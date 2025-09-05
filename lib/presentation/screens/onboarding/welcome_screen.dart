@@ -28,7 +28,7 @@ class WelcomeScreen extends StatelessWidget {
                   width: 120,
                   height: 120,
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
+                    color: Colors.white.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(PulseRadii.xl),
                   ),
                   child: const Icon(
@@ -53,7 +53,7 @@ class WelcomeScreen extends StatelessWidget {
                 Text(
                   'Find your perfect match',
                   style: PulseTextStyles.headlineSmall.copyWith(
-                    color: Colors.white.withOpacity(0.9),
+                    color: Colors.white.withValues(alpha: 0.9),
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -118,7 +118,7 @@ class WelcomeScreen extends StatelessWidget {
                 Text(
                   'By continuing, you agree to our Terms of Service and Privacy Policy',
                   style: PulseTextStyles.labelSmall.copyWith(
-                    color: Colors.white.withOpacity(0.7),
+                    color: Colors.white.withValues(alpha: 0.7),
                   ),
                   textAlign: TextAlign.center,
                 ),

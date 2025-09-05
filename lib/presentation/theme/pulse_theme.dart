@@ -37,7 +37,7 @@ class PulseTheme {
 
       surface: PulseColors.surface,
       onSurface: PulseColors.onSurface,
-      surfaceVariant: PulseColors.surfaceVariant,
+      surfaceContainerHighest: PulseColors.surfaceVariant,
       onSurfaceVariant: PulseColors.onSurfaceVariant,
 
       outline: PulseColors.outline,
@@ -271,7 +271,7 @@ class PulseTheme {
 
       surface: PulseColors.surfaceDark,
       onSurface: PulseColors.onSurfaceDark,
-      surfaceVariant: PulseColors.surfaceVariantDark,
+      surfaceContainerHighest: PulseColors.surfaceVariantDark,
       onSurfaceVariant: PulseColors.onSurfaceVariantDark,
 
       outline: PulseColors.outline,

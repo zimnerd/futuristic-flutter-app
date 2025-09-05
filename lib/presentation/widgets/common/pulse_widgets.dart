@@ -82,7 +82,7 @@ class PulseBottomSheet {
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: PulseColors.onSurfaceVariant.withOpacity(0.4),
+                  color: PulseColors.onSurfaceVariant.withValues(alpha: 0.4),
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),

@@ -95,7 +95,7 @@ class _PulseTextFieldState extends State<PulseTextField> {
             ),
             color: widget.enabled
                 ? PulseColors.surfaceVariant
-                : PulseColors.outlineVariant.withOpacity(0.1),
+                : PulseColors.outlineVariant.withValues(alpha: 0.1),
           ),
           child: TextFormField(
             controller: widget.controller,
