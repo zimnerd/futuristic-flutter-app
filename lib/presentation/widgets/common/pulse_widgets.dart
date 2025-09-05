@@ -93,10 +93,7 @@ class PulseBottomSheet {
                 child: Row(
                   children: [
                     Expanded(
-                      child: Text(
-                        title,
-                        style: PulseTextStyles.headlineSmall,
-                      ),
+                      child: Text(title, style: PulseTextStyles.headlineSmall),
                     ),
                     if (isDismissible)
                       IconButton(
@@ -186,18 +183,12 @@ class PulseSnackBar {
       SnackBar(
         content: Row(
           children: [
-            Icon(
-              iconData,
-              color: Colors.white,
-              size: 20,
-            ),
+            Icon(iconData, color: Colors.white, size: 20),
             const SizedBox(width: PulseSpacing.sm),
             Expanded(
               child: Text(
                 message,
-                style: PulseTextStyles.bodyMedium.copyWith(
-                  color: Colors.white,
-                ),
+                style: PulseTextStyles.bodyMedium.copyWith(color: Colors.white),
               ),
             ),
           ],

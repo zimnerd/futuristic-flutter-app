@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'core/constants/app_constants.dart';
-// import 'package:hive_flutter/hive_flutter.dart';
-
-// Core imports
-import 'core/theme/app_theme.dart';
-// import 'core/storage/hive_storage_service.dart';
-
-// import 'presentation/pages/splash/splash_page.dart';
-// import 'presentation/blocs/app/app_bloc.dart';
+import 'core/storage/hive_storage_service.dart';
+// Temporary mock repository for development
+import 'data/models/user_model.dart';
+import 'domain/repositories/user_repository.dart';
+import 'presentation/blocs/auth/auth_bloc.dart';
+import 'presentation/blocs/user/user_bloc.dart';
+import 'presentation/navigation/app_router.dart';
+import 'presentation/theme/pulse_theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -21,7 +22,7 @@ void main() async {
   ]);
 
   // Initialize local storage
-  // await HiveStorageService().initialize();
+  await HiveStorageService().initialize();
 
   runApp(const PulseDatingApp());
 }
@@ -31,53 +32,77 @@ class PulseDatingApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: AppConstants.appName,
-      theme: PulseTheme.lightTheme,
-      darkTheme: PulseTheme.darkTheme,
-      themeMode: ThemeMode.system,
-      debugShowCheckedModeBanner: false,
-      home: const HomePage(),
+    return MultiBlocProvider(
+      providers: [
+        // Initialize repositories with mock implementation for now
+        RepositoryProvider<UserRepository>(
+          create: (context) => MockUserRepository(),
+        ),
+
+        // Initialize BLoCs
+        BlocProvider<AuthBloc>(
+          create: (context) =>
+              AuthBloc(userRepository: context.read<UserRepository>()),
+        ),
+        BlocProvider<UserBloc>(
+          create: (context) =>
+              UserBloc(userRepository: context.read<UserRepository>()),
+        ),
+      ],
+      child: MaterialApp.router(
+        title: AppConstants.appName,
+        theme: PulseTheme.light,
+        darkTheme: PulseTheme.dark,
+        themeMode: ThemeMode.system,
+        debugShowCheckedModeBanner: false,
+        routerConfig: AppRouter.router,
+      ),
     );
   }
 }
 
-// Temporary home page until we implement proper navigation
-class HomePage extends StatelessWidget {
-  const HomePage({super.key});
+/// Temporary mock repository implementation for development
+class MockUserRepository implements UserRepository {
+  @override
+  Future<UserModel?> signInWithEmailPassword(
+    String email,
+    String password,
+  ) async {
+    // TODO: Implement mock authentication
+    return null;
+  }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(AppConstants.appName),
-        backgroundColor: Theme.of(context).colorScheme.primary,
-        foregroundColor: Theme.of(context).colorScheme.onPrimary,
-      ),
-      body: const Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.favorite, size: 80, color: PulseColors.primary),
-            SizedBox(height: 24),
-            Text('Pulse Dating App', style: PulseTextStyles.headlineMedium),
-            SizedBox(height: 16),
-            Text(
-              'Modern dating with offline-first architecture',
-              style: PulseTextStyles.bodyLarge,
-              textAlign: TextAlign.center,
-            ),
-            SizedBox(height: 32),
-            Text('🚧 Under Development 🚧', style: PulseTextStyles.titleMedium),
-            SizedBox(height: 16),
-            Text(
-              'Phase 1: Foundation & Architecture in progress...',
-              style: PulseTextStyles.bodyMedium,
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
-      ),
-    );
+  Future<UserModel?> getCurrentUser() async {
+    return null;
+  }
+
+  @override
+  Future<UserModel?> getUserById(String userId) async {
+    return null;
+  }
+
+  @override
+  Future<void> signOut() async {
+    // Mock implementation
+  }
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) {
+    // For any unimplemented method, return appropriate defaults
+    final returnType = invocation.memberName.toString();
+    if (returnType.contains('Future')) {
+      if (returnType.contains('List')) {
+        return Future.value(<dynamic>[]);
+      }
+      if (returnType.contains('UserModel')) {
+        return Future.value(null);
+      }
+      return Future.value();
+    }
+    if (returnType.contains('Stream')) {
+      return Stream.empty();
+    }
+    return super.noSuchMethod(invocation);
   }
 }

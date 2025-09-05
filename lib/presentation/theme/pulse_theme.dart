@@ -12,34 +12,34 @@ class PulseTheme {
   static ThemeData get light => ThemeData(
     useMaterial3: true,
     brightness: Brightness.light,
-    
+
     // Color scheme based on Pulse brand colors
     colorScheme: const ColorScheme.light(
       primary: PulseColors.primary,
       onPrimary: Colors.white,
       primaryContainer: PulseColors.primaryContainer,
       onPrimaryContainer: PulseColors.primaryDark,
-      
+
       secondary: PulseColors.secondary,
       onSecondary: Colors.white,
       secondaryContainer: PulseColors.secondaryContainer,
       onSecondaryContainer: PulseColors.secondaryDark,
-      
+
       tertiary: PulseColors.success,
       onTertiary: Colors.white,
       tertiaryContainer: PulseColors.successContainer,
       onTertiaryContainer: PulseColors.successDark,
-      
+
       error: PulseColors.error,
       onError: Colors.white,
       errorContainer: PulseColors.errorContainer,
       onErrorContainer: PulseColors.errorDark,
-      
+
       surface: PulseColors.surface,
       onSurface: PulseColors.onSurface,
       surfaceVariant: PulseColors.surfaceVariant,
       onSurfaceVariant: PulseColors.onSurfaceVariant,
-      
+
       outline: PulseColors.outline,
       outlineVariant: PulseColors.outlineVariant,
     ),
@@ -126,10 +126,7 @@ class PulseTheme {
           borderRadius: BorderRadius.circular(PulseRadii.button),
         ),
         textStyle: PulseTextStyles.labelLarge,
-        side: const BorderSide(
-          color: PulseColors.outline,
-          width: 1.5,
-        ),
+        side: const BorderSide(color: PulseColors.outline, width: 1.5),
         minimumSize: const Size(120, 48),
       ),
     ),
@@ -249,34 +246,34 @@ class PulseTheme {
   static ThemeData get dark => ThemeData(
     useMaterial3: true,
     brightness: Brightness.dark,
-    
+
     // Dark color scheme
     colorScheme: const ColorScheme.dark(
       primary: PulseColors.primaryLight,
       onPrimary: PulseColors.onSurface,
       primaryContainer: PulseColors.primaryDark,
       onPrimaryContainer: PulseColors.primaryLight,
-      
+
       secondary: PulseColors.secondaryLight,
       onSecondary: PulseColors.onSurface,
       secondaryContainer: PulseColors.secondaryDark,
       onSecondaryContainer: PulseColors.secondaryLight,
-      
+
       tertiary: PulseColors.successLight,
       onTertiary: PulseColors.onSurface,
       tertiaryContainer: PulseColors.successDark,
       onTertiaryContainer: PulseColors.successLight,
-      
+
       error: PulseColors.errorLight,
       onError: PulseColors.onSurface,
       errorContainer: PulseColors.errorDark,
       onErrorContainer: PulseColors.errorLight,
-      
+
       surface: PulseColors.surfaceDark,
       onSurface: PulseColors.onSurfaceDark,
       surfaceVariant: PulseColors.surfaceVariantDark,
       onSurfaceVariant: PulseColors.onSurfaceVariantDark,
-      
+
       outline: PulseColors.outline,
       outlineVariant: PulseColors.outlineVariant,
     ),

@@ -7,12 +7,8 @@ class OnboardingScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Setup Your Profile'),
-      ),
-      body: const Center(
-        child: Text('Onboarding Screen - TODO: Implement'),
-      ),
+      appBar: AppBar(title: const Text('Setup Your Profile')),
+      body: const Center(child: Text('Onboarding Screen - TODO: Implement')),
     );
   }
 }

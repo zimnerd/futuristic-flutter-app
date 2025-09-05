@@ -14,10 +14,7 @@ class WelcomeScreen extends StatelessWidget {
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [
-              PulseColors.primary,
-              PulseColors.secondary,
-            ],
+            colors: [PulseColors.primary, PulseColors.secondary],
           ),
         ),
         child: SafeArea(
@@ -41,7 +38,7 @@ class WelcomeScreen extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: PulseSpacing.xl),
-                
+
                 // App name
                 Text(
                   'PulseLink',
@@ -51,7 +48,7 @@ class WelcomeScreen extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: PulseSpacing.md),
-                
+
                 // Tagline
                 Text(
                   'Find your perfect match',
@@ -61,7 +58,7 @@ class WelcomeScreen extends StatelessWidget {
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: PulseSpacing.xxl),
-                
+
                 // Action buttons
                 Column(
                   children: [
@@ -78,7 +75,9 @@ class WelcomeScreen extends StatelessWidget {
                             vertical: PulseSpacing.md,
                           ),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(PulseRadii.button),
+                            borderRadius: BorderRadius.circular(
+                              PulseRadii.button,
+                            ),
                           ),
                         ),
                         child: Text(
@@ -103,7 +102,9 @@ class WelcomeScreen extends StatelessWidget {
                             vertical: PulseSpacing.md,
                           ),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(PulseRadii.button),
+                            borderRadius: BorderRadius.circular(
+                              PulseRadii.button,
+                            ),
                           ),
                         ),
                         child: const Text('I already have an account'),
@@ -112,7 +113,7 @@ class WelcomeScreen extends StatelessWidget {
                   ],
                 ),
                 const Spacer(),
-                
+
                 // Terms and privacy
                 Text(
                   'By continuing, you agree to our Terms of Service and Privacy Policy',

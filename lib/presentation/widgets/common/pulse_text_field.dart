@@ -93,8 +93,8 @@ class _PulseTextFieldState extends State<PulseTextField> {
               color: _getBorderColor(),
               width: _isFocused ? 2 : 1,
             ),
-            color: widget.enabled 
-                ? PulseColors.surfaceVariant 
+            color: widget.enabled
+                ? PulseColors.surfaceVariant
                 : PulseColors.outlineVariant.withOpacity(0.1),
           ),
           child: TextFormField(
@@ -113,8 +113,8 @@ class _PulseTextFieldState extends State<PulseTextField> {
             autofocus: widget.autofocus,
             onTap: widget.onTap,
             style: PulseTextStyles.bodyMedium.copyWith(
-              color: widget.enabled 
-                  ? PulseColors.onSurface 
+              color: widget.enabled
+                  ? PulseColors.onSurface
                   : PulseColors.onSurfaceVariant,
             ),
             decoration: InputDecoration(
@@ -146,8 +146,8 @@ class _PulseTextFieldState extends State<PulseTextField> {
             child: Text(
               widget.errorText ?? widget.helperText!,
               style: PulseTextStyles.labelSmall.copyWith(
-                color: widget.errorText != null 
-                    ? PulseColors.error 
+                color: widget.errorText != null
+                    ? PulseColors.error
                     : PulseColors.onSurfaceVariant,
               ),
             ),

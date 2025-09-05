@@ -20,9 +20,7 @@ class PulseLoadingIndicator extends StatelessWidget {
       width: _getSize(),
       child: CircularProgressIndicator(
         strokeWidth: _getStrokeWidth(),
-        valueColor: AlwaysStoppedAnimation<Color>(
-          color ?? PulseColors.primary,
-        ),
+        valueColor: AlwaysStoppedAnimation<Color>(color ?? PulseColors.primary),
       ),
     );
   }
@@ -52,11 +50,7 @@ class PulseLoadingIndicator extends StatelessWidget {
 
 /// Loading overlay that covers the entire screen
 class PulseLoadingOverlay extends StatelessWidget {
-  const PulseLoadingOverlay({
-    super.key,
-    this.message,
-    this.isVisible = true,
-  });
+  const PulseLoadingOverlay({super.key, this.message, this.isVisible = true});
 
   final String? message;
   final bool isVisible;
@@ -115,11 +109,7 @@ class PulseEmptyState extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              icon,
-              size: 64,
-              color: PulseColors.onSurfaceVariant,
-            ),
+            Icon(icon, size: 64, color: PulseColors.onSurfaceVariant),
             const SizedBox(height: PulseSpacing.lg),
             Text(
               title,
@@ -172,11 +162,7 @@ class PulseErrorState extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.error_outline,
-              size: 64,
-              color: PulseColors.error,
-            ),
+            Icon(Icons.error_outline, size: 64, color: PulseColors.error),
             const SizedBox(height: PulseSpacing.lg),
             Text(
               title,
@@ -214,8 +200,4 @@ class PulseErrorState extends StatelessWidget {
 }
 
 /// Loading size options
-enum PulseLoadingSize {
-  small,
-  medium,
-  large,
-}
+enum PulseLoadingSize { small, medium, large }

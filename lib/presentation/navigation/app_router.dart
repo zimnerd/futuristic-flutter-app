@@ -2,16 +2,16 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../screens/auth/forgot_password_screen.dart';
 import '../screens/auth/login_screen.dart';
 import '../screens/auth/register_screen.dart';
-import '../screens/auth/forgot_password_screen.dart';
 import '../screens/main/home_screen.dart';
-import '../screens/main/profile_screen.dart';
 import '../screens/main/matches_screen.dart';
 import '../screens/main/messages_screen.dart';
+import '../screens/main/profile_screen.dart';
 import '../screens/main/settings_screen.dart';
-import '../screens/onboarding/welcome_screen.dart';
 import '../screens/onboarding/onboarding_screen.dart';
+import '../screens/onboarding/welcome_screen.dart';
 
 /// Application routes configuration using GoRouter
 /// Provides type-safe navigation with route guards and transitions
@@ -87,11 +87,7 @@ class AppRouter {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(
-              Icons.error_outline,
-              size: 64,
-              color: Colors.red,
-            ),
+            const Icon(Icons.error_outline, size: 64, color: Colors.red),
             const SizedBox(height: 16),
             Text(
               'Page not found',
@@ -139,10 +135,7 @@ class AppRoutes {
 
 /// Main navigation wrapper with bottom navigation bar
 class MainNavigationWrapper extends StatelessWidget {
-  const MainNavigationWrapper({
-    super.key,
-    required this.child,
-  });
+  const MainNavigationWrapper({super.key, required this.child});
 
   final Widget child;
 
@@ -162,7 +155,7 @@ class MainBottomNavigation extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final location = GoRouterState.of(context).uri.path;
-    
+
     return BottomNavigationBar(
       type: BottomNavigationBarType.fixed,
       currentIndex: _getSelectedIndex(location),

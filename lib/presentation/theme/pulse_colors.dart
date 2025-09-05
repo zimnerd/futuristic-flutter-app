@@ -11,7 +11,7 @@ class PulseColors {
   static const Color primaryDark = Color(0xFF5528CC);
   static const Color primaryContainer = Color(0xFFE8DCFF);
 
-  // Secondary Brand Colors  
+  // Secondary Brand Colors
   static const Color secondary = Color(0xFF00C2FF); // Cyan accent
   static const Color secondaryLight = Color(0xFF33D1FF);
   static const Color secondaryDark = Color(0xFF0099CC);
@@ -244,11 +244,11 @@ class PulseSpacing {
   PulseSpacing._();
 
   // Base spacing unit (8pt grid)
-  static const double xs = 4.0;   // Extra small
-  static const double sm = 8.0;   // Small
-  static const double md = 16.0;  // Medium
-  static const double lg = 24.0;  // Large
-  static const double xl = 32.0;  // Extra large
+  static const double xs = 4.0; // Extra small
+  static const double sm = 8.0; // Small
+  static const double md = 16.0; // Medium
+  static const double lg = 24.0; // Large
+  static const double xl = 32.0; // Extra large
   static const double xxl = 48.0; // Extra extra large
 
   // Component specific spacing

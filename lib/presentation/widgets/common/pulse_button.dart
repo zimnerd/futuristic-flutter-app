@@ -29,16 +29,14 @@ class PulseButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    
+
     Widget child = isLoading
         ? SizedBox(
             height: _getIconSize(),
             width: _getIconSize(),
             child: CircularProgressIndicator(
               strokeWidth: 2,
-              valueColor: AlwaysStoppedAnimation<Color>(
-                _getTextColor(theme),
-              ),
+              valueColor: AlwaysStoppedAnimation<Color>(_getTextColor(theme)),
             ),
           )
         : Row(
@@ -82,7 +80,7 @@ class PulseButton extends StatelessWidget {
           ),
           child: child,
         );
-      
+
       case PulseButtonVariant.secondary:
         return OutlinedButton(
           onPressed: isDisabled || isLoading ? null : onPressed,
@@ -97,7 +95,7 @@ class PulseButton extends StatelessWidget {
           ),
           child: child,
         );
-      
+
       case PulseButtonVariant.tertiary:
         return TextButton(
           onPressed: isDisabled || isLoading ? null : onPressed,
@@ -111,7 +109,7 @@ class PulseButton extends StatelessWidget {
           ),
           child: child,
         );
-      
+
       case PulseButtonVariant.danger:
         return ElevatedButton(
           onPressed: isDisabled || isLoading ? null : onPressed,
@@ -195,16 +193,7 @@ class PulseButton extends StatelessWidget {
 }
 
 /// Button variant styles
-enum PulseButtonVariant {
-  primary,
-  secondary,
-  tertiary,
-  danger,
-}
+enum PulseButtonVariant { primary, secondary, tertiary, danger }
 
 /// Button size options
-enum PulseButtonSize {
-  small,
-  medium,
-  large,
-}
+enum PulseButtonSize { small, medium, large }
