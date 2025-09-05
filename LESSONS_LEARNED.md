@@ -5,7 +5,88 @@ This document captures key learnings from building the **Flutter mobile dating a
 
 ---
 
-## 📱 **Flutter Architecture Lessons**
+## � **Dependency Management & Package Installation**
+
+### ✅ **CRITICAL: Always Use Latest Package Versions in Clean Projects**
+**Date**: September 4, 2025
+**Context**: Flutter dependency resolution and package installation
+
+#### **Problem Encountered**
+- Started with outdated package versions in pubspec.yaml
+- Flutter showed warnings about newer versions being available
+- Version conflicts arose when mixing old and new package versions
+- Created multiple backup files (pubspec_clean.yaml, pubspec_minimal.yaml) causing confusion
+
+#### **Solution Applied**
+- **Always check pub.dev for latest versions** when starting a clean project
+- Use `flutter pub outdated` to see available updates
+- Start with minimal dependencies and add incrementally
+- **Never create backup/duplicate files** - use standard naming only
+
+#### **Best Practices Established**
+```yaml
+# ✅ Use latest stable versions (September 2025)
+flutter_bloc: ^9.1.1    # Latest stable
+go_router: ^16.2.1       # Latest (was 12.1.3)
+dio: ^5.9.0             # Latest stable
+hive: ^2.2.3            # Latest stable
+flutter_lints: ^6.0.0   # Latest (was 4.0.0)
+geolocator: ^14.0.2     # Latest stable
+permission_handler: ^12.0.1 # Latest stable
+```
+
+#### **Process for Clean Projects**
+1. **Research latest versions** on pub.dev before writing pubspec.yaml
+2. **Start minimal** - only essential packages first
+3. **Add incrementally** - install and test one package group at a time
+4. **No file duplications** - use standard naming (pubspec.yaml, not variants)
+5. **Clean approach** - remove any test/backup files immediately
+
+#### **Commands for Latest Versions**
+```bash
+# Clean approach - no backups needed
+rm -f pubspec.yaml.backup pubspec_clean.yaml pubspec_minimal.yaml
+
+# Install with latest versions
+flutter pub get
+
+# Check for updates in future
+flutter pub outdated
+```
+
+#### **Impact & Results**
+- ✅ Cleaner dependency tree with latest features
+- ✅ Better compatibility with current Flutter SDK
+- ✅ Reduced version conflicts and build issues
+- ✅ Access to latest bug fixes and performance improvements
+
+#### **⚠️ Transitive Dependencies Reality Check**
+**Issue Discovered**: Even with latest direct dependencies, some transitive dependencies remain outdated:
+```
+transitive dependencies:
+characters                *1.4.0   → 1.4.1 available
+material_color_utilities  *0.11.1  → 0.13.0 available
+meta                      *1.16.0  → 1.17.0 available
+
+transitive dev_dependencies:
+test_api                  *0.7.6   → 0.7.7 available
+```
+
+**Understanding**:
+- These are **indirect dependencies** pulled in by our direct packages
+- The packages we depend on haven't updated to use the latest versions yet
+- This is **normal and expected** - not all package authors update immediately
+- **No action needed** - these will update automatically when the parent packages update
+
+**Key Lesson**:
+- Focus on **direct dependencies** being latest
+- **Transitive dependencies** will catch up naturally
+- Don't try to override transitive versions unless there's a specific issue
+- Use `flutter pub deps` to understand the dependency tree
+
+---
+
+## �📱 **Flutter Architecture Lessons**
 
 ### 1. **BLoC Pattern Mastery**
 - ✅ **Learned**: BLoC pattern provides excellent separation of concerns and testable business logic
@@ -267,7 +348,7 @@ flutter build apk --split-per-abi  # Split APKs for different architectures
 adb logcat                 # Android logs
 adb install build/app/outputs/flutter-apk/app-release.apk  # Install APK
 
-# iOS  
+# iOS
 flutter build ios --release  # iOS release build
 xcrun simctl openurl booted "url"  # Open URL in simulator
 ```
