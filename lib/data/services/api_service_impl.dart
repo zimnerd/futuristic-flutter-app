@@ -36,6 +36,12 @@ class ApiServiceImpl implements ApiService {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
     'User-Agent': AppConfig.userAgent,
+    'X-Platform': 'mobile-flutter', // Identify as mobile Flutter app
+    'X-App-Version': AppConfig.appVersion, // App version for backend tracking
+    'Access-Control-Allow-Origin': '*', // For CORS preflight
+    'Access-Control-Allow-Methods': 'GET,PUT,POST,DELETE,PATCH,OPTIONS',
+    'Access-Control-Allow-Headers':
+        'Content-Type,Authorization,X-Requested-With,Accept,Origin,User-Agent',
   };
 
   @override

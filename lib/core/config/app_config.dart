@@ -3,17 +3,17 @@ class AppConfig {
   AppConfig._();
 
   // Environment flags
-  static const bool isDevelopment = true;
-  static const bool isProduction = false;
+  static const bool isDevelopment = false; // Changed to production
+  static const bool isProduction = true; // Changed to production
 
-  // API Configuration
+  // API Configuration - Using production backend
   static const String apiBaseUrl = isDevelopment
       ? 'http://localhost:3000/api/v1'
-      : 'https://api.pulselink.com/v1';
+      : 'https://pulsetechnology.co.za:3000/api/v1'; // Production backend
 
   static const String websocketUrl = isDevelopment
       ? 'http://localhost:3000'
-      : 'https://api.pulselink.com';
+      : 'https://pulsetechnology.co.za:3000'; // Production WebSocket
 
   // Timeouts
   static const Duration apiTimeout = Duration(seconds: 30);
