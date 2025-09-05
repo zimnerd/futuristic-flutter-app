@@ -58,7 +58,7 @@ class AutoLoginFab extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 16),
-                
+
                 // Header
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -73,10 +73,11 @@ class AutoLoginFab extends StatelessWidget {
                       Expanded(
                         child: Text(
                           'Development Auto-Login',
-                          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: PulseColors.primary,
-                          ),
+                          style: Theme.of(context).textTheme.titleLarge
+                              ?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: PulseColors.primary,
+                              ),
                         ),
                       ),
                       IconButton(
@@ -86,7 +87,7 @@ class AutoLoginFab extends StatelessWidget {
                     ],
                   ),
                 ),
-                
+
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 24),
                   child: Text(
@@ -97,7 +98,7 @@ class AutoLoginFab extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 24),
-                
+
                 // Account list
                 Expanded(
                   child: ListView.builder(
@@ -110,7 +111,7 @@ class AutoLoginFab extends StatelessWidget {
                     },
                   ),
                 ),
-                
+
                 const SizedBox(height: 16),
               ],
             );
@@ -133,14 +134,12 @@ class _AutoLoginCard extends StatelessWidget {
       elevation: 2,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
-        side: BorderSide(
-          color: PulseColors.outline.withValues(alpha: 0.2),
-        ),
+        side: BorderSide(color: PulseColors.outline.withValues(alpha: 0.2)),
       ),
       child: BlocBuilder<AuthBloc, AuthState>(
         builder: (context, state) {
           final isLoading = state is AuthLoading;
-          
+
           return InkWell(
             onTap: isLoading ? null : () => _handleAutoLogin(context),
             borderRadius: BorderRadius.circular(12),
@@ -164,7 +163,7 @@ class _AutoLoginCard extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 16),
-                  
+
                   // Account info
                   Expanded(
                     child: Column(
@@ -175,23 +174,28 @@ class _AutoLoginCard extends StatelessWidget {
                             Expanded(
                               child: Text(
                                 account.name,
-                                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                  fontWeight: FontWeight.w600,
-                                ),
+                                style: Theme.of(context).textTheme.titleMedium
+                                    ?.copyWith(fontWeight: FontWeight.w600),
                               ),
                             ),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 4,
+                              ),
                               decoration: BoxDecoration(
-                                color: _getRoleColor(account.role).withValues(alpha: 0.1),
+                                color: _getRoleColor(
+                                  account.role,
+                                ).withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Text(
                                 account.role,
-                                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                  color: _getRoleColor(account.role),
-                                  fontWeight: FontWeight.w500,
-                                ),
+                                style: Theme.of(context).textTheme.bodySmall
+                                    ?.copyWith(
+                                      color: _getRoleColor(account.role),
+                                      fontWeight: FontWeight.w500,
+                                    ),
                               ),
                             ),
                           ],
@@ -199,22 +203,22 @@ class _AutoLoginCard extends StatelessWidget {
                         const SizedBox(height: 4),
                         Text(
                           account.description,
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: PulseColors.onSurfaceVariant,
-                          ),
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(color: PulseColors.onSurfaceVariant),
                         ),
                         const SizedBox(height: 4),
                         Text(
                           account.email,
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: PulseColors.primary,
-                            fontFamily: 'monospace',
-                          ),
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(
+                                color: PulseColors.primary,
+                                fontFamily: 'monospace',
+                              ),
                         ),
                       ],
                     ),
                   ),
-                  
+
                   // Loading indicator or arrow
                   if (isLoading) ...[
                     const SizedBox(width: 12),
@@ -223,7 +227,9 @@ class _AutoLoginCard extends StatelessWidget {
                       height: 20,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>(PulseColors.primary),
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          PulseColors.primary,
+                        ),
                       ),
                     ),
                   ] else ...[
@@ -260,15 +266,12 @@ class _AutoLoginCard extends StatelessWidget {
 
   void _handleAutoLogin(BuildContext context) {
     context.read<AuthBloc>().add(
-      AuthSignInRequested(
-        email: account.email,
-        password: account.password,
-      ),
+      AuthSignInRequested(email: account.email, password: account.password),
     );
-    
+
     // Close the dialog
     Navigator.of(context).pop();
-    
+
     // Show feedback
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(

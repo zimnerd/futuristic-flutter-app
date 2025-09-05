@@ -3,7 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'core/constants/app_constants.dart';
-import 'core/storage/hive_storage_service.dart';
+import 'core/storage/storage_service.dart';
+import 'data/datasources/local/user_local_data_source_mock.dart';
 import 'data/datasources/remote/user_remote_data_source_impl.dart';
 import 'data/repositories/user_repository_impl.dart';
 import 'data/services/api_service_impl.dart';
@@ -46,11 +47,10 @@ class PulseDatingApp extends StatelessWidget {
             final remoteDataSource = UserRemoteDataSourceImpl(
               apiService: apiService,
             );
-            // TODO: Initialize local data source when implemented
+            final localDataSource = MockUserLocalDataSource();
             return UserRepositoryImpl(
               remoteDataSource: remoteDataSource,
-              localDataSource:
-                  remoteDataSource as dynamic, // Temporary: use remote as local
+              localDataSource: localDataSource,
             );
           },
         ),
