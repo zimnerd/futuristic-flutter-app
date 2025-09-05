@@ -158,22 +158,16 @@ lib/data/
 #### **Batch 6: BLoC State Management** ⏳
 **Status**: Next | **Priority**: Critical | **ETA**: Day 3
 
-- [ ] **4.1** Generate Dart models from API schema using `json_annotation`
-- [ ] **4.2** Create API service layer with proper error handling
-- [ ] **4.3** Setup HTTP interceptors for authentication
-- [ ] **4.4** Implement request/response caching
-- [ ] **4.5** Create repository pattern for data access
+- [ ] **6.1** Create authentication BLoCs (Login, Register, Profile)
+- [ ] **6.2** Implement user management BLoC (UserBloc)
+- [ ] **6.3** Create matching system BLoC (MatchBloc)
+- [ ] **6.4** Build chat/messaging BLoC (ConversationBloc, MessageBloc)
+- [ ] **6.5** Setup event-driven state management
+- [ ] **6.6** Integrate BLoCs with repositories and services
+- [ ] **6.7** Implement loading states and error handling
+- [ ] **6.8** Add state persistence for offline scenarios
 
-#### **Batch 5: Offline Data Management** ⏳
-**Status**: Not Started | **Priority**: High | **ETA**: Day 3-4
-
-- [ ] **5.1** Create local database schema (Drift)
-- [ ] **5.2** Implement data synchronization service
-- [ ] **5.3** Create offline queue for pending actions
-- [ ] **5.4** Setup conflict resolution strategies
-- [ ] **5.5** Implement cache-first data fetching
-
-### **Phase 3: Authentication & User Management**
+### **Phase 3: UI Foundation & Navigation**
 **Duration**: 4-5 days | **Progress**: 0/10 tasks
 
 #### **Batch 6: Authentication Flow** ⏳

@@ -1,5 +1,5 @@
-/// Core constants for the Pulse Dating App
-/// Contains API endpoints, app configuration, and global settings
+// Core constants for the Pulse Dating App
+// Contains API endpoints, app configuration, and global settings
 
 class AppConstants {
   // App Information

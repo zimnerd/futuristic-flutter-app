@@ -1,14 +1,14 @@
 import 'dart:async';
 
 import 'package:logger/logger.dart';
-import 'package:socket_io_client/socket_io_client.dart' as IO;
+import 'package:socket_io_client/socket_io_client.dart' as socket_io;
 
 import '../../domain/services/websocket_service.dart';
 import '../exceptions/app_exceptions.dart';
 
 /// Concrete implementation of WebSocketService using socket_io_client
 class WebSocketServiceImpl implements WebSocketService {
-  IO.Socket? _socket;
+  socket_io.Socket? _socket;
   final Logger _logger = Logger();
   String? _authToken;
   bool _isConnected = false;
@@ -68,9 +68,9 @@ class WebSocketServiceImpl implements WebSocketService {
       _logger.i('🔌 Connecting to WebSocket...');
       _connectionStateController.add('connecting');
 
-      _socket = IO.io(
+      _socket = socket_io.io(
         'wss://api.pulselink.com$_currentNamespace',
-        IO.OptionBuilder()
+        socket_io.OptionBuilder()
             .setTransports(['websocket'])
             .enableAutoConnect()
             .enableReconnection()
