@@ -102,13 +102,10 @@ class AppDatabase extends _$AppDatabase {
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
-        onCreate: (Migrator m) async {
-          await m.createAll();
-        },
-        onUpgrade: (Migrator m, int from, int to) async {
-          // Handle database migrations here
-        },
-      );
+    onCreate: (Migrator m) async {
+      await m.createAll();
+    },
+  );
 
   // User operations
   Future<List<User>> getAllUsers() => select(users).get();
@@ -117,16 +114,22 @@ class AppDatabase extends _$AppDatabase {
 
   Future<int> insertUser(UsersCompanion user) => into(users).insert(user);
 
-  Future<bool> updateUser(String id, UsersCompanion user) =>
-      (update(users)..where((u) => u.id.equals(id))).write(user);
+  Future<bool> updateUser(String id, UsersCompanion user) async {
+    final result = await (update(
+      users,
+    )..where((u) => u.id.equals(id))).write(user);
+    return result > 0;
+  }
 
   // Message operations
   Future<List<Message>> getConversationMessages(String conversationId) =>
       (select(messages)
             ..where((m) => m.conversationId.equals(conversationId))
             ..orderBy([
-              (m) =>
-                  OrderingTerm(expression: m.createdAt, mode: OrderingMode.desc)
+              (m) => OrderingTerm(
+                expression: m.createdAt,
+                mode: OrderingMode.desc,
+              ),
             ]))
           .get();
 
@@ -134,10 +137,11 @@ class AppDatabase extends _$AppDatabase {
       into(messages).insert(message);
 
   // Match operations
-  Future<List<Match>> getUserMatches(String userId) => (select(matches)
-        ..where((m) => m.user1Id.equals(userId) | m.user2Id.equals(userId))
-        ..where((m) => m.isMatched.equals(true)))
-      .get();
+  Future<List<Matche>> getUserMatches(String userId) =>
+      (select(matches)
+            ..where((m) => m.user1Id.equals(userId) | m.user2Id.equals(userId))
+            ..where((m) => m.isMatched.equals(true)))
+          .get();
 
   Future<int> insertMatch(MatchesCompanion match) =>
       into(matches).insert(match);
@@ -149,7 +153,9 @@ class AppDatabase extends _$AppDatabase {
             ..where((c) => c.isActive.equals(true))
             ..orderBy([
               (c) => OrderingTerm(
-                  expression: c.lastMessageAt, mode: OrderingMode.desc)
+                expression: c.lastMessageAt,
+                mode: OrderingMode.desc,
+              ),
             ]))
           .get();
 

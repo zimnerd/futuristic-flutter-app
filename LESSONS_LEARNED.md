@@ -352,3 +352,65 @@ adb install build/app/outputs/flutter-apk/app-release.apk  # Install APK
 flutter build ios --release  # iOS release build
 xcrun simctl openurl booted "url"  # Open URL in simulator
 ```
+
+---
+
+## 🎯 **Batch 5: Service Layer & Network Management - Critical Lessons**
+
+### **Interface Alignment Crisis & Resolution**
+❌ **Major Issue**: Repository interfaces vs Data Source interfaces mismatch
+- **Problem**: Repository defined high-level business operations, Data Sources defined low-level CRUD
+- **Root Cause**: Designed interfaces separately without considering implementation bridge
+- **Impact**: Cannot implement Repository interface using current Data Source methods
+
+✅ **Solution Strategy**:
+- Repositories should orchestrate multiple data source operations
+- Use adapter pattern or service layer to bridge interface gaps
+- Create method mapping between domain needs and data source capabilities
+- Consider splitting large interfaces into smaller, focused contracts
+
+### **Network Connectivity Without External Dependencies**
+✅ **Simple, Reliable Implementation**
+- **Approach**: Used `InternetAddress.lookup()` instead of `connectivity_plus`
+- **Benefits**: No external dependencies, platform-agnostic, simple to maintain
+- **Implementation**: Timer-based periodic checks (5s intervals), latency-based quality estimation
+- **Pattern**: Custom enums provide better control than external package enums
+
+```dart
+// Simple connectivity check
+Future<bool> _hasNetworkConnection() async {
+  try {
+    final result = await InternetAddress.lookup('google.com');
+    return result.isNotEmpty && result[0].rawAddress.isNotEmpty;
+  } catch (e) {
+    return false;
+  }
+}
+```
+
+### **Service Layer Architecture Success**
+✅ **API Service (Dio-based)**
+- Comprehensive interceptor chain for auth, logging, retries
+- Proper error transformation from HTTP to domain exceptions
+- Request/response transformers for data consistency
+- Timeout management with graceful degradation
+
+✅ **WebSocket Service (socket_io_client)**
+- Auto-reconnect with exponential backoff
+- Event queuing for offline scenarios
+- Connection state management with heartbeat
+- Namespace support for organized communication
+
+### **Key Architectural Learning**
+🔑 **Interface Design Must Consider Implementation Reality**
+- Don't design interfaces in isolation
+- Start with concrete implementation needs, then abstract
+- Use adapter pattern when interface mismatch is unavoidable
+- Repository pattern works best with service layer underneath
+
+### **Next Steps - Batch 6 Preview**
+- Fix data source interfaces to match repository expectations
+- Implement proper method mapping/adapters
+- Complete offline sync logic
+- Add integration tests for service layer
+- Set up BLoC layer for state management
