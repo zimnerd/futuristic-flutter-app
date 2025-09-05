@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../navigation/app_router.dart';
 import '../../theme/pulse_colors.dart';
+import '../../widgets/common/common_widgets.dart';
 
-/// Welcome screen - first screen users see
+/// Enhanced welcome screen with actual functionality
 class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({super.key});
 
@@ -62,53 +65,19 @@ class WelcomeScreen extends StatelessWidget {
                 // Action buttons
                 Column(
                   children: [
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: () {
-                          // TODO: Navigate to register
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.white,
-                          foregroundColor: PulseColors.primary,
-                          padding: const EdgeInsets.symmetric(
-                            vertical: PulseSpacing.md,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(
-                              PulseRadii.button,
-                            ),
-                          ),
-                        ),
-                        child: Text(
-                          'Get Started',
-                          style: PulseTextStyles.labelLarge.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
+                    PulseButton(
+                      text: 'Get Started',
+                      onPressed: () => context.go(AppRoutes.register),
+                      variant: PulseButtonVariant.secondary,
+                      fullWidth: true,
+                      icon: const Icon(Icons.arrow_forward),
                     ),
                     const SizedBox(height: PulseSpacing.md),
-                    SizedBox(
-                      width: double.infinity,
-                      child: OutlinedButton(
-                        onPressed: () {
-                          // TODO: Navigate to login
-                        },
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: Colors.white,
-                          side: const BorderSide(color: Colors.white),
-                          padding: const EdgeInsets.symmetric(
-                            vertical: PulseSpacing.md,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(
-                              PulseRadii.button,
-                            ),
-                          ),
-                        ),
-                        child: const Text('I already have an account'),
-                      ),
+                    PulseButton(
+                      text: 'I already have an account',
+                      onPressed: () => context.go(AppRoutes.login),
+                      variant: PulseButtonVariant.tertiary,
+                      fullWidth: true,
                     ),
                   ],
                 ),
