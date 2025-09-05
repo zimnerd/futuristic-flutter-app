@@ -1,0 +1,136 @@
+import 'package:equatable/equatable.dart';
+
+import '../../../data/models/match_model.dart';
+import '../../../data/models/user_model.dart';
+
+/// Base class for all matching system states
+sealed class MatchState extends Equatable {
+  const MatchState();
+
+  @override
+  List<Object?> get props => [];
+}
+
+/// Initial state when MatchBloc is created
+final class MatchInitial extends MatchState {
+  const MatchInitial();
+}
+
+/// State when match operation is in progress
+final class MatchLoading extends MatchState {
+  const MatchLoading();
+}
+
+/// State when user recommendations are loaded
+final class MatchRecommendationsLoaded extends MatchState {
+  const MatchRecommendationsLoaded({
+    required this.users,
+    required this.hasMore,
+  });
+
+  final List<UserModel> users;
+  final bool hasMore;
+
+  @override
+  List<Object?> get props => [users, hasMore];
+}
+
+/// State when nearby users are loaded
+final class MatchNearbyUsersLoaded extends MatchState {
+  const MatchNearbyUsersLoaded({required this.users, required this.hasMore});
+
+  final List<UserModel> users;
+  final bool hasMore;
+
+  @override
+  List<Object?> get props => [users, hasMore];
+}
+
+/// State when user has been liked (no match yet)
+final class MatchUserLikeRecorded extends MatchState {
+  const MatchUserLikeRecorded({
+    required this.likedUserId,
+    required this.message,
+  });
+
+  final String likedUserId;
+  final String message;
+
+  @override
+  List<Object?> get props => [likedUserId, message];
+}
+
+/// State when user has been passed
+final class MatchUserPassRecorded extends MatchState {
+  const MatchUserPassRecorded({
+    required this.passedUserId,
+    required this.message,
+  });
+
+  final String passedUserId;
+  final String message;
+
+  @override
+  List<Object?> get props => [passedUserId, message];
+}
+
+/// State when user has been super liked
+final class MatchUserSuperLikeRecorded extends MatchState {
+  const MatchUserSuperLikeRecorded({
+    required this.superLikedUserId,
+    required this.message,
+  });
+
+  final String superLikedUserId;
+  final String message;
+
+  @override
+  List<Object?> get props => [superLikedUserId, message];
+}
+
+/// State when a mutual match occurs (both users liked each other)
+final class MatchCreated extends MatchState {
+  const MatchCreated({required this.match, required this.message});
+
+  final MatchModel match;
+  final String message;
+
+  @override
+  List<Object?> get props => [match, message];
+}
+
+/// State when user's matches are loaded
+final class MatchUserMatchesLoaded extends MatchState {
+  const MatchUserMatchesLoaded({required this.matches, required this.hasMore});
+
+  final List<MatchModel> matches;
+  final bool hasMore;
+
+  @override
+  List<Object?> get props => [matches, hasMore];
+}
+
+/// State when user has been unmatched
+final class MatchUserUnmatchRecorded extends MatchState {
+  const MatchUserUnmatchRecorded({
+    required this.unmatchedUserId,
+    required this.message,
+  });
+
+  final String unmatchedUserId;
+  final String message;
+
+  @override
+  List<Object?> get props => [unmatchedUserId, message];
+}
+
+/// State when match operation fails
+final class MatchError extends MatchState {
+  const MatchError({required this.message, this.errorCode});
+
+  final String message;
+  final String? errorCode;
+
+  @override
+  List<Object?> get props => [message, errorCode];
+}
