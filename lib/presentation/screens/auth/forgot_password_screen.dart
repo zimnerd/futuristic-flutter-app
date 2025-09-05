@@ -1,16 +1,213 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
-/// Forgot password screen
-class ForgotPasswordScreen extends StatelessWidget {
+import '../../navigation/app_router.dart';
+import '../../theme/pulse_colors.dart';
+import '../../widgets/common/common_widgets.dart';
+
+/// Enhanced forgot password screen
+class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
+
+  @override
+  State<ForgotPasswordScreen> createState() => _ForgotPasswordScreenState();
+}
+
+class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
+  final _formKey = GlobalKey<FormState>();
+  final _emailController = TextEditingController();
+  bool _isLoading = false;
+  bool _emailSent = false;
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    super.dispose();
+  }
+
+  void _handleResetPassword() async {
+    if (_formKey.currentState?.validate() == true) {
+      setState(() {
+        _isLoading = true;
+      });
+      
+      // Simulate API call
+      await Future.delayed(const Duration(seconds: 2));
+      
+      setState(() {
+        _isLoading = false;
+        _emailSent = true;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Reset Password')),
-      body: const Center(
-        child: Text('Forgot Password Screen - TODO: Implement'),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              PulseColors.surface,
+              const Color(0xFFF8F9FA),
+            ],
+          ),
+        ),
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(PulseSpacing.xl),
+            child: _emailSent ? _buildSuccessView() : _buildFormView(),
+          ),
+        ),
       ),
+    );
+  }
+
+  Widget _buildFormView() {
+    return Form(
+      key: _formKey,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Back button
+          IconButton(
+            onPressed: () => context.go(AppRoutes.login),
+            icon: const Icon(Icons.arrow_back),
+            padding: EdgeInsets.zero,
+            alignment: Alignment.centerLeft,
+          ),
+          const SizedBox(height: PulseSpacing.xl),
+          
+          // Header
+          Text(
+            'Reset Password',
+            style: PulseTextStyles.displayMedium.copyWith(
+              color: PulseColors.onSurface,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: PulseSpacing.sm),
+          Text(
+            'Enter your email address and we\'ll send you a link to reset your password',
+            style: PulseTextStyles.bodyLarge.copyWith(
+              color: PulseColors.onSurfaceVariant,
+            ),
+          ),
+          const SizedBox(height: PulseSpacing.xxl),
+          
+          // Email input
+          PulseTextField(
+            controller: _emailController,
+            hintText: 'Email Address',
+            keyboardType: TextInputType.emailAddress,
+            prefixIcon: const Icon(Icons.email),
+            validator: (value) {
+              if (value?.isEmpty == true) {
+                return 'Email is required';
+              }
+              if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value!)) {
+                return 'Please enter a valid email';
+              }
+              return null;
+            },
+          ),
+          const SizedBox(height: PulseSpacing.xl),
+          
+          // Reset button
+          PulseButton(
+            text: 'Send Reset Link',
+            onPressed: _isLoading ? null : _handleResetPassword,
+            fullWidth: true,
+            isLoading: _isLoading,
+          ),
+          const Spacer(),
+          
+          // Sign in prompt
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                'Remember your password? ',
+                style: PulseTextStyles.bodyMedium.copyWith(
+                  color: PulseColors.onSurfaceVariant,
+                ),
+              ),
+              TextButton(
+                onPressed: () => context.go(AppRoutes.login),
+                child: Text(
+                  'Sign in',
+                  style: PulseTextStyles.bodyMedium.copyWith(
+                    color: PulseColors.primary,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSuccessView() {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Container(
+          width: 80,
+          height: 80,
+          decoration: BoxDecoration(
+            color: PulseColors.success,
+            shape: BoxShape.circle,
+          ),
+          child: const Icon(
+            Icons.check,
+            color: Colors.white,
+            size: 40,
+          ),
+        ),
+        const SizedBox(height: PulseSpacing.xl),
+        
+        Text(
+          'Check your email',
+          style: PulseTextStyles.headlineLarge.copyWith(
+            color: PulseColors.onSurface,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: PulseSpacing.md),
+        Text(
+          'We\'ve sent a password reset link to\n${_emailController.text}',
+          style: PulseTextStyles.bodyLarge.copyWith(
+            color: PulseColors.onSurfaceVariant,
+          ),
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: PulseSpacing.xxl),
+        
+        PulseButton(
+          text: 'Back to Sign In',
+          onPressed: () => context.go(AppRoutes.login),
+          fullWidth: true,
+        ),
+        const SizedBox(height: PulseSpacing.lg),
+        
+        TextButton(
+          onPressed: () {
+            setState(() {
+              _emailSent = false;
+            });
+          },
+          child: Text(
+            'Didn\'t receive the email? Try again',
+            style: PulseTextStyles.bodyMedium.copyWith(
+              color: PulseColors.primary,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
