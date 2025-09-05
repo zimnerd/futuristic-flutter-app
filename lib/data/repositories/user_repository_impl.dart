@@ -26,9 +26,9 @@ class UserRepositoryImpl implements UserRepository {
     try {
       _logger.i('👤 Signing in user with email: $email');
 
-      // Note: Authentication would typically be handled by a separate AuthService
-      // For now, we'll simulate by getting current user after "authentication"
-      final user = await _remoteDataSource.getCurrentUser();
+      // Cast to implementation to access auth methods
+      final remoteImpl = _remoteDataSource as dynamic;
+      final user = await remoteImpl.signIn(email, password);
       await _localDataSource.cacheCurrentUser(user);
       _logger.i('✅ User signed in successfully: ${user.id}');
       return user;
@@ -51,9 +51,9 @@ class UserRepositoryImpl implements UserRepository {
     try {
       _logger.i('👤 Signing up user with email: $email');
 
-      // Note: User creation would typically be handled by a separate AuthService
-      // For now, we'll simulate by getting current user after "signup"
-      final user = await _remoteDataSource.getCurrentUser();
+      // Cast to implementation to access auth methods
+      final remoteImpl = _remoteDataSource as dynamic;
+      final user = await remoteImpl.signUp(email, password, username);
       await _localDataSource.cacheCurrentUser(user);
       _logger.i('✅ User signed up successfully: ${user.id}');
       return user;

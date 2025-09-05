@@ -37,16 +37,20 @@ class _RegisterScreenState extends State<RegisterScreen> {
     if (_formKey.currentState?.validate() == true && _acceptedTerms) {
       final name = _nameController.text.trim();
       final email = _emailController.text.trim();
-      
-      context.read<AuthBloc>().add(AuthSignUpRequested(
-        email: email,
-        password: 'temp_password', // TODO: Add password field
-        username: name,
-      ));
+
+      context.read<AuthBloc>().add(
+        AuthSignUpRequested(
+          email: email,
+          password: 'temp_password', // TODO: Add password field
+          username: name,
+        ),
+      );
     } else if (!_acceptedTerms) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Please accept the Terms of Service and Privacy Policy'),
+          content: Text(
+            'Please accept the Terms of Service and Privacy Policy',
+          ),
           backgroundColor: PulseColors.error,
         ),
       );
@@ -78,10 +82,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             gradient: LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
-              colors: [
-                PulseColors.surface,
-                const Color(0xFFF8F9FA),
-              ],
+              colors: [PulseColors.surface, const Color(0xFFF8F9FA)],
             ),
           ),
           child: SafeArea(
@@ -100,7 +101,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       alignment: Alignment.centerLeft,
                     ),
                     const SizedBox(height: PulseSpacing.xl),
-                    
+
                     // Header
                     Text(
                       'Create Account',
@@ -117,7 +118,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       ),
                     ),
                     const SizedBox(height: PulseSpacing.xxl),
-                    
+
                     // Form fields
                     Expanded(
                       child: SingleChildScrollView(
@@ -140,7 +141,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               },
                             ),
                             const SizedBox(height: PulseSpacing.lg),
-                            
+
                             // Email input
                             PulseTextField(
                               controller: _emailController,
@@ -151,14 +152,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 if (value?.isEmpty == true) {
                                   return 'Email is required';
                                 }
-                                if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value!)) {
+                                if (!RegExp(
+                                  r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+                                ).hasMatch(value!)) {
                                   return 'Please enter a valid email';
                                 }
                                 return null;
                               },
                             ),
                             const SizedBox(height: PulseSpacing.lg),
-                            
+
                             // Phone input
                             PulseTextField(
                               controller: _phoneController,
@@ -176,7 +179,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               },
                             ),
                             const SizedBox(height: PulseSpacing.xl),
-                            
+
                             // Terms checkbox
                             Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -201,24 +204,28 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                     child: Text.rich(
                                       TextSpan(
                                         text: 'I agree to the ',
-                                        style: PulseTextStyles.bodyMedium.copyWith(
-                                          color: PulseColors.onSurfaceVariant,
-                                        ),
+                                        style: PulseTextStyles.bodyMedium
+                                            .copyWith(
+                                              color:
+                                                  PulseColors.onSurfaceVariant,
+                                            ),
                                         children: [
                                           TextSpan(
                                             text: 'Terms of Service',
-                                            style: PulseTextStyles.bodyMedium.copyWith(
-                                              color: PulseColors.primary,
-                                              fontWeight: FontWeight.w600,
-                                            ),
+                                            style: PulseTextStyles.bodyMedium
+                                                .copyWith(
+                                                  color: PulseColors.primary,
+                                                  fontWeight: FontWeight.w600,
+                                                ),
                                           ),
                                           const TextSpan(text: ' and '),
                                           TextSpan(
                                             text: 'Privacy Policy',
-                                            style: PulseTextStyles.bodyMedium.copyWith(
-                                              color: PulseColors.primary,
-                                              fontWeight: FontWeight.w600,
-                                            ),
+                                            style: PulseTextStyles.bodyMedium
+                                                .copyWith(
+                                                  color: PulseColors.primary,
+                                                  fontWeight: FontWeight.w600,
+                                                ),
                                           ),
                                         ],
                                       ),
@@ -228,7 +235,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               ],
                             ),
                             const SizedBox(height: PulseSpacing.xl),
-                            
+
                             // Register button
                             PulseButton(
                               text: 'Create Account',
@@ -240,7 +247,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         ),
                       ),
                     ),
-                    
+
                     // Sign in prompt
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,

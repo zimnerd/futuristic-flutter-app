@@ -4,9 +4,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'core/constants/app_constants.dart';
 import 'core/storage/hive_storage_service.dart';
-// Temporary mock repository for development
-import 'data/models/user_model.dart';
+import 'data/datasources/remote/user_remote_data_source_impl.dart';
+import 'data/repositories/user_repository_impl.dart';
+import 'data/services/api_service_impl.dart';
 import 'domain/repositories/user_repository.dart';
+import 'domain/services/api_service.dart';
 import 'presentation/blocs/auth/auth_bloc.dart';
 import 'presentation/blocs/user/user_bloc.dart';
 import 'presentation/navigation/app_router.dart';
@@ -34,9 +36,23 @@ class PulseDatingApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
-        // Initialize repositories with mock implementation for now
+        // Initialize services
+        RepositoryProvider<ApiService>(create: (context) => ApiServiceImpl()),
+
+        // Initialize repositories with real implementation
         RepositoryProvider<UserRepository>(
-          create: (context) => MockUserRepository(),
+          create: (context) {
+            final apiService = context.read<ApiService>();
+            final remoteDataSource = UserRemoteDataSourceImpl(
+              apiService: apiService,
+            );
+            // TODO: Initialize local data source when implemented
+            return UserRepositoryImpl(
+              remoteDataSource: remoteDataSource,
+              localDataSource:
+                  remoteDataSource as dynamic, // Temporary: use remote as local
+            );
+          },
         ),
 
         // Initialize BLoCs
@@ -58,51 +74,5 @@ class PulseDatingApp extends StatelessWidget {
         routerConfig: AppRouter.router,
       ),
     );
-  }
-}
-
-/// Temporary mock repository implementation for development
-class MockUserRepository implements UserRepository {
-  @override
-  Future<UserModel?> signInWithEmailPassword(
-    String email,
-    String password,
-  ) async {
-    // TODO: Implement mock authentication
-    return null;
-  }
-
-  @override
-  Future<UserModel?> getCurrentUser() async {
-    return null;
-  }
-
-  @override
-  Future<UserModel?> getUserById(String userId) async {
-    return null;
-  }
-
-  @override
-  Future<void> signOut() async {
-    // Mock implementation
-  }
-
-  @override
-  dynamic noSuchMethod(Invocation invocation) {
-    // For any unimplemented method, return appropriate defaults
-    final returnType = invocation.memberName.toString();
-    if (returnType.contains('Future')) {
-      if (returnType.contains('List')) {
-        return Future.value(<dynamic>[]);
-      }
-      if (returnType.contains('UserModel')) {
-        return Future.value(null);
-      }
-      return Future.value();
-    }
-    if (returnType.contains('Stream')) {
-      return Stream.empty();
-    }
-    return super.noSuchMethod(invocation);
   }
 }

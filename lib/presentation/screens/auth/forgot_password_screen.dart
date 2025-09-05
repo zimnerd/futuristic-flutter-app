@@ -30,10 +30,10 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       setState(() {
         _isLoading = true;
       });
-      
+
       // Simulate API call
       await Future.delayed(const Duration(seconds: 2));
-      
+
       setState(() {
         _isLoading = false;
         _emailSent = true;
@@ -49,10 +49,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [
-              PulseColors.surface,
-              const Color(0xFFF8F9FA),
-            ],
+            colors: [PulseColors.surface, const Color(0xFFF8F9FA)],
           ),
         ),
         child: SafeArea(
@@ -79,7 +76,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
             alignment: Alignment.centerLeft,
           ),
           const SizedBox(height: PulseSpacing.xl),
-          
+
           // Header
           Text(
             'Reset Password',
@@ -96,7 +93,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
             ),
           ),
           const SizedBox(height: PulseSpacing.xxl),
-          
+
           // Email input
           PulseTextField(
             controller: _emailController,
@@ -107,14 +104,16 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               if (value?.isEmpty == true) {
                 return 'Email is required';
               }
-              if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value!)) {
+              if (!RegExp(
+                r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+              ).hasMatch(value!)) {
                 return 'Please enter a valid email';
               }
               return null;
             },
           ),
           const SizedBox(height: PulseSpacing.xl),
-          
+
           // Reset button
           PulseButton(
             text: 'Send Reset Link',
@@ -123,7 +122,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
             isLoading: _isLoading,
           ),
           const Spacer(),
-          
+
           // Sign in prompt
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -162,14 +161,10 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
             color: PulseColors.success,
             shape: BoxShape.circle,
           ),
-          child: const Icon(
-            Icons.check,
-            color: Colors.white,
-            size: 40,
-          ),
+          child: const Icon(Icons.check, color: Colors.white, size: 40),
         ),
         const SizedBox(height: PulseSpacing.xl),
-        
+
         Text(
           'Check your email',
           style: PulseTextStyles.headlineLarge.copyWith(
@@ -186,14 +181,14 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: PulseSpacing.xxl),
-        
+
         PulseButton(
           text: 'Back to Sign In',
           onPressed: () => context.go(AppRoutes.login),
           fullWidth: true,
         ),
         const SizedBox(height: PulseSpacing.lg),
-        
+
         TextButton(
           onPressed: () {
             setState(() {

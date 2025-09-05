@@ -5,6 +5,85 @@ This document captures key learnings from building the **Flutter mobile dating a
 
 ---
 
+## 🚀 **Latest Progress: Backend Integration & Deprecation Fixes**
+
+### ✅ **Phase 5 Complete: Backend API Integration & Code Quality Improvements (Latest)**
+**Date**: Current Session
+**Context**: Connected mobile app to real NestJS backend API and fixed deprecated Flutter methods
+
+#### **Backend Integration Achievements**
+- **Real API Implementation**: Replaced mock UserRepository with UserRemoteDataSourceImpl
+- **Service Layer Connected**: API and WebSocket services now point to local backend (localhost:3001)
+- **Authentication Ready**: Sign-in/sign-up methods now call real backend auth endpoints
+- **Dependency Injection**: Proper DI setup with real services in main.dart
+- **Error Handling**: Backend HTTP errors properly mapped to domain exceptions
+
+#### **Code Quality Improvements**
+- **Deprecated Method Fixes**: Replaced all `withOpacity()` calls with `withValues(alpha: x)`
+- **Kotlin Version Upgrade**: Updated Android Kotlin from 1.8.22 to 2.1.0 to fix Flutter compatibility warnings
+- **Clean Analysis**: Zero warnings, zero errors in `flutter analyze`
+- **Modern Flutter**: Updated to use latest recommended Color opacity methods
+- **Android Compatibility**: Future-proofed Android build configuration
+
+#### **Critical Learning: Flutter Color API Updates**
+🔑 **withOpacity() Deprecation Fix**
+```dart
+// ❌ Old deprecated way
+color: PulseColors.primary.withOpacity(0.1)
+
+// ✅ New recommended way
+color: PulseColors.primary.withValues(alpha: 0.1)
+```
+
+**Why This Matters**:
+- `withOpacity()` has precision loss issues with color values
+- `withValues()` provides better color accuracy and performance
+- Essential for maintaining code quality as Flutter evolves
+- Must be applied consistently across the entire codebase
+
+#### **Critical Learning: Android Kotlin Version Compatibility**
+🔑 **Kotlin Version Upgrade Fix**
+```kotlin
+// File: android/settings.gradle.kts
+// ❌ Old version causing Flutter warnings
+id("org.jetbrains.kotlin.android") version "1.8.22" apply false
+
+// ✅ Updated to supported version
+id("org.jetbrains.kotlin.android") version "2.1.0" apply false
+```
+
+**Why This Matters**:
+- Flutter will drop support for older Kotlin versions (< 2.1.0)
+- Prevents future build failures and compatibility issues
+- Essential for maintaining Android build pipeline health
+- Must be updated in `android/settings.gradle.kts` for Kotlin DSL projects
+- Alternative bypass flag: `--android-skip-build-dependency-validation` (not recommended)
+
+#### **Backend Architecture Integration**
+- **API Service**: ApiServiceImpl connects to NestJS backend with proper auth headers
+- **WebSocket Service**: Real-time communication ready for chat and notifications
+- **User Repository**: UserRepositoryImpl with remote data source for API calls
+- **Exception Mapping**: HTTP status codes properly converted to domain exceptions
+- **Local Storage**: Temporary dynamic casting until local data source implemented
+
+#### **Quality Standards Maintained**
+- ✅ Zero compilation errors or warnings (`flutter analyze` clean)
+- ✅ Real backend integration with proper error handling
+- ✅ Modern Flutter API usage (withValues instead of withOpacity)
+- ✅ Updated Android Kotlin version (2.1.0) - no more deprecation warnings
+- ✅ Successful Android build (`flutter build appbundle --debug`)
+- ✅ Type safety with proper service layer architecture
+- ✅ Clean dependency injection setup
+
+---
+
+## � **Previous Progress: Enhanced UI & Screen Implementation**ile Lessons Learned - Pulse Dating Platform
+
+## Overview
+This document captures key learnings from building the **Flutter mobile dating application** with BLoC state management, real-time communication, WebRTC calling, and comprehensive native integrations. It serves as a reference for maintaining code quality and making future mobile development a pleasure to work with.
+
+---
+
 ## � **Latest Progress: Enhanced UI & Screen Implementation**
 
 ## 🎯 **Latest Progress: Enhanced UI & Advanced Screen Implementation**

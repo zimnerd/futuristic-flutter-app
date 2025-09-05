@@ -21,16 +21,16 @@ class ProfileScreen extends StatelessWidget {
             children: [
               // Header
               _buildHeader(context),
-              
+
               // Profile info
               _buildProfileInfo(),
-              
+
               // Settings sections
               _buildSettingsSection(),
-              
+
               // Support section
               _buildSupportSection(),
-              
+
               // Logout
               _buildLogoutSection(context),
             ],
@@ -92,14 +92,10 @@ class ProfileScreen extends StatelessWidget {
                 ),
               ],
             ),
-            child: const Icon(
-              Icons.person,
-              size: 64,
-              color: Colors.white,
-            ),
+            child: const Icon(Icons.person, size: 64, color: Colors.white),
           ),
           const SizedBox(height: PulseSpacing.lg),
-          
+
           // Name and info
           Text(
             'John Doe',
@@ -116,7 +112,7 @@ class ProfileScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: PulseSpacing.xl),
-          
+
           // Stats
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -157,7 +153,7 @@ class ProfileScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: PulseSpacing.md),
-          
+
           _SettingsCard(
             children: [
               _SettingsTile(
@@ -213,7 +209,7 @@ class ProfileScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: PulseSpacing.md),
-          
+
           _SettingsCard(
             children: [
               _SettingsTile(
@@ -374,11 +370,7 @@ class _SettingsTile extends StatelessWidget {
           padding: const EdgeInsets.all(PulseSpacing.lg),
           child: Row(
             children: [
-              Icon(
-                icon,
-                color: textColor ?? PulseColors.primary,
-                size: 24,
-              ),
+              Icon(icon, color: textColor ?? PulseColors.primary, size: 24),
               const SizedBox(width: PulseSpacing.lg),
               Expanded(
                 child: Column(

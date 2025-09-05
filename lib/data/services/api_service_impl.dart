@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:logger/logger.dart';
 
+import '../../core/config/app_config.dart';
 import '../../domain/services/api_service.dart';
 import '../exceptions/app_exceptions.dart';
 
@@ -17,9 +18,9 @@ class ApiServiceImpl implements ApiService {
   }) {
     _dio = Dio(
       BaseOptions(
-        baseUrl: baseUrl ?? 'https://api.pulselink.com/v1',
-        connectTimeout: connectTimeout ?? const Duration(seconds: 30),
-        receiveTimeout: receiveTimeout ?? const Duration(seconds: 30),
+        baseUrl: baseUrl ?? AppConfig.apiBaseUrl,
+        connectTimeout: connectTimeout ?? AppConfig.apiTimeout,
+        receiveTimeout: receiveTimeout ?? AppConfig.apiTimeout,
         headers: defaultHeaders,
       ),
     );
@@ -34,16 +35,16 @@ class ApiServiceImpl implements ApiService {
   Map<String, String> get defaultHeaders => {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
-    'User-Agent': 'PulseLink-Mobile/1.0.0',
+    'User-Agent': AppConfig.userAgent,
   };
 
   @override
   Duration get connectTimeout =>
-      _dio.options.connectTimeout ?? const Duration(seconds: 30);
+      _dio.options.connectTimeout ?? AppConfig.apiTimeout;
 
   @override
   Duration get receiveTimeout =>
-      _dio.options.receiveTimeout ?? const Duration(seconds: 30);
+      _dio.options.receiveTimeout ?? AppConfig.apiTimeout;
 
   void _setupInterceptors() {
     // Request interceptor for authentication

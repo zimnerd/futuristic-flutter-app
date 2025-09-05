@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:logger/logger.dart';
 import 'package:socket_io_client/socket_io_client.dart' as socket_io;
 
+import '../../core/config/app_config.dart';
 import '../../domain/services/websocket_service.dart';
 import '../exceptions/app_exceptions.dart';
 
@@ -69,7 +70,7 @@ class WebSocketServiceImpl implements WebSocketService {
       _connectionStateController.add('connecting');
 
       _socket = socket_io.io(
-        'wss://api.pulselink.com$_currentNamespace',
+        '${AppConfig.websocketUrl}$_currentNamespace',
         socket_io.OptionBuilder()
             .setTransports(['websocket'])
             .enableAutoConnect()
@@ -77,7 +78,7 @@ class WebSocketServiceImpl implements WebSocketService {
             .setReconnectionAttempts(_maxReconnectAttempts)
             .setReconnectionDelay(_initialReconnectDelay.inMilliseconds)
             .setReconnectionDelayMax(_maxReconnectDelay.inMilliseconds)
-            .setTimeout(30000)
+            .setTimeout(AppConfig.websocketTimeout.inMilliseconds)
             .build(),
       );
 
