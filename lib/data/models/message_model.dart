@@ -1,8 +1,5 @@
-import 'package:json_annotation/json_annotation.dart';
-
-part 'message_model.g.dart';
-
-@JsonSerializable()
+/// Simple message model without complex JSON generation
+/// Part of the clean architecture - easy to read and maintain
 class MessageModel {
   final String id;
   final String conversationId;
@@ -40,9 +37,54 @@ class MessageModel {
     required this.updatedAt,
   });
 
-  factory MessageModel.fromJson(Map<String, dynamic> json) =>
-      _$MessageModelFromJson(json);
-  Map<String, dynamic> toJson() => _$MessageModelToJson(this);
+  // Simple JSON methods without code generation
+  factory MessageModel.fromJson(Map<String, dynamic> json) {
+    return MessageModel(
+      id: json['id'] ?? '',
+      conversationId: json['conversationId'] ?? '',
+      senderId: json['senderId'] ?? '',
+      receiverId: json['receiverId'],
+      content: json['content'] ?? '',
+      type: json['type'] ?? 'text',
+      mediaUrl: json['mediaUrl'],
+      metadata: json['metadata'] != null
+          ? Map<String, dynamic>.from(json['metadata'])
+          : null,
+      isRead: json['isRead'] ?? false,
+      isEdited: json['isEdited'] ?? false,
+      isDeleted: json['isDeleted'] ?? false,
+      readAt: json['readAt'] != null ? DateTime.parse(json['readAt']) : null,
+      editedAt: json['editedAt'] != null
+          ? DateTime.parse(json['editedAt'])
+          : null,
+      deletedAt: json['deletedAt'] != null
+          ? DateTime.parse(json['deletedAt'])
+          : null,
+      createdAt: DateTime.parse(json['createdAt']),
+      updatedAt: DateTime.parse(json['updatedAt']),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'conversationId': conversationId,
+      'senderId': senderId,
+      'receiverId': receiverId,
+      'content': content,
+      'type': type,
+      'mediaUrl': mediaUrl,
+      'metadata': metadata,
+      'isRead': isRead,
+      'isEdited': isEdited,
+      'isDeleted': isDeleted,
+      'readAt': readAt?.toIso8601String(),
+      'editedAt': editedAt?.toIso8601String(),
+      'deletedAt': deletedAt?.toIso8601String(),
+      'createdAt': createdAt.toIso8601String(),
+      'updatedAt': updatedAt.toIso8601String(),
+    };
+  }
 
   MessageModel copyWith({
     String? id,

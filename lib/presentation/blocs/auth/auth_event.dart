@@ -25,14 +25,36 @@ final class AuthSignUpRequested extends AuthEvent {
     required this.email,
     required this.password,
     required this.username,
+    required this.phone,
+    this.firstName,
+    this.lastName,
+    this.birthdate,
+    this.gender,
+    this.location,
   });
 
   final String email;
   final String password;
   final String username;
+  final String phone;
+  final String? firstName;
+  final String? lastName;
+  final String? birthdate;
+  final String? gender;
+  final String? location;
 
   @override
-  List<Object?> get props => [email, password, username];
+  List<Object?> get props => [
+    email,
+    password,
+    username,
+    phone,
+    firstName,
+    lastName,
+    birthdate,
+    gender,
+    location,
+  ];
 }
 
 /// Event triggered when user requests to sign out

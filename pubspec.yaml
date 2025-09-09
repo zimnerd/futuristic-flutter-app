@@ -47,6 +47,7 @@ dependencies:
   connectivity_plus: ^6.1.5
   path: ^1.9.1
   sqlite3: ^2.9.0
+  dartz: ^0.10.1
 
 dev_dependencies:
   flutter_test:

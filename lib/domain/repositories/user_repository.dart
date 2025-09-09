@@ -6,7 +6,16 @@ abstract class UserRepository {
   // Authentication
   Future<UserModel?> signInWithEmailPassword(String email, String password);
   Future<UserModel?> signUpWithEmailPassword(
-      String email, String password, String username);
+    String email,
+    String password,
+    String username,
+    String phone, {
+    String? firstName,
+    String? lastName,
+    String? birthdate,
+    String? gender,
+    String? location,
+  });
   Future<void> signOut();
   Future<UserModel?> getCurrentUser();
 

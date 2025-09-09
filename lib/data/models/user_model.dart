@@ -1,8 +1,5 @@
-import 'package:json_annotation/json_annotation.dart';
-
-part 'user_model.g.dart';
-
-@JsonSerializable()
+/// Simple user model without complex JSON generation
+/// Part of the clean architecture - easy to read and maintain
 class UserModel {
   final String id;
   final String email;
@@ -54,9 +51,74 @@ class UserModel {
     required this.updatedAt,
   });
 
-  factory UserModel.fromJson(Map<String, dynamic> json) =>
-      _$UserModelFromJson(json);
-  Map<String, dynamic> toJson() => _$UserModelToJson(this);
+  // Simple JSON methods without code generation
+  factory UserModel.fromJson(Map<String, dynamic> json) {
+    return UserModel(
+      id: json['id'] ?? '',
+      email: json['email'] ?? '',
+      username: json['username'] ?? '',
+      firstName: json['firstName'],
+      lastName: json['lastName'],
+      bio: json['bio'],
+      interests: json['interests'] != null 
+          ? List<String>.from(json['interests'])
+          : [],
+      age: json['age'],
+      gender: json['gender'],
+      photos: json['photos'] != null 
+          ? List<String>.from(json['photos'])
+          : [],
+      location: json['location'],
+      coordinates: json['coordinates'] != null 
+          ? Map<String, dynamic>.from(json['coordinates'])
+          : null,
+      premium: json['premium'] ?? false,
+      verified: json['verified'] ?? false,
+      role: json['role'] ?? 'USER',
+      permissions: json['permissions'] != null 
+          ? List<String>.from(json['permissions'])
+          : [],
+      isActive: json['isActive'] ?? true,
+      profileCompletionPercentage: json['profileCompletionPercentage'],
+      lastSeen: json['lastSeen'] != null 
+          ? DateTime.parse(json['lastSeen'])
+          : null,
+      fcmToken: json['fcmToken'],
+      preferences: json['preferences'] != null 
+          ? Map<String, dynamic>.from(json['preferences'])
+          : null,
+      createdAt: DateTime.parse(json['createdAt']),
+      updatedAt: DateTime.parse(json['updatedAt']),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'email': email,
+      'username': username,
+      'firstName': firstName,
+      'lastName': lastName,
+      'bio': bio,
+      'interests': interests,
+      'age': age,
+      'gender': gender,
+      'photos': photos,
+      'location': location,
+      'coordinates': coordinates,
+      'premium': premium,
+      'verified': verified,
+      'role': role,
+      'permissions': permissions,
+      'isActive': isActive,
+      'profileCompletionPercentage': profileCompletionPercentage,
+      'lastSeen': lastSeen?.toIso8601String(),
+      'fcmToken': fcmToken,
+      'preferences': preferences,
+      'createdAt': createdAt.toIso8601String(),
+      'updatedAt': updatedAt.toIso8601String(),
+    };
+  }
 
   UserModel copyWith({
     String? id,

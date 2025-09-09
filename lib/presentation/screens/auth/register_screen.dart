@@ -2,12 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/utils/phone_utils.dart';
 import '../../blocs/auth/auth_bloc.dart';
 import '../../blocs/auth/auth_event.dart';
 import '../../blocs/auth/auth_state.dart';
 import '../../navigation/app_router.dart';
 import '../../theme/pulse_colors.dart';
 import '../../widgets/common/common_widgets.dart';
+import '../../widgets/error_widgets.dart';
+import '../../widgets/phone_input.dart';
 
 /// Enhanced registration screen for new users
 class RegisterScreen extends StatefulWidget {
@@ -21,14 +24,20 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
   final _phoneController = TextEditingController();
+  
+  String _selectedCountryCode = PhoneUtils.defaultCountryCode;
+  String _currentPhone = '';
   bool _isLoading = false;
   bool _acceptedTerms = false;
+  bool _obscurePassword = true;
 
   @override
   void dispose() {
     _nameController.dispose();
     _emailController.dispose();
+    _passwordController.dispose();
     _phoneController.dispose();
     super.dispose();
   }
@@ -37,24 +46,48 @@ class _RegisterScreenState extends State<RegisterScreen> {
     if (_formKey.currentState?.validate() == true && _acceptedTerms) {
       final name = _nameController.text.trim();
       final email = _emailController.text.trim();
+      final password = _passwordController.text;
+
+      // Clean phone number before submission using PhoneUtils
+      final cleanedPhone = PhoneUtils.cleanPhoneForSubmission(
+        _currentPhone.isNotEmpty ? _currentPhone : _phoneController.text,
+        _selectedCountryCode,
+      );
+
+      if (cleanedPhone.isEmpty) {
+        ErrorNotification.showSnackbar(
+          context,
+          'Please enter a valid phone number',
+        );
+        return;
+      }
 
       context.read<AuthBloc>().add(
         AuthSignUpRequested(
           email: email,
-          password: 'temp_password', // TODO: Add password field
+          password: password,
           username: name,
+          phone: cleanedPhone,
         ),
       );
     } else if (!_acceptedTerms) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Please accept the Terms of Service and Privacy Policy',
-          ),
-          backgroundColor: PulseColors.error,
-        ),
+      ErrorNotification.showSnackbar(
+        context,
+        'Please accept the Terms of Service and Privacy Policy',
       );
     }
+  }
+
+  void _onPhoneChanged(String formattedPhone) {
+    setState(() {
+      _currentPhone = formattedPhone;
+    });
+  }
+
+  void _onCountryChanged(String countryCode) {
+    setState(() {
+      _selectedCountryCode = countryCode;
+    });
   }
 
   @override
@@ -127,18 +160,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             // Name input
                             PulseTextField(
                               controller: _nameController,
-                              hintText: 'Full Name',
+                              hintText: 'Username',
                               keyboardType: TextInputType.name,
                               prefixIcon: const Icon(Icons.person),
-                              validator: (value) {
-                                if (value?.isEmpty == true) {
-                                  return 'Name is required';
-                                }
-                                if (value!.length < 2) {
-                                  return 'Name must be at least 2 characters';
-                                }
-                                return null;
-                              },
+                              validator: ValidationHelpers.validateUsername,
                             ),
                             const SizedBox(height: PulseSpacing.lg),
 
@@ -148,35 +173,42 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               hintText: 'Email Address',
                               keyboardType: TextInputType.emailAddress,
                               prefixIcon: const Icon(Icons.email),
-                              validator: (value) {
-                                if (value?.isEmpty == true) {
-                                  return 'Email is required';
-                                }
-                                if (!RegExp(
-                                  r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
-                                ).hasMatch(value!)) {
-                                  return 'Please enter a valid email';
-                                }
-                                return null;
-                              },
+                              validator: ValidationHelpers.validateEmail,
                             ),
                             const SizedBox(height: PulseSpacing.lg),
 
-                            // Phone input
+                            // Password input
                             PulseTextField(
-                              controller: _phoneController,
-                              hintText: 'Phone Number',
-                              keyboardType: TextInputType.phone,
-                              prefixIcon: const Icon(Icons.phone),
-                              validator: (value) {
-                                if (value?.isEmpty == true) {
-                                  return 'Phone number is required';
-                                }
-                                if (value!.length < 10) {
-                                  return 'Please enter a valid phone number';
-                                }
-                                return null;
-                              },
+                              controller: _passwordController,
+                              hintText: 'Password',
+                              obscureText: _obscurePassword,
+                              prefixIcon: const Icon(Icons.lock),
+                              suffixIcon: IconButton(
+                                icon: Icon(
+                                  _obscurePassword
+                                      ? Icons.visibility
+                                      : Icons.visibility_off,
+                                ),
+                                onPressed: () {
+                                  setState(() {
+                                    _obscurePassword = !_obscurePassword;
+                                  });
+                                },
+                              ),
+                              validator: ValidationHelpers.validatePassword,
+                            ),
+                            const SizedBox(height: PulseSpacing.lg),
+
+                            // Phone input with country selector
+                            PhoneInput(
+                              initialCountryCode: _selectedCountryCode,
+                              onChanged: _onPhoneChanged,
+                              onCountryChanged: _onCountryChanged,
+                              validator: ValidationHelpers.validatePhone,
+                              decoration: const InputDecoration(
+                                labelText: 'Phone Number',
+                                hintText: 'Enter your phone number',
+                              ),
                             ),
                             const SizedBox(height: PulseSpacing.xl),
 

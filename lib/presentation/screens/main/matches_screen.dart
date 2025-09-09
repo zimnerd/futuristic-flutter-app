@@ -1,10 +1,14 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter/services.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 import '../../theme/pulse_colors.dart';
-import '../../widgets/common/common_widgets.dart';
+import '../../widgets/swipeable_profile_card.dart' as swipe_widget;
+import '../../blocs/matching/matching_bloc.dart';
+import '../../../domain/entities/user_profile.dart';
 
-/// Enhanced matches screen with swipe interface
+/// Enhanced matches screen with swipeable cards and modern UI
 class MatchesScreen extends StatefulWidget {
   const MatchesScreen({super.key});
 
@@ -12,40 +16,31 @@ class MatchesScreen extends StatefulWidget {
   State<MatchesScreen> createState() => _MatchesScreenState();
 }
 
-class _MatchesScreenState extends State<MatchesScreen> {
-  final PageController _pageController = PageController();
+class _MatchesScreenState extends State<MatchesScreen>
+    with TickerProviderStateMixin {
+  late AnimationController _buttonAnimationController;
+  late AnimationController _matchAnimationController;
+  
+  @override
+  void initState() {
+    super.initState();
+    _buttonAnimationController = AnimationController(
+      duration: const Duration(milliseconds: 200),
+      vsync: this,
+    );
+    _matchAnimationController = AnimationController(
+      duration: const Duration(milliseconds: 1000),
+      vsync: this,
+    );
 
-  // Mock data for demo
-  final List<_MatchProfile> _profiles = [
-    _MatchProfile(
-      name: 'Emma',
-      age: 24,
-      bio: 'Love hiking and coffee ☕️',
-      imageUrl:
-          'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400',
-      distance: '2 km away',
-    ),
-    _MatchProfile(
-      name: 'Sarah',
-      age: 27,
-      bio: 'Artist & yoga enthusiast 🧘‍♀️',
-      imageUrl:
-          'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=400',
-      distance: '5 km away',
-    ),
-    _MatchProfile(
-      name: 'Maya',
-      age: 22,
-      bio: 'Photographer exploring the world 📸',
-      imageUrl:
-          'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400',
-      distance: '8 km away',
-    ),
-  ];
+    // Load initial matches
+    context.read<MatchingBloc>().add(const LoadPotentialMatches());
+  }
 
   @override
   void dispose() {
-    _pageController.dispose();
+    _buttonAnimationController.dispose();
+    _matchAnimationController.dispose();
     super.dispose();
   }
 
@@ -53,47 +48,105 @@ class _MatchesScreenState extends State<MatchesScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        child: Column(
-          children: [
-            // Header
-            _buildHeader(),
+        child: BlocConsumer<MatchingBloc, MatchingState>(
+          listener: (context, state) {
+            if (state.error != null) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(state.error!),
+                  backgroundColor: Colors.red,
+                ),
+              );
+            }
 
-            // Card stack
-            Expanded(
-              child: _profiles.isEmpty ? _buildEmptyState() : _buildCardStack(),
-            ),
+            if (state.lastSwipeWasMatch && state.matchedProfile != null) {
+              _showMatchDialog(state.matchedProfile!);
+            }
+          },
+          builder: (context, state) {
+            return Column(
+              children: [
+                // Header with stats
+                _buildHeader(state),
 
-            // Action buttons
-            _buildActionButtons(),
-          ],
+                // Card stack
+                Expanded(
+                  child: _buildContent(state)),
+
+                // Action buttons
+                if (state.profiles.isNotEmpty) _buildActionButtons(),
+              ],
+            );
+          },
         ),
       ),
     );
   }
 
-  Widget _buildHeader() {
-    return Padding(
-      padding: const EdgeInsets.all(PulseSpacing.lg),
+  Widget _buildHeader(MatchingState state) {
+    return Container(
+      padding: const EdgeInsets.all(16),
       child: Row(
         children: [
-          Text(
-            'Discover',
-            style: PulseTextStyles.headlineLarge.copyWith(
-              color: PulseColors.onSurface,
-              fontWeight: FontWeight.bold,
-            ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Discover',
+                style: TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
+              ),
+              Text(
+                '${state.profiles.length} profiles nearby',
+                style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+              ),
+            ],
           ),
           const Spacer(),
-          IconButton(
-            onPressed: () {
-              // TODO: Open filters
-            },
-            icon: const Icon(Icons.tune),
-            style: IconButton.styleFrom(
-              backgroundColor: PulseColors.surfaceVariant,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(PulseRadii.md),
+          // Filters button
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.1),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: IconButton(
+              icon: const Icon(Icons.tune, color: PulseColors.primary),
+              onPressed: () => _showFiltersDialog(),
+            ),
+          ),
+          const SizedBox(width: 8),
+          // Super likes remaining
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [PulseColors.primary, PulseColors.secondary],
               ),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.star, color: Colors.white, size: 16),
+                const SizedBox(width: 4),
+                Text(
+                  '${state.superLikesRemaining}',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -101,160 +154,69 @@ class _MatchesScreenState extends State<MatchesScreen> {
     );
   }
 
-  Widget _buildCardStack() {
+  Widget _buildContent(MatchingState state) {
+    if (state.status == MatchingStatus.loading && state.profiles.isEmpty) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (state.profiles.isEmpty) {
+      return _buildEmptyState();
+    }
+
     return Stack(
       children: [
-        // Background cards for depth
-        for (int i = _profiles.length - 1; i >= 0; i--)
-          Positioned(
-            left: PulseSpacing.lg + (i * 4.0),
-            right: PulseSpacing.lg + (i * 4.0),
-            top: i * 8.0,
-            bottom: 120 + (i * 8.0),
-            child: _buildProfileCard(_profiles[i], i),
+        // Stack of profile cards
+        for (int i = state.profiles.length - 1; i >= 0; i--)
+          Positioned.fill(
+            child: Container(
+              margin: EdgeInsets.only(
+                top: i * 8.0,
+                left: i * 4.0,
+                right: i * 4.0,
+              ),
+              child: _buildProfileCard(state.profiles[i], i),
+            ),
           ),
       ],
     );
   }
 
-  Widget _buildProfileCard(_MatchProfile profile, int index) {
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(PulseRadii.xl),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.1),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
-          ),
-        ],
+  Widget _buildProfileCard(UserProfile profile, int index) {
+    return swipe_widget.SwipeableProfileCard(
+      profile: swipe_widget.ProfileCardData(
+        id: profile.id,
+        name: profile.name,
+        age: profile.age,
+        bio: profile.bio,
+        imageUrl: profile.primaryPhotoUrl,
+        distance: profile.distanceString,
+        isVerified: profile.isVerified,
+        photoCount: profile.photos.length,
+        interests: profile.interests,
       ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(PulseRadii.xl),
-        child: Stack(
-          children: [
-            // Background image
-            Positioned.fill(
-              child: CachedNetworkImage(
-                imageUrl: profile.imageUrl,
-                fit: BoxFit.cover,
-                placeholder: (context, url) => Container(
-                  color: PulseColors.surfaceVariant,
-                  child: const Center(child: CircularProgressIndicator()),
-                ),
-                errorWidget: (context, url, error) => Container(
-                  color: PulseColors.surfaceVariant,
-                  child: const Icon(Icons.person, size: 64),
-                ),
-              ),
-            ),
-
-            // Gradient overlay
-            Positioned.fill(
-              child: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Colors.transparent,
-                      Colors.black.withValues(alpha: 0.7),
-                    ],
-                    stops: const [0.5, 1.0],
-                  ),
-                ),
-              ),
-            ),
-
-            // Profile info
-            Positioned(
-              bottom: PulseSpacing.xl,
-              left: PulseSpacing.lg,
-              right: PulseSpacing.lg,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Text(
-                        '${profile.name}, ${profile.age}',
-                        style: PulseTextStyles.headlineMedium.copyWith(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(width: PulseSpacing.sm),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: PulseSpacing.sm,
-                          vertical: PulseSpacing.xs,
-                        ),
-                        decoration: BoxDecoration(
-                          color: PulseColors.success,
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: const Icon(
-                          Icons.verified,
-                          color: Colors.white,
-                          size: 16,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: PulseSpacing.sm),
-                  Text(
-                    profile.bio,
-                    style: PulseTextStyles.bodyLarge.copyWith(
-                      color: Colors.white,
-                    ),
-                  ),
-                  const SizedBox(height: PulseSpacing.sm),
-                  Text(
-                    profile.distance,
-                    style: PulseTextStyles.bodyMedium.copyWith(
-                      color: Colors.white.withValues(alpha: 0.8),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildActionButtons() {
-    return Padding(
-      padding: const EdgeInsets.all(PulseSpacing.xl),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          // Pass button
-          _ActionButton(
-            onPressed: () => _handleSwipe(false),
-            icon: Icons.close,
-            color: PulseColors.error,
-            size: 56,
-          ),
-
-          // Super like button
-          _ActionButton(
-            onPressed: () => _handleSuperLike(),
-            icon: Icons.star,
-            color: PulseColors.warning,
-            size: 48,
-          ),
-
-          // Like button
-          _ActionButton(
-            onPressed: () => _handleSwipe(true),
-            icon: Icons.favorite,
-            color: PulseColors.success,
-            size: 56,
-          ),
-        ],
-      ),
+      onSwipe: (direction) {
+        HapticFeedback.lightImpact();
+        // Convert widget SwipeDirection to bloc SwipeDirection
+        SwipeDirection blocDirection;
+        switch (direction) {
+          case swipe_widget.SwipeDirection.left:
+            blocDirection = SwipeDirection.left;
+            break;
+          case swipe_widget.SwipeDirection.right:
+            blocDirection = SwipeDirection.right;
+            break;
+          case swipe_widget.SwipeDirection.up:
+            blocDirection = SwipeDirection.up;
+            break;
+        }
+        
+        context.read<MatchingBloc>().add(
+          SwipeProfile(profileId: profile.id, direction: blocDirection),
+        );
+      },
+      onTap: () {
+        _showProfileDetails(profile);
+      },
     );
   }
 
@@ -263,92 +225,109 @@ class _MatchesScreenState extends State<MatchesScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.favorite_outline,
-            size: 64,
-            color: PulseColors.onSurfaceVariant,
-          ),
-          const SizedBox(height: PulseSpacing.lg),
-          Text(
-            'No more profiles',
-            style: PulseTextStyles.headlineMedium.copyWith(
-              color: PulseColors.onSurface,
-              fontWeight: FontWeight.bold,
+          Container(
+            width: 120,
+            height: 120,
+            decoration: BoxDecoration(
+              color: PulseColors.primary.withValues(alpha: 0.1),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.favorite_outline,
+              size: 60,
+              color: PulseColors.primary,
             ),
           ),
-          const SizedBox(height: PulseSpacing.sm),
+          const SizedBox(height: 24),
+          const Text(
+            'No more profiles',
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
+            ),
+          ),
+          const SizedBox(height: 8),
           Text(
             'Check back later for new matches',
-            style: PulseTextStyles.bodyLarge.copyWith(
-              color: PulseColors.onSurfaceVariant,
-            ),
+            style: TextStyle(fontSize: 16, color: Colors.grey[600]),
           ),
-          const SizedBox(height: PulseSpacing.xl),
-          PulseButton(
-            text: 'Adjust Filters',
+          const SizedBox(height: 32),
+          ElevatedButton(
             onPressed: () {
-              // TODO: Open filter settings
+              context.read<MatchingBloc>().add(const RefreshMatches());
             },
-            variant: PulseButtonVariant.secondary,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: PulseColors.primary,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(24),
+              ),
+            ),
+            child: const Text('Refresh'),
           ),
         ],
       ),
     );
   }
 
-  void _handleSwipe(bool liked) {
-    if (_profiles.isNotEmpty) {
-      setState(() {
-        _profiles.removeAt(0);
-      });
-
-      if (liked) {
-        // Show success feedback
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('Profile liked! 💕'),
-            backgroundColor: PulseColors.success,
-            behavior: SnackBarBehavior.floating,
-            duration: const Duration(seconds: 1),
+  Widget _buildActionButtons() {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          // Undo button
+          _buildActionButton(
+            icon: Icons.undo,
+            color: Colors.grey[400]!,
+            onPressed: () {
+              HapticFeedback.lightImpact();
+              context.read<MatchingBloc>().add(const UndoLastSwipe());
+            },
           ),
-        );
-      }
-    }
+          
+          // Pass button
+          _buildActionButton(
+            icon: Icons.close,
+            color: Colors.red[400]!,
+            onPressed: () => _handleSwipe(SwipeDirection.left),
+            size: 56,
+          ),
+          
+          // Super like button
+          _buildActionButton(
+            icon: Icons.star,
+            color: PulseColors.secondary,
+            onPressed: () => _handleSuperLike(),
+          ),
+          
+          // Like button
+          _buildActionButton(
+            icon: Icons.favorite,
+            color: Colors.green[400]!,
+            onPressed: () => _handleSwipe(SwipeDirection.right),
+            size: 56,
+          ),
+          
+          // Boost button
+          _buildActionButton(
+            icon: Icons.flash_on,
+            color: PulseColors.primary,
+            onPressed: () => _showBoostDialog(),
+          ),
+        ],
+      ),
+    );
   }
 
-  void _handleSuperLike() {
-    if (_profiles.isNotEmpty) {
-      setState(() {
-        _profiles.removeAt(0);
-      });
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Super liked! ⭐️'),
-          backgroundColor: PulseColors.warning,
-          behavior: SnackBarBehavior.floating,
-          duration: const Duration(seconds: 1),
-        ),
-      );
-    }
-  }
-}
-
-class _ActionButton extends StatelessWidget {
-  const _ActionButton({
-    required this.onPressed,
-    required this.icon,
-    required this.color,
-    required this.size,
-  });
-
-  final VoidCallback onPressed;
-  final IconData icon;
-  final Color color;
-  final double size;
-
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildActionButton({
+    required IconData icon,
+    required Color color,
+    required VoidCallback onPressed,
+    double size = 48,
+  }) {
     return Container(
       width: size,
       height: size,
@@ -357,36 +336,231 @@ class _ActionButton extends StatelessWidget {
         shape: BoxShape.circle,
         boxShadow: [
           BoxShadow(
-            color: color.withValues(alpha: 0.3),
-            blurRadius: 16,
-            offset: const Offset(0, 4),
+            color: Colors.black.withValues(alpha: 0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
           ),
         ],
       ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onPressed,
-          borderRadius: BorderRadius.circular(size / 2),
-          child: Icon(icon, color: color, size: size * 0.4),
+      child: IconButton(
+        icon: Icon(icon, color: color, size: size * 0.4),
+        onPressed: onPressed,
+      ),
+    );
+  }
+
+  void _handleSwipe(SwipeDirection direction) {
+    final state = context.read<MatchingBloc>().state;
+    if (state.profiles.isNotEmpty) {
+      HapticFeedback.lightImpact();
+      context.read<MatchingBloc>().add(
+        SwipeProfile(profileId: state.profiles.first.id, direction: direction),
+      );
+    }
+  }
+
+  void _handleSuperLike() {
+    final state = context.read<MatchingBloc>().state;
+    if (state.profiles.isNotEmpty) {
+      HapticFeedback.mediumImpact();
+      context.read<MatchingBloc>().add(
+        SuperLikeProfile(profileId: state.profiles.first.id),
+      );
+    }
+  }
+
+  void _showMatchDialog(UserProfile matchedProfile) {
+    _matchAnimationController.forward();
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => Dialog(
+        backgroundColor: Colors.transparent,
+        child: Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [PulseColors.primary, PulseColors.secondary],
+            ),
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                "It's a Match!",
+                style: TextStyle(
+                  fontSize: 32,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 24),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  CircleAvatar(
+                    radius: 50,
+                    backgroundImage: matchedProfile.photos.isNotEmpty
+                        ? CachedNetworkImageProvider(
+                            matchedProfile.photos.first.url,
+                          )
+                        : null,
+                    child: matchedProfile.photos.isEmpty
+                        ? const Icon(Icons.person, size: 50)
+                        : null,
+                  ),
+                  const Icon(Icons.favorite, color: Colors.white, size: 40),
+                  const CircleAvatar(
+                    radius: 50,
+                    backgroundImage: AssetImage(
+                      'assets/images/current_user.jpg',
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+              Text(
+                'You and ${matchedProfile.name} liked each other!',
+                style: const TextStyle(fontSize: 16, color: Colors.white),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 32),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.white,
+                        side: const BorderSide(color: Colors.white),
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: const Text('Keep Swiping'),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                        // Navigate to chat
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        foregroundColor: PulseColors.primary,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: const Text('Say Hello'),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
-}
 
-class _MatchProfile {
-  const _MatchProfile({
-    required this.name,
-    required this.age,
-    required this.bio,
-    required this.imageUrl,
-    required this.distance,
-  });
+  void _showFiltersDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Search Filters'),
+        content: const Text('Filter options will be available here'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
 
-  final String name;
-  final int age;
-  final String bio;
-  final String imageUrl;
-  final String distance;
+  void _showBoostDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Boost Your Profile'),
+        content: const Text('Boost feature will be available here'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showProfileDetails(UserProfile profile) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        height: MediaQuery.of(context).size.height * 0.9,
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: Column(
+          children: [
+            Container(
+              width: 40,
+              height: 4,
+              margin: const EdgeInsets.symmetric(vertical: 8),
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      profile.name,
+                      style: const TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      'Age: ${profile.age}',
+                      style: TextStyle(fontSize: 18, color: Colors.grey[600]),
+                    ),
+                    const SizedBox(height: 16),
+                    const Text(
+                      'About',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(profile.bio, style: const TextStyle(fontSize: 16)),
+                    // Add more profile details here
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }

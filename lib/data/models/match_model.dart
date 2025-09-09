@@ -1,8 +1,5 @@
-import 'package:json_annotation/json_annotation.dart';
-
-part 'match_model.g.dart';
-
-@JsonSerializable()
+/// Simple match model without complex JSON generation
+/// Part of the clean architecture - easy to read and maintain
 class MatchModel {
   final String id;
   final String user1Id;
@@ -32,9 +29,48 @@ class MatchModel {
     required this.updatedAt,
   });
 
-  factory MatchModel.fromJson(Map<String, dynamic> json) =>
-      _$MatchModelFromJson(json);
-  Map<String, dynamic> toJson() => _$MatchModelToJson(this);
+  // Simple JSON methods without code generation
+  factory MatchModel.fromJson(Map<String, dynamic> json) {
+    return MatchModel(
+      id: json['id'] ?? '',
+      user1Id: json['user1Id'] ?? '',
+      user2Id: json['user2Id'] ?? '',
+      isMatched: json['isMatched'] ?? false,
+      compatibilityScore: (json['compatibilityScore'] ?? 0.0).toDouble(),
+      matchReasons: json['matchReasons'] != null
+          ? Map<String, dynamic>.from(json['matchReasons'])
+          : null,
+      status: json['status'] ?? 'pending',
+      matchedAt: json['matchedAt'] != null
+          ? DateTime.parse(json['matchedAt'])
+          : null,
+      rejectedAt: json['rejectedAt'] != null
+          ? DateTime.parse(json['rejectedAt'])
+          : null,
+      expiredAt: json['expiredAt'] != null
+          ? DateTime.parse(json['expiredAt'])
+          : null,
+      createdAt: DateTime.parse(json['createdAt']),
+      updatedAt: DateTime.parse(json['updatedAt']),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'user1Id': user1Id,
+      'user2Id': user2Id,
+      'isMatched': isMatched,
+      'compatibilityScore': compatibilityScore,
+      'matchReasons': matchReasons,
+      'status': status,
+      'matchedAt': matchedAt?.toIso8601String(),
+      'rejectedAt': rejectedAt?.toIso8601String(),
+      'expiredAt': expiredAt?.toIso8601String(),
+      'createdAt': createdAt.toIso8601String(),
+      'updatedAt': updatedAt.toIso8601String(),
+    };
+  }
 
   MatchModel copyWith({
     String? id,

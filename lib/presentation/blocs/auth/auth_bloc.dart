@@ -106,7 +106,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     }
   }
 
-  /// Handles user sign up with email, password, and username
+  /// Handles user sign up with email, password, username, and phone
   Future<void> _onSignUpRequested(
     AuthSignUpRequested event,
     Emitter<AuthState> emit,
@@ -119,6 +119,12 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         event.email,
         event.password,
         event.username,
+        event.phone,
+        firstName: event.firstName,
+        lastName: event.lastName,
+        birthdate: event.birthdate,
+        gender: event.gender,
+        location: event.location,
       );
 
       if (user != null) {
