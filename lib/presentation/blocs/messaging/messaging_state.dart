@@ -39,6 +39,9 @@ class MessagingState extends Equatable {
     return conversations.fold(0, (sum, conv) => sum + conv.unreadCount);
   }
 
+  /// Get messages for current conversation (alias for currentMessages)
+  List<Message> get messages => currentMessages;
+
   /// Check if user is typing in current conversation
   bool isUserTyping(String userId) {
     return typingUsers[userId] ?? false;

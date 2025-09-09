@@ -48,12 +48,14 @@ dependencies:
   path: ^1.9.1
   sqlite3: ^2.9.0
   dartz: ^0.10.1
+  image_picker: ^1.2.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
   drift_dev: ^2.28.1
+  mocktail: ^1.0.4
 
 flutter:
   uses-material-design: true

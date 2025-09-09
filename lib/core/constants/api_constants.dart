@@ -2,7 +2,7 @@
 class ApiConstants {
   // Base URLs
   static const String baseUrl = 'http://localhost:3001/api';
-  static const String webSocketUrl = 'ws://localhost:3001';
+  static const String websocketUrl = 'ws://localhost:3001';
   
   // API Endpoints
   static const String auth = '/auth';
@@ -23,6 +23,7 @@ class ApiConstants {
   
   // User endpoints
   static const String profile = '$users/profile';
+  static const String getCurrentProfile = '$users/profile';
   static const String updateProfile = '$users/profile';
   static const String uploadPhoto = '$users/photos';
   static const String deletePhoto = '$users/photos';
@@ -45,6 +46,8 @@ class ApiConstants {
   static const String uploadImage = '$media/images';
   static const String uploadVideo = '$media/videos';
   static const String uploadAudio = '$media/audio';
+  static const String uploadFile = '$media/files';
+  static const String deleteFile = '$media/files';
   
   // WebSocket events
   static const String wsNewMessage = 'new_message';

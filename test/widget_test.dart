@@ -1,16 +1,102 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:pulse_dating_app/presentation/widgets/chat/message_input.dart';
+import 'package:pulse_dating_app/presentation/widgets/chat/typing_indicator.dart';
+import 'package:pulse_dating_app/presentation/widgets/profile/photo_grid.dart';
+import 'package:pulse_dating_app/presentation/widgets/call/call_controls.dart';
+
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // TODO: Add actual widget tests when main app is implemented
-    // This is a placeholder test file
-    expect(1, 1);
+  group('Chat Widgets Tests', () {
+    testWidgets('MessageInput shows send button when text is entered', (
+      tester,
+    ) async {
+      // Arrange
+      final controller = TextEditingController();
+      bool sendCalled = false;
+
+      // Act
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: MessageInput(
+              controller: controller,
+              onSend: () => sendCalled = true,
+            ),
+          ),
+        ),
+      );
+
+      // Type text
+      await tester.enterText(find.byType(TextField), 'Test message');
+      await tester.pump();
+
+      // Tap send button
+      await tester.tap(find.byIcon(Icons.send));
+      await tester.pump();
+
+      // Assert
+      expect(sendCalled, isTrue);
+    });
+
+    testWidgets('TypingIndicator displays animation', (tester) async {
+      // Act
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(body: TypingIndicator(userName: 'John')),
+        ),
+      );
+
+      // Assert
+      expect(find.text('John is typing'), findsOneWidget);
+      expect(find.byType(AnimatedBuilder), findsOneWidget);
+    });
+  });
+
+  group('Profile Widgets Tests', () {
+    testWidgets('PhotoGrid displays add photo button when empty', (
+      tester,
+    ) async {
+      // Act
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: PhotoGrid(photos: const [], onPhotosChanged: (_) {}),
+          ),
+        ),
+      );
+
+      // Assert
+      expect(find.text('Add Photo'), findsOneWidget);
+      expect(find.byIcon(Icons.add_a_photo), findsOneWidget);
+    });
+  });
+
+  group('Call Widgets Tests', () {
+    testWidgets('CallControls displays all control buttons', (tester) async {
+      // Act
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: CallControls(
+              isVideoEnabled: true,
+              isAudioEnabled: true,
+              isSpeakerEnabled: false,
+              onToggleVideo: () {},
+              onToggleAudio: () {},
+              onToggleSpeaker: () {},
+              onEndCall: () {},
+            ),
+          ),
+        ),
+      );
+
+      // Assert
+      expect(find.byIcon(Icons.videocam), findsOneWidget);
+      expect(find.byIcon(Icons.mic), findsOneWidget);
+      expect(find.byIcon(Icons.volume_down), findsOneWidget);
+      expect(find.byIcon(Icons.call_end), findsOneWidget);
+      expect(find.byIcon(Icons.flip_camera_ios), findsOneWidget);
+    });
   });
 }

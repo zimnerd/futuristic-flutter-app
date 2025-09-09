@@ -50,6 +50,7 @@ class UserProfileModel extends UserProfile {
   }
 
   /// Convert to JSON
+  @override
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -144,6 +145,7 @@ class ProfilePhotoModel extends ProfilePhoto {
     );
   }
 
+  @override
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -185,6 +187,7 @@ class UserLocationModel extends UserLocation {
     );
   }
 
+  @override
   Map<String, dynamic> toJson() {
     return {
       'latitude': latitude,

@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'user_profile.dart';
 
 /// Conversation entity for messaging
 class Conversation extends Equatable {
@@ -16,6 +17,7 @@ class Conversation extends Equatable {
     this.isMuted = false,
     this.isPinned = false,
     this.matchedAt,
+    this.otherUser,
   });
 
   final String id;
@@ -31,6 +33,7 @@ class Conversation extends Equatable {
   final bool isMuted;
   final bool isPinned;
   final DateTime? matchedAt;
+  final UserProfile? otherUser;
 
   /// Get display name for conversation
   String get displayName => otherUserName;
@@ -97,6 +100,7 @@ class Conversation extends Equatable {
     bool? isMuted,
     bool? isPinned,
     DateTime? matchedAt,
+    UserProfile? otherUser,
   }) {
     return Conversation(
       id: id ?? this.id,
@@ -112,6 +116,7 @@ class Conversation extends Equatable {
       isMuted: isMuted ?? this.isMuted,
       isPinned: isPinned ?? this.isPinned,
       matchedAt: matchedAt ?? this.matchedAt,
+      otherUser: otherUser ?? this.otherUser,
     );
   }
 
@@ -130,5 +135,6 @@ class Conversation extends Equatable {
         isMuted,
         isPinned,
         matchedAt,
+    otherUser,
       ];
 }

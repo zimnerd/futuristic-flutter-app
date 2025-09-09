@@ -17,6 +17,8 @@ class Message extends Equatable {
     this.mediaType,
     this.mediaDuration,
     this.reactions = const [],
+    this.status = MessageStatus.sent,
+    this.createdAt,
   });
 
   final String id;
@@ -33,6 +35,8 @@ class Message extends Equatable {
   final String? mediaType;
   final int? mediaDuration; // For audio/video messages
   final List<MessageReaction> reactions;
+  final MessageStatus status;
+  final DateTime? createdAt;
 
   /// Check if message is from current user
   bool isFromCurrentUser(String currentUserId) {
@@ -85,6 +89,8 @@ class Message extends Equatable {
     String? mediaType,
     int? mediaDuration,
     List<MessageReaction>? reactions,
+    MessageStatus? status,
+    DateTime? createdAt,
   }) {
     return Message(
       id: id ?? this.id,
@@ -101,7 +107,68 @@ class Message extends Equatable {
       mediaType: mediaType ?? this.mediaType,
       mediaDuration: mediaDuration ?? this.mediaDuration,
       reactions: reactions ?? this.reactions,
+      status: status ?? this.status,
+      createdAt: createdAt ?? this.createdAt,
     );
+  }
+
+  /// Create Message from JSON
+  factory Message.fromJson(Map<String, dynamic> json) {
+    return Message(
+      id: json['id'] as String,
+      conversationId: json['conversationId'] as String,
+      senderId: json['senderId'] as String,
+      content: json['content'] as String,
+      type: MessageType.values.firstWhere(
+        (e) => e.name == json['type'],
+        orElse: () => MessageType.text,
+      ),
+      timestamp: DateTime.parse(json['timestamp'] as String),
+      replyToMessageId: json['replyToMessageId'] as String?,
+      isDelivered: json['isDelivered'] as bool? ?? false,
+      isRead: json['isRead'] as bool? ?? false,
+      isOptimistic: json['isOptimistic'] as bool? ?? false,
+      mediaUrl: json['mediaUrl'] as String?,
+      mediaType: json['mediaType'] as String?,
+      mediaDuration: json['mediaDuration'] as int?,
+      reactions:
+          (json['reactions'] as List<dynamic>?)
+              ?.map(
+                (reaction) =>
+                    MessageReaction.fromJson(reaction as Map<String, dynamic>),
+              )
+              .toList() ??
+          [],
+      status: MessageStatus.values.firstWhere(
+        (e) => e.name == json['status'],
+        orElse: () => MessageStatus.sent,
+      ),
+      createdAt: json['createdAt'] != null
+          ? DateTime.parse(json['createdAt'] as String)
+          : null,
+    );
+  }
+
+  /// Convert Message to JSON
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'conversationId': conversationId,
+      'senderId': senderId,
+      'content': content,
+      'type': type.name,
+      'timestamp': timestamp.toIso8601String(),
+      'replyToMessageId': replyToMessageId,
+      'isDelivered': isDelivered,
+      'isRead': isRead,
+      'isOptimistic': isOptimistic,
+      'mediaUrl': mediaUrl,
+      'mediaType': mediaType,
+      'mediaDuration': mediaDuration,
+      'reactions': reactions.map((reaction) => reaction.toJson()).toList(),
+      'status': status.name,
+      'createdAt': createdAt?.toIso8601String(),
+    };
   }
 
   @override
@@ -120,6 +187,8 @@ class Message extends Equatable {
         mediaType,
         mediaDuration,
         reactions,
+    status,
+    createdAt,
       ];
 }
 
@@ -133,6 +202,11 @@ enum MessageType {
   sticker,
   location,
   contact,
+  file,
+}
+
+/// Message status enumeration
+enum MessageStatus { sending, sent, delivered, read, failed,
 }
 
 /// Message reaction entity
@@ -165,6 +239,28 @@ class MessageReaction extends Equatable {
       emoji: emoji ?? this.emoji,
       timestamp: timestamp ?? this.timestamp,
     );
+  }
+
+  /// Create MessageReaction from JSON
+  factory MessageReaction.fromJson(Map<String, dynamic> json) {
+    return MessageReaction(
+      id: json['id'] as String,
+      messageId: json['messageId'] as String,
+      userId: json['userId'] as String,
+      emoji: json['emoji'] as String,
+      timestamp: DateTime.parse(json['timestamp'] as String),
+    );
+  }
+
+  /// Convert MessageReaction to JSON
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'messageId': messageId,
+      'userId': userId,
+      'emoji': emoji,
+      'timestamp': timestamp.toIso8601String(),
+    };
   }
 
   @override

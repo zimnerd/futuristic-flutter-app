@@ -19,6 +19,14 @@ class UserProfile extends Equatable {
     this.preferences = const {},
     this.lastActiveAt,
     this.distanceKm,
+    this.gender,
+    this.job,
+    this.company,
+    this.school,
+    this.lookingFor,
+    this.isOnline = false,
+    this.lastSeen,
+    this.verified = false,
   });
 
   final String id;
@@ -37,6 +45,14 @@ class UserProfile extends Equatable {
   final Map<String, dynamic> preferences;
   final DateTime? lastActiveAt;
   final double? distanceKm;
+  final String? gender;
+  final String? job;
+  final String? company;
+  final String? school;
+  final String? lookingFor;
+  final bool isOnline;
+  final DateTime? lastSeen;
+  final bool verified;
 
   /// Get primary photo URL
   String get primaryPhotoUrl {
@@ -97,6 +113,14 @@ class UserProfile extends Equatable {
     Map<String, dynamic>? preferences,
     DateTime? lastActiveAt,
     double? distanceKm,
+    String? gender,
+    String? job,
+    String? company,
+    String? school,
+    String? lookingFor,
+    bool? isOnline,
+    DateTime? lastSeen,
+    bool? verified,
   }) {
     return UserProfile(
       id: id ?? this.id,
@@ -115,7 +139,85 @@ class UserProfile extends Equatable {
       preferences: preferences ?? this.preferences,
       lastActiveAt: lastActiveAt ?? this.lastActiveAt,
       distanceKm: distanceKm ?? this.distanceKm,
+      gender: gender ?? this.gender,
+      job: job ?? this.job,
+      company: company ?? this.company,
+      school: school ?? this.school,
+      lookingFor: lookingFor ?? this.lookingFor,
+      isOnline: isOnline ?? this.isOnline,
+      lastSeen: lastSeen ?? this.lastSeen,
+      verified: verified ?? this.verified,
     );
+  }
+
+  /// Create UserProfile from JSON
+  factory UserProfile.fromJson(Map<String, dynamic> json) {
+    return UserProfile(
+      id: json['id'] as String,
+      name: json['name'] as String,
+      age: json['age'] as int,
+      bio: json['bio'] as String? ?? '',
+      photos:
+          (json['photos'] as List<dynamic>?)
+              ?.map(
+                (photo) => ProfilePhoto.fromJson(photo as Map<String, dynamic>),
+              )
+              .toList() ??
+          [],
+      location: UserLocation.fromJson(json['location'] as Map<String, dynamic>),
+      isVerified: json['isVerified'] as bool? ?? false,
+      interests: (json['interests'] as List<dynamic>?)?.cast<String>() ?? [],
+      occupation: json['occupation'] as String?,
+      education: json['education'] as String?,
+      height: json['height'] as int?,
+      zodiacSign: json['zodiacSign'] as String?,
+      lifestyle: json['lifestyle'] as Map<String, dynamic>? ?? {},
+      preferences: json['preferences'] as Map<String, dynamic>? ?? {},
+      lastActiveAt: json['lastActiveAt'] != null
+          ? DateTime.parse(json['lastActiveAt'] as String)
+          : null,
+      distanceKm: json['distanceKm'] as double?,
+      gender: json['gender'] as String?,
+      job: json['job'] as String?,
+      company: json['company'] as String?,
+      school: json['school'] as String?,
+      lookingFor: json['lookingFor'] as String?,
+      isOnline: json['isOnline'] as bool? ?? false,
+      lastSeen: json['lastSeen'] != null
+          ? DateTime.parse(json['lastSeen'] as String)
+          : null,
+      verified: json['verified'] as bool? ?? false,
+    );
+  }
+
+  /// Convert UserProfile to JSON
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'age': age,
+      'bio': bio,
+      'photos': photos.map((photo) => photo.toJson()).toList(),
+      'location': location.toJson(),
+      'isVerified': isVerified,
+      'interests': interests,
+      'occupation': occupation,
+      'education': education,
+      'height': height,
+      'zodiacSign': zodiacSign,
+      'lifestyle': lifestyle,
+      'preferences': preferences,
+      'lastActiveAt': lastActiveAt?.toIso8601String(),
+      'distanceKm': distanceKm,
+      'gender': gender,
+      'job': job,
+      'company': company,
+      'school': school,
+      'lookingFor': lookingFor,
+      'isOnline': isOnline,
+      'lastSeen': lastSeen?.toIso8601String(),
+      'verified': verified,
+    };
   }
 
   @override
@@ -136,6 +238,14 @@ class UserProfile extends Equatable {
         preferences,
         lastActiveAt,
         distanceKm,
+    gender,
+    job,
+    company,
+    school,
+    lookingFor,
+    isOnline,
+    lastSeen,
+    verified,
       ];
 }
 
@@ -169,6 +279,30 @@ class ProfilePhoto extends Equatable {
       isVerified: isVerified ?? this.isVerified,
       uploadedAt: uploadedAt ?? this.uploadedAt,
     );
+  }
+
+  /// Create ProfilePhoto from JSON
+  factory ProfilePhoto.fromJson(Map<String, dynamic> json) {
+    return ProfilePhoto(
+      id: json['id'] as String,
+      url: json['url'] as String,
+      order: json['order'] as int,
+      isVerified: json['isVerified'] as bool? ?? false,
+      uploadedAt: json['uploadedAt'] != null
+          ? DateTime.parse(json['uploadedAt'] as String)
+          : null,
+    );
+  }
+
+  /// Convert ProfilePhoto to JSON
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'url': url,
+      'order': order,
+      'isVerified': isVerified,
+      'uploadedAt': uploadedAt?.toIso8601String(),
+    };
   }
 
   @override
@@ -218,6 +352,28 @@ class UserLocation extends Equatable {
       country: country ?? this.country,
       address: address ?? this.address,
     );
+  }
+
+  /// Create UserLocation from JSON
+  factory UserLocation.fromJson(Map<String, dynamic> json) {
+    return UserLocation(
+      latitude: json['latitude'] as double,
+      longitude: json['longitude'] as double,
+      city: json['city'] as String?,
+      country: json['country'] as String?,
+      address: json['address'] as String?,
+    );
+  }
+
+  /// Convert UserLocation to JSON
+  Map<String, dynamic> toJson() {
+    return {
+      'latitude': latitude,
+      'longitude': longitude,
+      'city': city,
+      'country': country,
+      'address': address,
+    };
   }
 
   @override
