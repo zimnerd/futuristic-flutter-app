@@ -5,6 +5,7 @@ import 'data/services/service_locator.dart';
 import 'presentation/blocs/matching/matching_bloc.dart';
 import 'presentation/blocs/messaging/messaging_bloc.dart';
 import 'presentation/blocs/profile/profile_bloc.dart';
+import 'presentation/blocs/filters/filter_bloc.dart';
 
 /// Clean app setup with simple dependency injection
 class AppProviders extends StatelessWidget {
@@ -36,6 +37,9 @@ class AppProviders extends StatelessWidget {
         BlocProvider<ProfileBloc>(
           create: (context) =>
               ProfileBloc(profileService: serviceLocator.profileService),
+        ),
+        BlocProvider<FilterBLoC>(
+          create: (context) => FilterBLoC(serviceLocator.preferencesService),
         ),
       ],
       child: child,

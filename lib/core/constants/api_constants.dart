@@ -59,6 +59,11 @@ class ApiConstants {
   static const String wsCallAnswer = 'call_answer';
   static const String wsCallEnd = 'call_end';
   
+  // Preferences endpoints
+  static const String filterPreferences = '$users/preferences/filters';
+  static const String interests = '$users/interests';
+  static const String educationLevels = '$users/education-levels';
+  
   // Request timeouts
   static const int connectTimeout = 30000; // 30 seconds
   static const int receiveTimeout = 30000; // 30 seconds

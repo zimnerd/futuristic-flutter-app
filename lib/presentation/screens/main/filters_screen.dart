@@ -1,0 +1,405 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
+import '../../blocs/filters/filter_bloc.dart';
+import '../../blocs/filters/filter_event.dart';
+import '../../blocs/filters/filter_state.dart';
+import '../../theme/pulse_colors.dart';
+import '../../widgets/common/pulse_button.dart';
+
+/// Screen for managing dating filter preferences
+class FiltersScreen extends StatefulWidget {
+  const FiltersScreen({super.key});
+
+  @override
+  State<FiltersScreen> createState() => _FiltersScreenState();
+}
+
+class _FiltersScreenState extends State<FiltersScreen> {
+  @override
+  void initState() {
+    super.initState();
+    context.read<FilterBLoC>().add(LoadFilterPreferences());
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(
+          'Filter Preferences',
+          style: PulseTextStyles.titleLarge,
+        ),
+        backgroundColor: PulseColors.primary,
+        foregroundColor: Colors.white,
+        actions: [
+          TextButton(
+            onPressed: () {
+              context.read<FilterBLoC>().add(ResetFilterPreferences());
+            },
+            child: Text(
+              'Reset',
+              style: PulseTextStyles.bodyLarge.copyWith(
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+      body: BlocConsumer<FilterBLoC, FilterState>(
+        listener: (context, state) {
+          if (state is FilterError) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(state.message),
+                backgroundColor: PulseColors.error,
+              ),
+            );
+          } else if (state is FilterSaved) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Filter preferences saved!'),
+                backgroundColor: PulseColors.success,
+              ),
+            );
+          }
+        },
+        builder: (context, state) {
+          if (state is FilterLoading) {
+            return const Center(
+              child: CircularProgressIndicator(
+                color: PulseColors.primary,
+              ),
+            );
+          }
+
+          if (state is FilterLoaded) {
+            return _buildFilterContent(context, state);
+          }
+
+          if (state is FilterSaving) {
+            return _buildSavingOverlay(context, state);
+          }
+
+          return _buildErrorState(context);
+        },
+      ),
+    );
+  }
+
+  Widget _buildFilterContent(BuildContext context, FilterLoaded state) {
+    return Column(
+      children: [
+        Expanded(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildAgeRangeSection(context, state),
+                const SizedBox(height: 32),
+                _buildDistanceSection(context, state),
+                const SizedBox(height: 32),
+                _buildInterestsSection(context, state),
+                const SizedBox(height: 32),
+                _buildEducationSection(context, state),
+                const SizedBox(height: 32),
+                _buildPreferencesSection(context, state),
+                const SizedBox(height: 48),
+              ],
+            ),
+          ),
+        ),
+        _buildSaveButton(context, state),
+      ],
+    );
+  }
+
+  Widget _buildAgeRangeSection(BuildContext context, FilterLoaded state) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Age Range',
+          style: PulseTextStyles.titleMedium,
+        ),
+        const SizedBox(height: 16),
+        Text(
+          '${state.preferences.minAge} - ${state.preferences.maxAge} years',
+          style: PulseTextStyles.bodyLarge.copyWith(
+            color: PulseColors.primary,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: 8),
+        RangeSlider(
+          values: RangeValues(
+            state.preferences.minAge.toDouble(),
+            state.preferences.maxAge.toDouble(),
+          ),
+          min: 18,
+          max: 99,
+          divisions: 81,
+          activeColor: PulseColors.primary,
+          inactiveColor: PulseColors.primary.withValues(alpha: 0.3),
+          onChanged: (RangeValues values) {
+            context.read<FilterBLoC>().add(
+              UpdateAgeRange(
+                values.start.round(),
+                values.end.round(),
+              ),
+            );
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDistanceSection(BuildContext context, FilterLoaded state) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Maximum Distance',
+          style: PulseTextStyles.titleMedium,
+        ),
+        const SizedBox(height: 16),
+        Text(
+          '${state.preferences.maxDistance.round()} km',
+          style: PulseTextStyles.bodyLarge.copyWith(
+            color: PulseColors.primary,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Slider(
+          value: state.preferences.maxDistance,
+          min: 1,
+          max: 500,
+          divisions: 99,
+          activeColor: PulseColors.primary,
+          inactiveColor: PulseColors.primary.withValues(alpha: 0.3),
+          onChanged: (double value) {
+            context.read<FilterBLoC>().add(UpdateMaxDistance(value));
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildInterestsSection(BuildContext context, FilterLoaded state) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Interests',
+          style: PulseTextStyles.titleMedium,
+        ),
+        const SizedBox(height: 16),
+        if (state.availableInterests.isEmpty)
+          Text(
+            'Loading interests...',
+            style: PulseTextStyles.bodyMedium.copyWith(
+              color: PulseColors.onSurfaceVariant,
+            ),
+          )
+        else
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: state.availableInterests.map((interest) {
+              final isSelected = state.preferences.interests.contains(interest);
+              return FilterChip(
+                label: Text(interest),
+                selected: isSelected,
+                selectedColor: PulseColors.primary.withValues(alpha: 0.2),
+                checkmarkColor: PulseColors.primary,
+                onSelected: (bool selected) {
+                  final updatedInterests = List<String>.from(state.preferences.interests);
+                  if (selected) {
+                    updatedInterests.add(interest);
+                  } else {
+                    updatedInterests.remove(interest);
+                  }
+                  context.read<FilterBLoC>().add(UpdateInterests(updatedInterests));
+                },
+              );
+            }).toList(),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildEducationSection(BuildContext context, FilterLoaded state) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Education Level',
+          style: PulseTextStyles.titleMedium,
+        ),
+        const SizedBox(height: 16),
+        DropdownButtonFormField<String>(
+          initialValue: state.preferences.education,
+          decoration: InputDecoration(
+            hintText: 'Any education level',
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: PulseColors.outline),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: PulseColors.primary),
+            ),
+          ),
+          items: [
+            const DropdownMenuItem<String>(
+              value: null,
+              child: Text('Any education level'),
+            ),
+            ...state.availableEducationLevels.map((level) {
+              return DropdownMenuItem<String>(
+                value: level,
+                child: Text(level),
+              );
+            }),
+          ],
+          onChanged: (String? value) {
+            context.read<FilterBLoC>().add(UpdateEducation(value));
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPreferencesSection(BuildContext context, FilterLoaded state) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Additional Preferences',
+          style: PulseTextStyles.titleMedium,
+        ),
+        const SizedBox(height: 16),
+        SwitchListTile(
+          title: Text(
+            'Only verified profiles',
+            style: PulseTextStyles.bodyLarge,
+          ),
+          subtitle: Text(
+            'Show only users with verified accounts',
+            style: PulseTextStyles.bodyMedium.copyWith(
+              color: PulseColors.onSurfaceVariant,
+            ),
+          ),
+          value: state.preferences.showOnlyVerified,
+          activeThumbColor: PulseColors.primary,
+          onChanged: (bool value) {
+            context.read<FilterBLoC>().add(UpdateVerificationPreference(value));
+          },
+        ),
+        SwitchListTile(
+          title: Text(
+            'Only profiles with photos',
+            style: PulseTextStyles.bodyLarge,
+          ),
+          subtitle: Text(
+            'Show only users who have uploaded photos',
+            style: PulseTextStyles.bodyMedium.copyWith(
+              color: PulseColors.onSurfaceVariant,
+            ),
+          ),
+          value: state.preferences.showOnlyWithPhotos,
+          activeThumbColor: PulseColors.primary,
+          onChanged: (bool value) {
+            context.read<FilterBLoC>().add(UpdatePhotosPreference(value));
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSaveButton(BuildContext context, FilterLoaded state) {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.1),
+            blurRadius: 8,
+            offset: const Offset(0, -2),
+          ),
+        ],
+      ),
+      child: SafeArea(
+        child: SizedBox(
+          width: double.infinity,
+          child: PulseButton(
+            text: 'Save Preferences',
+            onPressed: () {
+              context.read<FilterBLoC>().add(SaveFilterPreferences());
+            },
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSavingOverlay(BuildContext context, FilterSaving state) {
+    return Stack(
+      children: [
+        _buildFilterContent(
+          context, 
+          FilterLoaded(preferences: state.preferences),
+        ),
+        Container(
+          color: Colors.black.withValues(alpha: 0.3),
+          child: const Center(
+            child: Card(
+              child: Padding(
+                padding: EdgeInsets.all(PulseSpacing.lg),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    CircularProgressIndicator(color: PulseColors.primary),
+                    SizedBox(height: PulseSpacing.md),
+                    Text('Saving preferences...'),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildErrorState(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.error_outline,
+            size: 64,
+            color: PulseColors.error,
+          ),
+                            const SizedBox(height: 16),
+          Text(
+            'Failed to load filter preferences',
+            style: PulseTextStyles.titleMedium,
+          ),
+                            const SizedBox(height: 24),
+          PulseButton(
+            text: 'Retry',
+            onPressed: () {
+              context.read<FilterBLoC>().add(LoadFilterPreferences());
+            },
+          ),
+        ],
+      ),
+    );
+  }
+}

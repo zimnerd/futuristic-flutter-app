@@ -5,6 +5,7 @@ import 'messaging_service.dart';
 import 'profile_service.dart';
 import 'file_upload_service.dart';
 import 'websocket_service.dart';
+import 'preferences_service.dart';
 
 /// Simple service locator without external dependencies
 class ServiceLocator {
@@ -19,6 +20,7 @@ class ServiceLocator {
   late final ProfileService _profileService;
   late final FileUploadService _fileUploadService;
   late final WebSocketService _webSocketService;
+  late final PreferencesService _preferencesService;
 
   bool _isInitialized = false;
 
@@ -35,6 +37,7 @@ class ServiceLocator {
     _profileService = ProfileService(apiClient: _apiClient);
     _fileUploadService = FileUploadService(apiClient: _apiClient);
     _webSocketService = WebSocketService.instance;
+    _preferencesService = PreferencesService(_apiClient);
 
     _isInitialized = true;
   }
@@ -73,5 +76,11 @@ class ServiceLocator {
   ApiClient get apiClient {
     if (!_isInitialized) initialize();
     return _apiClient;
+  }
+
+  /// Get PreferencesService instance
+  PreferencesService get preferencesService {
+    if (!_isInitialized) initialize();
+    return _preferencesService;
   }
 }

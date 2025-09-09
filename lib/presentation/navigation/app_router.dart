@@ -10,6 +10,7 @@ import '../screens/main/matches_screen.dart';
 import '../screens/main/messages_screen.dart';
 import '../screens/main/profile_screen.dart';
 import '../screens/main/settings_screen.dart';
+import '../screens/main/filters_screen.dart';
 import '../screens/onboarding/onboarding_screen.dart';
 import '../screens/onboarding/welcome_screen.dart';
 
@@ -79,6 +80,11 @@ class AppRouter {
             name: 'settings',
             builder: (context, state) => const SettingsScreen(),
           ),
+          GoRoute(
+            path: AppRoutes.filters,
+            name: 'filters',
+            builder: (context, state) => const FiltersScreen(),
+          ),
         ],
       ),
     ],
@@ -131,6 +137,7 @@ class AppRoutes {
   static const String messages = '/messages';
   static const String profile = '/profile';
   static const String settings = '/settings';
+  static const String filters = '/filters';
 }
 
 /// Main navigation wrapper with bottom navigation bar
