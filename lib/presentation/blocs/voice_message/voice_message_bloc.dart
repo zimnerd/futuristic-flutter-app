@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:logger/logger.dart';
+import '../../../data/models/voice_message.dart';
 import '../../../data/services/voice_message_service.dart';
 import 'voice_message_event.dart';
 import 'voice_message_state.dart';
@@ -165,9 +166,13 @@ class VoiceMessageBloc extends Bloc<VoiceMessageEvent, VoiceMessageState> {
       ));
 
       // Find the voice message from the current messages
-      final voiceMessage = state.messages.firstWhere(
-        (msg) => msg.id == event.messageId,
-        orElse: () => VoiceMessage(
+      VoiceMessage? voiceMessage;
+      try {
+        voiceMessage = state.messages.firstWhere(
+          (msg) => msg.id == event.messageId,
+        );
+      } catch (e) {
+        voiceMessage = VoiceMessage(
           id: event.messageId,
           conversationId: '',
           senderId: '',
@@ -176,8 +181,8 @@ class VoiceMessageBloc extends Bloc<VoiceMessageEvent, VoiceMessageState> {
           waveformData: const [],
           createdAt: DateTime.now(),
           isPlayed: false,
-        ),
-      );
+        );
+      }
 
       final success = await _voiceMessageService.playVoiceMessage(voiceMessage);
       if (success) {
