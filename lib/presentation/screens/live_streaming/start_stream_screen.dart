@@ -132,7 +132,7 @@ class _StartStreamScreenState extends State<StartStreamScreen> {
             
             // Category selection
             DropdownButtonFormField<String>(
-              value: _selectedCategory,
+              initialValue: _selectedCategory,
               decoration: const InputDecoration(
                 labelText: 'Category',
                 border: OutlineInputBorder(),

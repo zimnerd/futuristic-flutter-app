@@ -52,7 +52,7 @@ dependencies:
 
   # Voice Messages
   audio_waveforms: ^1.0.5
-  record: ^5.0.4
+  record: ^6.1.1
   just_audio: ^0.9.36
 
   # Virtual Gifts & Animations
