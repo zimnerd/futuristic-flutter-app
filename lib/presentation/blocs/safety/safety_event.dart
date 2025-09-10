@@ -1,5 +1,4 @@
-import 'package:equatable/equatable.dart';
-import '../../../data/models/safety.dart';
+part of 'safety_bloc.dart';
 
 // Simple enums for safety events
 enum SafetyLevel { low, medium, high, critical }
@@ -150,4 +149,96 @@ class MarkTipAsRead extends SafetyEvent {
 
 class RefreshSafetyData extends SafetyEvent {
   const RefreshSafetyData();
+}
+
+// Additional events to match the bloc handlers
+class LoadSafetyData extends SafetyEvent {
+  const LoadSafetyData();
+}
+
+class ReportContent extends SafetyEvent {
+  final String contentId;
+  final SafetyReportType reportType;
+  final String description;
+
+  const ReportContent({
+    required this.contentId,
+    required this.reportType,
+    required this.description,
+  });
+
+  @override
+  List<Object?> get props => [contentId, reportType, description];
+}
+
+class LoadSafetySettings extends SafetyEvent {
+  const LoadSafetySettings();
+}
+
+class LoadSafetyScore extends SafetyEvent {
+  const LoadSafetyScore();
+}
+
+class LoadSafetyReports extends SafetyEvent {
+  const LoadSafetyReports();
+}
+
+class TriggerEmergencyContact extends SafetyEvent {
+  final String location;
+  final String? additionalInfo;
+
+  const TriggerEmergencyContact({required this.location, this.additionalInfo});
+
+  @override
+  List<Object?> get props => [location, additionalInfo];
+}
+
+class SubmitPhotoVerification extends SafetyEvent {
+  final String photoPath;
+
+  const SubmitPhotoVerification({required this.photoPath});
+
+  @override
+  List<Object?> get props => [photoPath];
+}
+
+class SubmitIdVerification extends SafetyEvent {
+  final String frontPhotoPath;
+  final String backPhotoPath;
+  final String idType;
+
+  const SubmitIdVerification({
+    required this.frontPhotoPath,
+    required this.backPhotoPath,
+    required this.idType,
+  });
+
+  @override
+  List<Object?> get props => [frontPhotoPath, backPhotoPath, idType];
+}
+
+class ReportDateSafetyConcern extends SafetyEvent {
+  final String dateId;
+  final String concern;
+  final String location;
+  final bool requiresImmediateHelp;
+
+  const ReportDateSafetyConcern({
+    required this.dateId,
+    required this.concern,
+    required this.location,
+    this.requiresImmediateHelp = false,
+  });
+
+  @override
+  List<Object?> get props => [dateId, concern, location, requiresImmediateHelp];
+}
+
+class CheckUserSafety extends SafetyEvent {
+  final String userId;
+
+  const CheckUserSafety({required this.userId});
+
+  @override
+  List<Object?> get props => [userId];
 }

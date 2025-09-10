@@ -1,5 +1,4 @@
-import 'package:equatable/equatable.dart';
-import '../../../data/models/safety.dart';
+part of 'safety_bloc.dart';
 
 enum SafetyStatus { 
   initial, 
@@ -19,7 +18,9 @@ class SafetyState extends Equatable {
   final List<SafetyReport> userReports;
   final List<BlockedUser> blockedUsers;
   final List<SafetyTip> safetyTips;
-  final List<EmergencyContact> emergencyContacts;
+  final SafetySettings? safetySettings;
+  final double? safetyScore;
+  final Map<String, dynamic>? userSafetyCheck;
   final bool locationSharingEnabled;
   final bool emergencyContactsEnabled;
   final bool incidentReportingEnabled;
@@ -28,13 +29,17 @@ class SafetyState extends Equatable {
   final SafetyReport? lastReport;
   final DateTime? lastLocationShare;
   final bool isEmergencyMode;
+  final bool photoVerificationSubmitted;
+  final bool idVerificationSubmitted;
 
   const SafetyState({
     this.status = SafetyStatus.initial,
     this.userReports = const [],
     this.blockedUsers = const [],
     this.safetyTips = const [],
-    this.emergencyContacts = const [],
+    this.safetySettings,
+    this.safetyScore,
+    this.userSafetyCheck,
     this.locationSharingEnabled = false,
     this.emergencyContactsEnabled = false,
     this.incidentReportingEnabled = true,
@@ -43,6 +48,8 @@ class SafetyState extends Equatable {
     this.lastReport,
     this.lastLocationShare,
     this.isEmergencyMode = false,
+    this.photoVerificationSubmitted = false,
+    this.idVerificationSubmitted = false,
   });
 
   SafetyState copyWith({
@@ -50,7 +57,9 @@ class SafetyState extends Equatable {
     List<SafetyReport>? userReports,
     List<BlockedUser>? blockedUsers,
     List<SafetyTip>? safetyTips,
-    List<EmergencyContact>? emergencyContacts,
+    SafetySettings? safetySettings,
+    double? safetyScore,
+    Map<String, dynamic>? userSafetyCheck,
     bool? locationSharingEnabled,
     bool? emergencyContactsEnabled,
     bool? incidentReportingEnabled,
@@ -59,13 +68,17 @@ class SafetyState extends Equatable {
     SafetyReport? lastReport,
     DateTime? lastLocationShare,
     bool? isEmergencyMode,
+    bool? photoVerificationSubmitted,
+    bool? idVerificationSubmitted,
   }) {
     return SafetyState(
       status: status ?? this.status,
       userReports: userReports ?? this.userReports,
       blockedUsers: blockedUsers ?? this.blockedUsers,
       safetyTips: safetyTips ?? this.safetyTips,
-      emergencyContacts: emergencyContacts ?? this.emergencyContacts,
+      safetySettings: safetySettings ?? this.safetySettings,
+      safetyScore: safetyScore ?? this.safetyScore,
+      userSafetyCheck: userSafetyCheck ?? this.userSafetyCheck,
       locationSharingEnabled: locationSharingEnabled ?? this.locationSharingEnabled,
       emergencyContactsEnabled: emergencyContactsEnabled ?? this.emergencyContactsEnabled,
       incidentReportingEnabled: incidentReportingEnabled ?? this.incidentReportingEnabled,
@@ -74,6 +87,10 @@ class SafetyState extends Equatable {
       lastReport: lastReport ?? this.lastReport,
       lastLocationShare: lastLocationShare ?? this.lastLocationShare,
       isEmergencyMode: isEmergencyMode ?? this.isEmergencyMode,
+      photoVerificationSubmitted:
+          photoVerificationSubmitted ?? this.photoVerificationSubmitted,
+      idVerificationSubmitted:
+          idVerificationSubmitted ?? this.idVerificationSubmitted,
     );
   }
 
@@ -83,7 +100,9 @@ class SafetyState extends Equatable {
         userReports,
         blockedUsers,
         safetyTips,
-        emergencyContacts,
+    safetySettings,
+    safetyScore,
+    userSafetyCheck,
         locationSharingEnabled,
         emergencyContactsEnabled,
         incidentReportingEnabled,
@@ -92,5 +111,7 @@ class SafetyState extends Equatable {
         lastReport,
         lastLocationShare,
         isEmergencyMode,
+    photoVerificationSubmitted,
+    idVerificationSubmitted,
       ];
 }
