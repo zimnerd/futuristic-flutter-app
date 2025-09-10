@@ -237,7 +237,17 @@ class PremiumService {
 
       if (response.statusCode == 200 && response.data != null) {
         final List<dynamic> data = response.data['features'] ?? [];
-        final features = data.map((json) => PremiumFeature.fromJson(json)).toList();
+        final features = data.map((featureName) {
+          // Convert string feature name to enum
+          try {
+            return PremiumFeature.values.firstWhere(
+              (feature) => feature.name == featureName,
+            );
+          } catch (e) {
+            _logger.w('Unknown premium feature: $featureName');
+            return null;
+          }
+        }).where((feature) => feature != null).cast<PremiumFeature>().toList();
         
         _logger.d('Retrieved ${features.length} premium features');
         return features;
