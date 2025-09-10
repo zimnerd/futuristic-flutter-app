@@ -918,6 +918,27 @@ flutter analyze --no-fatal-infos    # Confirm resolution
 - ✅ **Applied**: iOS/Android specific implementations, proper platform checks
 - 🔄 **Next**: Add platform testing automation, implement feature flags
 
+### 4. **Safe Upgrade Strategy** ✅ **Recently Applied**
+- ✅ **Process**: Use `flutter pub outdated` to identify upgrade candidates
+- ✅ **Validation**: Check changelogs for breaking changes before upgrading
+- ✅ **Testing**: Run `flutter analyze` and `flutter build` after each upgrade
+- ✅ **Documentation**: Track upgrade results and conflicts for future reference
+
+**Recent Successful Upgrades (September 2025)**:
+- `just_audio`: 0.9.36 → 0.10.5 (major version, no breaking changes)
+- `record`: 5.0.4 → 6.1.1 (major version, new features, no breaking API changes)
+- `drift_dev`: 2.28.1 → 2.28.2 (patch version)
+- `json_serializable`: 6.11.0 → 6.11.1 (patch version)
+
+**Deferred Upgrades (Breaking Changes)**:
+- `purchases_flutter`: 8.10.6 → 9.5.0 
+  - **Reason**: Major API redesign, removed methods, new return types
+  - **Action**: Defer until planned refactoring phase
+
+**Dependency Conflicts Resolved**:
+- `build_runner` vs `drift_dev`: Constrained by transitive dependencies
+- **Solution**: Keep compatible versions, upgrade when constraints allow
+
 ---
 
 ## 🔐 **Security & Privacy Implementation**
