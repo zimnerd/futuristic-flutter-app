@@ -61,7 +61,7 @@ class SafetyTipsWidget extends StatelessWidget {
         leading: Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: _getCategoryColor(tip.category).withOpacity(0.1),
+            color: _getCategoryColor(tip.category).withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Icon(

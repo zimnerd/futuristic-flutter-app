@@ -142,7 +142,7 @@ class _SpeedDatingRoomScreenState extends State<SpeedDatingRoomScreen> {
                   vertical: 12,
                 ),
                 decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.6),
+                  color: Colors.black.withValues(alpha: 0.6),
                   borderRadius: BorderRadius.circular(25),
                 ),
                 child: Row(
@@ -199,7 +199,7 @@ class _SpeedDatingRoomScreenState extends State<SpeedDatingRoomScreen> {
                     child: Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: _isMuted ? Colors.red : Colors.white.withOpacity(0.2),
+                        color: _isMuted ? Colors.red : Colors.white.withValues(alpha: 0.2),
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
@@ -237,7 +237,7 @@ class _SpeedDatingRoomScreenState extends State<SpeedDatingRoomScreen> {
                     child: Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: _isCameraOff ? Colors.red : Colors.white.withOpacity(0.2),
+                        color: _isCameraOff ? Colors.red : Colors.white.withValues(alpha: 0.2),
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
@@ -266,7 +266,7 @@ class _SpeedDatingRoomScreenState extends State<SpeedDatingRoomScreen> {
                         shape: BoxShape.circle,
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.3),
+                            color: Colors.black.withValues(alpha: 0.3),
                             blurRadius: 8,
                             offset: const Offset(0, 4),
                           ),
@@ -289,7 +289,7 @@ class _SpeedDatingRoomScreenState extends State<SpeedDatingRoomScreen> {
                         shape: BoxShape.circle,
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.3),
+                            color: Colors.black.withValues(alpha: 0.3),
                             blurRadius: 8,
                             offset: const Offset(0, 4),
                           ),

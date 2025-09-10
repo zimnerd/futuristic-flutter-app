@@ -85,7 +85,7 @@ class _PulseLoadingWidgetState extends State<PulseLoadingWidget>
                       gradient: LinearGradient(
                         colors: [
                           PulseColors.primary,
-                          PulseColors.primary.withOpacity(0.3),
+                          PulseColors.primary.withValues(alpha: 0.3),
                         ],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
@@ -93,7 +93,7 @@ class _PulseLoadingWidgetState extends State<PulseLoadingWidget>
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                          color: PulseColors.primary.withOpacity(0.3),
+                          color: PulseColors.primary.withValues(alpha: 0.3),
                           blurRadius: 10,
                           spreadRadius: 2,
                         ),

@@ -33,8 +33,8 @@ class CompanionCardWidget extends StatelessWidget {
             borderRadius: BorderRadius.circular(16),
             gradient: LinearGradient(
               colors: [
-                PulseColors.primary.withOpacity(0.1),
-                PulseColors.secondary.withOpacity(0.1),
+                PulseColors.primary.withValues(alpha: 0.1),
+                PulseColors.secondary.withValues(alpha: 0.1),
               ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
@@ -51,7 +51,7 @@ class CompanionCardWidget extends StatelessWidget {
                     backgroundImage: companion.avatarUrl.isNotEmpty
                         ? NetworkImage(companion.avatarUrl)
                         : null,
-                    backgroundColor: PulseColors.primary.withOpacity(0.2),
+                    backgroundColor: PulseColors.primary.withValues(alpha: 0.2),
                     child: companion.avatarUrl.isEmpty
                         ? Text(
                             companion.personality.emoji,
@@ -158,8 +158,8 @@ class CompanionCardWidget extends StatelessWidget {
                     ),
                     decoration: BoxDecoration(
                       color: companion.isActive
-                          ? Colors.green.withOpacity(0.2)
-                          : Colors.grey.withOpacity(0.2),
+                          ? Colors.green.withValues(alpha: 0.2)
+                          : Colors.grey.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Row(

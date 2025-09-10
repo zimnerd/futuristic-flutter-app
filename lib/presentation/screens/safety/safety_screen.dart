@@ -146,7 +146,7 @@ class _SafetyScreenState extends State<SafetyScreen> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -228,7 +228,7 @@ class _SafetyScreenState extends State<SafetyScreen> {
         decoration: BoxDecoration(
           color: PulseColors.surfaceVariant,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: PulseColors.outline.withOpacity(0.2)),
+          border: Border.all(color: PulseColors.outline.withValues(alpha: 0.2)),
         ),
         child: Column(
           children: [
@@ -249,7 +249,7 @@ class _SafetyScreenState extends State<SafetyScreen> {
             Text(
               subtitle,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: PulseColors.onSurface.withOpacity(0.7),
+                color: PulseColors.onSurface.withValues(alpha: 0.7),
               ),
               textAlign: TextAlign.center,
               maxLines: 2,

@@ -37,8 +37,8 @@ class SpeedDatingEventCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
           gradient: LinearGradient(
             colors: [
-              PulseColors.primary.withOpacity(0.1),
-              PulseColors.secondary.withOpacity(0.1),
+              PulseColors.primary.withValues(alpha: 0.1),
+              PulseColors.secondary.withValues(alpha: 0.1),
             ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
@@ -65,7 +65,7 @@ class SpeedDatingEventCard extends StatelessWidget {
                     vertical: 4,
                   ),
                   decoration: BoxDecoration(
-                    color: _getStatusColor(event['status']).withOpacity(0.2),
+                    color: _getStatusColor(event['status']).withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(

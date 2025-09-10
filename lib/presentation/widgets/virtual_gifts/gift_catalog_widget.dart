@@ -48,8 +48,8 @@ class _GiftCatalogWidgetState extends State<GiftCatalogWidget> {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            PulseColors.primary.withOpacity(0.1),
-            PulseColors.primary.withOpacity(0.05),
+            PulseColors.primary.withValues(alpha: 0.1),
+            PulseColors.primary.withValues(alpha: 0.05),
           ],
         ),
       ),
@@ -152,7 +152,7 @@ class _GiftCatalogWidgetState extends State<GiftCatalogWidget> {
           });
         },
         backgroundColor: Colors.grey[100],
-        selectedColor: PulseColors.primary.withOpacity(0.2),
+        selectedColor: PulseColors.primary.withValues(alpha: 0.2),
         checkmarkColor: PulseColors.primary,
         labelStyle: TextStyle(
           color: isSelected ? PulseColors.primary : Colors.grey[700],
@@ -229,8 +229,8 @@ class _GiftCatalogWidgetState extends State<GiftCatalogWidget> {
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
-                      _getCategoryColor(gift.category).withOpacity(0.1),
-                      _getCategoryColor(gift.category).withOpacity(0.05),
+                      _getCategoryColor(gift.category).withValues(alpha: 0.1),
+                      _getCategoryColor(gift.category).withValues(alpha: 0.05),
                     ],
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,

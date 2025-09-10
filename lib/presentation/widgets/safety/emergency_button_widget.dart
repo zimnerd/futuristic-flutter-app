@@ -23,7 +23,7 @@ class EmergencyButtonWidget extends StatelessWidget {
               backgroundColor: isEmergencyMode ? Colors.red : Colors.red.shade600,
               foregroundColor: Colors.white,
               elevation: isEmergencyMode ? 12 : 6,
-              shadowColor: Colors.red.withOpacity(0.5),
+              shadowColor: Colors.red.withValues(alpha: 0.5),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
               ),

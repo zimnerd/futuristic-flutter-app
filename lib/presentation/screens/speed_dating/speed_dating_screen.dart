@@ -305,7 +305,7 @@ class _SpeedDatingScreenState extends State<SpeedDatingScreen>
                   backgroundImage: match['avatarUrl'] != null
                       ? NetworkImage(match['avatarUrl'])
                       : null,
-                  backgroundColor: PulseColors.primary.withOpacity(0.2),
+                  backgroundColor: PulseColors.primary.withValues(alpha: 0.2),
                   child: match['avatarUrl'] == null
                       ? const Icon(Icons.person)
                       : null,
@@ -341,7 +341,7 @@ class _SpeedDatingScreenState extends State<SpeedDatingScreen>
       margin: const EdgeInsets.only(bottom: 12),
       child: ListTile(
         leading: CircleAvatar(
-          backgroundColor: PulseColors.secondary.withOpacity(0.2),
+          backgroundColor: PulseColors.secondary.withValues(alpha: 0.2),
           child: const Icon(Icons.speed, color: PulseColors.secondary),
         ),
         title: Text(session['eventTitle'] ?? 'Speed Dating Event'),

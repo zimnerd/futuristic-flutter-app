@@ -105,10 +105,10 @@ class BlockedUsersWidget extends StatelessWidget {
                             vertical: 4,
                           ),
                           decoration: BoxDecoration(
-                            color: _getReasonColor(blockedUser.reason!).withOpacity(0.1),
+                            color: _getReasonColor(blockedUser.reason!).withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
-                              color: _getReasonColor(blockedUser.reason!).withOpacity(0.3),
+                              color: _getReasonColor(blockedUser.reason!).withValues(alpha: 0.3),
                             ),
                           ),
                           child: Text(

@@ -179,7 +179,7 @@ class _CompanionCreationWidgetState extends State<CompanionCreationWidget> {
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: isSelected 
-                ? PulseColors.primary.withOpacity(0.1)
+                ? PulseColors.primary.withValues(alpha: 0.1)
                 : Colors.grey[100],
               border: Border.all(
                 color: isSelected 
@@ -250,7 +250,7 @@ class _CompanionCreationWidgetState extends State<CompanionCreationWidget> {
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: isSelected 
-                ? PulseColors.secondary.withOpacity(0.1)
+                ? PulseColors.secondary.withValues(alpha: 0.1)
                 : Colors.grey[100],
               border: Border.all(
                 color: isSelected 

@@ -52,7 +52,7 @@ class _AiCompanionChatScreenState extends State<AiCompanionChatScreen> {
               backgroundImage: widget.companion.avatarUrl.isNotEmpty
                   ? NetworkImage(widget.companion.avatarUrl)
                   : null,
-              backgroundColor: PulseColors.primary.withOpacity(0.2),
+              backgroundColor: PulseColors.primary.withValues(alpha: 0.2),
               child: widget.companion.avatarUrl.isEmpty
                   ? Text(
                       widget.companion.personality.emoji,
@@ -155,7 +155,7 @@ class _AiCompanionChatScreenState extends State<AiCompanionChatScreen> {
               backgroundImage: widget.companion.avatarUrl.isNotEmpty
                   ? NetworkImage(widget.companion.avatarUrl)
                   : null,
-              backgroundColor: PulseColors.primary.withOpacity(0.2),
+              backgroundColor: PulseColors.primary.withValues(alpha: 0.2),
               child: widget.companion.avatarUrl.isEmpty
                   ? Text(
                       widget.companion.personality.emoji,
@@ -209,9 +209,9 @@ class _AiCompanionChatScreenState extends State<AiCompanionChatScreen> {
               vertical: 8,
             ),
             decoration: BoxDecoration(
-              color: PulseColors.primary.withOpacity(0.1),
+              color: PulseColors.primary.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: PulseColors.primary.withOpacity(0.3)),
+              border: Border.all(color: PulseColors.primary.withValues(alpha: 0.3)),
             ),
             child: Text(
               suggestion,
@@ -357,7 +357,7 @@ class _AiCompanionChatScreenState extends State<AiCompanionChatScreen> {
               backgroundImage: widget.companion.avatarUrl.isNotEmpty
                   ? NetworkImage(widget.companion.avatarUrl)
                   : null,
-              backgroundColor: PulseColors.primary.withOpacity(0.2),
+              backgroundColor: PulseColors.primary.withValues(alpha: 0.2),
               child: widget.companion.avatarUrl.isEmpty
                   ? Text(
                       widget.companion.personality.emoji,

@@ -141,8 +141,8 @@ class _VoiceMessagePlayerWidgetState extends State<VoiceMessagePlayerWidget>
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            PulseColors.primary.withOpacity(0.1),
-            PulseColors.primary.withOpacity(0.05),
+            PulseColors.primary.withValues(alpha: 0.1),
+            PulseColors.primary.withValues(alpha: 0.05),
           ],
         ),
         borderRadius: BorderRadius.circular(16),
@@ -310,7 +310,7 @@ class _VoiceMessagePlayerWidgetState extends State<VoiceMessagePlayerWidget>
               color: PulseColors.primary,
               boxShadow: [
                 BoxShadow(
-                  color: PulseColors.primary.withOpacity(0.3),
+                  color: PulseColors.primary.withValues(alpha: 0.3),
                   blurRadius: 8,
                   spreadRadius: 2,
                 ),

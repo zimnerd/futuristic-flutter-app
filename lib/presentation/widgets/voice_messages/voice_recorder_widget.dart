@@ -228,7 +228,7 @@ class _VoiceRecorderWidgetState extends State<VoiceRecorderWidget>
                   boxShadow: _isRecording && !_isPaused
                       ? [
                           BoxShadow(
-                            color: Colors.red.withOpacity(0.3),
+                            color: Colors.red.withValues(alpha: 0.3),
                             blurRadius: 20,
                             spreadRadius: 5,
                           ),

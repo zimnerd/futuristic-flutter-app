@@ -85,7 +85,7 @@ class _LiveStreamViewerScreenState extends State<LiveStreamViewerScreen> {
               width: 200,
               height: 300,
               decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.5),
+                color: Colors.black.withValues(alpha: 0.5),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Column(
@@ -140,7 +140,7 @@ class _LiveStreamViewerScreenState extends State<LiveStreamViewerScreen> {
                         borderSide: const BorderSide(color: Colors.white54),
                       ),
                       filled: true,
-                      fillColor: Colors.black.withOpacity(0.5),
+                      fillColor: Colors.black.withValues(alpha: 0.5),
                       contentPadding: const EdgeInsets.symmetric(
                         horizontal: 16,
                         vertical: 12,

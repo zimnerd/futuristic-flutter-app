@@ -23,7 +23,7 @@ class SafetyScoreWidget extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -52,7 +52,7 @@ class SafetyScoreWidget extends StatelessWidget {
                     Text(
                       _getScoreDescription(score),
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: PulseColors.onSurface.withOpacity(0.7),
+                        color: PulseColors.onSurface.withValues(alpha: 0.7),
                       ),
                     ),
                   ],
@@ -122,7 +122,7 @@ class SafetyScoreWidget extends StatelessWidget {
     required String label,
     required bool value,
   }) {
-    final color = value ? Colors.green : PulseColors.onSurface.withOpacity(0.4);
+    final color = value ? Colors.green : PulseColors.onSurface.withValues(alpha: 0.4);
     
     return Column(
       children: [
