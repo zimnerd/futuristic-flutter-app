@@ -24,21 +24,14 @@ class _CompanionCreationWidgetState extends State<CompanionCreationWidget> {
   final _nameController = TextEditingController();
   CompanionPersonality _selectedPersonality = CompanionPersonality.mentor;
   String _selectedAvatarStyle = 'realistic';
-  String _selectedHairColor = 'brown';
-  String _selectedEyeColor = 'brown';
+  final String _selectedHairColor = 'brown';
+  final String _selectedEyeColor = 'brown';
   
   final List<Map<String, dynamic>> _avatarStyles = [
     {'value': 'realistic', 'label': 'Realistic', 'icon': Icons.person},
     {'value': 'cartoon', 'label': 'Cartoon', 'icon': Icons.emoji_emotions},
     {'value': 'anime', 'label': 'Anime', 'icon': Icons.face},
     {'value': 'minimalist', 'label': 'Minimalist', 'icon': Icons.circle},
-  ];
-  
-  final List<Map<String, dynamic>> _hairColors = [
-    {'value': 'brown', 'label': 'Brown', 'color': Colors.brown},
-    {'value': 'black', 'label': 'Black', 'color': Colors.black},
-    {'value': 'blonde', 'label': 'Blonde', 'color': Colors.yellow[700]},
-    {'value': 'red', 'label': 'Red', 'color': Colors.red[400]},
   ];
   
   @override

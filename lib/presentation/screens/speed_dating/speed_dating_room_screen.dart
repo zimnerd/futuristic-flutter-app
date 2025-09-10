@@ -48,7 +48,9 @@ class _SpeedDatingRoomScreenState extends State<SpeedDatingRoomScreen> {
                         children: [
                           CircleAvatar(
                             radius: 50,
-                            backgroundColor: PulseColors.primary.withOpacity(0.3),
+                            backgroundColor: PulseColors.primary.withValues(
+                              alpha: 0.3,
+                            ),
                             child: const Icon(
                               Icons.person,
                               size: 50,
@@ -88,7 +90,8 @@ class _SpeedDatingRoomScreenState extends State<SpeedDatingRoomScreen> {
                             children: [
                               CircleAvatar(
                                 radius: 40,
-                                backgroundColor: PulseColors.secondary.withOpacity(0.3),
+                                  backgroundColor: PulseColors.secondary
+                                      .withValues(alpha: 0.3),
                                 child: const Icon(
                                   Icons.videocam_off,
                                   size: 40,
@@ -107,7 +110,9 @@ class _SpeedDatingRoomScreenState extends State<SpeedDatingRoomScreen> {
                           )
                         : Container(
                             decoration: BoxDecoration(
-                              color: PulseColors.secondary.withOpacity(0.2),
+                                color: PulseColors.secondary.withValues(
+                                  alpha: 0.2,
+                                ),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: const Center(

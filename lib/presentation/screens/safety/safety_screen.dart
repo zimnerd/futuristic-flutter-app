@@ -9,7 +9,6 @@ import '../../widgets/safety/safety_dashboard_widget.dart';
 import '../../widgets/safety/emergency_button_widget.dart';
 import '../../widgets/safety/safety_score_widget.dart';
 import '../../widgets/safety/safety_tips_widget.dart';
-import '../../widgets/safety/blocked_users_widget.dart';
 
 /// Main safety screen with dashboard and controls
 class SafetyScreen extends StatefulWidget {

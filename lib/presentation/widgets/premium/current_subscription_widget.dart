@@ -218,7 +218,7 @@ class CurrentSubscriptionWidget extends StatelessWidget {
             Switch(
               value: subscription.autoRenew,
               onChanged: null, // Would be handled by parent
-              activeColor: PulseColors.primary,
+              activeThumbColor: PulseColors.primary,
             ),
           ],
         ),

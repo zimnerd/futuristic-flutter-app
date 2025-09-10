@@ -29,12 +29,10 @@ class _VoiceRecorderWidgetState extends State<VoiceRecorderWidget>
   bool _isPaused = false;
   Duration _recordedDuration = Duration.zero;
   Timer? _recordingTimer;
-  String? _recordingPath;
   
   late AnimationController _pulseController;
   late AnimationController _waveController;
   late Animation<double> _pulseAnimation;
-  late Animation<double> _waveAnimation;
 
   @override
   void initState() {
@@ -59,15 +57,8 @@ class _VoiceRecorderWidgetState extends State<VoiceRecorderWidget>
     ).animate(CurvedAnimation(
       parent: _pulseController,
       curve: Curves.easeInOut,
-    ));
-
-    _waveAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _waveController,
-      curve: Curves.easeInOut,
-    ));
+    ),
+    );
   }
 
   @override
@@ -96,7 +87,6 @@ class _VoiceRecorderWidgetState extends State<VoiceRecorderWidget>
         setState(() {
           _isRecording = true;
           _isPaused = false;
-          _recordingPath = path;
           _recordedDuration = Duration.zero;
         });
 
@@ -165,9 +155,10 @@ class _VoiceRecorderWidgetState extends State<VoiceRecorderWidget>
             
             widget.onMessageRecorded(message);
           }
-        }      setState(() {
+      }
+
+      setState(() {
         _recordedDuration = Duration.zero;
-        _recordingPath = null;
       });
     } catch (e) {
       _showError('Failed to stop recording: $e');
