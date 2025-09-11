@@ -17,6 +17,16 @@ class ApiConstants {
   static const String analytics = '/analytics';
   static const String payment = '/payment';
   
+  // Analytics endpoints
+  static const String analyticsEvents = '$analytics/events';
+  static const String analyticsInsights = '$analytics/insights';
+  static const String analyticsUserProperties = '$analytics/user-properties';
+
+  // Payment endpoints
+  static const String paymentMethods = '$payment/methods';
+  static const String subscriptions = '$payment/subscriptions';
+  static const String refunds = '$payment/refunds';
+  
   // Auth endpoints
   static const String login = '$auth/login';
   static const String register = '$auth/register';

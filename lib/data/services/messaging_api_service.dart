@@ -15,6 +15,11 @@ class MessagingApiService {
   io.Socket? _socket;
   String? _authToken;
 
+  /// Set authentication token
+  void setAuthToken(String authToken) {
+    _authToken = authToken;
+  }
+
   /// Initialize WebSocket connection for real-time messaging
   Future<void> initializeSocket(String authToken) async {
     _authToken = authToken;
