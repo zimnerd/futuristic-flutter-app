@@ -13,6 +13,7 @@ import '../screens/main/settings_screen.dart';
 import '../screens/main/filters_screen.dart';
 import '../screens/onboarding/onboarding_screen.dart';
 import '../screens/onboarding/welcome_screen.dart';
+import '../screens/subscription_management_screen.dart';
 
 /// Application routes configuration using GoRouter
 /// Provides type-safe navigation with route guards and transitions
@@ -85,6 +86,11 @@ class AppRouter {
             name: 'filters',
             builder: (context, state) => const FiltersScreen(),
           ),
+          GoRoute(
+            path: AppRoutes.subscription,
+            name: 'subscription',
+            builder: (context, state) => const SubscriptionManagementScreen(),
+          ),
         ],
       ),
     ],
@@ -138,6 +144,7 @@ class AppRoutes {
   static const String profile = '/profile';
   static const String settings = '/settings';
   static const String filters = '/filters';
+  static const String subscription = '/subscription';
 }
 
 /// Main navigation wrapper with bottom navigation bar

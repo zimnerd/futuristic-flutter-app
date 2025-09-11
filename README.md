@@ -48,6 +48,17 @@ A comprehensive, feature-rich mobile dating platform built with modern Flutter a
 - Instant messaging with typing indicators
 - Voice message recording/playback with waveform visualization
 - WebRTC video calling with camera/mic controls
+
+### **💳 Complete Payment & Subscription System**
+- PeachPayments API integration for secure payment processing
+- Comprehensive subscription management with plan upgrades/downgrades
+- Saved payment methods with tokenization and validation
+- Payment history with search, filtering, and export capabilities
+- Advanced security framework with device fingerprinting and fraud detection
+- Performance optimizations with caching and batch request processing
+- Webhook handling for real-time payment status updates
+- Usage tracking with visual progress indicators and limits
+- Modern, clean UI following PulseLink design system
 - Live streaming with viewer interaction
 - WebSocket-based real-time updates
 
@@ -93,6 +104,14 @@ A comprehensive, feature-rich mobile dating platform built with modern Flutter a
 - **Custom PulseColors** (Brand identity)
 - **Responsive Design** (All screen sizes)
 - **Glassmorphism Effects** (Modern UI)
+
+### **Payment & Security**
+- **PeachPayments SDK** (Payment processing)
+- **HTTP** (API communication)
+- **Shared Preferences** (Local storage)
+- **Device Info Plus** (Device fingerprinting)
+- **Crypto** (Security and encryption)
+- **Equatable** (Model comparisons)
 
 ## 🚀 **Getting Started**
 
@@ -150,6 +169,43 @@ lib/
 │   └── ⚙️ config/           # Configuration
 └── 🎯 main.dart             # App entry point
 ```
+
+## 💳 **Payment System Architecture**
+
+### **Complete Payment Infrastructure**
+```
+lib/data/services/
+├── 💳 payment_service.dart              # Main payment orchestration
+├── 🍑 peach_payments_service.dart       # PeachPayments API integration
+├── 🔔 payment_webhook_service.dart      # Webhook handling & validation
+├── 💾 saved_payment_methods_service.dart # Payment method management
+├── 📊 subscription_service.dart         # Subscription lifecycle
+├── 📚 payment_history_service.dart      # Transaction history
+├── 🔒 payment_security_service.dart     # Fraud detection & security
+└── ⚡ payment_performance_service.dart  # Caching & optimization
+
+lib/data/models/
+├── 💳 payment_*.dart                    # Payment models
+├── 📊 subscription_*.dart               # Subscription models
+└── 🔐 payment_security_*.dart           # Security models
+
+lib/presentation/
+├── 🎨 screens/subscription_management_screen.dart
+└── 🧩 widgets/
+    ├── subscription_status_card.dart
+    ├── subscription_plan_card.dart
+    └── usage_indicator.dart
+```
+
+### **Key Payment Features**
+- **🍑 PeachPayments Integration**: Secure payment processing with card tokenization
+- **📊 Subscription Management**: Full lifecycle with upgrades/downgrades/cancellations
+- **🔔 Webhook Processing**: Real-time payment status updates with signature validation
+- **💾 Saved Payment Methods**: Secure tokenization and management
+- **📚 Payment History**: Complete transaction history with search/export
+- **🔒 Security Framework**: Device fingerprinting, fraud detection, risk scoring
+- **⚡ Performance Optimization**: Intelligent caching, batch processing, background tasks
+- **📱 Modern UI**: Beautiful subscription management interface with usage tracking
 
 ## 🎨 **Design System**
 
