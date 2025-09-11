@@ -46,6 +46,25 @@ final class AuthError extends AuthState {
   List<Object?> get props => [message, errorCode];
 }
 
+/// Alias for AuthError to maintain compatibility
+final class AuthFailure extends AuthError {
+  const AuthFailure({required super.message, super.errorCode});
+
+  // Additional getter for error property
+  String get error => message;
+}
+
+/// State when two-factor authentication is required
+final class AuthTwoFactorRequired extends AuthState {
+  const AuthTwoFactorRequired({required this.sessionId, this.message});
+
+  final String sessionId;
+  final String? message;
+
+  @override
+  List<Object?> get props => [sessionId, message];
+}
+
 /// State when user account is created successfully but needs verification
 final class AuthRegistrationSuccess extends AuthState {
   const AuthRegistrationSuccess({required this.user, required this.message});
@@ -55,4 +74,14 @@ final class AuthRegistrationSuccess extends AuthState {
 
   @override
   List<Object?> get props => [user, message];
+}
+
+/// State when password reset email is sent successfully
+final class AuthPasswordResetEmailSent extends AuthState {
+  const AuthPasswordResetEmailSent({required this.message});
+
+  final String message;
+
+  @override
+  List<Object?> get props => [message];
 }

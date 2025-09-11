@@ -88,6 +88,22 @@ class UserRepositorySimple implements UserRepository {
     }
   }
 
+  @override
+  Future<void> requestPasswordReset(String email) async {
+    try {
+      final response = await _apiService.post(
+        '/auth/forgot-password',
+        data: {'email': email},
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception('Failed to send password reset email');
+      }
+    } catch (e) {
+      throw Exception('Password reset request failed: ${e.toString()}');
+    }
+  }
+
   // User Profile
   @override
   Future<UserModel?> getUserById(String userId) async {

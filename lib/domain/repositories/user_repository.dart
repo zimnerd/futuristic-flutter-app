@@ -18,6 +18,7 @@ abstract class UserRepository {
   });
   Future<void> signOut();
   Future<UserModel?> getCurrentUser();
+  Future<void> requestPasswordReset(String email);
 
   // User Profile
   Future<UserModel?> getUserById(String userId);

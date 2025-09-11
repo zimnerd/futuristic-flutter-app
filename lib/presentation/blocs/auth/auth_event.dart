@@ -10,13 +10,20 @@ sealed class AuthEvent extends Equatable {
 
 /// Event triggered when user attempts to sign in with email and password
 final class AuthSignInRequested extends AuthEvent {
-  const AuthSignInRequested({required this.email, required this.password});
+  const AuthSignInRequested({
+    required this.email,
+    required this.password,
+    this.rememberMe = false,
+    this.trustDevice = false,
+  });
 
   final String email;
   final String password;
+  final bool rememberMe;
+  final bool trustDevice;
 
   @override
-  List<Object?> get props => [email, password];
+  List<Object?> get props => [email, password, rememberMe, trustDevice];
 }
 
 /// Event triggered when user attempts to sign up with email and password
@@ -75,4 +82,33 @@ final class AuthTokenRefreshRequested extends AuthEvent {
 /// Event triggered when authentication error needs to be cleared
 final class AuthErrorCleared extends AuthEvent {
   const AuthErrorCleared();
+}
+
+/// Event triggered when 2FA verification is requested
+final class AuthTwoFactorVerifyRequested extends AuthEvent {
+  const AuthTwoFactorVerifyRequested({
+    required this.sessionId,
+    required this.code,
+  });
+
+  final String sessionId;
+  final String code;
+
+  @override
+  List<Object?> get props => [sessionId, code];
+}
+
+/// Event triggered when biometric sign in is requested
+final class AuthBiometricSignInRequested extends AuthEvent {
+  const AuthBiometricSignInRequested();
+}
+
+/// Event triggered when password reset is requested
+final class AuthPasswordResetRequested extends AuthEvent {
+  const AuthPasswordResetRequested({required this.email});
+
+  final String email;
+
+  @override
+  List<Object?> get props => [email];
 }

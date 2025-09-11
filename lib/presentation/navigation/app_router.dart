@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../screens/auth/forgot_password_screen.dart';
-import '../screens/auth/login_screen.dart';
+import '../screens/auth/login_screen.dart' as SimpleLogin;
+import '../screens/auth/enhanced_login_screen.dart';
 import '../screens/auth/register_screen.dart';
 import '../screens/main/home_screen.dart';
 import '../screens/main/matches_screen.dart';
@@ -39,6 +40,11 @@ class AppRouter {
       GoRoute(
         path: AppRoutes.login,
         name: 'login',
+        builder: (context, state) => const SimpleLogin.LoginScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.enhancedLogin,
+        name: 'enhanced-login',
         builder: (context, state) => const LoginScreen(),
       ),
       GoRoute(
@@ -136,6 +142,7 @@ class AppRoutes {
   static const String welcome = '/';
   static const String onboarding = '/onboarding';
   static const String login = '/login';
+  static const String enhancedLogin = '/auth/login';
   static const String register = '/register';
   static const String forgotPassword = '/forgot-password';
   static const String home = '/home';

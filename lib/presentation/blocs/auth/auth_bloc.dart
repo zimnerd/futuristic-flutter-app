@@ -26,6 +26,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<AuthSignOutRequested>(_onSignOutRequested);
     on<AuthTokenRefreshRequested>(_onTokenRefreshRequested);
     on<AuthErrorCleared>(_onErrorCleared);
+    on<AuthPasswordResetRequested>(_onPasswordResetRequested);
 
     // Check authentication status when BLoC is created
     add(const AuthStatusChecked());
@@ -213,6 +214,38 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   void _onErrorCleared(AuthErrorCleared event, Emitter<AuthState> emit) {
     _logger.i('🧹 Clearing authentication error');
     emit(const AuthUnauthenticated());
+  }
+
+  /// Handles password reset request
+  Future<void> _onPasswordResetRequested(
+    AuthPasswordResetRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    try {
+      _logger.i('🔐 Requesting password reset for: ${event.email}');
+      emit(const AuthLoading());
+
+      await _userRepository.requestPasswordReset(event.email);
+
+      _logger.i('✅ Password reset email sent successfully');
+      emit(
+        const AuthPasswordResetEmailSent(
+          message:
+              'Password reset link sent to your email address. Please check your inbox.',
+        ),
+      );
+    } on AppException catch (e) {
+      _logger.e('❌ Password reset failed: ${e.message}');
+      emit(AuthFailure(message: e.message, errorCode: e.code));
+    } catch (e) {
+      _logger.e('❌ Unexpected error during password reset: $e');
+      emit(
+        const AuthFailure(
+          message: 'Failed to send password reset email. Please try again.',
+          errorCode: 'password_reset_error',
+        ),
+      );
+    }
   }
 
   /// Gets the current authenticated user, if any

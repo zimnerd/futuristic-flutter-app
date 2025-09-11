@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../blocs/auth/auth_bloc.dart';
+import '../../blocs/auth/auth_event.dart';
+import '../../blocs/auth/auth_state.dart';
 import '../../navigation/app_router.dart';
 import '../../theme/pulse_colors.dart';
 import '../../widgets/common/common_widgets.dart';
@@ -27,35 +31,52 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
   void _handleResetPassword() async {
     if (_formKey.currentState?.validate() == true) {
-      setState(() {
-        _isLoading = true;
-      });
-
-      // Simulate API call
-      await Future.delayed(const Duration(seconds: 2));
-
-      setState(() {
-        _isLoading = false;
-        _emailSent = true;
-      });
+      final email = _emailController.text.trim();
+      context.read<AuthBloc>().add(AuthPasswordResetRequested(email: email));
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [PulseColors.surface, const Color(0xFFF8F9FA)],
+      body: BlocListener<AuthBloc, AuthState>(
+        listener: (context, state) {
+          setState(() {
+            _isLoading = state is AuthLoading;
+          });
+
+          if (state is AuthPasswordResetEmailSent) {
+            setState(() {
+              _emailSent = true;
+            });
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(state.message),
+                backgroundColor: PulseColors.success,
+              ),
+            );
+          } else if (state is AuthFailure) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(state.error),
+                backgroundColor: PulseColors.error,
+              ),
+            );
+          }
+        },
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [PulseColors.surface, const Color(0xFFF8F9FA)],
+            ),
           ),
-        ),
-        child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(PulseSpacing.xl),
-            child: _emailSent ? _buildSuccessView() : _buildFormView(),
+          child: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.all(PulseSpacing.xl),
+              child: _emailSent ? _buildSuccessView() : _buildFormView(),
+            ),
           ),
         ),
       ),

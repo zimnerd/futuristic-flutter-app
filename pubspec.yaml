@@ -50,6 +50,9 @@ dependencies:
   sqlite3: ^2.9.0
   dartz: ^0.10.1
   image_picker: ^1.2.0
+  image_cropper: ^8.0.2
+  flutter_image_compress: ^2.3.0
+  geocoding: ^3.0.0
 
   # Voice Messages
   audio_waveforms: ^1.0.5
@@ -64,6 +67,9 @@ dependencies:
   contacts_service: ^0.6.3
   device_info_plus: ^11.2.1
   url_launcher: ^6.3.2
+
+  # Authentication
+  local_auth: ^2.1.8
 
   # Live Streaming
   camera: ^0.11.0+2
