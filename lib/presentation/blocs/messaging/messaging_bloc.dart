@@ -21,6 +21,7 @@ class MessagingBloc extends Bloc<MessagingEvent, MessagingState> {
     on<MarkConversationAsRead>(_onMarkConversationAsRead);
     on<DeleteConversation>(_onDeleteConversation);
     on<BlockUser>(_onBlockUser);
+    on<StartConversation>(_onStartConversation);
   }
 
   Future<void> _onLoadConversations(
@@ -196,6 +197,31 @@ class MessagingBloc extends Bloc<MessagingEvent, MessagingState> {
     } catch (e) {
       emit(state.copyWith(
         error: 'Failed to block user: ${e.toString()}',
+      ));
+    }
+  }
+
+  Future<void> _onStartConversation(
+    StartConversation event,
+    Emitter<MessagingState> emit,
+  ) async {
+    try {
+      // Create conversation and send initial message
+      final conversation = await _messagingService.startConversationFromMatch(
+        matchId: event.matchId,
+        initialMessage: event.initialMessage,
+      );
+
+      // Add the new conversation to the beginning of the list
+      final updatedConversations = [conversation, ...state.conversations];
+
+      emit(state.copyWith(
+        conversations: updatedConversations,
+        conversationsStatus: MessagingStatus.loaded,
+      ));
+    } catch (e) {
+      emit(state.copyWith(
+        error: 'Failed to start conversation: ${e.toString()}',
       ));
     }
   }

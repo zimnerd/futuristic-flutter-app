@@ -164,3 +164,17 @@ class UpdateOnlineStatus extends MessagingEvent {
   @override
   List<Object?> get props => [userId, isOnline];
 }
+
+/// Event to start a conversation with a match
+class StartConversation extends MessagingEvent {
+  const StartConversation({
+    required this.matchId,
+    required this.initialMessage,
+  });
+
+  final String matchId;
+  final String initialMessage;
+
+  @override
+  List<Object?> get props => [matchId, initialMessage];
+}

@@ -105,3 +105,98 @@ final class MatchUserUnmatched extends MatchEvent {
 final class MatchErrorCleared extends MatchEvent {
   const MatchErrorCleared();
 }
+
+/// Event to load user's matches with optional filtering
+final class LoadMatches extends MatchEvent {
+  const LoadMatches({this.status, this.limit = 20, this.offset = 0});
+
+  final String? status;
+  final int? limit;
+  final int offset;
+
+  @override
+  List<Object?> get props => [status, limit, offset];
+}
+
+/// Event to load match suggestions
+final class LoadMatchSuggestions extends MatchEvent {
+  const LoadMatchSuggestions({
+    this.limit = 10,
+    this.useAI = false,
+    this.filters,
+  });
+
+  final int limit;
+  final bool useAI;
+  final Map<String, dynamic>? filters;
+
+  @override
+  List<Object?> get props => [limit, useAI, filters];
+}
+
+/// Event to create a new match (like someone)
+final class CreateMatch extends MatchEvent {
+  const CreateMatch({required this.targetUserId, this.isSuper = false});
+
+  final String targetUserId;
+  final bool isSuper;
+
+  @override
+  List<Object?> get props => [targetUserId, isSuper];
+}
+
+/// Event to accept a pending match
+final class AcceptMatch extends MatchEvent {
+  const AcceptMatch({required this.matchId});
+
+  final String matchId;
+
+  @override
+  List<Object?> get props => [matchId];
+}
+
+/// Event to reject a pending match
+final class RejectMatch extends MatchEvent {
+  const RejectMatch({required this.matchId});
+
+  final String matchId;
+
+  @override
+  List<Object?> get props => [matchId];
+}
+
+/// Event to unmatch a user
+final class UnmatchUser extends MatchEvent {
+  const UnmatchUser({required this.matchId});
+
+  final String matchId;
+
+  @override
+  List<Object?> get props => [matchId];
+}
+
+/// Event to load detailed match information
+final class LoadMatchDetails extends MatchEvent {
+  const LoadMatchDetails({required this.matchId});
+
+  final String matchId;
+
+  @override
+  List<Object?> get props => [matchId];
+}
+
+/// Event to update match status
+final class UpdateMatchStatus extends MatchEvent {
+  const UpdateMatchStatus({required this.matchId, required this.status});
+
+  final String matchId;
+  final String status;
+
+  @override
+  List<Object?> get props => [matchId, status];
+}
+
+/// Event to reset match state
+final class ResetMatchState extends MatchEvent {
+  const ResetMatchState();
+}

@@ -243,4 +243,24 @@ class MessagingService {
         return Exception('An unexpected error occurred: ${e.message}');
     }
   }
+
+  /// Start a conversation from a match and send initial message
+  Future<Conversation> startConversationFromMatch({
+    required String matchId,
+    required String initialMessage,
+  }) async {
+    try {
+      final response = await _apiClient.post(
+        '${ApiConstants.conversations}/start-from-match',
+        data: {'matchId': matchId, 'message': initialMessage},
+      );
+
+      final data = response.data as Map<String, dynamic>;
+      return _conversationFromJson(
+        data['conversation'] as Map<String, dynamic>,
+      );
+    } on DioException catch (e) {
+      throw _handleDioError(e);
+    }
+  }
 }

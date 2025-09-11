@@ -90,13 +90,18 @@ final class MatchUserSuperLikeRecorded extends MatchState {
 
 /// State when a mutual match occurs (both users liked each other)
 final class MatchCreated extends MatchState {
-  const MatchCreated({required this.match, required this.message});
+  const MatchCreated({
+    required this.match,
+    required this.message,
+    this.isNewMatch = false,
+  });
 
   final MatchModel match;
   final String message;
+  final bool isNewMatch;
 
   @override
-  List<Object?> get props => [match, message];
+  List<Object?> get props => [match, message, isNewMatch];
 }
 
 /// State when user's matches are loaded
@@ -133,4 +138,98 @@ final class MatchError extends MatchState {
 
   @override
   List<Object?> get props => [message, errorCode];
+}
+
+/// State when matches are loaded (general)
+final class MatchesLoaded extends MatchState {
+  const MatchesLoaded({required this.matches, required this.hasMore});
+
+  final List<MatchModel> matches;
+  final bool hasMore;
+
+  @override
+  List<Object?> get props => [matches, hasMore];
+}
+
+/// State when match suggestions are loaded
+final class MatchSuggestionsLoaded extends MatchState {
+  const MatchSuggestionsLoaded({
+    required this.suggestions,
+    required this.hasMore,
+  });
+
+  final List<UserModel> suggestions;
+  final bool hasMore;
+
+  @override
+  List<Object?> get props => [suggestions, hasMore];
+}
+
+/// State when match action is in progress
+final class MatchActionInProgress extends MatchState {
+  const MatchActionInProgress();
+}
+
+/// State when match action succeeds
+final class MatchActionSuccess extends MatchState {
+  const MatchActionSuccess({required this.message});
+
+  final String message;
+
+  @override
+  List<Object?> get props => [message];
+}
+
+/// State when a match is accepted
+final class MatchAccepted extends MatchState {
+  const MatchAccepted({required this.match, required this.message});
+
+  final MatchModel match;
+  final String message;
+
+  @override
+  List<Object?> get props => [match, message];
+}
+
+/// State when a match is rejected
+final class MatchRejected extends MatchState {
+  const MatchRejected({required this.matchId, required this.message});
+
+  final String matchId;
+  final String message;
+
+  @override
+  List<Object?> get props => [matchId, message];
+}
+
+/// State when a user is unmatched
+final class MatchUnmatched extends MatchState {
+  const MatchUnmatched({required this.matchId, required this.message});
+
+  final String matchId;
+  final String message;
+
+  @override
+  List<Object?> get props => [matchId, message];
+}
+
+/// State when match details are loaded
+final class MatchDetailsLoaded extends MatchState {
+  const MatchDetailsLoaded({required this.match});
+
+  final MatchModel match;
+
+  @override
+  List<Object?> get props => [match];
+}
+
+/// State when match status is updated
+final class MatchStatusUpdated extends MatchState {
+  const MatchStatusUpdated({required this.match, required this.message});
+
+  final MatchModel match;
+  final String message;
+
+  @override
+  List<Object?> get props => [match, message];
 }

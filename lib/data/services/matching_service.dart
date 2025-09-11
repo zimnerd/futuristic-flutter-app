@@ -2,6 +2,8 @@ import 'package:dio/dio.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/constants/api_constants.dart';
 import '../../../domain/entities/user_profile.dart';
+import '../models/match_model.dart';
+import '../models/user_model.dart';
 
 /// Service for matching operations that matches BLoC expectations
 class MatchingService {
@@ -58,8 +60,8 @@ class MatchingService {
     }
   }
 
-  /// Get user's matches
-  Future<List<UserProfile>> getMatches({
+  /// Get user's matches (legacy - returns UserProfile)
+  Future<List<UserProfile>> getUserMatches({
     int limit = 20,
     int offset = 0,
   }) async {
@@ -218,6 +220,151 @@ class MatchingService {
         }
       default:
         return Exception('An unexpected error occurred: ${e.message}');
+    }
+  }
+
+  // Extended methods for new MatchBloc functionality
+
+  /// Get matches with status filtering for MatchBloc
+  Future<List<MatchModel>> getMatches({
+    String? status,
+    int? limit,
+    int offset = 0,
+  }) async {
+    try {
+      final queryParams = <String, dynamic>{
+        'offset': offset,
+        if (limit != null) 'limit': limit,
+        if (status != null) 'status': status,
+      };
+
+      final response = await _apiClient.get(
+        ApiConstants.matches,
+        queryParameters: queryParams,
+      );
+
+      final data = response.data as Map<String, dynamic>;
+      final matches = data['matches'] as List<dynamic>;
+
+      return matches
+          .map((match) => MatchModel.fromJson(match as Map<String, dynamic>))
+          .toList();
+    } on DioException catch (e) {
+      throw _handleDioError(e);
+    }
+  }
+
+  /// Get match suggestions for discovery
+  Future<List<UserModel>> getMatchSuggestions({
+    int limit = 10,
+    bool useAI = false,
+    Map<String, dynamic>? filters,
+  }) async {
+    try {
+      final queryParams = <String, dynamic>{
+        'limit': limit,
+        'useAI': useAI,
+        if (filters != null) ...filters,
+      };
+
+      final response = await _apiClient.get(
+        ApiConstants.discover,
+        queryParameters: queryParams,
+      );
+
+      final data = response.data as Map<String, dynamic>;
+      final suggestions =
+          data['suggestions'] ?? data['profiles'] as List<dynamic>;
+
+      return suggestions
+          .map((user) => UserModel.fromJson(user as Map<String, dynamic>))
+          .toList();
+    } on DioException catch (e) {
+      throw _handleDioError(e);
+    }
+  }
+
+  /// Create a match (like someone)
+  Future<MatchModel> createMatch({
+    required String targetUserId,
+    bool isSuper = false,
+  }) async {
+    try {
+      final response = await _apiClient.post(
+        ApiConstants.swipe,
+        data: {
+          'targetUserId': targetUserId,
+          'action': 'like',
+          'isSuper': isSuper,
+        },
+      );
+
+      final data = response.data as Map<String, dynamic>;
+      return MatchModel.fromJson(data['match'] as Map<String, dynamic>);
+    } on DioException catch (e) {
+      throw _handleDioError(e);
+    }
+  }
+
+  /// Accept a pending match
+  Future<MatchModel> acceptMatch(String matchId) async {
+    try {
+      final response = await _apiClient.patch(
+        '${ApiConstants.matches}/$matchId/accept',
+      );
+
+      final data = response.data as Map<String, dynamic>;
+      return MatchModel.fromJson(data['match'] as Map<String, dynamic>);
+    } on DioException catch (e) {
+      throw _handleDioError(e);
+    }
+  }
+
+  /// Reject a pending match
+  Future<void> rejectMatch(String matchId) async {
+    try {
+      await _apiClient.patch('${ApiConstants.matches}/$matchId/reject');
+    } on DioException catch (e) {
+      throw _handleDioError(e);
+    }
+  }
+
+  /// Unmatch with a user
+  Future<void> unmatchUser(String matchId) async {
+    try {
+      await _apiClient.delete('${ApiConstants.matches}/$matchId');
+    } on DioException catch (e) {
+      throw _handleDioError(e);
+    }
+  }
+
+  /// Get detailed match information
+  Future<MatchModel> getMatchDetails(String matchId) async {
+    try {
+      final response = await _apiClient.get('${ApiConstants.matches}/$matchId');
+
+      final data = response.data as Map<String, dynamic>;
+      return MatchModel.fromJson(data['match'] as Map<String, dynamic>);
+    } on DioException catch (e) {
+      throw _handleDioError(e);
+    }
+  }
+
+  /// Update match status
+  Future<MatchModel> updateMatchStatus({
+    required String matchId,
+    required String status,
+  }) async {
+    try {
+      final response = await _apiClient.patch(
+        '${ApiConstants.matches}/$matchId/status',
+        data: {'status': status},
+      );
+
+      final data = response.data as Map<String, dynamic>;
+      return MatchModel.fromJson(data['match'] as Map<String, dynamic>);
+    } on DioException catch (e) {
+      throw _handleDioError(e);
     }
   }
 }
