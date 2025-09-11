@@ -126,7 +126,7 @@ class _IncomingCallWidgetState extends State<IncomingCallWidget>
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
+              color: Colors.white.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(16),
             ),
             child: Row(
@@ -177,12 +177,12 @@ class _IncomingCallWidgetState extends State<IncomingCallWidget>
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: Colors.white.withOpacity(0.3),
+                      color: Colors.white.withValues(alpha: 0.3),
                       width: 3,
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.white.withOpacity(0.3),
+                        color: Colors.white.withValues(alpha: 0.3),
                         blurRadius: 20,
                         spreadRadius: 5,
                       ),
@@ -216,7 +216,7 @@ class _IncomingCallWidgetState extends State<IncomingCallWidget>
             Text(
               callerProfile!.bio,
               style: TextStyle(
-                color: Colors.white.withOpacity(0.8),
+                color: Colors.white.withValues(alpha: 0.8),
                 fontSize: 16,
                 fontWeight: FontWeight.w400,
               ),
@@ -228,7 +228,7 @@ class _IncomingCallWidgetState extends State<IncomingCallWidget>
             Text(
               'PulseLink User',
               style: TextStyle(
-                color: Colors.white.withOpacity(0.8),
+                color: Colors.white.withValues(alpha: 0.8),
                 fontSize: 16,
                 fontWeight: FontWeight.w400,
               ),
@@ -260,7 +260,7 @@ class _IncomingCallWidgetState extends State<IncomingCallWidget>
   Widget _buildDefaultAvatar() {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.2),
+        color: Colors.white.withValues(alpha: 0.2),
       ),
       child: const Icon(
         Icons.person,
@@ -288,7 +288,7 @@ class _IncomingCallWidgetState extends State<IncomingCallWidget>
           if (widget.call.type == CallType.video) ...[
             _buildActionButton(
               icon: Icons.message,
-              color: Colors.white.withOpacity(0.3),
+              color: Colors.white.withValues(alpha: 0.3),
               onTap: () => _sendQuickMessage(),
               label: 'Message',
               iconColor: Colors.white,
@@ -326,7 +326,7 @@ class _IncomingCallWidgetState extends State<IncomingCallWidget>
             color: color,
             boxShadow: [
               BoxShadow(
-                color: color.withOpacity(0.3),
+                color: color.withValues(alpha: 0.3),
                 blurRadius: 15,
                 spreadRadius: 2,
               ),

@@ -36,7 +36,7 @@ class SubscriptionPlanCard extends StatelessWidget {
         ),
         boxShadow: isPopular ? [
           BoxShadow(
-            color: AppColors.warning.withOpacity(0.2),
+            color: AppColors.warning.withValues(alpha: 0.2),
             blurRadius: 8,
             offset: const Offset(0, 4),
           ),
@@ -107,7 +107,7 @@ class SubscriptionPlanCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withOpacity(0.1),
+                  color: AppColors.primary.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(

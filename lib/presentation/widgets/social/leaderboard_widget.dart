@@ -577,9 +577,9 @@ class _LeaderboardWidgetState extends State<LeaderboardWidget>
         return 'Match Masters';
       case LeaderboardType.conversations:
         return 'Chat Champions';
-      case LeaderboardType.profile_views:
+      case LeaderboardType.profileViews:
         return 'Most Viewed';
-      case LeaderboardType.likes_given:
+      case LeaderboardType.likesGiven:
         return 'Love Givers';
       case LeaderboardType.streak:
         return 'Streak Kings';
@@ -592,9 +592,9 @@ class _LeaderboardWidgetState extends State<LeaderboardWidget>
         return 'Most matches this week';
       case LeaderboardType.conversations:
         return 'Most active conversations';
-      case LeaderboardType.profile_views:
+      case LeaderboardType.profileViews:
         return 'Highest profile engagement';
-      case LeaderboardType.likes_given:
+      case LeaderboardType.likesGiven:
         return 'Spreading the most love';
       case LeaderboardType.streak:
         return 'Longest daily streaks';
@@ -618,8 +618,8 @@ class _LeaderboardWidgetState extends State<LeaderboardWidget>
 enum LeaderboardType {
   matches,
   conversations,
-  profile_views,
-  likes_given,
+  profileViews,
+  likesGiven,
   streak,
 }
 

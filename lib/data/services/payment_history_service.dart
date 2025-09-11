@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import '../models/payment_transaction.dart';
 import '../models/api_response.dart';
+import '../../core/utils/logger.dart';
 
 /// Service for managing payment history
 class PaymentHistoryService {
@@ -290,7 +291,7 @@ class PaymentHistoryService {
       final jsonList = allTransactions.map((t) => t.toJson()).toList();
       await prefs.setString('cached_payment_transactions', jsonEncode(jsonList));
     } catch (e) {
-      print('Error caching transactions: $e');
+      AppLogger.error('Error caching transactions: $e');
     }
   }
 
@@ -309,7 +310,7 @@ class PaymentHistoryService {
       
       return [];
     } catch (e) {
-      print('Error getting cached transactions: $e');
+      AppLogger.error('Error getting cached transactions: $e');
       return [];
     }
   }

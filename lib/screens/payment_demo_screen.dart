@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../core/theme/app_colors.dart';
 import '../core/theme/app_text_styles.dart';
+import '../core/utils/logger.dart';
 import '../widgets/app_button.dart';
 import '../widgets/peach_payment_widget.dart';
 import '../data/services/payment_service.dart';
@@ -43,7 +44,7 @@ class _PaymentDemoScreenState extends State<PaymentDemoScreen> {
             onPaymentResult: _handlePaymentResult,
             onCancel: () {
               Navigator.of(context).pop();
-              print('Payment cancelled by user');
+              AppLogger.info('Payment cancelled by user');
             },
           );
         }
@@ -208,13 +209,13 @@ class _PaymentDemoScreenState extends State<PaymentDemoScreen> {
                     end: Alignment.bottomRight,
                     colors: [
                       AppColors.primary,
-                      AppColors.primary.withOpacity(0.8),
+                      AppColors.primary.withValues(alpha: 0.8),
                     ],
                   ),
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
-                      color: AppColors.primary.withOpacity(0.3),
+                      color: AppColors.primary.withValues(alpha: 0.3),
                       blurRadius: 12,
                       offset: const Offset(0, 4),
                     ),
@@ -244,7 +245,7 @@ class _PaymentDemoScreenState extends State<PaymentDemoScreen> {
                     Text(
                       'Unlock all premium features including:',
                       style: AppTextStyles.bodyMedium.copyWith(
-                        color: AppColors.textOnPrimary.withOpacity(0.9),
+                        color: AppColors.textOnPrimary.withValues(alpha: 0.9),
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -270,7 +271,7 @@ class _PaymentDemoScreenState extends State<PaymentDemoScreen> {
                         Text(
                           'per year',
                           style: AppTextStyles.bodyMedium.copyWith(
-                            color: AppColors.textOnPrimary.withOpacity(0.8),
+                            color: AppColors.textOnPrimary.withValues(alpha: 0.8),
                           ),
                         ),
                       ],
@@ -295,7 +296,7 @@ class _PaymentDemoScreenState extends State<PaymentDemoScreen> {
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: AppColors.error.withOpacity(0.1),
+                    color: AppColors.error.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(color: AppColors.error),
                   ),
@@ -331,7 +332,7 @@ class _PaymentDemoScreenState extends State<PaymentDemoScreen> {
                   decoration: BoxDecoration(
                     color: AppColors.surface,
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: AppColors.textSecondary.withOpacity(0.3)),
+                    border: Border.all(color: AppColors.textSecondary.withValues(alpha: 0.3)),
                   ),
                   child: Text(
                     _lastResult.toString(),
@@ -349,7 +350,7 @@ class _PaymentDemoScreenState extends State<PaymentDemoScreen> {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: AppColors.surface.withOpacity(0.5),
+                  color: AppColors.surface.withValues(alpha: 0.5),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Row(
@@ -387,7 +388,7 @@ class _PaymentDemoScreenState extends State<PaymentDemoScreen> {
           Text(
             text,
             style: AppTextStyles.bodyMedium.copyWith(
-              color: AppColors.textOnPrimary.withOpacity(0.9),
+              color: AppColors.textOnPrimary.withValues(alpha: 0.9),
             ),
           ),
         ],

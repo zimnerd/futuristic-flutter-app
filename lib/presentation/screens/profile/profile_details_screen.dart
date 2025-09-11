@@ -194,7 +194,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
                     decoration: BoxDecoration(
                       color: isActive 
                         ? Colors.white 
-                        : Colors.white.withOpacity(0.3),
+                        : Colors.white.withValues(alpha: 0.3),
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
@@ -210,7 +210,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
-              color: Colors.black.withOpacity(0.6),
+              color: Colors.black.withValues(alpha: 0.6),
               borderRadius: BorderRadius.circular(16),
             ),
             child: Text(
@@ -333,7 +333,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
                             shape: BoxShape.circle,
                             boxShadow: [
                               BoxShadow(
-                                color: PulseColors.primary.withOpacity(0.3),
+                                color: PulseColors.primary.withValues(alpha: 0.3),
                                 blurRadius: 8,
                                 offset: const Offset(0, 4),
                               ),
@@ -540,13 +540,13 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
-                      PulseColors.primary.withOpacity(0.1),
-                      PulseColors.secondary.withOpacity(0.1),
+                      PulseColors.primary.withValues(alpha: 0.1),
+                      PulseColors.secondary.withValues(alpha: 0.1),
                     ],
                   ),
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
-                    color: PulseColors.primary.withOpacity(0.3),
+                    color: PulseColors.primary.withValues(alpha: 0.3),
                     width: 1,
                   ),
                 ),

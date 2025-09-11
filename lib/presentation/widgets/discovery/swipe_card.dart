@@ -119,7 +119,7 @@ class _SwipeCardState extends State<SwipeCard>
               decoration: BoxDecoration(
                 color: index == _currentPhotoIndex 
                     ? Colors.white 
-                    : Colors.white.withOpacity(0.3),
+                    : Colors.white.withValues(alpha: 0.3),
                 borderRadius: BorderRadius.circular(1.5),
               ),
             ),
@@ -139,7 +139,7 @@ class _SwipeCardState extends State<SwipeCard>
     return Positioned.fill(
       child: Container(
         decoration: BoxDecoration(
-          color: _getSwipeColor().withOpacity(opacity * 0.3),
+          color: _getSwipeColor().withValues(alpha: opacity * 0.3),
           borderRadius: BorderRadius.circular(16),
         ),
         child: Center(
@@ -150,7 +150,7 @@ class _SwipeCardState extends State<SwipeCard>
               borderRadius: BorderRadius.circular(8),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.2),
+                  color: Colors.black.withValues(alpha: 0.2),
                   blurRadius: 8,
                   offset: const Offset(0, 2),
                 ),
@@ -235,7 +235,7 @@ class _SwipeCardState extends State<SwipeCard>
             end: Alignment.bottomCenter,
             colors: [
               Colors.transparent,
-              Colors.black.withOpacity(0.8),
+              Colors.black.withValues(alpha: 0.8),
             ],
           ),
           borderRadius: const BorderRadius.only(
@@ -322,10 +322,10 @@ class _SwipeCardState extends State<SwipeCard>
                       vertical: 6,
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
+                      color: Colors.white.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(
-                        color: Colors.white.withOpacity(0.3),
+                        color: Colors.white.withValues(alpha: 0.3),
                         width: 1,
                       ),
                     ),
@@ -368,7 +368,7 @@ class _SwipeCardState extends State<SwipeCard>
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
+                    color: Colors.black.withValues(alpha: 0.1),
                     blurRadius: 10,
                     offset: const Offset(0, 4),
                   ),

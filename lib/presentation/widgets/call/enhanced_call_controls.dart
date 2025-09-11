@@ -29,7 +29,7 @@ class EnhancedCallControls extends StatelessWidget {
               end: Alignment.bottomCenter,
               colors: [
                 Colors.transparent,
-                Colors.black.withOpacity(0.7),
+                Colors.black.withValues(alpha: 0.7),
               ],
             ),
           ),
@@ -209,12 +209,12 @@ class EnhancedCallControls extends StatelessWidget {
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           color: isEnabled 
-              ? PulseColors.primary.withOpacity(0.2)
-              : Colors.white.withOpacity(0.2),
+              ? PulseColors.primary.withValues(alpha: 0.2)
+              : Colors.white.withValues(alpha: 0.2),
           border: Border.all(
             color: isEnabled 
                 ? PulseColors.primary
-                : Colors.white.withOpacity(0.5),
+                : Colors.white.withValues(alpha: 0.5),
             width: 1.5,
           ),
         ),

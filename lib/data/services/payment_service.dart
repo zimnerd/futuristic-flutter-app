@@ -413,7 +413,7 @@ class PaymentService {
       
       return result;
     } catch (e) {
-      print('Error submitting PeachPayments payment: $e');
+      AppLogger.error('Error submitting PeachPayments payment: $e');
       throw Exception('Failed to process payment: $e');
     }
   }
@@ -469,11 +469,13 @@ class PaymentService {
         );
 
         if (response.statusCode != 200) {
-          print('Failed to sync payment with backend: ${response.body}');
+          AppLogger.warning(
+            'Failed to sync payment with backend: ${response.body}',
+          );
         }
       }
     } catch (e) {
-      print('Error syncing payment with backend: $e');
+      AppLogger.error('Error syncing payment with backend: $e');
       // Don't throw error as payment was successful, just log the sync failure
     }
   }

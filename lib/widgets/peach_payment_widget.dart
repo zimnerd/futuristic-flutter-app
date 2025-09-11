@@ -167,7 +167,7 @@ class _PeachPaymentWidgetState extends State<PeachPaymentWidget> {
             decoration: BoxDecoration(
               color: AppColors.surface,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppColors.textSecondary.withOpacity(0.3)),
+              border: Border.all(color: AppColors.textSecondary.withValues(alpha: 0.3)),
             ),
             child: Column(
               children: [
@@ -220,7 +220,7 @@ class _PeachPaymentWidgetState extends State<PeachPaymentWidget> {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: AppColors.error.withOpacity(0.1),
+                color: AppColors.error.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(color: AppColors.error),
               ),
@@ -255,7 +255,7 @@ class _PeachPaymentWidgetState extends State<PeachPaymentWidget> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: AppColors.surface.withOpacity(0.5),
+              color: AppColors.surface.withValues(alpha: 0.5),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Row(
@@ -306,10 +306,10 @@ class _PeachPaymentWidgetState extends State<PeachPaymentWidget> {
             child: Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: isSelected ? AppColors.primary.withOpacity(0.1) : AppColors.surface,
+                color: isSelected ? AppColors.primary.withValues(alpha: 0.1) : AppColors.surface,
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                  color: isSelected ? AppColors.primary : AppColors.textSecondary.withOpacity(0.3),
+                  color: isSelected ? AppColors.primary : AppColors.textSecondary.withValues(alpha: 0.3),
                   width: isSelected ? 2 : 1,
                 ),
               ),
@@ -446,7 +446,7 @@ class _PeachPaymentWidgetState extends State<PeachPaymentWidget> {
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.textSecondary.withOpacity(0.3)),
+        border: Border.all(color: AppColors.textSecondary.withValues(alpha: 0.3)),
       ),
       child: Column(
         children: [

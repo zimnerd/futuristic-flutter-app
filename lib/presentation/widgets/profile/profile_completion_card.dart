@@ -23,15 +23,15 @@ class ProfileCompletionCard extends StatelessWidget {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            PulseColors.primary.withOpacity(0.1),
-            PulseColors.secondary.withOpacity(0.05),
+            PulseColors.primary.withValues(alpha: 0.1),
+            PulseColors.secondary.withValues(alpha: 0.05),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: PulseColors.primary.withOpacity(0.2),
+          color: PulseColors.primary.withValues(alpha: 0.2),
           width: 1,
         ),
       ),
@@ -43,7 +43,7 @@ class ProfileCompletionCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: PulseColors.primary.withOpacity(0.1),
+                  color: PulseColors.primary.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Icon(
@@ -190,10 +190,10 @@ class ProfileCompletionCard extends StatelessWidget {
               width: double.infinity,
               padding: const EdgeInsets.symmetric(vertical: 12),
               decoration: BoxDecoration(
-                color: PulseColors.success.withOpacity(0.1),
+                color: PulseColors.success.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(
-                  color: PulseColors.success.withOpacity(0.3),
+                  color: PulseColors.success.withValues(alpha: 0.3),
                 ),
               ),
               child: Row(

@@ -181,7 +181,7 @@ class _EnhancedVideoCallScreenState extends State<EnhancedVideoCallScreen> {
           color: Colors.grey[900],
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: Colors.white.withOpacity(0.3),
+            color: Colors.white.withValues(alpha: 0.3),
             width: 2,
           ),
         ),
@@ -207,7 +207,7 @@ class _EnhancedVideoCallScreenState extends State<EnhancedVideoCallScreen> {
                 right: 8,
                 child: Container(
                   decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.5),
+                    color: Colors.black.withValues(alpha: 0.5),
                     shape: BoxShape.circle,
                   ),
                   child: IconButton(
@@ -257,7 +257,7 @@ class _EnhancedVideoCallScreenState extends State<EnhancedVideoCallScreen> {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: Colors.white.withOpacity(0.3),
+                  color: Colors.white.withValues(alpha: 0.3),
                   width: 3,
                 ),
               ),
@@ -353,7 +353,7 @@ class _EnhancedVideoCallScreenState extends State<EnhancedVideoCallScreen> {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: Colors.white.withOpacity(0.3),
+                  color: Colors.white.withValues(alpha: 0.3),
                   width: 4,
                 ),
               ),
@@ -431,7 +431,7 @@ class _EnhancedVideoCallScreenState extends State<EnhancedVideoCallScreen> {
             end: Alignment.bottomCenter,
             colors: [
               Colors.transparent,
-              Colors.black.withOpacity(0.8),
+              Colors.black.withValues(alpha: 0.8),
             ],
           ),
         ),
@@ -458,7 +458,7 @@ class _EnhancedVideoCallScreenState extends State<EnhancedVideoCallScreen> {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Colors.black.withOpacity(0.8),
+              Colors.black.withValues(alpha: 0.8),
               Colors.transparent,
             ],
           ),

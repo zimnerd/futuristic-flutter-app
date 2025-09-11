@@ -41,7 +41,7 @@ class _ProfilePrivacySettingsState extends State<ProfilePrivacySettings> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -57,7 +57,7 @@ class _ProfilePrivacySettingsState extends State<ProfilePrivacySettings> {
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: PulseColors.primary.withOpacity(0.1),
+                    color: PulseColors.primary.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Icon(
@@ -176,8 +176,8 @@ class _ProfilePrivacySettingsState extends State<ProfilePrivacySettings> {
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
               color: isWarning 
-                ? Colors.orange.withOpacity(0.1)
-                : Colors.grey.withOpacity(0.1),
+                ? Colors.orange.withValues(alpha: 0.1)
+                : Colors.grey.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(

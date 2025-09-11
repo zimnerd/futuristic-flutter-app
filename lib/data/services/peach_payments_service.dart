@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import '../../core/utils/logger.dart';
 
 /// PeachPayments API integration service
 /// Documentation: https://developer.peachpayments.com/
@@ -27,7 +28,7 @@ class PeachPaymentsService {
     _entityId = entityId;
     _accessToken = accessToken;
     
-    print('PeachPayments initialized with entity: $entityId');
+    AppLogger.info('PeachPayments initialized with entity: $entityId');
   }
 
   /// Create a checkout session for payment processing
@@ -69,7 +70,7 @@ class PeachPaymentsService {
         });
       }
 
-      print('Creating PeachPayments checkout: $checkoutData');
+      AppLogger.info('Creating PeachPayments checkout: $checkoutData');
 
       final response = await http.post(
         url,
@@ -83,7 +84,7 @@ class PeachPaymentsService {
       final responseData = json.decode(response.body);
       
       if (response.statusCode == 200 && responseData['result']['code'] == '000.200.100') {
-        print('Checkout created successfully: ${responseData['id']}');
+        AppLogger.info('Checkout created successfully: ${responseData['id']}');
         return {
           'success': true,
           'checkoutId': responseData['id'],
@@ -92,7 +93,9 @@ class PeachPaymentsService {
           'timestamp': responseData['timestamp'],
         };
       } else {
-        print('Failed to create checkout: ${responseData['result']['description']}');
+        AppLogger.warning(
+          'Failed to create checkout: ${responseData['result']['description']}',
+        );
         return {
           'success': false,
           'error': responseData['result']['description'] ?? 'Unknown error',
@@ -100,7 +103,7 @@ class PeachPaymentsService {
         };
       }
     } catch (e) {
-      print('Error creating checkout: $e');
+      AppLogger.error('Error creating checkout: $e');
       return {
         'success': false,
         'error': 'Network error: $e',

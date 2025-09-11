@@ -80,7 +80,7 @@ class _PaymentHistoryScreenState extends State<PaymentHistoryScreen> {
             Icon(
               Icons.receipt_long_outlined,
               size: 64,
-              color: AppColors.textSecondary.withOpacity(0.6),
+              color: AppColors.textSecondary.withValues(alpha: 0.6),
             ),
             const SizedBox(height: 24),
             Text(
@@ -177,7 +177,7 @@ class _PaymentHistoryScreenState extends State<PaymentHistoryScreen> {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: AppColors.error.withOpacity(0.1),
+                color: AppColors.error.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(6),
               ),
               child: Row(
@@ -222,32 +222,32 @@ class _PaymentHistoryScreenState extends State<PaymentHistoryScreen> {
     
     switch (status) {
       case PaymentStatus.completed:
-        backgroundColor = AppColors.success.withOpacity(0.1);
+        backgroundColor = AppColors.success.withValues(alpha: 0.1);
         textColor = AppColors.success;
         icon = Icons.check_circle_outline;
         break;
       case PaymentStatus.pending:
-        backgroundColor = AppColors.warning.withOpacity(0.1);
+        backgroundColor = AppColors.warning.withValues(alpha: 0.1);
         textColor = AppColors.warning;
         icon = Icons.schedule;
         break;
       case PaymentStatus.processing:
-        backgroundColor = AppColors.info.withOpacity(0.1);
+        backgroundColor = AppColors.info.withValues(alpha: 0.1);
         textColor = AppColors.info;
         icon = Icons.sync;
         break;
       case PaymentStatus.failed:
-        backgroundColor = AppColors.error.withOpacity(0.1);
+        backgroundColor = AppColors.error.withValues(alpha: 0.1);
         textColor = AppColors.error;
         icon = Icons.error_outline;
         break;
       case PaymentStatus.cancelled:
-        backgroundColor = AppColors.disabled.withOpacity(0.1);
+        backgroundColor = AppColors.disabled.withValues(alpha: 0.1);
         textColor = AppColors.disabled;
         icon = Icons.cancel_outlined;
         break;
       case PaymentStatus.refunded:
-        backgroundColor = AppColors.textSecondary.withOpacity(0.1);
+        backgroundColor = AppColors.textSecondary.withValues(alpha: 0.1);
         textColor = AppColors.textSecondary;
         icon = Icons.undo;
         break;

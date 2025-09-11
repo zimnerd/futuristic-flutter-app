@@ -6,11 +6,6 @@ import '../../theme/pulse_colors.dart';
 import '../../widgets/common/pulse_button.dart';
 import '../../widgets/profile/photo_grid.dart';
 import '../../widgets/profile/profile_form.dart';
-import '../../widgets/profile/enhanced_photo_grid.dart';
-import '../../widgets/profile/profile_completion_card.dart';
-import '../../widgets/profile/profile_privacy_settings.dart';
-import '../../widgets/profile/profile_preview.dart';
-import '../../widgets/profile/interests_selector.dart';
 import '../../../domain/entities/user_profile.dart';
 
 class ProfileEditScreen extends StatefulWidget {

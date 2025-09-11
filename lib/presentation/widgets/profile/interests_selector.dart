@@ -255,10 +255,10 @@ class _InterestsSelectorState extends State<InterestsSelector>
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: PulseColors.primary.withOpacity(0.05),
+            color: PulseColors.primary.withValues(alpha: 0.05),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: PulseColors.primary.withOpacity(0.2),
+              color: PulseColors.primary.withValues(alpha: 0.2),
               width: 1,
             ),
           ),

@@ -79,32 +79,32 @@ class SubscriptionStatusCard extends StatelessWidget {
 
     switch (status) {
       case SubscriptionStatus.active:
-        backgroundColor = AppColors.success.withOpacity(0.1);
+        backgroundColor = AppColors.success.withValues(alpha: 0.1);
         textColor = AppColors.success;
         text = 'Active';
         break;
       case SubscriptionStatus.cancelled:
-        backgroundColor = AppColors.error.withOpacity(0.1);
+        backgroundColor = AppColors.error.withValues(alpha: 0.1);
         textColor = AppColors.error;
         text = 'Cancelled';
         break;
       case SubscriptionStatus.pendingCancellation:
-        backgroundColor = AppColors.warning.withOpacity(0.1);
+        backgroundColor = AppColors.warning.withValues(alpha: 0.1);
         textColor = AppColors.warning;
         text = 'Ends Soon';
         break;
       case SubscriptionStatus.expired:
-        backgroundColor = AppColors.error.withOpacity(0.1);
+        backgroundColor = AppColors.error.withValues(alpha: 0.1);
         textColor = AppColors.error;
         text = 'Expired';
         break;
       case SubscriptionStatus.pastDue:
-        backgroundColor = AppColors.warning.withOpacity(0.1);
+        backgroundColor = AppColors.warning.withValues(alpha: 0.1);
         textColor = AppColors.warning;
         text = 'Past Due';
         break;
       default:
-        backgroundColor = AppColors.textSecondary.withOpacity(0.1);
+        backgroundColor = AppColors.textSecondary.withValues(alpha: 0.1);
         textColor = AppColors.textSecondary;
         text = 'Pending';
     }
