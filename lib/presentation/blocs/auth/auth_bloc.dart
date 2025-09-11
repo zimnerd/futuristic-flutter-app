@@ -27,6 +27,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<AuthTokenRefreshRequested>(_onTokenRefreshRequested);
     on<AuthErrorCleared>(_onErrorCleared);
     on<AuthPasswordResetRequested>(_onPasswordResetRequested);
+    on<AuthTwoFactorVerifyRequested>(_onTwoFactorVerifyRequested);
+    on<AuthBiometricSignInRequested>(_onBiometricSignInRequested);
 
     // Check authentication status when BLoC is created
     add(const AuthStatusChecked());
@@ -245,6 +247,67 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           errorCode: 'password_reset_error',
         ),
       );
+    }
+  }
+
+  /// Handles two-factor authentication verification
+  Future<void> _onTwoFactorVerifyRequested(
+    AuthTwoFactorVerifyRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(const AuthLoading());
+
+    try {
+      _logger.i('Verifying two-factor authentication code');
+
+      final user = await _userRepository.verifyTwoFactor(
+        sessionId: event.sessionId,
+        code: event.code,
+      );
+
+      if (user != null) {
+        emit(AuthAuthenticated(user: user));
+        _logger.i('Two-factor authentication verified successfully');
+      } else {
+        emit(const AuthError(message: 'Two-factor verification failed'));
+      }
+    } on AppException catch (e) {
+      _logger.e('Two-factor verification failed: ${e.message}');
+      emit(AuthError(message: e.message));
+    } catch (e) {
+      const message =
+          'An unexpected error occurred during two-factor verification';
+      _logger.e('Two-factor verification error: $e');
+      emit(const AuthError(message: message));
+    }
+  }
+
+  /// Handles biometric authentication sign-in
+  Future<void> _onBiometricSignInRequested(
+    AuthBiometricSignInRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(const AuthLoading());
+
+    try {
+      _logger.i('Attempting biometric authentication');
+
+      final user = await _userRepository.signInWithBiometric();
+
+      if (user != null) {
+        emit(AuthAuthenticated(user: user));
+        _logger.i('Biometric authentication successful');
+      } else {
+        emit(const AuthError(message: 'Biometric authentication failed'));
+      }
+    } on AppException catch (e) {
+      _logger.e('Biometric authentication failed: ${e.message}');
+      emit(AuthError(message: e.message));
+    } catch (e) {
+      const message =
+          'An unexpected error occurred during biometric authentication';
+      _logger.e('Biometric authentication error: $e');
+      emit(const AuthError(message: message));
     }
   }
 

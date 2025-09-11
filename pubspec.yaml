@@ -70,6 +70,7 @@ dependencies:
 
   # Authentication
   local_auth: ^2.1.8
+  flutter_secure_storage: ^9.2.2
 
   # Live Streaming
   camera: ^0.11.0+2

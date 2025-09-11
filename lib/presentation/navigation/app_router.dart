@@ -1,7 +1,9 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+import '../blocs/auth/auth_bloc.dart';
 import '../screens/auth/forgot_password_screen.dart';
 import '../screens/auth/login_screen.dart' as SimpleLogin;
 import '../screens/auth/enhanced_login_screen.dart';
@@ -131,8 +133,39 @@ class AppRouter {
 
   /// Handle route redirects based on authentication state
   static String? _handleRedirect(BuildContext context, GoRouterState state) {
-    // TODO: Implement authentication state checking with BLoC
-    // For now, allow all routes
+    final authBloc = context.read<AuthBloc>();
+    final isAuthenticated = authBloc.isAuthenticated;
+    final isLoading = authBloc.isLoading;
+
+    final isAuthRoute =
+        state.fullPath?.startsWith('/auth') == true ||
+        state.fullPath == AppRoutes.login ||
+        state.fullPath == AppRoutes.register ||
+        state.fullPath == AppRoutes.enhancedLogin ||
+        state.fullPath == AppRoutes.forgotPassword;
+
+    final isWelcomeRoute =
+        state.fullPath == AppRoutes.welcome ||
+        state.fullPath == AppRoutes.onboarding;
+
+    // Don't redirect while authentication is loading
+    if (isLoading) {
+      return null;
+    }
+
+    // If user is authenticated and trying to access auth/welcome routes,
+    // redirect to home
+    if (isAuthenticated && (isAuthRoute || isWelcomeRoute)) {
+      return AppRoutes.home;
+    }
+
+    // If user is not authenticated and trying to access protected routes,
+    // redirect to welcome screen
+    if (!isAuthenticated && !isAuthRoute && !isWelcomeRoute) {
+      return AppRoutes.welcome;
+    }
+
+    // Allow the navigation
     return null;
   }
 }

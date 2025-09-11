@@ -19,6 +19,12 @@ abstract class UserRepository {
   Future<void> signOut();
   Future<UserModel?> getCurrentUser();
   Future<void> requestPasswordReset(String email);
+  Future<UserModel?> verifyTwoFactor({
+    required String sessionId,
+    required String code,
+  });
+  Future<UserModel?> signInWithBiometric();
+  Future<void> refreshToken();
 
   // User Profile
   Future<UserModel?> getUserById(String userId);

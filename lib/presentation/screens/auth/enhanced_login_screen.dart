@@ -6,6 +6,7 @@ import '../../blocs/auth/auth_bloc.dart';
 import '../../blocs/auth/auth_event.dart';
 import '../../blocs/auth/auth_state.dart';
 import '../../theme/pulse_colors.dart';
+import '../../../data/services/biometric_service.dart';
 
 /// Enhanced login screen with comprehensive validation and biometric auth
 class LoginScreen extends StatefulWidget {
@@ -28,6 +29,7 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _requiresTwoFactor = false;
   String? _twoFactorSessionId;
   bool _biometricEnabled = false;
+  final BiometricService _biometricService = BiometricService();
 
   @override
   void initState() {
@@ -45,9 +47,11 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<void> _checkBiometricAvailability() async {
     // Check if biometric auth is available and enabled
-    // This would be implemented with your auth service
+    final isAvailable = await _biometricService.isBiometricAvailable();
+    final hasEnrolled = await _biometricService.hasEnrolledBiometrics();
+    
     setState(() {
-      _biometricEnabled = false; // Placeholder
+      _biometricEnabled = isAvailable && hasEnrolled;
     });
   }
 

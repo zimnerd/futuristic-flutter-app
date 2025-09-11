@@ -1,11 +1,15 @@
 import '../../domain/repositories/user_repository.dart';
 import '../../domain/services/api_service.dart';
 import '../models/user_model.dart';
+import '../services/biometric_service.dart';
+import '../services/token_service.dart';
 
 /// Simple user repository implementation using API service directly
 /// Part of the clean architecture - no complex data sources or adapters
 class UserRepositorySimple implements UserRepository {
   final ApiService _apiService;
+  final TokenService _tokenService = TokenService();
+  final BiometricService _biometricService = BiometricService();
 
   UserRepositorySimple({
     required ApiService apiService,
@@ -24,7 +28,21 @@ class UserRepositorySimple implements UserRepository {
       });
 
       if (response.statusCode == 200) {
-        return UserModel.fromJson(response.data['user']);
+        final user = UserModel.fromJson(response.data['user']);
+
+        // Store tokens if they exist in the response
+        if (response.data['accessToken'] != null &&
+            response.data['refreshToken'] != null) {
+          await _tokenService.storeTokens(
+            accessToken: response.data['accessToken'],
+            refreshToken: response.data['refreshToken'],
+          );
+
+          // Store user data for biometric login
+          await _tokenService.storeUserData(response.data['user']);
+        }
+
+        return user;
       }
       return null;
     } catch (e) {
@@ -69,18 +87,36 @@ class UserRepositorySimple implements UserRepository {
   @override
   Future<void> signOut() async {
     try {
+      // Call the logout endpoint
       await _apiService.post('/auth/logout');
+      
+      // Clear stored tokens and user data
+      await _tokenService.clearTokens();
     } catch (e) {
-      throw Exception('Logout failed: ${e.toString()}');
+      // Even if the API call fails, clear local tokens
+      await _tokenService.clearTokens();
+      throw Exception('Sign out failed: ${e.toString()}');
     }
   }
 
   @override
   Future<UserModel?> getCurrentUser() async {
     try {
+      // First check if we have stored user data
+      final userData = await _tokenService.getUserData();
+      if (userData != null) {
+        return UserModel.fromJson(userData);
+      }
+
+      // If no stored data, try to get from API
       final response = await _apiService.get('/auth/me');
       if (response.statusCode == 200) {
-        return UserModel.fromJson(response.data['user']);
+        final user = UserModel.fromJson(response.data['user']);
+
+        // Store user data for future use
+        await _tokenService.storeUserData(response.data['user']);
+
+        return user;
       }
       return null;
     } catch (e) {
@@ -101,6 +137,77 @@ class UserRepositorySimple implements UserRepository {
       }
     } catch (e) {
       throw Exception('Password reset request failed: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<UserModel?> verifyTwoFactor({
+    required String sessionId,
+    required String code,
+  }) async {
+    try {
+      final response = await _apiService.post(
+        '/auth/verify-2fa',
+        data: {'sessionId': sessionId, 'code': code},
+      );
+
+      if (response.statusCode == 200) {
+        return UserModel.fromJson(response.data['user']);
+      }
+      return null;
+    } catch (e) {
+      throw Exception('Two-factor verification failed: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<UserModel?> signInWithBiometric() async {
+    try {
+      // First, check if biometric authentication is available
+      final isAvailable = await _biometricService.isBiometricAvailable();
+      if (!isAvailable) {
+        throw Exception(
+          'Biometric authentication is not available on this device',
+        );
+      }
+
+      // Authenticate using biometrics
+      final isAuthenticated = await _biometricService.authenticate(
+        localizedReason: 'Please authenticate to sign in to PulseLink',
+      );
+
+      if (!isAuthenticated) {
+        throw Exception('Biometric authentication failed');
+      }
+
+      // Check if we have stored tokens for biometric login
+      final hasTokens = await _tokenService.hasValidTokens();
+      if (!hasTokens) {
+        throw Exception('No stored credentials found for biometric login');
+      }
+
+      // Get stored user data
+      final userData = await _tokenService.getUserData();
+      if (userData == null) {
+        throw Exception('No user data found for biometric login');
+      }
+
+      return UserModel.fromJson(userData);
+    } catch (e) {
+      throw Exception('Biometric authentication failed: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<void> refreshToken() async {
+    try {
+      final response = await _apiService.post('/auth/refresh');
+
+      if (response.statusCode != 200) {
+        throw Exception('Failed to refresh token');
+      }
+    } catch (e) {
+      throw Exception('Token refresh failed: ${e.toString()}');
     }
   }
 
