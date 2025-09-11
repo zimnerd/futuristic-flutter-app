@@ -9,6 +9,7 @@ import 'package:uuid/uuid.dart';
 import '../../domain/services/api_service.dart';
 import '../exceptions/app_exceptions.dart';
 import '../models/profile_model.dart';
+import '../../domain/entities/user_profile.dart' as domain;
 
 /// Service for managing user profiles and related operations
 class ProfileService {
@@ -42,6 +43,31 @@ class ProfileService {
     } catch (e) {
       _logger.e('❌ Unexpected error fetching profile: $e');
       throw UserException('Failed to fetch profile');
+    }
+  }
+
+  /// Get current user's profile
+  Future<domain.UserProfile> getCurrentProfile() async {
+    try {
+      _logger.i('🔍 Fetching current user profile');
+
+      final response = await _apiService.get('/profiles/me');
+
+      if (response.statusCode == 200) {
+        final data = response.data as Map<String, dynamic>;
+        final profile = UserProfile.fromJson(data);
+        _logger.i('✅ Current profile loaded successfully');
+        return _convertToEntity(profile);
+      } else {
+        _logger.w('⚠️ Failed to load current profile: ${response.statusCode}');
+        throw UserException('Failed to fetch current profile');
+      }
+    } on DioException catch (e) {
+      _logger.e('❌ Network error fetching current profile: ${e.message}');
+      throw NetworkException('Failed to fetch current profile: ${e.message}');
+    } catch (e) {
+      _logger.e('❌ Unexpected error fetching current profile: $e');
+      throw UserException('Failed to fetch current profile');
     }
   }
 
@@ -82,8 +108,21 @@ class ProfileService {
     }
   }
 
-  /// Update existing user profile
-  Future<UserProfile> updateProfile({
+  /// Update profile using a UserProfile object (wrapper for BLoC compatibility)
+  Future<domain.UserProfile> updateProfile(domain.UserProfile profile) async {
+    final updatedProfile = await updateProfileWithDetails(
+      userId: profile.id,
+      bio: profile.bio,
+      interests: profile.interests,
+      dealBreakers: profile.lifestyle['dealBreakers'] as List<String>?,
+      preferences: _convertPreferences(profile.preferences),
+      location: _convertLocation(profile.location),
+    );
+    return _convertToEntity(updatedProfile);
+  }
+
+  /// Update existing user profile with individual parameters
+  Future<UserProfile> updateProfileWithDetails({
     required String userId,
     String? bio,
     List<String>? interests,
@@ -119,8 +158,20 @@ class ProfileService {
     }
   }
 
-  /// Upload profile photo with compression
-  Future<ProfilePhoto> uploadPhoto({
+  /// Upload photo by path (wrapper for BLoC compatibility)
+  Future<String> uploadPhoto(String photoPath) async {
+    // Note: This requires getting the current user ID
+    // For now, we'll assume we can get it from a static method or token
+    final file = File(photoPath);
+    final photo = await uploadPhotoWithDetails(
+      userId: 'current', // TODO: Get actual current user ID
+      imageFile: file,
+    );
+    return photo.url;
+  }
+
+  /// Upload profile photo with compression (original method)
+  Future<ProfilePhoto> uploadPhotoWithDetails({
     required String userId,
     required File imageFile,
     bool isPrimary = false,
@@ -163,8 +214,18 @@ class ProfileService {
     }
   }
 
-  /// Delete profile photo
-  Future<void> deletePhoto({
+  /// Delete photo by URL (wrapper for BLoC compatibility)
+  Future<void> deletePhoto(String photoUrl) async {
+    // Extract photo ID from URL and get current user ID
+    final photoId = photoUrl.split('/').last.split('.').first;
+    return deletePhotoWithDetails(
+      userId: 'current', // TODO: Get actual current user ID
+      photoId: photoId,
+    );
+  }
+
+  /// Delete profile photo (original method)
+  Future<void> deletePhotoWithDetails({
     required String userId,
     required String photoId,
   }) async {
@@ -368,6 +429,43 @@ class ProfileService {
       _logger.w('⚠️ Image compression error: $e, using original file');
       return file;
     }
+  }
+
+  /// Convert data model UserProfile to domain entity
+  domain.UserProfile _convertToEntity(UserProfile dataModel) {
+    // Simple conversion using available fields
+    return domain.UserProfile(
+      id: dataModel.id,
+      name: dataModel.userId, // Using userId as name for now
+      age: 25, // Default age for now
+      bio: dataModel.bio ?? '',
+      photos: [], // Empty photos list for now
+      location: domain.UserLocation(
+        latitude: dataModel.location?.latitude ?? 0.0,
+        longitude: dataModel.location?.longitude ?? 0.0,
+        address: dataModel.location?.city ?? '',
+        city: dataModel.location?.city ?? '',
+        country: dataModel.location?.country ?? '',
+      ),
+      interests: dataModel.interests,
+    );
+  }
+
+  /// Convert domain preferences to data model preferences
+  UserPreferences? _convertPreferences(Map<String, dynamic> preferences) {
+    // Return null for now - TODO: implement proper conversion
+    return null;
+  }
+
+  /// Convert domain location to data model location
+  UserLocation _convertLocation(domain.UserLocation location) {
+    return UserLocation(
+      latitude: location.latitude,
+      longitude: location.longitude,
+      city: location.city,
+      country: location.country,
+      updatedAt: DateTime.now(),
+    );
   }
 }
 

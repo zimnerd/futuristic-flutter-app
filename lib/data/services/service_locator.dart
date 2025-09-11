@@ -6,6 +6,7 @@ import 'profile_service.dart';
 import 'file_upload_service.dart';
 import 'websocket_service.dart';
 import 'preferences_service.dart';
+import 'api_service_impl.dart';
 
 /// Simple service locator without external dependencies
 class ServiceLocator {
@@ -15,6 +16,7 @@ class ServiceLocator {
 
   // Service instances
   late final ApiClient _apiClient;
+  late final ApiServiceImpl _apiService;
   late final MatchingService _matchingService;
   late final MessagingService _messagingService;
   late final ProfileService _profileService;
@@ -28,13 +30,14 @@ class ServiceLocator {
   void initialize() {
     if (_isInitialized) return;
 
-    // Initialize API client
+    // Initialize API client and service
     _apiClient = ApiClient(baseUrl: ApiConstants.baseUrl);
+    _apiService = ApiServiceImpl(baseUrl: ApiConstants.baseUrl);
 
     // Initialize services
     _matchingService = MatchingService(apiClient: _apiClient);
     _messagingService = MessagingService(apiClient: _apiClient);
-    _profileService = ProfileService(apiClient: _apiClient);
+    _profileService = ProfileService(apiService: _apiService);
     _fileUploadService = FileUploadService(apiClient: _apiClient);
     _webSocketService = WebSocketService.instance;
     _preferencesService = PreferencesService(_apiClient);
