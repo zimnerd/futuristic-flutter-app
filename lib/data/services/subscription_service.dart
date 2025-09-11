@@ -5,12 +5,10 @@ import '../models/subscription.dart';
 import '../models/subscription_plan.dart';
 import '../models/subscription_usage.dart';
 import '../models/api_response.dart';
-import 'payment_service.dart';
 import 'saved_payment_methods_service.dart';
 
 /// Subscription service for managing user subscriptions
 class SubscriptionService {
-  final PaymentService _paymentService;
   final SavedPaymentMethodsService _savedMethodsService;
   
   // Stream controllers for reactive updates
@@ -18,10 +16,8 @@ class SubscriptionService {
   final StreamController<SubscriptionUsage?> _usageController = StreamController<SubscriptionUsage?>.broadcast();
 
   SubscriptionService({
-    required PaymentService paymentService,
     required SavedPaymentMethodsService savedMethodsService,
-  })  : _paymentService = paymentService,
-        _savedMethodsService = savedMethodsService;
+  }) : _savedMethodsService = savedMethodsService;
 
   // Streams
   Stream<Subscription?> get subscriptionStream => _subscriptionController.stream;
