@@ -9,6 +9,9 @@ enum SubscriptionStatus {
   expired,
   pending,
   failed,
+  pendingCancellation,
+  pastDue,
+  suspended,
 }
 
 /// Subscription model
@@ -165,6 +168,12 @@ class Subscription extends Equatable {
         return 'Pending';
       case SubscriptionStatus.failed:
         return 'Failed';
+      case SubscriptionStatus.pendingCancellation:
+        return 'Cancelling';
+      case SubscriptionStatus.pastDue:
+        return 'Past Due';
+      case SubscriptionStatus.suspended:
+        return 'Suspended';
     }
   }
 
