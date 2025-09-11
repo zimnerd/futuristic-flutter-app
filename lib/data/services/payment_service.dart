@@ -423,6 +423,30 @@ class PaymentService {
     return _peachPayments.getCheckoutScriptUrl();
   }
 
+  /// Sync payment result with backend (public method)
+  Future<void> syncPaymentWithBackend(Map<String, dynamic> paymentData) async {
+    try {
+      final response = await http.post(
+        Uri.parse('${ApiConstants.baseUrl}${ApiConstants.payment}/sync'),
+        headers: {
+          'Authorization': 'Bearer $_authToken',
+          'Content-Type': 'application/json',
+        },
+        body: json.encode(paymentData),
+      );
+
+      if (response.statusCode != 200) {
+        throw PaymentException(
+          'Failed to sync payment with backend: ${response.statusCode}',
+        );
+      }
+    } catch (e) {
+      AppLogger.error('Error syncing payment with backend: $e');
+      if (e is PaymentException) rethrow;
+      throw PaymentException('Failed to sync payment: $e');
+    }
+  }
+
   /// Sync payment result with backend
   Future<void> _syncPaymentWithBackend(Map<String, dynamic> paymentResult) async {
     try {

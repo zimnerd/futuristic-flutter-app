@@ -430,4 +430,163 @@ class PeachPaymentsService {
       'card.holder': 'Jane Jones',
     };
   }
+
+  /// Tokenize payment method for secure storage
+  /// Returns token that can be used for future payments
+  Future<Map<String, dynamic>> tokenizePaymentMethod({
+    required String cardNumber,
+    required String expiryMonth,
+    required String expiryYear,
+    required String cardholderName,
+    String? cvv,
+  }) async {
+    try {
+      final url = Uri.parse('$_baseUrl/v1/registrations');
+
+      final tokenData = {
+        'entityId': _entityId,
+        'paymentBrand': _detectCardBrand(cardNumber),
+        'card.number': cardNumber,
+        'card.holder': cardholderName,
+        'card.expiryMonth': expiryMonth,
+        'card.expiryYear': expiryYear,
+        if (cvv != null) 'card.cvv': cvv,
+      };
+
+      final response = await http.post(
+        url,
+        headers: {
+          'Authorization': 'Bearer $_accessToken',
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: tokenData.entries
+            .map(
+              (e) =>
+                  '${Uri.encodeComponent(e.key)}=${Uri.encodeComponent(e.value.toString())}',
+            )
+            .join('&'),
+      );
+
+      final responseData = json.decode(response.body);
+
+      if (response.statusCode == 200) {
+        final result = responseData['result'];
+        final code = result['code'] as String;
+
+        // Check if tokenization was successful
+        if (code.startsWith('000.000.') || code.startsWith('000.100.1')) {
+          return {
+            'success': true,
+            'token': responseData['id'],
+            'brand': responseData['paymentBrand'],
+            'last4': cardNumber.substring(cardNumber.length - 4),
+            'expiryMonth': expiryMonth,
+            'expiryYear': expiryYear,
+          };
+        } else {
+          return {
+            'success': false,
+            'error': result['description'] ?? 'Tokenization failed',
+            'code': code,
+          };
+        }
+      } else {
+        return {
+          'success': false,
+          'error':
+              'HTTP ${response.statusCode}: ${responseData['error'] ?? 'Unknown error'}',
+          'code': 'HTTP_ERROR',
+        };
+      }
+    } catch (e) {
+      print('Error tokenizing payment method: $e');
+      return {
+        'success': false,
+        'error': 'Tokenization failed: $e',
+        'code': 'TOKENIZATION_ERROR',
+      };
+    }
+  }
+
+  /// Process payment using stored token
+  Future<Map<String, dynamic>> processTokenPayment({
+    required String token,
+    required double amount,
+    required String currency,
+    String? description,
+    Map<String, dynamic>? metadata,
+  }) async {
+    try {
+      final url = Uri.parse('$_baseUrl/v1/payments');
+
+      final paymentData = {
+        'entityId': _entityId,
+        'amount': amount.toStringAsFixed(2),
+        'currency': currency,
+        'paymentType': 'DB', // Debit payment
+        'registrationId': token,
+        if (description != null) 'merchantTransactionId': description,
+        if (metadata != null)
+          ...metadata.map(
+            (key, value) =>
+                MapEntry('customParameters[$key]', value.toString()),
+          ),
+      };
+
+      final response = await http.post(
+        url,
+        headers: {
+          'Authorization': 'Bearer $_accessToken',
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: paymentData.entries
+            .map(
+              (e) =>
+                  '${Uri.encodeComponent(e.key)}=${Uri.encodeComponent(e.value.toString())}',
+            )
+            .join('&'),
+      );
+
+      final responseData = json.decode(response.body);
+
+      if (response.statusCode == 200) {
+        final result = responseData['result'];
+        final code = result['code'] as String;
+
+        // Check if payment was successful
+        if (code.startsWith('000.000.') || code.startsWith('000.100.1')) {
+          return {
+            'success': true,
+            'payment_id': responseData['id'],
+            'amount': responseData['amount'],
+            'currency': responseData['currency'],
+            'status': 'succeeded',
+            'result_code': code,
+            'descriptor': responseData['descriptor'],
+          };
+        } else {
+          return {
+            'success': false,
+            'error': result['description'] ?? 'Payment failed',
+            'code': code,
+            'payment_id': responseData['id'],
+          };
+        }
+      } else {
+        return {
+          'success': false,
+          'error':
+              'HTTP ${response.statusCode}: ${responseData['error'] ?? 'Unknown error'}',
+          'code': 'HTTP_ERROR',
+        };
+      }
+    } catch (e) {
+      print('Error processing token payment: $e');
+      return {
+        'success': false,
+        'error': 'Payment processing failed: $e',
+        'code': 'PAYMENT_ERROR',
+      };
+    }
+  }
 }
