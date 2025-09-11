@@ -12,6 +12,10 @@ class ApiConstants {
   static const String conversations = '/conversations';
   static const String media = '/media';
   static const String notifications = '/notifications';
+  static const String premium = '/premium';
+  static const String socialGaming = '/social-gaming';
+  static const String analytics = '/analytics';
+  static const String payment = '/payment';
   
   // Auth endpoints
   static const String login = '$auth/login';
