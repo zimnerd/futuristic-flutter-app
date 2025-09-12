@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:logger/logger.dart';
 
@@ -112,7 +110,8 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
       _logger.i('🔄 Updating profile for user: ${event.userId}');
       emit(const ProfileLoading());
 
-      final profile = await _profileService.updateProfile(
+      // Use the service's update method directly
+      final profile = await _profileService.updateProfileWithDetails(
         userId: event.userId,
         bio: event.bio,
         interests: event.interests,
@@ -143,19 +142,20 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
       _logger.i('📸 Uploading photo for user: ${event.userId}');
       emit(const PhotoUploading());
 
-      final photo = await _profileService.uploadPhoto(
-        userId: event.userId,
-        imageFile: File(event.imagePath),
-        isPrimary: event.isPrimary,
-        order: event.order,
-      );
+      final photoUrl = await _profileService.uploadPhoto(event.imagePath);
 
       // Reload profile to get updated photos
       final updatedProfile = await _profileService.getProfile(event.userId);
       _currentProfile = updatedProfile;
       
       emit(PhotoUploaded(
-        photo: photo,
+          photo: ProfilePhoto(
+            id: 'temp_${DateTime.now().millisecondsSinceEpoch}',
+            url: photoUrl,
+            isPrimary: event.isPrimary,
+            order: event.order,
+            createdAt: DateTime.now(),
+          ),
         updatedProfile: updatedProfile,
       ));
       
@@ -175,10 +175,10 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
   /// Delete photo
   Future<void> _onDeletePhoto(DeletePhoto event, Emitter<ProfileState> emit) async {
     try {
-      _logger.i('🗑️ Deleting photo: ${event.photoId}');
-      emit(const ProfileLoading());
+      _logger.i('🗑️ Deleting photo for user: ${event.userId}');
+      emit(const PhotoDeleting());
 
-      await _profileService.deletePhoto(
+      await _profileService.deletePhotoWithDetails(
         userId: event.userId,
         photoId: event.photoId,
       );
@@ -187,18 +187,23 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
       final updatedProfile = await _profileService.getProfile(event.userId);
       _currentProfile = updatedProfile;
       
-      emit(PhotoDeleted(updatedProfile: updatedProfile));
+      emit(
+        PhotoDeleted(
+          updatedProfile: updatedProfile,
+          message: 'Photo deleted successfully',
+        ),
+      );
       
       _logger.i('✅ Photo deleted successfully');
     } on NetworkException catch (e) {
       _logger.e('❌ Network error deleting photo: ${e.message}');
-      emit(ProfileError('Network error: ${e.message}'));
-    } on MediaException catch (e) {
-      _logger.e('❌ Media error deleting photo: ${e.message}');
-      emit(ProfileError(e.message));
+      emit(PhotoDeleteError('Network error: ${e.message}'));
+    } on UserException catch (e) {
+      _logger.e('❌ User error deleting photo: ${e.message}');
+      emit(PhotoDeleteError(e.message));
     } catch (e) {
       _logger.e('❌ Unexpected error deleting photo: $e');
-      emit(const ProfileError('Failed to delete photo'));
+      emit(const PhotoDeleteError('Failed to delete photo'));
     }
   }
 

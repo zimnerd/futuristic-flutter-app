@@ -196,6 +196,19 @@ class PhotoUploadError extends ProfileState {
   List<Object?> get props => [message];
 }
 
+class PhotoDeleting extends ProfileState {
+  const PhotoDeleting();
+}
+
+class PhotoDeleteError extends ProfileState {
+  final String message;
+
+  const PhotoDeleteError(this.message);
+
+  @override
+  List<Object?> get props => [message];
+}
+
 class PreferencesError extends ProfileState {
   final String message;
 
