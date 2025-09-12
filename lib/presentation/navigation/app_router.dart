@@ -17,6 +17,20 @@ import '../screens/main/filters_screen.dart';
 import '../screens/onboarding/onboarding_screen.dart';
 import '../screens/onboarding/welcome_screen.dart';
 import '../screens/subscription_management_screen.dart';
+// Advanced feature screens
+import '../screens/virtual_gifts/virtual_gifts_screen.dart';
+import '../screens/premium/premium_screen.dart';
+import '../screens/safety/safety_screen.dart';
+import '../screens/ai_companion/ai_companion_screen.dart';
+import '../screens/speed_dating/speed_dating_screen.dart';
+import '../screens/live_streaming/live_streaming_screen.dart';
+import '../screens/date_planning/date_planning_screen.dart';
+import '../screens/voice_messages/voice_messages_screen.dart';
+import '../screens/profile/profile_creation_screen.dart';
+import '../screens/call/video_call_screen.dart';
+import '../screens/discovery/discovery_screen.dart';
+import '../screens/features/advanced_features_screen.dart';
+import '../../../domain/entities/user_profile.dart';
 
 /// Application routes configuration using GoRouter
 /// Provides type-safe navigation with route guards and transitions
@@ -100,6 +114,96 @@ class AppRouter {
             builder: (context, state) => const SubscriptionManagementScreen(),
           ),
         ],
+      ),
+      
+      // Advanced feature routes (full screen, not in bottom nav)
+      GoRoute(
+        path: AppRoutes.discovery,
+        name: 'discovery',
+        builder: (context, state) => const DiscoveryScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.advancedFeatures,
+        name: 'advancedFeatures',
+        builder: (context, state) => const AdvancedFeaturesScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.virtualGifts,
+        name: 'virtualGifts',
+        builder: (context, state) {
+          final recipientId = state.uri.queryParameters['recipientId'];
+          final recipientName = state.uri.queryParameters['recipientName'];
+          return VirtualGiftsScreen(
+            recipientId: recipientId,
+            recipientName: recipientName,
+          );
+        },
+      ),
+      GoRoute(
+        path: AppRoutes.premium,
+        name: 'premium',
+        builder: (context, state) => const PremiumScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.safety,
+        name: 'safety',
+        builder: (context, state) => const SafetyScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.aiCompanion,
+        name: 'aiCompanion',
+        builder: (context, state) => const AiCompanionScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.speedDating,
+        name: 'speedDating',
+        builder: (context, state) => const SpeedDatingScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.liveStreaming,
+        name: 'liveStreaming',
+        builder: (context, state) => const LiveStreamingScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.datePlanning,
+        name: 'datePlanning',
+        builder: (context, state) => const DatePlanningScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.voiceMessages,
+        name: 'voiceMessages',
+        builder: (context, state) => const VoiceMessagesScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.profileCreation,
+        name: 'profileCreation',
+        builder: (context, state) => const ProfileCreationScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.videoCall,
+        name: 'videoCall',
+        builder: (context, state) {
+          final callId = state.pathParameters['callId'] ?? '';
+          // TODO: Get actual user data from parameters or state
+          // For now, we'll pass a placeholder and fix this in integration testing
+          return VideoCallScreen(
+            callId: callId,
+            remoteUser: UserProfile(
+              id: 'temp_user',
+              name: 'Unknown User',
+              age: 25,
+              bio: '',
+              photos: [],
+              location: UserLocation(
+                latitude: 0.0,
+                longitude: 0.0,
+                address: 'Unknown',
+                city: 'Unknown',
+                country: 'Unknown',
+              ),
+            ),
+          );
+        },
       ),
     ],
     errorBuilder: (context, state) => Scaffold(
@@ -185,6 +289,20 @@ class AppRoutes {
   static const String settings = '/settings';
   static const String filters = '/filters';
   static const String subscription = '/subscription';
+  
+  // Advanced feature routes
+  static const String discovery = '/discovery';
+  static const String advancedFeatures = '/advanced-features';
+  static const String virtualGifts = '/virtual-gifts';
+  static const String premium = '/premium';
+  static const String safety = '/safety';
+  static const String aiCompanion = '/ai-companion';
+  static const String speedDating = '/speed-dating';
+  static const String liveStreaming = '/live-streaming';
+  static const String datePlanning = '/date-planning';
+  static const String voiceMessages = '/voice-messages';
+  static const String profileCreation = '/profile-creation';
+  static const String videoCall = '/video-call/:callId';
 }
 
 /// Main navigation wrapper with bottom navigation bar
@@ -269,45 +387,5 @@ class MainBottomNavigation extends StatelessWidget {
         context.go(AppRoutes.profile);
         break;
     }
-  }
-}
-
-/// Navigation extensions for easy route management
-extension AppNavigationExtension on BuildContext {
-  /// Navigate to login screen
-  void goToLogin() => go(AppRoutes.login);
-
-  /// Navigate to register screen
-  void goToRegister() => go(AppRoutes.register);
-
-  /// Navigate to home screen
-  void goToHome() => go(AppRoutes.home);
-
-  /// Navigate to profile screen
-  void goToProfile() => go(AppRoutes.profile);
-
-  /// Navigate to settings screen
-  void goToSettings() => go(AppRoutes.settings);
-
-  /// Check if current route is authenticated
-  bool get isAuthenticatedRoute {
-    final location = GoRouterState.of(this).uri.path;
-    return [
-      AppRoutes.home,
-      AppRoutes.matches,
-      AppRoutes.messages,
-      AppRoutes.profile,
-      AppRoutes.settings,
-    ].contains(location);
-  }
-
-  /// Check if current route is authentication related
-  bool get isAuthRoute {
-    final location = GoRouterState.of(this).uri.path;
-    return [
-      AppRoutes.login,
-      AppRoutes.register,
-      AppRoutes.forgotPassword,
-    ].contains(location);
   }
 }

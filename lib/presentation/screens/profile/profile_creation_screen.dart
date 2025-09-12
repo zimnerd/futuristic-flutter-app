@@ -1,0 +1,742 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
+import '../../blocs/profile/profile_bloc.dart';
+import '../../theme/pulse_colors.dart';
+import '../../widgets/common/pulse_loading_widget.dart';
+import '../../widgets/profile/interests_selector.dart';
+
+/// Profile creation screen for new users
+class ProfileCreationScreen extends StatefulWidget {
+  const ProfileCreationScreen({super.key});
+
+  @override
+  State<ProfileCreationScreen> createState() => _ProfileCreationScreenState();
+}
+
+class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
+  final PageController _pageController = PageController();
+  final _formKey = GlobalKey<FormState>();
+
+  // Form controllers
+  final _nameController = TextEditingController();
+  final _bioController = TextEditingController();
+  final _ageController = TextEditingController();
+  final _heightController = TextEditingController();
+  final _occupationController = TextEditingController();
+
+  int _currentStep = 0;
+  final int _totalSteps = 5;
+
+  List<String> _selectedPhotos = [];
+  List<String> _selectedInterests = [];
+  String? _selectedGender;
+  String? _selectedLookingFor;
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    _nameController.dispose();
+    _bioController.dispose();
+    _ageController.dispose();
+    _heightController.dispose();
+    _occupationController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      appBar: AppBar(
+        title: Text('Create Profile'),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        foregroundColor: PulseColors.primary,
+        actions: [
+          TextButton(
+            onPressed: _currentStep > 0 ? _goToPreviousStep : null,
+            child: Text(
+              'Back',
+              style: TextStyle(
+                color: _currentStep > 0 ? PulseColors.primary : Colors.grey,
+              ),
+            ),
+          ),
+        ],
+      ),
+      body: BlocConsumer<ProfileBloc, ProfileState>(
+        listener: (context, state) {
+          if (state.status == ProfileStatus.error) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(state.error ?? 'An error occurred'),
+                backgroundColor: Colors.red,
+              ),
+            );
+          } else if (state.status == ProfileStatus.success) {
+            // Profile created successfully, navigate to main app
+            Navigator.of(context).pushReplacementNamed('/main');
+          }
+        },
+        builder: (context, state) {
+          if (state.status == ProfileStatus.loading) {
+            return const Center(child: PulseLoadingWidget());
+          }
+
+          return Column(
+            children: [
+              _buildProgressIndicator(),
+              Expanded(
+                child: PageView(
+                  controller: _pageController,
+                  physics: const NeverScrollableScrollPhysics(),
+                  children: [
+                    _buildBasicInfoStep(),
+                    _buildPhotosStep(),
+                    _buildBioStep(),
+                    _buildInterestsStep(),
+                    _buildPreferencesStep(),
+                  ],
+                ),
+              ),
+              _buildNavigationButtons(),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildProgressIndicator() {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        children: [
+          Row(
+            children: List.generate(
+              _totalSteps,
+              (index) => Expanded(
+                child: Container(
+                  height: 4,
+                  margin: EdgeInsets.only(
+                    right: index < _totalSteps - 1 ? 8 : 0,
+                  ),
+                  decoration: BoxDecoration(
+                    color: index <= _currentStep
+                        ? PulseColors.primary
+                        : Colors.grey[300],
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'Step ${_currentStep + 1} of $_totalSteps',
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBasicInfoStep() {
+    return Padding(
+      padding: const EdgeInsets.all(20),
+      child: Form(
+        key: _formKey,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Basic Information',
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: PulseColors.primary,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Tell us a bit about yourself',
+              style: Theme.of(
+                context,
+              ).textTheme.bodyLarge?.copyWith(color: Colors.grey[600]),
+            ),
+            const SizedBox(height: 32),
+            TextFormField(
+              controller: _nameController,
+              decoration: InputDecoration(
+                labelText: 'Full Name',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                prefixIcon: Icon(Icons.person),
+              ),
+              validator: (value) {
+                if (value == null || value.trim().isEmpty) {
+                  return 'Please enter your name';
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: 20),
+            Row(
+              children: [
+                Expanded(
+                  child: TextFormField(
+                    controller: _ageController,
+                    decoration: InputDecoration(
+                      labelText: 'Age',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      prefixIcon: Icon(Icons.cake),
+                    ),
+                    keyboardType: TextInputType.number,
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return 'Please enter your age';
+                      }
+                      final age = int.tryParse(value);
+                      if (age == null || age < 18 || age > 100) {
+                        return 'Please enter a valid age (18-100)';
+                      }
+                      return null;
+                    },
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: TextFormField(
+                    controller: _heightController,
+                    decoration: InputDecoration(
+                      labelText: 'Height (cm)',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      prefixIcon: Icon(Icons.height),
+                    ),
+                    keyboardType: TextInputType.number,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+            TextFormField(
+              controller: _occupationController,
+              decoration: InputDecoration(
+                labelText: 'Occupation',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                prefixIcon: Icon(Icons.work),
+              ),
+            ),
+            const SizedBox(height: 20),
+            DropdownButtonFormField<String>(
+              value: _selectedGender,
+              decoration: InputDecoration(
+                labelText: 'Gender',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                prefixIcon: Icon(Icons.person_outline),
+              ),
+              items: ['Male', 'Female', 'Non-binary', 'Other']
+                  .map(
+                    (gender) =>
+                        DropdownMenuItem(value: gender, child: Text(gender)),
+                  )
+                  .toList(),
+              onChanged: (value) {
+                setState(() {
+                  _selectedGender = value;
+                });
+              },
+              validator: (value) {
+                if (value == null) {
+                  return 'Please select your gender';
+                }
+                return null;
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPhotosStep() {
+    return Padding(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Add Photos',
+            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+              fontWeight: FontWeight.bold,
+              color: PulseColors.primary,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Upload at least 2 photos to get started',
+            style: Theme.of(
+              context,
+            ).textTheme.bodyLarge?.copyWith(color: Colors.grey[600]),
+          ),
+          const SizedBox(height: 32),
+          Expanded(child: _buildSimplePhotoPicker()),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBioStep() {
+    return Padding(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'About You',
+            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+              fontWeight: FontWeight.bold,
+              color: PulseColors.primary,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Write a short bio to tell people about yourself',
+            style: Theme.of(
+              context,
+            ).textTheme.bodyLarge?.copyWith(color: Colors.grey[600]),
+          ),
+          const SizedBox(height: 32),
+          TextFormField(
+            controller: _bioController,
+            decoration: InputDecoration(
+              labelText: 'Bio',
+              hintText:
+                  'Tell us about yourself, your hobbies, what you\'re looking for...',
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              alignLabelWithHint: true,
+            ),
+            maxLines: 6,
+            maxLength: 500,
+          ),
+          const SizedBox(height: 20),
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: PulseColors.primary.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.lightbulb_outline, color: PulseColors.primary),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    'Tip: Mention your interests, what makes you unique, and what you\'re looking for in a relationship.',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: PulseColors.primary,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInterestsStep() {
+    return Padding(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Your Interests',
+            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+              fontWeight: FontWeight.bold,
+              color: PulseColors.primary,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Select interests that represent you',
+            style: Theme.of(
+              context,
+            ).textTheme.bodyLarge?.copyWith(color: Colors.grey[600]),
+          ),
+          const SizedBox(height: 32),
+          Expanded(
+            child: InterestsSelector(
+              selectedInterests: _selectedInterests,
+              onInterestsChanged: (interests) {
+                setState(() {
+                  _selectedInterests = interests;
+                });
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPreferencesStep() {
+    return Padding(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Dating Preferences',
+            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+              fontWeight: FontWeight.bold,
+              color: PulseColors.primary,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Tell us what you\'re looking for',
+            style: Theme.of(
+              context,
+            ).textTheme.bodyLarge?.copyWith(color: Colors.grey[600]),
+          ),
+          const SizedBox(height: 32),
+          DropdownButtonFormField<String>(
+            value: _selectedLookingFor,
+            decoration: InputDecoration(
+              labelText: 'Looking for',
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              prefixIcon: Icon(Icons.favorite),
+            ),
+            items:
+                [
+                      'Long-term relationship',
+                      'Something casual',
+                      'New friends',
+                      'Not sure yet',
+                    ]
+                    .map(
+                      (option) =>
+                          DropdownMenuItem(value: option, child: Text(option)),
+                    )
+                    .toList(),
+            onChanged: (value) {
+              setState(() {
+                _selectedLookingFor = value;
+              });
+            },
+            validator: (value) {
+              if (value == null) {
+                return 'Please select what you\'re looking for';
+              }
+              return null;
+            },
+          ),
+          const SizedBox(height: 32),
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  PulseColors.primary.withOpacity(0.1),
+                  PulseColors.secondary.withOpacity(0.05),
+                ],
+              ),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Column(
+              children: [
+                Icon(Icons.celebration, size: 48, color: PulseColors.primary),
+                const SizedBox(height: 16),
+                Text(
+                  'You\'re almost done!',
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: PulseColors.primary,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Complete your profile to start meeting amazing people.',
+                  textAlign: TextAlign.center,
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.copyWith(color: Colors.grey[700]),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNavigationButtons() {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Theme.of(context).scaffoldBackgroundColor,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, -5),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          if (_currentStep > 0)
+            Expanded(
+              child: OutlinedButton(
+                onPressed: _goToPreviousStep,
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  side: BorderSide(color: PulseColors.primary),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: Text(
+                  'Previous',
+                  style: TextStyle(
+                    color: PulseColors.primary,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
+          if (_currentStep > 0) const SizedBox(width: 16),
+          Expanded(
+            flex: _currentStep == 0 ? 1 : 1,
+            child: ElevatedButton(
+              onPressed: _canProceed() ? _goToNextStep : null,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: PulseColors.primary,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                elevation: 0,
+              ),
+              child: Text(
+                _currentStep == _totalSteps - 1 ? 'Complete Profile' : 'Next',
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  bool _canProceed() {
+    switch (_currentStep) {
+      case 0:
+        return _nameController.text.trim().isNotEmpty &&
+            _ageController.text.trim().isNotEmpty &&
+            _selectedGender != null;
+      case 1:
+        return _selectedPhotos.length >= 2;
+      case 2:
+        return true; // Bio is optional
+      case 3:
+        return _selectedInterests.isNotEmpty;
+      case 4:
+        return _selectedLookingFor != null;
+      default:
+        return false;
+    }
+  }
+
+  void _goToNextStep() {
+    if (_currentStep < _totalSteps - 1) {
+      if (_currentStep == 0 && !_formKey.currentState!.validate()) {
+        return;
+      }
+
+      setState(() {
+        _currentStep++;
+      });
+      _pageController.nextPage(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    } else {
+      _createProfile();
+    }
+  }
+
+  void _goToPreviousStep() {
+    if (_currentStep > 0) {
+      setState(() {
+        _currentStep--;
+      });
+      _pageController.previousPage(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    }
+  }
+
+  void _createProfile() {
+    // For now, just navigate to main app
+    // TODO: Implement proper profile creation with UpdateProfile event
+    Navigator.of(context).pushReplacementNamed('/main');
+  }
+
+  Widget _buildSimplePhotoPicker() {
+    return GridView.builder(
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        crossAxisSpacing: 12,
+        mainAxisSpacing: 12,
+        childAspectRatio: 1,
+      ),
+      itemCount: 6,
+      itemBuilder: (context, index) {
+        final hasPhoto = index < _selectedPhotos.length;
+        return GestureDetector(
+          onTap: () => _handlePhotoTap(index),
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: hasPhoto ? PulseColors.primary : Colors.grey[300]!,
+                width: 2,
+              ),
+              color: hasPhoto ? null : Colors.grey[50],
+            ),
+            child: hasPhoto
+                ? Stack(
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                        child: Container(
+                          width: double.infinity,
+                          height: double.infinity,
+                          color: Colors.grey[200],
+                          child: Icon(
+                            Icons.image,
+                            size: 50,
+                            color: Colors.grey[400],
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        top: 8,
+                        right: 8,
+                        child: GestureDetector(
+                          onTap: () => _removePhoto(index),
+                          child: Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: BoxDecoration(
+                              color: Colors.red,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: const Icon(
+                              Icons.close,
+                              color: Colors.white,
+                              size: 16,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  )
+                : Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.add_a_photo,
+                        size: 40,
+                        color: Colors.grey[400],
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Add Photo',
+                        style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                      ),
+                    ],
+                  ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _handlePhotoTap(int index) {
+    if (index < _selectedPhotos.length) {
+      // View or edit existing photo
+      _showPhotoOptions(index);
+    } else {
+      // Add new photo
+      _addPhoto();
+    }
+  }
+
+  void _showPhotoOptions(int index) {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: Icon(Icons.edit),
+              title: Text('Replace Photo'),
+              onTap: () {
+                Navigator.pop(context);
+                _addPhoto();
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.delete, color: Colors.red),
+              title: Text('Remove Photo'),
+              onTap: () {
+                Navigator.pop(context);
+                _removePhoto(index);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _addPhoto() {
+    // Simulate adding a photo
+    setState(() {
+      _selectedPhotos.add('photo_${_selectedPhotos.length + 1}');
+    });
+  }
+
+  void _removePhoto(int index) {
+    setState(() {
+      _selectedPhotos.removeAt(index);
+    });
+  }
+}
