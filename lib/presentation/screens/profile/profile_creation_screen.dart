@@ -28,7 +28,7 @@ class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
   int _currentStep = 0;
   final int _totalSteps = 5;
 
-  List<String> _selectedPhotos = [];
+  final List<String> _selectedPhotos = [];
   List<String> _selectedInterests = [];
   String? _selectedGender;
   String? _selectedLookingFor;
@@ -238,7 +238,7 @@ class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
             ),
             const SizedBox(height: 20),
             DropdownButtonFormField<String>(
-              value: _selectedGender,
+              initialValue: _selectedGender,
               decoration: InputDecoration(
                 labelText: 'Gender',
                 border: OutlineInputBorder(
@@ -336,7 +336,7 @@ class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: PulseColors.primary.withOpacity(0.1),
+              color: PulseColors.primary.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Row(
@@ -417,7 +417,7 @@ class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
           ),
           const SizedBox(height: 32),
           DropdownButtonFormField<String>(
-            value: _selectedLookingFor,
+            initialValue: _selectedLookingFor,
             decoration: InputDecoration(
               labelText: 'Looking for',
               border: OutlineInputBorder(
@@ -455,8 +455,8 @@ class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  PulseColors.primary.withOpacity(0.1),
-                  PulseColors.secondary.withOpacity(0.05),
+                  PulseColors.primary.withValues(alpha: 0.1),
+                  PulseColors.secondary.withValues(alpha: 0.05),
                 ],
               ),
               borderRadius: BorderRadius.circular(16),
@@ -495,7 +495,7 @@ class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
         color: Theme.of(context).scaffoldBackgroundColor,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, -5),
           ),

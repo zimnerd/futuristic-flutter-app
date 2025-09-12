@@ -285,7 +285,8 @@ class _NotificationPreferencesWidgetState
           Switch.adaptive(
             value: _preferences[item.key] ?? false,
             onChanged: (value) => _updatePreference(item.key, value),
-            activeColor: PulseColors.primary,
+            activeTrackColor: PulseColors.primary,
+            activeThumbColor: Colors.white,
           ),
         ],
       ),

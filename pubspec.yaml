@@ -66,7 +66,7 @@ dependencies:
   flutter_animate: ^4.5.2
 
   # Safety Features
-  contacts_service: ^0.6.3
+  # contacts_service: ^0.6.3  # Temporarily disabled due to namespace issues
   device_info_plus: ^11.2.1
   url_launcher: ^6.3.2
 

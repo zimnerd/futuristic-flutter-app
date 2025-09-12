@@ -24,12 +24,12 @@ class _AdvancedFiltersState extends State<AdvancedFilters>
   // Filter values
   RangeValues _ageRange = const RangeValues(18, 65);
   double _distance = 50.0;
-  List<String> _selectedInterests = [];
+  final List<String> _selectedInterests = [];
   String? _selectedEducation;
   String? _selectedOccupation;
   RangeValues? _heightRange;
   String? _selectedZodiacSign;
-  List<String> _selectedLifestyleChoices = [];
+  final List<String> _selectedLifestyleChoices = [];
   bool _verifiedOnly = false;
   bool _activeRecentlyOnly = false;
 
@@ -423,7 +423,7 @@ class _AdvancedFiltersState extends State<AdvancedFilters>
 
   Widget _buildEducationDropdown() {
     return DropdownButtonFormField<String>(
-      value: _selectedEducation,
+      initialValue: _selectedEducation,
       hint: const Text('Select education level'),
       decoration: InputDecoration(
         border: OutlineInputBorder(
@@ -450,7 +450,7 @@ class _AdvancedFiltersState extends State<AdvancedFilters>
 
   Widget _buildOccupationDropdown() {
     return DropdownButtonFormField<String>(
-      value: _selectedOccupation,
+      initialValue: _selectedOccupation,
       hint: const Text('Select occupation type'),
       decoration: InputDecoration(
         border: OutlineInputBorder(
@@ -477,7 +477,7 @@ class _AdvancedFiltersState extends State<AdvancedFilters>
 
   Widget _buildZodiacDropdown() {
     return DropdownButtonFormField<String>(
-      value: _selectedZodiacSign,
+      initialValue: _selectedZodiacSign,
       hint: const Text('Select zodiac sign'),
       decoration: InputDecoration(
         border: OutlineInputBorder(

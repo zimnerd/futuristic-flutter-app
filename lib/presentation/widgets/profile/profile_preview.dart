@@ -233,7 +233,7 @@ class ProfilePreview extends StatelessWidget {
   }
 
   Widget _buildPhotoPage(BuildContext context, ProfilePhoto photo) {
-    return Container(
+    return SizedBox(
       width: double.infinity,
       height: double.infinity,
       child: photo.url.startsWith('/') || photo.url.startsWith('file://')

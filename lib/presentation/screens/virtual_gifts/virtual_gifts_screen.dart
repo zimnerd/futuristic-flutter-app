@@ -55,8 +55,8 @@ class _VirtualGiftsScreenState extends State<VirtualGiftsScreen>
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [
-                PulseColors.primary.withOpacity(0.1),
-                PulseColors.secondary.withOpacity(0.05),
+                PulseColors.primary.withValues(alpha: 0.1),
+                PulseColors.secondary.withValues(alpha: 0.05),
               ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
@@ -136,8 +136,8 @@ class _VirtualGiftsScreenState extends State<VirtualGiftsScreen>
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [
-                PulseColors.primary.withOpacity(0.1),
-                PulseColors.secondary.withOpacity(0.05),
+                PulseColors.primary.withValues(alpha: 0.1),
+                PulseColors.secondary.withValues(alpha: 0.05),
               ],
             ),
           ),

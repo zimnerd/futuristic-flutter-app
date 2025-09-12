@@ -222,7 +222,7 @@ class _StatusIndicatorWidgetState extends State<StatusIndicatorWidget>
           ),
         );
         
-      case UserStatus.recently_active:
+      case UserStatus.recentlyActive:
         return Stack(
           children: [
             Container(
@@ -253,7 +253,7 @@ class _StatusIndicatorWidgetState extends State<StatusIndicatorWidget>
           ],
         );
         
-      case UserStatus.in_call:
+      case UserStatus.inCall:
         return Container(
           width: size,
           height: size,
@@ -297,12 +297,12 @@ class _StatusIndicatorWidgetState extends State<StatusIndicatorWidget>
           color: Colors.grey,
           label: 'Offline',
         );
-      case UserStatus.recently_active:
+      case UserStatus.recentlyActive:
         return StatusConfig(
           color: Colors.green.shade300,
           label: 'Recently active',
         );
-      case UserStatus.in_call:
+      case UserStatus.inCall:
         return StatusConfig(
           color: Colors.blue,
           label: 'In call',
@@ -448,8 +448,8 @@ enum UserStatus {
   away,
   busy,
   offline,
-  recently_active,
-  in_call,
+  recentlyActive,
+  inCall,
 }
 
 enum StatusIndicatorSize {

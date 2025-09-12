@@ -540,7 +540,7 @@ class _EnhancedProfileEditScreenState extends State<EnhancedProfileEditScreen>
         ),
         const SizedBox(height: 8),
         DropdownButtonFormField<String>(
-          value: value,
+          initialValue: value,
           onChanged: onChanged,
           decoration: InputDecoration(
             filled: true,

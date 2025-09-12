@@ -220,7 +220,7 @@ class _InterestsSelectorState extends State<InterestsSelector>
                       ),
                       const SizedBox(height: 16),
                       Text(
-                        'No interests found for "${_searchQuery}"',
+                        'No interests found for "$_searchQuery"',
                         style: TextStyle(
                           color: Colors.grey[600],
                           fontSize: 16,

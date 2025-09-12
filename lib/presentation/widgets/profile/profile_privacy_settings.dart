@@ -216,7 +216,8 @@ class _ProfilePrivacySettingsState extends State<ProfilePrivacySettings> {
           Switch.adaptive(
             value: isEnabled,
             onChanged: (value) => _updateSetting(settingKey, value),
-            activeColor: PulseColors.primary,
+            activeTrackColor: PulseColors.primary,
+            activeThumbColor: Colors.white,
             materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
           ),
         ],

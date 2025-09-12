@@ -61,7 +61,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
         completionPercentage: completion,
       ));
       
-      _logger.i('✅ Profile loaded successfully (${completion}% complete)');
+      _logger.i('✅ Profile loaded successfully ($completion% complete)');
     } on NetworkException catch (e) {
       _logger.e('❌ Network error loading profile: ${e.message}');
       emit(ProfileError('Network error: ${e.message}'));

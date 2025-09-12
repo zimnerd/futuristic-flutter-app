@@ -167,7 +167,7 @@ class SubscriptionPlan {
 
   /// Get formatted price with billing cycle
   String get formattedPriceWithCycle {
-    return '${formattedPrice}/${billingCycle.displayName.toLowerCase()}';
+    return '$formattedPrice/${billingCycle.displayName.toLowerCase()}';
   }
 
   /// Check if plan has discount

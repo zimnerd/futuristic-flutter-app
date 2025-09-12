@@ -215,7 +215,7 @@ class AdvancedFeaturesScreen extends StatelessWidget {
               ].map((feature) => ElevatedButton(
                 onPressed: () => context.navigateToFeature(feature),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.deepPurple.withOpacity(0.1),
+                  backgroundColor: Colors.deepPurple.withValues(alpha: 0.1),
                   foregroundColor: Colors.deepPurple,
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 ),
