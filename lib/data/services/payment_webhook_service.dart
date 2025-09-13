@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:crypto/crypto.dart';
+import 'package:logger/logger.dart';
 import '../services/payment_service.dart';
 
 /// Service for handling PeachPayments webhook notifications
@@ -7,6 +8,9 @@ class PaymentWebhookService {
   static PaymentWebhookService? _instance;
   static PaymentWebhookService get instance => _instance ??= PaymentWebhookService._();
   PaymentWebhookService._();
+  
+  // Logger instance
+  final Logger _logger = Logger();
   
   /// Process incoming webhook notification from PeachPayments
   Future<Map<String, dynamic>> processWebhook({
@@ -60,7 +64,7 @@ class PaymentWebhookService {
         'processed': result,
       };
     } catch (e) {
-      print('Error processing webhook: $e');
+      _logger.e('Error processing webhook: $e');
       return {
         'success': false,
         'error': 'Webhook processing failed: $e',
@@ -85,7 +89,7 @@ class PaymentWebhookService {
       // Compare signatures securely
       return _secureCompare(signature, expectedSignature);
     } catch (e) {
-      print('Error validating webhook signature: $e');
+      _logger.e('Error validating webhook signature: $e');
       return false;
     }
   }
@@ -164,7 +168,7 @@ class PaymentWebhookService {
           await _handleRefundedPayment(paymentId, amount, fullPayload);
           break;
         default:
-          print('Unknown payment status: $status');
+          _logger.i('Unknown payment status: $status');
       }
 
       // Send notification to user if app is active
@@ -172,7 +176,7 @@ class PaymentWebhookService {
 
       return true;
     } catch (e) {
-      print('Error processing payment update for $paymentId: $e');
+      _logger.e('Error processing payment update for $paymentId: $e');
       return false;
     }
   }
@@ -188,7 +192,7 @@ class PaymentWebhookService {
   }) async {
     // TODO: Implement local database update
     // This would typically update your local SQLite/Hive database
-    print('Updating local payment record: $paymentId -> $status');
+    _logger.i('Updating local payment record: $paymentId -> $status');
   }
 
   /// Handle successful payment completion
@@ -208,9 +212,9 @@ class PaymentWebhookService {
       // Update subscription status if applicable
       await _updateSubscriptionStatus(paymentId, active: true);
       
-      print('Successfully processed payment completion: $paymentId');
+      _logger.i('Successfully processed payment completion: $paymentId');
     } catch (e) {
-      print('Error handling successful payment $paymentId: $e');
+      _logger.e('Error handling successful payment $paymentId: $e');
     }
   }
 
@@ -223,7 +227,7 @@ class PaymentWebhookService {
     try {
       // Log failure reason
       final failureReason = payload['result']?['description'] ?? 'Unknown error';
-      print('Payment failed: $paymentId - $failureReason ($resultCode)');
+      _logger.i('Payment failed: $paymentId - $failureReason ($resultCode)');
       
       // Notify user of failure and suggest retry
       await _scheduleRetryNotification(paymentId, failureReason);
@@ -231,7 +235,7 @@ class PaymentWebhookService {
       // Update subscription status if applicable
       await _updateSubscriptionStatus(paymentId, active: false);
     } catch (e) {
-      print('Error handling failed payment $paymentId: $e');
+      _logger.e('Error handling failed payment $paymentId: $e');
     }
   }
 
@@ -241,7 +245,7 @@ class PaymentWebhookService {
     Map<String, dynamic> payload,
   ) async {
     try {
-      print('Payment pending: $paymentId');
+      _logger.i('Payment pending: $paymentId');
       
       // Schedule status check for later
       await _scheduleStatusCheck(paymentId);
@@ -249,7 +253,7 @@ class PaymentWebhookService {
       // Notify user that payment is being processed
       await _notifyPaymentPending(paymentId);
     } catch (e) {
-      print('Error handling pending payment $paymentId: $e');
+      _logger.e('Error handling pending payment $paymentId: $e');
     }
   }
 
@@ -260,7 +264,7 @@ class PaymentWebhookService {
     Map<String, dynamic> payload,
   ) async {
     try {
-      print('Payment refunded: $paymentId - $amount');
+      _logger.i('Payment refunded: $paymentId - $amount');
       
       // Revoke premium features if applicable
       await _revokePremiumFeatures(paymentId);
@@ -271,63 +275,63 @@ class PaymentWebhookService {
       // Send refund confirmation
       await _sendRefundConfirmation(paymentId, amount);
     } catch (e) {
-      print('Error handling refunded payment $paymentId: $e');
+      _logger.e('Error handling refunded payment $paymentId: $e');
     }
   }
 
   /// Unlock premium features for user
   Future<void> _unlockPremiumFeatures(String paymentId) async {
     // TODO: Implement feature unlocking logic
-    print('Unlocking premium features for payment: $paymentId');
+    _logger.i('Unlocking premium features for payment: $paymentId');
   }
 
   /// Revoke premium features for user
   Future<void> _revokePremiumFeatures(String paymentId) async {
     // TODO: Implement feature revocation logic
-    print('Revoking premium features for payment: $paymentId');
+    _logger.i('Revoking premium features for payment: $paymentId');
   }
 
   /// Send payment confirmation
   Future<void> _sendPaymentConfirmation(String paymentId, String? amount, String? currency) async {
     // TODO: Implement confirmation sending via backend API
-    print('Sending payment confirmation: $paymentId');
+    _logger.i('Sending payment confirmation: $paymentId');
   }
 
   /// Send refund confirmation
   Future<void> _sendRefundConfirmation(String paymentId, String? amount) async {
     // TODO: Implement refund confirmation via backend API
-    print('Sending refund confirmation: $paymentId');
+    _logger.i('Sending refund confirmation: $paymentId');
   }
 
   /// Update subscription status
   Future<void> _updateSubscriptionStatus(String paymentId, {required bool active}) async {
     // TODO: Implement subscription status update
-    print('Updating subscription status: $paymentId -> ${active ? 'active' : 'inactive'}');
+    _logger.i('Updating subscription status: $paymentId -> ${active ? 'active' : 'inactive'}');
   }
 
   /// Schedule retry notification for failed payments
   Future<void> _scheduleRetryNotification(String paymentId, String reason) async {
     // TODO: Implement retry notification scheduling
-    print('Scheduling retry notification for: $paymentId');
+    _logger.i('Scheduling retry notification for: $paymentId');
   }
 
   /// Schedule status check for pending payments
   Future<void> _scheduleStatusCheck(String paymentId) async {
     // TODO: Implement status check scheduling
-    print('Scheduling status check for: $paymentId');
+    _logger.i('Scheduling status check for: $paymentId');
   }
 
   /// Notify user about payment pending
   Future<void> _notifyPaymentPending(String paymentId) async {
     // TODO: Implement pending notification
-    print('Notifying user of pending payment: $paymentId');
+    _logger.i('Notifying user of pending payment: $paymentId');
   }
 
   /// Send in-app notification to user about payment status
   Future<void> _notifyUser(String paymentId, PaymentStatus status, String? amount, String? currency) async {
     // TODO: Implement in-app notification system
     final statusText = status.name.toUpperCase();
-    print('Notifying user: Payment $paymentId is $statusText');
+    _logger.i('Notifying user: Payment $paymentId is $statusText');
   }
 
   /// Get webhook endpoint URL for PeachPayments configuration
@@ -341,7 +345,7 @@ class PaymentWebhookService {
     
     for (final field in requiredFields) {
       if (!payload.containsKey(field)) {
-        print('Missing required webhook field: $field');
+        _logger.i('Missing required webhook field: $field');
         return false;
       }
     }

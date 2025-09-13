@@ -54,7 +54,7 @@ class _SavedPaymentMethodsScreenState extends State<SavedPaymentMethodsScreen> {
 
     try {
       final success = await _service.deletePaymentMethod(method.id);
-      if (success) {
+      if (success && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Payment method deleted'),
@@ -66,12 +66,14 @@ class _SavedPaymentMethodsScreenState extends State<SavedPaymentMethodsScreen> {
         throw Exception('Failed to delete payment method');
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error deleting payment method: $e'),
-          backgroundColor: AppColors.error,
-        ),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error deleting payment method: $e'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
     }
   }
 
@@ -111,7 +113,7 @@ class _SavedPaymentMethodsScreenState extends State<SavedPaymentMethodsScreen> {
   Future<void> _setAsDefault(SavedPaymentMethod method) async {
     try {
       final success = await _service.setDefaultPaymentMethod(method.id);
-      if (success) {
+      if (success && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Default payment method updated'),
@@ -123,12 +125,14 @@ class _SavedPaymentMethodsScreenState extends State<SavedPaymentMethodsScreen> {
         throw Exception('Failed to set default payment method');
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error updating default method: $e'),
-          backgroundColor: AppColors.error,
-        ),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error updating default method: $e'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
     }
   }
 
@@ -144,7 +148,7 @@ class _SavedPaymentMethodsScreenState extends State<SavedPaymentMethodsScreen> {
           methodId: method.id,
           nickname: result,
         );
-        if (success) {
+        if (success && mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('Payment method updated'),
@@ -156,12 +160,14 @@ class _SavedPaymentMethodsScreenState extends State<SavedPaymentMethodsScreen> {
           throw Exception('Failed to update payment method');
         }
       } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error updating payment method: $e'),
-            backgroundColor: AppColors.error,
-          ),
-        );
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Error updating payment method: $e'),
+              backgroundColor: AppColors.error,
+            ),
+          );
+        }
       }
     }
   }

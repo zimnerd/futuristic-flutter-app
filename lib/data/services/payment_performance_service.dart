@@ -1,11 +1,15 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:isolate';
+import 'package:logger/logger.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// Performance optimization service for payments
 class PaymentPerformanceService {
   static const String _keyOptimizationSettings = 'optimization_settings';
+  
+  // Logger instance
+  final Logger _logger = Logger();
   
   // Cache for frequently accessed data
   final Map<String, dynamic> _memoryCache = {};
@@ -56,7 +60,9 @@ class PaymentPerformanceService {
     
     // Log if operation is slow
     if (duration.inMilliseconds > 1000) {
-      print('Slow operation detected: $operationName took ${duration.inMilliseconds}ms');
+      _logger.w(
+        'Slow operation detected: $operationName took ${duration.inMilliseconds}ms',
+      );
     }
     
     return duration;
@@ -124,7 +130,7 @@ class PaymentPerformanceService {
       await _preloadUserPreferences();
       
     } catch (e) {
-      print('Error preloading data: $e');
+      _logger.e('Error preloading data: $e');
     } finally {
       stopTimer('preload_data');
     }
@@ -245,20 +251,20 @@ class PaymentPerformanceService {
       // Apply settings immediately
       await _applyOptimizationSettings(settings);
     } catch (e) {
-      print('Error updating optimization settings: $e');
+      _logger.e('Error updating optimization settings: $e');
     }
   }
 
   /// Optimize image loading and caching
   Future<void> optimizeImageCaching() async {
     // Implementation would integrate with image caching library
-    print('Image caching optimization applied');
+    _logger.i('Image caching optimization applied');
   }
 
   /// Optimize network requests
   Future<void> optimizeNetworkRequests() async {
     // Implementation would configure HTTP client with optimal settings
-    print('Network request optimization applied');
+    _logger.i('Network request optimization applied');
   }
 
   /// Get cache statistics
@@ -287,7 +293,7 @@ class PaymentPerformanceService {
       };
       await prefs.setString('cache_$key', jsonEncode(cacheItem));
     } catch (e) {
-      print('Error persisting cache data: $e');
+      _logger.e('Error persisting cache data: $e');
     }
   }
 
@@ -312,7 +318,7 @@ class PaymentPerformanceService {
       
       return null;
     } catch (e) {
-      print('Error getting persisted cache data: $e');
+      _logger.e('Error getting persisted cache data: $e');
       return null;
     }
   }
@@ -333,7 +339,7 @@ class PaymentPerformanceService {
         }
       }
     } catch (e) {
-      print('Error clearing persisted cache: $e');
+      _logger.e('Error clearing persisted cache: $e');
     }
   }
 

@@ -2,8 +2,9 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
 import 'package:crypto/crypto.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:device_info_plus/device_info_plus.dart';
+import 'package:logger/logger.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 /// Security service for payment and authentication protection
 class PaymentSecurityService {
@@ -11,6 +12,9 @@ class PaymentSecurityService {
   static const String _keySecuritySettings = 'security_settings';
   static const String _keySecurityLogs = 'security_logs';
   static const String _keyTrustedDevices = 'trusted_devices';
+  
+  // Logger instance
+  final Logger _logger = Logger();
   
   // Stream controllers for security events
   final StreamController<SecurityEvent> _securityEventController = 
@@ -207,7 +211,7 @@ class PaymentSecurityService {
         timestamp: DateTime.now(),
       ));
     } catch (e) {
-      print('Error updating security settings: $e');
+      _logger.e('Error updating security settings: $e');
     }
   }
 
@@ -229,7 +233,7 @@ class PaymentSecurityService {
         ));
       }
     } catch (e) {
-      print('Error adding trusted device: $e');
+      _logger.e('Error adding trusted device: $e');
     }
   }
 
@@ -250,7 +254,7 @@ class PaymentSecurityService {
         ));
       }
     } catch (e) {
-      print('Error removing trusted device: $e');
+      _logger.e('Error removing trusted device: $e');
     }
   }
 
@@ -273,7 +277,7 @@ class PaymentSecurityService {
       
       return [];
     } catch (e) {
-      print('Error getting security logs: $e');
+      _logger.e('Error getting security logs: $e');
       return [];
     }
   }
@@ -284,7 +288,7 @@ class PaymentSecurityService {
       final prefs = await SharedPreferences.getInstance();
       await prefs.remove(_keySecurityLogs);
     } catch (e) {
-      print('Error clearing security logs: $e');
+      _logger.e('Error clearing security logs: $e');
     }
   }
 
@@ -402,7 +406,7 @@ class PaymentSecurityService {
       
       _securityEventController.add(event);
     } catch (e) {
-      print('Error logging security event: $e');
+      _logger.e('Error logging security event: $e');
     }
   }
 

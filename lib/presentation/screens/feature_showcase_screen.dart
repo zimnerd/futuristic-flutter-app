@@ -293,8 +293,11 @@ class _FeatureShowcaseScreenState extends State<FeatureShowcaseScreen>
                     _buildStatusDemo('Typing', UserStatus.typing),
                     _buildStatusDemo('Away', UserStatus.away),
                     _buildStatusDemo('Busy', UserStatus.busy),
-                    _buildStatusDemo('In Call', UserStatus.in_call),
-                    _buildStatusDemo('Recently Active', UserStatus.recently_active),
+                    _buildStatusDemo('In Call', UserStatus.inCall),
+                    _buildStatusDemo(
+                      'Recently Active',
+                      UserStatus.recentlyActive,
+                    ),
                   ],
                 ),
                 const SizedBox(height: 20),

@@ -5,7 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import '../blocs/auth/auth_bloc.dart';
 import '../screens/auth/forgot_password_screen.dart';
-import '../screens/auth/login_screen.dart' as SimpleLogin;
+import '../screens/auth/login_screen.dart' as simple_login;
 import '../screens/auth/enhanced_login_screen.dart';
 import '../screens/auth/register_screen.dart';
 import '../screens/main/home_screen.dart';
@@ -56,7 +56,7 @@ class AppRouter {
       GoRoute(
         path: AppRoutes.login,
         name: 'login',
-        builder: (context, state) => const SimpleLogin.LoginScreen(),
+        builder: (context, state) => const simple_login.LoginScreen(),
       ),
       GoRoute(
         path: AppRoutes.enhancedLogin,

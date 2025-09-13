@@ -1,4 +1,5 @@
 /// Payment-related entities for the PulseLink payment system
+library;
 
 enum PaymentType {
   boost,
