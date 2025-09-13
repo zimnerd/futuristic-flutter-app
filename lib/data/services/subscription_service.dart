@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:logger/logger.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/subscription.dart';
 import '../models/subscription_plan.dart';
@@ -10,6 +11,9 @@ import 'saved_payment_methods_service.dart';
 /// Subscription service for managing user subscriptions
 class SubscriptionService {
   final SavedPaymentMethodsService _savedMethodsService;
+  
+  // Logger instance
+  final Logger _logger = Logger();
   
   // Stream controllers for reactive updates
   final StreamController<Subscription?> _subscriptionController = StreamController<Subscription?>.broadcast();
@@ -36,7 +40,7 @@ class SubscriptionService {
       
       return null;
     } catch (e) {
-      print('Error getting current subscription: $e');
+      _logger.e('Error getting current subscription: $e');
       return null;
     }
   }
@@ -246,7 +250,7 @@ class SubscriptionService {
       
       return null;
     } catch (e) {
-      print('Error getting subscription usage: $e');
+      _logger.e('Error getting subscription usage: $e');
       return null;
     }
   }
@@ -274,7 +278,7 @@ class SubscriptionService {
 
       return true;
     } catch (e) {
-      print('Error tracking feature usage: $e');
+      _logger.e('Error tracking feature usage: $e');
       return false;
     }
   }
@@ -294,7 +298,7 @@ class SubscriptionService {
       final counter = usage.getFeatureUsage(feature);
       return !counter.isLimitReached;
     } catch (e) {
-      print('Error checking feature availability: $e');
+      _logger.e('Error checking feature availability: $e');
       return false;
     }
   }
@@ -308,7 +312,7 @@ class SubscriptionService {
       final counter = usage.getFeatureUsage(feature);
       return counter.remaining;
     } catch (e) {
-      print('Error getting remaining usage: $e');
+      _logger.e('Error getting remaining usage: $e');
       return 0;
     }
   }
@@ -359,7 +363,7 @@ class SubscriptionService {
 
       return true;
     } catch (e) {
-      print('Error processing renewal: $e');
+      _logger.e('Error processing renewal: $e');
       return false;
     }
   }

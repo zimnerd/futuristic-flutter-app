@@ -12,6 +12,9 @@ class PeachPaymentsService {
   
   PeachPaymentsService._();
 
+  // Logger instance
+  final Logger _logger = Logger();
+
   // PeachPayments API configuration
   static const String _baseUrl = 'https://test.oppwa.com'; // Use production URL for live
   static const String _checkoutEndpoint = '/v1/checkouts';
@@ -141,7 +144,7 @@ class PeachPaymentsService {
         
         final isFailure = !isSuccess && !isPending;
 
-        print('Payment status retrieved: $code - ${result['description']}');
+        _logger.i('Payment status retrieved: $code - ${result['description']}');
 
         return {
           'success': true,
@@ -157,14 +160,14 @@ class PeachPaymentsService {
           'isFailure': isFailure,
         };
       } else {
-        print('Failed to get payment status: $responseData');
+        _logger.i('Failed to get payment status: $responseData');
         return {
           'success': false,
           'error': 'Failed to retrieve payment status',
         };
       }
     } catch (e) {
-      print('Error getting payment status: $e');
+      _logger.e('Error getting payment status: $e');
       return {
         'success': false,
         'error': 'Network error: $e',
@@ -191,7 +194,7 @@ class PeachPaymentsService {
         if (merchantTransactionId != null) 'merchantTransactionId': merchantTransactionId,
       };
 
-      print('Creating recurring payment: $paymentData');
+      _logger.i('Creating recurring payment: $paymentData');
 
       final response = await http.post(
         url,
@@ -209,7 +212,7 @@ class PeachPaymentsService {
         final code = result['code'] as String;
         final isSuccess = code.startsWith('000.000.') || code.startsWith('000.100.1');
 
-        print('Recurring payment result: $code - ${result['description']}');
+        _logger.i('Recurring payment result: $code - ${result['description']}');
 
         return {
           'success': isSuccess,
@@ -220,14 +223,14 @@ class PeachPaymentsService {
           'result': result,
         };
       } else {
-        print('Failed to create recurring payment: $responseData');
+        _logger.i('Failed to create recurring payment: $responseData');
         return {
           'success': false,
           'error': 'Failed to create recurring payment',
         };
       }
     } catch (e) {
-      print('Error creating recurring payment: $e');
+      _logger.e('Error creating recurring payment: $e');
       return {
         'success': false,
         'error': 'Network error: $e',
@@ -254,7 +257,7 @@ class PeachPaymentsService {
         if (reason != null) 'descriptor': reason,
       };
 
-      print('Creating refund: $refundData');
+      _logger.i('Creating refund: $refundData');
 
       final response = await http.post(
         url,
@@ -272,7 +275,7 @@ class PeachPaymentsService {
         final code = result['code'] as String;
         final isSuccess = code.startsWith('000.000.') || code.startsWith('000.100.1');
 
-        print('Refund result: $code - ${result['description']}');
+        _logger.i('Refund result: $code - ${result['description']}');
 
         return {
           'success': isSuccess,
@@ -283,14 +286,14 @@ class PeachPaymentsService {
           'result': result,
         };
       } else {
-        print('Failed to create refund: $responseData');
+        _logger.i('Failed to create refund: $responseData');
         return {
           'success': false,
           'error': 'Failed to create refund',
         };
       }
     } catch (e) {
-      print('Error creating refund: $e');
+      _logger.e('Error creating refund: $e');
       return {
         'success': false,
         'error': 'Network error: $e',
@@ -329,7 +332,7 @@ class PeachPaymentsService {
   bool validateWebhookNotification(Map<String, dynamic> notification, String signature) {
     // Implement webhook signature validation based on PeachPayments documentation
     // This is crucial for security in production
-    print('Validating webhook notification: ${notification['id']}');
+    _logger.i('Validating webhook notification: ${notification['id']}');
     
     // For now, return true - implement proper validation in production
     return true;
@@ -359,7 +362,7 @@ class PeachPaymentsService {
         return await _submitExternalPayment(paymentData);
       }
     } catch (e) {
-      print('Error submitting payment: $e');
+      _logger.e('Error submitting payment: $e');
       return {
         'success': false,
         'error': 'Payment submission failed: $e',
@@ -503,7 +506,7 @@ class PeachPaymentsService {
         };
       }
     } catch (e) {
-      print('Error tokenizing payment method: $e');
+      _logger.e('Error tokenizing payment method: $e');
       return {
         'success': false,
         'error': 'Tokenization failed: $e',
@@ -585,7 +588,7 @@ class PeachPaymentsService {
         };
       }
     } catch (e) {
-      print('Error processing token payment: $e');
+      _logger.e('Error processing token payment: $e');
       return {
         'success': false,
         'error': 'Payment processing failed: $e',

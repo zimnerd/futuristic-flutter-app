@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:logger/logger.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/saved_payment_method.dart';
 import 'payment_service.dart';
@@ -10,6 +11,9 @@ class SavedPaymentMethodsService {
   static SavedPaymentMethodsService? _instance;
   static SavedPaymentMethodsService get instance => _instance ??= SavedPaymentMethodsService._();
   SavedPaymentMethodsService._();
+
+  // Logger instance
+  final Logger _logger = Logger();
 
   static const String _storageKey = 'saved_payment_methods';
   static const String _defaultMethodKey = 'default_payment_method_id';
@@ -32,7 +36,7 @@ class SavedPaymentMethodsService {
           .map((json) => SavedPaymentMethod.fromJson(json as Map<String, dynamic>))
           .toList();
     } catch (e) {
-      print('Error loading saved payment methods: $e');
+      _logger.e('Error loading saved payment methods: $e');
       return [];
     }
   }
@@ -56,7 +60,7 @@ class SavedPaymentMethodsService {
       );
 
       if (!tokenResult['success']) {
-        print('Failed to tokenize payment method: ${tokenResult['error']}');
+        _logger.i('Failed to tokenize payment method: ${tokenResult['error']}');
         return null;
       }
 
@@ -93,10 +97,10 @@ class SavedPaymentMethodsService {
         await setDefaultPaymentMethod(savedMethod.id);
       }
 
-      print('Payment method saved successfully: ${savedMethod.id}');
+      _logger.i('Payment method saved successfully: ${savedMethod.id}');
       return savedMethod;
     } catch (e) {
-      print('Error saving payment method: $e');
+      _logger.e('Error saving payment method: $e');
       return null;
     }
   }
@@ -108,7 +112,7 @@ class SavedPaymentMethodsService {
       final methodIndex = methods.indexWhere((m) => m.id == methodId);
       
       if (methodIndex == -1) {
-        print('Payment method not found: $methodId');
+        _logger.i('Payment method not found: $methodId');
         return false;
       }
 
@@ -126,10 +130,10 @@ class SavedPaymentMethodsService {
       // TODO: Optionally revoke token from PeachPayments
       await _revokePaymentToken(deletedMethod.token);
 
-      print('Payment method deleted: $methodId');
+      _logger.i('Payment method deleted: $methodId');
       return true;
     } catch (e) {
-      print('Error deleting payment method: $e');
+      _logger.e('Error deleting payment method: $e');
       return false;
     }
   }
@@ -145,7 +149,7 @@ class SavedPaymentMethodsService {
       final methodIndex = methods.indexWhere((m) => m.id == methodId);
       
       if (methodIndex == -1) {
-        print('Payment method not found: $methodId');
+        _logger.i('Payment method not found: $methodId');
         return false;
       }
 
@@ -166,10 +170,10 @@ class SavedPaymentMethodsService {
       }
 
       await _saveMethodsToStorage(methods);
-      print('Payment method updated: $methodId');
+      _logger.i('Payment method updated: $methodId');
       return true;
     } catch (e) {
-      print('Error updating payment method: $e');
+      _logger.e('Error updating payment method: $e');
       return false;
     }
   }
@@ -191,7 +195,7 @@ class SavedPaymentMethodsService {
       }
 
       if (!methodFound) {
-        print('Payment method not found: $methodId');
+        _logger.i('Payment method not found: $methodId');
         return false;
       }
 
@@ -201,10 +205,10 @@ class SavedPaymentMethodsService {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString(_defaultMethodKey, methodId);
 
-      print('Default payment method set: $methodId');
+      _logger.i('Default payment method set: $methodId');
       return true;
     } catch (e) {
-      print('Error setting default payment method: $e');
+      _logger.e('Error setting default payment method: $e');
       return false;
     }
   }
@@ -218,7 +222,7 @@ class SavedPaymentMethodsService {
         orElse: () => methods.isNotEmpty ? methods.first : throw StateError('No methods'),
       );
     } catch (e) {
-      print('No default payment method found');
+      _logger.i('No default payment method found');
       return null;
     }
   }
@@ -270,7 +274,7 @@ class SavedPaymentMethodsService {
 
       return result;
     } catch (e) {
-      print('Error processing payment with saved method: $e');
+      _logger.e('Error processing payment with saved method: $e');
       return {
         'success': false,
         'error': 'Payment processing failed: $e',
@@ -299,12 +303,12 @@ class SavedPaymentMethodsService {
       }
 
       if (expiredMethods.isNotEmpty) {
-        print('Found ${expiredMethods.length} expired payment methods');
+        _logger.i('Found ${expiredMethods.length} expired payment methods');
       }
 
       return expiredMethods;
     } catch (e) {
-      print('Error validating saved methods: $e');
+      _logger.e('Error validating saved methods: $e');
       return [];
     }
   }
@@ -321,10 +325,10 @@ class SavedPaymentMethodsService {
         }
       }
 
-      print('Removed $removedCount expired payment methods');
+      _logger.i('Removed $removedCount expired payment methods');
       return removedCount;
     } catch (e) {
-      print('Error removing expired methods: $e');
+      _logger.e('Error removing expired methods: $e');
       return 0;
     }
   }
@@ -336,10 +340,10 @@ class SavedPaymentMethodsService {
       await prefs.remove(_storageKey);
       await prefs.remove(_defaultMethodKey);
       
-      print('All saved payment methods cleared');
+      _logger.i('All saved payment methods cleared');
       return true;
     } catch (e) {
-      print('Error clearing saved methods: $e');
+      _logger.e('Error clearing saved methods: $e');
       return false;
     }
   }
@@ -372,9 +376,9 @@ class SavedPaymentMethodsService {
   Future<void> _revokePaymentToken(String token) async {
     try {
       // TODO: Implement token revocation with PeachPayments API
-      print('Revoking payment token: $token');
+      _logger.i('Revoking payment token: $token');
     } catch (e) {
-      print('Error revoking payment token: $e');
+      _logger.e('Error revoking payment token: $e');
     }
   }
 
