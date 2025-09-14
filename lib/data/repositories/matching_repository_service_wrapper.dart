@@ -43,18 +43,18 @@ class MatchingRepositoryServiceWrapper implements MatchingRepository {
   @override
   Future<Either<Failure, discovery_types.SwipeResult>> swipeProfile({
     required String profileId,
-    required SwipeDirection direction,
+    required discovery_types.SwipeAction direction,
   }) async {
     try {
       final result = await _matchingService.swipeProfile(
         profileId: profileId,
-        isLike: direction == SwipeDirection.right, // right = like
+        isLike: direction == discovery_types.SwipeAction.right, // right = like
       );
       
       return Right(discovery_types.SwipeResult(
         isMatch: result['isMatch'] ?? false,
         targetUserId: profileId,
-        action: direction == SwipeDirection.right ? discovery_types.SwipeAction.right : discovery_types.SwipeAction.left,
+        action: direction == discovery_types.SwipeAction.right ? discovery_types.SwipeAction.right : discovery_types.SwipeAction.left,
         conversationId: result['matchId'],
       ));
     } catch (e) {

@@ -6,7 +6,7 @@ import '../../../domain/entities/discovery_types.dart';
 import '../../blocs/discovery/discovery_bloc.dart';
 import '../../blocs/discovery/discovery_event.dart';
 import '../../blocs/discovery/discovery_state.dart';
-import '../../widgets/discovery/swipe_card.dart';
+import '../../widgets/discovery/swipe_card.dart' as swipe_widget;
 
 /// Main discovery screen with swipeable user cards
 /// 
@@ -34,7 +34,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
   
   bool _isDragging = false;
   Offset _dragOffset = Offset.zero;
-  SwipeDirection? _currentSwipeDirection;
+  SwipeAction? _currentSwipeDirection;
 
   @override
   void initState() {
@@ -104,11 +104,11 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
       // Determine swipe direction
       if (_dragOffset.dx.abs() > 0.1 || _dragOffset.dy.abs() > 0.1) {
         if (_dragOffset.dy < -0.2) {
-          _currentSwipeDirection = SwipeDirection.up;
+          _currentSwipeDirection = SwipeAction.up;
         } else if (_dragOffset.dx > 0.2) {
-          _currentSwipeDirection = SwipeDirection.right;
+          _currentSwipeDirection = SwipeAction.right;
         } else if (_dragOffset.dx < -0.2) {
-          _currentSwipeDirection = SwipeDirection.left;
+          _currentSwipeDirection = SwipeAction.left;
         } else {
           _currentSwipeDirection = null;
         }
@@ -131,7 +131,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
     }
   }
 
-  void _executeSwipe(SwipeDirection direction) {
+  void _executeSwipe(SwipeAction direction) {
     final discoveryBloc = context.read<DiscoveryBloc>();
     final state = discoveryBloc.state;
     
@@ -150,20 +150,20 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
       
       // Execute swipe action
       switch (direction) {
-        case SwipeDirection.left:
+        case SwipeAction.left:
           discoveryBloc.add(SwipeLeft(user));
           break;
-        case SwipeDirection.right:
+        case SwipeAction.right:
           discoveryBloc.add(SwipeRight(user));
           break;
-        case SwipeDirection.up:
+        case SwipeAction.up:
           discoveryBloc.add(SwipeUp(user));
           break;
       }
     }
   }
 
-  void _handleActionTap(SwipeDirection direction) {
+  void _handleActionTap(SwipeAction direction) {
     _actionController.forward().then((_) {
       _actionController.reverse();
     });
@@ -183,11 +183,11 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
             animation: _actionScaleAnimation,
             builder: (context, child) {
               return Transform.scale(
-                scale: _currentSwipeDirection == SwipeDirection.left 
+                scale: _currentSwipeDirection == SwipeAction.left 
                     ? _actionScaleAnimation.value 
                     : 1.0,
                 child: GestureDetector(
-                  onTap: () => _handleActionTap(SwipeDirection.left),
+                  onTap: () => _handleActionTap(SwipeAction.left),
                   child: Container(
                     width: 60,
                     height: 60,
@@ -218,11 +218,11 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
             animation: _actionScaleAnimation,
             builder: (context, child) {
               return Transform.scale(
-                scale: _currentSwipeDirection == SwipeDirection.up 
+                scale: _currentSwipeDirection == SwipeAction.up 
                     ? _actionScaleAnimation.value 
                     : 1.0,
                 child: GestureDetector(
-                  onTap: () => _handleActionTap(SwipeDirection.up),
+                  onTap: () => _handleActionTap(SwipeAction.up),
                   child: Container(
                     width: 50,
                     height: 50,
@@ -253,11 +253,11 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
             animation: _actionScaleAnimation,
             builder: (context, child) {
               return Transform.scale(
-                scale: _currentSwipeDirection == SwipeDirection.right 
+                scale: _currentSwipeDirection == SwipeAction.right 
                     ? _actionScaleAnimation.value 
                     : 1.0,
                 child: GestureDetector(
-                  onTap: () => _handleActionTap(SwipeDirection.right),
+                  onTap: () => _handleActionTap(SwipeAction.right),
                   child: Container(
                     width: 60,
                     height: 60,
@@ -391,7 +391,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
               Positioned.fill(
                 child: Transform.scale(
                   scale: 0.95,
-                  child: SwipeCard(
+                  child: swipe_widget.SwipeCard(
                     user: users[1],
                     showDetails: false,
                   ),
@@ -402,7 +402,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
               Positioned.fill(
                 child: Transform.scale(
                   scale: 0.9,
-                  child: SwipeCard(
+                  child: swipe_widget.SwipeCard(
                     user: users[2],
                     showDetails: false,
                   ),
@@ -429,10 +429,12 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
                         angle: _isDragging 
                             ? _dragOffset.dx * 0.3
                             : _cardRotationAnimation.value,
-                        child: SwipeCard(
+                        child: swipe_widget.SwipeCard(
                           user: users[0],
                           swipeProgress: _dragOffset.dx,
-                          swipeDirection: _currentSwipeDirection,
+                          swipeDirection: _currentSwipeDirection != null 
+                              ? _convertToWidgetSwipeDirection(_currentSwipeDirection!) 
+                              : null,
                           isAnimating: _isDragging,
                         ),
                       ),
@@ -841,5 +843,17 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
         const Text('Current location'),
       ],
     );
+  }
+
+  /// Convert SwipeAction to widget SwipeDirection
+  swipe_widget.SwipeDirection _convertToWidgetSwipeDirection(SwipeAction action) {
+    switch (action) {
+      case SwipeAction.left:
+        return swipe_widget.SwipeDirection.left;
+      case SwipeAction.right:
+        return swipe_widget.SwipeDirection.right;
+      case SwipeAction.up:
+        return swipe_widget.SwipeDirection.up;
+    }
   }
 }

@@ -7,6 +7,7 @@ import '../../theme/pulse_colors.dart';
 import '../../widgets/swipeable_profile_card.dart' as swipe_widget;
 import '../../blocs/matching/matching_bloc.dart';
 import '../../../domain/entities/user_profile.dart';
+import '../../../domain/entities/discovery_types.dart';
 
 /// Enhanced matches screen with swipeable cards and modern UI
 class MatchesScreen extends StatefulWidget {
@@ -196,17 +197,17 @@ class _MatchesScreenState extends State<MatchesScreen>
       ),
       onSwipe: (direction) {
         HapticFeedback.lightImpact();
-        // Convert widget SwipeDirection to bloc SwipeDirection
-        SwipeDirection blocDirection;
+        // Convert widget SwipeDirection to bloc SwipeAction
+        SwipeAction blocDirection;
         switch (direction) {
           case swipe_widget.SwipeDirection.left:
-            blocDirection = SwipeDirection.left;
+            blocDirection = SwipeAction.left;
             break;
           case swipe_widget.SwipeDirection.right:
-            blocDirection = SwipeDirection.right;
+            blocDirection = SwipeAction.right;
             break;
           case swipe_widget.SwipeDirection.up:
-            blocDirection = SwipeDirection.up;
+            blocDirection = SwipeAction.up;
             break;
         }
         
@@ -292,7 +293,7 @@ class _MatchesScreenState extends State<MatchesScreen>
           _buildActionButton(
             icon: Icons.close,
             color: Colors.red[400]!,
-            onPressed: () => _handleSwipe(SwipeDirection.left),
+            onPressed: () => _handleSwipe(SwipeAction.left),
             size: 56,
           ),
           
@@ -307,7 +308,7 @@ class _MatchesScreenState extends State<MatchesScreen>
           _buildActionButton(
             icon: Icons.favorite,
             color: Colors.green[400]!,
-            onPressed: () => _handleSwipe(SwipeDirection.right),
+            onPressed: () => _handleSwipe(SwipeAction.right),
             size: 56,
           ),
           
@@ -349,7 +350,7 @@ class _MatchesScreenState extends State<MatchesScreen>
     );
   }
 
-  void _handleSwipe(SwipeDirection direction) {
+  void _handleSwipe(SwipeAction direction) {
     final state = context.read<MatchingBloc>().state;
     if (state.profiles.isNotEmpty) {
       HapticFeedback.lightImpact();

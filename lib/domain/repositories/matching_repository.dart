@@ -16,7 +16,7 @@ abstract class MatchingRepository {
   /// Swipe on a profile (like, pass, or super like)
   Future<Either<Failure, discovery_types.SwipeResult>> swipeProfile({
     required String profileId,
-    required SwipeDirection direction,
+    required discovery_types.SwipeAction direction,
   });
 
   /// Undo the last swipe action
