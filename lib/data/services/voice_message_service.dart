@@ -2,19 +2,20 @@ import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 import 'package:logger/logger.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:dio/dio.dart';
 import '../models/voice_message.dart';
-import 'api_service_impl.dart';
+import '../../core/network/api_client.dart';
 
 /// Service for handling voice message recording, playback, and management
 class VoiceMessageService {
-  final ApiServiceImpl _apiService;
+  final ApiClient _apiClient;
   final Logger _logger = Logger();
 
   // Current recording session
   VoiceRecordingSession? _currentSession;
   String? _currentPlayingMessageId;
 
-  VoiceMessageService(this._apiService);
+  VoiceMessageService(this._apiClient);
 
   /// Check and request microphone permission
   Future<bool> checkMicrophonePermission() async {
@@ -145,12 +146,12 @@ class VoiceMessageService {
       }
 
       // Upload the voice message file
-      final response = await _apiService.uploadFile(
+      final response = await _apiClient.post(
         '/api/messages/$conversationId/voice',
-        filePath,
-        data: {
+        data: FormData.fromMap({
+          'voiceMessage': await MultipartFile.fromFile(filePath),
           'duration': duration?.toString() ?? '0',
-        },
+        }),
       );
 
       if (response.statusCode == 200 && response.data != null) {
@@ -221,7 +222,7 @@ class VoiceMessageService {
   /// Mark voice message as played
   Future<bool> markAsPlayed(String messageId) async {
     try {
-      final response = await _apiService.patch(
+      final response = await _apiClient.patch(
         '/api/messages/$messageId/played',
         data: {'isPlayed': true},
       );
@@ -242,7 +243,9 @@ class VoiceMessageService {
   /// Get voice messages for a conversation
   Future<List<VoiceMessage>> getVoiceMessages(String conversationId) async {
     try {
-      final response = await _apiService.get('/api/conversations/$conversationId/voice-messages');
+      final response = await _apiClient.get(
+        '/api/conversations/$conversationId/voice-messages',
+      );
 
       if (response.statusCode == 200 && response.data != null) {
         final List<dynamic> data = response.data['messages'] ?? [];

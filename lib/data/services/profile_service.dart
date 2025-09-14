@@ -6,7 +6,7 @@ import 'package:logger/logger.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
 
-import '../../domain/services/api_service.dart';
+import '../../core/network/api_client.dart';
 import '../exceptions/app_exceptions.dart';
 import '../models/profile_model.dart';
 import '../../domain/entities/user_profile.dart' as domain;
@@ -14,16 +14,16 @@ import 'auth_service.dart';
 
 /// Service for managing user profiles and related operations
 class ProfileService {
-  final ApiService _apiService;
+  final ApiClient _apiClient;
   final AuthService _authService;
   final Logger _logger;
   final Uuid _uuid = const Uuid();
 
   ProfileService({
-    required ApiService apiService,
+    required ApiClient apiClient,
     required AuthService authService,
     Logger? logger,
-  })  : _apiService = apiService,
+  }) : _apiClient = apiClient,
         _authService = authService,
         _logger = logger ?? Logger();
 
@@ -32,7 +32,7 @@ class ProfileService {
     try {
       _logger.i('🔍 Fetching profile for user: $userId');
       
-      final response = await _apiService.get('/profiles/$userId');
+      final response = await _apiClient.get('/profiles/$userId');
       
       if (response.statusCode == 200) {
         final profile = UserProfile.fromJson(response.data['profile']);
@@ -55,7 +55,7 @@ class ProfileService {
     try {
       _logger.i('🔍 Fetching current user profile');
 
-      final response = await _apiService.get('/profiles/me');
+      final response = await _apiClient.get('/profiles/me');
 
       if (response.statusCode == 200) {
         final data = response.data as Map<String, dynamic>;
@@ -103,7 +103,7 @@ class ProfileService {
         'location': location?.toJson(),
       };
       
-      final response = await _apiService.post('/profiles', data: data);
+      final response = await _apiClient.post('/profiles', data: data);
       
       if (response.statusCode == 201) {
         final profile = UserProfile.fromJson(response.data['profile']);
@@ -153,7 +153,7 @@ class ProfileService {
       if (preferences != null) data['preferences'] = preferences.toJson();
       if (location != null) data['location'] = location.toJson();
       
-      final response = await _apiService.put('/profiles/$userId', data: data);
+      final response = await _apiClient.put('/profiles/$userId', data: data);
       
       if (response.statusCode == 200) {
         final profile = UserProfile.fromJson(response.data['profile']);
@@ -206,7 +206,7 @@ class ProfileService {
         'order': order,
       });
       
-      final response = await _apiService.post(
+      final response = await _apiClient.post(
         '/profiles/$userId/photos',
         data: formData,
       );
@@ -246,7 +246,9 @@ class ProfileService {
     try {
       _logger.i('🗑️ Deleting photo: $photoId for user: $userId');
       
-      final response = await _apiService.delete('/profiles/$userId/photos/$photoId');
+      final response = await _apiClient.delete(
+        '/profiles/$userId/photos/$photoId',
+      );
       
       if (response.statusCode == 200) {
         _logger.i('✅ Photo deleted successfully');
@@ -274,7 +276,7 @@ class ProfileService {
         'photoOrders': photoOrders.map((order) => order.toJson()).toList(),
       };
       
-      final response = await _apiService.patch(
+      final response = await _apiClient.patch(
         '/profiles/$userId/photos/reorder',
         data: data,
       );
@@ -316,7 +318,7 @@ class ProfileService {
       if (interests != null) data['interests'] = interests;
       if (lifestyle != null) data['lifestyle'] = lifestyle.toJson();
       
-      final response = await _apiService.put(
+      final response = await _apiClient.put(
         '/preferences/$userId',
         data: data,
       );
@@ -349,7 +351,7 @@ class ProfileService {
         'type': verificationType,
       };
       
-      final response = await _apiService.post(
+      final response = await _apiClient.post(
         '/profiles/$userId/verification',
         data: data,
       );
@@ -373,7 +375,7 @@ class ProfileService {
     try {
       _logger.i('📋 Fetching available interests');
       
-      final response = await _apiService.get('/interests');
+      final response = await _apiClient.get('/interests');
       
       if (response.statusCode == 200) {
         final interests = List<String>.from(response.data['interests']);

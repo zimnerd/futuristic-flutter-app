@@ -3,8 +3,6 @@ import '../network/api_client.dart';
 import '../storage/hive_storage_service.dart';
 import '../../data/services/messaging_service.dart';
 import '../../data/services/matching_service.dart';
-import '../../data/services/api_service_impl.dart';
-import '../../domain/services/api_service.dart';
 import '../../data/datasources/remote/user_remote_data_source.dart';
 import '../../data/datasources/local/user_local_data_source.dart';
 import '../../data/repositories/user_repository_impl.dart';
@@ -22,11 +20,10 @@ Future<void> initializeDependencies() async {
 
   // Core Network
   sl.registerLazySingleton<ApiClient>(() => ApiClient.instance);
-  sl.registerLazySingleton<ApiService>(() => ApiServiceImpl());
 
   // Data Sources
   sl.registerLazySingleton<UserRemoteDataSource>(
-    () => UserRemoteDataSourceImpl(sl<ApiService>()),
+    () => UserRemoteDataSourceImpl(sl<ApiClient>()),
   );
   sl.registerLazySingleton<UserLocalDataSource>(
     () => UserLocalDataSourceImpl(sl<HiveStorageService>()),

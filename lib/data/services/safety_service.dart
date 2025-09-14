@@ -1,13 +1,14 @@
 import 'package:logger/logger.dart';
 import '../models/safety.dart';
-import 'api_service_impl.dart';
+import '../../core/network/api_client.dart';
+import 'package:dio/dio.dart'; // Ensure Dio is imported for FormData
 
 /// Service for handling safety and reporting features
 class SafetyService {
-  final ApiServiceImpl _apiService;
+  final ApiClient _apiClient;
   final Logger _logger = Logger();
 
-  SafetyService(this._apiService);
+  SafetyService(this._apiClient);
 
   /// Report a user for inappropriate behavior
   Future<SafetyReport?> reportUser({
@@ -18,7 +19,7 @@ class SafetyService {
     String? incidentLocation,
   }) async {
     try {
-      final response = await _apiService.post(
+      final response = await _apiClient.post(
         '/api/safety/report-user',
         data: {
           'reportedUserId': reportedUserId,
@@ -52,7 +53,7 @@ class SafetyService {
     String? reportedUserId,
   }) async {
     try {
-      final response = await _apiService.post(
+      final response = await _apiClient.post(
         '/api/safety/report-content',
         data: {
           'contentId': contentId,
@@ -80,7 +81,7 @@ class SafetyService {
   /// Block a user
   Future<bool> blockUser(String userId) async {
     try {
-      final response = await _apiService.post(
+      final response = await _apiClient.post(
         '/api/safety/block-user',
         data: {'userId': userId},
       );
@@ -101,7 +102,9 @@ class SafetyService {
   /// Unblock a user
   Future<bool> unblockUser(String userId) async {
     try {
-      final response = await _apiService.delete('/api/safety/block-user/$userId');
+      final response = await _apiClient.delete(
+        '/api/safety/block-user/$userId',
+      );
 
       if (response.statusCode == 200) {
         _logger.d('User unblocked successfully: $userId');
@@ -119,7 +122,7 @@ class SafetyService {
   /// Get list of blocked users
   Future<List<BlockedUser>> getBlockedUsers() async {
     try {
-      final response = await _apiService.get('/api/safety/blocked-users');
+      final response = await _apiClient.get('/api/safety/blocked-users');
 
       if (response.statusCode == 200 && response.data != null) {
         final List<dynamic> data = response.data['blockedUsers'] ?? [];
@@ -140,7 +143,7 @@ class SafetyService {
   /// Get safety settings for the current user
   Future<SafetySettings?> getSafetySettings() async {
     try {
-      final response = await _apiService.get('/api/safety/settings');
+      final response = await _apiClient.get('/api/safety/settings');
 
       if (response.statusCode == 200 && response.data != null) {
         final settings = SafetySettings.fromJson(response.data!);
@@ -159,7 +162,7 @@ class SafetyService {
   /// Update safety settings
   Future<bool> updateSafetySettings(SafetySettings settings) async {
     try {
-      final response = await _apiService.put(
+      final response = await _apiClient.put(
         '/api/safety/settings',
         data: settings.toJson(),
       );
@@ -180,7 +183,7 @@ class SafetyService {
   /// Get user's safety score and verification status
   Future<Map<String, dynamic>?> getSafetyScore() async {
     try {
-      final response = await _apiService.get('/api/safety/score');
+      final response = await _apiClient.get('/api/safety/score');
 
       if (response.statusCode == 200 && response.data != null) {
         final safetyData = {
@@ -209,9 +212,11 @@ class SafetyService {
   /// Submit photo verification
   Future<bool> submitPhotoVerification(String photoPath) async {
     try {
-      final response = await _apiService.uploadFile(
+      final response = await _apiClient.post(
         '/api/safety/verify-photo',
-        photoPath,
+        data: FormData.fromMap({
+          'photo': await MultipartFile.fromFile(photoPath),
+        }),
       );
 
       if (response.statusCode == 200) {
@@ -235,10 +240,12 @@ class SafetyService {
   }) async {
     try {
       // Upload front photo
-      final frontResponse = await _apiService.uploadFile(
+      final frontResponse = await _apiClient.post(
         '/api/safety/verify-id/front',
-        frontPhotoPath,
-        data: {'idType': idType},
+        data: FormData.fromMap({
+          'idType': idType,
+          'frontPhoto': await MultipartFile.fromFile(frontPhotoPath),
+        }),
       );
 
       if (frontResponse.statusCode != 200) {
@@ -247,10 +254,12 @@ class SafetyService {
       }
 
       // Upload back photo
-      final backResponse = await _apiService.uploadFile(
+      final backResponse = await _apiClient.post(
         '/api/safety/verify-id/back',
-        backPhotoPath,
-        data: {'idType': idType},
+        data: FormData.fromMap({
+          'idType': idType,
+          'backPhoto': await MultipartFile.fromFile(backPhotoPath),
+        }),
       );
 
       if (backResponse.statusCode == 200) {
@@ -269,7 +278,7 @@ class SafetyService {
   /// Get safety tips and guidelines
   Future<List<SafetyTip>> getSafetyTips() async {
     try {
-      final response = await _apiService.get('/api/safety/tips');
+      final response = await _apiClient.get('/api/safety/tips');
 
       if (response.statusCode == 200 && response.data != null) {
         final List<dynamic> data = response.data['tips'] ?? [];
@@ -295,7 +304,7 @@ class SafetyService {
     bool requiresImmediateHelp = false,
   }) async {
     try {
-      final response = await _apiService.post(
+      final response = await _apiClient.post(
         '/api/safety/report-date-concern',
         data: {
           'dateId': dateId,
@@ -326,7 +335,7 @@ class SafetyService {
     String? additionalInfo,
   }) async {
     try {
-      final response = await _apiService.post(
+      final response = await _apiClient.post(
         '/api/safety/emergency-contact',
         data: {
           'location': location,
@@ -351,7 +360,7 @@ class SafetyService {
   /// Check if a user is safe to interact with
   Future<Map<String, dynamic>?> checkUserSafety(String userId) async {
     try {
-      final response = await _apiService.get('/api/safety/check-user/$userId');
+      final response = await _apiClient.get('/api/safety/check-user/$userId');
 
       if (response.statusCode == 200 && response.data != null) {
         final safetyCheck = {
@@ -378,7 +387,7 @@ class SafetyService {
   /// Get my safety reports history
   Future<List<SafetyReport>> getMySafetyReports() async {
     try {
-      final response = await _apiService.get('/api/safety/my-reports');
+      final response = await _apiClient.get('/api/safety/my-reports');
 
       if (response.statusCode == 200 && response.data != null) {
         final List<dynamic> data = response.data['reports'] ?? [];

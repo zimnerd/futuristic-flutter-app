@@ -1,8 +1,8 @@
 // cSpell:ignore Mila Camila Scarlett Zoey
 import '../../../domain/entities/user_profile.dart';
 import '../../../domain/entities/discovery_types.dart';
-import '../../domain/services/api_service.dart';
-import 'api_service_impl.dart';
+import '../../../core/network/api_client.dart';
+import '../../../core/constants/api_constants.dart';
 
 /// Service for handling user discovery and swipe operations
 /// 
@@ -12,10 +12,9 @@ import 'api_service_impl.dart';
 /// - Managing boost features
 /// - Handling undo functionality
 class DiscoveryService {
-  final ApiService _apiService;
+  final ApiClient _apiClient;
   
-  DiscoveryService({ApiService? apiService}) 
-    : _apiService = apiService ?? ApiServiceImpl();
+  DiscoveryService({required ApiClient apiClient}) : _apiClient = apiClient;
 
   /// Get discoverable users based on filters and preferences
   Future<List<UserProfile>> getDiscoverableUsers({
@@ -43,12 +42,13 @@ class DiscoveryService {
         if (filters.recentlyActive) queryParams['recentlyActive'] = filters.recentlyActive;
       }
       
-      final response = await _apiService.get<Map<String, dynamic>>(
-        '/matches',
+      final response = await _apiClient.get(
+        ApiConstants.discover, // This should be /matching/suggestions
         queryParameters: queryParams,
       );
       
-      final List<dynamic> usersJson = response.data?['matches'] ?? [];
+      final Map<String, dynamic> data = response.data as Map<String, dynamic>;
+      final List<dynamic> usersJson = data['profiles'] ?? data['users'] ?? [];
       return usersJson
           .map((json) => UserProfile.fromJson(json))
           .toList();
@@ -67,19 +67,25 @@ class DiscoveryService {
     try {
       // Use correct API endpoints based on action
       final String endpoint;
+      final Map<String, dynamic> data;
+      
       if (action == SwipeAction.right || action == SwipeAction.up) {
-        endpoint = '/matches/$targetUserId/like';
+        endpoint = ApiConstants.swipe;
+        data = {'targetUserId': targetUserId, 'action': 'like'};
       } else {
-        endpoint = '/matches/$targetUserId/pass';
+        endpoint = ApiConstants.swipe;
+        data = {'targetUserId': targetUserId, 'action': 'pass'};
       }
       
-      final response = await _apiService.post<Map<String, dynamic>>(
+      final response = await _apiClient.post(
         endpoint,
-        data: {},
+        data: data,
       );
       
-      final bool isMatch = response.data?['match'] ?? false;
-      final String? conversationId = response.data?['conversationId'];
+      final Map<String, dynamic> responseData =
+          response.data as Map<String, dynamic>;
+      final bool isMatch = responseData['match'] ?? false;
+      final String? conversationId = responseData['conversationId'];
       
       return SwipeResult(
         isMatch: isMatch,
@@ -97,12 +103,14 @@ class DiscoveryService {
   Future<bool> undoLastSwipe() async {
     try {
       // Implement actual API call to backend
-      final response = await _apiService.post<Map<String, dynamic>>(
+      final response = await _apiClient.post(
         '/discovery/undo',
         data: {},
       );
       
-      final bool canUndo = response.data?['success'] ?? false;
+      final Map<String, dynamic> responseData =
+          response.data as Map<String, dynamic>;
+      final bool canUndo = responseData['success'] ?? false;
       return canUndo;
     } catch (error) {
       // Throw error instead of falling back to mock logic
@@ -114,14 +122,17 @@ class DiscoveryService {
   Future<BoostResult> activateBoost() async {
     try {
       // Implement actual API call to backend
-      final response = await _apiService.post<Map<String, dynamic>>(
+      final response = await _apiClient.post(
         '/discovery/boost',
         data: {},
       );
       
-      final bool success = response.data?['success'] ?? false;
-      final int durationMinutes = response.data?['durationMinutes'] ?? 30;
-      final String startTimeStr = response.data?['startTime'] ?? DateTime.now().toIso8601String();
+      final Map<String, dynamic> responseData =
+          response.data as Map<String, dynamic>;
+      final bool success = responseData['success'] ?? false;
+      final int durationMinutes = responseData['durationMinutes'] ?? 30;
+      final String startTimeStr =
+          responseData['startTime'] ?? DateTime.now().toIso8601String();
       
       return BoostResult(
         success: success,
@@ -138,11 +149,13 @@ class DiscoveryService {
   Future<bool> hasAvailableBoosts() async {
     try {
       // Implement actual API call to backend
-      final response = await _apiService.get<Map<String, dynamic>>(
+      final response = await _apiClient.get(
         '/discovery/boosts/available',
       );
       
-      final bool hasBoosts = response.data?['hasBoosts'] ?? false;
+      final Map<String, dynamic> responseData =
+          response.data as Map<String, dynamic>;
+      final bool hasBoosts = responseData['hasBoosts'] ?? false;
       return hasBoosts;
     } catch (error) {
       // Throw error instead of falling back to mock logic
@@ -153,7 +166,7 @@ class DiscoveryService {
   /// Get user's remaining super likes for today
   Future<int> getRemainingSuperLikes() async {
     try {
-      final response = await _apiService.get<Map<String, dynamic>>(
+      final response = await _apiClient.get(
         '/api/discovery/super-likes/remaining',
       );
       

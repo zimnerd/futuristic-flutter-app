@@ -1,18 +1,18 @@
 import 'package:logger/logger.dart';
 import '../models/virtual_gift.dart';
-import 'api_service_impl.dart';
+import '../../core/network/api_client.dart';
 
 /// Service for handling virtual gift operations
 class VirtualGiftService {
-  final ApiServiceImpl _apiService;
+  final ApiClient _apiClient;
   final Logger _logger = Logger();
 
-  VirtualGiftService(this._apiService);
+  VirtualGiftService(this._apiClient);
 
   /// Get all available virtual gifts
   Future<List<VirtualGift>> getAvailableGifts() async {
     try {
-      final response = await _apiService.get('/api/gifts/available');
+      final response = await _apiClient.get('/api/gifts/available');
 
       if (response.statusCode == 200 && response.data != null) {
         final List<dynamic> data = response.data['gifts'] ?? [];
@@ -33,7 +33,9 @@ class VirtualGiftService {
   /// Get gifts by category
   Future<List<VirtualGift>> getGiftsByCategory(GiftCategory category) async {
     try {
-      final response = await _apiService.get('/api/gifts/category/${category.name}');
+      final response = await _apiClient.get(
+        '/api/gifts/category/${category.name}',
+      );
 
       if (response.statusCode == 200 && response.data != null) {
         final List<dynamic> data = response.data['gifts'] ?? [];
@@ -59,7 +61,7 @@ class VirtualGiftService {
     bool isAnonymous = false,
   }) async {
     try {
-      final response = await _apiService.post(
+      final response = await _apiClient.post(
         '/api/gifts/send',
         data: {
           'recipientId': recipientId,
@@ -89,7 +91,7 @@ class VirtualGiftService {
     int limit = 20,
   }) async {
     try {
-      final response = await _apiService.get(
+      final response = await _apiClient.get(
         '/api/gifts/received',
         queryParameters: {
           'page': page.toString(),
@@ -119,7 +121,7 @@ class VirtualGiftService {
     int limit = 20,
   }) async {
     try {
-      final response = await _apiService.get(
+      final response = await _apiClient.get(
         '/api/gifts/sent',
         queryParameters: {
           'page': page.toString(),
@@ -146,7 +148,7 @@ class VirtualGiftService {
   /// Thank someone for a gift received
   Future<bool> thankForGift(String transactionId, String message) async {
     try {
-      final response = await _apiService.post(
+      final response = await _apiClient.post(
         '/api/gifts/thank',
         data: {
           'transactionId': transactionId,
@@ -170,7 +172,9 @@ class VirtualGiftService {
   /// Get gift transaction details
   Future<GiftTransaction?> getGiftTransaction(String transactionId) async {
     try {
-      final response = await _apiService.get('/api/gifts/transaction/$transactionId');
+      final response = await _apiClient.get(
+        '/api/gifts/transaction/$transactionId',
+      );
 
       if (response.statusCode == 200 && response.data != null) {
         final transaction = GiftTransaction.fromJson(response.data!);
@@ -189,7 +193,7 @@ class VirtualGiftService {
   /// Get user's gift statistics
   Future<Map<String, dynamic>?> getUserGiftStats() async {
     try {
-      final response = await _apiService.get('/api/gifts/stats');
+      final response = await _apiClient.get('/api/gifts/stats');
 
       if (response.statusCode == 200 && response.data != null) {
         final stats = {
@@ -217,7 +221,7 @@ class VirtualGiftService {
   /// Mark gift notification as read
   Future<bool> markGiftNotificationAsRead(String transactionId) async {
     try {
-      final response = await _apiService.patch(
+      final response = await _apiClient.patch(
         '/api/gifts/notification/$transactionId/read',
         data: {'isRead': true},
       );
@@ -238,7 +242,7 @@ class VirtualGiftService {
   /// Get popular gifts
   Future<List<VirtualGift>> getPopularGifts({int limit = 10}) async {
     try {
-      final response = await _apiService.get(
+      final response = await _apiClient.get(
         '/api/gifts/popular',
         queryParameters: {'limit': limit.toString()},
       );
@@ -265,7 +269,7 @@ class VirtualGiftService {
     int limit = 20,
   }) async {
     try {
-      final response = await _apiService.get(
+      final response = await _apiClient.get(
         '/api/gifts/activity',
         queryParameters: {
           'page': page.toString(),

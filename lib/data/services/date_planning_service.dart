@@ -1,12 +1,12 @@
 import 'package:logger/logger.dart';
-import 'api_service_impl.dart';
+import '../../core/network/api_client.dart';
 
 /// Service for date planning and suggestions
 class DatePlanningService {
-  final ApiServiceImpl _apiService;
+  final ApiClient _apiClient;
   final Logger _logger = Logger();
 
-  DatePlanningService(this._apiService);
+  DatePlanningService(this._apiClient);
 
   /// Get AI-powered date suggestions
   Future<List<Map<String, dynamic>>> getDateSuggestions({
@@ -17,7 +17,7 @@ class DatePlanningService {
     List<String>? interests,
   }) async {
     try {
-      final response = await _apiService.post(
+      final response = await _apiClient.post(
         '/api/date-planning/suggestions',
         data: {
           'matchId': matchId,
@@ -54,7 +54,7 @@ class DatePlanningService {
     Map<String, dynamic>? details,
   }) async {
     try {
-      final response = await _apiService.post(
+      final response = await _apiClient.post(
         '/api/date-planning/plan',
         data: {
           'matchId': matchId,
@@ -82,7 +82,7 @@ class DatePlanningService {
   /// Accept a date invitation
   Future<bool> acceptDateInvitation(String dateId) async {
     try {
-      final response = await _apiService.post(
+      final response = await _apiClient.post(
         '/api/date-planning/accept',
         data: {
           'dateId': dateId,
@@ -106,7 +106,7 @@ class DatePlanningService {
   /// Decline a date invitation
   Future<bool> declineDateInvitation(String dateId, {String? reason}) async {
     try {
-      final response = await _apiService.post(
+      final response = await _apiClient.post(
         '/api/date-planning/decline',
         data: {
           'dateId': dateId,
@@ -135,7 +135,7 @@ class DatePlanningService {
     String? reason,
   }) async {
     try {
-      final response = await _apiService.post(
+      final response = await _apiClient.post(
         '/api/date-planning/reschedule',
         data: {
           'dateId': dateId,
@@ -161,7 +161,7 @@ class DatePlanningService {
   /// Cancel a planned date
   Future<bool> cancelDate(String dateId, {String? reason}) async {
     try {
-      final response = await _apiService.post(
+      final response = await _apiClient.post(
         '/api/date-planning/cancel',
         data: {
           'dateId': dateId,
@@ -186,7 +186,7 @@ class DatePlanningService {
   /// Get upcoming dates
   Future<List<Map<String, dynamic>>> getUpcomingDates() async {
     try {
-      final response = await _apiService.get('/api/date-planning/upcoming');
+      final response = await _apiClient.get('/api/date-planning/upcoming');
 
       if (response.statusCode == 200 && response.data != null) {
         final List<dynamic> data = response.data['dates'] ?? [];
@@ -210,7 +210,7 @@ class DatePlanningService {
     int limit = 20,
   }) async {
     try {
-      final response = await _apiService.get(
+      final response = await _apiClient.get(
         '/api/date-planning/history',
         queryParameters: {
           'page': page.toString(),
@@ -242,7 +242,7 @@ class DatePlanningService {
     List<String>? tags,
   }) async {
     try {
-      final response = await _apiService.post(
+      final response = await _apiClient.post(
         '/api/date-planning/rate',
         data: {
           'dateId': dateId,
@@ -274,7 +274,7 @@ class DatePlanningService {
     int radiusKm = 10,
   }) async {
     try {
-      final response = await _apiService.get(
+      final response = await _apiClient.get(
         '/api/date-planning/venues',
         queryParameters: {
           'latitude': latitude.toString(),
@@ -308,7 +308,7 @@ class DatePlanningService {
     bool isFirstDate = false,
   }) async {
     try {
-      final response = await _apiService.post(
+      final response = await _apiClient.post(
         '/api/date-planning/ideas',
         data: {
           'interests': interests ?? [],

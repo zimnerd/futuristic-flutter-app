@@ -1,12 +1,12 @@
 import 'package:logger/logger.dart';
-import 'api_service_impl.dart';
+import '../../core/network/api_client.dart';
 
 /// Service for live streaming feature
 class LiveStreamingService {
-  final ApiServiceImpl _apiService;
+  final ApiClient _apiClient;
   final Logger _logger = Logger();
 
-  LiveStreamingService(this._apiService);
+  LiveStreamingService(this._apiClient);
 
   /// Start a live stream
   Future<Map<String, dynamic>?> startLiveStream({
@@ -17,7 +17,7 @@ class LiveStreamingService {
     Map<String, dynamic>? streamSettings,
   }) async {
     try {
-      final response = await _apiService.post(
+      final response = await _apiClient.post(
         '/api/live-streaming/start',
         data: {
           'title': title,
@@ -63,7 +63,7 @@ class LiveStreamingService {
       if (isPrivate != null) data['isPrivate'] = isPrivate;
       if (streamSettings != null) data['streamSettings'] = streamSettings;
 
-      final response = await _apiService.put(
+      final response = await _apiClient.put(
         '/api/live-streaming/update',
         data: data,
       );
@@ -84,7 +84,7 @@ class LiveStreamingService {
   /// End a live stream
   Future<bool> endLiveStream(String streamId) async {
     try {
-      final response = await _apiService.post(
+      final response = await _apiClient.post(
         '/api/live-streaming/end',
         data: {
           'streamId': streamId,
@@ -108,7 +108,7 @@ class LiveStreamingService {
   /// Join a live stream as viewer
   Future<Map<String, dynamic>?> joinStream(String streamId) async {
     try {
-      final response = await _apiService.post(
+      final response = await _apiClient.post(
         '/api/live-streaming/join',
         data: {
           'streamId': streamId,
@@ -132,7 +132,7 @@ class LiveStreamingService {
   /// Leave a live stream
   Future<bool> leaveStream(String streamId) async {
     try {
-      final response = await _apiService.post(
+      final response = await _apiClient.post(
         '/api/live-streaming/leave',
         data: {
           'streamId': streamId,
@@ -160,7 +160,7 @@ class LiveStreamingService {
     String? category,
   }) async {
     try {
-      final response = await _apiService.get(
+      final response = await _apiClient.get(
         '/api/live-streaming/active',
         queryParameters: {
           'page': page.toString(),
@@ -192,7 +192,7 @@ class LiveStreamingService {
     String? messageType,
   }) async {
     try {
-      final response = await _apiService.post(
+      final response = await _apiClient.post(
         '/api/live-streaming/chat',
         data: {
           'streamId': streamId,
@@ -222,7 +222,7 @@ class LiveStreamingService {
     String? message,
   }) async {
     try {
-      final response = await _apiService.post(
+      final response = await _apiClient.post(
         '/api/live-streaming/gift',
         data: {
           'streamId': streamId,
@@ -252,7 +252,7 @@ class LiveStreamingService {
     String? description,
   }) async {
     try {
-      final response = await _apiService.post(
+      final response = await _apiClient.post(
         '/api/live-streaming/report',
         data: {
           'streamId': streamId,
@@ -278,7 +278,7 @@ class LiveStreamingService {
   /// Get stream analytics (for streamers)
   Future<Map<String, dynamic>?> getStreamAnalytics(String streamId) async {
     try {
-      final response = await _apiService.get('/api/live-streaming/analytics/$streamId');
+      final response = await _apiClient.get('/api/live-streaming/analytics/$streamId');
 
       if (response.statusCode == 200 && response.data != null) {
         _logger.d('Retrieved analytics for stream: $streamId');
@@ -299,7 +299,7 @@ class LiveStreamingService {
     int limit = 20,
   }) async {
     try {
-      final response = await _apiService.get(
+      final response = await _apiClient.get(
         '/api/live-streaming/history',
         queryParameters: {
           'page': page.toString(),

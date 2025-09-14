@@ -1,7 +1,7 @@
 import 'package:logger/logger.dart';
 
 import '../../models/user_model.dart';
-import '../../../domain/services/api_service.dart';
+import '../../../core/network/api_client.dart';
 import '../../exceptions/app_exceptions.dart';
 import '../../../core/services/service_locator.dart';
 
@@ -92,10 +92,10 @@ abstract class UserRemoteDataSource {
 
 /// Implementation of UserRemoteDataSource using API service
 class UserRemoteDataSourceImpl implements UserRemoteDataSource {
-  final ApiService _apiService;
+  final ApiClient _apiClient;
   final Logger _logger = Logger();
 
-  UserRemoteDataSourceImpl(this._apiService);
+  UserRemoteDataSourceImpl(this._apiClient);
 
   @override
   Future<UserModel> signInWithEmailPassword(
@@ -105,9 +105,7 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
     try {
       _logger.i('Signing in user with email: $email');
 
-      final response = await _apiService.post(
-        '/auth/login',
-        data: {'email': email, 'password': password},
+      final response = await _apiClient.login(email: email, password: password,
       );
 
       if (response.statusCode == 200) {
@@ -118,7 +116,7 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
 
         // Store auth tokens for future requests
         if (accessToken != null) {
-          _apiService.setAuthToken(accessToken);
+          _apiClient.setAuthToken(accessToken);
           // Also set the token in the service locator for all services
           try {
             await ServiceLocator.instance.setAuthToken(accessToken);
@@ -167,19 +165,16 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
     try {
       _logger.i('Signing up new user with email: $email');
 
-      final response = await _apiService.post(
-        '/auth/register',
-        data: {
-          'email': email,
-          'password': password,
-          'username': username,
-          'phone': phone,
-          if (firstName != null) 'firstName': firstName,
-          if (lastName != null) 'lastName': lastName,
-          if (birthdate != null) 'birthdate': birthdate,
-          if (gender != null) 'gender': gender,
-          if (location != null) 'location': location,
-        },
+      final response = await _apiClient.register(
+        email: email,
+        password: password,
+        username: username,
+        phone: phone,
+        firstName: firstName,
+        lastName: lastName,
+        birthdate: birthdate,
+        gender: gender,
+        location: location,
       );
 
       if (response.statusCode == 201) {
@@ -190,7 +185,7 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
 
         // Store auth token for future requests
         if (accessToken != null) {
-          _apiService.setAuthToken(accessToken);
+          _apiClient.setAuthToken(accessToken);
           
           // Also set the token in the service locator for all services
           try {
@@ -230,8 +225,8 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
     try {
       _logger.i('Signing out user');
 
-      await _apiService.post('/auth/logout');
-      _apiService.clearAuthToken();
+      await _apiClient.logout();
+      _apiClient.clearAuthToken();
       
       // Clear securely stored tokens
       try {
@@ -246,7 +241,7 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
     } catch (e) {
       _logger.e('Sign out error: $e');
       // Even if logout fails on server, clear local tokens
-      _apiService.clearAuthToken();
+      _apiClient.clearAuthToken();
       try {
         final tokenService = ServiceLocator.instance.token;
         await tokenService.clearTokens();
@@ -263,7 +258,7 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
     try {
       _logger.i('Getting current user');
 
-      final response = await _apiService.get('/users/me');
+      final response = await _apiClient.getCurrentUser();
 
       if (response.statusCode == 200) {
         return UserModel.fromJson(response.data);
@@ -284,7 +279,7 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
     try {
       _logger.i('Requesting password reset for email: $email');
 
-      await _apiService.post('/auth/password-reset', data: {'email': email});
+      await _apiClient.requestPasswordReset(email);
 
       _logger.i('Password reset requested successfully');
     } catch (e) {
@@ -302,7 +297,7 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
     try {
       _logger.i('Verifying two-factor authentication');
 
-      final response = await _apiService.post(
+      final response = await _apiClient.rawPost(
         '/auth/verify-2fa',
         data: {'sessionId': sessionId, 'code': code},
       );
@@ -314,7 +309,7 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
         final refreshToken = responseData['refreshToken'];
 
         if (accessToken != null) {
-          _apiService.setAuthToken(accessToken);
+          _apiClient.setAuthToken(accessToken);
           
           // Also set the token in the service locator for all services
           try {
@@ -364,10 +359,7 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
         throw ApiException('No refresh token available');
       }
 
-      final response = await _apiService.post(
-        '/auth/refresh',
-        data: {'refreshToken': storedRefreshToken},
-      );
+      final response = await _apiClient.refreshToken(storedRefreshToken);
 
       if (response.statusCode == 200) {
         final responseData = response.data['data'] ?? response.data;
@@ -376,7 +368,7 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
 
         if (newAccessToken != null) {
           // Update access token in API service
-          _apiService.setAuthToken(newAccessToken);
+          _apiClient.setAuthToken(newAccessToken);
 
           // Update tokens in service locator
           try {
@@ -418,14 +410,11 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
     try {
       _logger.i('Sending OTP to email: $email, type: $type');
 
-      final response = await _apiService.post(
-        '/auth/send-otp',
-        data: {
-          'email': email,
-          if (phoneNumber != null) 'phoneNumber': phoneNumber,
-          'type': type,
-          if (preferredMethod != null) 'preferredMethod': preferredMethod,
-        },
+      final response = await _apiClient.sendOTP(
+        email: email,
+        phoneNumber: phoneNumber,
+        type: type,
+        preferredMethod: preferredMethod,
       );
 
       if (response.statusCode == 200) {
@@ -453,9 +442,10 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
     try {
       _logger.i('Verifying OTP for session: $sessionId');
 
-      final response = await _apiService.post(
-        '/auth/verify-otp',
-        data: {'sessionId': sessionId, 'code': code, 'email': email},
+      final response = await _apiClient.verifyOTP(
+        sessionId: sessionId,
+        code: code,
+        email: email,
       );
 
       if (response.statusCode == 200) {
@@ -466,7 +456,7 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
           // Store tokens if verification successful
           final tokens = responseData['tokens'];
           if (tokens != null && tokens['accessToken'] != null) {
-            _apiService.setAuthToken(tokens['accessToken']);
+            _apiClient.setAuthToken(tokens['accessToken']);
             
             // Also set the token in the service locator for all services
             try {
@@ -516,7 +506,7 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
     try {
       _logger.i('Resending OTP for session: $sessionId');
 
-      final response = await _apiService.post(
+      final response = await _apiClient.rawPost(
         '/auth/resend-otp',
         data: {'sessionId': sessionId},
       );
@@ -542,7 +532,7 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
     try {
       _logger.i('Getting user by ID: $userId');
 
-      final response = await _apiService.get('/users/$userId');
+      final response = await _apiClient.getUserById(userId);
 
       if (response.statusCode == 200) {
         return UserModel.fromJson(response.data);
@@ -564,7 +554,7 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
     try {
       _logger.i('Updating user profile for ID: $userId');
 
-      final response = await _apiService.patch('/users/$userId', data: updates);
+      final response = await _apiClient.updateProfile(updates);
 
       if (response.statusCode == 200) {
         return UserModel.fromJson(response.data);
@@ -585,7 +575,7 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
     try {
       _logger.i('Uploading profile photo for user: $userId');
 
-      final response = await _apiService.post(
+      final response = await _apiClient.rawPost(
         '/users/$userId/photos',
         data: {'photoPath': photoPath},
       );
@@ -607,7 +597,7 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
     try {
       _logger.i('Deleting profile photo for user: $userId');
 
-      await _apiService.delete(
+      await _apiClient.delete(
         '/users/$userId/photos',
         data: {'photoUrl': photoUrl},
       );
@@ -625,7 +615,7 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
     try {
       _logger.i('Updating user location for user: $userId');
 
-      await _apiService.put(
+      await _apiClient.put(
         '/users/$userId/location',
         data: {
           'latitude': latitude,
@@ -653,7 +643,7 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
         'Getting nearby users: lat=$latitude, lng=$longitude, radius=${radiusKm}km',
       );
 
-      final response = await _apiService.get(
+      final response = await _apiClient.get(
         '/users/nearby',
         queryParameters: {
           'latitude': latitude,
@@ -686,7 +676,7 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
     try {
       _logger.i('Getting user recommendations for: $userId');
 
-      final response = await _apiService.get(
+      final response = await _apiClient.get(
         '/users/$userId/recommendations',
         queryParameters: {'limit': limit},
       );
@@ -714,7 +704,7 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
     try {
       _logger.i('Updating user preferences for: $userId');
 
-      await _apiService.patch('/users/$userId/preferences', data: preferences);
+      await _apiClient.patch('/users/$userId/preferences', data: preferences);
 
       _logger.i('User preferences updated successfully');
     } catch (e) {
@@ -729,7 +719,7 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
     try {
       _logger.i('Getting user preferences for: $userId');
 
-      final response = await _apiService.get('/users/$userId/preferences');
+      final response = await _apiClient.get('/users/$userId/preferences');
 
       if (response.statusCode == 200) {
         return Map<String, dynamic>.from(response.data);
@@ -753,7 +743,7 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
     try {
       _logger.i('Requesting phone verification for user: $userId');
 
-      await _apiService.post(
+      await _apiClient.rawPost(
         '/users/$userId/verify-phone',
         data: {'phoneNumber': phoneNumber},
       );
@@ -776,7 +766,7 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
     try {
       _logger.i('Verifying phone number for user: $userId');
 
-      final response = await _apiService.post(
+      final response = await _apiClient.rawPost(
         '/users/$userId/verify-phone/confirm',
         data: {'verificationCode': verificationCode},
       );
@@ -800,7 +790,7 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
     try {
       _logger.i('Requesting email verification for user: $userId');
 
-      await _apiService.post('/users/$userId/verify-email');
+      await _apiClient.rawPost('/users/$userId/verify-email');
 
       _logger.i('Email verification requested successfully');
     } catch (e) {
@@ -817,7 +807,7 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
     try {
       _logger.i('Verifying email for user: $userId');
 
-      final response = await _apiService.post(
+      final response = await _apiClient.rawPost(
         '/users/$userId/verify-email/confirm',
         data: {'verificationToken': verificationToken},
       );
@@ -845,7 +835,7 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
     try {
       _logger.i('Reporting user $reportedUserId by user $userId');
 
-      await _apiService.post(
+      await _apiClient.rawPost(
         '/users/$userId/report',
         data: {'reportedUserId': reportedUserId, 'reason': reason},
       );
@@ -863,7 +853,7 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
     try {
       _logger.i('Blocking user $blockedUserId by user $userId');
 
-      await _apiService.post(
+      await _apiClient.rawPost(
         '/users/$userId/block',
         data: {'blockedUserId': blockedUserId},
       );
@@ -881,7 +871,7 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
     try {
       _logger.i('Unblocking user $blockedUserId by user $userId');
 
-      await _apiService.delete('/users/$userId/block/$blockedUserId');
+      await _apiClient.delete('/users/$userId/block/$blockedUserId');
 
       _logger.i('User unblocked successfully');
     } catch (e) {
@@ -896,7 +886,7 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
     try {
       _logger.i('Getting blocked users for: $userId');
 
-      final response = await _apiService.get('/users/$userId/blocked');
+      final response = await _apiClient.get('/users/$userId/blocked');
 
       if (response.statusCode == 200) {
         final List<dynamic> usersData = response.data['blockedUsers'];
@@ -918,7 +908,7 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
     try {
       _logger.i('Updating online status for user $userId: $isOnline');
 
-      await _apiService.patch(
+      await _apiClient.patch(
         '/users/$userId/status',
         data: {'isOnline': isOnline},
       );
@@ -942,7 +932,7 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
         'Updating location for user $userId: lat=$latitude, lng=$longitude',
       );
 
-      await _apiService.patch(
+      await _apiClient.patch(
         '/users/$userId/location',
         data: {'latitude': latitude, 'longitude': longitude},
       );

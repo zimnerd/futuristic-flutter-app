@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/network/api_client.dart';
 import '../../../data/services/discovery_service.dart';
 import '../../../domain/entities/discovery_types.dart';
 import '../../blocs/discovery/discovery_bloc.dart';
@@ -610,7 +611,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
         ),
         child: BlocProvider(
           create: (context) => DiscoveryBloc(
-            discoveryService: DiscoveryService(),
+            discoveryService: DiscoveryService(apiClient: ApiClient.instance),
           ),
           child: BlocBuilder<DiscoveryBloc, DiscoveryState>(
             builder: (context, state) {

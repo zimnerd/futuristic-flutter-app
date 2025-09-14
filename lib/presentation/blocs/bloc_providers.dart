@@ -44,7 +44,9 @@ class BlocProviders extends StatelessWidget {
         // Discovery BLoC - User discovery and swiping
         BlocProvider<DiscoveryBloc>(
           create: (context) =>
-              DiscoveryBloc(discoveryService: DiscoveryService()),
+              DiscoveryBloc(
+            discoveryService: DiscoveryService(apiClient: ApiClient.instance),
+          ),
         ),
 
         // Match Management BLoC - Matching system and chat integration

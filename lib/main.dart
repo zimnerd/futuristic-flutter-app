@@ -17,7 +17,7 @@ import 'data/repositories/chat_repository_impl.dart';
 import 'data/repositories/notification_repository.dart';
 import 'data/repositories/notification_repository_impl.dart';
 import 'data/repositories/user_repository_impl.dart';
-import 'data/services/api_service_impl.dart';
+import 'core/network/api_client.dart';
 import 'data/services/webrtc_service.dart';
 import 'data/services/websocket_service.dart';
 import 'domain/repositories/user_repository.dart';
@@ -56,7 +56,9 @@ class PulseDatingApp extends StatelessWidget {
       child: MultiBlocProvider(
         providers: [
           // Initialize services
-          RepositoryProvider<ApiService>(create: (context) => ApiServiceImpl()),
+          RepositoryProvider<ApiClient>(
+            create: (context) => ApiClient.instance,
+          ),
           RepositoryProvider<HiveStorageService>(
             create: (context) => hiveStorage,
           ),
@@ -70,7 +72,7 @@ class PulseDatingApp extends StatelessWidget {
           // Initialize data sources
           RepositoryProvider<UserRemoteDataSource>(
             create: (context) =>
-                UserRemoteDataSourceImpl(context.read<ApiService>()),
+                UserRemoteDataSourceImpl(context.read<ApiClient>()),
           ),
           RepositoryProvider<UserLocalDataSource>(
             create: (context) =>

@@ -1,15 +1,12 @@
 import '../../../core/network/api_client.dart';
-import '../../../core/constants/api_constants.dart';
 import 'package:dio/dio.dart';
 import 'package:hive/hive.dart';
-import '../../domain/services/api_service.dart';
 import 'matching_service.dart';
 import 'messaging_service.dart';
 import 'profile_service.dart';
 import 'file_upload_service.dart';
 import 'websocket_service.dart';
 import 'preferences_service.dart';
-import 'api_service_impl.dart';
 import 'discovery_service.dart';
 import 'virtual_gift_service.dart';
 import 'safety_service.dart';
@@ -32,7 +29,6 @@ class ServiceLocator {
 
   // Service instances
   late final ApiClient _apiClient;
-  late final ApiServiceImpl _apiService;
   late final MatchingService _matchingService;
   late final MessagingService _messagingService;
   late final ProfileService _profileService;
@@ -58,9 +54,8 @@ class ServiceLocator {
   void initialize([Box<String>? secureStorageBox]) {
     if (_isInitialized) return;
 
-    // Initialize API client and service
+    // Initialize API client
     _apiClient = ApiClient.instance;
-    _apiService = ApiServiceImpl(baseUrl: ApiConstants.baseUrl);
 
     // Initialize AuthService with provided secure storage box or try to get existing one
     final secureStorage =
@@ -74,7 +69,7 @@ class ServiceLocator {
     _matchingService = MatchingService(apiClient: _apiClient);
     _messagingService = MessagingService(apiClient: _apiClient);
     _profileService = ProfileService(
-      apiService: _apiService,
+      apiClient: _apiClient,
       authService: _authService,
     );
     _fileUploadService = FileUploadService(apiClient: _apiClient);
@@ -82,21 +77,21 @@ class ServiceLocator {
     _preferencesService = PreferencesService(_apiClient);
 
     // Initialize feature services
-    _discoveryService = DiscoveryService();
-    _virtualGiftService = VirtualGiftService(_apiService);
-    _safetyService = SafetyService(_apiService);
-    _premiumService = PremiumService(_apiService);
-    _aiCompanionService = AiCompanionService(_apiService);
-    _speedDatingService = SpeedDatingService(_apiService);
-    _liveStreamingService = LiveStreamingService(_apiService);
-    _datePlanningService = DatePlanningService(_apiService);
-    _voiceMessageService = VoiceMessageService(_apiService);
+    _discoveryService = DiscoveryService(apiClient: _apiClient);
+    _virtualGiftService = VirtualGiftService(_apiClient);
+    _safetyService = SafetyService(_apiClient);
+    _premiumService = PremiumService(_apiClient);
+    _aiCompanionService = AiCompanionService(_apiClient);
+    _speedDatingService = SpeedDatingService(_apiClient);
+    _liveStreamingService = LiveStreamingService(_apiClient);
+    _datePlanningService = DatePlanningService(_apiClient);
+    _voiceMessageService = VoiceMessageService(_apiClient);
     _callService = CallService.instance;
 
     // Initialize SubscriptionService
     _subscriptionService = SubscriptionService(
       savedMethodsService: SavedPaymentMethodsService.instance,
-      apiService: _apiService,
+      apiClient: _apiClient,
       authService: _authService,
     );
 
@@ -205,11 +200,7 @@ class ServiceLocator {
     return _callService;
   }
 
-  /// Get ApiService instance
-  ApiService get apiService {
-    if (!_isInitialized) initialize();
-    return _apiService;
-  }
+
 
   /// Get AuthService instance
   AuthService get authService {

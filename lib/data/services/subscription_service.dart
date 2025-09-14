@@ -7,14 +7,14 @@ import '../models/subscription.dart';
 import '../models/subscription_plan.dart';
 import '../models/subscription_usage.dart';
 import '../models/api_response.dart';
-import '../../domain/services/api_service.dart';
+import '../../core/network/api_client.dart';
 import 'auth_service.dart';
 import 'saved_payment_methods_service.dart';
 
 /// Subscription service for managing user subscriptions
 class SubscriptionService {
   final SavedPaymentMethodsService _savedMethodsService;
-  final ApiService _apiService;
+  final ApiClient _apiClient;
   final AuthService _authService;
   
   // Logger instance
@@ -26,10 +26,10 @@ class SubscriptionService {
 
   SubscriptionService({
     required SavedPaymentMethodsService savedMethodsService,
-    required ApiService apiService,
+    required ApiClient apiClient,
     required AuthService authService,
   }) : _savedMethodsService = savedMethodsService,
-       _apiService = apiService,
+       _apiClient = apiClient,
        _authService = authService;
 
   // Streams
@@ -52,7 +52,7 @@ class SubscriptionService {
     if (promoCode != null && promoCode.isNotEmpty) {
       try {
         // Call backend to validate promo code and get discount
-        final response = await _apiService.post<Map<String, dynamic>>(
+        final response = await _apiClient.post<Map<String, dynamic>>(
           '/subscriptions/validate-promo',
           data: {
             'promoCode': promoCode,

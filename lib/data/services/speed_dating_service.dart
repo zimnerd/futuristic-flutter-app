@@ -1,12 +1,12 @@
 import 'package:logger/logger.dart';
-import 'api_service_impl.dart';
+import '../../core/network/api_client.dart';
 
 /// Service for speed dating feature
 class SpeedDatingService {
-  final ApiServiceImpl _apiService;
+  final ApiClient _apiClient;
   final Logger _logger = Logger();
 
-  SpeedDatingService(this._apiService);
+  SpeedDatingService(this._apiClient);
 
   /// Join speed dating session
   Future<Map<String, dynamic>?> joinSpeedDatingSession({
@@ -14,7 +14,7 @@ class SpeedDatingService {
     Map<String, dynamic>? preferences,
   }) async {
     try {
-      final response = await _apiService.post(
+      final response = await _apiClient.post(
         '/api/speed-dating/join',
         data: {
           'sessionId': sessionId,
@@ -39,7 +39,7 @@ class SpeedDatingService {
   /// Get available speed dating sessions
   Future<List<Map<String, dynamic>>> getAvailableSessions() async {
     try {
-      final response = await _apiService.get('/api/speed-dating/sessions');
+      final response = await _apiClient.get('/api/speed-dating/sessions');
 
       if (response.statusCode == 200 && response.data != null) {
         final List<dynamic> data = response.data['sessions'] ?? [];
@@ -60,7 +60,7 @@ class SpeedDatingService {
   /// Leave speed dating session
   Future<bool> leaveSession(String sessionId) async {
     try {
-      final response = await _apiService.post(
+      final response = await _apiClient.post(
         '/api/speed-dating/leave',
         data: {
           'sessionId': sessionId,
@@ -89,7 +89,7 @@ class SpeedDatingService {
     String? feedback,
   }) async {
     try {
-      final response = await _apiService.post(
+      final response = await _apiClient.post(
         '/api/speed-dating/rate',
         data: {
           'sessionId': sessionId,
@@ -116,7 +116,7 @@ class SpeedDatingService {
   /// Get speed dating results/matches
   Future<List<Map<String, dynamic>>> getSpeedDatingResults(String sessionId) async {
     try {
-      final response = await _apiService.get('/api/speed-dating/results/$sessionId');
+      final response = await _apiClient.get('/api/speed-dating/results/$sessionId');
 
       if (response.statusCode == 200 && response.data != null) {
         final List<dynamic> data = response.data['matches'] ?? [];

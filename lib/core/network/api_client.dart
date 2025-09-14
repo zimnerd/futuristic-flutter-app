@@ -210,6 +210,7 @@ class ApiClient {
     required String email,
     required String password,
     required String username,
+    String? phone,
     String? firstName,
     String? lastName,
     String? birthdate,
@@ -222,6 +223,7 @@ class ApiClient {
         'email': email,
         'password': password,
         'username': username,
+        if (phone != null) 'phone': phone,
         if (firstName != null) 'firstName': firstName,
         if (lastName != null) 'lastName': lastName,
         if (birthdate != null) 'birthdate': birthdate,
@@ -996,4 +998,106 @@ class ApiClient {
 
   /// Get Dio instance for advanced usage
   Dio get dio => _dio;
+
+  // ============================================================================
+  // GENERIC HTTP METHODS
+  // ============================================================================
+  // For backwards compatibility with existing code that uses generic endpoints
+
+  /// Generic GET request - exposed for backwards compatibility
+  Future<Response<T>> rawGet<T>(
+    String path, {
+    Map<String, dynamic>? queryParameters,
+    Options? options,
+    CancelToken? cancelToken,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    return await _dio.get<T>(
+      path,
+      queryParameters: queryParameters,
+      options: options,
+      cancelToken: cancelToken,
+      onReceiveProgress: onReceiveProgress,
+    );
+  }
+
+  /// Generic POST request - exposed for backwards compatibility
+  Future<Response<T>> rawPost<T>(
+    String path, {
+    dynamic data,
+    Map<String, dynamic>? queryParameters,
+    Options? options,
+    CancelToken? cancelToken,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    return await _dio.post<T>(
+      path,
+      data: data,
+      queryParameters: queryParameters,
+      options: options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+  }
+
+  /// Generic PUT request - exposed for backwards compatibility
+  Future<Response<T>> rawPut<T>(
+    String path, {
+    dynamic data,
+    Map<String, dynamic>? queryParameters,
+    Options? options,
+    CancelToken? cancelToken,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    return await _dio.put<T>(
+      path,
+      data: data,
+      queryParameters: queryParameters,
+      options: options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+  }
+
+  /// Generic PATCH request - exposed for backwards compatibility
+  Future<Response<T>> rawPatch<T>(
+    String path, {
+    dynamic data,
+    Map<String, dynamic>? queryParameters,
+    Options? options,
+    CancelToken? cancelToken,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    return await _dio.patch<T>(
+      path,
+      data: data,
+      queryParameters: queryParameters,
+      options: options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+  }
+
+  /// Generic DELETE request - exposed for backwards compatibility
+  Future<Response<T>> rawDelete<T>(
+    String path, {
+    dynamic data,
+    Map<String, dynamic>? queryParameters,
+    Options? options,
+    CancelToken? cancelToken,
+  }) async {
+    return await _dio.delete<T>(
+      path,
+      data: data,
+      queryParameters: queryParameters,
+      options: options,
+      cancelToken: cancelToken,
+    );
+  }
 }

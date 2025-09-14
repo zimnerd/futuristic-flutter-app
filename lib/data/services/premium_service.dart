@@ -1,18 +1,18 @@
 import 'package:logger/logger.dart';
 import '../models/premium.dart';
-import 'api_service_impl.dart';
+import '../../core/network/api_client.dart';
 
 /// Service for handling premium features and subscriptions
 class PremiumService {
-  final ApiServiceImpl _apiService;
+  final ApiClient _apiClient;
   final Logger _logger = Logger();
 
-  PremiumService(this._apiService);
+  PremiumService(this._apiClient);
 
   /// Get available premium plans
   Future<List<PremiumPlan>> getAvailablePlans() async {
     try {
-      final response = await _apiService.get('/api/premium/plans');
+      final response = await _apiClient.get('/api/premium/plans');
 
       if (response.statusCode == 200 && response.data != null) {
         final List<dynamic> data = response.data['plans'] ?? [];
@@ -33,7 +33,7 @@ class PremiumService {
   /// Get current user's subscription status
   Future<UserSubscription?> getCurrentSubscription() async {
     try {
-      final response = await _apiService.get('/api/premium/subscription');
+      final response = await _apiClient.get('/api/premium/subscription');
 
       if (response.statusCode == 200 && response.data != null) {
         final subscription = UserSubscription.fromJson(response.data!);
@@ -59,7 +59,7 @@ class PremiumService {
     String? promoCode,
   }) async {
     try {
-      final response = await _apiService.post(
+      final response = await _apiClient.post(
         '/api/premium/subscribe',
         data: {
           'planId': planId,
@@ -85,7 +85,7 @@ class PremiumService {
   /// Cancel current subscription
   Future<bool> cancelSubscription({String? reason}) async {
     try {
-      final response = await _apiService.post(
+      final response = await _apiClient.post(
         '/api/premium/cancel',
         data: {
           'reason': reason,
@@ -109,7 +109,7 @@ class PremiumService {
   /// Reactivate cancelled subscription
   Future<UserSubscription?> reactivateSubscription() async {
     try {
-      final response = await _apiService.post('/api/premium/reactivate');
+      final response = await _apiClient.post('/api/premium/reactivate');
 
       if (response.statusCode == 200 && response.data != null) {
         final subscription = UserSubscription.fromJson(response.data!);
@@ -131,7 +131,7 @@ class PremiumService {
     required String paymentMethodId,
   }) async {
     try {
-      final response = await _apiService.post(
+      final response = await _apiClient.post(
         '/api/premium/purchase-coins',
         data: {
           'coinPackageId': coinPackageId,
@@ -156,7 +156,7 @@ class PremiumService {
   /// Get user's coin balance
   Future<CoinBalance?> getCoinBalance() async {
     try {
-      final response = await _apiService.get('/api/premium/coins/balance');
+      final response = await _apiClient.get('/api/premium/coins/balance');
 
       if (response.statusCode == 200 && response.data != null) {
         final balance = CoinBalance.fromJson(response.data!);
@@ -178,7 +178,7 @@ class PremiumService {
     int limit = 20,
   }) async {
     try {
-      final response = await _apiService.get(
+      final response = await _apiClient.get(
         '/api/premium/coins/transactions',
         queryParameters: {
           'page': page.toString(),
@@ -208,7 +208,7 @@ class PremiumService {
     Map<String, dynamic>? parameters,
   }) async {
     try {
-      final response = await _apiService.post(
+      final response = await _apiClient.post(
         '/api/premium/use-feature',
         data: {
           'featureType': featureType.name,
@@ -233,7 +233,7 @@ class PremiumService {
   /// Get available premium features for current subscription
   Future<List<PremiumFeature>> getAvailableFeatures() async {
     try {
-      final response = await _apiService.get('/api/premium/features');
+      final response = await _apiClient.get('/api/premium/features');
 
       if (response.statusCode == 200 && response.data != null) {
         final List<dynamic> data = response.data['features'] ?? [];
@@ -264,7 +264,7 @@ class PremiumService {
   /// Get premium feature usage stats
   Future<Map<String, dynamic>?> getFeatureUsageStats() async {
     try {
-      final response = await _apiService.get('/api/premium/usage-stats');
+      final response = await _apiClient.get('/api/premium/usage-stats');
 
       if (response.statusCode == 200 && response.data != null) {
         final stats = {
@@ -295,7 +295,7 @@ class PremiumService {
   /// Apply promo code
   Future<PromoCodeResult?> applyPromoCode(String promoCode) async {
     try {
-      final response = await _apiService.post(
+      final response = await _apiClient.post(
         '/api/premium/promo-code',
         data: {'promoCode': promoCode},
       );
@@ -317,7 +317,7 @@ class PremiumService {
   /// Get subscription history
   Future<List<UserSubscription>> getSubscriptionHistory() async {
     try {
-      final response = await _apiService.get('/api/premium/subscription-history');
+      final response = await _apiClient.get('/api/premium/subscription-history');
 
       if (response.statusCode == 200 && response.data != null) {
         final List<dynamic> data = response.data['subscriptions'] ?? [];
@@ -338,7 +338,7 @@ class PremiumService {
   /// Update payment method
   Future<bool> updatePaymentMethod(String paymentMethodId) async {
     try {
-      final response = await _apiService.put(
+      final response = await _apiClient.put(
         '/api/premium/payment-method',
         data: {'paymentMethodId': paymentMethodId},
       );
@@ -359,7 +359,7 @@ class PremiumService {
   /// Get billing information
   Future<Map<String, dynamic>?> getBillingInfo() async {
     try {
-      final response = await _apiService.get('/api/premium/billing-info');
+      final response = await _apiClient.get('/api/premium/billing-info');
 
       if (response.statusCode == 200 && response.data != null) {
         final billingInfo = {
@@ -387,7 +387,7 @@ class PremiumService {
   /// Check if user has access to specific premium feature
   Future<bool> hasFeatureAccess(PremiumFeatureType featureType) async {
     try {
-      final response = await _apiService.get('/api/premium/feature-access/${featureType.name}');
+      final response = await _apiClient.get('/api/premium/feature-access/${featureType.name}');
 
       if (response.statusCode == 200 && response.data != null) {
         final hasAccess = response.data['hasAccess'] as bool? ?? false;
