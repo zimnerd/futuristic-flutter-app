@@ -1,11 +1,14 @@
 import '../../data/services/analytics_service.dart';
-import '../../data/services/messaging_api_service.dart';
+import '../../data/services/messaging_service.dart';
 import '../../data/services/notification_api_service.dart';
 import '../../data/services/payment_service.dart';
 import '../../data/services/premium_api_service.dart';
 import '../../data/services/push_notification_service.dart';
 import '../../data/services/social_gaming_api_service.dart';
 import '../../data/services/token_service.dart';
+import '../../data/services/matching_service.dart';
+import '../network/api_client.dart';
+import '../network/unified_api_client.dart';
 import '../utils/logger.dart';
 
 /// Service locator for managing app services
@@ -17,7 +20,10 @@ class ServiceLocator {
   bool _initialized = false;
 
   // Services
-  MessagingApiService? _messagingService;
+  UnifiedApiClient? _unifiedApiClient;
+  ApiClient? _apiClient;
+  MatchingService? _matchingService;
+  MessagingService? _messagingService;
   PremiumApiService? _premiumService;
   SocialGamingApiService? _socialGamingService;
   NotificationApiService? _notificationService;
@@ -33,8 +39,15 @@ class ServiceLocator {
     try {
       AppLogger.info('Initializing services...');
 
+      // Initialize unified API client (new primary client)
+      _unifiedApiClient = UnifiedApiClient.instance;
+
+      // Initialize legacy API client for backward compatibility
+      _apiClient = ApiClient();
+      
       // Initialize core services
-      _messagingService = MessagingApiService.instance;
+      _matchingService = MatchingService(apiClient: _apiClient!);
+      _messagingService = MessagingService(apiClient: _unifiedApiClient!);
       _premiumService = PremiumApiService.instance;
       _socialGamingService = SocialGamingApiService.instance;
       _notificationService = NotificationApiService.instance;
@@ -62,7 +75,8 @@ class ServiceLocator {
   /// Set auth token for all services
   Future<void> setAuthToken(String authToken) async {
     try {
-      _messagingService?.setAuthToken(authToken);
+      _unifiedApiClient?.setAuthToken(authToken);
+      _apiClient?.setAuthToken(authToken);
       _premiumService?.setAuthToken(authToken);
       _socialGamingService?.setAuthToken(authToken);
       _notificationService?.setAuthToken(authToken);
@@ -104,8 +118,20 @@ class ServiceLocator {
     }
   }
 
+  /// Get API client
+  ApiClient get apiClient {
+    _ensureInitialized();
+    return _apiClient!;
+  }
+
+  /// Get matching service
+  MatchingService get matchingService {
+    _ensureInitialized();
+    return _matchingService!;
+  }
+
   /// Get messaging service
-  MessagingApiService get messaging {
+  MessagingService get messaging {
     _ensureInitialized();
     return _messagingService!;
   }
@@ -163,6 +189,8 @@ class ServiceLocator {
   void dispose() {
     _pushNotificationService?.dispose();
     _analyticsService = null;
+    _apiClient = null;
+    _matchingService = null;
     _messagingService = null;
     _premiumService = null;
     _socialGamingService = null;

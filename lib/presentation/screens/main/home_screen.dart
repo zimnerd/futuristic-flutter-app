@@ -4,9 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../blocs/user/user_bloc.dart';
 import '../../blocs/user/user_state.dart';
 import '../../theme/pulse_colors.dart';
-import '../main/matches_screen.dart';
-import '../main/messages_screen.dart';
-import '../main/profile_screen.dart';
+import '../discovery/discovery_screen.dart';
 
 /// Modern home screen with tab navigation
 class HomeScreen extends StatefulWidget {
@@ -16,24 +14,14 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
-  late TabController _tabController;
-  int _currentIndex = 0;
-
+class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
-    _tabController.addListener(() {
-      setState(() {
-        _currentIndex = _tabController.index;
-      });
-    });
   }
 
   @override
   void dispose() {
-    _tabController.dispose();
     super.dispose();
   }
 
@@ -56,16 +44,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   // Custom header
                   _buildHeader(context, state),
 
-                  // Tab content
+                  // Discovery content
                   Expanded(
-                    child: TabBarView(
-                      controller: _tabController,
-                      children: const [
-                        MatchesScreen(),
-                        MessagesScreen(),
-                        ProfileScreen(),
-                      ],
-                    ),
+                    child: DiscoveryScreen(),
                   ),
                 ],
               ),
@@ -73,9 +54,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           );
         },
       ),
-
-      // Custom bottom navigation
-      bottomNavigationBar: _buildBottomNavigation(),
     );
   }
 
@@ -186,113 +164,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildBottomNavigation() {
-    final items = [
-      _NavItem(
-        icon: Icons.favorite_outline,
-        activeIcon: Icons.favorite,
-        label: 'Matches',
-      ),
-      _NavItem(
-        icon: Icons.chat_bubble_outline,
-        activeIcon: Icons.chat_bubble,
-        label: 'Messages',
-      ),
-      _NavItem(
-        icon: Icons.person_outline,
-        activeIcon: Icons.person,
-        label: 'Profile',
-      ),
-    ];
-
-    return Container(
-      decoration: BoxDecoration(
-        color: PulseColors.surface,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.1),
-            blurRadius: 20,
-            offset: const Offset(0, -5),
-          ),
-        ],
-      ),
-      child: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: PulseSpacing.lg,
-            vertical: PulseSpacing.sm,
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: items.asMap().entries.map((entry) {
-              final index = entry.key;
-              final item = entry.value;
-              final isActive = index == _currentIndex;
-
-              return GestureDetector(
-                onTap: () {
-                  _tabController.animateTo(index);
-                },
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: PulseSpacing.md,
-                    vertical: PulseSpacing.sm,
-                  ),
-                  decoration: BoxDecoration(
-                    color: isActive
-                        ? PulseColors.primaryContainer
-                        : Colors.transparent,
-                    borderRadius: BorderRadius.circular(PulseRadii.lg),
-                  ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        isActive ? item.activeIcon : item.icon,
-                        color: isActive
-                            ? PulseColors.primary
-                            : PulseColors.onSurfaceVariant,
-                        size: 24,
-                      ),
-                      const SizedBox(height: PulseSpacing.xs),
-                      Text(
-                        item.label,
-                        style: PulseTextStyles.labelSmall.copyWith(
-                          color: isActive
-                              ? PulseColors.primary
-                              : PulseColors.onSurfaceVariant,
-                          fontWeight: isActive
-                              ? FontWeight.w600
-                              : FontWeight.normal,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            }).toList(),
-          ),
-        ),
-      ),
-    );
-  }
-
   String _getGreeting() {
     final hour = DateTime.now().hour;
     if (hour < 12) return 'Good morning';
     if (hour < 17) return 'Good afternoon';
     return 'Good evening';
   }
-}
-
-class _NavItem {
-  const _NavItem({
-    required this.icon,
-    required this.activeIcon,
-    required this.label,
-  });
-
-  final IconData icon;
-  final IconData activeIcon;
-  final String label;
 }

@@ -23,7 +23,7 @@ class UserModel {
   final String? fcmToken;
   final Map<String, dynamic>? preferences;
   final DateTime createdAt;
-  final DateTime updatedAt;
+  final DateTime? updatedAt;
 
   const UserModel({
     required this.id,
@@ -48,7 +48,7 @@ class UserModel {
     this.fcmToken,
     this.preferences,
     required this.createdAt,
-    required this.updatedAt,
+    this.updatedAt,
   });
 
   // Simple JSON methods without code generation
@@ -88,7 +88,9 @@ class UserModel {
           ? Map<String, dynamic>.from(json['preferences'])
           : null,
       createdAt: DateTime.parse(json['createdAt']),
-      updatedAt: DateTime.parse(json['updatedAt']),
+      updatedAt: json['updatedAt'] != null
+          ? DateTime.parse(json['updatedAt'])
+          : null,
     );
   }
 
@@ -116,7 +118,7 @@ class UserModel {
       'fcmToken': fcmToken,
       'preferences': preferences,
       'createdAt': createdAt.toIso8601String(),
-      'updatedAt': updatedAt.toIso8601String(),
+      'updatedAt': updatedAt?.toIso8601String(),
     };
   }
 

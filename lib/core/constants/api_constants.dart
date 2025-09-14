@@ -43,9 +43,11 @@ class ApiConstants {
   static const String deletePhoto = '$users/photos';
   
   // Matching endpoints
-  static const String discover = '$matching/discover';
+  static const String discover = '$matching/suggestions';
   static const String swipe = '$matching/swipe';
   static const String matches = '$matching/matches';
+  static const String likeUser = '$matching/like';
+  static const String passUser = '$matching/pass';
   static const String reportProfile = '$matching/report';
   static const String blockProfile = '$matching/block';
   

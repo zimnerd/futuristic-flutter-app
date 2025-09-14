@@ -1,14 +1,14 @@
 import 'package:dio/dio.dart';
-import '../../../core/network/api_client.dart';
-import '../../../core/constants/api_constants.dart';
+import '../../../core/network/unified_api_client.dart';
 import '../../../domain/entities/conversation.dart';
 import '../../../domain/entities/message.dart';
 
 /// Service for messaging operations that matches BLoC expectations
 class MessagingService {
-  final ApiClient _apiClient;
+  final UnifiedApiClient _apiClient;
 
-  MessagingService({required ApiClient apiClient}) : _apiClient = apiClient;
+  MessagingService({required UnifiedApiClient apiClient})
+    : _apiClient = apiClient;
 
   /// Get conversations for current user
   Future<List<Conversation>> getConversations({
@@ -16,12 +16,9 @@ class MessagingService {
     int offset = 0,
   }) async {
     try {
-      final response = await _apiClient.get(
-        ApiConstants.getConversations,
-        queryParameters: {
-          'limit': limit,
-          'offset': offset,
-        },
+      final response = await _apiClient.getConversations(
+        limit: limit,
+        offset: offset,
       );
 
       final data = response.data as Map<String, dynamic>;
@@ -42,12 +39,9 @@ class MessagingService {
     int offset = 0,
   }) async {
     try {
-      final response = await _apiClient.get(
-        '${ApiConstants.getMessages}/$conversationId/messages',
-        queryParameters: {
-          'limit': limit,
-          'offset': offset,
-        },
+      final response = await _apiClient.getMessages(
+        conversationId: conversationId,
+        limit: limit,
       );
 
       final data = response.data as Map<String, dynamic>;
@@ -61,26 +55,23 @@ class MessagingService {
     }
   }
 
-  /// Send a message
+  /// Send a message to a conversation
   Future<Message> sendMessage({
     required String conversationId,
     required String content,
     String type = 'text',
-    String? mediaUrl,
-    String? replyToMessageId,
+    Map<String, dynamic>? metadata,
   }) async {
     try {
-      final response = await _apiClient.post(
-        '${ApiConstants.sendMessage}/$conversationId/messages',
-        data: {
-          'content': content,
-          'type': type,
-          'mediaUrl': mediaUrl,
-          'replyToMessageId': replyToMessageId,
-        },
+      final response = await _apiClient.sendMessage(
+        conversationId: conversationId,
+        content: content,
+        type: type,
+        metadata: metadata,
       );
 
-      return _messageFromJson(response.data as Map<String, dynamic>);
+      final data = response.data as Map<String, dynamic>;
+      return _messageFromJson(data['message'] as Map<String, dynamic>);
     } on DioException catch (e) {
       throw _handleDioError(e);
     }
@@ -89,7 +80,7 @@ class MessagingService {
   /// Mark conversation as read
   Future<void> markConversationAsRead(String conversationId) async {
     try {
-      await _apiClient.patch('${ApiConstants.markAsRead}/$conversationId/read');
+      await _apiClient.markConversationAsRead(conversationId);
     } on DioException catch (e) {
       throw _handleDioError(e);
     }
@@ -98,7 +89,7 @@ class MessagingService {
   /// Delete conversation
   Future<void> deleteConversation(String conversationId) async {
     try {
-      await _apiClient.delete('${ApiConstants.getConversations}/$conversationId');
+      await _apiClient.deleteConversation(conversationId);
     } on DioException catch (e) {
       throw _handleDioError(e);
     }
@@ -107,10 +98,7 @@ class MessagingService {
   /// Block user
   Future<void> blockUser(String userId) async {
     try {
-      await _apiClient.post(
-        '${ApiConstants.users}/block',
-        data: {'userId': userId},
-      );
+      await _apiClient.blockUser(userId);
     } on DioException catch (e) {
       throw _handleDioError(e);
     }
@@ -119,9 +107,9 @@ class MessagingService {
   /// Report conversation
   Future<void> reportConversation(String conversationId, String reason) async {
     try {
-      await _apiClient.post(
-        '${ApiConstants.getConversations}/$conversationId/report',
-        data: {'reason': reason},
+      await _apiClient.reportConversation(
+        conversationId: conversationId,
+        reason: reason,
       );
     } on DioException catch (e) {
       throw _handleDioError(e);
@@ -250,9 +238,9 @@ class MessagingService {
     required String initialMessage,
   }) async {
     try {
-      final response = await _apiClient.post(
-        '${ApiConstants.conversations}/start-from-match',
-        data: {'matchId': matchId, 'message': initialMessage},
+      final response = await _apiClient.startConversationFromMatch(
+        matchId: matchId,
+        initialMessage: initialMessage,
       );
 
       final data = response.data as Map<String, dynamic>;

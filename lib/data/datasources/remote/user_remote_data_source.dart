@@ -3,6 +3,7 @@ import 'package:logger/logger.dart';
 import '../../models/user_model.dart';
 import '../../../domain/services/api_service.dart';
 import '../../exceptions/app_exceptions.dart';
+import '../../../core/services/service_locator.dart';
 
 /// Remote data source for user-related API operations
 /// Handles all HTTP requests to the backend user endpoints
@@ -118,6 +119,12 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
         // Store auth tokens for future requests
         if (accessToken != null) {
           _apiService.setAuthToken(accessToken);
+          // Also set the token in the service locator for all services
+          try {
+            await ServiceLocator.instance.setAuthToken(accessToken);
+          } catch (e) {
+            _logger.w('Failed to set auth token in service locator: $e');
+          }
         }
         
         // TODO: Store refresh token for token refresh functionality
