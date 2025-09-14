@@ -96,13 +96,13 @@ class MatchingBloc extends Bloc<MatchingEvent, MatchingState> {
     try {
       final result = await _matchingService.swipeProfile(
         profileId: currentProfile.id,
-        isLike: event.direction == SwipeDirection.right,
+        isLike: event.direction == SwipeAction.right,
       );
 
       emit(state.copyWith(
         lastSwipeWasMatch: result['isMatch'] ?? false,
         matchedProfile: (result['isMatch'] ?? false) ? currentProfile : null,
-        superLikesRemaining: event.direction == SwipeDirection.up
+          superLikesRemaining: event.direction == SwipeAction.up
             ? (state.superLikesRemaining - 1).clamp(0, double.infinity).toInt()
             : state.superLikesRemaining,
       ));
@@ -187,7 +187,7 @@ class MatchingBloc extends Bloc<MatchingEvent, MatchingState> {
 
     add(SwipeProfile(
       profileId: event.profileId,
-      direction: SwipeDirection.up,
+      direction: SwipeAction.up,
     ));
   }
 
@@ -237,13 +237,6 @@ class MatchingBloc extends Bloc<MatchingEvent, MatchingState> {
   }
 }
 
-/// Swipe direction enum
-enum SwipeDirection {
-  left,  // Pass/Nope
-  right, // Like
-  up,    // Super like
-}
-
 /// Swipe action for history tracking
 class MatchingSwipeAction {
   const MatchingSwipeAction({
@@ -253,7 +246,7 @@ class MatchingSwipeAction {
   });
 
   final UserProfile profile;
-  final SwipeDirection direction;
+  final SwipeAction direction;
   final DateTime timestamp;
 }
 

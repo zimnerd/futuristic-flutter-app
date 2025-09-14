@@ -26,7 +26,7 @@ class SwipeProfile extends MatchingEvent {
   });
 
   final String profileId;
-  final SwipeDirection direction;
+  final SwipeAction direction;
 
   @override
   List<Object?> get props => [profileId, direction];
