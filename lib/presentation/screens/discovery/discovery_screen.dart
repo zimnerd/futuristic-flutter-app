@@ -512,7 +512,8 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
                     Expanded(
                       child: ElevatedButton(
                         onPressed: () {
-                          // TODO: Navigate to chat
+                          // Navigate to messages and dismiss match
+                          context.go('/messages');
                           context.read<DiscoveryBloc>().dismissMatch();
                         },
                         style: ElevatedButton.styleFrom(
