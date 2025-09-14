@@ -127,10 +127,18 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
           }
         }
         
-        // TODO: Store refresh token for token refresh functionality
-        // This would typically be stored securely for automatic token refresh
-        if (refreshToken != null) {
-          _logger.d('Refresh token received and ready for storage');
+        // Store refresh token securely for automatic token refresh
+        if (refreshToken != null && accessToken != null) {
+          try {
+            final tokenService = ServiceLocator.instance.token;
+            await tokenService.storeTokens(
+              accessToken: accessToken,
+              refreshToken: refreshToken,
+            );
+            _logger.d('Tokens stored securely');
+          } catch (e) {
+            _logger.w('Failed to store tokens securely: $e');
+          }
         }
 
         return UserModel.fromJson(userData);
@@ -178,10 +186,32 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
         final responseData = response.data['data'];
         final userData = responseData['user'];
         final accessToken = responseData['accessToken'];
+        final refreshToken = responseData['refreshToken'];
 
         // Store auth token for future requests
         if (accessToken != null) {
           _apiService.setAuthToken(accessToken);
+          
+          // Also set the token in the service locator for all services
+          try {
+            await ServiceLocator.instance.setAuthToken(accessToken);
+          } catch (e) {
+            _logger.w('Failed to set auth token in service locator: $e');
+          }
+
+          // Store tokens securely if both are available
+          if (refreshToken != null) {
+            try {
+              final tokenService = ServiceLocator.instance.token;
+              await tokenService.storeTokens(
+                accessToken: accessToken,
+                refreshToken: refreshToken,
+              );
+              _logger.d('Registration tokens stored securely');
+            } catch (e) {
+              _logger.w('Failed to store registration tokens: $e');
+            }
+          }
         }
 
         return UserModel.fromJson(userData);
@@ -202,12 +232,29 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
 
       await _apiService.post('/auth/logout');
       _apiService.clearAuthToken();
+      
+      // Clear securely stored tokens
+      try {
+        final tokenService = ServiceLocator.instance.token;
+        await tokenService.clearTokens();
+        _logger.d('Stored tokens cleared successfully');
+      } catch (e) {
+        _logger.w('Failed to clear stored tokens: $e');
+      }
 
       _logger.i('User signed out successfully');
     } catch (e) {
       _logger.e('Sign out error: $e');
-      // Even if logout fails on server, clear local token
+      // Even if logout fails on server, clear local tokens
       _apiService.clearAuthToken();
+      try {
+        final tokenService = ServiceLocator.instance.token;
+        await tokenService.clearTokens();
+      } catch (clearError) {
+        _logger.w(
+          'Failed to clear stored tokens during error handling: $clearError',
+        );
+      }
     }
   }
 
@@ -264,9 +311,31 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
         final responseData = response.data['data'];
         final userData = responseData['user'];
         final accessToken = responseData['accessToken'];
+        final refreshToken = responseData['refreshToken'];
 
         if (accessToken != null) {
           _apiService.setAuthToken(accessToken);
+          
+          // Also set the token in the service locator for all services
+          try {
+            await ServiceLocator.instance.setAuthToken(accessToken);
+          } catch (e) {
+            _logger.w('Failed to set auth token in service locator: $e');
+          }
+
+          // Store tokens securely if both are available
+          if (refreshToken != null) {
+            try {
+              final tokenService = ServiceLocator.instance.token;
+              await tokenService.storeTokens(
+                accessToken: accessToken,
+                refreshToken: refreshToken,
+              );
+              _logger.d('2FA verification tokens stored securely');
+            } catch (e) {
+              _logger.w('Failed to store 2FA tokens: $e');
+            }
+          }
         }
 
         return UserModel.fromJson(userData);
@@ -287,13 +356,47 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
     try {
       _logger.i('Refreshing auth token');
 
-      final response = await _apiService.post('/auth/refresh');
+      // Get the stored refresh token
+      final tokenService = ServiceLocator.instance.token;
+      final storedRefreshToken = await tokenService.getRefreshToken();
+
+      if (storedRefreshToken == null) {
+        throw ApiException('No refresh token available');
+      }
+
+      final response = await _apiService.post(
+        '/auth/refresh',
+        data: {'refreshToken': storedRefreshToken},
+      );
 
       if (response.statusCode == 200) {
         final responseData = response.data['data'] ?? response.data;
-        final accessToken = responseData['accessToken'];
-        if (accessToken != null) {
-          _apiService.setAuthToken(accessToken);
+        final newAccessToken = responseData['accessToken'];
+        final newRefreshToken = responseData['refreshToken'];
+
+        if (newAccessToken != null) {
+          // Update access token in API service
+          _apiService.setAuthToken(newAccessToken);
+
+          // Update tokens in service locator
+          try {
+            await ServiceLocator.instance.setAuthToken(newAccessToken);
+          } catch (e) {
+            _logger.w('Failed to set auth token in service locator: $e');
+          }
+
+          // Store new tokens securely if refresh token is also provided
+          if (newRefreshToken != null) {
+            try {
+              await tokenService.storeTokens(
+                accessToken: newAccessToken,
+                refreshToken: newRefreshToken,
+              );
+              _logger.d('New tokens stored securely after refresh');
+            } catch (e) {
+              _logger.w('Failed to store new tokens: $e');
+            }
+          }
         }
       } else {
         throw ApiException('Token refresh failed: ${response.statusMessage}');
@@ -364,6 +467,27 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
           final tokens = responseData['tokens'];
           if (tokens != null && tokens['accessToken'] != null) {
             _apiService.setAuthToken(tokens['accessToken']);
+            
+            // Also set the token in the service locator for all services
+            try {
+              await ServiceLocator.instance.setAuthToken(tokens['accessToken']);
+            } catch (e) {
+              _logger.w('Failed to set auth token in service locator: $e');
+            }
+
+            // Store tokens securely if both are available
+            if (tokens['refreshToken'] != null) {
+              try {
+                final tokenService = ServiceLocator.instance.token;
+                await tokenService.storeTokens(
+                  accessToken: tokens['accessToken'],
+                  refreshToken: tokens['refreshToken'],
+                );
+                _logger.d('OTP verification tokens stored securely');
+              } catch (e) {
+                _logger.w('Failed to store OTP tokens: $e');
+              }
+            }
           }
 
           return {

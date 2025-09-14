@@ -40,6 +40,14 @@ class ServiceLocator {
       // Initialize the main API client (replaces all scattered API services)
       _apiClient = ApiClient.instance;
 
+      // Initialize auth token from storage or use provided token
+      if (authToken != null) {
+        await setAuthToken(authToken);
+      } else {
+        // Try to load auth token from storage
+        await _apiClient!.initializeAuthToken();
+      }
+
       // Initialize feature-specific services that use the unified API client
       _matchingService = MatchingService(apiClient: _apiClient!);
       _messagingService = MessagingService(apiClient: _apiClient!);
@@ -47,11 +55,6 @@ class ServiceLocator {
       _analyticsService = AnalyticsService.instance;
       _pushNotificationService = PushNotificationService.instance;
       _tokenService = TokenService();
-
-      // Set auth tokens if provided
-      if (authToken != null) {
-        await setAuthToken(authToken);
-      }
 
       // Initialize push notifications
       await _pushNotificationService!.initialize(authToken: authToken);
@@ -184,7 +187,6 @@ class ServiceLocator {
 
   /// Dispose all services
   void dispose() {
-    _apiClient?.dispose();
     _pushNotificationService?.dispose();
     _analyticsService = null;
     _apiClient = null;

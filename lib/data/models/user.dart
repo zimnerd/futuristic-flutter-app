@@ -4,14 +4,18 @@ import 'package:equatable/equatable.dart';
 class User extends Equatable {
   final String id;
   final String email;
+  final String? username; // Added from API spec
   final String? firstName;
   final String? lastName;
   final String? displayName;
   final String? profileImageUrl;
   final String? bio;
   final DateTime? birthDate;
+  final int? age; // Added from API spec
+  final String? gender; // Added from API spec
   final String? location;
   final List<String> interests;
+  final List<String> photos; // Added from API spec (array of photo URLs)
   final bool isOnline;
   final DateTime? lastSeen;
   final bool isVerified;
@@ -24,14 +28,18 @@ class User extends Equatable {
   const User({
     required this.id,
     required this.email,
+    this.username,
     this.firstName,
     this.lastName,
     this.displayName,
     this.profileImageUrl,
     this.bio,
     this.birthDate,
+    this.age,
+    this.gender,
     this.location,
     this.interests = const [],
+    this.photos = const [],
     this.isOnline = false,
     this.lastSeen,
     this.isVerified = false,
@@ -47,6 +55,7 @@ class User extends Equatable {
     return User(
       id: json['id'] as String,
       email: json['email'] as String,
+      username: json['username'] as String?,
       firstName: json['firstName'] as String?,
       lastName: json['lastName'] as String?,
       displayName: json['displayName'] as String?,
@@ -55,8 +64,11 @@ class User extends Equatable {
       birthDate: json['birthDate'] != null
           ? DateTime.parse(json['birthDate'] as String)
           : null,
+      age: json['age'] as int?,
+      gender: json['gender'] as String?,
       location: json['location'] as String?,
       interests: (json['interests'] as List?)?.cast<String>() ?? [],
+      photos: (json['photos'] as List?)?.cast<String>() ?? [],
       isOnline: json['isOnline'] as bool? ?? false,
       lastSeen: json['lastSeen'] != null
           ? DateTime.parse(json['lastSeen'] as String)
@@ -75,14 +87,18 @@ class User extends Equatable {
     return {
       'id': id,
       'email': email,
+      'username': username,
       'firstName': firstName,
       'lastName': lastName,
       'displayName': displayName,
       'profileImageUrl': profileImageUrl,
       'bio': bio,
       'birthDate': birthDate?.toIso8601String(),
+      'age': age,
+      'gender': gender,
       'location': location,
       'interests': interests,
+      'photos': photos,
       'isOnline': isOnline,
       'lastSeen': lastSeen?.toIso8601String(),
       'isVerified': isVerified,
@@ -110,7 +126,7 @@ class User extends Equatable {
   String get name => displayName ?? fullName;
 
   /// Get age from birth date
-  int? get age {
+  int? get calculatedAge {
     if (birthDate == null) return null;
     final now = DateTime.now();
     int age = now.year - birthDate!.year;
@@ -150,14 +166,18 @@ class User extends Equatable {
   User copyWith({
     String? id,
     String? email,
+    String? username,
     String? firstName,
     String? lastName,
     String? displayName,
     String? profileImageUrl,
     String? bio,
     DateTime? birthDate,
+    int? age,
+    String? gender,
     String? location,
     List<String>? interests,
+    List<String>? photos,
     bool? isOnline,
     DateTime? lastSeen,
     bool? isVerified,
@@ -170,14 +190,18 @@ class User extends Equatable {
     return User(
       id: id ?? this.id,
       email: email ?? this.email,
+      username: username ?? this.username,
       firstName: firstName ?? this.firstName,
       lastName: lastName ?? this.lastName,
       displayName: displayName ?? this.displayName,
       profileImageUrl: profileImageUrl ?? this.profileImageUrl,
       bio: bio ?? this.bio,
       birthDate: birthDate ?? this.birthDate,
+      age: age ?? this.age,
+      gender: gender ?? this.gender,
       location: location ?? this.location,
       interests: interests ?? this.interests,
+      photos: photos ?? this.photos,
       isOnline: isOnline ?? this.isOnline,
       lastSeen: lastSeen ?? this.lastSeen,
       isVerified: isVerified ?? this.isVerified,
@@ -193,14 +217,18 @@ class User extends Equatable {
   List<Object?> get props => [
         id,
         email,
+    username,
         firstName,
         lastName,
         displayName,
         profileImageUrl,
         bio,
         birthDate,
+    age,
+    gender,
         location,
         interests,
+    photos,
         isOnline,
         lastSeen,
         isVerified,

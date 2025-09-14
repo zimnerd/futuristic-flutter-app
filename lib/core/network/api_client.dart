@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:logger/logger.dart';
 import '../constants/api_constants.dart';
+import '../../data/services/token_service.dart';
 
 /// Consolidated API client for all backend communication
 ///
@@ -19,6 +20,7 @@ import '../constants/api_constants.dart';
 class ApiClient {
   late final Dio _dio;
   final Logger _logger = Logger();
+  final TokenService _tokenService = TokenService();
   String? _authToken;
 
   static ApiClient? _instance;
@@ -36,16 +38,17 @@ class ApiClient {
   }
 
   void _setupDio({String? baseUrl}) {
-    _dio = Dio(BaseOptions(
-      baseUrl: baseUrl ?? ApiConstants.baseUrl,
-      connectTimeout: const Duration(seconds: 30),
-      receiveTimeout: const Duration(seconds: 30),
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
+    _dio = Dio(
+      BaseOptions(
+        baseUrl: baseUrl ?? ApiConstants.baseUrl,
+        connectTimeout: const Duration(seconds: 30),
+        receiveTimeout: const Duration(seconds: 30),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
           'X-Platform': 'mobile-flutter',
           'X-App-Version': '1.0.0',
-      },
+        },
       ),
     );
   }
@@ -130,13 +133,72 @@ class ApiClient {
     _logger.i('🔓 Auth token cleared');
   }
 
+  /// Initialize auth token from storage
+  Future<void> initializeAuthToken() async {
+    try {
+      final token = await _tokenService.getAccessToken();
+      if (token != null) {
+        // Check if token is expired
+        if (!_tokenService.isTokenExpired(token)) {
+          _authToken = token;
+          _logger.i('🔐 Auth token loaded from storage');
+        } else {
+          _logger.w('⚠️ Stored token is expired, attempting refresh...');
+          await _attemptTokenRefresh();
+        }
+      }
+    } catch (e) {
+      _logger.e('❌ Failed to initialize auth token: $e');
+      await _tokenService.clearTokens();
+    }
+  }
+
   /// Get current authentication token
   String? get authToken => _authToken;
 
   Future<void> _attemptTokenRefresh() async {
-    // Implementation would depend on how refresh tokens are stored
-    // This is a placeholder for the refresh logic
-    throw Exception('Token refresh not implemented yet');
+    try {
+      final refreshToken = await _tokenService.getRefreshToken();
+
+      if (refreshToken == null) {
+        throw Exception('No refresh token available');
+      }
+
+      _logger.i('🔄 Attempting token refresh...');
+
+      // Call the refresh endpoint
+      final response = await _dio.post(
+        '/auth/refresh',
+        data: {'refreshToken': refreshToken},
+      );
+
+      if (response.statusCode == 200) {
+        final data = response.data;
+        final newAccessToken = data['accessToken'] as String;
+        final newRefreshToken = data['refreshToken'] as String?;
+
+        // Store new tokens
+        await _tokenService.storeTokens(
+          accessToken: newAccessToken,
+          refreshToken: newRefreshToken ?? refreshToken,
+        );
+
+        // Update the current auth token
+        _authToken = newAccessToken;
+
+        _logger.i('✅ Token refresh successful');
+      } else {
+        throw Exception(
+          'Token refresh failed with status: ${response.statusCode}',
+        );
+      }
+    } catch (e) {
+      _logger.e('❌ Token refresh failed: $e');
+      // Clear tokens on refresh failure
+      await _tokenService.clearTokens();
+      _authToken = null;
+      rethrow;
+    }
   }
 
   // ===========================================
@@ -765,143 +827,173 @@ class ApiClient {
   }
 
   /// Get payment history
-  Future<Response> getPaymentHistory({int limit = 50, int offset = 0}) async {
+  Future<Response> getPaymentHistory({int limit = 20, int offset = 0}) async {
     return await _dio.get(
       '/payments/history',
       queryParameters: {'limit': limit, 'offset': offset},
     );
   }
 
-  /// GET request
+  // ===========================================
+  // HTTP UTILITY METHODS
+  // ===========================================
+
+  /// Generic GET request
   Future<Response<T>> get<T>(
     String path, {
     Map<String, dynamic>? queryParameters,
     Options? options,
+    CancelToken? cancelToken,
+    ProgressCallback? onReceiveProgress,
   }) async {
-    try {
-      return await _dio.get<T>(
-        path,
-        queryParameters: queryParameters,
-        options: options,
-      );
-    } catch (e) {
-      _logger.e('GET request failed: $e');
-      rethrow;
-    }
+    return await _dio.get<T>(
+      path,
+      queryParameters: queryParameters,
+      options: options,
+      cancelToken: cancelToken,
+      onReceiveProgress: onReceiveProgress,
+    );
   }
 
-  /// POST request
+  /// Generic POST request
   Future<Response<T>> post<T>(
     String path, {
     dynamic data,
     Map<String, dynamic>? queryParameters,
     Options? options,
+    CancelToken? cancelToken,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
   }) async {
-    try {
-      return await _dio.post<T>(
-        path,
-        data: data,
-        queryParameters: queryParameters,
-        options: options,
-      );
-    } catch (e) {
-      _logger.e('POST request failed: $e');
-      rethrow;
-    }
+    return await _dio.post<T>(
+      path,
+      data: data,
+      queryParameters: queryParameters,
+      options: options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
   }
 
-  /// PUT request
+  /// Generic PUT request
   Future<Response<T>> put<T>(
     String path, {
     dynamic data,
     Map<String, dynamic>? queryParameters,
     Options? options,
+    CancelToken? cancelToken,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
   }) async {
-    try {
-      return await _dio.put<T>(
-        path,
-        data: data,
-        queryParameters: queryParameters,
-        options: options,
-      );
-    } catch (e) {
-      _logger.e('PUT request failed: $e');
-      rethrow;
-    }
+    return await _dio.put<T>(
+      path,
+      data: data,
+      queryParameters: queryParameters,
+      options: options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
   }
 
-  /// PATCH request
+  /// Generic PATCH request
   Future<Response<T>> patch<T>(
     String path, {
     dynamic data,
     Map<String, dynamic>? queryParameters,
     Options? options,
+    CancelToken? cancelToken,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
   }) async {
-    try {
-      return await _dio.patch<T>(
-        path,
-        data: data,
-        queryParameters: queryParameters,
-        options: options,
-      );
-    } catch (e) {
-      _logger.e('PATCH request failed: $e');
-      rethrow;
-    }
+    return await _dio.patch<T>(
+      path,
+      data: data,
+      queryParameters: queryParameters,
+      options: options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
   }
 
-  /// DELETE request
+  /// Generic DELETE request
   Future<Response<T>> delete<T>(
     String path, {
     dynamic data,
     Map<String, dynamic>? queryParameters,
     Options? options,
+    CancelToken? cancelToken,
   }) async {
-    try {
-      return await _dio.delete<T>(
-        path,
-        data: data,
-        queryParameters: queryParameters,
-        options: options,
-      );
-    } catch (e) {
-      _logger.e('DELETE request failed: $e');
-      rethrow;
-    }
+    return await _dio.delete<T>(
+      path,
+      data: data,
+      queryParameters: queryParameters,
+      options: options,
+      cancelToken: cancelToken,
+    );
   }
 
-  /// Upload file
-  Future<Response<T>> uploadFile<T>(
+  /// Generic HEAD request
+  Future<Response<T>> head<T>(
+    String path, {
+    Map<String, dynamic>? queryParameters,
+    Options? options,
+    CancelToken? cancelToken,
+  }) async {
+    return await _dio.head<T>(
+      path,
+      queryParameters: queryParameters,
+      options: options,
+      cancelToken: cancelToken,
+    );
+  }
+
+  /// Download file
+  Future<Response> download(
+    String urlPath,
+    String savePath, {
+    ProgressCallback? onReceiveProgress,
+    Map<String, dynamic>? queryParameters,
+    CancelToken? cancelToken,
+    bool deleteOnError = true,
+    String lengthHeader = Headers.contentLengthHeader,
+    Options? options,
+  }) async {
+    return await _dio.download(
+      urlPath,
+      savePath,
+      onReceiveProgress: onReceiveProgress,
+      queryParameters: queryParameters,
+      cancelToken: cancelToken,
+      deleteOnError: deleteOnError,
+      lengthHeader: lengthHeader,
+      options: options,
+    );
+  }
+
+  /// Send FormData (for file uploads)
+  Future<Response<T>> postFormData<T>(
     String path,
-    String filePath, {
-    Map<String, dynamic>? data,
+    FormData formData, {
+    Map<String, dynamic>? queryParameters,
+    Options? options,
+    CancelToken? cancelToken,
     ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
   }) async {
-    try {
-      final formData = FormData.fromMap({
-        'file': await MultipartFile.fromFile(filePath),
-        if (data != null) ...data,
-      });
-
-      return await _dio.post<T>(
-        path,
-        data: formData,
-        onSendProgress: onSendProgress,
-      );
-    } catch (e) {
-      _logger.e('File upload failed: $e');
-      rethrow;
-    }
+    return await _dio.post<T>(
+      path,
+      data: formData,
+      queryParameters: queryParameters,
+      options: options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
   }
 
-  /// Health check endpoint
-  Future<Response> healthCheck() async {
-    return await _dio.get('/health');
-  }
-
-  /// Dispose the client
-  void dispose() {
-    _dio.close();
-    _instance = null;
-  }
+  /// Get Dio instance for advanced usage
+  Dio get dio => _dio;
 }
