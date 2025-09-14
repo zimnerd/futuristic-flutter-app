@@ -1,5 +1,8 @@
 import '../../../core/network/api_client.dart';
 import '../../../core/constants/api_constants.dart';
+import 'package:dio/dio.dart';
+import 'package:hive/hive.dart';
+import '../../domain/services/api_service.dart';
 import 'matching_service.dart';
 import 'messaging_service.dart';
 import 'profile_service.dart';
@@ -17,6 +20,9 @@ import 'live_streaming_service.dart';
 import 'date_planning_service.dart';
 import 'voice_message_service.dart';
 import 'call_service.dart';
+import 'auth_service.dart';
+import 'subscription_service.dart';
+import 'saved_payment_methods_service.dart';
 
 /// Simple service locator without external dependencies
 class ServiceLocator {
@@ -43,6 +49,8 @@ class ServiceLocator {
   late final DatePlanningService _datePlanningService;
   late final VoiceMessageService _voiceMessageService;
   late final CallService _callService;
+  late final AuthService _authService;
+  late final SubscriptionService _subscriptionService;
 
   bool _isInitialized = false;
 
@@ -54,10 +62,19 @@ class ServiceLocator {
     _apiClient = ApiClient(baseUrl: ApiConstants.baseUrl);
     _apiService = ApiServiceImpl(baseUrl: ApiConstants.baseUrl);
 
+    // Initialize AuthService with basic Dio client (for now)
+    _authService = AuthService(
+      httpClient: Dio(),
+      secureStorage: Hive.box<String>('secure_storage'),
+    );
+
     // Initialize core services
     _matchingService = MatchingService(apiClient: _apiClient);
     _messagingService = MessagingService(apiClient: _apiClient);
-    _profileService = ProfileService(apiService: _apiService);
+    _profileService = ProfileService(
+      apiService: _apiService,
+      authService: _authService,
+    );
     _fileUploadService = FileUploadService(apiClient: _apiClient);
     _webSocketService = WebSocketService.instance;
     _preferencesService = PreferencesService(_apiClient);
@@ -73,6 +90,13 @@ class ServiceLocator {
     _datePlanningService = DatePlanningService(_apiService);
     _voiceMessageService = VoiceMessageService(_apiService);
     _callService = CallService.instance;
+
+    // Initialize SubscriptionService
+    _subscriptionService = SubscriptionService(
+      savedMethodsService: SavedPaymentMethodsService.instance,
+      apiService: _apiService,
+      authService: _authService,
+    );
 
     _isInitialized = true;
   }
@@ -177,5 +201,23 @@ class ServiceLocator {
   CallService get callService {
     if (!_isInitialized) initialize();
     return _callService;
+  }
+
+  /// Get ApiService instance
+  ApiService get apiService {
+    if (!_isInitialized) initialize();
+    return _apiService;
+  }
+
+  /// Get AuthService instance
+  AuthService get authService {
+    if (!_isInitialized) initialize();
+    return _authService;
+  }
+
+  /// Get SubscriptionService instance
+  SubscriptionService get subscriptionService {
+    if (!_isInitialized) initialize();
+    return _subscriptionService;
   }
 }

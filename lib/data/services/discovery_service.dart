@@ -1,3 +1,4 @@
+// cSpell:ignore Mila Camila Scarlett Zoey
 import '../../../domain/entities/user_profile.dart';
 import '../../../domain/entities/discovery_types.dart';
 import '../../domain/services/api_service.dart';

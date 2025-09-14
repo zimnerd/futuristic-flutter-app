@@ -1,3 +1,4 @@
+// cSpell:ignore prefs
 import 'dart:async';
 import 'dart:convert';
 import 'package:logger/logger.dart';

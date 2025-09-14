@@ -9,8 +9,7 @@ import 'profile/profile_bloc.dart';
 import '../../data/services/websocket_service.dart';
 import '../../data/services/discovery_service.dart';
 import '../../data/services/matching_service.dart';
-import '../../data/services/profile_service.dart';
-import '../../data/services/api_service_impl.dart';
+import '../../data/services/service_locator.dart';
 import '../../core/network/api_client.dart';
 
 /// Provides all BLoCs to the widget tree with proper dependency injection
@@ -52,7 +51,7 @@ class BlocProviders extends StatelessWidget {
         // Profile Management BLoC - User profile customization
         BlocProvider<ProfileBloc>(
           create: (context) => ProfileBloc(
-            profileService: ProfileService(apiService: ApiServiceImpl()),
+            profileService: ServiceLocator().profileService,
           ),
         ),
         

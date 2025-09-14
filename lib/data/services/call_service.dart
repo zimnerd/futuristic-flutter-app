@@ -70,7 +70,7 @@ class CallService {
     try {
       // Generate call ID and channel name
       final callId = DateTime.now().millisecondsSinceEpoch.toString();
-      final channelName = 'call_${callId}';
+      final channelName = 'call_$callId';
       
       // Send call initiation through WebSocket
       _webSocketService.initiateCall(recipientId, type.name);

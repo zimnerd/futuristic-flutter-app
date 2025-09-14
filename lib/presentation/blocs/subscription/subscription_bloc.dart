@@ -1,8 +1,8 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../core/services/service_locator.dart';
+import '../../../data/services/service_locator.dart' as data_services;
 import '../../../data/services/subscription_service.dart';
 import '../../../data/services/analytics_service.dart';
-import '../../../data/services/saved_payment_methods_service.dart';
 import '../../../data/models/subscription.dart';
 import '../../../data/models/subscription_plan.dart';
 import '../../../data/models/subscription_usage.dart';
@@ -90,9 +90,7 @@ class SubscriptionBloc extends Bloc<SubscriptionEvent, SubscriptionState> {
 
   SubscriptionBloc() : super(SubscriptionInitial()) {
     // Initialize the subscription service with required dependencies
-    _subscriptionService = SubscriptionService(
-      savedMethodsService: SavedPaymentMethodsService.instance,
-    );
+    _subscriptionService = data_services.ServiceLocator().subscriptionService;
     
     on<LoadSubscriptionEvent>(_onLoadSubscription);
     on<LoadSubscriptionPlansEvent>(_onLoadSubscriptionPlans);
