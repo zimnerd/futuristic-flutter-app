@@ -12,13 +12,13 @@ part 'call_state.dart';
 /// BLoC for managing call state and WebRTC operations
 class CallBloc extends Bloc<CallEvent, CallState> {
   final WebSocketService _webSocketService;
-  final AuthBloc _authBloc;
+  final AuthBloc? _authBloc;
   Timer? _callTimer;
   Timer? _reconnectionTimer;
 
   CallBloc({
     required WebSocketService webSocketService,
-    required AuthBloc authBloc,
+    AuthBloc? authBloc,
   })  : _webSocketService = webSocketService,
        _authBloc = authBloc,
         super(const CallState()) {
@@ -46,13 +46,13 @@ class CallBloc extends Bloc<CallEvent, CallState> {
     _setupWebSocketListeners();
   }
 
-  /// Gets the current user ID from the AuthBloc state
+  /// Get current user ID from auth state
   String? get _currentUserId {
-    final authState = _authBloc.state;
+    final authState = _authBloc?.state;
     if (authState is AuthAuthenticated) {
       return authState.user.id;
     }
-    return null;
+    return null; // Return null if not authenticated or authBloc not available
   }
 
   /// Setup WebSocket listeners for real-time call events

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -155,16 +156,16 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
   }
 
   void _startCallTimer() {
-    // TODO: Implement actual call timer
-    Future.doWhile(() async {
-      if (!mounted || !_isCallConnected) return false;
-      await Future.delayed(const Duration(seconds: 1));
-      if (mounted) {
-        setState(() {
-          _callDuration = Duration(seconds: _callDuration.inSeconds + 1);
-        });
+    // Start timer for call duration tracking
+    Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (!mounted || !_isCallConnected) {
+        timer.cancel();
+        return;
       }
-      return true;
+
+      setState(() {
+        _callDuration = Duration(seconds: _callDuration.inSeconds + 1);
+      });
     });
   }
 

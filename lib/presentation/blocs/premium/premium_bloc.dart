@@ -9,13 +9,13 @@ import 'premium_state.dart';
 
 class PremiumBloc extends Bloc<PremiumEvent, PremiumState> {
   final PremiumService _premiumService;
-  final AuthBloc _authBloc;
+  final AuthBloc? _authBloc;
   final Logger _logger = Logger();
   static const String _tag = 'PremiumBloc';
 
   PremiumBloc({
     required PremiumService premiumService,
-    required AuthBloc authBloc,
+    AuthBloc? authBloc,
   })  : _premiumService = premiumService,
        _authBloc = authBloc,
         super(PremiumInitial()) {
@@ -34,13 +34,13 @@ class PremiumBloc extends Bloc<PremiumEvent, PremiumState> {
     on<RefreshPremiumData>(_onRefreshPremiumData);
   }
 
-  /// Gets the current user ID from the AuthBloc state
+  /// Get current user ID from auth state
   String? get _currentUserId {
-    final authState = _authBloc.state;
+    final authState = _authBloc?.state;
     if (authState is AuthAuthenticated) {
       return authState.user.id;
     }
-    return null;
+    return null; // Return null if not authenticated or authBloc not available
   }
 
   Future<void> _onLoadPremiumData(

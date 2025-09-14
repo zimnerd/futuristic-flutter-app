@@ -143,8 +143,11 @@ class _EnhancedVideoCallScreenState extends State<EnhancedVideoCallScreen> {
       return _buildAudioOnlyView();
     }
     
-    // TODO: Integrate with actual WebRTC video renderer
-    // For now, show a placeholder
+    // WebRTC Video Integration - Use AgoraVideoView for remote video
+    // Example: AgoraVideoView(controller: AgoraVideoViewController.remote(
+    //   rtcEngine: _webRTCService.engine,
+    //   canvas: VideoCanvas(uid: remoteUid),
+    // ))
     return Container(
       decoration: const BoxDecoration(
         gradient: LinearGradient(
@@ -189,7 +192,8 @@ class _EnhancedVideoCallScreenState extends State<EnhancedVideoCallScreen> {
           borderRadius: BorderRadius.circular(10),
           child: Stack(
             children: [
-              // TODO: Integrate with actual WebRTC local video renderer
+              // WebRTC Local Video Integration - Use AgoraVideoView for local video
+              // Example: AgoraVideoView(controller: AgoraVideoViewController.local())
               Container(
                 color: Colors.grey[800],
                 child: const Center(

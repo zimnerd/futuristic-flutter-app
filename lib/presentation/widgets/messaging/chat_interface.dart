@@ -389,14 +389,32 @@ class _ChatInterfaceState extends State<ChatInterface>
           IconButton(
             icon: const Icon(Icons.videocam),
             onPressed: () {
-              // TODO: Implement video call
+              // Implement video call - navigate to video call screen
+              Navigator.pushNamed(
+                context,
+                '/video-call',
+                arguments: {
+                  'conversationId': widget.conversation.id,
+                  'callId': DateTime.now().millisecondsSinceEpoch.toString(),
+                  'isIncoming': false,
+                },
+              );
               _logger.d('Video call requested');
             },
           ),
           IconButton(
             icon: const Icon(Icons.call),
             onPressed: () {
-              // TODO: Implement audio call
+              // Implement audio call - navigate to audio call screen
+              Navigator.pushNamed(
+                context,
+                '/audio-call',
+                arguments: {
+                  'conversationId': widget.conversation.id,
+                  'callId': DateTime.now().millisecondsSinceEpoch.toString(),
+                  'isIncoming': false,
+                },
+              );
               _logger.d('Audio call requested');
             },
           ),
