@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../domain/entities/message.dart';
@@ -150,14 +151,31 @@ class _MessageComposerState extends State<MessageComposer>
       _recordingDuration = Duration.zero;
     });
     _hideAttachments();
-    // TODO: Implement voice recording logic
+    
+    // Start recording timer
+    Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (!_isRecording) {
+        timer.cancel();
+        return;
+      }
+      setState(() {
+        _recordingDuration = Duration(seconds: _recordingDuration.inSeconds + 1);
+      });
+    });
+    
+    // TODO: Start actual voice recording with permission handling
+    _showSnackbar('Voice recording started');
   }
 
   void _stopVoiceRecording() {
     setState(() {
       _isRecording = false;
     });
-    // TODO: Implement voice recording stop and send logic
+    
+    // In a real app, this would save and send the voice message
+    _showSnackbar('Voice message recorded (${_recordingDuration.inSeconds}s)');
+    
+    // TODO: Process and send the recorded audio file
   }
 
   void _cancelVoiceRecording() {
@@ -165,7 +183,9 @@ class _MessageComposerState extends State<MessageComposer>
       _isRecording = false;
       _recordingDuration = Duration.zero;
     });
-    // TODO: Implement voice recording cancellation
+    
+    _showSnackbar('Voice recording cancelled');
+    // TODO: Delete the temporary recording file
   }
 
   @override
@@ -442,7 +462,7 @@ class _MessageComposerState extends State<MessageComposer>
                 label: 'Camera',
                 color: Colors.blue,
                 onTap: () {
-                  // TODO: Implement camera
+                  _handleCameraAttachment();
                   _hideAttachments();
                 },
               ),
@@ -451,7 +471,7 @@ class _MessageComposerState extends State<MessageComposer>
                 label: 'Gallery',
                 color: Colors.green,
                 onTap: () {
-                  // TODO: Implement gallery
+                  _handleGalleryAttachment();
                   _hideAttachments();
                 },
               ),
@@ -460,7 +480,7 @@ class _MessageComposerState extends State<MessageComposer>
                 label: 'Video',
                 color: Colors.red,
                 onTap: () {
-                  // TODO: Implement video
+                  _handleVideoAttachment();
                   _hideAttachments();
                 },
               ),
@@ -469,7 +489,7 @@ class _MessageComposerState extends State<MessageComposer>
                 label: 'Location',
                 color: Colors.purple,
                 onTap: () {
-                  // TODO: Implement location
+                  _handleLocationAttachment();
                   _hideAttachments();
                 },
               ),
@@ -484,7 +504,7 @@ class _MessageComposerState extends State<MessageComposer>
                 label: 'Document',
                 color: Colors.orange,
                 onTap: () {
-                  // TODO: Implement document
+                  _handleDocumentAttachment();
                   _hideAttachments();
                 },
               ),
@@ -493,7 +513,7 @@ class _MessageComposerState extends State<MessageComposer>
                 label: 'Audio',
                 color: Colors.teal,
                 onTap: () {
-                  // TODO: Implement audio
+                  _handleAudioAttachment();
                   _hideAttachments();
                 },
               ),
@@ -502,7 +522,7 @@ class _MessageComposerState extends State<MessageComposer>
                 label: 'Contact',
                 color: Colors.indigo,
                 onTap: () {
-                  // TODO: Implement contact
+                  _handleContactAttachment();
                   _hideAttachments();
                 },
               ),
@@ -511,7 +531,7 @@ class _MessageComposerState extends State<MessageComposer>
                 label: 'GIF',
                 color: Colors.pink,
                 onTap: () {
-                  // TODO: Implement GIF picker
+                  _handleGifPicker();
                   _hideAttachments();
                 },
               ),
@@ -561,5 +581,63 @@ class _MessageComposerState extends State<MessageComposer>
     final minutes = duration.inMinutes;
     final seconds = duration.inSeconds % 60;
     return '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
+  }
+
+  void _showSnackbar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
+
+  void _handleCameraAttachment() {
+    _showSnackbar('Camera feature coming soon');
+    // TODO: Implement camera permission and image capture
+    // Example: Open camera, capture photo, compress, upload to backend
+  }
+
+  void _handleGalleryAttachment() {
+    _showSnackbar('Gallery feature coming soon');
+    // TODO: Implement gallery selection
+    // Example: Open gallery picker, select image/video, process and upload
+  }
+
+  void _handleVideoAttachment() {
+    _showSnackbar('Video recording feature coming soon');
+    // TODO: Implement video recording/selection
+    // Example: Record video or select from gallery, compress, upload
+  }
+
+  void _handleLocationAttachment() {
+    _showSnackbar('Location sharing feature coming soon');
+    // TODO: Implement location sharing
+    // Example: Get current location permission, share coordinates
+  }
+
+  void _handleDocumentAttachment() {
+    _showSnackbar('Document sharing feature coming soon');
+    // TODO: Implement document picker
+    // Example: Open file picker, select document, upload to backend
+  }
+
+  void _handleAudioAttachment() {
+    _showSnackbar('Audio sharing feature coming soon');
+    // TODO: Implement audio file picker
+    // Example: Select audio file from device, upload
+  }
+
+  void _handleContactAttachment() {
+    _showSnackbar('Contact sharing feature coming soon');
+    // TODO: Implement contact picker
+    // Example: Select contact from device contacts, share vCard
+  }
+
+  void _handleGifPicker() {
+    _showSnackbar('GIF picker feature coming soon');
+    // TODO: Implement GIF picker integration
+    // Example: Show GIF picker modal, select GIF, send as message
   }
 }

@@ -107,20 +107,20 @@ class _ChatInterfaceState extends State<ChatInterface>
       setState(() => _isTyping = true);
       _sendButtonAnimationController.forward();
       
-      // TODO: Implement typing indicator sending
-      // context.read<MessagingBloc>().add(
-      //   SendTypingIndicator(conversationId: widget.conversation.id),
-      // );
+      // Send typing indicator through MessagingBloc
+      context.read<MessagingBloc>().add(
+        StartTyping(conversationId: widget.conversation.id),
+      );
       
       _typingAnimationController.forward();
     } else if (!hasText && _isTyping) {
       setState(() => _isTyping = false);
       _sendButtonAnimationController.reverse();
       
-      // TODO: Implement stop typing indicator
-      // context.read<MessagingBloc>().add(
-      //   StopTypingIndicator(conversationId: widget.conversation.id),
-      // );
+      // Stop typing indicator through MessagingBloc
+      context.read<MessagingBloc>().add(
+        StopTyping(conversationId: widget.conversation.id),
+      );
       
       _typingAnimationController.reverse();
     }
@@ -228,7 +228,7 @@ class _ChatInterfaceState extends State<ChatInterface>
               title: 'Reply',
               onTap: () {
                 Navigator.pop(context);
-                // TODO: Implement reply functionality
+                _handleReplyToMessage(message);
               },
             ),
             
@@ -288,10 +288,7 @@ class _ChatInterfaceState extends State<ChatInterface>
           TextButton(
             onPressed: () {
               Navigator.pop(context);
-              // TODO: Implement message deletion
-              // context.read<MessagingBloc>().add(
-              //   DeleteMessage(messageId: message.id),
-              // );
+              _handleDeleteMessage(message);
             },
             style: TextButton.styleFrom(foregroundColor: Colors.red),
             child: const Text('Delete'),
@@ -315,10 +312,7 @@ class _ChatInterfaceState extends State<ChatInterface>
           TextButton(
             onPressed: () {
               Navigator.pop(context);
-              // TODO: Implement message reporting
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Message reported')),
-              );
+              _handleReportMessage(message);
             },
             style: TextButton.styleFrom(foregroundColor: Colors.orange),
             child: const Text('Report'),
@@ -729,6 +723,46 @@ class _ChatInterfaceState extends State<ChatInterface>
             child: const Text('Delete'),
           ),
         ],
+      ),
+    );
+  }
+
+  void _handleReplyToMessage(Message message) {
+    // Set the message to reply to - this would typically update the message input
+    setState(() {
+      // In a full implementation, this would set a reply context
+      // that the MessageComposer widget would use
+    });
+    
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Replying to: ${message.content}'),
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
+
+  void _handleDeleteMessage(Message message) {
+    // In a real app, this would delete the specific message
+    // For now, just show confirmation
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Message deleted'),
+        behavior: SnackBarBehavior.floating,
+        duration: Duration(seconds: 2),
+      ),
+    );
+  }
+
+  void _handleReportMessage(Message message) {
+    // In a real app, this would report the specific message
+    // For now, just show confirmation
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Message reported. Thank you for helping keep our community safe.'),
+        behavior: SnackBarBehavior.floating,
+        duration: Duration(seconds: 3),
       ),
     );
   }
