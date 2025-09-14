@@ -242,3 +242,7 @@ class CheckUserSafety extends SafetyEvent {
   @override
   List<Object?> get props => [userId];
 }
+
+class CancelEmergencyAlert extends SafetyEvent {
+  const CancelEmergencyAlert();
+}

@@ -10,6 +10,8 @@ import '../../widgets/speed_dating/speed_dating_event_card.dart';
 import '../../widgets/speed_dating/active_session_widget.dart';
 import '../../theme/pulse_colors.dart';
 import 'speed_dating_room_screen.dart';
+import 'speed_dating_event_details_screen.dart';
+import '../../widgets/speed_dating/create_speed_dating_event_dialog.dart';
 
 /// Main screen for speed dating functionality
 class SpeedDatingScreen extends StatefulWidget {
@@ -383,19 +385,27 @@ class _SpeedDatingScreenState extends State<SpeedDatingScreen>
   }
 
   void _viewEventDetails(Map<String, dynamic> event) {
-    // TODO: Navigate to event details screen
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => SpeedDatingEventDetailsScreen(event: event),
+      ),
+    );
   }
 
   void _viewSessionDetails(Map<String, dynamic> session) {
-    // TODO: Navigate to session details screen
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => SpeedDatingRoomScreen(session: session),
+      ),
+    );
   }
 
   void _showCreateEventDialog() {
-    // TODO: Show create event dialog
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Create event feature coming soon!'),
-      ),
+    showDialog(
+      context: context,
+      builder: (context) => const CreateSpeedDatingEventDialog(),
     );
   }
 }

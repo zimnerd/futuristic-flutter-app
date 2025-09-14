@@ -8,6 +8,7 @@ import '../../widgets/common/pulse_error_widget.dart';
 import '../../widgets/date_planning/date_plan_card.dart';
 import '../../widgets/date_planning/date_suggestion_card.dart';
 import 'create_date_plan_screen.dart';
+import 'date_plan_details_screen.dart';
 
 /// Main screen for date planning functionality
 class DatePlanningScreen extends StatefulWidget {
@@ -318,7 +319,12 @@ class _DatePlanningScreenState extends State<DatePlanningScreen>
   }
 
   void _viewDatePlan(Map<String, dynamic> plan) {
-    // TODO: Navigate to date plan details
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => DatePlanDetailsScreen(datePlan: plan),
+      ),
+    );
   }
 
   void _editDatePlan(Map<String, dynamic> plan) {

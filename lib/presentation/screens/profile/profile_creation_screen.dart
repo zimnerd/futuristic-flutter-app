@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../blocs/profile/profile_bloc.dart';
+import '../../blocs/user/user_bloc.dart';
+import '../../blocs/user/user_event.dart';
 import '../../theme/pulse_colors.dart';
 import '../../widgets/common/pulse_loading_widget.dart';
 import '../../widgets/profile/interests_selector.dart';
@@ -602,9 +605,55 @@ class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
   }
 
   void _createProfile() {
-    // For now, just navigate to main app
-    // TODO: Implement proper profile creation with UpdateProfile event
-    Navigator.of(context).pushReplacementNamed('/main');
+    if (!_formKey.currentState!.validate()) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please fill in all required fields'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    // Get current user ID (this would typically come from auth state)
+    const userId = 'current-user-id'; // This should be retrieved from auth state
+
+    final profileData = {
+      'name': _nameController.text.trim(),
+      'bio': _bioController.text.trim(),
+      'age': int.tryParse(_ageController.text) ?? 18,
+      'height': _heightController.text.trim(),
+      'occupation': _occupationController.text.trim(),
+      'gender': _selectedGender,
+      'lookingFor': _selectedLookingFor,
+      'interests': _selectedInterests,
+      'photos': _selectedPhotos,
+      'profileCompleted': true,
+    };
+
+    try {
+      context.read<UserBloc>().add(UserProfileUpdateRequested(
+        userId: userId,
+        updates: profileData,
+      ));
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Profile created successfully!'),
+          backgroundColor: Colors.green,
+        ),
+      );
+
+      // Navigate to main app
+      context.go('/main');
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to create profile: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   Widget _buildSimplePhotoPicker() {

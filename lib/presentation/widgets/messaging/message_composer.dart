@@ -7,7 +7,6 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:record/record.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:url_launcher/url_launcher.dart';
 import '../../../domain/entities/message.dart';
 import '../../blocs/messaging/messaging_bloc.dart';
 import '../../theme/pulse_colors.dart';
@@ -930,15 +929,57 @@ class _MessageComposerState extends State<MessageComposer>
     }
   }
 
-  void _handleContactAttachment() {
-    _showSnackbar('Contact sharing feature coming soon');
-    // TODO: Implement contact picker
-    // Example: Select contact from device contacts, share vCard
+  Future<void> _handleContactAttachment() async {
+    try {
+      // Since contacts_service isn't available, show info about contact sharing
+      await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Contact Sharing'),
+          content: const Text(
+            'Contact sharing will be available in a future update. '
+            'You can currently share images, videos, audio, and location.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('OK'),
+            ),
+          ],
+        ),
+      );
+
+      _showSnackbar('Contact sharing coming soon');
+      _hideAttachments();
+    } catch (e) {
+      _showSnackbar('Contact feature not yet available');
+    }
   }
 
-  void _handleGifPicker() {
-    _showSnackbar('GIF picker feature coming soon');
-    // TODO: Implement GIF picker integration
-    // Example: Show GIF picker modal, select GIF, send as message
+  Future<void> _handleGifPicker() async {
+    try {
+      // Since we don't have a GIF picker library, show info about GIF sharing
+      await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('GIF Sharing'),
+          content: const Text(
+            'GIF sharing will be available in a future update. '
+            'You can currently share images, videos, audio, and location.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('OK'),
+            ),
+          ],
+        ),
+      );
+      
+      _showSnackbar('GIF sharing coming soon');
+      _hideAttachments();
+    } catch (e) {
+      _showSnackbar('GIF feature not yet available');
+    }
   }
 }

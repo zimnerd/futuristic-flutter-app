@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:geolocator/geolocator.dart';
 
 import '../../blocs/safety/safety_bloc.dart';
 
@@ -130,7 +131,7 @@ class EmergencyButtonWidget extends StatelessWidget {
             ElevatedButton(
               onPressed: () {
                 Navigator.of(context).pop();
-                // TODO: Add cancel emergency logic
+                context.read<SafetyBloc>().add(const CancelEmergencyAlert());
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
                     content: Text('Emergency alert cancelled'),
@@ -146,12 +147,44 @@ class EmergencyButtonWidget extends StatelessWidget {
     );
   }
 
-  void _triggerEmergency(BuildContext context) {
-    // TODO: Get current location
-    const location = "Current Location"; // Placeholder
+  Future<void> _triggerEmergency(BuildContext context) async {
+    String location = "Location unavailable";
+    
+    try {
+      // Check location permission
+      final permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        final newPermission = await Geolocator.requestPermission();
+        if (newPermission == LocationPermission.denied || 
+            newPermission == LocationPermission.deniedForever) {
+          location = "Location permission denied";
+        }
+      }
+
+      // Get location if permission granted
+      if (permission != LocationPermission.denied && 
+          permission != LocationPermission.deniedForever) {
+        final serviceEnabled = await Geolocator.isLocationServiceEnabled();
+        if (serviceEnabled) {
+          try {
+            final position = await Geolocator.getCurrentPosition(
+              desiredAccuracy: LocationAccuracy.high,
+              timeLimit: const Duration(seconds: 5),
+            );
+            location = "Lat: ${position.latitude}, Lng: ${position.longitude}";
+          } catch (e) {
+            location = "Unable to get precise location";
+          }
+        } else {
+          location = "Location services disabled";
+        }
+      }
+    } catch (e) {
+      location = "Location error: $e";
+    }
     
     context.read<SafetyBloc>().add(
-      const TriggerEmergencyContact(
+      TriggerEmergencyContact(
         location: location,
         additionalInfo: 'Emergency alert triggered from app',
       ),

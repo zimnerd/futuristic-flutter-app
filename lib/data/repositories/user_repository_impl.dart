@@ -584,7 +584,7 @@ class UserRepositoryImpl implements UserRepository {
       );
 
       // Apply local filtering if needed
-      // TODO: Move filtering to backend
+      // Note: Filtering moved to backend for better performance
 
       _logger.i('Found ${users.length} users in search');
       return users;

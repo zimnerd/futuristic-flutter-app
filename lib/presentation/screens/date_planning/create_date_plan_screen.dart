@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../theme/pulse_colors.dart';
+import '../../blocs/date_planning/date_planning_bloc.dart';
+import '../../blocs/date_planning/date_planning_event.dart';
 
 /// Screen for creating or editing a date plan
 class CreateDatePlanScreen extends StatefulWidget {
@@ -329,6 +332,8 @@ class _CreateDatePlanScreenState extends State<CreateDatePlanScreen> {
   void _savePlan() {
     final title = _titleController.text.trim();
     final location = _locationController.text.trim();
+    final description = _descriptionController.text.trim();
+    final budget = _budgetController.text.trim();
     
     if (title.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -347,16 +352,66 @@ class _CreateDatePlanScreenState extends State<CreateDatePlanScreen> {
       );
       return;
     }
-    
-    // TODO: Implement plan creation/update
-    final message = widget.planToEdit != null 
-        ? 'Date plan updated successfully!'
-        : 'Date plan created successfully!';
-    
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
+
+    // Combine date and time
+    final scheduledDateTime = DateTime(
+      _selectedDate.year,
+      _selectedDate.month,
+      _selectedDate.day,
+      _selectedTime.hour,
+      _selectedTime.minute,
     );
-    
-    Navigator.pop(context);
+
+    // Check if date is in the future
+    if (scheduledDateTime.isBefore(DateTime.now())) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please select a future date and time'),
+        ),
+      );
+      return;
+    }
+
+    try {
+      if (widget.planToEdit != null) {
+        // Update existing plan
+        final planId = widget.planToEdit!['id'] as String;
+        context.read<DatePlanningBloc>().add(UpdateDatePlan(
+          planId: planId,
+          updates: {
+            'title': title,
+            'description': description,
+            'location': location,
+            'budget': budget,
+            'scheduledDate': scheduledDateTime.toIso8601String(),
+            'activities': _activities,
+          },
+        ));
+      } else {
+        // Create new plan
+        context.read<DatePlanningBloc>().add(CreateDatePlan(
+          title: title,
+          description: description,
+          scheduledDate: scheduledDateTime,
+          location: location,
+          budget: budget.isNotEmpty ? budget : null,
+          activities: _activities,
+        ));
+      }
+
+      final message = widget.planToEdit != null 
+          ? 'Date plan updated successfully!'
+          : 'Date plan created successfully!';
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(message)),
+      );
+      
+      Navigator.pop(context);
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to save plan: $e')),
+      );
+    }
   }
 }
