@@ -5,8 +5,6 @@ import 'package:logger/logger.dart';
 import '../data/models/call_model.dart';
 import '../data/services/webrtc_service.dart';
 import '../data/services/websocket_service.dart';
-import '../presentation/blocs/auth/auth_bloc.dart';
-import '../presentation/blocs/auth/auth_state.dart';
 
 // Events
 abstract class CallEvent extends Equatable {

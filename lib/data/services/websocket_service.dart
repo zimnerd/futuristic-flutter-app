@@ -1,9 +1,12 @@
 import 'package:socket_io_client/socket_io_client.dart' as io;
 import 'package:logger/logger.dart';
+import 'dart:async';
 
 import '../../../core/constants/api_constants.dart';
-import '../../../domain/entities/message.dart';
+import '../../../domain/entities/message.dart' as domain;
 import '../models/call_model.dart';
+import '../models/chat_model.dart';
+import '../models/notification_model.dart';
 
 class WebSocketService {
   static WebSocketService? _instance;
@@ -16,13 +19,35 @@ class WebSocketService {
   bool _isConnected = false;
 
   // Event callbacks
-  Function(Message)? onMessageReceived;
+  Function(domain.Message)? onMessageReceived;
+  Function(NotificationModel)? onNotificationReceived;
   Function(String, String)? onTypingReceived;
   Function(String)? onTypingStoppedReceived;
   Function(String, bool)? onUserStatusChanged;
   Function(String)? onCallReceived;
   Function(String)? onCallEnded;
   Function(CallSignalModel)? onCallSignalReceived;
+  Function(bool)? onConnectionStatusChanged;
+
+  // Stream controllers for real-time coordination
+  final StreamController<MessageModel> _messageController =
+      StreamController<MessageModel>.broadcast();
+  final StreamController<NotificationModel> _notificationController =
+      StreamController<NotificationModel>.broadcast();
+  final StreamController<CallSignalModel> _callController =
+      StreamController<CallSignalModel>.broadcast();
+
+  // Stream getters
+  Stream<MessageModel> get messageStream => _messageController.stream;
+  Stream<NotificationModel> get notificationStream =>
+      _notificationController.stream;
+  Stream<CallSignalModel> get callStream => _callController.stream;
+
+  // Controller getters for backward compatibility
+  StreamController<MessageModel> get messageController => _messageController;
+  StreamController<NotificationModel> get notificationController =>
+      _notificationController;
+  StreamController<CallSignalModel> get callController => _callController;
 
   bool get isConnected => _isConnected;
 
@@ -42,11 +67,13 @@ class WebSocketService {
       _socket?.onConnect((_) {
         _logger.d('WebSocket connected');
         _isConnected = true;
+        onConnectionStatusChanged?.call(true);
       });
 
       _socket?.onDisconnect((_) {
         _logger.d('WebSocket disconnected');
         _isConnected = false;
+        onConnectionStatusChanged?.call(false);
       });
 
       _socket?.onConnectError((error) {
@@ -67,8 +94,14 @@ class WebSocketService {
     _socket?.on('new_message', (data) {
       try {
         final messageData = data as Map<String, dynamic>;
-        final message = Message.fromJson(messageData);
+        final message = domain.Message.fromJson(messageData);
         onMessageReceived?.call(message);
+        
+        // Also emit to stream if it's a MessageModel
+        if (messageData.containsKey('conversationId')) {
+          final messageModel = MessageModel.fromJson(messageData);
+          _messageController.add(messageModel);
+        }
       } catch (e) {
         _logger.e('Error parsing new message: $e');
       }
@@ -144,14 +177,31 @@ class WebSocketService {
         final signalData = data as Map<String, dynamic>;
         final signal = CallSignalModel.fromJson(signalData);
         onCallSignalReceived?.call(signal);
+        _callController.add(signal);
       } catch (e) {
         _logger.e('Error parsing call signal: $e');
+      }
+    });
+
+    // Notification events
+    _socket?.on('new_notification', (data) {
+      try {
+        final notificationData = data as Map<String, dynamic>;
+        final notification = NotificationModel.fromJson(notificationData);
+        onNotificationReceived?.call(notification);
+        _notificationController.add(notification);
+      } catch (e) {
+        _logger.e('Error parsing notification: $e');
       }
     });
   }
 
   // Send message
-  void sendMessage(String conversationId, String content, MessageType type) {
+  void sendMessage(
+    String conversationId,
+    String content,
+    domain.MessageType type,
+  ) {
     if (!_isConnected) return;
 
     _socket?.emit('send_message', {
@@ -169,6 +219,16 @@ class WebSocketService {
     _socket?.emit('typing', {
       'conversationId': conversationId,
     });
+  }
+
+  void sendTypingIndicator(String conversationId, bool isTyping) {
+    if (!_isConnected) return;
+
+    if (isTyping) {
+      sendTyping(conversationId);
+    } else {
+      sendStoppedTyping(conversationId);
+    }
   }
 
   void sendStoppedTyping(String conversationId) {
@@ -252,16 +312,28 @@ class WebSocketService {
     _socket?.dispose();
     _socket = null;
     _isConnected = false;
+    onConnectionStatusChanged?.call(false);
   }
 
-  // Clear callbacks
+  // Clear callbacks and close streams
   void clearCallbacks() {
     onMessageReceived = null;
+    onNotificationReceived = null;
     onTypingReceived = null;
     onTypingStoppedReceived = null;
     onUserStatusChanged = null;
     onCallReceived = null;
     onCallEnded = null;
     onCallSignalReceived = null;
+    onConnectionStatusChanged = null;
+  }
+
+  // Dispose streams
+  void dispose() {
+    clearCallbacks();
+    _messageController.close();
+    _notificationController.close();
+    _callController.close();
+    disconnect();
   }
 }

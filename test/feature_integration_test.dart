@@ -1,9 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:logger/logger.dart';
 
-import '../lib/data/models/chat_model.dart';
-import '../lib/data/models/notification_model.dart';
-import '../lib/data/models/call_model.dart';
+import 'package:pulse_dating_app/data/models/chat_model.dart' as chat;
+import 'package:pulse_dating_app/data/models/notification_model.dart';
+import 'package:pulse_dating_app/data/models/call_model.dart';
+import 'package:pulse_dating_app/domain/entities/message.dart';
 
 /// Integration tests for the PulseLink mobile app features
 void main() {
@@ -29,11 +30,13 @@ void main() {
           'updatedAt': '2024-01-01T12:00:00Z',
         };
 
-        final message = MessageModel.fromJson(messageJson);
-        expect(message.id, 'msg_123');
-        expect(message.content, 'Hello world!');
+        final message = chat.MessageModel.fromJson(messageJson);
+
+        expect(message.id, 'conv_1');
+        expect(message.content, 'Hello');
         expect(message.type, MessageType.text);
-        expect(message.status, MessageStatus.sent);
+        expect(message.senderId, 'testuser');
+        expect(message.status, chat.MessageStatus.sent);
 
         final serialized = message.toJson();
         expect(serialized['id'], 'msg_123');
@@ -89,13 +92,14 @@ void main() {
     group('Feature Completeness', () {
       test('All required models are implemented', () {
         // Test that we can create instances of all required models
-        final message = MessageModel(
-          id: 'test',
-          conversationId: 'test',
-          senderId: 'test',
-          senderUsername: 'test',
+        final message = chat.MessageModel(
+          id: 'msg_1',
+          conversationId: 'conv_1',
+          senderId: 'user_1',
+          senderUsername: 'testuser',
+          content: 'Test message',
           type: MessageType.text,
-          status: MessageStatus.sent,
+          status: chat.MessageStatus.sent,
           createdAt: DateTime.now(),
           updatedAt: DateTime.now(),
         );
@@ -135,8 +139,11 @@ void main() {
         expect(MessageType.values.contains(MessageType.text), true);
         
         // Test MessageStatus enum
-        expect(MessageStatus.values.length, greaterThan(0));
-        expect(MessageStatus.values.contains(MessageStatus.sent), true);
+        expect(chat.MessageStatus.values.length, greaterThan(0));
+        expect(
+          chat.MessageStatus.values.contains(chat.MessageStatus.sent),
+          true,
+        );
         
         // Test NotificationType enum
         expect(NotificationType.values.length, greaterThan(0));

@@ -1,5 +1,7 @@
 import 'package:equatable/equatable.dart';
 
+import '../../domain/entities/message.dart';
+
 /// Model representing a chat conversation
 class ConversationModel extends Equatable {
   const ConversationModel({
@@ -275,8 +277,6 @@ class MessageModel extends Equatable {
 
 /// Supporting classes
 enum ConversationType { direct, group, channel }
-
-enum MessageType { text, image, video, audio, file, voice, location, contact, sticker, gif }
 
 enum MessageStatus { sending, sent, delivered, read, failed }
 

@@ -65,7 +65,7 @@ class MessageBubble extends StatelessWidget {
                         DateFormat('h:mm a').format(message.createdAt),
                         style: TextStyle(
                           color: isCurrentUser 
-                              ? Colors.white.withOpacity(0.7) 
+                              ? Colors.white.withValues(alpha: 0.7) 
                               : Colors.grey[600],
                           fontSize: 12,
                         ),
@@ -79,7 +79,7 @@ class MessageBubble extends StatelessWidget {
                           size: 16,
                           color: message.status == MessageStatus.read 
                               ? Colors.blue[300] 
-                              : Colors.white.withOpacity(0.7),
+                              : Colors.white.withValues(alpha: 0.7),
                         ),
                       ],
                     ],

@@ -33,10 +33,13 @@ class _ChatListScreenState extends State<ChatListScreen> {
     _searchController.dispose();
     super.dispose();
   }
+  @override
   void initState() {
     super.initState();
     // Load conversations when screen initializes
-    context.read<ChatBloc>().add(const LoadConversations());
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<ChatBloc>().add(const LoadConversations());
+    });
   }
 
   @override
@@ -112,29 +115,53 @@ class _ChatListScreenState extends State<ChatListScreen> {
           }
 
           if (state is ConversationsLoaded) {
-            if (state.conversations.isEmpty) {
-              return const Center(
+            // Filter conversations based on search query
+            final filteredConversations = _searchQuery.isEmpty
+                ? state.conversations
+                : state.conversations.where((conversation) {
+                    // For now, filter by conversation name if available
+                    // TODO: In a real app, we'd need to resolve participant names from IDs
+                    if (conversation.name != null) {
+                      return conversation.name!.toLowerCase().contains(
+                        _searchQuery.toLowerCase(),
+                      );
+                    }
+                    // For direct messages, we could use participant IDs as fallback
+                    return conversation.participantIds.any(
+                      (id) =>
+                          id.toLowerCase().contains(_searchQuery.toLowerCase()),
+                    );
+                  }).toList();
+
+            if (filteredConversations.isEmpty) {
+              return Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Icon(
-                      Icons.chat_bubble_outline,
+                      _searchQuery.isEmpty
+                          ? Icons.chat_bubble_outline
+                          : Icons.search_off,
                       color: Colors.grey,
                       size: 64,
                     ),
-                    SizedBox(height: 16),
+                    const SizedBox(height: 16),
                     Text(
-                      'No conversations yet',
-                      style: TextStyle(
+                      _searchQuery.isEmpty
+                          ? 'No conversations yet'
+                          : 'No conversations found',
+                      style: const TextStyle(
                         color: Colors.grey,
                         fontSize: 18,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
-                    SizedBox(height: 8),
+                    const SizedBox(height: 8),
                     Text(
-                      'Start matching with people to begin chatting!',
-                      style: TextStyle(
+                      _searchQuery.isEmpty
+                          ? 'Start matching with people to begin chatting!'
+                          : 'Try searching with a different name',
+                      style: const TextStyle(
                         color: Colors.grey,
                         fontSize: 14,
                       ),
@@ -147,9 +174,9 @@ class _ChatListScreenState extends State<ChatListScreen> {
 
             return ListView.builder(
               padding: const EdgeInsets.symmetric(vertical: 8),
-              itemCount: state.conversations.length,
+              itemCount: filteredConversations.length,
               itemBuilder: (context, index) {
-                final conversation = state.conversations[index];
+                final conversation = filteredConversations[index];
                 return _buildConversationTile(context, conversation);
               },
             );
@@ -180,7 +207,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -193,7 +220,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
           backgroundImage: otherUserPhoto != null
               ? CachedNetworkImageProvider(otherUserPhoto)
               : null,
-          backgroundColor: PulseColors.primary.withOpacity(0.1),
+          backgroundColor: PulseColors.primary.withValues(alpha: 0.1),
           child: otherUserPhoto == null
               ? Text(
                   otherUserName[0].toUpperCase(),
