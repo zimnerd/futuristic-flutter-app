@@ -185,7 +185,9 @@ class EnhancedCallControls extends StatelessWidget {
                 : Icons.screen_share,
             isEnabled: state.isScreenSharing,
             onTap: () {
-              // TODO: Implement screen sharing
+              context.read<CallBloc>().add(
+                ToggleScreenShare(enabled: !state.isScreenSharing),
+              );
             },
             tooltip: state.isScreenSharing 
                 ? 'Stop sharing screen' 

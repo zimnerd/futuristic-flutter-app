@@ -5,6 +5,7 @@ import '../../blocs/call/call_bloc.dart';
 import '../../theme/pulse_colors.dart';
 import '../../../domain/entities/call.dart';
 import '../../../domain/entities/user_profile.dart';
+import '../../../data/services/service_locator.dart';
 
 /// Widget for displaying incoming call UI
 class IncomingCallWidget extends StatefulWidget {
@@ -369,8 +370,67 @@ class _IncomingCallWidgetState extends State<IncomingCallWidget>
   }
 
   void _sendQuickMessage() {
-    // TODO: Implement quick message functionality
-    // For now, just decline the call
-    _declineCall();
+    final quickMessages = [
+      "I'm busy right now, can I call you back?",
+      "I'm in a meeting, text me instead",
+      "Can't talk now, everything okay?",
+      "I'll call you back in a few minutes",
+      "What's up? Send me a message",
+    ];
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Send Quick Message'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: quickMessages
+              .map(
+                (message) => ListTile(
+                  title: Text(message),
+                  onTap: () {
+                    Navigator.pop(context);
+                    // Send the message and decline the call
+                    _sendMessageAndDecline(message);
+                  },
+                ),
+              )
+              .toList(),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _sendMessageAndDecline(String message) async {
+    try {
+      // Send quick message via messaging service
+      final messagingService = ServiceLocator().messagingService;
+      await messagingService.sendMessage(
+        conversationId: widget.call.recipientId,
+        content: message,
+        type: 'text',
+      );
+
+      // Show feedback
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Message sent: "$message"')));
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to send message: ${e.toString()}'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
+      // Always decline the call
+      _declineCall();
+    }
   }
 }

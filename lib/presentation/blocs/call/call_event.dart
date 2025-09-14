@@ -87,6 +87,16 @@ class SwitchCamera extends CallEvent {
   const SwitchCamera();
 }
 
+/// Event to toggle screen sharing
+class ToggleScreenShare extends CallEvent {
+  final bool enabled;
+
+  const ToggleScreenShare({required this.enabled});
+
+  @override
+  List<Object> get props => [enabled];
+}
+
 /// Event when call connection state changes
 class CallConnectionChanged extends CallEvent {
   final CallConnectionState connectionState;

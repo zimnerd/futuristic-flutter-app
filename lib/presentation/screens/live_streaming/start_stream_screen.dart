@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../theme/pulse_colors.dart';
+import '../../../data/services/service_locator.dart';
 
 /// Screen for starting or editing a live stream
 class StartStreamScreen extends StatefulWidget {
@@ -177,7 +178,7 @@ class _StartStreamScreenState extends State<StartStreamScreen> {
     );
   }
 
-  void _startStream() {
+  void _startStream() async {
     final title = _titleController.text.trim();
     
     if (title.isEmpty) {
@@ -189,15 +190,64 @@ class _StartStreamScreenState extends State<StartStreamScreen> {
       return;
     }
     
-    // TODO: Implement stream creation/update
-    final message = widget.streamToEdit != null 
-        ? 'Stream updated successfully!'
-        : 'Live stream started!';
-    
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
-    
-    Navigator.pop(context);
+    try {
+      final liveStreamingService = ServiceLocator().liveStreamingService;
+      final description = _descriptionController.text.trim();
+      
+      if (widget.streamToEdit != null) {
+        // Update existing stream
+        final streamId = widget.streamToEdit!['id'] ?? '';
+        final result = await liveStreamingService.updateLiveStream(
+          streamId: streamId,
+          title: title,
+          description: description.isNotEmpty ? description : null,
+          tags: [_selectedCategory],
+        );
+
+        if (result != null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Stream updated successfully!')),
+          );
+          Navigator.pop(context, result);
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Failed to update stream. Please try again.'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      } else {
+        // Create new stream
+        final result = await liveStreamingService.startLiveStream(
+          title: title,
+          description: description.isNotEmpty
+              ? description
+              : 'Live streaming with PulseLink',
+          tags: [_selectedCategory],
+        );
+        
+        if (result != null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Live stream started successfully!')),
+          );
+          Navigator.pop(context, result);
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Failed to start stream. Please try again.'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error: ${e.toString()}'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 }

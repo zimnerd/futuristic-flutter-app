@@ -8,6 +8,7 @@ class CallControls extends StatelessWidget {
   final VoidCallback onToggleAudio;
   final VoidCallback onToggleSpeaker;
   final VoidCallback onEndCall;
+  final VoidCallback? onFlipCamera;
 
   const CallControls({
     super.key,
@@ -18,6 +19,7 @@ class CallControls extends StatelessWidget {
     required this.onToggleAudio,
     required this.onToggleSpeaker,
     required this.onEndCall,
+    this.onFlipCamera,
   });
 
   @override
@@ -43,9 +45,11 @@ class CallControls extends StatelessWidget {
         ),
         _buildControlButton(
           icon: Icons.flip_camera_ios,
-          isEnabled: true,
-          onTap: () {
-            // TODO: Implement camera flip
+          isEnabled: isVideoEnabled,
+          onTap:
+              onFlipCamera ??
+              () {
+                // Camera flip only available when video is enabled
           },
         ),
       ],

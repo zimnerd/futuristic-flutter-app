@@ -10,6 +10,7 @@ import '../../widgets/live_streaming/stream_category_filter.dart';
 import '../../theme/pulse_colors.dart';
 import 'start_stream_screen.dart';
 import 'live_stream_viewer_screen.dart';
+import '../../../data/services/service_locator.dart';
 
 /// Main screen for live streaming functionality
 class LiveStreamingScreen extends StatefulWidget {
@@ -347,11 +348,28 @@ class _LiveStreamingScreenState extends State<LiveStreamingScreen>
   }
 
   void _viewStreamDetails(Map<String, dynamic> stream) {
-    // TODO: Navigate to stream details screen
+    // Navigate to stream viewer screen to view/join the stream
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => LiveStreamViewerScreen(stream: stream),
+      ),
+    );
   }
 
   void _editStream(Map<String, dynamic> stream) {
-    // TODO: Navigate to edit stream screen
+    // Navigate to edit stream screen
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => StartStreamScreen(streamToEdit: stream),
+      ),
+    ).then((result) {
+      if (result != null) {
+        // Refresh the streams list if stream was updated
+        context.read<LiveStreamingBloc>().add(const LoadLiveStreams());
+      }
+    });
   }
 
   void _deleteStream(Map<String, dynamic> stream) {
@@ -366,14 +384,42 @@ class _LiveStreamingScreenState extends State<LiveStreamingScreen>
             child: const Text('Cancel'),
           ),
           TextButton(
-            onPressed: () {
-              // TODO: Implement delete stream
+            onPressed: () async {
               Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Stream deleted successfully'),
-                ),
-              );
+              
+              // Call the service to delete the stream
+              try {
+                final liveStreamingService =
+                    ServiceLocator().liveStreamingService;
+                final streamId = stream['id'] ?? '';
+                final success = await liveStreamingService.endLiveStream(
+                  streamId,
+                );
+
+                if (success) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Stream ended successfully')),
+                  );
+                  // Refresh the streams list
+                  context.read<LiveStreamingBloc>().add(
+                    const LoadLiveStreams(),
+                  );
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Failed to end stream. Please try again.'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+              } catch (e) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Error: ${e.toString()}'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              }
             },
             style: TextButton.styleFrom(foregroundColor: Colors.red),
             child: const Text('Delete'),
@@ -384,27 +430,99 @@ class _LiveStreamingScreenState extends State<LiveStreamingScreen>
   }
 
   void _reportStream(Map<String, dynamic> stream) {
+    String selectedReason = 'Inappropriate content';
+    
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Report Stream'),
-        content: const Text('Why are you reporting this stream?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          title: const Text('Report Stream'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('Why are you reporting this stream?'),
+              const SizedBox(height: 16),
+              DropdownButtonFormField<String>(
+                value: selectedReason,
+                items:
+                    [
+                          'Inappropriate content',
+                          'Harassment',
+                          'Spam',
+                          'Violence',
+                          'Copyright violation',
+                          'Other',
+                        ]
+                        .map(
+                          (reason) => DropdownMenuItem(
+                            value: reason,
+                            child: Text(reason),
+                          ),
+                        )
+                        .toList(),
+                onChanged: (value) {
+                  if (value != null) {
+                    setState(() {
+                      selectedReason = value;
+                    });
+                  }
+                },
+                decoration: const InputDecoration(
+                  labelText: 'Reason',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+            ],
           ),
-          TextButton(
-            onPressed: () {
-              // TODO: Implement report stream
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Stream reported successfully')),
-              );
-            },
-            child: const Text('Report'),
-          ),
-        ],
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () async {
+                Navigator.pop(context);
+                
+                // Call the service to report the stream
+                try {
+                  final liveStreamingService =
+                      ServiceLocator().liveStreamingService;
+                  final streamId = stream['id'] ?? '';
+                  final success = await liveStreamingService.reportStream(
+                    streamId: streamId,
+                    reason: selectedReason,
+                  );
+
+                  if (success) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Stream reported successfully'),
+                      ),
+                    );
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text(
+                          'Failed to report stream. Please try again.',
+                        ),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                  }
+                } catch (e) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Error: ${e.toString()}'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+              },
+              style: TextButton.styleFrom(foregroundColor: Colors.red),
+              child: const Text('Report'),
+            ),
+          ],
+        ),
       ),
     );
   }

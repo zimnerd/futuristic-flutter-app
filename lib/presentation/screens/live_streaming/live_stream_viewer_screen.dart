@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../theme/pulse_colors.dart';
+import '../../../data/services/service_locator.dart';
 
 /// Screen for viewing a live stream
 class LiveStreamViewerScreen extends StatefulWidget {
@@ -163,11 +164,38 @@ class _LiveStreamViewerScreenState extends State<LiveStreamViewerScreen> {
     );
   }
 
-  void _sendMessage() {
+  void _sendMessage() async {
     final message = _messageController.text.trim();
     if (message.isNotEmpty) {
-      // TODO: Send message to stream chat
-      _messageController.clear();
+      try {
+        final liveStreamingService = ServiceLocator().liveStreamingService;
+        final streamId = widget.stream['id'] ?? '';
+        final success = await liveStreamingService.sendChatMessage(
+          streamId: streamId,
+          message: message,
+        );
+
+        if (success) {
+          _messageController.clear();
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text('Message sent!')));
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Failed to send message. Please try again.'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 }

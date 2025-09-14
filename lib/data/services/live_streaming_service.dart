@@ -42,6 +42,45 @@ class LiveStreamingService {
     }
   }
 
+  /// Update a live stream
+  Future<Map<String, dynamic>?> updateLiveStream({
+    required String streamId,
+    String? title,
+    String? description,
+    List<String>? tags,
+    bool? isPrivate,
+    Map<String, dynamic>? streamSettings,
+  }) async {
+    try {
+      final data = <String, dynamic>{
+        'streamId': streamId,
+        'updatedAt': DateTime.now().toIso8601String(),
+      };
+
+      if (title != null) data['title'] = title;
+      if (description != null) data['description'] = description;
+      if (tags != null) data['tags'] = tags;
+      if (isPrivate != null) data['isPrivate'] = isPrivate;
+      if (streamSettings != null) data['streamSettings'] = streamSettings;
+
+      final response = await _apiService.put(
+        '/api/live-streaming/update',
+        data: data,
+      );
+
+      if (response.statusCode == 200 && response.data != null) {
+        _logger.d('Successfully updated live stream: $streamId');
+        return response.data;
+      } else {
+        _logger.e('Failed to update live stream: ${response.statusMessage}');
+        return null;
+      }
+    } catch (e) {
+      _logger.e('Error updating live stream: $e');
+      return null;
+    }
+  }
+
   /// End a live stream
   Future<bool> endLiveStream(String streamId) async {
     try {

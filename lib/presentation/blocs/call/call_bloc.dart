@@ -32,6 +32,7 @@ class CallBloc extends Bloc<CallEvent, CallState> {
     on<ToggleAudio>(_onToggleAudio);
     on<ToggleSpeaker>(_onToggleSpeaker);
     on<SwitchCamera>(_onSwitchCamera);
+    on<ToggleScreenShare>(_onToggleScreenShare);
     on<CallConnectionChanged>(_onCallConnectionChanged);
     on<CallQualityChanged>(_onCallQualityChanged);
     on<IncomingCallReceived>(_onIncomingCallReceived);
@@ -219,6 +220,23 @@ class CallBloc extends Bloc<CallEvent, CallState> {
     // Send camera switch event via WebSocket
     if (state.currentCall != null) {
       _webSocketService.switchCallCamera(state.currentCall!.id, state.isFrontCamera);
+    }
+  }
+
+  /// Handle toggling screen share
+  Future<void> _onToggleScreenShare(
+    ToggleScreenShare event,
+    Emitter<CallState> emit,
+  ) async {
+    emit(state.copyWith(isScreenSharing: event.enabled));
+
+    // Send screen share event via WebSocket
+    if (state.currentCall != null) {
+      _webSocketService.sendWebRTCSignaling(state.currentCall!.id, {
+        'type': 'screen_share',
+        'enabled': event.enabled,
+        'timestamp': DateTime.now().toIso8601String(),
+      });
     }
   }
 
