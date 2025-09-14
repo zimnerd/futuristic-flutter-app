@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../blocs/profile/profile_bloc.dart';
+import '../../blocs/auth/auth_bloc.dart';
+import '../../blocs/auth/auth_state.dart';
 import '../../theme/pulse_colors.dart';
 import '../../widgets/common/pulse_button.dart';
 import '../../widgets/profile/photo_grid.dart';
@@ -28,6 +30,15 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
   String _selectedGender = 'Woman';
   String _selectedPreference = 'Men';
   List<String> _photos = [];
+
+  /// Gets the current user ID from the AuthBloc state
+  String? get _currentUserId {
+    final authState = context.read<AuthBloc>().state;
+    if (authState is AuthAuthenticated) {
+      return authState.user.id;
+    }
+    return null;
+  }
 
   @override
   void initState() {
@@ -61,7 +72,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
   void _saveProfile() {
     if (_formKey.currentState?.validate() ?? false) {
       final updatedProfile = UserProfile(
-        id: 'current_user_id', // TODO: Get from auth
+        id: _currentUserId ?? 'fallback-user-id',
         name: _nameController.text.trim(),
         bio: _bioController.text.trim(),
         age: int.tryParse(_ageController.text) ?? 18,

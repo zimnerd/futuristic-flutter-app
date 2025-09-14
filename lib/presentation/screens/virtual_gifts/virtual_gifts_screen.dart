@@ -5,6 +5,8 @@ import '../../../data/models/virtual_gift.dart';
 import '../../blocs/virtual_gift/virtual_gift_bloc.dart';
 import '../../blocs/virtual_gift/virtual_gift_event.dart';
 import '../../blocs/virtual_gift/virtual_gift_state.dart';
+import '../../blocs/auth/auth_bloc.dart';
+import '../../blocs/auth/auth_state.dart';
 import '../../theme/pulse_colors.dart';
 import '../../widgets/common/pulse_loading_widget.dart';
 import '../../widgets/common/pulse_error_widget.dart';
@@ -25,6 +27,15 @@ class VirtualGiftsScreen extends StatefulWidget {
 class _VirtualGiftsScreenState extends State<VirtualGiftsScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
+
+  /// Gets the current user ID from the AuthBloc state
+  String? get _currentUserId {
+    final authState = context.read<AuthBloc>().state;
+    if (authState is AuthAuthenticated) {
+      return authState.user.id;
+    }
+    return null;
+  }
 
   @override
   void initState() {
@@ -179,7 +190,7 @@ class _VirtualGiftsScreenState extends State<VirtualGiftsScreen>
       padding: const EdgeInsets.all(16),
       child: GiftHistoryWidget(
         transactions: [...state.sentGifts, ...state.receivedGifts],
-        currentUserId: 'current_user_id', // TODO: Get from auth
+        currentUserId: _currentUserId ?? 'fallback-user-id',
         isLoading: state.status == VirtualGiftStatus.loading,
         error: state.errorMessage,
         onRefresh: () {

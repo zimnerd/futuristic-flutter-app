@@ -1,4 +1,5 @@
 import 'package:logger/logger.dart';
+import 'package:pulse_dating_app/data/models/message.dart';
 
 import '../models/chat_model.dart';
 import '../datasources/remote/chat_remote_data_source.dart';

@@ -1,4 +1,5 @@
 import '../models/chat_model.dart';
+import '../models/message.dart';
 
 /// Abstract repository for chat operations
 abstract class ChatRepository {

@@ -2,17 +2,22 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:logger/logger.dart';
 import '../../../data/models/premium.dart';
 import '../../../data/services/premium_service.dart';
+import '../auth/auth_bloc.dart';
+import '../auth/auth_state.dart';
 import 'premium_event.dart';
 import 'premium_state.dart';
 
 class PremiumBloc extends Bloc<PremiumEvent, PremiumState> {
   final PremiumService _premiumService;
+  final AuthBloc _authBloc;
   final Logger _logger = Logger();
   static const String _tag = 'PremiumBloc';
 
   PremiumBloc({
     required PremiumService premiumService,
+    required AuthBloc authBloc,
   })  : _premiumService = premiumService,
+       _authBloc = authBloc,
         super(PremiumInitial()) {
     on<LoadPremiumData>(_onLoadPremiumData);
     on<LoadAvailablePlans>(_onLoadAvailablePlans);
@@ -27,6 +32,15 @@ class PremiumBloc extends Bloc<PremiumEvent, PremiumState> {
     on<LoadAvailableFeatures>(_onLoadAvailableFeatures);
     on<CheckFeatureAccess>(_onCheckFeatureAccess);
     on<RefreshPremiumData>(_onRefreshPremiumData);
+  }
+
+  /// Gets the current user ID from the AuthBloc state
+  String? get _currentUserId {
+    final authState = _authBloc.state;
+    if (authState is AuthAuthenticated) {
+      return authState.user.id;
+    }
+    return null;
   }
 
   Future<void> _onLoadPremiumData(
@@ -53,7 +67,7 @@ class PremiumBloc extends Bloc<PremiumEvent, PremiumState> {
         subscription: subscription,
         plans: plans,
         coinBalance: coinBalance ?? CoinBalance(
-          userId: 'current-user', // TODO: Get from user session
+                userId: _currentUserId ?? 'fallback-user-id',
           totalCoins: 0,
           lastUpdated: DateTime.now(),
         ),
@@ -84,7 +98,7 @@ class PremiumBloc extends Bloc<PremiumEvent, PremiumState> {
         emit(PremiumLoaded(
           plans: plans,
           coinBalance: CoinBalance(
-            userId: 'current-user', // TODO: Get from user session
+              userId: _currentUserId ?? 'fallback-user-id',
             totalCoins: 0,
             lastUpdated: DateTime.now(),
           ),
@@ -114,7 +128,7 @@ class PremiumBloc extends Bloc<PremiumEvent, PremiumState> {
         emit(PremiumLoaded(
           subscription: subscription,
           coinBalance: CoinBalance(
-            userId: 'current-user', // TODO: Get from user session
+              userId: _currentUserId ?? 'fallback-user-id',
             totalCoins: 0,
             lastUpdated: DateTime.now(),
           ),
@@ -327,7 +341,7 @@ class PremiumBloc extends Bloc<PremiumEvent, PremiumState> {
         emit(PremiumLoaded(
           features: features.map((f) => f.name).toList(),
           coinBalance: CoinBalance(
-            userId: 'current-user', // TODO: Get from user session
+              userId: _currentUserId ?? 'fallback-user-id',
             totalCoins: 0,
             lastUpdated: DateTime.now(),
           ),

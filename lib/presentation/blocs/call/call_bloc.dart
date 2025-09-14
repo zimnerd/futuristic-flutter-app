@@ -3,6 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import '../../../domain/entities/call.dart';
 import '../../../data/services/websocket_service.dart';
+import '../auth/auth_bloc.dart';
+import '../auth/auth_state.dart';
 
 part 'call_event.dart';
 part 'call_state.dart';
@@ -10,12 +12,15 @@ part 'call_state.dart';
 /// BLoC for managing call state and WebRTC operations
 class CallBloc extends Bloc<CallEvent, CallState> {
   final WebSocketService _webSocketService;
+  final AuthBloc _authBloc;
   Timer? _callTimer;
   Timer? _reconnectionTimer;
 
   CallBloc({
     required WebSocketService webSocketService,
+    required AuthBloc authBloc,
   })  : _webSocketService = webSocketService,
+       _authBloc = authBloc,
         super(const CallState()) {
     
     // Register event handlers
@@ -41,6 +46,15 @@ class CallBloc extends Bloc<CallEvent, CallState> {
     _setupWebSocketListeners();
   }
 
+  /// Gets the current user ID from the AuthBloc state
+  String? get _currentUserId {
+    final authState = _authBloc.state;
+    if (authState is AuthAuthenticated) {
+      return authState.user.id;
+    }
+    return null;
+  }
+
   /// Setup WebSocket listeners for real-time call events
   void _setupWebSocketListeners() {
     _webSocketService.onCallReceived = (callId) {
@@ -49,7 +63,7 @@ class CallBloc extends Bloc<CallEvent, CallState> {
       final call = Call(
         id: callId,
         callerId: 'unknown_caller', // This should be fetched from server
-        recipientId: 'current_user_id', // TODO: Get from auth
+        recipientId: _currentUserId ?? 'fallback-user-id',
         type: CallType.video, // Default, should be in the event data
         status: CallStatus.incoming,
         createdAt: DateTime.now(),
@@ -73,7 +87,7 @@ class CallBloc extends Bloc<CallEvent, CallState> {
       // Create new call
       final call = Call(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
-        callerId: 'current_user_id', // TODO: Get from auth
+        callerId: _currentUserId ?? 'fallback-user-id',
         recipientId: event.recipientId,
         type: event.type,
         status: CallStatus.outgoing,

@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 
 import '../../widgets/call/call_controls.dart';
 import '../../../domain/entities/user_profile.dart';
+import '../../../data/services/webrtc_service.dart';
+import '../../../data/models/call_model.dart' as model;
 
 class VideoCallScreen extends StatefulWidget {
   final UserProfile remoteUser;
@@ -21,6 +23,8 @@ class VideoCallScreen extends StatefulWidget {
 }
 
 class _VideoCallScreenState extends State<VideoCallScreen> {
+  final WebRTCService _webRTCService = WebRTCService();
+  
   bool _isVideoEnabled = true;
   bool _isAudioEnabled = true;
   bool _isSpeakerEnabled = false;
@@ -106,21 +110,43 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
     );
   }
 
-  void _initiateCall() {
-    // TODO: Implement WebRTC call initiation
-    setState(() {
-      _isCallConnected = true;
-    });
-    _startCallTimer();
+  void _initiateCall() async {
+    try {
+      // Start WebRTC call
+      await _webRTCService.startCall(
+        receiverId: widget.remoteUser.id,
+        receiverName: widget.remoteUser.name,
+        receiverAvatar: widget.remoteUser.photos.isNotEmpty ? widget.remoteUser.photos.first.url : null,
+        callType: model.CallType.video,
+        channelName: 'call_${widget.callId}',
+        token: 'placeholder_token', // Should come from backend
+      );
+      
+      setState(() {
+        _isCallConnected = true;
+      });
+      _startCallTimer();
+    } catch (e) {
+      debugPrint('Failed to initiate call: $e');
+    }
   }
 
-  void _acceptCall() {
+  void _acceptCall() async {
     Navigator.of(context).pop(); // Close dialog
-    // TODO: Implement WebRTC call acceptance
-    setState(() {
-      _isCallConnected = true;
-    });
-    _startCallTimer();
+    try {
+      // Answer WebRTC call
+      await _webRTCService.answerCall(
+        channelName: 'call_${widget.callId}',
+        token: 'placeholder_token', // Should come from backend
+      );
+      
+      setState(() {
+        _isCallConnected = true;
+      });
+      _startCallTimer();
+    } catch (e) {
+      debugPrint('Failed to accept call: $e');
+    }
   }
 
   void _rejectCall() {
@@ -142,33 +168,50 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
     });
   }
 
-  void _toggleVideo() {
-    setState(() {
-      _isVideoEnabled = !_isVideoEnabled;
-    });
-    // TODO: Implement video toggle
+  void _toggleVideo() async {
+    try {
+      await _webRTCService.toggleCamera();
+      setState(() {
+        _isVideoEnabled = !_isVideoEnabled;
+      });
+    } catch (e) {
+      debugPrint('Failed to toggle video: $e');
+    }
   }
 
-  void _toggleAudio() {
-    setState(() {
-      _isAudioEnabled = !_isAudioEnabled;
-    });
-    // TODO: Implement audio toggle
+  void _toggleAudio() async {
+    try {
+      await _webRTCService.toggleMute();
+      setState(() {
+        _isAudioEnabled = !_isAudioEnabled;
+      });
+    } catch (e) {
+      debugPrint('Failed to toggle audio: $e');
+    }
   }
 
-  void _toggleSpeaker() {
-    setState(() {
-      _isSpeakerEnabled = !_isSpeakerEnabled;
-    });
-    // TODO: Implement speaker toggle
+  void _toggleSpeaker() async {
+    try {
+      await _webRTCService.toggleSpeaker();
+      setState(() {
+        _isSpeakerEnabled = !_isSpeakerEnabled;
+      });
+    } catch (e) {
+      debugPrint('Failed to toggle speaker: $e');
+    }
   }
 
-  void _endCall() {
-    setState(() {
-      _isCallConnected = false;
-    });
-    // TODO: Implement call ending
-    Navigator.of(context).pop();
+  void _endCall() async {
+    try {
+      await _webRTCService.endCall();
+      setState(() {
+        _isCallConnected = false;
+      });
+      Navigator.of(context).pop();
+    } catch (e) {
+      debugPrint('Failed to end call: $e');
+      Navigator.of(context).pop();
+    }
   }
 
   void _toggleControls() {

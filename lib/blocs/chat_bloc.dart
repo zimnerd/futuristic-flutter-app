@@ -3,6 +3,7 @@ import 'package:equatable/equatable.dart';
 import 'package:logger/logger.dart';
 
 import '../data/models/chat_model.dart';
+import '../data/models/message.dart';
 import '../data/repositories/chat_repository.dart';
 
 // Events

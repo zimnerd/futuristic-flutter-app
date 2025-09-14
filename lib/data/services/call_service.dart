@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import '../../../domain/entities/call.dart';
+import '../models/call_model.dart' as model;
 import 'websocket_service.dart';
+import 'webrtc_service.dart';
 
 /// Service for managing WebRTC calls and real-time communication
 class CallService {
@@ -11,6 +13,7 @@ class CallService {
   CallService._();
 
   final WebSocketService _webSocketService = WebSocketService.instance;
+  final WebRTCService _webRTCService = WebRTCService();
   
   // Stream controllers for call events
   final StreamController<Call> _incomingCallController = StreamController.broadcast();
@@ -65,11 +68,22 @@ class CallService {
     required CallType type,
   }) async {
     try {
-      // Generate call ID
+      // Generate call ID and channel name
       final callId = DateTime.now().millisecondsSinceEpoch.toString();
+      final channelName = 'call_${callId}';
       
       // Send call initiation through WebSocket
       _webSocketService.initiateCall(recipientId, type.name);
+      
+      // Start WebRTC call (token should come from backend)
+      // For now using a placeholder token - in production get from API
+      await _webRTCService.startCall(
+        receiverId: recipientId,
+        receiverName: 'User $recipientId', // Should come from user data
+        callType: type == CallType.video ? model.CallType.video : model.CallType.audio,
+        channelName: channelName,
+        token: 'placeholder_token', // Get from backend API
+      );
       
       return callId;
     } catch (e) {
@@ -82,6 +96,13 @@ class CallService {
     try {
       _webSocketService.acceptCall(callId);
       _connectionStateController.add(CallConnectionState.connecting);
+      
+      // Answer WebRTC call with channel name and token from incoming call
+      // In production, these should be provided by the incoming call data
+      await _webRTCService.answerCall(
+        channelName: 'call_$callId',
+        token: 'placeholder_token', // Get from backend API
+      );
     } catch (e) {
       throw CallException('Failed to accept call: $e');
     }
@@ -100,6 +121,9 @@ class CallService {
   Future<void> endCall(String callId) async {
     try {
       _webSocketService.endCall(callId);
+      
+      // End WebRTC call
+      await _webRTCService.endCall();
     } catch (e) {
       throw CallException('Failed to end call: $e');
     }
@@ -108,8 +132,12 @@ class CallService {
   /// Toggle video during call
   Future<void> toggleVideo(String callId, bool enabled) async {
     try {
-      // TODO: Implement WebRTC video toggle
-      // For now, just emit state change
+      // Use WebRTCService to toggle camera
+      if (enabled) {
+        await _webRTCService.toggleCamera();
+      } else {
+        await _webRTCService.toggleCamera();
+      }
       debugPrint('Video ${enabled ? 'enabled' : 'disabled'} for call $callId');
     } catch (e) {
       throw CallException('Failed to toggle video: $e');
@@ -119,8 +147,8 @@ class CallService {
   /// Toggle audio during call
   Future<void> toggleAudio(String callId, bool enabled) async {
     try {
-      // TODO: Implement WebRTC audio toggle
-      // For now, just emit state change
+      // Use WebRTCService to toggle microphone
+      await _webRTCService.toggleMute();
       debugPrint('Audio ${enabled ? 'enabled' : 'disabled'} for call $callId');
     } catch (e) {
       throw CallException('Failed to toggle audio: $e');
@@ -130,8 +158,8 @@ class CallService {
   /// Switch camera (front/back)
   Future<void> switchCamera(String callId) async {
     try {
-      // TODO: Implement WebRTC camera switch
-      // For now, just emit state change
+      // Use WebRTCService to switch camera
+      await _webRTCService.switchCamera();
       debugPrint('Camera switched for call $callId');
     } catch (e) {
       throw CallException('Failed to switch camera: $e');
@@ -144,8 +172,24 @@ class CallService {
     required Map<String, dynamic> signalingData,
   }) async {
     try {
-      // TODO: Implement WebRTC signaling through WebSocket
-      // For now, just emit the data
+      // Use WebRTCService for signaling
+      if (signalingData['type'] != null) {
+        // Handle different signaling types
+        final signalType = signalingData['type'] as String;
+        switch (signalType) {
+          case 'offer':
+            // Handled by WebRTCService internally
+            break;
+          case 'answer':
+            // Handled by WebRTCService internally
+            break;
+          case 'ice-candidate':
+            // ICE candidates handled by Agora SDK
+            break;
+          default:
+            debugPrint('Unknown signaling type: $signalType');
+        }
+      }
       _signalingController.add(signalingData);
     } catch (e) {
       throw CallException('Failed to send signaling data: $e');

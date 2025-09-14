@@ -4,13 +4,13 @@ import 'package:cached_network_image/cached_network_image.dart';
 
 import '../../../blocs/chat_bloc.dart';
 import '../../../blocs/call_bloc.dart';
+import '../../../data/models/message.dart';
 import '../../../presentation/blocs/auth/auth_bloc.dart';
 import '../../../presentation/blocs/auth/auth_state.dart';
 import '../../theme/pulse_colors.dart';
 import '../../widgets/chat/message_bubble_new.dart';
 import '../../widgets/chat/message_input_new.dart';
 import '../../../data/models/call_model.dart';
-import '../../../data/models/chat_model.dart';
 
 class ChatScreen extends StatefulWidget {
   final String conversationId;
