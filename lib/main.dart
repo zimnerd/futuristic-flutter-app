@@ -4,9 +4,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'app_providers.dart';
 import 'core/constants/app_constants.dart';
-import 'core/storage/storage_service.dart';
-import 'data/repositories/user_repository_simple.dart';
+import 'core/storage/hive_storage_service.dart';
 import 'data/services/api_service_impl.dart';
+import 'data/datasources/remote/user_remote_data_source.dart';
+import 'data/datasources/local/user_local_data_source.dart';
+import 'data/repositories/user_repository_impl.dart';
 import 'domain/repositories/user_repository.dart';
 import 'domain/services/api_service.dart';
 import 'presentation/blocs/auth/auth_bloc.dart';
@@ -24,13 +26,16 @@ void main() async {
   ]);
 
   // Initialize local storage
-  await HiveStorageService().initialize();
+  final hiveStorage = HiveStorageService();
+  await hiveStorage.initialize();
 
-  runApp(const PulseDatingApp());
+  runApp(PulseDatingApp(hiveStorage: hiveStorage));
 }
 
 class PulseDatingApp extends StatelessWidget {
-  const PulseDatingApp({super.key});
+  final HiveStorageService hiveStorage;
+
+  const PulseDatingApp({super.key, required this.hiveStorage});
 
   @override
   Widget build(BuildContext context) {
@@ -39,11 +44,26 @@ class PulseDatingApp extends StatelessWidget {
         providers: [
           // Initialize services
           RepositoryProvider<ApiService>(create: (context) => ApiServiceImpl()),
+          RepositoryProvider<HiveStorageService>(
+            create: (context) => hiveStorage,
+          ),
 
-          // Initialize repositories with simplified implementation
-          RepositoryProvider<UserRepository>(
+          // Initialize data sources
+          RepositoryProvider<UserRemoteDataSource>(
             create: (context) =>
-                UserRepositorySimple(apiService: context.read<ApiService>()),
+                UserRemoteDataSourceImpl(context.read<ApiService>()),
+          ),
+          RepositoryProvider<UserLocalDataSource>(
+            create: (context) =>
+                UserLocalDataSourceImpl(context.read<HiveStorageService>()),
+          ),
+
+          // Initialize repositories with complete implementation
+          RepositoryProvider<UserRepository>(
+            create: (context) => UserRepositoryImpl(
+              context.read<UserRemoteDataSource>(),
+              context.read<UserLocalDataSource>(),
+            ),
           ),
 
           // Initialize BLoCs

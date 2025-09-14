@@ -15,6 +15,11 @@ class NetworkException extends AppException {
   const NetworkException(super.message, {super.code, super.details});
 }
 
+/// API-related exceptions
+class ApiException extends NetworkException {
+  const ApiException(super.message, {super.code, super.details});
+}
+
 class NoInternetException extends NetworkException {
   const NoInternetException() : super('No internet connection available');
 }

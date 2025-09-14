@@ -8,13 +8,13 @@ class AppConfig {
   static const bool isProduction =
       false; // Changed back to development for local testing
 
-  // API Configuration - Updated with correct production URL
+  // API Configuration - Updated to match backend configuration
   static const String apiBaseUrl = isDevelopment
-      ? 'http://192.168.101.10:3000/api/v1' // Local backend
+      ? 'http://localhost:3000/api/v1' // Local backend matching .env.example
       : 'https://apilink.pulsetek.co.za/api/v1'; // Production backend
 
   static const String websocketUrl = isDevelopment
-      ? 'http://192.168.101.10:3000' // Local WebSocket
+      ? 'http://localhost:3000' // Local WebSocket
       : 'https://apilink.pulsetek.co.za'; // Production WebSocket
 
   // PeachPayments Configuration - Updated from .env

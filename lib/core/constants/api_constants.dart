@@ -1,8 +1,8 @@
 /// API constants for backend communication
 class ApiConstants {
-  // Base URLs
-  static const String baseUrl = 'http://localhost:3001/api';
-  static const String websocketUrl = 'ws://localhost:3001';
+  // Base URLs - Updated to match backend configuration
+  static const String baseUrl = 'http://localhost:3000/api/v1';
+  static const String websocketUrl = 'ws://localhost:3000';
   
   // API Endpoints
   static const String auth = '/auth';
