@@ -3,29 +3,31 @@ class AppConfig {
   AppConfig._();
 
   // Environment flags
-  static const bool isDevelopment = false; // Changed to production
-  static const bool isProduction = true; // Changed to production
+  static const bool isDevelopment =
+      true; // Changed back to development for local testing
+  static const bool isProduction =
+      false; // Changed back to development for local testing
 
-  // API Configuration - Using production backend
+  // API Configuration - Using local backend on your network IP
   static const String apiBaseUrl = isDevelopment
-      ? 'http://localhost:3000/api/v1'
+      ? 'http://192.168.101.10:3000/api/v1' // Fixed: Backend runs on port 3000
       : 'https://pulsetechnology.co.za:3000/api/v1'; // Production backend
 
   static const String websocketUrl = isDevelopment
-      ? 'http://localhost:3000'
+      ? 'http://192.168.101.10:3000' // Fixed: Backend runs on port 3000
       : 'https://pulsetechnology.co.za:3000'; // Production WebSocket
 
-  // PeachPayments Configuration
+  // PeachPayments Configuration - Updated from .env
   static const String peachPaymentsBaseUrl = isDevelopment
-      ? 'https://test.oppwa.com' // Test environment
+      ? 'https://test.oppwa.com' // Test environment from .env
       : 'https://oppwa.com'; // Production environment
 
   static const String peachPaymentsEntityId = isDevelopment
-      ? '8a8294174e735d0c014e78cf26461790' // Test entity ID
+      ? 'your-peach-entity-id' // From .env - needs to be replaced with actual value
       : 'YOUR_PRODUCTION_ENTITY_ID'; // TODO: Replace with production entity ID
 
   static const String peachPaymentsAccessToken = isDevelopment
-      ? 'OGE4Mjk0MTc0ZTczNWQwYzAxNGU3OGNmMjY0NjE3OTB8c3k2S0pzVDg=' // Test access token
+      ? 'your-peach-access-token' // From .env - needs to be replaced with actual value
       : 'YOUR_PRODUCTION_ACCESS_TOKEN'; // TODO: Replace with production access token
 
   // Payment webhook configuration
@@ -38,9 +40,9 @@ class AppConfig {
   static const Duration websocketTimeout = Duration(seconds: 10);
   static const Duration paymentTimeout = Duration(seconds: 45);
 
-  // App Info
-  static const String appName = 'Pulse Dating';
-  static const String appVersion = '1.0.0';
+  // App Info - Updated from .env
+  static const String appName = 'PulseLink'; // From .env APP_NAME
+  static const String appVersion = '1.0.0'; // From .env APP_VERSION
   static const String userAgent = 'PulseLink-Mobile/1.0.0';
 
   // Feature Flags
@@ -66,9 +68,10 @@ class AppConfig {
   static const int defaultPageSize = 20;
   static const int maxPageSize = 100;
 
-  // Payment Configuration
-  static const List<String> supportedCurrencies = ['USD', 'EUR', 'GBP', 'ZAR'];
-  static const String defaultCurrency = 'USD';
+  // Payment Configuration - Updated for South African market
+  static const List<String> supportedCurrencies = ['ZAR', 'USD', 'EUR', 'GBP'];
+  static const String defaultCurrency =
+      'ZAR'; // Primary currency for South Africa
 
   // Subscription Configuration
   static const Duration subscriptionCacheExpiry = Duration(hours: 1);
