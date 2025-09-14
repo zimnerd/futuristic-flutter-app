@@ -160,32 +160,32 @@ class ProfileScreen extends StatelessWidget {
                 icon: Icons.person_outline,
                 title: 'Edit Profile',
                 subtitle: 'Update your photos and info',
-                onTap: () {
-                  // TODO: Navigate to edit profile
+                onTap: (context) {
+                  context.go('/profile-creation');
                 },
               ),
               _SettingsTile(
                 icon: Icons.notifications,
                 title: 'Notifications',
                 subtitle: 'Manage your notification preferences',
-                onTap: () {
-                  // TODO: Navigate to notifications settings
+                onTap: (context) {
+                  context.go('/settings');
                 },
               ),
               _SettingsTile(
                 icon: Icons.location_on,
                 title: 'Location',
                 subtitle: 'Update your location settings',
-                onTap: () {
-                  // TODO: Navigate to location settings
+                onTap: (context) {
+                  context.go('/settings');
                 },
               ),
               _SettingsTile(
                 icon: Icons.security,
                 title: 'Privacy & Security',
                 subtitle: 'Control your privacy settings',
-                onTap: () {
-                  // TODO: Navigate to privacy settings
+                onTap: (context) {
+                  context.go('/safety');
                 },
               ),
             ],
@@ -216,24 +216,38 @@ class ProfileScreen extends StatelessWidget {
                 icon: Icons.help_outline,
                 title: 'Help Center',
                 subtitle: 'Get help and support',
-                onTap: () {
-                  // TODO: Navigate to help
+                onTap: (context) {
+                  // Navigate to help center - placeholder for now
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Help Center coming soon!')),
+                  );
                 },
               ),
               _SettingsTile(
                 icon: Icons.feedback_outlined,
                 title: 'Feedback',
                 subtitle: 'Share your thoughts with us',
-                onTap: () {
-                  // TODO: Navigate to feedback
+                onTap: (context) {
+                  // Navigate to feedback - placeholder for now
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Feedback form coming soon!')),
+                  );
                 },
               ),
               _SettingsTile(
                 icon: Icons.info_outline,
                 title: 'About',
                 subtitle: 'App version and info',
-                onTap: () {
-                  // TODO: Show about dialog
+                onTap: (context) {
+                  showAboutDialog(
+                    context: context,
+                    applicationName: 'PulseLink',
+                    applicationVersion: '1.0.0',
+                    applicationIcon: const FlutterLogo(size: 64),
+                    children: const [
+                      Text('A modern dating app connecting hearts worldwide.'),
+                    ],
+                  );
                 },
               ),
             ],
@@ -253,7 +267,7 @@ class ProfileScreen extends StatelessWidget {
             title: 'Sign Out',
             subtitle: 'Sign out of your account',
             textColor: PulseColors.error,
-            onTap: () => _showLogoutDialog(context),
+            onTap: (context) => _showLogoutDialog(context),
           ),
         ],
       ),
@@ -356,7 +370,7 @@ class _SettingsTile extends StatelessWidget {
   final IconData icon;
   final String title;
   final String subtitle;
-  final VoidCallback onTap;
+  final void Function(BuildContext) onTap;
   final Color? textColor;
 
   @override
@@ -364,7 +378,7 @@ class _SettingsTile extends StatelessWidget {
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        onTap: onTap,
+        onTap: () => onTap(context),
         borderRadius: BorderRadius.circular(PulseRadii.lg),
         child: Padding(
           padding: const EdgeInsets.all(PulseSpacing.lg),

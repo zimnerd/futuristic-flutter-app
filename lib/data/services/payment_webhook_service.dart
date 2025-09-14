@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'package:crypto/crypto.dart';
 import 'package:logger/logger.dart';
 import '../services/payment_service.dart';
+import 'api_service_impl.dart';
+import '../../domain/services/api_service.dart';
 
 /// Service for handling PeachPayments webhook notifications
 class PaymentWebhookService {
@@ -11,6 +13,7 @@ class PaymentWebhookService {
   
   // Logger instance
   final Logger _logger = Logger();
+  final ApiService _apiService = ApiServiceImpl();
   
   /// Process incoming webhook notification from PeachPayments
   Future<Map<String, dynamic>> processWebhook({
@@ -190,9 +193,19 @@ class PaymentWebhookService {
     String? currency,
     required Map<String, dynamic> metadata,
   }) async {
-    // TODO: Implement local database update
-    // This would typically update your local SQLite/Hive database
-    _logger.i('Updating local payment record: $paymentId -> $status');
+    try {
+      // Update payment record via API (which would typically update local cache)
+      await _apiService.patch('/api/payments/$paymentId', data: {
+        'status': status.name,
+        'resultCode': resultCode,
+        'amount': amount,
+        'currency': currency,
+        'metadata': metadata,
+      });
+      _logger.i('Updated local payment record: $paymentId -> $status');
+    } catch (e) {
+      _logger.e('Failed to update local payment record: $e');
+    }
   }
 
   /// Handle successful payment completion
@@ -281,57 +294,109 @@ class PaymentWebhookService {
 
   /// Unlock premium features for user
   Future<void> _unlockPremiumFeatures(String paymentId) async {
-    // TODO: Implement feature unlocking logic
-    _logger.i('Unlocking premium features for payment: $paymentId');
+    try {
+      await _apiService.post('/api/payments/$paymentId/unlock-features');
+      _logger.i('Unlocked premium features for payment: $paymentId');
+    } catch (e) {
+      _logger.e('Failed to unlock premium features: $e');
+    }
   }
 
   /// Revoke premium features for user
   Future<void> _revokePremiumFeatures(String paymentId) async {
-    // TODO: Implement feature revocation logic
-    _logger.i('Revoking premium features for payment: $paymentId');
+    try {
+      await _apiService.post('/api/payments/$paymentId/revoke-features');
+      _logger.i('Revoked premium features for payment: $paymentId');
+    } catch (e) {
+      _logger.e('Failed to revoke premium features: $e');
+    }
   }
 
   /// Send payment confirmation
   Future<void> _sendPaymentConfirmation(String paymentId, String? amount, String? currency) async {
-    // TODO: Implement confirmation sending via backend API
-    _logger.i('Sending payment confirmation: $paymentId');
+    try {
+      await _apiService.post('/api/payments/$paymentId/send-confirmation', data: {
+        'amount': amount,
+        'currency': currency,
+      });
+      _logger.i('Sent payment confirmation: $paymentId');
+    } catch (e) {
+      _logger.e('Failed to send payment confirmation: $e');
+    }
   }
 
   /// Send refund confirmation
   Future<void> _sendRefundConfirmation(String paymentId, String? amount) async {
-    // TODO: Implement refund confirmation via backend API
-    _logger.i('Sending refund confirmation: $paymentId');
+    try {
+      await _apiService.post('/api/payments/$paymentId/send-refund-confirmation', data: {
+        'amount': amount,
+      });
+      _logger.i('Sent refund confirmation: $paymentId');
+    } catch (e) {
+      _logger.e('Failed to send refund confirmation: $e');
+    }
   }
 
   /// Update subscription status
   Future<void> _updateSubscriptionStatus(String paymentId, {required bool active}) async {
-    // TODO: Implement subscription status update
-    _logger.i('Updating subscription status: $paymentId -> ${active ? 'active' : 'inactive'}');
+    try {
+      await _apiService.patch('/api/subscriptions/payment/$paymentId', data: {
+        'active': active,
+      });
+      _logger.i('Updated subscription status: $paymentId -> ${active ? 'active' : 'inactive'}');
+    } catch (e) {
+      _logger.e('Failed to update subscription status: $e');
+    }
   }
 
   /// Schedule retry notification for failed payments
   Future<void> _scheduleRetryNotification(String paymentId, String reason) async {
-    // TODO: Implement retry notification scheduling
-    _logger.i('Scheduling retry notification for: $paymentId');
+    try {
+      await _apiService.post('/api/payments/$paymentId/schedule-retry', data: {
+        'reason': reason,
+      });
+      _logger.i('Scheduled retry notification for: $paymentId');
+    } catch (e) {
+      _logger.e('Failed to schedule retry notification: $e');
+    }
   }
 
   /// Schedule status check for pending payments
   Future<void> _scheduleStatusCheck(String paymentId) async {
-    // TODO: Implement status check scheduling
-    _logger.i('Scheduling status check for: $paymentId');
+    try {
+      await _apiService.post('/api/payments/$paymentId/schedule-check');
+      _logger.i('Scheduled status check for: $paymentId');
+    } catch (e) {
+      _logger.e('Failed to schedule status check: $e');
+    }
   }
 
   /// Notify user about payment pending
   Future<void> _notifyPaymentPending(String paymentId) async {
-    // TODO: Implement pending notification
-    _logger.i('Notifying user of pending payment: $paymentId');
+    try {
+      await _apiService.post('/api/notifications/payment-pending', data: {
+        'paymentId': paymentId,
+      });
+      _logger.i('Notified user of pending payment: $paymentId');
+    } catch (e) {
+      _logger.e('Failed to notify user about pending payment: $e');
+    }
   }
 
   /// Send in-app notification to user about payment status
   Future<void> _notifyUser(String paymentId, PaymentStatus status, String? amount, String? currency) async {
-    // TODO: Implement in-app notification system
-    final statusText = status.name.toUpperCase();
-    _logger.i('Notifying user: Payment $paymentId is $statusText');
+    try {
+      await _apiService.post('/api/notifications/payment-status', data: {
+        'paymentId': paymentId,
+        'status': status.name,
+        'amount': amount,
+        'currency': currency,
+      });
+      final statusText = status.name.toUpperCase();
+      _logger.i('Notified user: Payment $paymentId is $statusText');
+    } catch (e) {
+      _logger.e('Failed to notify user about payment status: $e');
+    }
   }
 
   /// Get webhook endpoint URL for PeachPayments configuration

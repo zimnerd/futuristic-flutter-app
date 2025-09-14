@@ -306,6 +306,46 @@ class WebSocketService {
     });
   }
 
+  // Toggle video during call
+  void toggleCallVideo(String callId, bool enabled) {
+    if (!_isConnected) return;
+
+    _socket?.emit('toggle_call_video', {
+      'callId': callId,
+      'enabled': enabled,
+    });
+  }
+
+  // Toggle audio during call
+  void toggleCallAudio(String callId, bool enabled) {
+    if (!_isConnected) return;
+
+    _socket?.emit('toggle_call_audio', {
+      'callId': callId,
+      'enabled': enabled,
+    });
+  }
+
+  // Switch camera during call
+  void switchCallCamera(String callId, bool isFrontCamera) {
+    if (!_isConnected) return;
+
+    _socket?.emit('switch_call_camera', {
+      'callId': callId,
+      'isFrontCamera': isFrontCamera,
+    });
+  }
+
+  // Send WebRTC signaling data
+  void sendWebRTCSignaling(String callId, Map<String, dynamic> signalingData) {
+    if (!_isConnected) return;
+
+    _socket?.emit('webrtc_signaling', {
+      'callId': callId,
+      'signalingData': signalingData,
+    });
+  }
+
   // Disconnect
   void disconnect() {
     _socket?.disconnect();

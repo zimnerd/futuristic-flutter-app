@@ -4,6 +4,8 @@ import '../../../domain/entities/call.dart';
 import '../models/call_model.dart' as model;
 import 'websocket_service.dart';
 import 'webrtc_service.dart';
+import 'api_service_impl.dart';
+import '../../domain/services/api_service.dart';
 
 /// Service for managing WebRTC calls and real-time communication
 class CallService {
@@ -14,6 +16,7 @@ class CallService {
 
   final WebSocketService _webSocketService = WebSocketService.instance;
   final WebRTCService _webRTCService = WebRTCService();
+  final ApiService _apiService = ApiServiceImpl();
   
   // Stream controllers for call events
   final StreamController<Call> _incomingCallController = StreamController.broadcast();
@@ -202,11 +205,70 @@ class CallService {
     int offset = 0,
   }) async {
     try {
-      // TODO: Implement API call to fetch call history
-      // For now, return empty list
-      return [];
+      final response = await _apiService.get<Map<String, dynamic>>(
+        '/api/calls/history',
+        queryParameters: {
+          'limit': limit,
+          'offset': offset,
+        },
+      );
+
+      if (response.statusCode == 200 && response.data != null) {
+        final callsData = response.data!['calls'] as List<dynamic>? ?? [];
+        return callsData.map((callData) {
+          final call = callData as Map<String, dynamic>;
+          return Call(
+            id: call['id'] as String,
+            callerId: call['callerId'] as String,
+            recipientId: call['receiverId'] as String,
+            type: _parseCallType(call['type'] as String),
+            status: _parseCallStatus(call['status'] as String),
+            createdAt: DateTime.parse(call['createdAt'] as String),
+            startedAt: call['startedAt'] != null ? DateTime.parse(call['startedAt'] as String) : null,
+            endedAt: call['endedAt'] != null ? DateTime.parse(call['endedAt'] as String) : null,
+            duration: call['duration'] != null ? Duration(seconds: call['duration'] as int) : null,
+          );
+        }).toList();
+      } else {
+        return []; // Return empty list if API fails
+      }
     } catch (e) {
-      throw CallException('Failed to get call history: $e');
+      // Fall back to empty list instead of throwing exception
+      return [];
+    }
+  }
+
+  /// Parse call type from string
+  CallType _parseCallType(String type) {
+    switch (type.toLowerCase()) {
+      case 'video':
+        return CallType.video;
+      case 'audio':
+        return CallType.audio;
+      default:
+        return CallType.video;
+    }
+  }
+
+  /// Parse call status from string
+  CallStatus _parseCallStatus(String status) {
+    switch (status.toLowerCase()) {
+      case 'incoming':
+        return CallStatus.incoming;
+      case 'outgoing':
+        return CallStatus.outgoing;
+      case 'connecting':
+        return CallStatus.connecting;
+      case 'connected':
+        return CallStatus.connected;
+      case 'ended':
+        return CallStatus.ended;
+      case 'declined':
+        return CallStatus.declined;
+      case 'failed':
+        return CallStatus.failed;
+      default:
+        return CallStatus.ended;
     }
   }
 

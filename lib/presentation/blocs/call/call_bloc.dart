@@ -191,16 +191,20 @@ class CallBloc extends Bloc<CallEvent, CallState> {
   Future<void> _onToggleVideo(ToggleVideo event, Emitter<CallState> emit) async {
     emit(state.copyWith(isVideoEnabled: event.enabled));
     
-    // TODO: Add WebSocket video toggle support to WebSocketService
-    // For now, just update local state
+    // Send video toggle event via WebSocket
+    if (state.currentCall != null) {
+      _webSocketService.toggleCallVideo(state.currentCall!.id, event.enabled);
+    }
   }
 
   /// Handle toggling audio
   Future<void> _onToggleAudio(ToggleAudio event, Emitter<CallState> emit) async {
     emit(state.copyWith(isAudioEnabled: event.enabled));
     
-    // TODO: Add WebSocket audio toggle support to WebSocketService
-    // For now, just update local state
+    // Send audio toggle event via WebSocket
+    if (state.currentCall != null) {
+      _webSocketService.toggleCallAudio(state.currentCall!.id, event.enabled);
+    }
   }
 
   /// Handle toggling speaker
@@ -212,8 +216,10 @@ class CallBloc extends Bloc<CallEvent, CallState> {
   Future<void> _onSwitchCamera(SwitchCamera event, Emitter<CallState> emit) async {
     emit(state.copyWith(isFrontCamera: !state.isFrontCamera));
     
-    // TODO: Add WebSocket camera switch support to WebSocketService
-    // For now, just update local state
+    // Send camera switch event via WebSocket
+    if (state.currentCall != null) {
+      _webSocketService.switchCallCamera(state.currentCall!.id, state.isFrontCamera);
+    }
   }
 
   /// Handle connection state changes
@@ -304,8 +310,10 @@ class CallBloc extends Bloc<CallEvent, CallState> {
     SendWebRTCSignaling event,
     Emitter<CallState> emit,
   ) async {
-    // TODO: Add WebRTC signaling support to WebSocketService
-    // For now, this is a placeholder for future WebRTC integration
+    // Send WebRTC signaling data via WebSocket
+    if (state.currentCall != null) {
+      _webSocketService.sendWebRTCSignaling(state.currentCall!.id, event.signalingData);
+    }
   }
 
   /// Handle resetting call state

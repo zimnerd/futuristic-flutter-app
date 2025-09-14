@@ -6,11 +6,17 @@ import 'call/call_bloc.dart';
 import 'discovery/discovery_bloc.dart';
 import 'match/match_bloc.dart';
 import 'profile/profile_bloc.dart';
+import 'auth/auth_bloc.dart';
+import 'user/user_bloc.dart';
+import 'messaging/messaging_bloc.dart';
 import '../../data/services/websocket_service.dart';
 import '../../data/services/discovery_service.dart';
 import '../../data/services/matching_service.dart';
+import '../../data/services/messaging_service.dart';
 import '../../data/services/service_locator.dart';
 import '../../core/network/api_client.dart';
+import '../../core/di/service_locator.dart' as di;
+import '../../domain/repositories/user_repository.dart';
 
 /// Provides all BLoCs to the widget tree with proper dependency injection
 /// 
@@ -55,11 +61,26 @@ class BlocProviders extends StatelessWidget {
           ),
         ),
         
-        // TODO: Add other BLoCs when their service dependencies are properly set up
-        // Examples:
-        // BlocProvider<AuthBloc>(
-        //   create: (context) => AuthBloc(userRepository: ServiceLocator.instance.userRepository),
-        // ),
+        // Authentication BLoC - User authentication and session management
+        BlocProvider<AuthBloc>(
+          create: (context) => AuthBloc(
+            userRepository: di.sl<UserRepository>(),
+          ),
+        ),
+
+        // User Management BLoC - User profile operations and management
+        BlocProvider<UserBloc>(
+          create: (context) => UserBloc(
+            userRepository: di.sl<UserRepository>(),
+          ),
+        ),
+
+        // Messaging BLoC - Chat and conversation management
+        BlocProvider<MessagingBloc>(
+          create: (context) => MessagingBloc(
+            messagingService: di.sl<MessagingService>(),
+          ),
+        ),
       ],
       child: child,
     );
@@ -84,7 +105,12 @@ extension BlocExtensions on BuildContext {
   // Profile Management BLoC - User profile customization
   ProfileBloc get profileBloc => read<ProfileBloc>();
 
-  // TODO: Add other BLoC getters when implemented
-  // AuthBloc get authBloc => read<AuthBloc>();
-  // UserBloc get userBloc => read<UserBloc>();
+  // Authentication BLoC - User authentication and session management
+  AuthBloc get authBloc => read<AuthBloc>();
+
+  // User Management BLoC - User profile operations and management
+  UserBloc get userBloc => read<UserBloc>();
+
+  // Messaging BLoC - Chat and conversation management
+  MessagingBloc get messagingBloc => read<MessagingBloc>();
 }

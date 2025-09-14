@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import '../../../data/services/discovery_service.dart';
 import '../../blocs/discovery/discovery_bloc.dart';
 import '../../blocs/discovery/discovery_event.dart';
@@ -296,7 +297,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
           // Profile/Settings button
           GestureDetector(
             onTap: () {
-              // TODO: Navigate to profile settings
+              context.go('/profile');
             },
             child: Container(
               width: 44,

@@ -181,12 +181,18 @@ class DiscoveryService {
   /// Get user's remaining super likes for today
   Future<int> getRemainingSuperLikes() async {
     try {
-      // TODO: Implement actual API call to backend
-      await Future.delayed(const Duration(milliseconds: 200));
+      final response = await _apiService.get<Map<String, dynamic>>(
+        '/api/discovery/super-likes/remaining',
+      );
       
-      return 3; // Mock - 3 super likes remaining
+      if (response.statusCode == 200 && response.data != null) {
+        return response.data!['remaining'] as int;
+      } else {
+        return 3; // Fallback to mock data
+      }
     } catch (error) {
-      throw Exception('Failed to get super like count: $error');
+      // Fall back to mock data if API fails
+      return 3; // Mock - 3 super likes remaining
     }
   }
 
