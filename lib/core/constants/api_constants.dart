@@ -1,8 +1,8 @@
 /// API constants for backend communication
 class ApiConstants {
-  // Base URLs - Updated to match backend configuration
-  static const String baseUrl = 'http://localhost:3000/api/v1';
-  static const String websocketUrl = 'ws://localhost:3000';
+  // Base URLs - Always use production API
+  static const String baseUrl = 'https://apilink.pulsetek.co.za/api/v1';
+  static const String websocketUrl = 'wss://apilink.pulsetek.co.za';
   
   // API Endpoints
   static const String auth = '/auth';

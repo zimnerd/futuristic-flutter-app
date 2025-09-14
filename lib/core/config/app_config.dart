@@ -14,18 +14,10 @@ class AppConfig {
   static const bool isProduction = _flavor == 'production';
   static const bool isStaging = _flavor == 'staging';
 
-  // API Configuration - Environment-based URLs
-  static const String apiBaseUrl = isDevelopment
-      ? 'http://localhost:3001/api/v1' // Local backend (updated to port 3001 based on backend standard)
-      : isStaging
-      ? 'https://staging-api.pulsetek.co.za/api/v1' // Staging backend
-      : 'https://api.pulsetek.co.za/api/v1'; // Production backend
+  // API Configuration - Always use production API
+  static const String apiBaseUrl = 'https://apilink.pulsetek.co.za/api/v1';
 
-  static const String websocketUrl = isDevelopment
-      ? 'ws://localhost:3001' // Local WebSocket
-      : isStaging
-      ? 'wss://staging-api.pulsetek.co.za' // Staging WebSocket
-      : 'wss://api.pulsetek.co.za'; // Production WebSocket
+  static const String websocketUrl = 'wss://apilink.pulsetek.co.za';
 
   // PeachPayments Configuration - Environment-based
   static const String peachPaymentsBaseUrl = isDevelopment || isStaging
