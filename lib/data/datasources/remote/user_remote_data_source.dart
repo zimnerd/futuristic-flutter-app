@@ -110,8 +110,9 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
       );
 
       if (response.statusCode == 200) {
-        final userData = response.data['user'];
-        final accessToken = response.data['accessToken'];
+        final responseData = response.data['data'];
+        final userData = responseData['user'];
+        final accessToken = responseData['accessToken'];
 
         // Store auth token for future requests
         if (accessToken != null) {
@@ -160,8 +161,9 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
       );
 
       if (response.statusCode == 201) {
-        final userData = response.data['user'];
-        final accessToken = response.data['accessToken'];
+        final responseData = response.data['data'];
+        final userData = responseData['user'];
+        final accessToken = responseData['accessToken'];
 
         // Store auth token for future requests
         if (accessToken != null) {
@@ -245,8 +247,9 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
       );
 
       if (response.statusCode == 200) {
-        final userData = response.data['user'];
-        final accessToken = response.data['accessToken'];
+        final responseData = response.data['data'];
+        final userData = responseData['user'];
+        final accessToken = responseData['accessToken'];
 
         if (accessToken != null) {
           _apiService.setAuthToken(accessToken);
@@ -273,7 +276,8 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
       final response = await _apiService.post('/auth/refresh');
 
       if (response.statusCode == 200) {
-        final accessToken = response.data['accessToken'];
+        final responseData = response.data['data'] ?? response.data;
+        final accessToken = responseData['accessToken'];
         if (accessToken != null) {
           _apiService.setAuthToken(accessToken);
         }
@@ -338,24 +342,25 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
       );
 
       if (response.statusCode == 200) {
-        final verified = response.data['verified'] ?? false;
+        final responseData = response.data['data'] ?? response.data;
+        final verified = responseData['verified'] ?? false;
 
         if (verified) {
           // Store tokens if verification successful
-          final tokens = response.data['tokens'];
+          final tokens = responseData['tokens'];
           if (tokens != null && tokens['accessToken'] != null) {
             _apiService.setAuthToken(tokens['accessToken']);
           }
 
           return {
             'verified': true,
-            'user': response.data['user'],
+            'user': responseData['user'],
             'tokens': tokens,
           };
         } else {
           return {
             'verified': false,
-            'attemptsRemaining': response.data['attemptsRemaining'],
+            'attemptsRemaining': responseData['attemptsRemaining'],
           };
         }
       } else {
