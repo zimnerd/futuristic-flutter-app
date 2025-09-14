@@ -2,20 +2,24 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
-import '../../blocs/messaging/messaging_bloc.dart';
+import '../../../blocs/chat_bloc.dart';
 import '../../theme/pulse_colors.dart';
-import '../../widgets/chat/message_bubble.dart';
-import '../../widgets/chat/message_input.dart';
-import '../../widgets/chat/typing_indicator.dart';
-import '../../../domain/entities/message.dart';
-import '../../../domain/entities/conversation.dart';
+import '../../widgets/chat/message_bubble_new.dart';
+import '../../widgets/chat/message_input_new.dart';
+import '../../../data/models/chat_model.dart';
 
 class ChatScreen extends StatefulWidget {
-  final Conversation conversation;
+  final String conversationId;
+  final String otherUserId;
+  final String otherUserName;
+  final String? otherUserPhoto;
 
   const ChatScreen({
     super.key,
-    required this.conversation,
+    required this.conversationId,
+    required this.otherUserId,
+    required this.otherUserName,
+    this.otherUserPhoto,
   });
 
   @override
@@ -31,14 +35,14 @@ class _ChatScreenState extends State<ChatScreen> {
     super.initState();
     
     // Load messages for this conversation
-    context.read<MessagingBloc>().add(
-      LoadMessages(conversationId: widget.conversation.id),
+    context.read<ChatBloc>().add(
+      LoadMessages(conversationId: widget.conversationId),
     );
     
-    // Mark conversation as read
-    context.read<MessagingBloc>().add(
-      MarkConversationAsRead(conversationId: widget.conversation.id),
-    );
+    // TODO: Mark conversation as read (not implemented in current bloc)
+    // context.read<ChatBloc>().add(
+    //   MarkChatAsRead(conversationId: widget.conversationId),
+    // );
     
     // Auto-scroll to bottom when keyboard appears
     _scrollController.addListener(_scrollListener);
@@ -56,8 +60,8 @@ class _ChatScreenState extends State<ChatScreen> {
     // Load more messages when scrolled to top
     if (_scrollController.position.pixels == 
         _scrollController.position.maxScrollExtent) {
-      context.read<MessagingBloc>().add(
-        LoadMessages(conversationId: widget.conversation.id),
+      context.read<ChatBloc>().add(
+        LoadMessages(conversationId: widget.conversationId),
       );
     }
   }
@@ -76,12 +80,11 @@ class _ChatScreenState extends State<ChatScreen> {
     final text = _messageController.text.trim();
     if (text.isEmpty) return;
 
-    context.read<MessagingBloc>().add(
+    context.read<ChatBloc>().add(
       SendMessage(
-        conversationId: widget.conversation.id,
-        senderId: 'current_user_id', // TODO: Get actual current user ID from auth service
-        content: text,
+        conversationId: widget.conversationId,
         type: MessageType.text,
+        content: text,
       ),
     );
 
@@ -97,9 +100,9 @@ class _ChatScreenState extends State<ChatScreen> {
       body: Column(
         children: [
           Expanded(
-            child: BlocConsumer<MessagingBloc, MessagingState>(
+            child: BlocConsumer<ChatBloc, ChatState>(
               listener: (context, state) {
-                if (state.messagesStatus == MessagingStatus.loaded) {
+                if (state is MessagesLoaded) {
                   _scrollToBottom();
                 }
               },
@@ -133,12 +136,12 @@ class _ChatScreenState extends State<ChatScreen> {
         children: [
           CircleAvatar(
             radius: 20,
-            backgroundImage: widget.conversation.otherUser?.photos.isNotEmpty == true
-                ? CachedNetworkImageProvider(widget.conversation.otherUser!.photos.first.url)
+            backgroundImage: widget.otherUserPhoto != null
+                ? CachedNetworkImageProvider(widget.otherUserPhoto!)
                 : null,
-            child: widget.conversation.otherUser?.photos.isEmpty != false
+            child: widget.otherUserPhoto == null
                 ? Text(
-                    widget.conversation.otherUser?.name[0].toUpperCase() ?? '?',
+                    widget.otherUserName[0].toUpperCase(),
                     style: const TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
@@ -152,21 +155,17 @@ class _ChatScreenState extends State<ChatScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  widget.conversation.otherUser?.name ?? 'Unknown User',
+                  widget.otherUserName,
                   style: const TextStyle(
                     color: Colors.black87,
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
-                if (widget.conversation.otherUser?.isOnline == true)
-                  const Text(
-                    'Online',
-                    style: TextStyle(
-                      color: PulseColors.success,
-                      fontSize: 12,
-                    ),
-                  ),
+                const Text(
+                  'Online',
+                  style: TextStyle(color: PulseColors.success, fontSize: 12),
+                ),
               ],
             ),
           ),
@@ -195,8 +194,8 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
-  Widget _buildMessagesList(MessagingState state) {
-    if (state.messagesStatus == MessagingStatus.loading && state.messages.isEmpty) {
+  Widget _buildMessagesList(ChatState state) {
+    if (state is ChatLoading) {
       return const Center(
         child: CircularProgressIndicator(
           valueColor: AlwaysStoppedAnimation<Color>(PulseColors.primary),
@@ -204,7 +203,7 @@ class _ChatScreenState extends State<ChatScreen> {
       );
     }
 
-    if (state.messagesStatus == MessagingStatus.error) {
+    if (state is ChatError) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -216,15 +215,15 @@ class _ChatScreenState extends State<ChatScreen> {
             ),
             const SizedBox(height: 16),
             Text(
-              state.error ?? 'Failed to load messages',
+              state.message,
               style: const TextStyle(color: Colors.grey),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: () {
-                context.read<MessagingBloc>().add(
-                  LoadMessages(conversationId: widget.conversation.id),
+                context.read<ChatBloc>().add(
+                  LoadMessages(conversationId: widget.conversationId),
                 );
               },
               style: ElevatedButton.styleFrom(
@@ -238,73 +237,50 @@ class _ChatScreenState extends State<ChatScreen> {
       );
     }
 
-    if (state.messages.isEmpty) {
-      return const Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.chat_bubble_outline,
-              color: Colors.grey,
-              size: 64,
-            ),
-            SizedBox(height: 16),
-            Text(
-              'No messages yet',
-              style: TextStyle(
-                color: Colors.grey,
-                fontSize: 16,
+    if (state is MessagesLoaded) {
+      if (state.messages.isEmpty) {
+        return const Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.chat_bubble_outline, color: Colors.grey, size: 64),
+              SizedBox(height: 16),
+              Text(
+                'No messages yet',
+                style: TextStyle(color: Colors.grey, fontSize: 16),
               ),
-            ),
-            SizedBox(height: 8),
-            Text(
-              'Send a message to start the conversation!',
-              style: TextStyle(
-                color: Colors.grey,
-                fontSize: 14,
+              SizedBox(height: 8),
+              Text(
+                'Send a message to start the conversation!',
+                style: TextStyle(color: Colors.grey, fontSize: 14),
               ),
-            ),
-          ],
-        ),
+            ],
+          ),
+        );
+      }
+
+      return ListView.builder(
+        controller: _scrollController,
+        reverse: true,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        itemCount: state.messages.length,
+        itemBuilder: (context, index) {
+          final message = state.messages[index];
+          // TODO: Get current user ID from auth bloc
+          final isCurrentUser = message.senderId != widget.otherUserId;
+
+          return MessageBubble(message: message, isCurrentUser: isCurrentUser);
+        },
       );
     }
 
-    return ListView.builder(
-      controller: _scrollController,
-      reverse: true,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      itemCount: state.messages.length + (state.hasReachedMaxMessages ? 0 : 1),
-      itemBuilder: (context, index) {
-        if (index == state.messages.length) {
-          return const Center(
-            child: Padding(
-              padding: EdgeInsets.all(16),
-              child: CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(PulseColors.primary),
-              ),
-            ),
-          );
-        }
-
-        final message = state.messages[index];
-        final isCurrentUser = message.senderId == 'current_user_id'; // TODO: Get from auth
-        
-        return MessageBubble(
-          message: message,
-          isCurrentUser: isCurrentUser,
-        );
-      },
-    );
+    return const SizedBox.shrink();
   }
 
   Widget _buildTypingIndicator() {
-    return BlocBuilder<MessagingBloc, MessagingState>(
+    return BlocBuilder<ChatBloc, ChatState>(
       builder: (context, state) {
-        // Check if other user is typing
-        final isOtherUserTyping = state.isUserTyping(widget.conversation.otherUserId);
-        if (isOtherUserTyping) {
-          return const TypingIndicator();
-        }
+        // TODO: Implement typing indicator when available in state
         return const SizedBox.shrink();
       },
     );

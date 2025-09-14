@@ -3,12 +3,20 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'app_providers.dart';
+import 'blocs/chat_bloc.dart';
+import 'blocs/notification_bloc.dart';
 import 'core/constants/app_constants.dart';
 import 'core/storage/hive_storage_service.dart';
-import 'data/services/api_service_impl.dart';
-import 'data/datasources/remote/user_remote_data_source.dart';
 import 'data/datasources/local/user_local_data_source.dart';
+import 'data/datasources/remote/chat_remote_data_source.dart';
+import 'data/datasources/remote/notification_remote_data_source.dart';
+import 'data/datasources/remote/user_remote_data_source.dart';
+import 'data/repositories/chat_repository.dart';
+import 'data/repositories/chat_repository_impl.dart';
+import 'data/repositories/notification_repository.dart';
+import 'data/repositories/notification_repository_impl.dart';
 import 'data/repositories/user_repository_impl.dart';
+import 'data/services/api_service_impl.dart';
 import 'domain/repositories/user_repository.dart';
 import 'domain/services/api_service.dart';
 import 'presentation/blocs/auth/auth_bloc.dart';
@@ -57,12 +65,30 @@ class PulseDatingApp extends StatelessWidget {
             create: (context) =>
                 UserLocalDataSourceImpl(context.read<HiveStorageService>()),
           ),
+          RepositoryProvider<ChatRemoteDataSource>(
+            create: (context) =>
+                ChatRemoteDataSourceImpl(context.read<ApiService>()),
+          ),
+          RepositoryProvider<NotificationRemoteDataSource>(
+            create: (context) =>
+                NotificationRemoteDataSourceImpl(context.read<ApiService>()),
+          ),
 
           // Initialize repositories with complete implementation
           RepositoryProvider<UserRepository>(
             create: (context) => UserRepositoryImpl(
               context.read<UserRemoteDataSource>(),
               context.read<UserLocalDataSource>(),
+            ),
+          ),
+          RepositoryProvider<ChatRepository>(
+            create: (context) => ChatRepositoryImpl(
+              remoteDataSource: context.read<ChatRemoteDataSource>(),
+            ),
+          ),
+          RepositoryProvider<NotificationRepository>(
+            create: (context) => NotificationRepositoryImpl(
+              remoteDataSource: context.read<NotificationRemoteDataSource>(),
             ),
           ),
 
@@ -74,6 +100,15 @@ class PulseDatingApp extends StatelessWidget {
           BlocProvider<UserBloc>(
             create: (context) =>
                 UserBloc(userRepository: context.read<UserRepository>()),
+          ),
+          BlocProvider<ChatBloc>(
+            create: (context) =>
+                ChatBloc(chatRepository: context.read<ChatRepository>()),
+          ),
+          BlocProvider<NotificationBloc>(
+            create: (context) => NotificationBloc(
+              notificationRepository: context.read<NotificationRepository>(),
+            ),
           ),
         ],
         child: MaterialApp.router(
