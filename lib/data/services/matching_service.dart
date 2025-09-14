@@ -1,5 +1,5 @@
 import 'package:dio/dio.dart';
-import '../../../core/network/api_client.dart';
+import '../../../core/network/pulselink_api_client.dart';
 import '../../../core/constants/api_constants.dart';
 import '../../../domain/entities/user_profile.dart';
 import '../models/match_model.dart';
@@ -7,9 +7,9 @@ import '../models/user_model.dart';
 
 /// Service for matching operations that matches BLoC expectations
 class MatchingService {
-  final ApiClient _apiClient;
+  final PulseLinkApiClient _apiClient;
 
-  MatchingService({required ApiClient apiClient}) : _apiClient = apiClient;
+  MatchingService({required PulseLinkApiClient apiClient}) : _apiClient = apiClient;
 
   /// Get potential matches for current user
   Future<List<UserProfile>> getPotentialMatches({

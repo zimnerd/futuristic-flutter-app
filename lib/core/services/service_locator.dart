@@ -1,17 +1,17 @@
+import 'package:dio/dio.dart';
 import '../../data/services/analytics_service.dart';
 import '../../data/services/messaging_service.dart';
-import '../../data/services/notification_api_service.dart';
 import '../../data/services/payment_service.dart';
-import '../../data/services/premium_api_service.dart';
 import '../../data/services/push_notification_service.dart';
-import '../../data/services/social_gaming_api_service.dart';
 import '../../data/services/token_service.dart';
 import '../../data/services/matching_service.dart';
-import '../network/api_client.dart';
-import '../network/unified_api_client.dart';
+import '../network/pulselink_api_client.dart';
 import '../utils/logger.dart';
 
 /// Service locator for managing app services
+/// 
+/// This has been simplified to use the new PulseLinkApiClient for all API operations,
+/// removing the need for scattered API services.
 class ServiceLocator {
   static ServiceLocator? _instance;
   static ServiceLocator get instance => _instance ??= ServiceLocator._();
@@ -19,14 +19,12 @@ class ServiceLocator {
 
   bool _initialized = false;
 
-  // Services
-  UnifiedApiClient? _unifiedApiClient;
-  ApiClient? _apiClient;
+  // Core API client (replaces all scattered API services)
+  PulseLinkApiClient? _apiClient;
+  
+  // Feature-specific services (using the unified API client)
   MatchingService? _matchingService;
   MessagingService? _messagingService;
-  PremiumApiService? _premiumService;
-  SocialGamingApiService? _socialGamingService;
-  NotificationApiService? _notificationService;
   PaymentService? _paymentService;
   AnalyticsService? _analyticsService;
   PushNotificationService? _pushNotificationService;
@@ -39,18 +37,12 @@ class ServiceLocator {
     try {
       AppLogger.info('Initializing services...');
 
-      // Initialize unified API client (new primary client)
-      _unifiedApiClient = UnifiedApiClient.instance;
+      // Initialize the main API client (replaces all scattered API services)
+      _apiClient = PulseLinkApiClient.instance;
 
-      // Initialize legacy API client for backward compatibility
-      _apiClient = ApiClient();
-      
-      // Initialize core services
+      // Initialize feature-specific services that use the unified API client
       _matchingService = MatchingService(apiClient: _apiClient!);
-      _messagingService = MessagingService(apiClient: _unifiedApiClient!);
-      _premiumService = PremiumApiService.instance;
-      _socialGamingService = SocialGamingApiService.instance;
-      _notificationService = NotificationApiService.instance;
+      _messagingService = MessagingService(apiClient: _apiClient!);
       _paymentService = PaymentService.instance;
       _analyticsService = AnalyticsService.instance;
       _pushNotificationService = PushNotificationService.instance;
@@ -75,11 +67,7 @@ class ServiceLocator {
   /// Set auth token for all services
   Future<void> setAuthToken(String authToken) async {
     try {
-      _unifiedApiClient?.setAuthToken(authToken);
       _apiClient?.setAuthToken(authToken);
-      _premiumService?.setAuthToken(authToken);
-      _socialGamingService?.setAuthToken(authToken);
-      _notificationService?.setAuthToken(authToken);
       _paymentService?.setAuthToken(authToken);
       _pushNotificationService?.updateAuthToken(authToken);
 
@@ -109,6 +97,7 @@ class ServiceLocator {
   /// Clear all service data (on logout)
   Future<void> clearAllData() async {
     try {
+      _apiClient?.clearAuthToken();
       await _pushNotificationService?.clearNotifications();
       _analyticsService?.clearUserData();
       
@@ -118,8 +107,12 @@ class ServiceLocator {
     }
   }
 
-  /// Get API client
-  ApiClient get apiClient {
+  // ===========================================
+  // SERVICE GETTERS (Simplified API)
+  // ===========================================
+
+  /// Get the main API client (replaces all old scattered API services)
+  PulseLinkApiClient get apiClient {
     _ensureInitialized();
     return _apiClient!;
   }
@@ -134,24 +127,6 @@ class ServiceLocator {
   MessagingService get messaging {
     _ensureInitialized();
     return _messagingService!;
-  }
-
-  /// Get premium service
-  PremiumApiService get premium {
-    _ensureInitialized();
-    return _premiumService!;
-  }
-
-  /// Get social gaming service
-  SocialGamingApiService get socialGaming {
-    _ensureInitialized();
-    return _socialGamingService!;
-  }
-
-  /// Get notification service
-  NotificationApiService get notification {
-    _ensureInitialized();
-    return _notificationService!;
   }
 
   /// Get payment service
@@ -178,6 +153,28 @@ class ServiceLocator {
     return _tokenService!;
   }
 
+  // ===========================================
+  // DIRECT API ACCESS (for convenience)
+  // ===========================================
+
+  /// Direct access to premium features (via API client)
+  Future<Response> getPremiumStatus() async {
+    _ensureInitialized();
+    return await _apiClient!.getPremiumStatus();
+  }
+
+  /// Direct access to notifications (via API client)
+  Future<Response> getNotifications({int limit = 50, int offset = 0}) async {
+    _ensureInitialized();
+    return await _apiClient!.getNotifications(limit: limit, offset: offset);
+  }
+
+  /// Direct access to social gaming (via API client)
+  Future<Response> getAvailableGames() async {
+    _ensureInitialized();
+    return await _apiClient!.getAvailableGames();
+  }
+
   /// Ensure services are initialized
   void _ensureInitialized() {
     if (!_initialized) {
@@ -187,14 +184,12 @@ class ServiceLocator {
 
   /// Dispose all services
   void dispose() {
+    _apiClient?.dispose();
     _pushNotificationService?.dispose();
     _analyticsService = null;
     _apiClient = null;
     _matchingService = null;
     _messagingService = null;
-    _premiumService = null;
-    _socialGamingService = null;
-    _notificationService = null;
     _paymentService = null;
     _pushNotificationService = null;
     _tokenService = null;
