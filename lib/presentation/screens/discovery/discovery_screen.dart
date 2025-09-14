@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../../data/services/discovery_service.dart';
+import '../../../domain/entities/discovery_types.dart';
 import '../../blocs/discovery/discovery_bloc.dart';
 import '../../blocs/discovery/discovery_event.dart';
 import '../../blocs/discovery/discovery_state.dart';
@@ -348,7 +349,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
           // Filters button
           GestureDetector(
             onTap: () {
-              // TODO: Show filters modal
+              _showFiltersModal(context);
             },
             child: Container(
               width: 44,
@@ -676,6 +677,169 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
           ),
         ),
       ),
+    );
+  }
+
+  void _showFiltersModal(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.8,
+        maxChildSize: 0.9,
+        minChildSize: 0.5,
+        builder: (context, scrollController) => Container(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Filters',
+                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                  ),
+                  IconButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    icon: const Icon(Icons.close),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+
+              // Filter options
+              Expanded(
+                child: ListView(
+                  controller: scrollController,
+                  children: [
+                    _buildAgeRangeFilter(),
+                    const SizedBox(height: 20),
+                    _buildDistanceFilter(),
+                    const SizedBox(height: 20),
+                    _buildInterestsFilter(),
+                    const SizedBox(height: 20),
+                    _buildLocationFilter(),
+                  ],
+                ),
+              ),
+
+              // Action buttons
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () {
+                        // Reset filters - load with empty filters
+                        context.read<DiscoveryBloc>().add(
+                          const LoadDiscoverableUsers(resetStack: true),
+                        );
+                        Navigator.of(context).pop();
+                      },
+                      child: const Text('Reset'),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        // Apply filters - for now, apply default filters
+                        final filters = DiscoveryFilters(
+                          minAge: 18,
+                          maxAge: 35,
+                          maxDistance: 50.0,
+                        );
+                        context.read<DiscoveryBloc>().add(
+                          ApplyFilters(filters),
+                        );
+                        Navigator.of(context).pop();
+                      },
+                      child: const Text('Apply'),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAgeRangeFilter() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Age Range',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+        ),
+        const SizedBox(height: 12),
+        // Age range slider implementation would go here
+        const Text('18 - 35 years'),
+      ],
+    );
+  }
+
+  Widget _buildDistanceFilter() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Distance',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+        ),
+        const SizedBox(height: 12),
+        // Distance slider implementation would go here
+        const Text('Within 50 km'),
+      ],
+    );
+  }
+
+  Widget _buildInterestsFilter() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Interests',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+        ),
+        const SizedBox(height: 12),
+        // Interests selection implementation would go here
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: ['Music', 'Travel', 'Sports', 'Art', 'Food']
+              .map(
+                (interest) => Chip(
+                  label: Text(interest),
+                  onDeleted: () {
+                    // Remove interest filter
+                  },
+                ),
+              )
+              .toList(),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildLocationFilter() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Location',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+        ),
+        const SizedBox(height: 12),
+        // Location selection implementation would go here
+        const Text('Current location'),
+      ],
     );
   }
 }

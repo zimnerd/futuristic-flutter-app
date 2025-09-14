@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../theme/pulse_colors.dart';
 import '../../widgets/common/common_widgets.dart';
@@ -16,7 +17,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
   final TextEditingController _searchController = TextEditingController();
 
   // Mock data for demo
-  final List<ConversationData> _conversations = [
+  List<ConversationData> _conversations = [
     ConversationData(
       id: '1',
       name: 'Emma',
@@ -84,7 +85,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
           const Spacer(),
           IconButton(
             onPressed: () {
-              // TODO: Show message options
+              _showMessageOptions(context);
             },
             icon: const Icon(Icons.more_vert),
             style: IconButton.styleFrom(
@@ -107,7 +108,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
         hintText: 'Search conversations...',
         prefixIcon: const Icon(Icons.search),
         onChanged: (value) {
-          // TODO: Implement search
+          _handleSearch(value);
         },
       ),
     );
@@ -299,7 +300,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
           PulseButton(
             text: 'Start Matching',
             onPressed: () {
-              // TODO: Navigate to discover
+              context.go('/discovery');
             },
             variant: PulseButtonVariant.secondary,
           ),
@@ -309,12 +310,150 @@ class _MessagesScreenState extends State<MessagesScreen> {
   }
 
   void _openConversation(ConversationData conversation) {
-    // TODO: Navigate to chat screen
+    // Navigate to chat screen
+    context.go('/chat/${conversation.id}');
+  }
+
+  void _showMessageOptions(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.mark_chat_read),
+              title: const Text('Mark all as read'),
+              onTap: () {
+                Navigator.of(context).pop();
+                // Mark all conversations as read
+                _markAllAsRead();
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.settings),
+              title: const Text('Chat settings'),
+              onTap: () {
+                Navigator.of(context).pop();
+                context.go('/settings/chat');
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.archive),
+              title: const Text('Archived chats'),
+              onTap: () {
+                Navigator.of(context).pop();
+                context.go('/messages/archived');
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _handleSearch(String query) {
+    // Simple search implementation - filter conversations by name or last message
+    setState(() {
+      if (query.isEmpty) {
+        // Show all conversations
+        _conversations = [
+          ConversationData(
+            id: '1',
+            name: 'Emma Wilson',
+            avatar: 'https://example.com/avatar1.jpg',
+            lastMessage: 'Hey! How was your day?',
+            timestamp: '2 min ago',
+            unreadCount: 2,
+            isOnline: true,
+          ),
+          ConversationData(
+            id: '2',
+            name: 'Alex Thompson',
+            avatar: 'https://example.com/avatar2.jpg',
+            lastMessage: 'That sounds great! When should we meet?',
+            timestamp: '5 min ago',
+            unreadCount: 0,
+            isOnline: false,
+          ),
+          ConversationData(
+            id: '3',
+            name: 'Sarah Chen',
+            avatar: 'https://example.com/avatar3.jpg',
+            lastMessage: 'Looking forward to it 😊',
+            timestamp: '1 hour ago',
+            unreadCount: 1,
+            isOnline: true,
+          ),
+        ];
+      } else {
+        // Filter conversations
+        final allConversations = [
+          ConversationData(
+            id: '1',
+            name: 'Emma Wilson',
+            avatar: 'https://example.com/avatar1.jpg',
+            lastMessage: 'Hey! How was your day?',
+            timestamp: '2 min ago',
+            unreadCount: 2,
+            isOnline: true,
+          ),
+          ConversationData(
+            id: '2',
+            name: 'Alex Thompson',
+            avatar: 'https://example.com/avatar2.jpg',
+            lastMessage: 'That sounds great! When should we meet?',
+            timestamp: '5 min ago',
+            unreadCount: 0,
+            isOnline: false,
+          ),
+          ConversationData(
+            id: '3',
+            name: 'Sarah Chen',
+            avatar: 'https://example.com/avatar3.jpg',
+            lastMessage: 'Looking forward to it 😊',
+            timestamp: '1 hour ago',
+            unreadCount: 1,
+            isOnline: true,
+          ),
+        ];
+
+        _conversations = allConversations.where((conversation) {
+          return conversation.name.toLowerCase().contains(
+                query.toLowerCase(),
+              ) ||
+              conversation.lastMessage.toLowerCase().contains(
+                query.toLowerCase(),
+              );
+        }).toList();
+      }
+    });
+  }
+
+  void _markAllAsRead() {
+    setState(() {
+      _conversations = _conversations.map((conversation) {
+        return ConversationData(
+          id: conversation.id,
+          name: conversation.name,
+          avatar: conversation.avatar,
+          lastMessage: conversation.lastMessage,
+          timestamp: conversation.timestamp,
+          unreadCount: 0, // Mark as read
+          isOnline: conversation.isOnline,
+        );
+      }).toList();
+    });
+    
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Opening chat with ${conversation.name}'),
+      const SnackBar(
+        content: Text('All conversations marked as read'),
         behavior: SnackBarBehavior.floating,
-        duration: const Duration(seconds: 1),
+        duration: Duration(seconds: 2),
       ),
     );
   }

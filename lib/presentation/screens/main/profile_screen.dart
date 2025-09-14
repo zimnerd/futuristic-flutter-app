@@ -55,7 +55,7 @@ class ProfileScreen extends StatelessWidget {
           const Spacer(),
           IconButton(
             onPressed: () {
-              // TODO: Edit profile
+              context.go('/profile/edit');
             },
             icon: const Icon(Icons.edit),
             style: IconButton.styleFrom(

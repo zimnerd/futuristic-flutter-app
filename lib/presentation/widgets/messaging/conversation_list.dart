@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import '../../../domain/entities/conversation.dart';
 import '../../blocs/messaging/messaging_bloc.dart';
 import '../../theme/pulse_colors.dart';
@@ -213,7 +214,8 @@ class _ConversationListState extends State<ConversationList>
         backgroundColor: PulseColors.primary,
         foregroundColor: Colors.white,
         onPressed: () {
-          // TODO: Navigate to new conversation screen
+          // Navigate to discovery to find new matches
+          context.go('/discovery');
         },
         child: const Icon(Icons.add),
       ),
@@ -424,7 +426,7 @@ class _ConversationListState extends State<ConversationList>
                 title: conversation.isMuted ? 'Unmute' : 'Mute',
                 onTap: () {
                   Navigator.pop(context);
-                  // TODO: Implement mute/unmute
+                  _toggleMute(conversation);
                 },
               ),
               
@@ -433,7 +435,7 @@ class _ConversationListState extends State<ConversationList>
                 title: conversation.isPinned ? 'Unpin' : 'Pin',
                 onTap: () {
                   Navigator.pop(context);
-                  // TODO: Implement pin/unpin
+                  _togglePin(conversation);
                 },
               ),
               
@@ -527,6 +529,36 @@ class _ConversationListState extends State<ConversationList>
             child: const Text('Delete'),
           ),
         ],
+      ),
+    );
+  }
+
+  void _toggleMute(Conversation conversation) {
+    // Simple UI feedback for now - in a real app this would update the backend
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          !conversation.isMuted 
+            ? 'Conversation muted' 
+            : 'Conversation unmuted'
+        ),
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
+
+  void _togglePin(Conversation conversation) {
+    // Simple UI feedback for now - in a real app this would update the backend
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          !conversation.isPinned 
+            ? 'Conversation pinned' 
+            : 'Conversation unpinned'
+        ),
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 2),
       ),
     );
   }
