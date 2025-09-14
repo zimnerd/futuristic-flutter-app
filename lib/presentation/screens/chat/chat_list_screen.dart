@@ -4,6 +4,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:intl/intl.dart';
 
 import '../../../blocs/chat_bloc.dart';
+import '../../../presentation/blocs/auth/auth_bloc.dart';
+import '../../../presentation/blocs/auth/auth_state.dart';
 import '../../theme/pulse_colors.dart';
 import 'chat_screen.dart';
 
@@ -15,7 +17,22 @@ class ChatListScreen extends StatefulWidget {
 }
 
 class _ChatListScreenState extends State<ChatListScreen> {
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
+
+  String? get _currentUserId {
+    final authState = context.read<AuthBloc>().state;
+    if (authState is AuthAuthenticated) {
+      return authState.user.id;
+    }
+    return null;
+  }
+
   @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
   void initState() {
     super.initState();
     // Load conversations when screen initializes
@@ -41,13 +58,13 @@ class _ChatListScreenState extends State<ChatListScreen> {
           IconButton(
             icon: const Icon(Icons.search, color: Colors.black87),
             onPressed: () {
-              // TODO: Implement search functionality
+              _showSearchDialog(context);
             },
           ),
           IconButton(
             icon: const Icon(Icons.add_comment, color: Colors.black87),
             onPressed: () {
-              // TODO: Navigate to new conversation screen
+              _showNewConversationDialog(context);
             },
           ),
         ],
@@ -146,8 +163,10 @@ class _ChatListScreenState extends State<ChatListScreen> {
 
   Widget _buildConversationTile(BuildContext context, conversation) {
     // Get the other participant (not current user)
+    final currentUserId =
+        _currentUserId ?? 'current_user_id'; // Fallback for safety
     final otherParticipant = conversation.participants?.firstWhere(
-      (p) => p.id != 'current_user_id', // TODO: Get current user ID from auth
+      (p) => p.id != currentUserId,
       orElse: () => null,
     );
 
@@ -256,6 +275,66 @@ class _ChatListScreenState extends State<ChatListScreen> {
             ),
           );
         },
+      ),
+    );
+  }
+
+  void _showSearchDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Search Conversations'),
+        content: TextField(
+          controller: _searchController,
+          decoration: const InputDecoration(
+            hintText: 'Search by name or message...',
+            border: OutlineInputBorder(),
+          ),
+          onChanged: (value) {
+            setState(() {
+              _searchQuery = value;
+            });
+          },
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              // Filter conversations based on search query
+              // Implementation would filter the conversation list
+            },
+            child: const Text('Search'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showNewConversationDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Start New Conversation'),
+        content: const Text(
+          'This feature will allow you to start a new conversation with your matches.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              // Navigate to user selection screen or matches screen
+            },
+            child: const Text('Browse Matches'),
+          ),
+        ],
       ),
     );
   }

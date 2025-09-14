@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 
 import '../../../blocs/notification_bloc.dart';
 import '../../theme/pulse_colors.dart';
+import '../chat/chat_screen.dart';
 
 class NotificationScreen extends StatefulWidget {
   const NotificationScreen({super.key});
@@ -308,28 +309,54 @@ class _NotificationScreenState extends State<NotificationScreen> {
   }
 
   void _handleNotificationTap(BuildContext context, notification) {
-    // TODO: Navigate based on notification type
+    // Navigate based on notification type
     switch (notification.type.toLowerCase()) {
       case 'match':
         // Navigate to match screen
+        Navigator.pushNamed(context, '/matches');
         break;
       case 'message':
         // Navigate to chat screen
-        if (notification.data != null && notification.data['conversationId'] != null) {
-          // Navigate to specific chat
+        if (notification.data != null &&
+            notification.data['conversationId'] != null &&
+            notification.data['userId'] != null &&
+            notification.data['userName'] != null) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => ChatScreen(
+                conversationId: notification.data['conversationId'],
+                otherUserId: notification.data['userId'],
+                otherUserName: notification.data['userName'],
+                otherUserPhoto: notification.data['userPhoto'],
+              ),
+            ),
+          );
         }
         break;
       case 'like':
         // Navigate to likes screen
+        Navigator.pushNamed(context, '/likes');
         break;
       case 'view':
         // Navigate to profile views screen
+        Navigator.pushNamed(context, '/profile-views');
         break;
       case 'call':
         // Handle call notification
+        if (notification.data != null && notification.data['callId'] != null) {
+          // Could show call history or rejoin call if still active
+          Navigator.pushNamed(context, '/call-history');
+        }
         break;
       default:
-        // Default action or no action
+        // For system notifications, just mark as read (already done above)
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${notification.title} - ${notification.message}'),
+            duration: const Duration(seconds: 2),
+          ),
+        );
         break;
     }
   }

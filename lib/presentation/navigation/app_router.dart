@@ -183,25 +183,27 @@ class AppRouter {
         path: AppRoutes.videoCall,
         name: 'videoCall',
         builder: (context, state) {
+          // Extract user data from route extra or use current call state
           final callId = state.pathParameters['callId'] ?? '';
-          // TODO: Get actual user data from parameters or state
-          // For now, we'll pass a placeholder and fix this in integration testing
-          return VideoCallScreen(
-            callId: callId,
-            remoteUser: UserProfile(
-              id: 'temp_user',
-              name: 'Unknown User',
-              age: 25,
-              bio: '',
-              photos: [],
-              location: UserLocation(
-                latitude: 0.0,
-                longitude: 0.0,
-                address: 'Unknown',
-                city: 'Unknown',
-                country: 'Unknown',
-              ),
-            ),
+          final extra = state.extra as Map<String, dynamic>?;
+          final remoteUser =
+              extra?['remoteUser'] as UserProfile? ??
+              UserProfile(
+                id: 'unknown_user',
+                name: 'Unknown User',
+                age: 25,
+                bio: '',
+                photos: [],
+                location: UserLocation(
+                  latitude: 0.0,
+                  longitude: 0.0,
+                  address: 'Unknown',
+                  city: 'Unknown',
+                  country: 'Unknown',
+                ),
+              );
+
+          return VideoCallScreen(callId: callId, remoteUser: remoteUser,
           );
         },
       ),

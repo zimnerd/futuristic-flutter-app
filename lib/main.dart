@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'app_providers.dart';
+import 'blocs/call_bloc.dart';
 import 'blocs/chat_bloc.dart';
 import 'blocs/notification_bloc.dart';
 import 'core/constants/app_constants.dart';
@@ -17,6 +18,8 @@ import 'data/repositories/notification_repository.dart';
 import 'data/repositories/notification_repository_impl.dart';
 import 'data/repositories/user_repository_impl.dart';
 import 'data/services/api_service_impl.dart';
+import 'data/services/webrtc_service.dart';
+import 'data/services/websocket_service.dart';
 import 'domain/repositories/user_repository.dart';
 import 'domain/services/api_service.dart';
 import 'presentation/blocs/auth/auth_bloc.dart';
@@ -54,6 +57,12 @@ class PulseDatingApp extends StatelessWidget {
           RepositoryProvider<ApiService>(create: (context) => ApiServiceImpl()),
           RepositoryProvider<HiveStorageService>(
             create: (context) => hiveStorage,
+          ),
+          RepositoryProvider<WebSocketService>(
+            create: (context) => WebSocketService.instance,
+          ),
+          RepositoryProvider<WebRTCService>(
+            create: (context) => WebRTCService(),
           ),
 
           // Initialize data sources
@@ -108,6 +117,12 @@ class PulseDatingApp extends StatelessWidget {
           BlocProvider<NotificationBloc>(
             create: (context) => NotificationBloc(
               notificationRepository: context.read<NotificationRepository>(),
+            ),
+          ),
+          BlocProvider<CallBloc>(
+            create: (context) => CallBloc(
+              webRTCService: context.read<WebRTCService>(),
+              webSocketService: context.read<WebSocketService>(),
             ),
           ),
         ],

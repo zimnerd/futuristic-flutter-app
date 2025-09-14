@@ -3,6 +3,7 @@ import 'package:logger/logger.dart';
 
 import '../../../core/constants/api_constants.dart';
 import '../../../domain/entities/message.dart';
+import '../models/call_model.dart';
 
 class WebSocketService {
   static WebSocketService? _instance;
@@ -21,6 +22,7 @@ class WebSocketService {
   Function(String, bool)? onUserStatusChanged;
   Function(String)? onCallReceived;
   Function(String)? onCallEnded;
+  Function(CallSignalModel)? onCallSignalReceived;
 
   bool get isConnected => _isConnected;
 
@@ -135,6 +137,17 @@ class WebSocketService {
         _logger.e('Error parsing call ended: $e');
       }
     });
+
+    // Call signal events
+    _socket?.on('call_signal', (data) {
+      try {
+        final signalData = data as Map<String, dynamic>;
+        final signal = CallSignalModel.fromJson(signalData);
+        onCallSignalReceived?.call(signal);
+      } catch (e) {
+        _logger.e('Error parsing call signal: $e');
+      }
+    });
   }
 
   // Send message
@@ -217,6 +230,13 @@ class WebSocketService {
     });
   }
 
+  // Send call signal
+  void sendCallSignal(CallSignalModel signal) {
+    if (!_isConnected) return;
+
+    _socket?.emit('call_signal', signal.toJson());
+  }
+
   // Update user status
   void updateUserStatus(bool isOnline) {
     if (!_isConnected) return;
@@ -242,5 +262,6 @@ class WebSocketService {
     onUserStatusChanged = null;
     onCallReceived = null;
     onCallEnded = null;
+    onCallSignalReceived = null;
   }
 }

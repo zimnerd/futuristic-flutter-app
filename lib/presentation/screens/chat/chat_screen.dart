@@ -3,9 +3,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 import '../../../blocs/chat_bloc.dart';
+import '../../../blocs/call_bloc.dart';
+import '../../../presentation/blocs/auth/auth_bloc.dart';
+import '../../../presentation/blocs/auth/auth_state.dart';
 import '../../theme/pulse_colors.dart';
 import '../../widgets/chat/message_bubble_new.dart';
 import '../../widgets/chat/message_input_new.dart';
+import '../../../data/models/call_model.dart';
 import '../../../data/models/chat_model.dart';
 
 class ChatScreen extends StatefulWidget {
@@ -29,6 +33,14 @@ class ChatScreen extends StatefulWidget {
 class _ChatScreenState extends State<ChatScreen> {
   final ScrollController _scrollController = ScrollController();
   final TextEditingController _messageController = TextEditingController();
+  
+  String? get _currentUserId {
+    final authState = context.read<AuthBloc>().state;
+    if (authState is AuthAuthenticated) {
+      return authState.user.id;
+    }
+    return null;
+  }
   
   @override
   void initState() {
@@ -175,13 +187,27 @@ class _ChatScreenState extends State<ChatScreen> {
         IconButton(
           icon: const Icon(Icons.videocam, color: Colors.black87),
           onPressed: () {
-            // TODO: Start video call
+            context.read<CallBloc>().add(
+              InitiateCall(
+                receiverId: widget.otherUserId,
+                receiverName: widget.otherUserName,
+                receiverAvatar: widget.otherUserPhoto,
+                callType: CallType.video,
+              ),
+            );
           },
         ),
         IconButton(
           icon: const Icon(Icons.call, color: Colors.black87),
           onPressed: () {
-            // TODO: Start voice call
+            context.read<CallBloc>().add(
+              InitiateCall(
+                receiverId: widget.otherUserId,
+                receiverName: widget.otherUserName,
+                receiverAvatar: widget.otherUserPhoto,
+                callType: CallType.audio,
+              ),
+            );
           },
         ),
         IconButton(
@@ -266,8 +292,9 @@ class _ChatScreenState extends State<ChatScreen> {
         itemCount: state.messages.length,
         itemBuilder: (context, index) {
           final message = state.messages[index];
-          // TODO: Get current user ID from auth bloc
-          final isCurrentUser = message.senderId != widget.otherUserId;
+          final currentUserId = _currentUserId;
+          final isCurrentUser =
+              currentUserId != null && message.senderId == currentUserId;
 
           return MessageBubble(message: message, isCurrentUser: isCurrentUser);
         },
