@@ -1,6 +1,13 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:record/record.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../domain/entities/message.dart';
 import '../../blocs/messaging/messaging_bloc.dart';
 import '../../theme/pulse_colors.dart';
@@ -38,6 +45,12 @@ class _MessageComposerState extends State<MessageComposer>
   bool _isRecording = false;
   bool _showAttachments = false;
   Duration _recordingDuration = Duration.zero;
+  
+  // Media functionality
+  final AudioRecorder _audioRecorder = AudioRecorder();
+  final ImagePicker _imagePicker = ImagePicker();
+  Timer? _recordingTimer;
+  String? _recordingPath;
 
   @override
   void initState() {
@@ -145,47 +158,129 @@ class _MessageComposerState extends State<MessageComposer>
     }
   }
 
-  void _startVoiceRecording() {
-    setState(() {
-      _isRecording = true;
-      _recordingDuration = Duration.zero;
-    });
-    _hideAttachments();
-    
-    // Start recording timer
-    Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (!_isRecording) {
-        timer.cancel();
+  Future<void> _startVoiceRecording() async {
+    try {
+      // Check and request microphone permission
+      final hasPermission = await Permission.microphone.isGranted;
+      if (!hasPermission) {
+        final status = await Permission.microphone.request();
+        if (!status.isGranted) {
+          _showSnackbar('Microphone permission required for voice recording');
+          return;
+        }
+      }
+
+      // Check if device can record
+      if (!await _audioRecorder.hasPermission()) {
+        _showSnackbar('Recording permission denied');
         return;
       }
+
+      // Get recording path
+      final directory = await getApplicationDocumentsDirectory();
+      final recordingPath = '${directory.path}/voice_message_${DateTime.now().millisecondsSinceEpoch}.m4a';
+
+      // Configure recording
+      const config = RecordConfig(
+        encoder: AudioEncoder.aacLc,
+        bitRate: 128000,
+        sampleRate: 44100,
+      );
+
       setState(() {
-        _recordingDuration = Duration(seconds: _recordingDuration.inSeconds + 1);
+        _isRecording = true;
+        _recordingDuration = Duration.zero;
+        _recordingPath = recordingPath;
       });
-    });
-    
-    // TODO: Start actual voice recording with permission handling
-    _showSnackbar('Voice recording started');
+      _hideAttachments();
+
+      // Start recording
+      await _audioRecorder.start(config, path: recordingPath);
+      
+      // Start recording timer
+      _recordingTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+        if (!_isRecording) {
+          timer.cancel();
+          return;
+        }
+        setState(() {
+          _recordingDuration = Duration(seconds: _recordingDuration.inSeconds + 1);
+        });
+      });
+
+      _showSnackbar('Voice recording started');
+    } catch (e) {
+      _showSnackbar('Failed to start recording: $e');
+    }
   }
 
-  void _stopVoiceRecording() {
-    setState(() {
-      _isRecording = false;
-    });
-    
-    // In a real app, this would save and send the voice message
-    _showSnackbar('Voice message recorded (${_recordingDuration.inSeconds}s)');
-    
-    // TODO: Process and send the recorded audio file
+  Future<void> _stopVoiceRecording() async {
+    try {
+      setState(() {
+        _isRecording = false;
+      });
+      
+      _recordingTimer?.cancel();
+      
+      // Stop recording and get the path
+      final path = await _audioRecorder.stop();
+      
+      if (path != null && _recordingPath != null) {
+        final file = File(_recordingPath!);
+        if (await file.exists()) {
+          final duration = _recordingDuration.inSeconds;
+          
+          // Send voice message through BLoC
+          context.read<MessagingBloc>().add(SendMessage(
+            conversationId: widget.conversationId,
+            senderId: widget.senderId,
+            content: 'Voice message',
+            type: MessageType.audio,
+            mediaUrl: _recordingPath,
+          ));
+          
+          _showSnackbar('Voice message sent (${duration}s)');
+        } else {
+          _showSnackbar('Recording file not found');
+        }
+      } else {
+        _showSnackbar('Failed to save recording');
+      }
+    } catch (e) {
+      _showSnackbar('Failed to stop recording: $e');
+    } finally {
+      setState(() {
+        _recordingPath = null;
+        _recordingDuration = Duration.zero;
+      });
+    }
   }
 
-  void _cancelVoiceRecording() {
-    setState(() {
-      _isRecording = false;
-      _recordingDuration = Duration.zero;
-    });
-    
-    _showSnackbar('Voice recording cancelled');
-    // TODO: Delete the temporary recording file
+  Future<void> _cancelVoiceRecording() async {
+    try {
+      setState(() {
+        _isRecording = false;
+        _recordingDuration = Duration.zero;
+      });
+      
+      _recordingTimer?.cancel();
+      
+      // Stop recording without saving
+      await _audioRecorder.stop();
+      
+      // Delete the recording file if it exists
+      if (_recordingPath != null) {
+        final file = File(_recordingPath!);
+        if (await file.exists()) {
+          await file.delete();
+        }
+        _recordingPath = null;
+      }
+      
+      _showSnackbar('Voice recording cancelled');
+    } catch (e) {
+      _showSnackbar('Failed to cancel recording: $e');
+    }
   }
 
   @override
@@ -593,40 +688,246 @@ class _MessageComposerState extends State<MessageComposer>
     );
   }
 
-  void _handleCameraAttachment() {
-    _showSnackbar('Camera feature coming soon');
-    // TODO: Implement camera permission and image capture
-    // Example: Open camera, capture photo, compress, upload to backend
+  Future<void> _handleCameraAttachment() async {
+    try {
+      // Check camera permission
+      final cameraStatus = await Permission.camera.isGranted;
+      if (!cameraStatus) {
+        final status = await Permission.camera.request();
+        if (!status.isGranted) {
+          _showSnackbar('Camera permission required');
+          return;
+        }
+      }
+
+      // Take photo with camera
+      final XFile? image = await _imagePicker.pickImage(
+        source: ImageSource.camera,
+        preferredCameraDevice: CameraDevice.rear,
+        imageQuality: 80, // Compress to 80% quality
+        maxWidth: 1920,
+        maxHeight: 1080,
+      );
+
+      if (image != null) {
+        // Send image message
+        context.read<MessagingBloc>().add(SendMessage(
+          conversationId: widget.conversationId,
+          senderId: widget.senderId,
+          content: 'Photo',
+          type: MessageType.image,
+          mediaUrl: image.path,
+        ));
+        
+        _showSnackbar('Photo sent');
+        _hideAttachments();
+      }
+    } catch (e) {
+      _showSnackbar('Failed to capture photo: $e');
+    }
   }
 
-  void _handleGalleryAttachment() {
-    _showSnackbar('Gallery feature coming soon');
-    // TODO: Implement gallery selection
-    // Example: Open gallery picker, select image/video, process and upload
+  Future<void> _handleGalleryAttachment() async {
+    try {
+      // Check storage permission
+      final storageStatus = await Permission.storage.isGranted;
+      if (!storageStatus) {
+        final status = await Permission.storage.request();
+        if (!status.isGranted) {
+          _showSnackbar('Storage permission required');
+          return;
+        }
+      }
+
+      // Pick image from gallery
+      final XFile? image = await _imagePicker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 80, // Compress to 80% quality
+        maxWidth: 1920,
+        maxHeight: 1080,
+      );
+
+      if (image != null) {
+        // Send image message
+        context.read<MessagingBloc>().add(SendMessage(
+          conversationId: widget.conversationId,
+          senderId: widget.senderId,
+          content: 'Image',
+          type: MessageType.image,
+          mediaUrl: image.path,
+        ));
+        
+        _showSnackbar('Image sent');
+        _hideAttachments();
+      }
+    } catch (e) {
+      _showSnackbar('Failed to select image: $e');
+    }
   }
 
-  void _handleVideoAttachment() {
-    _showSnackbar('Video recording feature coming soon');
-    // TODO: Implement video recording/selection
-    // Example: Record video or select from gallery, compress, upload
+  Future<void> _handleVideoAttachment() async {
+    try {
+      // Check camera permission for video recording
+      final cameraStatus = await Permission.camera.isGranted;
+      if (!cameraStatus) {
+        final status = await Permission.camera.request();
+        if (!status.isGranted) {
+          _showSnackbar('Camera permission required for video');
+          return;
+        }
+      }
+
+      // Show options for video recording or gallery selection
+      final result = await showDialog<String>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Select Video'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.videocam),
+                title: const Text('Record Video'),
+                onTap: () => Navigator.pop(context, 'record'),
+              ),
+              ListTile(
+                leading: const Icon(Icons.video_library),
+                title: const Text('Choose from Gallery'),
+                onTap: () => Navigator.pop(context, 'gallery'),
+              ),
+            ],
+          ),
+        ),
+      );
+
+      if (result != null) {
+        XFile? video;
+        if (result == 'record') {
+          video = await _imagePicker.pickVideo(
+            source: ImageSource.camera,
+            maxDuration: const Duration(minutes: 1), // Limit to 1 minute
+          );
+        } else {
+          video = await _imagePicker.pickVideo(
+            source: ImageSource.gallery,
+          );
+        }
+
+        if (video != null) {
+          // Send video message
+          context.read<MessagingBloc>().add(SendMessage(
+            conversationId: widget.conversationId,
+            senderId: widget.senderId,
+            content: 'Video',
+            type: MessageType.video,
+            mediaUrl: video.path,
+          ));
+          
+          _showSnackbar('Video sent');
+          _hideAttachments();
+        }
+      }
+    } catch (e) {
+      _showSnackbar('Failed to handle video: $e');
+    }
   }
 
-  void _handleLocationAttachment() {
-    _showSnackbar('Location sharing feature coming soon');
-    // TODO: Implement location sharing
-    // Example: Get current location permission, share coordinates
+  Future<void> _handleLocationAttachment() async {
+    try {
+      // Check location permission
+      final permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        final newPermission = await Geolocator.requestPermission();
+        if (newPermission == LocationPermission.denied || 
+            newPermission == LocationPermission.deniedForever) {
+          _showSnackbar('Location permission required');
+          return;
+        }
+      }
+
+      // Check if location service is enabled
+      final serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        _showSnackbar('Please enable location services');
+        return;
+      }
+
+      _showSnackbar('Getting your location...');
+
+      // Get current position
+      final position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+        timeLimit: const Duration(seconds: 10),
+      );
+
+      // Send location message
+      context.read<MessagingBloc>().add(SendMessage(
+        conversationId: widget.conversationId,
+        senderId: widget.senderId,
+        content: 'Location: ${position.latitude}, ${position.longitude}',
+        type: MessageType.location,
+        mediaUrl: 'geo:${position.latitude},${position.longitude}',
+      ));
+      
+      _showSnackbar('Location shared');
+      _hideAttachments();
+    } catch (e) {
+      _showSnackbar('Failed to get location: $e');
+    }
   }
 
-  void _handleDocumentAttachment() {
-    _showSnackbar('Document sharing feature coming soon');
-    // TODO: Implement document picker
-    // Example: Open file picker, select document, upload to backend
+  Future<void> _handleDocumentAttachment() async {
+    try {
+      // Since file_picker isn't available, show info about document sharing
+      await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Document Sharing'),
+          content: const Text(
+            'Document sharing will be available in a future update. '
+            'You can currently share images, videos, audio, and location.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('OK'),
+            ),
+          ],
+        ),
+      );
+      
+      _showSnackbar('Document sharing coming soon');
+      _hideAttachments();
+    } catch (e) {
+      _showSnackbar('Document feature not yet available');
+    }
   }
 
-  void _handleAudioAttachment() {
-    _showSnackbar('Audio sharing feature coming soon');
-    // TODO: Implement audio file picker
-    // Example: Select audio file from device, upload
+  Future<void> _handleAudioAttachment() async {
+    try {
+      // Since we don't have file_picker, show a message about audio file selection
+      await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Audio Files'),
+          content: const Text(
+            'For audio messages, use the voice recorder button. '
+            'Audio file selection will be available in a future update.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('OK'),
+            ),
+          ],
+        ),
+      );
+      
+      _showSnackbar('Use voice recorder for audio messages');
+      _hideAttachments();
+    } catch (e) {
+      _showSnackbar('Audio file feature not yet available');
+    }
   }
 
   void _handleContactAttachment() {

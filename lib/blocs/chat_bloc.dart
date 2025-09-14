@@ -85,6 +85,15 @@ class UpdateTypingStatus extends ChatEvent {
   List<Object?> get props => [conversationId, isTyping];
 }
 
+class MarkConversationAsRead extends ChatEvent {
+  final String conversationId;
+
+  const MarkConversationAsRead({required this.conversationId});
+
+  @override
+  List<Object?> get props => [conversationId];
+}
+
 class CreateConversation extends ChatEvent {
   final String participantId;
 
@@ -123,15 +132,36 @@ class MessagesLoaded extends ChatState {
   final String conversationId;
   final List<MessageModel> messages;
   final bool hasMoreMessages;
+  final Map<String, bool> typingUsers;
 
   const MessagesLoaded({
     required this.conversationId,
     required this.messages,
     required this.hasMoreMessages,
+    this.typingUsers = const {},
   });
 
+  MessagesLoaded copyWith({
+    String? conversationId,
+    List<MessageModel>? messages,
+    bool? hasMoreMessages,
+    Map<String, bool>? typingUsers,
+  }) {
+    return MessagesLoaded(
+      conversationId: conversationId ?? this.conversationId,
+      messages: messages ?? this.messages,
+      hasMoreMessages: hasMoreMessages ?? this.hasMoreMessages,
+      typingUsers: typingUsers ?? this.typingUsers,
+    );
+  }
+
   @override
-  List<Object?> get props => [conversationId, messages, hasMoreMessages];
+  List<Object?> get props => [
+    conversationId,
+    messages,
+    hasMoreMessages,
+    typingUsers,
+  ];
 }
 
 class MessageSent extends ChatState {
@@ -184,6 +214,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     on<MarkMessageAsRead>(_onMarkMessageAsRead);
     on<DeleteMessage>(_onDeleteMessage);
     on<UpdateTypingStatus>(_onUpdateTypingStatus);
+    on<MarkConversationAsRead>(_onMarkConversationAsRead);
     on<CreateConversation>(_onCreateConversation);
   }
 
@@ -291,8 +322,41 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
         event.isTyping,
       );
       _logger.d('Typing status updated: ${event.isTyping}');
+      
+      // Update local typing state if we're currently viewing messages
+      final currentState = state;
+      if (currentState is MessagesLoaded &&
+          currentState.conversationId == event.conversationId) {
+        final updatedTypingUsers = Map<String, bool>.from(
+          currentState.typingUsers,
+        );
+        // Note: In a real app, you'd track specific user IDs who are typing
+        // For now, we'll use a placeholder key for other users typing
+        if (event.isTyping) {
+          updatedTypingUsers['others'] = true;
+        } else {
+          updatedTypingUsers.remove('others');
+        }
+
+        emit(currentState.copyWith(typingUsers: updatedTypingUsers));
+      }
     } catch (e) {
       _logger.e('Error updating typing status: $e');
+    }
+  }
+
+  Future<void> _onMarkConversationAsRead(
+    MarkConversationAsRead event,
+    Emitter<ChatState> emit,
+  ) async {
+    try {
+      await _chatRepository.markConversationAsRead(event.conversationId);
+      _logger.d('Conversation marked as read: ${event.conversationId}');
+
+      // Reload conversations to update unread count
+      add(const LoadConversations());
+    } catch (e) {
+      _logger.e('Error marking conversation as read: $e');
     }
   }
 

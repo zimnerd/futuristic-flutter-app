@@ -46,4 +46,7 @@ abstract class ChatRepository {
 
   /// Delete/leave a conversation
   Future<void> deleteConversation(String conversationId);
+
+  /// Mark conversation as read
+  Future<void> markConversationAsRead(String conversationId);
 }

@@ -170,4 +170,16 @@ class ChatRepositoryImpl implements ChatRepository {
       rethrow;
     }
   }
+
+  @override
+  Future<void> markConversationAsRead(String conversationId) async {
+    try {
+      _logger.d('Marking conversation as read: $conversationId');
+      await _remoteDataSource.markConversationAsRead(conversationId);
+      _logger.d('Successfully marked conversation as read');
+    } catch (e) {
+      _logger.e('Error marking conversation as read: $e');
+      rethrow;
+    }
+  }
 }
