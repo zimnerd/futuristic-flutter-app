@@ -168,8 +168,10 @@ class EmergencyButtonWidget extends StatelessWidget {
         if (serviceEnabled) {
           try {
             final position = await Geolocator.getCurrentPosition(
-              desiredAccuracy: LocationAccuracy.high,
-              timeLimit: const Duration(seconds: 5),
+              locationSettings: const LocationSettings(
+                accuracy: LocationAccuracy.high,
+                timeLimit: Duration(seconds: 5),
+              ),
             );
             location = "Lat: ${position.latitude}, Lng: ${position.longitude}";
           } catch (e) {

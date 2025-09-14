@@ -396,6 +396,8 @@ class _LiveStreamingScreenState extends State<LiveStreamingScreen>
                   streamId,
                 );
 
+                if (!mounted) return;
+
                 if (success) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Stream ended successfully')),
@@ -413,6 +415,7 @@ class _LiveStreamingScreenState extends State<LiveStreamingScreen>
                   );
                 }
               } catch (e) {
+                if (!mounted) return;
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text('Error: ${e.toString()}'),
@@ -493,6 +496,8 @@ class _LiveStreamingScreenState extends State<LiveStreamingScreen>
                     reason: selectedReason,
                   );
 
+                  if (!mounted) return;
+
                   if (success) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
@@ -510,6 +515,7 @@ class _LiveStreamingScreenState extends State<LiveStreamingScreen>
                     );
                   }
                 } catch (e) {
+                  if (!mounted) return;
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text('Error: ${e.toString()}'),

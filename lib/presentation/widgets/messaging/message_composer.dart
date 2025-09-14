@@ -230,13 +230,17 @@ class _MessageComposerState extends State<MessageComposer>
           final duration = _recordingDuration.inSeconds;
           
           // Send voice message through BLoC
-          context.read<MessagingBloc>().add(SendMessage(
-            conversationId: widget.conversationId,
-            senderId: widget.senderId,
-            content: 'Voice message',
-            type: MessageType.audio,
-            mediaUrl: _recordingPath,
-          ));
+          if (mounted) {
+            context.read<MessagingBloc>().add(
+              SendMessage(
+                conversationId: widget.conversationId,
+                senderId: widget.senderId,
+                content: 'Voice message',
+                type: MessageType.audio,
+                mediaUrl: _recordingPath,
+              ),
+            );
+          }
           
           _showSnackbar('Voice message sent (${duration}s)');
         } else {
@@ -748,13 +752,17 @@ class _MessageComposerState extends State<MessageComposer>
 
       if (image != null) {
         // Send image message
-        context.read<MessagingBloc>().add(SendMessage(
-          conversationId: widget.conversationId,
-          senderId: widget.senderId,
-          content: 'Image',
-          type: MessageType.image,
-          mediaUrl: image.path,
-        ));
+        if (mounted) {
+          context.read<MessagingBloc>().add(
+            SendMessage(
+              conversationId: widget.conversationId,
+              senderId: widget.senderId,
+              content: 'Image',
+              type: MessageType.image,
+              mediaUrl: image.path,
+            ),
+          );
+        }
         
         _showSnackbar('Image sent');
         _hideAttachments();
@@ -814,13 +822,17 @@ class _MessageComposerState extends State<MessageComposer>
 
         if (video != null) {
           // Send video message
-          context.read<MessagingBloc>().add(SendMessage(
-            conversationId: widget.conversationId,
-            senderId: widget.senderId,
-            content: 'Video',
-            type: MessageType.video,
-            mediaUrl: video.path,
-          ));
+          if (mounted) {
+            context.read<MessagingBloc>().add(
+              SendMessage(
+                conversationId: widget.conversationId,
+                senderId: widget.senderId,
+                content: 'Video',
+                type: MessageType.video,
+                mediaUrl: video.path,
+              ),
+            );
+          }
           
           _showSnackbar('Video sent');
           _hideAttachments();
@@ -855,18 +867,24 @@ class _MessageComposerState extends State<MessageComposer>
 
       // Get current position
       final position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
-        timeLimit: const Duration(seconds: 10),
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.high,
+          timeLimit: Duration(seconds: 10),
+        ),
       );
 
       // Send location message
-      context.read<MessagingBloc>().add(SendMessage(
-        conversationId: widget.conversationId,
-        senderId: widget.senderId,
-        content: 'Location: ${position.latitude}, ${position.longitude}',
-        type: MessageType.location,
-        mediaUrl: 'geo:${position.latitude},${position.longitude}',
-      ));
+      if (mounted) {
+        context.read<MessagingBloc>().add(
+          SendMessage(
+            conversationId: widget.conversationId,
+            senderId: widget.senderId,
+            content: 'Location: ${position.latitude}, ${position.longitude}',
+            type: MessageType.location,
+            mediaUrl: 'geo:${position.latitude},${position.longitude}',
+          ),
+        );
+      }
       
       _showSnackbar('Location shared');
       _hideAttachments();

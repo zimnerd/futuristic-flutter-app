@@ -205,17 +205,21 @@ class _StartStreamScreenState extends State<StartStreamScreen> {
         );
 
         if (result != null) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Stream updated successfully!')),
-          );
-          Navigator.pop(context, result);
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Stream updated successfully!')),
+            );
+            Navigator.pop(context, result);
+          }
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Failed to update stream. Please try again.'),
-              backgroundColor: Colors.red,
-            ),
-          );
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Failed to update stream. Please try again.'),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
         }
       } else {
         // Create new stream
@@ -228,26 +232,34 @@ class _StartStreamScreenState extends State<StartStreamScreen> {
         );
         
         if (result != null) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Live stream started successfully!')),
-          );
-          Navigator.pop(context, result);
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Live stream started successfully!'),
+              ),
+            );
+            Navigator.pop(context, result);
+          }
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Failed to start stream. Please try again.'),
-              backgroundColor: Colors.red,
-            ),
-          );
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Failed to start stream. Please try again.'),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
         }
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error: ${e.toString()}'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 }
