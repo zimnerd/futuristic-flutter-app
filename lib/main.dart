@@ -51,6 +51,7 @@ class PulseDatingApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AppProviders(
+      hiveStorageService: hiveStorage,
       child: MultiBlocProvider(
         providers: [
           // Initialize services

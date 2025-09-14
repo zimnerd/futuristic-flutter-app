@@ -55,17 +55,19 @@ class ServiceLocator {
   bool _isInitialized = false;
 
   /// Initialize all services
-  void initialize() {
+  void initialize([Box<String>? secureStorageBox]) {
     if (_isInitialized) return;
 
     // Initialize API client and service
     _apiClient = ApiClient(baseUrl: ApiConstants.baseUrl);
     _apiService = ApiServiceImpl(baseUrl: ApiConstants.baseUrl);
 
-    // Initialize AuthService with basic Dio client (for now)
+    // Initialize AuthService with provided secure storage box or try to get existing one
+    final secureStorage =
+        secureStorageBox ?? Hive.box<String>('secure_storage');
     _authService = AuthService(
       httpClient: Dio(),
-      secureStorage: Hive.box<String>('secure_storage'),
+      secureStorage: secureStorage,
     );
 
     // Initialize core services

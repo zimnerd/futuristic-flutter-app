@@ -8,11 +8,13 @@ class HiveStorageService {
   static const String _authBox = 'authentication';
   static const String _settingsBox = 'app_settings';
   static const String _cacheBox = 'api_cache';
+  static const String _secureStorageBox = 'secure_storage';
 
   late Box<dynamic> _userPrefsStorage;
   late Box<dynamic> _authStorage;
   late Box<dynamic> _settingsStorage;
   late Box<dynamic> _cacheStorage;
+  late Box<String> _secureStorage;
 
   /// Initialize Hive storage
   Future<void> initialize() async {
@@ -27,6 +29,7 @@ class HiveStorageService {
     _authStorage = await Hive.openBox(_authBox);
     _settingsStorage = await Hive.openBox(_settingsBox);
     _cacheStorage = await Hive.openBox(_cacheBox);
+    _secureStorage = await Hive.openBox<String>(_secureStorageBox);
   }
 
   /// Close all boxes
@@ -35,6 +38,7 @@ class HiveStorageService {
     await _authStorage.close();
     await _settingsStorage.close();
     await _cacheStorage.close();
+    await _secureStorage.close();
   }
 
   /// Clear all stored data (for logout)
@@ -43,6 +47,7 @@ class HiveStorageService {
     await _authStorage.clear();
     await _settingsStorage.clear();
     await _cacheStorage.clear();
+    await _secureStorage.clear();
   }
 
   // Authentication methods
@@ -200,4 +205,7 @@ class HiveStorageService {
         break;
     }
   }
+
+  /// Get the secure storage box for AuthService
+  Box<String> get secureStorage => _secureStorage;
 }
