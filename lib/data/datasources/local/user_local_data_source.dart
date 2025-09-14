@@ -11,6 +11,7 @@ abstract class UserLocalDataSource {
   Future<void> cacheUser(UserModel user);
   Future<UserModel?> getCurrentUser();
   Future<UserModel?> getUserById(String userId);
+  Future<UserModel?> getCachedUser(String userId);
   Future<List<UserModel>> getCachedUsers();
   Future<void> clearUserCache();
 
@@ -106,6 +107,11 @@ class UserLocalDataSourceImpl implements UserLocalDataSource {
       _logger.e('Failed to get user by ID: $e');
       return null;
     }
+  }
+
+  @override
+  Future<UserModel?> getCachedUser(String userId) async {
+    return getUserById(userId);
   }
 
   @override

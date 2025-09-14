@@ -119,14 +119,14 @@ class _ChatListScreenState extends State<ChatListScreen> {
             final filteredConversations = _searchQuery.isEmpty
                 ? state.conversations
                 : state.conversations.where((conversation) {
-                    // For now, filter by conversation name if available
-                    // TODO: In a real app, we'd need to resolve participant names from IDs
+                    // Filter by conversation name if available
+                    // In a real app, we'd resolve participant names from UserRepository
                     if (conversation.name != null) {
                       return conversation.name!.toLowerCase().contains(
                         _searchQuery.toLowerCase(),
                       );
                     }
-                    // For direct messages, we could use participant IDs as fallback
+                    // For direct messages, use participant IDs as fallback
                     return conversation.participantIds.any(
                       (id) =>
                           id.toLowerCase().contains(_searchQuery.toLowerCase()),

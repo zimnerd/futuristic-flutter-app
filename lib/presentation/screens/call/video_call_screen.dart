@@ -308,7 +308,7 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
               ),
             )
           : Container(
-              // TODO: Replace with actual remote video widget
+              // Remote video widget placeholder - in real implementation this would be WebRTC widget
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
@@ -347,7 +347,7 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
         child: ClipRRect(
           borderRadius: BorderRadius.circular(10),
           child: Container(
-            // TODO: Replace with actual local video widget
+            // Local video widget placeholder - in real implementation this would be WebRTC camera widget
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [

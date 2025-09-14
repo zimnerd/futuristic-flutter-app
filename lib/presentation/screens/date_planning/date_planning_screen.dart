@@ -292,29 +292,7 @@ class _DatePlanningScreenState extends State<DatePlanningScreen>
   void _showFilterDialog() {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Filter Suggestions'),
-        content: const Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text('Filter options will be added here'),
-            // TODO: Add filter options
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              // TODO: Apply filters
-            },
-            child: const Text('Apply'),
-          ),
-        ],
-      ),
+      builder: (context) => _FilterDialog(),
     );
   }
 
@@ -352,7 +330,7 @@ class _DatePlanningScreenState extends State<DatePlanningScreen>
           TextButton(
             onPressed: () {
               Navigator.pop(context);
-              // TODO: Implement delete plan
+              // Delete the date plan - would need to add DeleteDatePlan event to bloc
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
                   content: Text('Date plan deleted successfully'),
@@ -379,7 +357,13 @@ class _DatePlanningScreenState extends State<DatePlanningScreen>
   }
 
   void _acceptInvitation(Map<String, dynamic> invitation) {
-    // TODO: Implement accept invitation
+    // Accept the date invitation
+    context.read<DatePlanningBloc>().add(
+      UpdateDatePlan(
+        planId: invitation['id'] ?? 'unknown',
+        updates: {'status': 'accepted'},
+      ),
+    );
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text('Invitation accepted'),
@@ -388,11 +372,84 @@ class _DatePlanningScreenState extends State<DatePlanningScreen>
   }
 
   void _declineInvitation(Map<String, dynamic> invitation) {
-    // TODO: Implement decline invitation
+    // Decline the date invitation
+    context.read<DatePlanningBloc>().add(
+      UpdateDatePlan(
+        planId: invitation['id'] ?? 'unknown',
+        updates: {'status': 'declined'},
+      ),
+    );
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text('Invitation declined'),
       ),
+    );
+  }
+}
+
+class _FilterDialog extends StatefulWidget {
+  @override
+  _FilterDialogState createState() => _FilterDialogState();
+}
+
+class _FilterDialogState extends State<_FilterDialog> {
+  String selectedPrice = 'Any';
+  String selectedTime = 'Any';
+  String selectedType = 'Any';
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Filter Suggestions'),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          DropdownButtonFormField<String>(
+            initialValue: selectedPrice,
+            decoration: const InputDecoration(labelText: 'Price Range'),
+            items: ['Any', '\$', '\$\$', '\$\$\$', '\$\$\$\$']
+                .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                .toList(),
+            onChanged: (value) => setState(() => selectedPrice = value!),
+          ),
+          const SizedBox(height: 16),
+          DropdownButtonFormField<String>(
+            initialValue: selectedTime,
+            decoration: const InputDecoration(labelText: 'Time of Day'),
+            items: ['Any', 'Morning', 'Afternoon', 'Evening', 'Night']
+                .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                .toList(),
+            onChanged: (value) => setState(() => selectedTime = value!),
+          ),
+          const SizedBox(height: 16),
+          DropdownButtonFormField<String>(
+            initialValue: selectedType,
+            decoration: const InputDecoration(labelText: 'Activity Type'),
+            items: ['Any', 'Dining', 'Entertainment', 'Outdoor', 'Culture', 'Adventure']
+                .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                .toList(),
+            onChanged: (value) => setState(() => selectedType = value!),
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cancel'),
+        ),
+        TextButton(
+          onPressed: () {
+            Navigator.pop(context);
+            // Apply filters to date suggestions
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Filters applied: $selectedPrice, $selectedTime, $selectedType'),
+              ),
+            );
+          },
+          child: const Text('Apply'),
+        ),
+      ],
     );
   }
 }

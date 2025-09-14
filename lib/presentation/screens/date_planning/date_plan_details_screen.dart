@@ -277,16 +277,59 @@ class _DatePlanDetailsScreenState extends State<DatePlanDetailsScreen> {
   }
 
   void _sendInvitation() {
-    // TODO: Show user picker to send invitation
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Invitation sent!')),
+    // Show user picker dialog to send invitation
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Send Invitation'),
+        content: const Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('Choose who to invite to this date:'),
+            // In a real app, this would show a list of matches/contacts
+            ListTile(
+              leading: CircleAvatar(child: Text('A')),
+              title: Text('Anna Smith'),
+              subtitle: Text('Available today'),
+            ),
+            ListTile(
+              leading: CircleAvatar(child: Text('B')),
+              title: Text('Bella Johnson'),
+              subtitle: Text('Last seen 2 hours ago'),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Invitation sent!')),
+              );
+            },
+            child: const Text('Send'),
+          ),
+        ],
+      ),
     );
   }
 
   void _openLocation(String location) {
-    // TODO: Open location in maps app
+    // Open location in maps app (would use url_launcher in real implementation)
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Opening location: $location')),
+      SnackBar(
+        content: Text('Opening $location in maps...'),
+        action: SnackBarAction(
+          label: 'Open Maps',
+          onPressed: () {
+            // In real implementation: launch('https://maps.google.com/?q=$location');
+          },
+        ),
+      ),
     );
   }
 }

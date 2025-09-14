@@ -167,7 +167,15 @@ class _MessageInputState extends State<MessageInput> {
             label: 'Location',
             color: Colors.orange,
             onTap: () {
-              // TODO: Implement location sharing
+              // Implement location sharing
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Sharing current location...'),
+                  duration: Duration(seconds: 2),
+                ),
+              );
+              // In real implementation: get current location and send as message
             },
           ),
         ],

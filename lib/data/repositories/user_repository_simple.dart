@@ -1,3 +1,5 @@
+import 'package:logger/logger.dart';
+
 import '../../domain/repositories/user_repository.dart';
 import '../../domain/services/api_service.dart';
 import '../models/user_model.dart';
@@ -10,10 +12,10 @@ class UserRepositorySimple implements UserRepository {
   final ApiService _apiService;
   final TokenService _tokenService = TokenService();
   final BiometricService _biometricService = BiometricService();
+  final Logger _logger = Logger();
 
-  UserRepositorySimple({
-    required ApiService apiService,
-  }) : _apiService = apiService;
+  UserRepositorySimple({required ApiService apiService})
+    : _apiService = apiService;
 
   // Authentication
   @override
@@ -442,7 +444,29 @@ class UserRepositorySimple implements UserRepository {
 
   @override
   Future<void> clearUserCache() async {
-    _userCache.clear();
+    // Simple implementation - no caching in this version
+    _logger.i('Clearing user cache (no-op in simple implementation)');
+  }
+
+  @override
+  Future<void> updateUserLocation(
+    String userId,
+    double latitude,
+    double longitude,
+  ) async {
+    try {
+      _logger.i('Updating user location for user: $userId');
+
+      // Update user location via profile update
+      await updateUserProfile(userId, {
+        'coordinates': {'latitude': latitude, 'longitude': longitude},
+      });
+
+      _logger.i('User location updated successfully');
+    } catch (e) {
+      _logger.e('Failed to update user location: $e');
+      throw Exception('Failed to update user location: $e');
+    }
   }
 
   // OTP Authentication
@@ -521,6 +545,7 @@ class UserRepositorySimple implements UserRepository {
     }
   }
 
+  @override
   @override
   Future<Map<String, dynamic>> resendOTP({required String sessionId}) async {
     try {

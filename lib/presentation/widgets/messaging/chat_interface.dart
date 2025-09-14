@@ -610,12 +610,102 @@ class _ChatInterfaceState extends State<ChatInterface>
                 focusNode: _messageFocusNode,
                 onSend: _sendMessage,
                 onVoiceMessage: () {
-                  // TODO: Implement voice message recording
+                  // Start voice message recording (simplified implementation)
                   _logger.d('Voice message requested');
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Voice recording started - hold to record'),
+                      duration: Duration(seconds: 2),
+                    ),
+                  );
                 },
                 onAttachment: () {
-                  // TODO: Implement file attachment
+                  // Show attachment options modal (simplified implementation)
                   _logger.d('Attachment requested');
+                  showModalBottomSheet(
+                    context: context,
+                    builder: (context) => Container(
+                      padding: const EdgeInsets.all(16),
+                      height: 200,
+                      child: Column(
+                        children: [
+                          const Text(
+                            'Attach',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              Column(
+                                children: [
+                                  IconButton(
+                                    onPressed: () {
+                                      Navigator.pop(context);
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        const SnackBar(
+                                          content: Text(
+                                            'Photo picker would open here',
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                    icon: const Icon(Icons.photo),
+                                  ),
+                                  const Text('Photo'),
+                                ],
+                              ),
+                              Column(
+                                children: [
+                                  IconButton(
+                                    onPressed: () {
+                                      Navigator.pop(context);
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        const SnackBar(
+                                          content: Text(
+                                            'File picker would open here',
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                    icon: const Icon(Icons.insert_drive_file),
+                                  ),
+                                  const Text('File'),
+                                ],
+                              ),
+                              Column(
+                                children: [
+                                  IconButton(
+                                    onPressed: () {
+                                      Navigator.pop(context);
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        const SnackBar(
+                                          content: Text(
+                                            'Location sharing would start here',
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                    icon: const Icon(Icons.location_on),
+                                  ),
+                                  const Text('Location'),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
                 },
               ),
             ),

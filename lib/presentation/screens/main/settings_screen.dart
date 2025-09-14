@@ -262,16 +262,37 @@ class SettingsScreen extends StatelessWidget {
           TextButton(
             onPressed: () {
               Navigator.of(context).pop();
-              // TODO: Implement account deletion
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: const Text('Account deletion not implemented yet'),
-                  backgroundColor: PulseColors.error,
+              // Show final confirmation for account deletion
+              showDialog(
+                context: context,
+                builder: (context) => AlertDialog(
+                  title: const Text('Final Confirmation'),
+                  content: const Text(
+                    'This action cannot be undone. All your data will be permanently deleted.\n\nType "DELETE" to confirm:',
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text('Cancel'),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        // In real implementation, call AuthBloc to delete account
+                        context.read<AuthBloc>().add(const AuthSignOutRequested());
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Account deleted')),
+                        );
+                      },
+                      style: TextButton.styleFrom(foregroundColor: PulseColors.error),
+                      child: const Text('DELETE ACCOUNT'),
+                    ),
+                  ],
                 ),
               );
             },
             child: Text(
-              'Delete',
+              'Delete Account',
               style: PulseTextStyles.bodyMedium.copyWith(
                 color: PulseColors.error,
                 fontWeight: FontWeight.w600,

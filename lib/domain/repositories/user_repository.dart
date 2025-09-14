@@ -46,6 +46,7 @@ abstract class UserRepository {
       String userId, Map<String, dynamic> updates);
   Future<void> uploadProfilePhoto(String userId, String photoPath);
   Future<void> deleteProfilePhoto(String userId, String photoUrl);
+  Future<void> updateUserLocation(String userId, double latitude, double longitude);
 
   // User Discovery
   Future<List<UserModel>> getNearbyUsers({

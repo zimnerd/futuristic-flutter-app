@@ -123,7 +123,55 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           // Notification button
           IconButton(
             onPressed: () {
-              // TODO: Show notifications
+              // Show notifications screen/modal
+              showModalBottomSheet(
+                context: context,
+                builder: (context) => Container(
+                  padding: const EdgeInsets.all(16),
+                  height: 400,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Notifications',
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Expanded(
+                        child: ListView(
+                          children: const [
+                            ListTile(
+                              leading: CircleAvatar(
+                                child: Icon(Icons.favorite),
+                              ),
+                              title: Text('You have a new match!'),
+                              subtitle: Text('Sarah liked your profile'),
+                              trailing: Text('5m ago'),
+                            ),
+                            ListTile(
+                              leading: CircleAvatar(child: Icon(Icons.message)),
+                              title: Text('New message'),
+                              subtitle: Text('Hey! How are you doing?'),
+                              trailing: Text('1h ago'),
+                            ),
+                            ListTile(
+                              leading: CircleAvatar(child: Icon(Icons.event)),
+                              title: Text('Date reminder'),
+                              subtitle: Text(
+                                'Your coffee date is tomorrow at 3pm',
+                              ),
+                              trailing: Text('2h ago'),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
             },
             icon: const Icon(Icons.notifications_outlined),
             style: IconButton.styleFrom(

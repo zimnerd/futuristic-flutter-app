@@ -443,7 +443,7 @@ class _LiveStreamingScreenState extends State<LiveStreamingScreen>
               const Text('Why are you reporting this stream?'),
               const SizedBox(height: 16),
               DropdownButtonFormField<String>(
-                value: selectedReason,
+                initialValue: selectedReason,
                 items:
                     [
                           'Inappropriate content',

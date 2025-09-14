@@ -636,4 +636,31 @@ class UserRepositoryImpl implements UserRepository {
       throw UserException('Failed to clear user cache: ${e.toString()}');
     }
   }
+
+  @override
+  Future<void> updateUserLocation(String userId, double latitude, double longitude) async {
+    try {
+      _logger.i('Updating user location for user: $userId');
+      
+      await _remoteDataSource.updateUserLocation(userId, latitude, longitude);
+      
+      // Update cached user if available
+      final cachedUser = await _localDataSource.getCachedUser(userId);
+      if (cachedUser != null) {
+        final updatedCoordinates = {
+          'latitude': latitude,
+          'longitude': longitude,
+        };
+        final updatedUser = cachedUser.copyWith(
+          coordinates: updatedCoordinates,
+        );
+        await _localDataSource.cacheUser(updatedUser);
+      }
+      
+      _logger.i('User location updated successfully');
+    } catch (e) {
+      _logger.e('Failed to update user location: $e');
+      throw Exception('Failed to update user location: $e');
+    }
+  }
 }

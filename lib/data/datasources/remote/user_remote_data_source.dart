@@ -51,6 +51,7 @@ abstract class UserRemoteDataSource {
   );
   Future<String> uploadProfilePhoto(String userId, String photoPath);
   Future<void> deleteProfilePhoto(String userId, String photoUrl);
+  Future<void> updateUserLocation(String userId, double latitude, double longitude);
 
   // User Discovery
   Future<List<UserModel>> getNearbyUsers({
@@ -473,6 +474,27 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
       _logger.e('Delete profile photo error: $e');
       if (e is ApiException) rethrow;
       throw ApiException('Failed to delete photo: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<void> updateUserLocation(String userId, double latitude, double longitude) async {
+    try {
+      _logger.i('Updating user location for user: $userId');
+
+      await _apiService.put(
+        '/users/$userId/location',
+        data: {
+          'latitude': latitude,
+          'longitude': longitude,
+        },
+      );
+
+      _logger.i('User location updated successfully');
+    } catch (e) {
+      _logger.e('Update user location error: $e');
+      if (e is ApiException) rethrow;
+      throw ApiException('Failed to update user location: ${e.toString()}');
     }
   }
 

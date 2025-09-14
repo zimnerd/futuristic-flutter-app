@@ -144,7 +144,7 @@ class _CreateSpeedDatingEventDialogState extends State<CreateSpeedDatingEventDia
               
               // Age Range
               DropdownButtonFormField<String>(
-                value: _selectedAgeRange,
+                initialValue: _selectedAgeRange,
                 decoration: const InputDecoration(
                   labelText: 'Age Range',
                   border: OutlineInputBorder(),

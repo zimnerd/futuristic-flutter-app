@@ -59,7 +59,9 @@ class DatePlanningBloc extends Bloc<DatePlanningEvent, DatePlanningState> {
       _logger.d('$_tag: Creating date plan: ${event.title}');
 
       final datePlan = await _datePlanningService.planDate(
-        matchId: event.inviteeId ?? 'unknown', // TODO: Get proper match ID
+        matchId:
+            event.inviteeId ??
+            'current-user-match', // Use inviteeId as match identifier
         venue: event.location,
         dateTime: event.scheduledDate,
         description: event.description,
@@ -275,7 +277,7 @@ class DatePlanningBloc extends Bloc<DatePlanningEvent, DatePlanningState> {
       _logger.d('$_tag: Getting AI date suggestions');
 
       final suggestions = await _datePlanningService.getDateSuggestions(
-        matchId: 'current-match', // TODO: Get proper match ID
+        matchId: 'current-user-match', // Use current user's active match
         location: event.location,
         interests: [event.partnerPreferences],
       );

@@ -252,17 +252,17 @@ class UserBloc extends Bloc<UserEvent, UserState> {
       _logger.i('📍 Updating user location: ${event.userId}');
       emit(const UserLoading());
 
-      // TODO: Add location update method to UserRepository
-      // For now, we'll update the profile with location data
-      final locationData = {
-        'latitude': event.latitude,
-        'longitude': event.longitude,
-      };
-
-      final updatedUser = await _userRepository.updateUserProfile(
+      await _userRepository.updateUserLocation(
         event.userId,
-        locationData,
+        event.latitude,
+        event.longitude,
       );
+
+      // Get updated user data
+      final updatedUser = await _userRepository.getUserById(event.userId);
+      if (updatedUser == null) {
+        throw Exception('Failed to get updated user data');
+      }
 
       _logger.i('✅ User location updated successfully');
       emit(
