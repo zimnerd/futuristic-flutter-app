@@ -1,12 +1,10 @@
 /// Test credentials for development auto-login functionality
 /// Based on backend integration guide documentation
 class TestCredentials {
-  static const String defaultPassword = 'Admin123!';
-
   static const List<TestAccount> testAccounts = [
     TestAccount(
       email: 'user@pulselink.com',
-      password: defaultPassword,
+      password: 'User123!',
       role: 'USER',
       name: 'John User',
       description: 'Regular dating app user',
@@ -14,7 +12,7 @@ class TestCredentials {
     ),
     TestAccount(
       email: 'moderator@pulselink.com',
-      password: defaultPassword,
+      password: 'Mod123!',
       role: 'MODERATOR',
       name: 'Jane Moderator',
       description: 'Content moderator with limited admin access',
@@ -22,7 +20,7 @@ class TestCredentials {
     ),
     TestAccount(
       email: 'admin@pulselink.com',
-      password: defaultPassword,
+      password: 'Admin123!',
       role: 'ADMIN',
       name: 'Mike Administrator',
       description: 'System administrator',
@@ -30,7 +28,7 @@ class TestCredentials {
     ),
     TestAccount(
       email: 'superadmin@pulselink.com',
-      password: defaultPassword,
+      password: 'SuperAdmin123!',
       role: 'SUPER_ADMIN',
       name: 'Sarah SuperAdmin',
       description: 'Super administrator with highest access',

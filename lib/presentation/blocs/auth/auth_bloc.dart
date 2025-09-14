@@ -32,6 +32,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<AuthOTPSendRequested>(_onOTPSendRequested);
     on<AuthOTPVerifyRequested>(_onOTPVerifyRequested);
     on<AuthOTPResendRequested>(_onOTPResendRequested);
+    on<AuthAutoLoginRequested>(_onAutoLoginRequested);
 
     // Check authentication status when BLoC is created
     add(const AuthStatusChecked());
@@ -107,6 +108,43 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         AuthError(
           message: e is AppException ? e.message : 'Sign in failed',
           errorCode: e is AppException ? e.code : null,
+        ),
+      );
+    }
+  }
+
+  /// Handles automatic login for development mode
+  Future<void> _onAutoLoginRequested(
+    AuthAutoLoginRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    try {
+      _logger.i('🔐 🤖 Auto-login for development: ${event.email}');
+      emit(const AuthLoading());
+
+      final user = await _userRepository.signInWithEmailPassword(
+        event.email,
+        event.password,
+      );
+
+      if (user != null) {
+        _logger.i('✅ 🤖 Auto-login successful: ${user.username}');
+        emit(AuthAuthenticated(user: user));
+      } else {
+        _logger.w('❌ 🤖 Auto-login failed: Invalid credentials');
+        emit(
+          const AuthError(
+            message: 'Auto-login failed: Invalid credentials',
+            errorCode: 'AUTO_LOGIN_FAILED',
+          ),
+        );
+      }
+    } catch (e, stackTrace) {
+      _logger.e('💥 🤖 Auto-login error', error: e, stackTrace: stackTrace);
+      emit(
+        AuthError(
+          message: e is AppException ? e.message : 'Auto-login failed',
+          errorCode: e is AppException ? e.code : 'AUTO_LOGIN_ERROR',
         ),
       );
     }

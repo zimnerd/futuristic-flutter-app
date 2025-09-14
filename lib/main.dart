@@ -26,6 +26,7 @@ import 'presentation/blocs/auth/auth_bloc.dart';
 import 'presentation/blocs/user/user_bloc.dart';
 import 'presentation/navigation/app_router.dart';
 import 'presentation/theme/pulse_theme.dart';
+import 'presentation/widgets/auto_login_wrapper.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -127,13 +128,15 @@ class PulseDatingApp extends StatelessWidget {
             ),
           ),
         ],
-        child: MaterialApp.router(
-          title: AppConstants.appName,
-          theme: PulseTheme.light,
-          darkTheme: PulseTheme.dark,
-          themeMode: ThemeMode.system,
-          debugShowCheckedModeBanner: false,
-          routerConfig: AppRouter.router,
+        child: AutoLoginWrapper(
+          child: MaterialApp.router(
+            title: AppConstants.appName,
+            theme: PulseTheme.light,
+            darkTheme: PulseTheme.dark,
+            themeMode: ThemeMode.system,
+            debugShowCheckedModeBanner: false,
+            routerConfig: AppRouter.router,
+          ),
         ),
       ),
     );

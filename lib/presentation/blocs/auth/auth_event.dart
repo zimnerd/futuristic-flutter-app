@@ -157,3 +157,14 @@ final class AuthOTPResendRequested extends AuthEvent {
   @override
   List<Object?> get props => [sessionId];
 }
+
+/// Event triggered for automatic login in development mode
+final class AuthAutoLoginRequested extends AuthEvent {
+  const AuthAutoLoginRequested({required this.email, required this.password});
+
+  final String email;
+  final String password;
+
+  @override
+  List<Object?> get props => [email, password];
+}
