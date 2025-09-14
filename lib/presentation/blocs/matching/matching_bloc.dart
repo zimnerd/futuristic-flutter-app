@@ -1,6 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import '../../../domain/entities/user_profile.dart';
+import '../../../domain/entities/discovery_types.dart';
 import '../../../data/services/matching_service.dart';
 
 part 'matching_event.dart';
@@ -78,8 +79,8 @@ class MatchingBloc extends Bloc<MatchingEvent, MatchingState> {
     final updatedProfiles = List<UserProfile>.from(state.profiles)..removeAt(0);
     
     // Add to swipe history for undo functionality
-    final swipeHistory = List<SwipeAction>.from(state.swipeHistory)
-      ..add(SwipeAction(
+    final swipeHistory = List<MatchingSwipeAction>.from(state.swipeHistory)
+      ..add(MatchingSwipeAction(
         profile: currentProfile,
         direction: event.direction,
         timestamp: DateTime.now(),
@@ -113,7 +114,7 @@ class MatchingBloc extends Bloc<MatchingEvent, MatchingState> {
     } catch (e) {
       // Revert the swipe on error
       final revertedProfiles = [currentProfile, ...updatedProfiles];
-      final revertedHistory = List<SwipeAction>.from(swipeHistory)..removeLast();
+      final revertedHistory = List<MatchingSwipeAction>.from(swipeHistory)..removeLast();
       
       emit(state.copyWith(
         profiles: revertedProfiles,
@@ -130,7 +131,7 @@ class MatchingBloc extends Bloc<MatchingEvent, MatchingState> {
     if (state.swipeHistory.isEmpty || state.undosRemaining <= 0) return;
 
     final lastSwipe = state.swipeHistory.last;
-    final updatedHistory = List<SwipeAction>.from(state.swipeHistory)..removeLast();
+    final updatedHistory = List<MatchingSwipeAction>.from(state.swipeHistory)..removeLast();
     final updatedProfiles = [lastSwipe.profile, ...state.profiles];
 
     emit(state.copyWith(
@@ -244,8 +245,8 @@ enum SwipeDirection {
 }
 
 /// Swipe action for history tracking
-class SwipeAction {
-  const SwipeAction({
+class MatchingSwipeAction {
+  const MatchingSwipeAction({
     required this.profile,
     required this.direction,
     required this.timestamp,
@@ -254,17 +255,6 @@ class SwipeAction {
   final UserProfile profile;
   final SwipeDirection direction;
   final DateTime timestamp;
-}
-
-/// Swipe result from backend
-class SwipeResult {
-  const SwipeResult({
-    required this.isMatch,
-    this.matchId,
-  });
-
-  final bool isMatch;
-  final String? matchId;
 }
 
 /// Matching filters

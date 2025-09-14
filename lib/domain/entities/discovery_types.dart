@@ -89,11 +89,13 @@ class SwipeResult {
     required this.isMatch,
     required this.targetUserId,
     required this.action,
+    this.conversationId,
   });
 
   final bool isMatch;
   final String targetUserId;
   final SwipeAction action;
+  final String? conversationId;
 }
 
 /// Result of boost activation

@@ -131,6 +131,36 @@ class TokenService {
     }
   }
 
+  /// Extract user ID from JWT token payload
+  String? extractUserIdFromToken(String token) {
+    try {
+      final parts = token.split('.');
+      if (parts.length != 3) {
+        _logger.w('Invalid JWT format: expected 3 parts, got ${parts.length}');
+        return null;
+      }
+
+      final payload = _decodeBase64(parts[1]);
+      final payloadMap = jsonDecode(payload) as Map<String, dynamic>;
+      
+      // Try common user ID field names
+      final userId = payloadMap['sub'] ?? // Standard JWT subject claim
+                     payloadMap['userId'] ?? 
+                     payloadMap['user_id'] ?? 
+                     payloadMap['id'];
+      
+      if (userId != null) {
+        return userId.toString();
+      }
+      
+      _logger.w('No user ID found in JWT payload');
+      return null;
+    } catch (e) {
+      _logger.e('Failed to extract user ID from JWT: $e');
+      return null;
+    }
+  }
+
   /// Decode base64 URL
   String _decodeBase64(String str) {
     String output = str.replaceAll('-', '+').replaceAll('_', '/');

@@ -25,7 +25,7 @@ class MatchingState extends Equatable {
 
   final MatchingStatus status;
   final List<UserProfile> profiles;
-  final List<SwipeAction> swipeHistory;
+  final List<MatchingSwipeAction> swipeHistory;
   final MatchingFilters filters;
   final bool hasReachedMax;
   final bool lastSwipeWasMatch;
@@ -37,7 +37,7 @@ class MatchingState extends Equatable {
   MatchingState copyWith({
     MatchingStatus? status,
     List<UserProfile>? profiles,
-    List<SwipeAction>? swipeHistory,
+    List<MatchingSwipeAction>? swipeHistory,
     MatchingFilters? filters,
     bool? hasReachedMax,
     bool? lastSwipeWasMatch,

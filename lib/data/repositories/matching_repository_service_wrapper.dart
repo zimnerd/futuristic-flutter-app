@@ -1,6 +1,7 @@
 import 'package:dartz/dartz.dart';
 import '../../../core/error/failures.dart';
 import '../../../domain/entities/user_profile.dart';
+import '../../../domain/entities/discovery_types.dart' as discovery_types;
 import '../../../domain/repositories/matching_repository.dart';
 import '../../../presentation/blocs/matching/matching_bloc.dart';
 import '../services/matching_service.dart';
@@ -40,7 +41,7 @@ class MatchingRepositoryServiceWrapper implements MatchingRepository {
   }
 
   @override
-  Future<Either<Failure, SwipeResult>> swipeProfile({
+  Future<Either<Failure, discovery_types.SwipeResult>> swipeProfile({
     required String profileId,
     required SwipeDirection direction,
   }) async {
@@ -50,9 +51,11 @@ class MatchingRepositoryServiceWrapper implements MatchingRepository {
         isLike: direction == SwipeDirection.right, // right = like
       );
       
-      return Right(SwipeResult(
+      return Right(discovery_types.SwipeResult(
         isMatch: result['isMatch'] ?? false,
-        matchId: result['matchId'],
+        targetUserId: profileId,
+        action: direction == SwipeDirection.right ? discovery_types.SwipeAction.right : discovery_types.SwipeAction.left,
+        conversationId: result['matchId'],
       ));
     } catch (e) {
       return Left(ServerFailure(message: e.toString()));
@@ -88,7 +91,7 @@ class MatchingRepositoryServiceWrapper implements MatchingRepository {
   }
 
   @override
-  Future<Either<Failure, List<SwipeAction>>> getSwipeHistory({
+  Future<Either<Failure, List<discovery_types.SwipeAction>>> getSwipeHistory({
     int limit = 50,
     int offset = 0,
   }) async {

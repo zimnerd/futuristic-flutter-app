@@ -60,12 +60,14 @@ class MessagingApiService {
     int limit = 20,
   }) async {
     try {
+      final queryParams = {
+        'page': page.toString(),
+        'limit': limit.toString(),
+      };
+      
       final response = await http.get(
-        Uri.parse('${ApiConstants.baseUrl}/messaging/conversations')
-            .replace(queryParameters: {
-          'page': page.toString(),
-          'limit': limit.toString(),
-        }),
+        Uri.parse('${ApiConstants.baseUrl}/conversations')
+            .replace(queryParameters: queryParams),
         headers: {
           'Authorization': 'Bearer $_authToken',
           'Content-Type': 'application/json',
@@ -94,7 +96,7 @@ class MessagingApiService {
   }) async {
     try {
       final response = await http.get(
-        Uri.parse('${ApiConstants.baseUrl}/messaging/conversations/$conversationId/messages')
+        Uri.parse('${ApiConstants.baseUrl}/conversations/$conversationId/messages')
             .replace(queryParameters: {
           'page': page.toString(),
           'limit': limit.toString(),
@@ -183,7 +185,7 @@ class MessagingApiService {
   Future<void> markAsRead(String conversationId) async {
     try {
       final response = await http.patch(
-        Uri.parse('${ApiConstants.baseUrl}/messaging/conversations/$conversationId/read'),
+        Uri.parse('${ApiConstants.baseUrl}/conversations/$conversationId/read'),
         headers: {
           'Authorization': 'Bearer $_authToken',
           'Content-Type': 'application/json',

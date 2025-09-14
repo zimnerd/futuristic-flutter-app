@@ -5,6 +5,7 @@ import '../../data/services/payment_service.dart';
 import '../../data/services/premium_api_service.dart';
 import '../../data/services/push_notification_service.dart';
 import '../../data/services/social_gaming_api_service.dart';
+import '../../data/services/token_service.dart';
 import '../utils/logger.dart';
 
 /// Service locator for managing app services
@@ -23,6 +24,7 @@ class ServiceLocator {
   PaymentService? _paymentService;
   AnalyticsService? _analyticsService;
   PushNotificationService? _pushNotificationService;
+  TokenService? _tokenService;
 
   /// Initialize all services
   Future<void> initialize({String? authToken}) async {
@@ -39,6 +41,7 @@ class ServiceLocator {
       _paymentService = PaymentService.instance;
       _analyticsService = AnalyticsService.instance;
       _pushNotificationService = PushNotificationService.instance;
+      _tokenService = TokenService();
 
       // Set auth tokens if provided
       if (authToken != null) {
@@ -81,14 +84,8 @@ class ServiceLocator {
   /// Extract user ID from JWT token (simplified implementation)
   String? _extractUserIdFromToken(String token) {
     try {
-      // This is a simplified implementation
-      // In a real app, you'd properly decode the JWT
-      final parts = token.split('.');
-      if (parts.length == 3) {
-        // For now, return a mock user ID
-        return 'user_${DateTime.now().millisecondsSinceEpoch}';
-      }
-      return null;
+      // Use the token service for proper JWT decoding
+      return _tokenService?.extractUserIdFromToken(token);
     } catch (e) {
       AppLogger.error('Failed to extract user ID from token: $e');
       return null;
@@ -149,6 +146,12 @@ class ServiceLocator {
     return _pushNotificationService!;
   }
 
+  /// Get token service
+  TokenService get token {
+    _ensureInitialized();
+    return _tokenService!;
+  }
+
   /// Ensure services are initialized
   void _ensureInitialized() {
     if (!_initialized) {
@@ -166,6 +169,7 @@ class ServiceLocator {
     _notificationService = null;
     _paymentService = null;
     _pushNotificationService = null;
+    _tokenService = null;
     _initialized = false;
   }
 }

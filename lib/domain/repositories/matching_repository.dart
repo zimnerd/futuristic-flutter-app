@@ -1,6 +1,7 @@
 import 'package:dartz/dartz.dart';
 import '../../core/error/failures.dart';
 import '../entities/user_profile.dart';
+import '../entities/discovery_types.dart' as discovery_types;
 import '../../presentation/blocs/matching/matching_bloc.dart';
 
 /// Repository interface for matching functionality
@@ -13,7 +14,7 @@ abstract class MatchingRepository {
   });
 
   /// Swipe on a profile (like, pass, or super like)
-  Future<Either<Failure, SwipeResult>> swipeProfile({
+  Future<Either<Failure, discovery_types.SwipeResult>> swipeProfile({
     required String profileId,
     required SwipeDirection direction,
   });
@@ -28,8 +29,8 @@ abstract class MatchingRepository {
     String? description,
   });
 
-  /// Get user's swipe history
-  Future<Either<Failure, List<SwipeAction>>> getSwipeHistory({
+  /// Get swipe history for the user
+  Future<Either<Failure, List<discovery_types.SwipeAction>>> getSwipeHistory({
     int limit = 50,
     int offset = 0,
   });
