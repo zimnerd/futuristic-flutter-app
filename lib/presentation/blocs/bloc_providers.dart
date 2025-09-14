@@ -50,7 +50,7 @@ class BlocProviders extends StatelessWidget {
         // Match Management BLoC - Matching system and chat integration
         BlocProvider<MatchBloc>(
           create: (context) => MatchBloc(
-            matchingService: MatchingService(apiClient: ApiClient()),
+            matchingService: MatchingService(apiClient: ApiClient.instance),
           ),
         ),
         

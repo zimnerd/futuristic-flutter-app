@@ -104,7 +104,7 @@ class MessagingBloc extends Bloc<MessagingEvent, MessagingState> {
         conversationId: event.conversationId,
         content: event.content,
         type: event.type.name,
-        mediaUrl: event.mediaUrl,
+        metadata: event.mediaUrl != null ? {'mediaUrl': event.mediaUrl} : null,
       );
 
       // Replace temp message with real one

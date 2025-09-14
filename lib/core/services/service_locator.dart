@@ -5,12 +5,12 @@ import '../../data/services/payment_service.dart';
 import '../../data/services/push_notification_service.dart';
 import '../../data/services/token_service.dart';
 import '../../data/services/matching_service.dart';
-import '../network/pulselink_api_client.dart';
+import '../network/api_client.dart';
 import '../utils/logger.dart';
 
 /// Service locator for managing app services
 /// 
-/// This has been simplified to use the new PulseLinkApiClient for all API operations,
+/// This has been simplified to use the new consolidated ApiClient for all API operations,
 /// removing the need for scattered API services.
 class ServiceLocator {
   static ServiceLocator? _instance;
@@ -20,7 +20,7 @@ class ServiceLocator {
   bool _initialized = false;
 
   // Core API client (replaces all scattered API services)
-  PulseLinkApiClient? _apiClient;
+  ApiClient? _apiClient;
   
   // Feature-specific services (using the unified API client)
   MatchingService? _matchingService;
@@ -38,7 +38,7 @@ class ServiceLocator {
       AppLogger.info('Initializing services...');
 
       // Initialize the main API client (replaces all scattered API services)
-      _apiClient = PulseLinkApiClient.instance;
+      _apiClient = ApiClient.instance;
 
       // Initialize feature-specific services that use the unified API client
       _matchingService = MatchingService(apiClient: _apiClient!);
@@ -112,7 +112,7 @@ class ServiceLocator {
   // ===========================================
 
   /// Get the main API client (replaces all old scattered API services)
-  PulseLinkApiClient get apiClient {
+  ApiClient get apiClient {
     _ensureInitialized();
     return _apiClient!;
   }

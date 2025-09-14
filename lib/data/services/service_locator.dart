@@ -59,7 +59,7 @@ class ServiceLocator {
     if (_isInitialized) return;
 
     // Initialize API client and service
-    _apiClient = ApiClient(baseUrl: ApiConstants.baseUrl);
+    _apiClient = ApiClient.instance;
     _apiService = ApiServiceImpl(baseUrl: ApiConstants.baseUrl);
 
     // Initialize AuthService with provided secure storage box or try to get existing one

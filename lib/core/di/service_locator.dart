@@ -21,7 +21,7 @@ Future<void> initializeDependencies() async {
   sl.registerLazySingleton<HiveStorageService>(() => HiveStorageService());
 
   // Core Network
-  sl.registerLazySingleton<ApiClient>(() => ApiClient());
+  sl.registerLazySingleton<ApiClient>(() => ApiClient.instance);
   sl.registerLazySingleton<ApiService>(() => ApiServiceImpl());
 
   // Data Sources

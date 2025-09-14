@@ -1,13 +1,13 @@
 import 'package:dio/dio.dart';
-import '../../../core/network/pulselink_api_client.dart';
+import '../../../core/network/api_client.dart';
 import '../../../domain/entities/conversation.dart';
 import '../../../domain/entities/message.dart';
 
 /// Service for messaging operations that matches BLoC expectations
 class MessagingService {
-  final PulseLinkApiClient _apiClient;
+  final ApiClient _apiClient;
 
-  MessagingService({required PulseLinkApiClient apiClient})
+  MessagingService({required ApiClient apiClient})
     : _apiClient = apiClient;
 
   /// Get conversations for current user
