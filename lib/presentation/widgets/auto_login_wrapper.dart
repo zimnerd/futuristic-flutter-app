@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:logger/logger.dart';
 
 import '../../core/services/auto_login_service.dart';
 import '../blocs/auth/auth_bloc.dart';
 import '../blocs/auth/auth_state.dart';
+import '../navigation/app_router.dart';
 
 /// Widget that handles automatic login on app startup in development mode
 class AutoLoginWrapper extends StatefulWidget {
@@ -56,11 +58,19 @@ class _AutoLoginWrapperState extends State<AutoLoginWrapper> {
   Widget build(BuildContext context) {
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
-        // Listen for auth state changes to provide feedback
+        // Listen for auth state changes to provide feedback and handle navigation
         if (state is AuthAuthenticated) {
           final user = AutoLoginService.defaultUser;
           if (user != null) {
             _logger.i('✅ 🤖 Auto-login successful for ${user.name}');
+            
+            // Navigate to home screen after successful authentication
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (context.mounted) {
+                context.go(AppRoutes.home);
+                _logger.i('🏠 Navigated to home screen after auto-login');
+              }
+            });
           }
         } else if (state is AuthError) {
           _logger.w('❌ 🤖 Auto-login failed: ${state.message}');
