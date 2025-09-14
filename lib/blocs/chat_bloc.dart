@@ -1,0 +1,316 @@
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:equatable/equatable.dart';
+import 'package:logger/logger.dart';
+
+import '../data/models/chat_model.dart';
+import '../data/repositories/chat_repository.dart';
+
+// Events
+abstract class ChatEvent extends Equatable {
+  const ChatEvent();
+
+  @override
+  List<Object?> get props => [];
+}
+
+class LoadConversations extends ChatEvent {
+  const LoadConversations();
+}
+
+class LoadMessages extends ChatEvent {
+  final String conversationId;
+  final int page;
+  final int limit;
+
+  const LoadMessages({
+    required this.conversationId,
+    this.page = 1,
+    this.limit = 50,
+  });
+
+  @override
+  List<Object?> get props => [conversationId, page, limit];
+}
+
+class SendMessage extends ChatEvent {
+  final String conversationId;
+  final MessageType type;
+  final String? content;
+  final List<String>? mediaIds;
+  final Map<String, dynamic>? metadata;
+  final String? replyToMessageId;
+
+  const SendMessage({
+    required this.conversationId,
+    required this.type,
+    this.content,
+    this.mediaIds,
+    this.metadata,
+    this.replyToMessageId,
+  });
+
+  @override
+  List<Object?> get props => [conversationId, type, content, mediaIds, metadata, replyToMessageId];
+}
+
+class MarkMessageAsRead extends ChatEvent {
+  final String messageId;
+
+  const MarkMessageAsRead({required this.messageId});
+
+  @override
+  List<Object?> get props => [messageId];
+}
+
+class DeleteMessage extends ChatEvent {
+  final String messageId;
+
+  const DeleteMessage({required this.messageId});
+
+  @override
+  List<Object?> get props => [messageId];
+}
+
+class UpdateTypingStatus extends ChatEvent {
+  final String conversationId;
+  final bool isTyping;
+
+  const UpdateTypingStatus({
+    required this.conversationId,
+    required this.isTyping,
+  });
+
+  @override
+  List<Object?> get props => [conversationId, isTyping];
+}
+
+class CreateConversation extends ChatEvent {
+  final String participantId;
+
+  const CreateConversation({required this.participantId});
+
+  @override
+  List<Object?> get props => [participantId];
+}
+
+// States
+abstract class ChatState extends Equatable {
+  const ChatState();
+
+  @override
+  List<Object?> get props => [];
+}
+
+class ChatInitial extends ChatState {
+  const ChatInitial();
+}
+
+class ChatLoading extends ChatState {
+  const ChatLoading();
+}
+
+class ConversationsLoaded extends ChatState {
+  final List<ConversationModel> conversations;
+
+  const ConversationsLoaded({required this.conversations});
+
+  @override
+  List<Object?> get props => [conversations];
+}
+
+class MessagesLoaded extends ChatState {
+  final String conversationId;
+  final List<MessageModel> messages;
+  final bool hasMoreMessages;
+
+  const MessagesLoaded({
+    required this.conversationId,
+    required this.messages,
+    required this.hasMoreMessages,
+  });
+
+  @override
+  List<Object?> get props => [conversationId, messages, hasMoreMessages];
+}
+
+class MessageSent extends ChatState {
+  final MessageModel message;
+
+  const MessageSent({required this.message});
+
+  @override
+  List<Object?> get props => [message];
+}
+
+class MessageUpdated extends ChatState {
+  final MessageModel message;
+
+  const MessageUpdated({required this.message});
+
+  @override
+  List<Object?> get props => [message];
+}
+
+class ConversationCreated extends ChatState {
+  final ConversationModel conversation;
+
+  const ConversationCreated({required this.conversation});
+
+  @override
+  List<Object?> get props => [conversation];
+}
+
+class ChatError extends ChatState {
+  final String message;
+
+  const ChatError({required this.message});
+
+  @override
+  List<Object?> get props => [message];
+}
+
+// BLoC
+class ChatBloc extends Bloc<ChatEvent, ChatState> {
+  final ChatRepository _chatRepository;
+  final Logger _logger = Logger();
+
+  ChatBloc({required ChatRepository chatRepository})
+      : _chatRepository = chatRepository,
+        super(const ChatInitial()) {
+    on<LoadConversations>(_onLoadConversations);
+    on<LoadMessages>(_onLoadMessages);
+    on<SendMessage>(_onSendMessage);
+    on<MarkMessageAsRead>(_onMarkMessageAsRead);
+    on<DeleteMessage>(_onDeleteMessage);
+    on<UpdateTypingStatus>(_onUpdateTypingStatus);
+    on<CreateConversation>(_onCreateConversation);
+  }
+
+  Future<void> _onLoadConversations(
+    LoadConversations event,
+    Emitter<ChatState> emit,
+  ) async {
+    try {
+      emit(const ChatLoading());
+      
+      final conversations = await _chatRepository.getConversations();
+      
+      emit(ConversationsLoaded(conversations: conversations));
+      _logger.d('Loaded ${conversations.length} conversations');
+    } catch (e) {
+      _logger.e('Error loading conversations: $e');
+      emit(ChatError(message: 'Failed to load conversations: $e'));
+    }
+  }
+
+  Future<void> _onLoadMessages(
+    LoadMessages event,
+    Emitter<ChatState> emit,
+  ) async {
+    try {
+      emit(const ChatLoading());
+      
+      final messages = await _chatRepository.getMessages(
+        conversationId: event.conversationId,
+        page: event.page,
+        limit: event.limit,
+      );
+      
+      // Check if there are more messages available
+      final hasMoreMessages = messages.length == event.limit;
+      
+      emit(MessagesLoaded(
+        conversationId: event.conversationId,
+        messages: messages,
+        hasMoreMessages: hasMoreMessages,
+      ));
+      
+      _logger.d('Loaded ${messages.length} messages for conversation ${event.conversationId}');
+    } catch (e) {
+      _logger.e('Error loading messages: $e');
+      emit(ChatError(message: 'Failed to load messages: $e'));
+    }
+  }
+
+  Future<void> _onSendMessage(
+    SendMessage event,
+    Emitter<ChatState> emit,
+  ) async {
+    try {
+      final message = await _chatRepository.sendMessage(
+        conversationId: event.conversationId,
+        type: event.type,
+        content: event.content,
+        mediaIds: event.mediaIds,
+        metadata: event.metadata,
+        replyToMessageId: event.replyToMessageId,
+      );
+      
+      emit(MessageSent(message: message));
+      _logger.d('Message sent: ${message.id}');
+    } catch (e) {
+      _logger.e('Error sending message: $e');
+      emit(ChatError(message: 'Failed to send message: $e'));
+    }
+  }
+
+  Future<void> _onMarkMessageAsRead(
+    MarkMessageAsRead event,
+    Emitter<ChatState> emit,
+  ) async {
+    try {
+      await _chatRepository.markMessageAsRead(event.messageId);
+      _logger.d('Message marked as read: ${event.messageId}');
+    } catch (e) {
+      _logger.e('Error marking message as read: $e');
+      emit(ChatError(message: 'Failed to mark message as read: $e'));
+    }
+  }
+
+  Future<void> _onDeleteMessage(
+    DeleteMessage event,
+    Emitter<ChatState> emit,
+  ) async {
+    try {
+      await _chatRepository.deleteMessage(event.messageId);
+      _logger.d('Message deleted: ${event.messageId}');
+    } catch (e) {
+      _logger.e('Error deleting message: $e');
+      emit(ChatError(message: 'Failed to delete message: $e'));
+    }
+  }
+
+  Future<void> _onUpdateTypingStatus(
+    UpdateTypingStatus event,
+    Emitter<ChatState> emit,
+  ) async {
+    try {
+      await _chatRepository.updateTypingStatus(
+        event.conversationId,
+        event.isTyping,
+      );
+      _logger.d('Typing status updated: ${event.isTyping}');
+    } catch (e) {
+      _logger.e('Error updating typing status: $e');
+    }
+  }
+
+  Future<void> _onCreateConversation(
+    CreateConversation event,
+    Emitter<ChatState> emit,
+  ) async {
+    try {
+      emit(const ChatLoading());
+      
+      final conversation = await _chatRepository.createConversation(
+        event.participantId,
+      );
+      
+      emit(ConversationCreated(conversation: conversation));
+      _logger.d('Conversation created: ${conversation.id}');
+    } catch (e) {
+      _logger.e('Error creating conversation: $e');
+      emit(ChatError(message: 'Failed to create conversation: $e'));
+    }
+  }
+}
