@@ -444,4 +444,101 @@ class UserRepositorySimple implements UserRepository {
   Future<void> clearUserCache() async {
     _userCache.clear();
   }
+
+  // OTP Authentication
+  @override
+  Future<Map<String, dynamic>> sendOTP({
+    required String email,
+    String? phoneNumber,
+    required String type,
+    String? preferredMethod,
+  }) async {
+    try {
+      final response = await _apiService.post(
+        '/auth/send-otp',
+        data: {
+          'email': email,
+          if (phoneNumber != null) 'phoneNumber': phoneNumber,
+          'type': type,
+          if (preferredMethod != null) 'preferredMethod': preferredMethod,
+        },
+      );
+
+      if (response.statusCode == 200) {
+        return {
+          'sessionId': response.data['sessionId'],
+          'deliveryMethods': response.data['deliveryMethods'],
+          'expiresAt': response.data['expiresAt'],
+        };
+      }
+      throw Exception('Failed to send OTP');
+    } catch (e) {
+      throw Exception('Send OTP failed: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>> verifyOTP({
+    required String sessionId,
+    required String code,
+    required String email,
+  }) async {
+    try {
+      final response = await _apiService.post(
+        '/auth/verify-otp',
+        data: {'sessionId': sessionId, 'code': code, 'email': email},
+      );
+
+      if (response.statusCode == 200) {
+        final verified = response.data['verified'] ?? false;
+
+        if (verified) {
+          // Store tokens if verification successful
+          final tokens = response.data['tokens'];
+          if (tokens != null) {
+            await _tokenService.storeTokens(
+              accessToken: tokens['accessToken'],
+              refreshToken: tokens['refreshToken'],
+            );
+            await _tokenService.storeUserData(response.data['user']);
+          }
+
+          return {
+            'verified': true,
+            'user': response.data['user'],
+            'tokens': tokens,
+          };
+        } else {
+          return {
+            'verified': false,
+            'attemptsRemaining': response.data['attemptsRemaining'],
+          };
+        }
+      }
+      throw Exception('Failed to verify OTP');
+    } catch (e) {
+      throw Exception('Verify OTP failed: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>> resendOTP({required String sessionId}) async {
+    try {
+      final response = await _apiService.post(
+        '/auth/resend-otp',
+        data: {'sessionId': sessionId},
+      );
+
+      if (response.statusCode == 200) {
+        return {
+          'sessionId': response.data['sessionId'],
+          'deliveryMethods': response.data['deliveryMethods'],
+          'expiresAt': response.data['expiresAt'],
+        };
+      }
+      throw Exception('Failed to resend OTP');
+    } catch (e) {
+      throw Exception('Resend OTP failed: ${e.toString()}');
+    }
+  }
 }

@@ -203,6 +203,78 @@ class UserRepositoryImpl implements UserRepository {
   }
 
   @override
+  Future<Map<String, dynamic>> sendOTP({
+    required String email,
+    String? phoneNumber,
+    required String type,
+    String? preferredMethod,
+  }) async {
+    try {
+      _logger.i('Sending OTP to: $email, type: $type');
+
+      final result = await _remoteDataSource.sendOTP(
+        email: email,
+        phoneNumber: phoneNumber,
+        type: type,
+        preferredMethod: preferredMethod,
+      );
+
+      _logger.i('OTP sent successfully');
+      return result;
+    } catch (e) {
+      _logger.e('Send OTP failed: $e');
+      if (e is AppException) rethrow;
+      throw AuthException('Send OTP failed: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>> verifyOTP({
+    required String sessionId,
+    required String code,
+    required String email,
+  }) async {
+    try {
+      _logger.i('Verifying OTP for session: $sessionId');
+
+      final result = await _remoteDataSource.verifyOTP(
+        sessionId: sessionId,
+        code: code,
+        email: email,
+      );
+
+      if (result['verified'] == true && result['user'] != null) {
+        // Cache the authenticated user
+        final user = UserModel.fromJson(result['user']);
+        await _localDataSource.cacheUser(user);
+        _logger.i('User authenticated and cached after OTP verification');
+      }
+
+      return result;
+    } catch (e) {
+      _logger.e('Verify OTP failed: $e');
+      if (e is AppException) rethrow;
+      throw AuthException('Verify OTP failed: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>> resendOTP({required String sessionId}) async {
+    try {
+      _logger.i('Resending OTP for session: $sessionId');
+
+      final result = await _remoteDataSource.resendOTP(sessionId: sessionId);
+
+      _logger.i('OTP resent successfully');
+      return result;
+    } catch (e) {
+      _logger.e('Resend OTP failed: $e');
+      if (e is AppException) rethrow;
+      throw AuthException('Resend OTP failed: ${e.toString()}');
+    }
+  }
+
+  @override
   Future<UserModel?> getUserById(String userId) async {
     try {
       _logger.i('Getting user by ID: $userId');

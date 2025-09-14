@@ -29,6 +29,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<AuthPasswordResetRequested>(_onPasswordResetRequested);
     on<AuthTwoFactorVerifyRequested>(_onTwoFactorVerifyRequested);
     on<AuthBiometricSignInRequested>(_onBiometricSignInRequested);
+    on<AuthOTPSendRequested>(_onOTPSendRequested);
+    on<AuthOTPVerifyRequested>(_onOTPVerifyRequested);
+    on<AuthOTPResendRequested>(_onOTPResendRequested);
 
     // Check authentication status when BLoC is created
     add(const AuthStatusChecked());
@@ -308,6 +311,131 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           'An unexpected error occurred during biometric authentication';
       _logger.e('Biometric authentication error: $e');
       emit(const AuthError(message: message));
+    }
+  }
+
+  /// Handles OTP send request
+  Future<void> _onOTPSendRequested(
+    AuthOTPSendRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    try {
+      _logger.i('Sending OTP to: ${event.email}, type: ${event.type}');
+      emit(const AuthLoading());
+
+      final result = await _userRepository.sendOTP(
+        email: event.email,
+        phoneNumber: event.phoneNumber,
+        type: event.type,
+        preferredMethod: event.preferredMethod,
+      );
+
+      emit(
+        AuthOTPSent(
+          sessionId: result['sessionId'],
+          deliveryMethods: List<String>.from(result['deliveryMethods'] ?? []),
+          expiresAt: result['expiresAt'],
+          message: 'OTP sent successfully',
+        ),
+      );
+
+      _logger.i('OTP sent successfully');
+    } catch (e, stackTrace) {
+      _logger.e('Send OTP error', error: e, stackTrace: stackTrace);
+      emit(
+        AuthError(
+          message: e is AppException ? e.message : 'Failed to send OTP',
+          errorCode: e is AppException ? e.code : null,
+        ),
+      );
+    }
+  }
+
+  /// Handles OTP verification request
+  Future<void> _onOTPVerifyRequested(
+    AuthOTPVerifyRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    try {
+      _logger.i('Verifying OTP for session: ${event.sessionId}');
+      emit(const AuthLoading());
+
+      final result = await _userRepository.verifyOTP(
+        sessionId: event.sessionId,
+        code: event.code,
+        email: event.email,
+      );
+
+      if (result['verified'] == true) {
+        // Successful verification
+        final userData = result['user'];
+        if (userData != null) {
+          final user = UserModel.fromJson(userData);
+          emit(AuthAuthenticated(user: user));
+          _logger.i('OTP verification successful: ${user.username}');
+        } else {
+          emit(
+            const AuthError(
+              message: 'Verification successful but user data not found',
+            ),
+          );
+        }
+      } else {
+        // Failed verification
+        final attemptsRemaining = result['attemptsRemaining'] ?? 0;
+        emit(
+          AuthOTPVerificationFailed(
+            message: 'Invalid OTP code. Please try again.',
+            attemptsRemaining: attemptsRemaining,
+            sessionId: event.sessionId,
+          ),
+        );
+        _logger.w(
+          'OTP verification failed, attempts remaining: $attemptsRemaining',
+        );
+      }
+    } catch (e, stackTrace) {
+      _logger.e('Verify OTP error', error: e, stackTrace: stackTrace);
+      emit(
+        AuthError(
+          message: e is AppException ? e.message : 'Failed to verify OTP',
+          errorCode: e is AppException ? e.code : null,
+        ),
+      );
+    }
+  }
+
+  /// Handles OTP resend request
+  Future<void> _onOTPResendRequested(
+    AuthOTPResendRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    try {
+      _logger.i('Resending OTP for session: ${event.sessionId}');
+      emit(const AuthLoading());
+
+      final result = await _userRepository.resendOTP(
+        sessionId: event.sessionId,
+      );
+
+      emit(
+        AuthOTPSent(
+          sessionId: result['sessionId'],
+          deliveryMethods: List<String>.from(result['deliveryMethods'] ?? []),
+          expiresAt: result['expiresAt'],
+          message: 'OTP resent successfully',
+        ),
+      );
+
+      _logger.i('OTP resent successfully');
+    } catch (e, stackTrace) {
+      _logger.e('Resend OTP error', error: e, stackTrace: stackTrace);
+      emit(
+        AuthError(
+          message: e is AppException ? e.message : 'Failed to resend OTP',
+          errorCode: e is AppException ? e.code : null,
+        ),
+      );
     }
   }
 

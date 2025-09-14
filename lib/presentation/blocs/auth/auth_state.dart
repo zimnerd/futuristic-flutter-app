@@ -85,3 +85,37 @@ final class AuthPasswordResetEmailSent extends AuthState {
   @override
   List<Object?> get props => [message];
 }
+
+/// State when OTP is sent successfully
+final class AuthOTPSent extends AuthState {
+  const AuthOTPSent({
+    required this.sessionId,
+    required this.deliveryMethods,
+    required this.expiresAt,
+    this.message,
+  });
+
+  final String sessionId;
+  final List<String> deliveryMethods;
+  final String expiresAt;
+  final String? message;
+
+  @override
+  List<Object?> get props => [sessionId, deliveryMethods, expiresAt, message];
+}
+
+/// State when OTP verification fails but user can try again
+final class AuthOTPVerificationFailed extends AuthState {
+  const AuthOTPVerificationFailed({
+    required this.message,
+    required this.attemptsRemaining,
+    required this.sessionId,
+  });
+
+  final String message;
+  final int attemptsRemaining;
+  final String sessionId;
+
+  @override
+  List<Object?> get props => [message, attemptsRemaining, sessionId];
+}

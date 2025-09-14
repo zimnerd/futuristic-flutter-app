@@ -29,6 +29,20 @@ abstract class UserRemoteDataSource {
   });
   Future<void> refreshToken();
 
+  // OTP Authentication
+  Future<Map<String, dynamic>> sendOTP({
+    required String email,
+    String? phoneNumber,
+    required String type,
+    String? preferredMethod,
+  });
+  Future<Map<String, dynamic>> verifyOTP({
+    required String sessionId,
+    required String code,
+    required String email,
+  });
+  Future<Map<String, dynamic>> resendOTP({required String sessionId});
+
   // User Profile
   Future<UserModel> getUserById(String userId);
   Future<UserModel> updateUserProfile(
@@ -269,6 +283,113 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
       _logger.e('Token refresh error: $e');
       if (e is ApiException) rethrow;
       throw ApiException('Token refresh failed: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>> sendOTP({
+    required String email,
+    String? phoneNumber,
+    required String type,
+    String? preferredMethod,
+  }) async {
+    try {
+      _logger.i('Sending OTP to email: $email, type: $type');
+
+      final response = await _apiService.post(
+        '/auth/send-otp',
+        data: {
+          'email': email,
+          if (phoneNumber != null) 'phoneNumber': phoneNumber,
+          'type': type,
+          if (preferredMethod != null) 'preferredMethod': preferredMethod,
+        },
+      );
+
+      if (response.statusCode == 200) {
+        return {
+          'sessionId': response.data['sessionId'],
+          'deliveryMethods': response.data['deliveryMethods'],
+          'expiresAt': response.data['expiresAt'],
+        };
+      } else {
+        throw ApiException('Failed to send OTP: ${response.statusMessage}');
+      }
+    } catch (e) {
+      _logger.e('Send OTP error: $e');
+      if (e is ApiException) rethrow;
+      throw ApiException('Failed to send OTP: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>> verifyOTP({
+    required String sessionId,
+    required String code,
+    required String email,
+  }) async {
+    try {
+      _logger.i('Verifying OTP for session: $sessionId');
+
+      final response = await _apiService.post(
+        '/auth/verify-otp',
+        data: {'sessionId': sessionId, 'code': code, 'email': email},
+      );
+
+      if (response.statusCode == 200) {
+        final verified = response.data['verified'] ?? false;
+
+        if (verified) {
+          // Store tokens if verification successful
+          final tokens = response.data['tokens'];
+          if (tokens != null && tokens['accessToken'] != null) {
+            _apiService.setAuthToken(tokens['accessToken']);
+          }
+
+          return {
+            'verified': true,
+            'user': response.data['user'],
+            'tokens': tokens,
+          };
+        } else {
+          return {
+            'verified': false,
+            'attemptsRemaining': response.data['attemptsRemaining'],
+          };
+        }
+      } else {
+        throw ApiException('Failed to verify OTP: ${response.statusMessage}');
+      }
+    } catch (e) {
+      _logger.e('Verify OTP error: $e');
+      if (e is ApiException) rethrow;
+      throw ApiException('Failed to verify OTP: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>> resendOTP({required String sessionId}) async {
+    try {
+      _logger.i('Resending OTP for session: $sessionId');
+
+      final response = await _apiService.post(
+        '/auth/resend-otp',
+        data: {'sessionId': sessionId},
+      );
+
+      if (response.statusCode == 200) {
+        return {
+          'sessionId': response.data['sessionId'],
+          'deliveryMethods': response.data['deliveryMethods'],
+          'expiresAt': response.data['expiresAt'],
+        };
+      } else {
+        throw ApiException('Failed to resend OTP: ${response.statusMessage}');
+      }
+    } catch (e) {
+      _logger.e('Resend OTP error: $e');
+      if (e is ApiException) rethrow;
+      throw ApiException('Failed to resend OTP: ${e.toString()}');
     }
   }
 

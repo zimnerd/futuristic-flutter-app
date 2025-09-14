@@ -26,6 +26,20 @@ abstract class UserRepository {
   Future<UserModel?> signInWithBiometric();
   Future<void> refreshToken();
 
+  // OTP Authentication
+  Future<Map<String, dynamic>> sendOTP({
+    required String email,
+    String? phoneNumber,
+    required String type,
+    String? preferredMethod,
+  });
+  Future<Map<String, dynamic>> verifyOTP({
+    required String sessionId,
+    required String code,
+    required String email,
+  });
+  Future<Map<String, dynamic>> resendOTP({required String sessionId});
+
   // User Profile
   Future<UserModel?> getUserById(String userId);
   Future<UserModel> updateUserProfile(
