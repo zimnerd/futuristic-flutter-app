@@ -116,26 +116,43 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
 
         // Store auth tokens for future requests
         if (accessToken != null) {
+          _logger.i('🔐 Setting auth token in API client...');
           _apiClient.setAuthToken(accessToken);
+          _logger.i(
+            '✅ Auth token set in API client: ${accessToken.substring(0, 20)}...',
+          );
+          
           // Also set the token in the service locator for all services
           try {
             await ServiceLocator.instance.setAuthToken(accessToken);
+            _logger.i('✅ Auth token set in service locator');
           } catch (e) {
-            _logger.w('Failed to set auth token in service locator: $e');
+            _logger.w('❌ Failed to set auth token in service locator: $e');
           }
         }
         
         // Store refresh token securely for automatic token refresh
         if (refreshToken != null && accessToken != null) {
           try {
+            _logger.i('💾 Storing tokens securely...');
             final tokenService = ServiceLocator.instance.token;
             await tokenService.storeTokens(
               accessToken: accessToken,
               refreshToken: refreshToken,
             );
-            _logger.d('Tokens stored securely');
+            _logger.i('✅ Tokens stored securely in device storage');
+
+            // Verify tokens were stored correctly
+            final storedAccessToken = await tokenService.getAccessToken();
+            final storedRefreshToken = await tokenService.getRefreshToken();
+            _logger.i(
+              '🔍 Verification - Access token stored: ${storedAccessToken != null}',
+            );
+            _logger.i(
+              '🔍 Verification - Refresh token stored: ${storedRefreshToken != null}',
+            );
           } catch (e) {
-            _logger.w('Failed to store tokens securely: $e');
+            _logger.w('❌ Failed to store tokens securely: $e');
           }
         }
 

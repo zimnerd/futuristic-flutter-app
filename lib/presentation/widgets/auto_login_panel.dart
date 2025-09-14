@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:logger/logger.dart';
 
 import '../../core/config/test_credentials.dart';
+import '../../core/network/api_client.dart';
 import '../blocs/auth/auth_bloc.dart';
 import '../blocs/auth/auth_event.dart';
 import '../blocs/auth/auth_state.dart';
@@ -55,6 +57,10 @@ class AutoLoginPanel extends StatelessWidget {
           ...TestCredentials.testAccounts.map(
             (account) => _AutoLoginButton(account: account),
           ),
+          const SizedBox(height: 16),
+          const Divider(),
+          const SizedBox(height: 8),
+          const _TestApiButton(),
         ],
       ),
     );
@@ -172,6 +178,144 @@ class _AutoLoginButton extends StatelessWidget {
   void _handleAutoLogin(BuildContext context) {
     context.read<AuthBloc>().add(
       AuthSignInRequested(email: account.email, password: account.password),
+    );
+  }
+}
+
+/// Test button to verify authenticated API calls
+class _TestApiButton extends StatefulWidget {
+  const _TestApiButton();
+
+  @override
+  State<_TestApiButton> createState() => _TestApiButtonState();
+}
+
+class _TestApiButtonState extends State<_TestApiButton> {
+  final _logger = Logger();
+  bool _isTesting = false;
+
+  Future<void> _testAuthenticatedApi() async {
+    setState(() {
+      _isTesting = true;
+    });
+
+    try {
+      _logger.i('🧪 Testing authenticated API calls...');
+
+      final apiClient = ApiClient.instance;
+
+      // Test 1: Check if we have an auth token
+      final hasToken = apiClient.authToken != null;
+      _logger.i('🔑 Has auth token: $hasToken');
+
+      if (!hasToken) {
+        _logger.w('⚠️ No auth token available. Please login first.');
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('❌ No auth token. Please login first.'),
+              backgroundColor: Colors.orange,
+            ),
+          );
+        }
+        return;
+      }
+
+      // Test 2: Try to get matching suggestions
+      _logger.i(
+        '📱 Making authenticated request to get matching suggestions...',
+      );
+
+      final response = await apiClient.get(
+        '/matching/suggestions',
+        queryParameters: {'offset': 0, 'limit': 5},
+      );
+
+      if (response.statusCode == 200) {
+        final suggestions = response.data['data'] as List;
+        _logger.i('✅ Successfully retrieved ${suggestions.length} suggestions');
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                '✅ Auth working! Got ${suggestions.length} suggestions',
+              ),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+      } else {
+        _logger.e('❌ API call failed with status: ${response.statusCode}');
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('❌ API call failed: ${response.statusCode}'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      _logger.e('❌ Test failed: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('❌ Test failed: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isTesting = false;
+        });
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<AuthBloc, AuthState>(
+      builder: (context, state) {
+        final isAuthenticated = state is AuthAuthenticated;
+
+        return SizedBox(
+          width: double.infinity,
+          child: ElevatedButton.icon(
+            onPressed: (isAuthenticated && !_isTesting)
+                ? _testAuthenticatedApi
+                : null,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: PulseColors.primary,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            icon: _isTesting
+                ? const SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.white,
+                    ),
+                  )
+                : const Icon(Icons.api, size: 18),
+            label: Text(
+              _isTesting
+                  ? 'Testing API...'
+                  : isAuthenticated
+                  ? 'Test Auth API Calls'
+                  : 'Login Required',
+              style: const TextStyle(fontWeight: FontWeight.w500),
+            ),
+          ),
+        );
+      },
     );
   }
 }

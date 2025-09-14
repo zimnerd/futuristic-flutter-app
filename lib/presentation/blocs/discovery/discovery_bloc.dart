@@ -45,7 +45,7 @@ class DiscoveryBloc extends Bloc<DiscoveryEvent, DiscoveryState> {
       final filters = event.filters ?? const DiscoveryFilters();
       final users = await _discoveryService.getDiscoverableUsers(
         filters: filters,
-        reset: event.resetStack,
+        // reset: event.resetStack, // Removed - backend doesn't support this parameter
       );
 
       if (users.isEmpty) {

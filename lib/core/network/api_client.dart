@@ -61,6 +61,11 @@ class ApiClient {
           // Add auth token if available
           if (_authToken != null) {
             options.headers['Authorization'] = 'Bearer $_authToken';
+            _logger.i(
+              '🔑 Auth token added to request: ${_authToken!.substring(0, 20)}...',
+            );
+          } else {
+            _logger.w('⚠️ No auth token available for request');
           }
 
           _logger.d('🚀 ${options.method} ${options.uri}');

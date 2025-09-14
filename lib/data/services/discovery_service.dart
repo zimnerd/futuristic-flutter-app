@@ -21,14 +21,14 @@ class DiscoveryService {
     DiscoveryFilters? filters,
     int offset = 0,
     int limit = 10,
-    bool reset = false,
+    // bool reset = false, // Removed - backend doesn't support this parameter
   }) async {
     try {
       // Implement actual API call to backend
       final queryParams = <String, dynamic>{
         'offset': offset,
         'limit': limit,
-        'reset': reset,
+        // 'reset': reset, // Removed - backend doesn't support this parameter
       };
       
       // Add filter parameters if provided
