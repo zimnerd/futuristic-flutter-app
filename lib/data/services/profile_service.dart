@@ -10,17 +10,21 @@ import '../../domain/services/api_service.dart';
 import '../exceptions/app_exceptions.dart';
 import '../models/profile_model.dart';
 import '../../domain/entities/user_profile.dart' as domain;
+import 'auth_service.dart';
 
 /// Service for managing user profiles and related operations
 class ProfileService {
   final ApiService _apiService;
+  final AuthService _authService;
   final Logger _logger;
   final Uuid _uuid = const Uuid();
 
   ProfileService({
     required ApiService apiService,
+    required AuthService authService,
     Logger? logger,
   })  : _apiService = apiService,
+        _authService = authService,
         _logger = logger ?? Logger();
 
   /// Get user profile by ID
@@ -69,6 +73,15 @@ class ProfileService {
       _logger.e('❌ Unexpected error fetching current profile: $e');
       throw UserException('Failed to fetch current profile');
     }
+  }
+
+  /// Helper method to get current user ID
+  Future<String> _getCurrentUserId() async {
+    final currentUser = await _authService.getCurrentUser();
+    if (currentUser == null) {
+      throw AuthException('No authenticated user found');
+    }
+    return currentUser.id;
   }
 
   /// Create new user profile
@@ -160,11 +173,11 @@ class ProfileService {
 
   /// Upload photo by path (wrapper for BLoC compatibility)
   Future<String> uploadPhoto(String photoPath) async {
-    // Note: This requires getting the current user ID
-    // For now, we'll assume we can get it from a static method or token
+    // Get the current user ID from auth service
+    final currentUserId = await _getCurrentUserId();
     final file = File(photoPath);
     final photo = await uploadPhotoWithDetails(
-      userId: 'current', // TODO: Get actual current user ID
+      userId: currentUserId,
       imageFile: file,
     );
     return photo.url;
@@ -217,9 +230,10 @@ class ProfileService {
   /// Delete photo by URL (wrapper for BLoC compatibility)
   Future<void> deletePhoto(String photoUrl) async {
     // Extract photo ID from URL and get current user ID
+    final currentUserId = await _getCurrentUserId();
     final photoId = photoUrl.split('/').last.split('.').first;
     return deletePhotoWithDetails(
-      userId: 'current', // TODO: Get actual current user ID
+      userId: currentUserId,
       photoId: photoId,
     );
   }
@@ -453,8 +467,37 @@ class ProfileService {
 
   /// Convert domain preferences to data model preferences
   UserPreferences? _convertPreferences(Map<String, dynamic> preferences) {
-    // Return null for now - TODO: implement proper conversion
-    return null;
+    try {
+      return UserPreferences(
+        id: preferences['id'] ?? _uuid.v4(),
+        userId: preferences['userId'] ?? '',
+        ageRange: AgeRange(
+          min: preferences['ageRangeMin'] ?? 18,
+          max: preferences['ageRangeMax'] ?? 50,
+        ),
+        maxDistance: preferences['maxDistance']?.toDouble() ?? 50.0,
+        genderPreference: List<String>.from(preferences['genderPreference'] ?? []),
+        lookingFor: List<String>.from(preferences['lookingFor'] ?? []),
+        dealBreakers: List<String>.from(preferences['dealBreakers'] ?? []),
+        interests: List<String>.from(preferences['interests'] ?? []),
+        lifestyle: LifestylePreferences(
+          drinkingHabits: preferences['drinkingHabits'],
+          smokingHabits: preferences['smokingHabits'],
+          exerciseFrequency: preferences['exerciseFrequency'],
+          dietType: preferences['dietType'],
+          religiosity: preferences['religiosity'],
+          politicalViews: preferences['politicalViews'],
+          hobbies: List<String>.from(preferences['hobbies'] ?? []),
+          musicGenres: List<String>.from(preferences['musicGenres'] ?? []),
+          travelPreferences: List<String>.from(preferences['travelPreferences'] ?? []),
+        ),
+        createdAt: DateTime.tryParse(preferences['createdAt'] ?? '') ?? DateTime.now(),
+        updatedAt: DateTime.tryParse(preferences['updatedAt'] ?? '') ?? DateTime.now(),
+      );
+    } catch (e) {
+      _logger.e('Failed to convert preferences: $e');
+      return null;
+    }
   }
 
   /// Convert domain location to data model location

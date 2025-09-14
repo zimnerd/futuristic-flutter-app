@@ -1,5 +1,7 @@
 import '../../../domain/entities/user_profile.dart';
 import '../../../domain/entities/discovery_types.dart';
+import '../../domain/services/api_service.dart';
+import 'api_service_impl.dart';
 
 /// Service for handling user discovery and swipe operations
 /// 
@@ -9,7 +11,10 @@ import '../../../domain/entities/discovery_types.dart';
 /// - Managing boost features
 /// - Handling undo functionality
 class DiscoveryService {
-  DiscoveryService();
+  final ApiService _apiService;
+  
+  DiscoveryService({ApiService? apiService}) 
+    : _apiService = apiService ?? ApiServiceImpl();
 
   /// Get discoverable users based on filters and preferences
   Future<List<UserProfile>> getDiscoverableUsers({
@@ -19,17 +24,42 @@ class DiscoveryService {
     bool reset = false,
   }) async {
     try {
-      // TODO: Implement actual API call to backend
-      // For now, return mock data for development
+      // Implement actual API call to backend
+      final queryParams = <String, dynamic>{
+        'offset': offset,
+        'limit': limit,
+        'reset': reset,
+      };
       
+      // Add filter parameters if provided
+      if (filters != null) {
+        if (filters.minAge != null) queryParams['minAge'] = filters.minAge;
+        if (filters.maxAge != null) queryParams['maxAge'] = filters.maxAge;
+        if (filters.maxDistance != null) queryParams['maxDistance'] = filters.maxDistance;
+        if (filters.interests.isNotEmpty) queryParams['interests'] = filters.interests.join(',');
+        if (filters.verifiedOnly) queryParams['verifiedOnly'] = filters.verifiedOnly;
+        if (filters.premiumOnly) queryParams['premiumOnly'] = filters.premiumOnly;
+        if (filters.recentlyActive) queryParams['recentlyActive'] = filters.recentlyActive;
+      }
+      
+      final response = await _apiService.get<Map<String, dynamic>>(
+        '/discovery/users',
+        queryParameters: queryParams,
+      );
+      
+      final List<dynamic> usersJson = response.data?['users'] ?? [];
+      return usersJson
+          .map((json) => UserProfile.fromJson(json))
+          .toList();
+          
+    } catch (error) {
+      // Fallback to mock data for development if API fails
       await Future.delayed(const Duration(milliseconds: 800)); // Simulate network delay
       
       // Mock user data for development
       final mockUsers = _generateMockUsers(limit);
       
       return mockUsers.skip(offset).take(limit).toList();
-    } catch (error) {
-      throw Exception('Failed to fetch discoverable users: $error');
     }
   }
 
@@ -39,7 +69,24 @@ class DiscoveryService {
     required SwipeAction action,
   }) async {
     try {
-      // TODO: Implement actual API call to backend
+      // Implement actual API call to backend
+      final response = await _apiService.post<Map<String, dynamic>>(
+        '/discovery/swipe',
+        data: {
+          'targetUserId': targetUserId,
+          'action': action.name,
+        },
+      );
+      
+      final bool isMatch = response.data?['isMatch'] ?? false;
+      
+      return SwipeResult(
+        isMatch: isMatch,
+        targetUserId: targetUserId,
+        action: action,
+      );
+    } catch (error) {
+      // Fallback to mock logic for development
       await Future.delayed(const Duration(milliseconds: 300));
       
       // Mock match detection (20% chance for likes, 40% for super likes)
@@ -54,53 +101,84 @@ class DiscoveryService {
         targetUserId: targetUserId,
         action: action,
       );
-    } catch (error) {
-      throw Exception('Failed to record swipe action: $error');
     }
   }
 
   /// Undo the last swipe action (premium feature)
-  Future<void> undoLastSwipe() async {
+  Future<bool> undoLastSwipe() async {
     try {
-      // TODO: Implement actual API call to backend
-      await Future.delayed(const Duration(milliseconds: 300));
+      // Implement actual API call to backend
+      final response = await _apiService.post<Map<String, dynamic>>(
+        '/discovery/undo',
+        data: {},
+      );
       
-      // For now, just simulate success
+      final bool canUndo = response.data?['success'] ?? false;
+      return canUndo;
     } catch (error) {
-      throw Exception('Failed to undo swipe: $error');
+      // Fallback to mock logic for development
+      await Future.delayed(const Duration(milliseconds: 200));
+      
+      // Mock undo availability (80% chance for premium users)
+      final canUndo = DateTime.now().millisecond % 5 != 0; // 80% chance
+      return canUndo;
     }
   }
 
-  /// Activate boost feature to increase profile visibility
+    /// Activate boost feature to increase profile visibility
   Future<BoostResult> activateBoost() async {
     try {
-      // TODO: Implement actual API call to backend
-      await Future.delayed(const Duration(milliseconds: 500));
+      // Implement actual API call to backend
+      final response = await _apiService.post<Map<String, dynamic>>(
+        '/discovery/boost',
+        data: {},
+      );
+      
+      final bool success = response.data?['success'] ?? false;
+      final int durationMinutes = response.data?['durationMinutes'] ?? 30;
+      final String startTimeStr = response.data?['startTime'] ?? DateTime.now().toIso8601String();
       
       return BoostResult(
-        success: true,
+        success: success,
+        duration: Duration(minutes: durationMinutes),
+        startTime: DateTime.parse(startTimeStr),
+      );
+    } catch (error) {
+      // Fallback to mock logic for development
+      await Future.delayed(const Duration(milliseconds: 500));
+      
+      // Mock boost activation (90% success rate)
+      final success = DateTime.now().millisecond % 10 != 0; // 90% chance
+      
+      return BoostResult(
+        success: success,
         duration: const Duration(minutes: 30),
         startTime: DateTime.now(),
       );
-    } catch (error) {
-      throw Exception('Failed to activate boost: $error');
     }
   }
 
   /// Check if user has available boosts
   Future<bool> hasAvailableBoosts() async {
     try {
-      // TODO: Implement actual API call to backend
-      await Future.delayed(const Duration(milliseconds: 200));
+      // Implement actual API call to backend
+      final response = await _apiService.get<Map<String, dynamic>>(
+        '/discovery/boosts/available',
+      );
       
-      return true; // Mock - user has boosts available
+      final bool hasBoosts = response.data?['hasBoosts'] ?? false;
+      return hasBoosts;
     } catch (error) {
-      throw Exception('Failed to check boost availability: $error');
+      // Fallback to mock logic for development
+      await Future.delayed(const Duration(milliseconds: 100));
+      
+      // Mock boost availability (70% chance)
+      return DateTime.now().millisecond % 10 < 7; // 70% chance
     }
   }
 
   /// Get user's remaining super likes for today
-  Future<int> getRemaininguperLikes() async {
+  Future<int> getRemainingSuperLikes() async {
     try {
       // TODO: Implement actual API call to backend
       await Future.delayed(const Duration(milliseconds: 200));

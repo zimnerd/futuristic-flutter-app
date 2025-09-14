@@ -133,7 +133,9 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
   }
 
   void _acceptCall() async {
-    Navigator.of(context).pop(); // Close dialog
+    if (mounted) {
+      Navigator.of(context).pop(); // Close dialog
+    }
     try {
       // Answer WebRTC call
       await _webRTCService.answerCall(
@@ -141,9 +143,11 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
         token: 'placeholder_token', // Should come from backend
       );
       
-      setState(() {
-        _isCallConnected = true;
-      });
+      if (mounted) {
+        setState(() {
+          _isCallConnected = true;
+        });
+      }
       _startCallTimer();
     } catch (e) {
       debugPrint('Failed to accept call: $e');
@@ -151,8 +155,10 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
   }
 
   void _rejectCall() {
-    Navigator.of(context).pop(); // Close dialog
-    Navigator.of(context).pop(); // Exit screen
+    if (mounted) {
+      Navigator.of(context).pop(); // Close dialog
+      Navigator.of(context).pop(); // Exit screen
+    }
   }
 
   void _startCallTimer() {
@@ -205,13 +211,17 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
   void _endCall() async {
     try {
       await _webRTCService.endCall();
-      setState(() {
-        _isCallConnected = false;
-      });
-      Navigator.of(context).pop();
+      if (mounted) {
+        setState(() {
+          _isCallConnected = false;
+        });
+        Navigator.of(context).pop();
+      }
     } catch (e) {
       debugPrint('Failed to end call: $e');
-      Navigator.of(context).pop();
+      if (mounted) {
+        Navigator.of(context).pop();
+      }
     }
   }
 

@@ -6,11 +6,15 @@ import '../models/subscription.dart';
 import '../models/subscription_plan.dart';
 import '../models/subscription_usage.dart';
 import '../models/api_response.dart';
+import '../../domain/services/api_service.dart';
+import 'auth_service.dart';
 import 'saved_payment_methods_service.dart';
 
 /// Subscription service for managing user subscriptions
 class SubscriptionService {
   final SavedPaymentMethodsService _savedMethodsService;
+  final ApiService _apiService;
+  final AuthService _authService;
   
   // Logger instance
   final Logger _logger = Logger();
@@ -21,11 +25,58 @@ class SubscriptionService {
 
   SubscriptionService({
     required SavedPaymentMethodsService savedMethodsService,
-  }) : _savedMethodsService = savedMethodsService;
+    required ApiService apiService,
+    required AuthService authService,
+  }) : _savedMethodsService = savedMethodsService,
+       _apiService = apiService,
+       _authService = authService;
 
   // Streams
   Stream<Subscription?> get subscriptionStream => _subscriptionController.stream;
   Stream<SubscriptionUsage?> get usageStream => _usageController.stream;
+
+  /// Helper method to get current user ID
+  Future<String> _getCurrentUserId() async {
+    final currentUser = await _authService.getCurrentUser();
+    if (currentUser == null) {
+      throw Exception('No authenticated user found');
+    }
+    return currentUser.id;
+  }
+
+  /// Calculate final amount after applying promo code discounts
+  Future<double> _calculateFinalAmount(SubscriptionPlan plan, String? promoCode) async {
+    double finalAmount = plan.amount;
+    
+    if (promoCode != null && promoCode.isNotEmpty) {
+      try {
+        // Call backend to validate promo code and get discount
+        final response = await _apiService.post<Map<String, dynamic>>(
+          '/subscriptions/validate-promo',
+          data: {
+            'promoCode': promoCode,
+            'planId': plan.id,
+          },
+        );
+        
+        if (response.data?['valid'] == true) {
+          final discount = response.data?['discount'] ?? 0.0;
+          final discountType = response.data?['discountType'] ?? 'percentage';
+          
+          if (discountType == 'percentage') {
+            finalAmount = finalAmount * (1 - discount / 100);
+          } else if (discountType == 'fixed') {
+            finalAmount = (finalAmount - discount).clamp(0.0, finalAmount);
+          }
+        }
+      } catch (e) {
+        _logger.w('Failed to validate promo code: $e');
+        // Continue with original price if promo validation fails
+      }
+    }
+    
+    return finalAmount;
+  }
 
   /// Get current active subscription
   Future<Subscription?> getCurrentSubscription() async {
@@ -58,8 +109,8 @@ class SubscriptionService {
         return ApiResponse.error('Payment method not found');
       }
 
-      // Calculate pricing (simplified for now)
-      final finalAmount = plan.amount; // TODO: Apply promo code discounts
+      // Calculate pricing with promo code discounts
+      final finalAmount = await _calculateFinalAmount(plan, promoCode);
 
       // Process initial payment
       final paymentResult = await _savedMethodsService.payWithSavedMethod(
@@ -79,9 +130,10 @@ class SubscriptionService {
       }
 
       // Create subscription record
+      final currentUserId = await _getCurrentUserId();
       final subscription = Subscription(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
-        userId: 'current_user', // TODO: Get from auth service
+        userId: currentUserId,
         planId: plan.id,
         status: SubscriptionStatus.active,
         startDate: DateTime.now(),
