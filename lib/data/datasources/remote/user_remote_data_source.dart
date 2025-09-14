@@ -113,10 +113,17 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
         final responseData = response.data['data'];
         final userData = responseData['user'];
         final accessToken = responseData['accessToken'];
+        final refreshToken = responseData['refreshToken'];
 
-        // Store auth token for future requests
+        // Store auth tokens for future requests
         if (accessToken != null) {
           _apiService.setAuthToken(accessToken);
+        }
+        
+        // TODO: Store refresh token for token refresh functionality
+        // This would typically be stored securely for automatic token refresh
+        if (refreshToken != null) {
+          _logger.d('Refresh token received and ready for storage');
         }
 
         return UserModel.fromJson(userData);
