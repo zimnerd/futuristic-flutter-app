@@ -148,6 +148,9 @@ class EmergencyButtonWidget extends StatelessWidget {
   }
 
   Future<void> _triggerEmergency(BuildContext context) async {
+    final safetyBloc = context.read<SafetyBloc>();
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
+    
     String location = "Location unavailable";
     
     try {
@@ -185,14 +188,14 @@ class EmergencyButtonWidget extends StatelessWidget {
       location = "Location error: $e";
     }
     
-    context.read<SafetyBloc>().add(
+    safetyBloc.add(
       TriggerEmergencyContact(
         location: location,
         additionalInfo: 'Emergency alert triggered from app',
       ),
     );
 
-    ScaffoldMessenger.of(context).showSnackBar(
+    scaffoldMessenger.showSnackBar(
       const SnackBar(
         content: Text('Emergency alert sent! Help is on the way.'),
         backgroundColor: Colors.red,

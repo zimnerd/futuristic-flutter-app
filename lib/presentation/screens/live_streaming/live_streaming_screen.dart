@@ -365,7 +365,7 @@ class _LiveStreamingScreenState extends State<LiveStreamingScreen>
         builder: (context) => StartStreamScreen(streamToEdit: stream),
       ),
     ).then((result) {
-      if (result != null) {
+      if (result != null && mounted) {
         // Refresh the streams list if stream was updated
         context.read<LiveStreamingBloc>().add(const LoadLiveStreams());
       }
@@ -385,7 +385,11 @@ class _LiveStreamingScreenState extends State<LiveStreamingScreen>
           ),
           TextButton(
             onPressed: () async {
-              Navigator.pop(context);
+              final navigator = Navigator.of(context);
+              final scaffoldMessenger = ScaffoldMessenger.of(context);
+              final liveStreamingBloc = context.read<LiveStreamingBloc>();
+
+              navigator.pop();
               
               // Call the service to delete the stream
               try {
@@ -399,15 +403,15 @@ class _LiveStreamingScreenState extends State<LiveStreamingScreen>
                 if (!mounted) return;
 
                 if (success) {
-                  ScaffoldMessenger.of(context).showSnackBar(
+                  scaffoldMessenger.showSnackBar(
                     const SnackBar(content: Text('Stream ended successfully')),
                   );
                   // Refresh the streams list
-                  context.read<LiveStreamingBloc>().add(
+                  liveStreamingBloc.add(
                     const LoadLiveStreams(),
                   );
                 } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
+                  scaffoldMessenger.showSnackBar(
                     const SnackBar(
                       content: Text('Failed to end stream. Please try again.'),
                       backgroundColor: Colors.red,
@@ -416,7 +420,7 @@ class _LiveStreamingScreenState extends State<LiveStreamingScreen>
                 }
               } catch (e) {
                 if (!mounted) return;
-                ScaffoldMessenger.of(context).showSnackBar(
+                scaffoldMessenger.showSnackBar(
                   SnackBar(
                     content: Text('Error: ${e.toString()}'),
                     backgroundColor: Colors.red,
@@ -484,7 +488,10 @@ class _LiveStreamingScreenState extends State<LiveStreamingScreen>
             ),
             TextButton(
               onPressed: () async {
-                Navigator.pop(context);
+                final navigator = Navigator.of(context);
+                final scaffoldMessenger = ScaffoldMessenger.of(context);
+
+                navigator.pop();
                 
                 // Call the service to report the stream
                 try {
@@ -499,13 +506,13 @@ class _LiveStreamingScreenState extends State<LiveStreamingScreen>
                   if (!mounted) return;
 
                   if (success) {
-                    ScaffoldMessenger.of(context).showSnackBar(
+                    scaffoldMessenger.showSnackBar(
                       const SnackBar(
                         content: Text('Stream reported successfully'),
                       ),
                     );
                   } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
+                    scaffoldMessenger.showSnackBar(
                       const SnackBar(
                         content: Text(
                           'Failed to report stream. Please try again.',
@@ -516,7 +523,7 @@ class _LiveStreamingScreenState extends State<LiveStreamingScreen>
                   }
                 } catch (e) {
                   if (!mounted) return;
-                  ScaffoldMessenger.of(context).showSnackBar(
+                  scaffoldMessenger.showSnackBar(
                     SnackBar(
                       content: Text('Error: ${e.toString()}'),
                       backgroundColor: Colors.red,

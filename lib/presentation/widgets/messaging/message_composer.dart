@@ -714,13 +714,17 @@ class _MessageComposerState extends State<MessageComposer>
 
       if (image != null) {
         // Send image message
-        context.read<MessagingBloc>().add(SendMessage(
-          conversationId: widget.conversationId,
-          senderId: widget.senderId,
-          content: 'Photo',
-          type: MessageType.image,
-          mediaUrl: image.path,
-        ));
+        if (mounted) {
+          context.read<MessagingBloc>().add(
+            SendMessage(
+              conversationId: widget.conversationId,
+              senderId: widget.senderId,
+              content: 'Photo',
+              type: MessageType.image,
+              mediaUrl: image.path,
+            ),
+          );
+        }
         
         _showSnackbar('Photo sent');
         _hideAttachments();
@@ -784,10 +788,13 @@ class _MessageComposerState extends State<MessageComposer>
         }
       }
 
+      // Check if widget is still mounted before using context
+      if (!mounted) return;
+
       // Show options for video recording or gallery selection
       final result = await showDialog<String>(
         context: context,
-        builder: (context) => AlertDialog(
+        builder: (dialogContext) => AlertDialog(
           title: const Text('Select Video'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
@@ -795,12 +802,12 @@ class _MessageComposerState extends State<MessageComposer>
               ListTile(
                 leading: const Icon(Icons.videocam),
                 title: const Text('Record Video'),
-                onTap: () => Navigator.pop(context, 'record'),
+                onTap: () => Navigator.pop(dialogContext, 'record'),
               ),
               ListTile(
                 leading: const Icon(Icons.video_library),
                 title: const Text('Choose from Gallery'),
-                onTap: () => Navigator.pop(context, 'gallery'),
+                onTap: () => Navigator.pop(dialogContext, 'gallery'),
               ),
             ],
           ),
