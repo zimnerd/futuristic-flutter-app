@@ -290,6 +290,113 @@ class EventService {
       throw EventServiceException('Network error: $e');
     }
   }
+
+  /// Send event invitations to users
+  Future<void> sendEventInvitations(
+    String eventId,
+    List<String> userIds,
+  ) async {
+    try {
+      final response = await http.post(
+        Uri.parse('${ApiConstants.baseUrl}/events/invitations'),
+        headers: {
+          'Authorization': 'Bearer $_authToken',
+          'Content-Type': 'application/json',
+        },
+        body: json.encode({'eventId': eventId, 'userIds': userIds}),
+      );
+
+      if (response.statusCode != 201) {
+        final errorData = json.decode(response.body);
+        throw EventServiceException(
+          errorData['message'] ?? 'Failed to send invitations',
+          statusCode: response.statusCode,
+        );
+      }
+    } catch (e) {
+      if (e is EventServiceException) rethrow;
+      throw EventServiceException('Network error: $e');
+    }
+  }
+
+  /// Respond to an event invitation
+  Future<void> respondToInvitation(String invitationId, String status) async {
+    try {
+      final response = await http.patch(
+        Uri.parse(
+          '${ApiConstants.baseUrl}/events/invitations/$invitationId/respond',
+        ),
+        headers: {
+          'Authorization': 'Bearer $_authToken',
+          'Content-Type': 'application/json',
+        },
+        body: json.encode({'status': status.toUpperCase()}),
+      );
+
+      if (response.statusCode != 200) {
+        final errorData = json.decode(response.body);
+        throw EventServiceException(
+          errorData['message'] ?? 'Failed to respond to invitation',
+          statusCode: response.statusCode,
+        );
+      }
+    } catch (e) {
+      if (e is EventServiceException) rethrow;
+      throw EventServiceException('Network error: $e');
+    }
+  }
+
+  /// Get received invitations for current user
+  Future<List<Map<String, dynamic>>> getReceivedInvitations() async {
+    try {
+      final response = await http.get(
+        Uri.parse('${ApiConstants.baseUrl}/events/invitations/received'),
+        headers: {
+          'Authorization': 'Bearer $_authToken',
+          'Content-Type': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        return List<Map<String, dynamic>>.from(json.decode(response.body));
+      } else {
+        final errorData = json.decode(response.body);
+        throw EventServiceException(
+          errorData['message'] ?? 'Failed to get invitations',
+          statusCode: response.statusCode,
+        );
+      }
+    } catch (e) {
+      if (e is EventServiceException) rethrow;
+      throw EventServiceException('Network error: $e');
+    }
+  }
+
+  /// Get sent invitations by current user
+  Future<List<Map<String, dynamic>>> getSentInvitations() async {
+    try {
+      final response = await http.get(
+        Uri.parse('${ApiConstants.baseUrl}/events/invitations/sent'),
+        headers: {
+          'Authorization': 'Bearer $_authToken',
+          'Content-Type': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        return List<Map<String, dynamic>>.from(json.decode(response.body));
+      } else {
+        final errorData = json.decode(response.body);
+        throw EventServiceException(
+          errorData['message'] ?? 'Failed to get sent invitations',
+          statusCode: response.statusCode,
+        );
+      }
+    } catch (e) {
+      if (e is EventServiceException) rethrow;
+      throw EventServiceException('Network error: $e');
+    }
+  }
 }
 
 /// Exception class for event service errors

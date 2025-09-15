@@ -33,10 +33,12 @@ import '../screens/call/video_call_screen.dart';
 import '../screens/discovery/discovery_screen.dart';
 import '../screens/features/advanced_features_screen.dart';
 import '../../../domain/entities/user_profile.dart';
+import '../../../domain/entities/event.dart';
 // Events screens
 import '../screens/events/events_screen.dart';
 import '../../../features/events/presentation/screens/event_details_screen.dart';
 import '../../../features/events/presentation/screens/create_event_screen.dart';
+import '../../../features/events/presentation/screens/event_communication_screen.dart';
 
 /// Application routes configuration using GoRouter
 /// Provides type-safe navigation with route guards and transitions
@@ -140,6 +142,27 @@ class AppRouter {
         path: AppRoutes.createEvent,
         name: 'createEvent',
         builder: (context, state) => const CreateEventScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.eventCommunication,
+        name: 'eventCommunication',
+        builder: (context, state) {
+          final eventId = state.pathParameters['eventId'] ?? '';
+          // For now, create a dummy event. In real implementation, fetch from state/service
+          final event = Event(
+            id: eventId,
+            title: 'Sample Event',
+            description: 'Sample event description',
+            location: 'Sample location',
+            coordinates: const EventCoordinates(lat: 0.0, lng: 0.0),
+            date: DateTime.now(),
+            image: null,
+            category: 'Social',
+            createdAt: DateTime.now(),
+            attendees: [],
+          );
+          return EventCommunicationScreen(event: event);
+        },
       ),
       
       // Advanced feature routes (full screen, not in bottom nav)
@@ -357,6 +380,7 @@ class AppRoutes {
   // Events routes
   static const String eventDetails = '/events/:eventId';
   static const String createEvent = '/events/create';
+  static const String eventCommunication = '/events/:eventId/communication';
 }
 
 /// Main navigation wrapper with bottom navigation bar
