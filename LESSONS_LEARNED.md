@@ -5,7 +5,70 @@ This document captures key learnings from building the **Flutter mobile dating a
 
 ---
 
-## 🚀 **Latest Progress: Discovery Interface & Swipe System Achievement**
+## � **Latest Progress: API Endpoint Alignment & Service Layer Refactoring**
+
+### ✅ **Batch 10 Complete: Backend-Mobile API Alignment (Latest)**
+**Date**: December 2024  
+**Context**: Critical refactoring to align mobile app API calls with actual backend NestJS implementation
+
+#### **🔥 CRITICAL SUCCESS: Complete API Endpoint Alignment (Major Compatibility Fix)**
+- **Before**: Mobile app using outdated/incorrect API endpoints causing potential communication failures
+- **After**: All mobile services aligned with backend NestJS controllers for reliable API communication
+- **Achievement**: DRY, professional service layer with centralized functionality and proper error handling
+
+#### **API Alignment Achievements**
+✅ **Core Service Endpoints Updated**:
+- **Profile Service**: `/users/profile` → `/users/me`, `/users/photos` → `/media/upload`
+- **Media Operations**: Unified `/media/*` endpoints for upload, get, delete operations
+- **Authentication**: Proper `/auth/*` endpoint usage for login, register, refresh
+- **User Management**: Consistent `/users/*` endpoints for profile, location, preferences
+
+✅ **Messaging & Communication**:
+- **Block/Unblock**: `POST /users/unblock` → `DELETE /users/block/:userId` (proper REST)
+- **Reporting**: Centralized `/reports` endpoint for all report types
+- **Conversations**: Verified `/messaging/*` endpoints match backend implementation
+- **Real-time**: WebSocket and WebRTC endpoints confirmed working
+
+✅ **Analytics & Payments**:
+- **Analytics**: `/analytics/events` → `/analytics/track/event` and other corrected paths
+- **Payment Methods**: `/payments/*` → `/payment/*` to match backend controller
+- **Payment Processing**: Updated to use `/payment/create-intent` flow
+
+#### **Service Layer Architecture Improvements**
+✅ **Dedicated Service Classes Created**:
+- **`ReportsService`**: Centralized reporting for profiles, conversations, messages, content
+- **`BlockService`**: Isolated block/unblock functionality with proper error handling
+- **`Report` Entity**: New domain entity with proper type safety and validation
+- **Clean Architecture**: Services properly abstracted from UI layer
+
+✅ **API Client Improvements**:
+- **Consistent Naming**: All endpoints follow backend controller patterns
+- **Proper HTTP Methods**: REST compliance (GET, POST, PUT, DELETE) correctly used
+- **Error Handling**: Standardized DioException handling across all services
+- **Type Safety**: Strong typing for all API request/response patterns
+
+#### **Key Technical Lessons**
+🔑 **API Design Consistency**:
+- Always align mobile endpoints with actual backend implementation
+- Use REST conventions consistently (nouns for resources, proper HTTP methods)
+- Centralize report functionality rather than scattering across features
+- Prefer unified endpoints (`/reports`) over feature-specific ones
+
+🔑 **Service Layer Best Practices**:
+- Create dedicated services for cross-cutting concerns (reports, blocking)
+- Maintain proper separation between API client and business logic
+- Use consistent error handling patterns across all services
+- Keep services focused on single responsibilities
+
+🔑 **Maintenance Strategy**:
+- Regular API alignment audits to prevent drift
+- Document endpoint mappings for future developers
+- Use backend OpenAPI/Swagger as source of truth
+- Test endpoint changes end-to-end before deployment
+
+---
+
+## 🚀 **Previous Progress: Discovery Interface & Swipe System Achievement**
 
 ### ✅ **Batch 9 Complete: Discovery Interface & Swipe System (Latest)**
 **Date**: September 11, 2025  

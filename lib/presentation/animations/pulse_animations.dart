@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/physics.dart';
 
 import '../theme/pulse_colors.dart';
 
@@ -517,7 +516,7 @@ class _MatchCelebrationWidgetState extends State<MatchCelebrationWidget>
               ),
               boxShadow: [
                 BoxShadow(
-                  color: PulseColors.primary.withOpacity(0.3),
+                  color: PulseColors.primary.withValues(alpha: 0.3),
                   blurRadius: 20,
                   spreadRadius: 5,
                 ),

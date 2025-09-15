@@ -32,7 +32,7 @@ class ProfileService {
     try {
       _logger.i('🔍 Fetching profile for user: $userId');
       
-      final response = await _apiClient.get('/profiles/$userId');
+      final response = await _apiClient.get('/users/$userId');
       
       if (response.statusCode == 200) {
         final profile = UserProfile.fromJson(response.data['profile']);
@@ -55,7 +55,7 @@ class ProfileService {
     try {
       _logger.i('🔍 Fetching current user profile');
 
-      final response = await _apiClient.get('/profiles/me');
+      final response = await _apiClient.get('/users/me');
 
       if (response.statusCode == 200) {
         final data = response.data as Map<String, dynamic>;
@@ -103,7 +103,7 @@ class ProfileService {
         'location': location?.toJson(),
       };
       
-      final response = await _apiClient.post('/profiles', data: data);
+      final response = await _apiClient.post('/users/me/profile', data: data);
       
       if (response.statusCode == 201) {
         final profile = UserProfile.fromJson(response.data['profile']);
@@ -153,7 +153,7 @@ class ProfileService {
       if (preferences != null) data['preferences'] = preferences.toJson();
       if (location != null) data['location'] = location.toJson();
       
-      final response = await _apiClient.put('/profiles/$userId', data: data);
+      final response = await _apiClient.put('/users/me/profile', data: data);
       
       if (response.statusCode == 200) {
         final profile = UserProfile.fromJson(response.data['profile']);
@@ -207,7 +207,7 @@ class ProfileService {
       });
       
       final response = await _apiClient.post(
-        '/profiles/$userId/photos',
+        '/media/upload',
         data: formData,
       );
       
@@ -247,7 +247,7 @@ class ProfileService {
       _logger.i('🗑️ Deleting photo: $photoId for user: $userId');
       
       final response = await _apiClient.delete(
-        '/profiles/$userId/photos/$photoId',
+        '/media/files/$photoId',
       );
       
       if (response.statusCode == 200) {
@@ -277,7 +277,7 @@ class ProfileService {
       };
       
       final response = await _apiClient.patch(
-        '/profiles/$userId/photos/reorder',
+        '/users/me/photos/reorder',
         data: data,
       );
       
@@ -352,7 +352,7 @@ class ProfileService {
       };
       
       final response = await _apiClient.post(
-        '/profiles/$userId/verification',
+        '/users/me/verification',
         data: data,
       );
       

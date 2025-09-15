@@ -17,12 +17,14 @@ class AutoLoginService {
       _logger.i('🔍 Starting session validation on app startup');
 
       // First, always check authentication status (validates stored session)
+      if (!context.mounted) return;
       context.read<AuthBloc>().add(const AuthStatusChecked());
 
       // Wait a moment to see if session validation succeeds
       await Future.delayed(const Duration(milliseconds: 500));
 
       // Check current auth state after validation attempt
+      if (!context.mounted) return;
       final authState = context.read<AuthBloc>().state;
 
       if (authState is AuthAuthenticated) {
@@ -48,6 +50,7 @@ class AutoLoginService {
         _logger.i('🔐 Auto-logging in as: ${testUser.email}');
 
         // Trigger auto-login event
+        if (!context.mounted) return;
         context.read<AuthBloc>().add(
           AuthAutoLoginRequested(
             email: testUser.email,

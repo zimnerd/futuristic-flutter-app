@@ -35,33 +35,38 @@ class ApiConstants {
   static const String refreshToken = '$auth/refresh';
   static const String logout = '$auth/logout';
   
-  // User endpoints
-  static const String profile = '$users/profile';
-  static const String getCurrentProfile = '$users/profile';
-  static const String updateProfile = '$users/profile';
-  static const String uploadPhoto = '$users/photos';
-  static const String deletePhoto = '$users/photos';
+  // User endpoints - Aligned with backend structure
+  static const String profile = '$users/me';
+  static const String getCurrentProfile = '$users/me';
+  static const String updateProfile = '$users/me';
+  static const String extendedProfile = '$users/me/profile';
+  static const String uploadPhoto = '$media/upload';
+  static const String deletePhoto = '$media/files';
   
   // Matching endpoints
   static const String discover = '$matching/suggestions';
   static const String matches = '$matching/matches';
   static const String likeUser = '$matching/like';
   static const String passUser = '$matching/pass';
-  static const String reportProfile = '$matching/report';
-  static const String blockProfile = '$matching/block';
+  static const String reportProfile = '/reports';
+  static const String blockProfile = '$users/block';
   
-  // Messaging endpoints
+  // Messaging endpoints - Aligned with backend structure
   static const String getConversations = '$messaging/conversations';
-  static const String getMessages = '$messaging/conversations';
-  static const String sendMessage = '$messaging/conversations';
-  static const String markAsRead = '$messaging/conversations';
-  static const String deleteMessage = '$messaging/messages';
+  static const String getMessages =
+      '$messaging/conversations'; // Use with /:conversationId/messages
+  static const String sendMessage =
+      '$messaging/conversations'; // Use with /:conversationId/messages
+  static const String markAsRead =
+      '$messaging/conversations'; // Use with /:conversationId/messages
+  static const String deleteMessage =
+      '$messaging/conversations'; // Use with /:conversationId/messages
   
-  // Media endpoints
-  static const String uploadImage = '$media/images';
-  static const String uploadVideo = '$media/videos';
-  static const String uploadAudio = '$media/audio';
-  static const String uploadFile = '$media/files';
+  // Media endpoints - Unified upload structure
+  static const String uploadImage = '$media/upload';
+  static const String uploadVideo = '$media/upload';
+  static const String uploadAudio = '$media/upload';
+  static const String uploadFile = '$media/upload';
   static const String deleteFile = '$media/files';
   
   // WebSocket events

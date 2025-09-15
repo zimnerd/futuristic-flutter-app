@@ -90,8 +90,8 @@ class _MatchesScreenState extends State<MatchesScreen>
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            PulseColors.primary.withOpacity(0.05),
-            PulseColors.secondary.withOpacity(0.05),
+            PulseColors.primary.withValues(alpha: 0.05),
+            PulseColors.secondary.withValues(alpha: 0.05),
           ],
         ),
       ),
@@ -103,7 +103,7 @@ class _MatchesScreenState extends State<MatchesScreen>
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: PulseColors.primary.withOpacity(0.1),
+                  color: PulseColors.primary.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: const Icon(
@@ -139,10 +139,10 @@ class _MatchesScreenState extends State<MatchesScreen>
                   vertical: 8,
                 ),
                 decoration: BoxDecoration(
-                  color: PulseColors.success.withOpacity(0.1),
+                  color: PulseColors.success.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
-                    color: PulseColors.success.withOpacity(0.3),
+                    color: PulseColors.success.withValues(alpha: 0.3),
                   ),
                 ),
                 child: Row(
@@ -184,7 +184,7 @@ class _MatchesScreenState extends State<MatchesScreen>
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -302,7 +302,7 @@ class _MatchesScreenState extends State<MatchesScreen>
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 10,
             offset: const Offset(0, 5),
           ),

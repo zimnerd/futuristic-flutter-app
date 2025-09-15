@@ -333,12 +333,12 @@ class ApiClient {
       'file': await MultipartFile.fromFile(filePath),
     });
 
-    return await _dio.post('/users/photos', data: formData);
+    return await _dio.post('/media/upload', data: formData);
   }
 
   /// Delete profile photo
   Future<Response> deleteProfilePhoto(String photoId) async {
-    return await _dio.delete('/users/photos/$photoId');
+    return await _dio.delete('/media/$photoId');
   }
 
   /// Update user location
@@ -429,11 +429,12 @@ class ApiClient {
     String? details,
   }) async {
     return await _dio.post(
-      '/matching/report',
+      '/reports',
       data: {
-        'targetUserId': userId,
+        'reportedUserId': userId,
+        'type': 'profile',
         'reason': reason,
-        if (details != null) 'details': details,
+        if (details != null) 'description': details,
       },
     );
   }
@@ -517,7 +518,7 @@ class ApiClient {
 
   /// Unblock a user
   Future<Response> unblockUser(String userId) async {
-    return await _dio.post('/users/unblock', data: {'userId': userId});
+    return await _dio.delete('/users/block/$userId');
   }
 
   /// Report conversation
@@ -527,8 +528,10 @@ class ApiClient {
     String? description,
   }) async {
     return await _dio.post(
-      '/messaging/conversations/$conversationId/report',
+      '/reports',
       data: {
+        'conversationId': conversationId,
+        'type': 'conversation',
         'reason': reason,
         if (description != null) 'description': description,
       },
@@ -777,7 +780,7 @@ class ApiClient {
     required Map<String, dynamic> properties,
   }) async {
     return await _dio.post(
-      '/analytics/events',
+      '/analytics/track/event',
       data: {
         'eventName': eventName,
         'properties': properties,
@@ -788,12 +791,12 @@ class ApiClient {
 
   /// Get user insights
   Future<Response> getUserInsights() async {
-    return await _dio.get('/analytics/insights');
+    return await _dio.get('/analytics/user/behavior');
   }
 
   /// Get app usage statistics
   Future<Response> getUsageStats() async {
-    return await _dio.get('/analytics/usage');
+    return await _dio.get('/analytics/app/usage');
   }
 
   // ===========================================
@@ -802,30 +805,28 @@ class ApiClient {
 
   /// Get payment methods
   Future<Response> getPaymentMethods() async {
-    return await _dio.get('/payments/methods');
+    return await _dio.get('/payment/methods');
   }
 
   /// Add payment method
   Future<Response> addPaymentMethod(Map<String, dynamic> paymentData) async {
-    return await _dio.post('/payments/methods', data: paymentData);
+    return await _dio.post('/payment/methods', data: paymentData);
   }
 
   /// Remove payment method
   Future<Response> removePaymentMethod(String paymentMethodId) async {
-    return await _dio.delete('/payments/methods/$paymentMethodId');
+    return await _dio.delete('/payment/methods/$paymentMethodId');
   }
 
-  /// Process payment
-  Future<Response> processPayment({
-    required String paymentMethodId,
+  /// Create payment intent (replaces process payment)
+  Future<Response> createPaymentIntent({
     required double amount,
     required String currency,
     String? description,
   }) async {
     return await _dio.post(
-      '/payments/process',
+      '/payment/create-intent',
       data: {
-        'paymentMethodId': paymentMethodId,
         'amount': amount,
         'currency': currency,
         if (description != null) 'description': description,
@@ -836,7 +837,7 @@ class ApiClient {
   /// Get payment history
   Future<Response> getPaymentHistory({int limit = 20, int offset = 0}) async {
     return await _dio.get(
-      '/payments/history',
+      '/payment/history',
       queryParameters: {'limit': limit, 'offset': offset},
     );
   }
