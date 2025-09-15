@@ -15,7 +15,7 @@ import '../screens/main/profile_screen.dart';
 import '../screens/main/settings_screen.dart';
 import '../screens/main/filters_screen.dart';
 import '../screens/onboarding/onboarding_screen.dart';
-import '../screens/onboarding/welcome_screen.dart';
+import '../screens/onboarding/modern_landing_screen.dart';
 import '../screens/subscription_management_screen.dart';
 // Advanced feature screens
 import '../screens/virtual_gifts/virtual_gifts_screen.dart';
@@ -44,7 +44,7 @@ class AppRouter {
       GoRoute(
         path: AppRoutes.welcome,
         name: 'welcome',
-        builder: (context, state) => const WelcomeScreen(),
+        builder: (context, state) => const ModernLandingScreen(),
       ),
       GoRoute(
         path: AppRoutes.onboarding,

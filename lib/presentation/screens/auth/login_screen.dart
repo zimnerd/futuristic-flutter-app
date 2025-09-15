@@ -7,9 +7,9 @@ import '../../blocs/auth/auth_event.dart';
 import '../../blocs/auth/auth_state.dart';
 import '../../navigation/app_router.dart';
 import '../../theme/pulse_colors.dart';
-import '../../widgets/auto_login_fab.dart';
-import '../../widgets/auto_login_panel.dart';
-import '../../widgets/common/common_widgets.dart';
+import '../../widgets/common/pulse_text_field.dart';
+import '../../widgets/common/pulse_button.dart';
+import '../../widgets/developer_auto_login_fab.dart';
 
 /// Enhanced login screen with auth integration
 class LoginScreen extends StatefulWidget {
@@ -43,7 +43,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      floatingActionButton: const AutoLoginFab(),
+      floatingActionButton: const DeveloperAutoLoginFAB(),
       body: BlocListener<AuthBloc, AuthState>(
         listener: (context, state) {
           setState(() {
@@ -139,9 +139,6 @@ class _LoginScreenState extends State<LoginScreen> {
                       isLoading: _isLoading,
                     ),
                     const SizedBox(height: PulseSpacing.lg),
-
-                    // Auto-login panel for development
-                    const AutoLoginPanel(),
 
                     // Forgot password
                     Center(

@@ -157,7 +157,7 @@ class _AnimatedPulseButtonState extends State<AnimatedPulseButton>
             boxShadow: isEnabled ? [
               BoxShadow(
                 color: (widget.backgroundColor ?? PulseColors.primary)
-                    .withOpacity(0.3),
+                          .withValues(alpha: 0.3),
                 blurRadius: widget.elevation ?? 8,
                 offset: const Offset(0, 4),
               ),

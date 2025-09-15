@@ -5,9 +5,11 @@ import '../../../core/network/api_client.dart';
 import '../../../data/services/discovery_service.dart';
 import '../../blocs/discovery/discovery_bloc.dart';
 import '../../blocs/discovery/discovery_event.dart';
+import '../../blocs/filters/filter_bloc.dart';
 import '../../blocs/user/user_bloc.dart';
 import '../../blocs/user/user_state.dart';
 import '../../theme/pulse_colors.dart';
+import '../../widgets/common/responsive_filter_header.dart';
 import '../discovery/discovery_screen.dart';
 
 /// Modern home screen with tab navigation
@@ -100,25 +102,16 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
 
-          // Filters button - more accessible
-          Container(
-            margin: const EdgeInsets.only(right: PulseSpacing.sm),
-            child: IconButton(
-              onPressed: () {
-                // Navigate to filters screen
-                // TODO: Implement filter navigation
-              },
-              icon: const Icon(Icons.tune),
-              style: IconButton.styleFrom(
-                backgroundColor: PulseColors.primaryContainer,
-                foregroundColor: PulseColors.primary,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(PulseRadii.md),
-                ),
-                padding: const EdgeInsets.all(12),
-              ),
-              tooltip: 'Filters',
-            ),
+          // Filters button - more accessible and functional
+          ResponsiveFilterHeader(
+            showCompactView: true,
+            backgroundColor: PulseColors.primaryContainer,
+            foregroundColor: PulseColors.primary,
+            onFiltersChanged: () {
+              // Refresh discovery when filters change
+              final discoveryBloc = context.read<DiscoveryBloc>();
+              discoveryBloc.add(const LoadDiscoverableUsers(resetStack: true));
+            },
           ),
 
           // Notification button

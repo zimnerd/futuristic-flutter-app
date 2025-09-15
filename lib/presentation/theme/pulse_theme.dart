@@ -281,8 +281,6 @@ class PulseTheme {
       surfaceContainer: PulseColors.surfaceVariantDark,
       surfaceContainerLow: PulseColors.surfaceDark,
       surfaceContainerLowest: Color(0xFF060A1F), // From web neutral-950
-      background: PulseColors.surfaceDark,
-      onBackground: PulseColors.onSurfaceDark,
     ),
 
     // Enhanced text theme with better contrast

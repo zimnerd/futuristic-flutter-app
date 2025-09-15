@@ -339,7 +339,7 @@ class _MatchesScreenState extends State<MatchesScreen>
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
-                  colors: [Colors.transparent, Colors.black.withOpacity(0.6)],
+                  colors: [Colors.transparent, Colors.black.withValues(alpha: 0.6)],
                 ),
               ),
             ),
@@ -447,8 +447,8 @@ class _MatchesScreenState extends State<MatchesScreen>
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
-                    PulseColors.primary.withOpacity(0.1),
-                    PulseColors.secondary.withOpacity(0.1),
+                    PulseColors.primary.withValues(alpha: 0.1),
+                    PulseColors.secondary.withValues(alpha: 0.1),
                   ],
                 ),
                 shape: BoxShape.circle,
@@ -513,7 +513,7 @@ class _MatchesScreenState extends State<MatchesScreen>
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 8,
             offset: const Offset(0, -2),
           ),
@@ -573,12 +573,12 @@ class _MatchesScreenState extends State<MatchesScreen>
           width: 56,
           height: 56,
           decoration: BoxDecoration(
-            color: isPrimary ? color : color.withOpacity(0.1),
+            color: isPrimary ? color : color.withValues(alpha: 0.1),
             shape: BoxShape.circle,
             boxShadow: isPrimary
                 ? [
                     BoxShadow(
-                      color: color.withOpacity(0.3),
+                      color: color.withValues(alpha: 0.3),
                       blurRadius: 8,
                       offset: const Offset(0, 4),
                     ),

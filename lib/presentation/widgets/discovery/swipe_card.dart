@@ -52,7 +52,7 @@ class _SwipeCardState extends State<SwipeCard>
   late AnimationController _shimmerController;
   late Animation<double> _scaleAnimation;
   
-  int _currentPhotoIndex = 0;
+  final int _currentPhotoIndex = 0;
 
   @override
   void initState() {
@@ -385,13 +385,13 @@ class _SwipeCardState extends State<SwipeCard>
                 boxShadow: [
                   // Enhanced shadow with multiple layers for depth
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.15),
+                    color: Colors.black.withValues(alpha: 0.15),
                     offset: const Offset(0, 8),
                     blurRadius: 24,
                     spreadRadius: 0,
                   ),
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.08),
+                    color: Colors.black.withValues(alpha: 0.08),
                     offset: const Offset(0, 2),
                     blurRadius: 8,
                     spreadRadius: 0,
@@ -503,7 +503,7 @@ class _SwipeCardState extends State<SwipeCard>
     return Positioned.fill(
       child: Container(
         decoration: BoxDecoration(
-          color: _getSwipeColor().withOpacity(opacity * 0.2),
+          color: _getSwipeColor().withValues(alpha: opacity * 0.2),
           borderRadius: BorderRadius.circular(20),
         ),
         child: Stack(
@@ -522,14 +522,14 @@ class _SwipeCardState extends State<SwipeCard>
                     borderRadius: BorderRadius.circular(12),
                     boxShadow: [
                       BoxShadow(
-                        color: _getSwipeColor().withOpacity(0.4),
+                        color: _getSwipeColor().withValues(alpha: 0.4),
                         blurRadius: 16,
                         offset: const Offset(0, 4),
                       ),
                       // Extra glow for Super Like
                       if (isSuperLike)
                         BoxShadow(
-                          color: _getSwipeColor().withOpacity(0.6),
+                          color: _getSwipeColor().withValues(alpha: 0.6),
                           blurRadius: 24,
                           offset: const Offset(0, 0),
                         ),

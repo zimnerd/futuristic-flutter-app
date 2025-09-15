@@ -64,7 +64,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
     showDialog(
       context: context,
       barrierDismissible: true,
-      barrierColor: Colors.black.withOpacity(0.9),
+      barrierColor: Colors.black.withValues(alpha: 0.9),
       builder: (context) => _buildPhotoModal(),
     );
   }
