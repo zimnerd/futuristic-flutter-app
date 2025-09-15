@@ -73,11 +73,14 @@ class DiscoveryService {
       final Map<String, dynamic> data;
       
       if (action == SwipeAction.right || action == SwipeAction.up) {
-        endpoint = ApiConstants.swipe;
-        data = {'targetUserId': targetUserId, 'action': 'like'};
+        endpoint = ApiConstants.likeUser; // Use /matching/like
+        data = {
+          'targetUserId': targetUserId,
+          'likeType': action == SwipeAction.up ? 'SUPER_LIKE' : 'LIKE',
+        };
       } else {
-        endpoint = ApiConstants.swipe;
-        data = {'targetUserId': targetUserId, 'action': 'pass'};
+        endpoint = ApiConstants.passUser; // Use /matching/pass
+        data = {'targetUserId': targetUserId};
       }
       
       final response = await _apiClient.post(

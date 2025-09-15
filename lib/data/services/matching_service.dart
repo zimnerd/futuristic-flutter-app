@@ -49,14 +49,18 @@ class MatchingService {
     required bool isLike,
   }) async {
     try {
-      final response = await _apiClient.post(
-        ApiConstants.swipe,
-        data: {
-          'profileId': profileId,
-          'action': isLike ? 'like' : 'pass',
-        },
-      );
+      final String endpoint;
+      final Map<String, dynamic> data;
 
+      if (isLike) {
+        endpoint = ApiConstants.likeUser; // Use /matching/like
+        data = {'targetUserId': profileId, 'likeType': 'LIKE'};
+      } else {
+        endpoint = ApiConstants.passUser; // Use /matching/pass
+        data = {'targetUserId': profileId};
+      }
+      
+      final response = await _apiClient.post(endpoint, data: data);
       return response.data as Map<String, dynamic>;
     } on DioException catch (e) {
       throw _handleDioError(e);
@@ -347,11 +351,10 @@ class MatchingService {
   }) async {
     try {
       final response = await _apiClient.post(
-        ApiConstants.swipe,
+        ApiConstants.likeUser, // Use /matching/like
         data: {
           'targetUserId': targetUserId,
-          'action': 'like',
-          'isSuper': isSuper,
+          'likeType': isSuper ? 'SUPER_LIKE' : 'LIKE',
         },
       );
 
