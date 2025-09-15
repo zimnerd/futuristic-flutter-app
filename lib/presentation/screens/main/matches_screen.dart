@@ -64,10 +64,10 @@ class _MatchesScreenState extends State<MatchesScreen>
     setState(() {
       _isLoadingMore = true;
     });
-    
+
     // Load more matches
     context.read<MatchingBloc>().add(const LoadPotentialMatches());
-    
+
     // Simulate loading delay
     Future.delayed(const Duration(seconds: 1), () {
       if (mounted) {
@@ -114,8 +114,7 @@ class _MatchesScreenState extends State<MatchesScreen>
 
                 // Matches content based on view mode
                 Expanded(
-                  child: _buildMatchesContentByViewMode(state),
-                ),
+                  child: _buildMatchesContentByViewMode(state)),
 
                 // Load more indicator
                 if (_isLoadingMore) _buildLoadMoreIndicator(),
@@ -244,7 +243,10 @@ class _MatchesScreenState extends State<MatchesScreen>
                         },
                       )
                     : IconButton(
-                        icon: const Icon(Icons.tune, color: PulseColors.primary),
+                        icon: const Icon(
+                          Icons.tune,
+                          color: PulseColors.primary,
+                        ),
                         onPressed: () => _showFiltersModal(),
                       ),
                 border: InputBorder.none,
@@ -311,7 +313,9 @@ class _MatchesScreenState extends State<MatchesScreen>
           color: isSelected ? PulseColors.primary : Colors.transparent,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
-            color: isSelected ? PulseColors.primary : Colors.grey.withOpacity(0.3),
+            color: isSelected
+                ? PulseColors.primary
+                : Colors.grey.withOpacity(0.3),
           ),
         ),
         child: Icon(
@@ -325,7 +329,7 @@ class _MatchesScreenState extends State<MatchesScreen>
 
   Widget _buildMatchesContentByViewMode(MatchingState state) {
     final filteredProfiles = _getFilteredProfiles();
-    
+
     if (state.status == MatchingStatus.loading && filteredProfiles.isEmpty) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -347,11 +351,11 @@ class _MatchesScreenState extends State<MatchesScreen>
   List<UserProfile> _getFilteredProfiles() {
     final profiles = context.read<MatchingBloc>().state.profiles;
     if (_searchQuery.isEmpty) return profiles;
-    
+
     return profiles.where((profile) {
       final query = _searchQuery.toLowerCase();
       return profile.name.toLowerCase().contains(query) ||
-             profile.bio.toLowerCase().contains(query);
+          profile.bio.toLowerCase().contains(query);
     }).toList();
   }
 
@@ -395,7 +399,8 @@ class _MatchesScreenState extends State<MatchesScreen>
               });
             },
             itemCount: profiles.length,
-            itemBuilder: (context, index) => _buildSliderProfileCard(profiles[index]),
+            itemBuilder: (context, index) =>
+                _buildSliderProfileCard(profiles[index]),
           ),
         ),
       ],
@@ -416,10 +421,14 @@ class _MatchesScreenState extends State<MatchesScreen>
               flex: 3,
               child: Container(
                 decoration: BoxDecoration(
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(16),
+                  ),
                   image: profile.photos.isNotEmpty
                       ? DecorationImage(
-                          image: CachedNetworkImageProvider(profile.photos.first.url),
+                          image: CachedNetworkImageProvider(
+                            profile.photos.first.url,
+                          ),
                           fit: BoxFit.cover,
                         )
                       : null,
@@ -467,9 +476,7 @@ class _MatchesScreenState extends State<MatchesScreen>
                     const SizedBox(height: 2),
                     Text(
                       profile.bio,
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey[600],
+                      style: TextStyle(fontSize: 12, color: Colors.grey[600],
                       ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
@@ -544,9 +551,7 @@ class _MatchesScreenState extends State<MatchesScreen>
                     Text(
                       profile.bio,
                       style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey[600],
-                      ),
+                        fontSize: 14, color: Colors.grey[600]),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -561,7 +566,10 @@ class _MatchesScreenState extends State<MatchesScreen>
                   ),
                   IconButton(
                     onPressed: () => _startCall(profile),
-                    icon: const Icon(Icons.videocam, color: PulseColors.secondary),
+                    icon: const Icon(
+                      Icons.videocam,
+                      color: PulseColors.secondary,
+                    ),
                   ),
                 ],
               ),
@@ -604,10 +612,7 @@ class _MatchesScreenState extends State<MatchesScreen>
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
-                  colors: [
-                    Colors.transparent,
-                    Colors.black.withOpacity(0.7),
-                  ],
+                  colors: [Colors.transparent, Colors.black.withOpacity(0.7)],
                 ),
               ),
             ),
@@ -630,18 +635,12 @@ class _MatchesScreenState extends State<MatchesScreen>
                   ),
                   Text(
                     'Age: ${profile.age}',
-                    style: const TextStyle(
-                      fontSize: 18,
-                      color: Colors.white70,
-                    ),
+                    style: const TextStyle(fontSize: 18, color: Colors.white70),
                   ),
                   const SizedBox(height: 8),
                   Text(
                     profile.bio,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      color: Colors.white70,
-                    ),
+                    style: const TextStyle(fontSize: 16, color: Colors.white70),
                     maxLines: 3,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -709,11 +708,7 @@ class _MatchesScreenState extends State<MatchesScreen>
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.favorite_border,
-            size: 64,
-            color: Colors.grey[400],
-          ),
+          Icon(Icons.favorite_border, size: 64, color: Colors.grey[400]),
           const SizedBox(height: 16),
           Text(
             'No matches found',
@@ -771,10 +766,7 @@ class _MatchesScreenState extends State<MatchesScreen>
               children: [
                 const Text(
                   'Filters',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                 ),
                 const Spacer(),
                 IconButton(
@@ -814,15 +806,17 @@ class _MatchesScreenState extends State<MatchesScreen>
             const SizedBox(height: 8),
             Wrap(
               spacing: 8,
-              children: [
-                'Music', 'Sports', 'Travel', 'Food', 'Movies'
-              ].map((interest) => FilterChip(
-                label: Text(interest),
-                selected: false,
-                onSelected: (selected) {
-                  // Handle interest selection
-                },
-              )).toList(),
+              children: ['Music', 'Sports', 'Travel', 'Food', 'Movies']
+                  .map(
+                    (interest) => FilterChip(
+                      label: Text(interest),
+                      selected: false,
+                      onSelected: (selected) {
+                        // Handle interest selection
+                      },
+                    ),
+                  )
+                  .toList(),
             ),
             const Spacer(),
             Row(
