@@ -141,40 +141,48 @@ class _ModernLandingScreenState extends State<ModernLandingScreen>
               // Main content
               Padding(
                 padding: const EdgeInsets.all(PulseSpacing.xl),
-                child: Column(
-                  children: [
-                    // Top section with logo and branding
-                    Expanded(
-                      flex: 2,
-                      child: FadeTransition(
-                        opacity: _fadeAnimation,
-                        child: SlideTransition(
-                          position: _slideAnimation,
-                          child: _buildBrandingSection(),
+                child: SingleChildScrollView(
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      minHeight: MediaQuery.of(context).size.height - 
+                          (PulseSpacing.xl * 2) - 
+                          MediaQuery.of(context).padding.top - 
+                          MediaQuery.of(context).padding.bottom,
+                    ),
+                    child: Column(
+                      children: [
+                        // Top section with logo and branding
+                        FadeTransition(
+                          opacity: _fadeAnimation,
+                          child: SlideTransition(
+                            position: _slideAnimation,
+                            child: _buildBrandingSection(),
+                          ),
                         ),
-                      ),
+                        
+                        const SizedBox(height: PulseSpacing.xl),
+
+                        // Features showcase
+                        FadeTransition(
+                          opacity: _fadeAnimation,
+                          child: _buildFeaturesSection(),
+                        ),
+                        
+                        const SizedBox(height: PulseSpacing.xl),
+
+                        // Action buttons
+                        ScaleTransition(
+                          scale: _scaleAnimation,
+                          child: _buildActionButtons(),
+                        ),
+                        
+                        const SizedBox(height: PulseSpacing.md),
+
+                        // Terms and privacy
+                        _buildTermsSection(),
+                      ],
                     ),
-                    
-                    // Features showcase
-                    Expanded(
-                      flex: 2,
-                      child: FadeTransition(
-                        opacity: _fadeAnimation,
-                        child: _buildFeaturesSection(),
-                      ),
-                    ),
-                    
-                    // Action buttons
-                    ScaleTransition(
-                      scale: _scaleAnimation,
-                      child: _buildActionButtons(),
-                    ),
-                    
-                    const SizedBox(height: PulseSpacing.lg),
-                    
-                    // Terms and privacy
-                    _buildTermsSection(),
-                  ],
+                  ),
                 ),
               ),
               

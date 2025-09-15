@@ -401,8 +401,16 @@ class _MessagesScreenState extends State<MessagesScreen> {
   }
 
   void _openConversation(ConversationData conversation) {
-    // Navigate to chat screen
-    context.go('/chat/${conversation.id}');
+    // Navigate to chat screen with proper data
+    context.go(
+      '/chat/${conversation.id}',
+      extra: {
+        'otherUserId':
+            conversation.id, // Using conversation.id as user ID for now
+        'otherUserName': conversation.name,
+        'otherUserPhoto': conversation.avatar,
+      },
+    );
   }
 
   void _showMessageOptions(BuildContext context) {

@@ -1,27 +1,19 @@
 import 'dart:convert';
-import 'package:http/http.dart' as http;
 import '../../core/constants/api_constants.dart';
 import '../../core/utils/logger.dart';
 import '../../core/network/api_client.dart';
 import '../../domain/entities/event.dart';
 
 /// Service for event API integration with NestJS backend
+/// 
+/// Now uses the centralized ApiClient for all HTTP operations,
+/// ensuring proper authentication, error handling, and logging.
 class EventService {
   static EventService? _instance;
   static EventService get instance => _instance ??= EventService._();
   EventService._();
 
-  String? _authToken;
-
-  /// Set authentication token
-  void setAuthToken(String authToken) {
-    _authToken = authToken;
-  }
-
-  /// Get current auth token from ApiClient if not set locally
-  String? get _currentAuthToken {
-    return _authToken ?? ApiClient.instance.authToken;
-  }
+  final ApiClient _apiClient = ApiClient.instance;
 
   /// Get events with optional location and category filtering
   Future<List<Event>> getEvents({
@@ -33,30 +25,20 @@ class EventService {
     int limit = 20,
   }) async {
     try {
-      final queryParams = <String, String>{
-        'page': page.toString(),
-        'limit': limit.toString(),
-      };
-
-      if (latitude != null) queryParams['lat'] = latitude.toString();
-      if (longitude != null) queryParams['lng'] = longitude.toString();
-      if (radiusKm != null) queryParams['radius'] = radiusKm.toString();
-      if (category != null && category.isNotEmpty) queryParams['category'] = category;
-
-      final response = await http.get(
-        Uri.parse('${ApiConstants.baseUrl}/events')
-            .replace(queryParameters: queryParams),
-        headers: {
-          'Authorization': 'Bearer ${_currentAuthToken}',
-          'Content-Type': 'application/json',
-        },
+      final response = await _apiClient.getEvents(
+        latitude: latitude,
+        longitude: longitude,
+        radiusKm: radiusKm,
+        category: category,
+        page: page,
+        limit: limit,
       );
 
       if (response.statusCode == 200) {
-        final List<dynamic> data = json.decode(response.body);
+        final List<dynamic> data = response.data;
         return data.map((json) => Event.fromJson(json)).toList();
       } else {
-        final error = json.decode(response.body);
+        final error = response.data;
         throw EventServiceException(
           error['message'] ?? 'Failed to load events',
           statusCode: response.statusCode,
@@ -76,26 +58,17 @@ class EventService {
     double radiusKm = 10.0,
   }) async {
     try {
-      final queryParams = {
-        'lat': latitude.toString(),
-        'lng': longitude.toString(),
-        'radius': radiusKm.toString(),
-      };
-
-      final response = await http.get(
-        Uri.parse('${ApiConstants.baseUrl}/events/nearby')
-            .replace(queryParameters: queryParams),
-        headers: {
-          'Authorization': 'Bearer ${_currentAuthToken}',
-          'Content-Type': 'application/json',
-        },
+      final response = await _apiClient.getNearbyEvents(
+        latitude: latitude,
+        longitude: longitude,
+        radiusKm: radiusKm,
       );
 
       if (response.statusCode == 200) {
-        final List<dynamic> data = json.decode(response.body);
+        final List<dynamic> data = response.data;
         return data.map((json) => Event.fromJson(json)).toList();
       } else {
-        final error = json.decode(response.body);
+        final error = response.data;
         throw EventServiceException(
           error['message'] ?? 'Failed to load nearby events',
           statusCode: response.statusCode,
@@ -108,51 +81,56 @@ class EventService {
     }
   }
 
-  /// Get event details by ID
+  /// Get event by ID
   Future<Event> getEventById(String eventId) async {
     try {
-      final response = await http.get(
-        Uri.parse('${ApiConstants.baseUrl}/events/$eventId'),
-        headers: {
-          'Authorization': 'Bearer ${_currentAuthToken}',
-          'Content-Type': 'application/json',
-        },
-      );
+      final response = await _apiClient.getEventById(eventId);
 
       if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        return Event.fromJson(data);
+        return Event.fromJson(response.data);
       } else {
-        final error = json.decode(response.body);
+        final error = response.data;
         throw EventServiceException(
-          error['message'] ?? 'Failed to load event details',
+          error['message'] ?? 'Failed to load event',
           statusCode: response.statusCode,
         );
       }
     } catch (e) {
-      AppLogger.error('Failed to get event details: $e');
+      AppLogger.error('Failed to get event by ID: $e');
       if (e is EventServiceException) rethrow;
       throw EventServiceException('Network error: $e');
     }
   }
 
   /// Create a new event
-  Future<Event> createEvent(CreateEventRequest request) async {
+  Future<Event> createEvent({
+    required String title,
+    required String description,
+    required String location,
+    required DateTime dateTime,
+    required double latitude,
+    required double longitude,
+    int? maxParticipants,
+    String? category,
+    String? image,
+  }) async {
     try {
-      final response = await http.post(
-        Uri.parse('${ApiConstants.baseUrl}/events'),
-        headers: {
-          'Authorization': 'Bearer ${_currentAuthToken}',
-          'Content-Type': 'application/json',
-        },
-        body: json.encode(request.toJson()),
+      final response = await _apiClient.createEvent(
+        title: title,
+        description: description,
+        location: location,
+        dateTime: dateTime,
+        latitude: latitude,
+        longitude: longitude,
+        maxParticipants: maxParticipants,
+        category: category,
+        image: image,
       );
 
       if (response.statusCode == 201) {
-        final data = json.decode(response.body);
-        return Event.fromJson(data);
+        return Event.fromJson(response.data);
       } else {
-        final error = json.decode(response.body);
+        final error = response.data;
         throw EventServiceException(
           error['message'] ?? 'Failed to create event',
           statusCode: response.statusCode,
@@ -165,23 +143,37 @@ class EventService {
     }
   }
 
-  /// Update an existing event
-  Future<Event> updateEvent(String eventId, CreateEventRequest request) async {
+  /// Update an event
+  Future<Event> updateEvent({
+    required String eventId,
+    String? title,
+    String? description,
+    String? location,
+    DateTime? dateTime,
+    double? latitude,
+    double? longitude,
+    int? maxParticipants,
+    String? category,
+    String? image,
+  }) async {
     try {
-      final response = await http.put(
-        Uri.parse('${ApiConstants.baseUrl}/events/$eventId'),
-        headers: {
-          'Authorization': 'Bearer ${_currentAuthToken}',
-          'Content-Type': 'application/json',
-        },
-        body: json.encode(request.toJson()),
+      final response = await _apiClient.updateEvent(
+        eventId: eventId,
+        title: title,
+        description: description,
+        location: location,
+        dateTime: dateTime,
+        latitude: latitude,
+        longitude: longitude,
+        maxParticipants: maxParticipants,
+        category: category,
+        image: image,
       );
 
       if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        return Event.fromJson(data);
+        return Event.fromJson(response.data);
       } else {
-        final error = json.decode(response.body);
+        final error = response.data;
         throw EventServiceException(
           error['message'] ?? 'Failed to update event',
           statusCode: response.statusCode,
@@ -197,16 +189,10 @@ class EventService {
   /// Delete an event
   Future<void> deleteEvent(String eventId) async {
     try {
-      final response = await http.delete(
-        Uri.parse('${ApiConstants.baseUrl}/events/$eventId'),
-        headers: {
-          'Authorization': 'Bearer ${_currentAuthToken}',
-          'Content-Type': 'application/json',
-        },
-      );
+      final response = await _apiClient.deleteEvent(eventId);
 
       if (response.statusCode != 200 && response.statusCode != 204) {
-        final error = json.decode(response.body);
+        final error = response.data;
         throw EventServiceException(
           error['message'] ?? 'Failed to delete event',
           statusCode: response.statusCode,
@@ -219,26 +205,20 @@ class EventService {
     }
   }
 
-  /// Attend an event
-  Future<void> attendEvent(String eventId) async {
+  /// Join an event
+  Future<void> joinEvent(String eventId) async {
     try {
-      final response = await http.post(
-        Uri.parse('${ApiConstants.baseUrl}/events/$eventId/attend'),
-        headers: {
-          'Authorization': 'Bearer ${_currentAuthToken}',
-          'Content-Type': 'application/json',
-        },
-      );
+      final response = await _apiClient.joinEvent(eventId);
 
       if (response.statusCode != 200 && response.statusCode != 201) {
-        final error = json.decode(response.body);
+        final error = response.data;
         throw EventServiceException(
-          error['message'] ?? 'Failed to attend event',
+          error['message'] ?? 'Failed to join event',
           statusCode: response.statusCode,
         );
       }
     } catch (e) {
-      AppLogger.error('Failed to attend event: $e');
+      AppLogger.error('Failed to join event: $e');
       if (e is EventServiceException) rethrow;
       throw EventServiceException('Network error: $e');
     }
@@ -247,16 +227,10 @@ class EventService {
   /// Leave an event
   Future<void> leaveEvent(String eventId) async {
     try {
-      final response = await http.delete(
-        Uri.parse('${ApiConstants.baseUrl}/events/$eventId/attend'),
-        headers: {
-          'Authorization': 'Bearer ${_currentAuthToken}',
-          'Content-Type': 'application/json',
-        },
-      );
+      final response = await _apiClient.leaveEvent(eventId);
 
       if (response.statusCode != 200 && response.statusCode != 204) {
-        final error = json.decode(response.body);
+        final error = response.data;
         throw EventServiceException(
           error['message'] ?? 'Failed to leave event',
           statusCode: response.statusCode,
@@ -269,143 +243,144 @@ class EventService {
     }
   }
 
-  /// Get event attendees
-  Future<List<EventAttendance>> getEventAttendees(String eventId) async {
+  /// Get event participants
+  Future<List<Map<String, dynamic>>> getEventParticipants(String eventId) async {
     try {
-      final response = await http.get(
-        Uri.parse('${ApiConstants.baseUrl}/events/$eventId/attendees'),
-        headers: {
-          'Authorization': 'Bearer ${_currentAuthToken}',
-          'Content-Type': 'application/json',
-        },
-      );
+      final response = await _apiClient.getEventParticipants(eventId);
 
       if (response.statusCode == 200) {
-        final List<dynamic> data = json.decode(response.body);
-        return data.map((json) => EventAttendance.fromJson(json)).toList();
+        return List<Map<String, dynamic>>.from(response.data);
       } else {
-        final error = json.decode(response.body);
+        final error = response.data;
         throw EventServiceException(
-          error['message'] ?? 'Failed to load event attendees',
+          error['message'] ?? 'Failed to load event participants',
           statusCode: response.statusCode,
         );
       }
     } catch (e) {
-      AppLogger.error('Failed to get event attendees: $e');
+      AppLogger.error('Failed to get event participants: $e');
       if (e is EventServiceException) rethrow;
       throw EventServiceException('Network error: $e');
     }
   }
 
-  /// Send event invitations to users
-  Future<void> sendEventInvitations(
-    String eventId,
-    List<String> userIds,
-  ) async {
+  /// Get user's events
+  Future<List<Event>> getUserEvents() async {
     try {
-      final response = await http.post(
-        Uri.parse('${ApiConstants.baseUrl}/events/invitations'),
-        headers: {
-          'Authorization': 'Bearer ${_currentAuthToken}',
-          'Content-Type': 'application/json',
-        },
-        body: json.encode({'eventId': eventId, 'userIds': userIds}),
+      final response = await _apiClient.getUserEvents();
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = response.data;
+        return data.map((json) => Event.fromJson(json)).toList();
+      } else {
+        final error = response.data;
+        throw EventServiceException(
+          error['message'] ?? 'Failed to load user events',
+          statusCode: response.statusCode,
+        );
+      }
+    } catch (e) {
+      AppLogger.error('Failed to get user events: $e');
+      if (e is EventServiceException) rethrow;
+      throw EventServiceException('Network error: $e');
+    }
+  }
+
+  /// Send event message
+  Future<void> sendEventMessage({
+    required String eventId,
+    required String content,
+  }) async {
+    try {
+      final response = await _apiClient.sendEventMessage(
+        eventId: eventId,
+        content: content,
       );
 
-      if (response.statusCode != 201) {
-        final errorData = json.decode(response.body);
+      if (response.statusCode != 200 && response.statusCode != 201) {
+        final error = response.data;
         throw EventServiceException(
-          errorData['message'] ?? 'Failed to send invitations',
+          error['message'] ?? 'Failed to send event message',
           statusCode: response.statusCode,
         );
       }
     } catch (e) {
+      AppLogger.error('Failed to send event message: $e');
       if (e is EventServiceException) rethrow;
       throw EventServiceException('Network error: $e');
     }
   }
 
-  /// Respond to an event invitation
-  Future<void> respondToInvitation(String invitationId, String status) async {
+  /// Update RSVP status
+  Future<void> updateEventRSVP({
+    required String eventId,
+    required String status,
+  }) async {
     try {
-      final response = await http.patch(
-        Uri.parse(
-          '${ApiConstants.baseUrl}/events/invitations/$invitationId/respond',
-        ),
-        headers: {
-          'Authorization': 'Bearer ${_currentAuthToken}',
-          'Content-Type': 'application/json',
-        },
-        body: json.encode({'status': status.toUpperCase()}),
+      final response = await _apiClient.updateEventRSVP(
+        eventId: eventId,
+        status: status,
       );
 
       if (response.statusCode != 200) {
-        final errorData = json.decode(response.body);
+        final error = response.data;
         throw EventServiceException(
-          errorData['message'] ?? 'Failed to respond to invitation',
+          error['message'] ?? 'Failed to update RSVP',
           statusCode: response.statusCode,
         );
       }
     } catch (e) {
+      AppLogger.error('Failed to update event RSVP: $e');
       if (e is EventServiceException) rethrow;
       throw EventServiceException('Network error: $e');
     }
   }
 
-  /// Get received invitations for current user
-  Future<List<Map<String, dynamic>>> getReceivedInvitations() async {
+  /// Get event categories
+  Future<List<String>> getEventCategories() async {
     try {
-      final response = await http.get(
-        Uri.parse('${ApiConstants.baseUrl}/events/invitations/received'),
-        headers: {
-          'Authorization': 'Bearer ${_currentAuthToken}',
-          'Content-Type': 'application/json',
-        },
-      );
+      final response = await _apiClient.getEventCategories();
 
       if (response.statusCode == 200) {
-        return List<Map<String, dynamic>>.from(json.decode(response.body));
+        return List<String>.from(response.data);
       } else {
-        final errorData = json.decode(response.body);
+        final error = response.data;
         throw EventServiceException(
-          errorData['message'] ?? 'Failed to get invitations',
+          error['message'] ?? 'Failed to load event categories',
           statusCode: response.statusCode,
         );
       }
     } catch (e) {
+      AppLogger.error('Failed to get event categories: $e');
       if (e is EventServiceException) rethrow;
       throw EventServiceException('Network error: $e');
     }
   }
 
-  /// Get sent invitations by current user
-  Future<List<Map<String, dynamic>>> getSentInvitations() async {
+  /// Get popular events
+  Future<List<Event>> getPopularEvents() async {
     try {
-      final response = await http.get(
-        Uri.parse('${ApiConstants.baseUrl}/events/invitations/sent'),
-        headers: {
-          'Authorization': 'Bearer ${_currentAuthToken}',
-          'Content-Type': 'application/json',
-        },
-      );
+      final response = await _apiClient.getPopularEvents();
 
       if (response.statusCode == 200) {
-        return List<Map<String, dynamic>>.from(json.decode(response.body));
+        final List<dynamic> data = response.data;
+        return data.map((json) => Event.fromJson(json)).toList();
       } else {
-        final errorData = json.decode(response.body);
+        final error = response.data;
         throw EventServiceException(
-          errorData['message'] ?? 'Failed to get sent invitations',
+          error['message'] ?? 'Failed to load popular events',
           statusCode: response.statusCode,
         );
       }
     } catch (e) {
+      AppLogger.error('Failed to get popular events: $e');
       if (e is EventServiceException) rethrow;
       throw EventServiceException('Network error: $e');
     }
   }
 }
 
-/// Exception class for event service errors
+/// Exception thrown by EventService operations
 class EventServiceException implements Exception {
   final String message;
   final int? statusCode;
@@ -413,5 +388,5 @@ class EventServiceException implements Exception {
   const EventServiceException(this.message, {this.statusCode});
 
   @override
-  String toString() => 'EventServiceException: $message${statusCode != null ? ' (Status: $statusCode)' : ''}';
+  String toString() => 'EventServiceException: $message (status: $statusCode)';
 }

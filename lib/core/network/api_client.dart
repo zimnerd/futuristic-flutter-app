@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:logger/logger.dart';
 import '../constants/api_constants.dart';
 import '../../data/services/token_service.dart';
+import '../../data/services/global_auth_handler.dart';
 
 /// Consolidated API client for all backend communication
 ///
@@ -91,31 +92,48 @@ class ApiClient {
       ),
     );
 
-    // Token refresh interceptor
+    // Token refresh interceptor with global 401 handling
     _dio.interceptors.add(
       InterceptorsWrapper(
         onError: (error, handler) async {
-          if (error.response?.statusCode == 401 && _authToken != null) {
-            try {
-              // Try to refresh token
-              await _attemptTokenRefresh();
+          if (error.response?.statusCode == 401) {
+            // Try to refresh token if we have one
+            if (_authToken != null) {
+              try {
+                _logger.i('🔄 Attempting token refresh for 401 error...');
+                await _attemptTokenRefresh();
 
-              // Retry the original request
-              final clonedRequest = await _dio.request(
-                error.requestOptions.path,
-                options: Options(
-                  method: error.requestOptions.method,
-                  headers: error.requestOptions.headers,
-                ),
-                data: error.requestOptions.data,
-                queryParameters: error.requestOptions.queryParameters,
+                // Retry the original request
+                final clonedRequest = await _dio.request(
+                  error.requestOptions.path,
+                  options: Options(
+                    method: error.requestOptions.method,
+                    headers: error.requestOptions.headers,
+                  ),
+                  data: error.requestOptions.data,
+                  queryParameters: error.requestOptions.queryParameters,
+                );
+
+                return handler.resolve(clonedRequest);
+              } catch (refreshError) {
+                _logger.e('❌ Token refresh failed: $refreshError');
+                
+                // Token refresh failed - trigger global logout
+                await GlobalAuthHandler.instance.handleAuthenticationFailure(
+                  reason: 'Token refresh failed after 401 response',
+                  clearTokens: true,
+                );
+                
+                handler.next(error);
+              }
+            } else {
+              // No auth token available - trigger global logout
+              _logger.w('⚠️ 401 error with no auth token - triggering logout');
+              await GlobalAuthHandler.instance.handleAuthenticationFailure(
+                reason: 'Received 401 with no authentication token',
+                clearTokens: true,
               );
-
-              return handler.resolve(clonedRequest);
-            } catch (refreshError) {
-              _logger.e('Failed to refresh token: $refreshError');
-              // Clear token and let the original error propagate
-              _authToken = null;
+              
               handler.next(error);
             }
           } else {
@@ -1105,5 +1123,164 @@ class ApiClient {
       options: options,
       cancelToken: cancelToken,
     );
+  }
+
+  // ===========================================
+  // EVENTS ENDPOINTS
+  // ===========================================
+
+  /// Get events with optional location and category filtering
+  Future<Response> getEvents({
+    double? latitude,
+    double? longitude,
+    double? radiusKm = 50.0,
+    String? category,
+    int page = 1,
+    int limit = 20,
+  }) async {
+    final queryParams = <String, dynamic>{
+      'page': page,
+      'limit': limit,
+    };
+
+    if (latitude != null) queryParams['lat'] = latitude;
+    if (longitude != null) queryParams['lng'] = longitude;
+    if (radiusKm != null) queryParams['radius'] = radiusKm;
+    if (category != null && category.isNotEmpty) queryParams['category'] = category;
+
+    return await _dio.get('/events', queryParameters: queryParams);
+  }
+
+  /// Get nearby events
+  Future<Response> getNearbyEvents({
+    required double latitude,
+    required double longitude,
+    double radiusKm = 10.0,
+  }) async {
+    return await _dio.get(
+      '/events/nearby',
+      queryParameters: {
+        'lat': latitude,
+        'lng': longitude,
+        'radius': radiusKm,
+      },
+    );
+  }
+
+  /// Get event by ID
+  Future<Response> getEventById(String eventId) async {
+    return await _dio.get('/events/$eventId');
+  }
+
+  /// Create a new event
+  Future<Response> createEvent({
+    required String title,
+    required String description,
+    required String location,
+    required DateTime dateTime,
+    required double latitude,
+    required double longitude,
+    int? maxParticipants,
+    String? category,
+    String? image,
+  }) async {
+    return await _dio.post(
+      '/events',
+      data: {
+        'title': title,
+        'description': description,
+        'location': location,
+        'dateTime': dateTime.toIso8601String(),
+        'latitude': latitude,
+        'longitude': longitude,
+        if (maxParticipants != null) 'maxParticipants': maxParticipants,
+        if (category != null) 'category': category,
+        if (image != null) 'image': image,
+      },
+    );
+  }
+
+  /// Update an event
+  Future<Response> updateEvent({
+    required String eventId,
+    String? title,
+    String? description,
+    String? location,
+    DateTime? dateTime,
+    double? latitude,
+    double? longitude,
+    int? maxParticipants,
+    String? category,
+    String? image,
+  }) async {
+    final data = <String, dynamic>{};
+    if (title != null) data['title'] = title;
+    if (description != null) data['description'] = description;
+    if (location != null) data['location'] = location;
+    if (dateTime != null) data['dateTime'] = dateTime.toIso8601String();
+    if (latitude != null) data['latitude'] = latitude;
+    if (longitude != null) data['longitude'] = longitude;
+    if (maxParticipants != null) data['maxParticipants'] = maxParticipants;
+    if (category != null) data['category'] = category;
+    if (image != null) data['image'] = image;
+
+    return await _dio.put('/events/$eventId', data: data);
+  }
+
+  /// Delete an event
+  Future<Response> deleteEvent(String eventId) async {
+    return await _dio.delete('/events/$eventId');
+  }
+
+  /// Join an event
+  Future<Response> joinEvent(String eventId) async {
+    return await _dio.post('/events/$eventId/join');
+  }
+
+  /// Leave an event
+  Future<Response> leaveEvent(String eventId) async {
+    return await _dio.delete('/events/$eventId/join');
+  }
+
+  /// Get event participants
+  Future<Response> getEventParticipants(String eventId) async {
+    return await _dio.get('/events/$eventId/participants');
+  }
+
+  /// Get user's events
+  Future<Response> getUserEvents() async {
+    return await _dio.get('/events/my-events');
+  }
+
+  /// Send event message
+  Future<Response> sendEventMessage({
+    required String eventId,
+    required String content,
+  }) async {
+    return await _dio.post(
+      '/events/$eventId/messages',
+      data: {'content': content},
+    );
+  }
+
+  /// Update RSVP status
+  Future<Response> updateEventRSVP({
+    required String eventId,
+    required String status,
+  }) async {
+    return await _dio.patch(
+      '/events/$eventId/rsvp',
+      data: {'status': status},
+    );
+  }
+
+  /// Get event categories
+  Future<Response> getEventCategories() async {
+    return await _dio.get('/events/categories');
+  }
+
+  /// Get popular events
+  Future<Response> getPopularEvents() async {
+    return await _dio.get('/events/popular');
   }
 }

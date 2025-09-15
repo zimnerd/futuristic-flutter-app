@@ -24,6 +24,7 @@ import 'data/services/event_service.dart';
 import 'data/services/matching_service.dart';
 import 'data/services/preferences_service.dart';
 import 'data/services/discovery_service.dart';
+import 'data/services/token_service.dart';
 import 'domain/repositories/user_repository.dart';
 import 'domain/services/api_service.dart';
 import 'presentation/blocs/auth/auth_bloc.dart';
@@ -49,7 +50,28 @@ void main() async {
   final hiveStorage = HiveStorageService();
   await hiveStorage.initialize();
 
+  // Initialize authentication tokens
+  await _initializeStoredTokens();
+
   runApp(PulseDatingApp(hiveStorage: hiveStorage));
+}
+
+/// Initialize stored authentication tokens in API client
+Future<void> _initializeStoredTokens() async {
+  try {
+    final tokenService = TokenService();
+    final accessToken = await tokenService.getAccessToken();
+    
+    if (accessToken != null) {
+      // Set the stored token in the API client for automatic authentication
+      ApiClient.instance.setAuthToken(accessToken);
+      print('✅ Restored stored auth token on app startup');
+    } else {
+      print('ℹ️ No stored auth token found');
+    }
+  } catch (e) {
+    print('❌ Failed to restore stored tokens: $e');
+  }
 }
 
 class PulseDatingApp extends StatelessWidget {

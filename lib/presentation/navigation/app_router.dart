@@ -29,6 +29,7 @@ import '../screens/profile/profile_creation_screen.dart';
 import '../screens/profile/profile_overview_screen.dart';
 import '../screens/profile/profile_section_edit_screen.dart';
 import '../screens/profile/profile_details_screen.dart';
+import '../screens/chat/chat_screen.dart';
 import '../screens/call/video_call_screen.dart';
 import '../screens/discovery/discovery_screen.dart';
 import '../screens/features/advanced_features_screen.dart';
@@ -261,6 +262,21 @@ class AppRouter {
         },
       ),
       GoRoute(
+        path: AppRoutes.chat,
+        name: 'chat',
+        builder: (context, state) {
+          final conversationId = state.pathParameters['conversationId'] ?? '';
+          final extra = state.extra as Map<String, dynamic>?;
+
+          return ChatScreen(
+            conversationId: conversationId,
+            otherUserId: extra?['otherUserId'] ?? '',
+            otherUserName: extra?['otherUserName'] ?? 'User',
+            otherUserPhoto: extra?['otherUserPhoto'],
+          );
+        },
+      ),
+      GoRoute(
         path: AppRoutes.videoCall,
         name: 'videoCall',
         builder: (context, state) {
@@ -387,6 +403,7 @@ class AppRoutes {
   static const String profileOverview = '/profile-overview';
   static const String profileSectionEdit = '/profile-section-edit';
   static const String profileDetails = '/profile-details/:profileId';
+  static const String chat = '/chat/:conversationId';
   static const String videoCall = '/video-call/:callId';
   
   // Events routes

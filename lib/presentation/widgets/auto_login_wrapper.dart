@@ -3,8 +3,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:logger/logger.dart';
 
 import '../../core/services/auto_login_service.dart';
+import '../../data/services/global_auth_handler.dart';
 import '../blocs/auth/auth_bloc.dart';
 import '../blocs/auth/auth_state.dart';
+import '../blocs/auth/auth_event.dart';
 
 /// Widget that handles automatic login on app startup in development mode
 class AutoLoginWrapper extends StatefulWidget {
@@ -26,6 +28,12 @@ class _AutoLoginWrapperState extends State<AutoLoginWrapper> {
   @override
   void initState() {
     super.initState();
+    
+    // Register global auth logout callback
+    GlobalAuthHandler.instance.registerLogoutCallback(() {
+      _logger.w('🚨 Global auth failure - triggering logout');
+      context.read<AuthBloc>().add(const AuthSignOutRequested());
+    });
     
     // Attempt auto-login after the first frame is rendered
     WidgetsBinding.instance.addPostFrameCallback((_) {

@@ -768,12 +768,14 @@ class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
       builder: (context) => ProfileExitDialog(
         currentDraft: currentDraft,
         onSaveAndExit: () {
-          Navigator.of(context).pop(true);
+          Navigator.of(context).pop(false); // Don't pop the screen yet
           _saveDraftAndExit();
         },
         onExitWithoutSaving: () {
-          Navigator.of(context).pop(true);
+          Navigator.of(context).pop(false); // Don't pop the screen yet
           _draftService.clearDraft();
+          // Navigate to home screen
+          context.go('/home');
         },
         onContinueEditing: () {
           Navigator.of(context).pop(false);
@@ -802,7 +804,8 @@ class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
     final draft = _getCurrentDraft();
     await _draftService.saveDraft(draft);
     if (mounted) {
-      Navigator.of(context).pop();
+      // Navigate to home screen instead of just popping
+      context.go('/home');
     }
   }
 
