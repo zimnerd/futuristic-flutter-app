@@ -33,6 +33,10 @@ import '../screens/call/video_call_screen.dart';
 import '../screens/discovery/discovery_screen.dart';
 import '../screens/features/advanced_features_screen.dart';
 import '../../../domain/entities/user_profile.dart';
+// Events screens
+import '../screens/events/events_screen.dart';
+import '../../../features/events/presentation/screens/event_details_screen.dart';
+import '../../../features/events/presentation/screens/create_event_screen.dart';
 
 /// Application routes configuration using GoRouter
 /// Provides type-safe navigation with route guards and transitions
@@ -115,7 +119,27 @@ class AppRouter {
             name: 'subscription',
             builder: (context, state) => const SubscriptionManagementScreen(),
           ),
+          GoRoute(
+            path: AppRoutes.events,
+            name: 'events',
+            builder: (context, state) => const EventsScreen(),
+          ),
         ],
+      ),
+      
+      // Events routes (full screen)
+      GoRoute(
+        path: AppRoutes.eventDetails,
+        name: 'eventDetails',
+        builder: (context, state) {
+          final eventId = state.pathParameters['eventId'] ?? '';
+          return EventDetailsScreen(eventId: eventId);
+        },
+      ),
+      GoRoute(
+        path: AppRoutes.createEvent,
+        name: 'createEvent',
+        builder: (context, state) => const CreateEventScreen(),
       ),
       
       // Advanced feature routes (full screen, not in bottom nav)
@@ -312,6 +336,7 @@ class AppRoutes {
   static const String settings = '/settings';
   static const String filters = '/filters';
   static const String subscription = '/subscription';
+  static const String events = '/events';
   
   // Advanced feature routes
   static const String discovery = '/discovery';
@@ -328,6 +353,10 @@ class AppRoutes {
   static const String profileOverview = '/profile-overview';
   static const String profileSectionEdit = '/profile-section-edit';
   static const String videoCall = '/video-call/:callId';
+  
+  // Events routes
+  static const String eventDetails = '/events/:eventId';
+  static const String createEvent = '/events/create';
 }
 
 /// Main navigation wrapper with bottom navigation bar
@@ -369,6 +398,11 @@ class MainBottomNavigation extends StatelessWidget {
           label: '🔥 Sparks',
         ),
         BottomNavigationBarItem(
+          icon: Icon(Icons.event_outlined),
+          activeIcon: Icon(Icons.event),
+          label: '🎉 Events',
+        ),
+        BottomNavigationBarItem(
           icon: Icon(Icons.chat_bubble_outline),
           activeIcon: Icon(Icons.chat_bubble),
           label: '💭 DMs',
@@ -388,10 +422,12 @@ class MainBottomNavigation extends StatelessWidget {
         return 0;
       case AppRoutes.matches:
         return 1;
-      case AppRoutes.messages:
+      case AppRoutes.events:
         return 2;
-      case AppRoutes.profile:
+      case AppRoutes.messages:
         return 3;
+      case AppRoutes.profile:
+        return 4;
       default:
         return 0;
     }
@@ -406,9 +442,12 @@ class MainBottomNavigation extends StatelessWidget {
         context.go(AppRoutes.matches);
         break;
       case 2:
-        context.go(AppRoutes.messages);
+        context.go(AppRoutes.events);
         break;
       case 3:
+        context.go(AppRoutes.messages);
+        break;
+      case 4:
         context.go(AppRoutes.profile);
         break;
     }

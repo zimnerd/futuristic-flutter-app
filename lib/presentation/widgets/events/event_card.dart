@@ -1,0 +1,333 @@
+import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:intl/intl.dart';
+
+import '../../../domain/entities/event.dart';
+import '../../../core/constants/app_constants.dart';
+import '../../theme/pulse_colors.dart';
+
+class EventCard extends StatelessWidget {
+  final Event event;
+  final VoidCallback? onTap;
+  final VoidCallback? onAttend;
+  final VoidCallback? onLeave;
+  final bool showAttendButton;
+  final bool isLoading;
+
+  const EventCard({
+    super.key,
+    required this.event,
+    this.onTap,
+    this.onAttend,
+    this.onLeave,
+    this.showAttendButton = true,
+    this.isLoading = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      elevation: 4,
+      shadowColor: PulseColors.primary.withOpacity(0.1),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Event Image
+            _buildEventImage(),
+            
+            // Event Content
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Category and Date
+                  Row(
+                    children: [
+                      _buildCategoryChip(),
+                      const Spacer(),
+                      _buildDateInfo(),
+                    ],
+                  ),
+                  
+                  const SizedBox(height: 12),
+                  
+                  // Title
+                  Text(
+                    event.title,
+                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: PulseColors.onSurface,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  
+                  const SizedBox(height: 8),
+                  
+                  // Description
+                  Text(
+                    event.description,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: PulseColors.onSurfaceVariant,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  
+                  const SizedBox(height: 12),
+                  
+                  // Location
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.location_on_outlined,
+                        size: 16,
+                        color: PulseColors.onSurfaceVariant,
+                      ),
+                      const SizedBox(width: 4),
+                      Expanded(
+                        child: Text(
+                          event.location,
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: PulseColors.onSurfaceVariant,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                  
+                  const SizedBox(height: 16),
+                  
+                  // Bottom Row - Attendees and Action Button
+                  Row(
+                    children: [
+                      _buildAttendeeInfo(),
+                      const Spacer(),
+                      if (showAttendButton) _buildActionButton(),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEventImage() {
+    return Container(
+      height: 200,
+      width: double.infinity,
+      decoration: BoxDecoration(
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+        gradient: LinearGradient(
+          colors: [
+            PulseColors.primary.withOpacity(0.1),
+            PulseColors.secondary.withOpacity(0.1),
+          ],
+        ),
+      ),
+      child: event.image != null
+          ? ClipRRect(
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+              child: CachedNetworkImage(
+                imageUrl: event.image!.startsWith('http') 
+                    ? event.image! 
+                    : '${AppConstants.baseUrl}/${event.image}',
+                fit: BoxFit.cover,
+                placeholder: (context, url) => Container(
+                  color: PulseColors.surface,
+                  child: Center(
+                    child: CircularProgressIndicator(
+                      color: PulseColors.primary,
+                      strokeWidth: 2,
+                    ),
+                  ),
+                ),
+                errorWidget: (context, url, error) => _buildPlaceholderImage(),
+              ),
+            )
+          : _buildPlaceholderImage(),
+    );
+  }
+
+  Widget _buildPlaceholderImage() {
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+        gradient: LinearGradient(
+          colors: [
+            PulseColors.primary.withOpacity(0.2),
+            PulseColors.secondary.withOpacity(0.2),
+          ],
+        ),
+      ),
+      child: Center(
+        child: Icon(
+          _getCategoryIcon(),
+          size: 48,
+          color: PulseColors.primary,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCategoryChip() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: PulseColors.primary.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: PulseColors.primary.withOpacity(0.3),
+          width: 1,
+        ),
+      ),
+      child: Text(
+        EventCategories.getDisplayName(event.category),
+        style: TextStyle(
+          color: PulseColors.primary,
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDateInfo() {
+    final dateFormat = DateFormat('MMM dd');
+    final timeFormat = DateFormat('HH:mm');
+    
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        Text(
+          dateFormat.format(event.date),
+          style: TextStyle(
+            color: PulseColors.onSurface,
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        Text(
+          timeFormat.format(event.date),
+          style: TextStyle(
+            color: PulseColors.onSurfaceVariant,
+            fontSize: 12,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildAttendeeInfo() {
+    return Row(
+      children: [
+        Icon(
+          Icons.people_outline,
+          size: 16,
+          color: PulseColors.onSurfaceVariant,
+        ),
+        const SizedBox(width: 4),
+        Text(
+          '${event.attendeeCount} attending',
+          style: TextStyle(
+            color: PulseColors.onSurfaceVariant,
+            fontSize: 12,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildActionButton() {
+    if (isLoading) {
+      return SizedBox(
+        width: 24,
+        height: 24,
+        child: CircularProgressIndicator(
+          color: PulseColors.primary,
+          strokeWidth: 2,
+        ),
+      );
+    }
+
+    if (event.isAttending) {
+      return TextButton.icon(
+        onPressed: onLeave,
+        icon: Icon(
+          Icons.check_circle,
+          size: 16,
+          color: PulseColors.success,
+        ),
+        label: Text(
+          'Going',
+          style: TextStyle(
+            color: PulseColors.success,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        style: TextButton.styleFrom(
+          backgroundColor: PulseColors.success.withOpacity(0.1),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        ),
+      );
+    }
+
+    return ElevatedButton.icon(
+      onPressed: onAttend,
+      icon: const Icon(Icons.add, size: 16),
+      label: const Text('Join'),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: PulseColors.primary,
+        foregroundColor: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        elevation: 0,
+      ),
+    );
+  }
+
+  IconData _getCategoryIcon() {
+    switch (event.category) {
+      case EventCategories.music:
+        return Icons.music_note;
+      case EventCategories.sports:
+        return Icons.sports_soccer;
+      case EventCategories.food:
+        return Icons.restaurant;
+      case EventCategories.drinks:
+        return Icons.local_bar;
+      case EventCategories.culture:
+        return Icons.palette;
+      case EventCategories.outdoors:
+        return Icons.nature;
+      case EventCategories.networking:
+        return Icons.people;
+      case EventCategories.education:
+        return Icons.school;
+      case EventCategories.wellness:
+        return Icons.spa;
+      case EventCategories.social:
+        return Icons.group;
+      default:
+        return Icons.event;
+    }
+  }
+}
