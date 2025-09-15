@@ -70,7 +70,12 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildHeader(BuildContext context, UserState state) {
     return Container(
-      padding: const EdgeInsets.all(PulseSpacing.lg),
+      padding: const EdgeInsets.fromLTRB(
+        PulseSpacing.lg,
+        PulseSpacing.lg,
+        PulseSpacing.lg,
+        PulseSpacing.md,
+      ),
       child: Row(
         children: [
           // User avatar
@@ -87,25 +92,46 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           const SizedBox(width: PulseSpacing.md),
 
-          // Greeting
+          // Greeting - clean and minimal
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   _getGreeting(),
-                  style: PulseTextStyles.bodySmall.copyWith(
+                  style: PulseTextStyles.bodyMedium.copyWith(
                     color: PulseColors.onSurfaceVariant,
                   ),
                 ),
                 Text(
-                  'Welcome!',
+                  'Ready to explore?',
                   style: PulseTextStyles.headlineSmall.copyWith(
                     color: PulseColors.onSurface,
-                    fontWeight: FontWeight.bold,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ],
+            ),
+          ),
+
+          // Filters button - more accessible
+          Container(
+            margin: const EdgeInsets.only(right: PulseSpacing.sm),
+            child: IconButton(
+              onPressed: () {
+                // Navigate to filters screen
+                // TODO: Implement filter navigation
+              },
+              icon: const Icon(Icons.tune),
+              style: IconButton.styleFrom(
+                backgroundColor: PulseColors.primaryContainer,
+                foregroundColor: PulseColors.primary,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(PulseRadii.md),
+                ),
+                padding: const EdgeInsets.all(12),
+              ),
+              tooltip: 'Filters',
             ),
           ),
 
@@ -165,6 +191,7 @@ class _HomeScreenState extends State<HomeScreen> {
             icon: const Icon(Icons.notifications_outlined),
             style: IconButton.styleFrom(
               backgroundColor: PulseColors.surfaceVariant,
+              foregroundColor: PulseColors.onSurfaceVariant,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(PulseRadii.md),
               ),

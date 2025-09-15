@@ -1,90 +1,118 @@
 import 'package:flutter/material.dart';
 
 /// Pulse Dating App Color Palette
-/// Modern, vibrant colors designed for dating app aesthetics
+/// Exactly matching the web brand colors (#6E3BFF, #00C2FF, #00D4AA)
 class PulseColors {
   PulseColors._();
 
-  // Primary Brand Colors
+  // Primary Brand Colors - Exact match with web (#6E3BFF)
   static const Color primary = Color(0xFF6E3BFF); // Pulse purple
-  static const Color primaryLight = Color(0xFF8B5CFF);
-  static const Color primaryDark = Color(0xFF5528CC);
-  static const Color primaryContainer = Color(0xFFE8DCFF);
+  static const Color primaryLight = Color(0xFFA777FF); // From web primary-400
+  static const Color primaryDark = Color(0xFF4A26B0); // From web primary-700
+  static const Color primaryContainer = Color(
+    0xFFE9E1FF,
+  ); // From web primary-100
 
-  // Secondary Brand Colors
+  // Secondary Brand Colors - Exact match with web (#00C2FF)
   static const Color secondary = Color(0xFF00C2FF); // Cyan accent
-  static const Color secondaryLight = Color(0xFF33D1FF);
-  static const Color secondaryDark = Color(0xFF0099CC);
-  static const Color secondaryContainer = Color(0xFFE0F8FF);
+  static const Color secondaryLight = Color(0xFF33CAFF); // From web accent-400
+  static const Color secondaryDark = Color(0xFF0074A9); // From web accent-700
+  static const Color secondaryContainer = Color(
+    0xFFCCF2FF,
+  ); // From web accent-100
 
-  // Success & Positive Actions
-  static const Color success = Color(0xFF00D4AA); // Green
-  static const Color successLight = Color(0xFF33DDBB);
-  static const Color successDark = Color(0xFF00A085);
-  static const Color successContainer = Color(0xFFE0FBF6);
+  // Success & Positive Actions - Exact match with web (#00D95F)
+  static const Color success = Color(
+    0xFF00D95F,
+  ); // Green - updated to match web
+  static const Color successLight = Color(0xFF33FF99); // From web success-400
+  static const Color successDark = Color(0xFF008640); // From web success-700
+  static const Color successContainer = Color(
+    0xFFCCFFE6,
+  ); // From web success-100
 
-  // Error & Warning
-  static const Color error = Color(0xFFFF4B6B); // Modern red
-  static const Color errorLight = Color(0xFFFF7089);
-  static const Color errorDark = Color(0xFFCC3954);
-  static const Color errorContainer = Color(0xFFFFE8EC);
+  // Error & Warning - Updated to match web design system
+  static const Color error = Color(
+    0xFFFF3B5C,
+  ); // Modern red - from web destructive
+  static const Color errorLight = Color(0xFFFF6684); // From web destructive-400
+  static const Color errorDark = Color(0xFFA92238); // From web destructive-700
+  static const Color errorContainer = Color(
+    0xFFFFCCD6,
+  ); // From web destructive-100
 
-  static const Color warning = Color(0xFFFFB545); // Warm orange
-  static const Color warningLight = Color(0xFFFFC766);
-  static const Color warningDark = Color(0xFFCC9037);
-  static const Color warningContainer = Color(0xFFFFF4E6);
+  static const Color warning = Color(
+    0xFFFF9900,
+  ); // Warm orange - from web warning
+  static const Color warningLight = Color(0xFFFFB366); // From web warning-300
+  static const Color warningDark = Color(0xFFA96600); // From web warning-700
+  static const Color warningContainer = Color(
+    0xFFFFE6CC,
+  ); // From web warning-100
 
-  // Neutral Colors
-  static const Color surface = Color(0xFFFFFBFF);
-  static const Color surfaceVariant = Color(0xFFF5F1FF);
-  static const Color surfaceDim = Color(0xFFE6E1E5);
+  // Neutral Colors - Updated to match web neutral system
+  static const Color surface = Color(0xFFFFFFFF); // Pure white for light mode
+  static const Color surfaceVariant = Color(0xFFF1F3F4); // From web neutral-100
+  static const Color surfaceDim = Color(0xFFE8EAED); // From web neutral-200
   static const Color surfaceBright = Color(0xFFFFFBFF);
 
-  static const Color onSurface = Color(0xFF1D1B20);
-  static const Color onSurfaceVariant = Color(0xFF49454F);
-  static const Color outline = Color(0xFF79747E);
-  static const Color outlineVariant = Color(0xFFCAC4D0);
+  static const Color onSurface = Color(0xFF202124); // From web neutral-800
+  static const Color onSurfaceVariant = Color(
+    0xFF5F6368,
+  ); // From web neutral-600
+  static const Color outline = Color(0xFFBDC1C6); // From web neutral-400
+  static const Color outlineVariant = Color(0xFFDADCE0); // From web neutral-300
 
-  // Dark Theme Colors
-  static const Color surfaceDark = Color(0xFF141218);
-  static const Color surfaceVariantDark = Color(0xFF2B2930);
-  static const Color onSurfaceDark = Color(0xFFE6E1E5);
-  static const Color onSurfaceVariantDark = Color(0xFFCAC4D0);
+  // Dark Theme Colors - Enhanced dark mode system
+  static const Color surfaceDark = Color(0xFF0A0F2D); // From web neutral-900
+  static const Color surfaceVariantDark = Color(
+    0xFF202124,
+  ); // From web neutral-800
+  static const Color onSurfaceDark = Color(
+    0xFFF1F3F4,
+  ); // Light text on dark surface
+  static const Color onSurfaceVariantDark = Color(
+    0xFFBDC1C6,
+  ); // From web neutral-400
 
-  // Gradient Colors for Premium Feel
+  // Gradient Colors for Premium Feel - Updated to match web gradients
   static const List<Color> primaryGradient = [
-    Color(0xFF6E3BFF),
-    Color(0xFF00C2FF),
+    Color(0xFF6E3BFF), // Primary
+    Color(0xFF00C2FF), // Secondary - creates the signature brand gradient
   ];
 
   static const List<Color> successGradient = [
-    Color(0xFF00D4AA),
-    Color(0xFF00C2FF),
+    Color(0xFF00D95F), // Success
+    Color(0xFF00C2FF), // Secondary
   ];
 
   static const List<Color> premiumGradient = [
-    Color(0xFFFFD700), // Gold
-    Color(0xFFFF8C00), // Orange
+    Color(0xFFFFD700), // Gold - from web warning colors
+    Color(0xFFFF9900), // Orange - from web warning
   ];
 
-  // Dating App Specific Colors
-  static const Color like = success; // Green for likes
+  // Dating App Specific Colors - Updated to use new color system
+  static const Color like = success; // Green for likes (#00D95F)
   static const Color superLike = Color(0xFF00C2FF); // Blue for super likes
-  static const Color nope = Color(0xFFCCCCCC); // Gray for pass
-  static const Color match = Color(0xFFFF4B6B); // Red/pink for matches
+  static const Color nope = Color(0xFFBDC1C6); // Neutral gray for pass
+  static const Color match = Color(0xFFFF3B5C); // Red/pink for matches
   static const Color online = success; // Online status
   static const Color recently = warning; // Recently active
-  static const Color offline = Color(0xFF9E9E9E); // Offline status
+  static const Color offline = Color(0xFF8C8CA1); // From web neutral-500
 
-  // Chat & Message Colors
-  static const Color sentMessage = primary;
-  static const Color receivedMessage = Color(0xFFF5F5F5);
-  static const Color unreadBadge = Color(0xFFFF4B6B);
-  static const Color typing = secondary;
+  // Chat & Message Colors - Enhanced for better UX
+  static const Color sentMessage = primary; // Purple for sent messages
+  static const Color receivedMessage = Color(
+    0xFFF1F3F4,
+  ); // Light gray for received
+  static const Color unreadBadge = Color(0xFFFF3B5C); // Match color for urgency
+  static const Color typing = secondary; // Cyan for typing indicator
 
   // Photo & Media Colors
   static const Color photoOverlay = Color(0x80000000); // Semi-transparent black
-  static const Color photoPlaceholder = Color(0xFFE0E0E0);
+  static const Color photoPlaceholder = Color(
+    0xFFE8EAED,
+  ); // From web neutral-200
   static const Color videoOverlay = Color(0xBF000000); // More opaque for video
 }
 

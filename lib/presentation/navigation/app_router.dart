@@ -338,22 +338,22 @@ class MainBottomNavigation extends StatelessWidget {
         BottomNavigationBarItem(
           icon: Icon(Icons.home_outlined),
           activeIcon: Icon(Icons.home),
-          label: 'Home',
+          label: '✨ Explore',
         ),
         BottomNavigationBarItem(
           icon: Icon(Icons.favorite_outline),
           activeIcon: Icon(Icons.favorite),
-          label: 'Matches',
+          label: '🔥 Sparks',
         ),
         BottomNavigationBarItem(
           icon: Icon(Icons.chat_bubble_outline),
           activeIcon: Icon(Icons.chat_bubble),
-          label: 'Messages',
+          label: '💭 DMs',
         ),
         BottomNavigationBarItem(
           icon: Icon(Icons.person_outline),
           activeIcon: Icon(Icons.person),
-          label: 'Profile',
+          label: '🎭 Me',
         ),
       ],
     );

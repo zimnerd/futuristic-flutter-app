@@ -5,47 +5,66 @@ import 'package:logger/logger.dart';
 import '../config/test_credentials.dart';
 import '../../presentation/blocs/auth/auth_bloc.dart';
 import '../../presentation/blocs/auth/auth_event.dart';
+import '../../presentation/blocs/auth/auth_state.dart';
 
-/// Service responsible for handling automatic login in development mode
+/// Service responsible for handling session validation and automatic login in development mode
 class AutoLoginService {
   static final Logger _logger = Logger();
 
-  /// Triggers auto-login for development if enabled
+  /// Attempts session validation first, then auto-login if needed in development
   static Future<void> attemptAutoLogin(BuildContext context) async {
-    // Only enable auto-login in development mode
-    if (!TestCredentials.isDevelopmentMode) {
-      _logger.d('🚫 Auto-login disabled - not in development mode');
-      return;
-    }
-
     try {
-      _logger.i('🤖 Auto-login enabled - attempting login with test user');
-      
-      // Use the regular user account for auto-login
-      final testUser = TestCredentials.getByRole('USER');
-      
-      if (testUser == null) {
-        _logger.w('❌ No test user found for auto-login');
+      _logger.i('🔍 Starting session validation on app startup');
+
+      // First, always check authentication status (validates stored session)
+      context.read<AuthBloc>().add(const AuthStatusChecked());
+
+      // Wait a moment to see if session validation succeeds
+      await Future.delayed(const Duration(milliseconds: 500));
+
+      // Check current auth state after validation attempt
+      final authState = context.read<AuthBloc>().state;
+
+      if (authState is AuthAuthenticated) {
+        _logger.i(
+          '✅ Session validation successful - user already authenticated',
+        );
         return;
       }
+      
+      // If session validation failed and we're in development mode, try auto-login
+      if (TestCredentials.isDevelopmentMode) {
+        _logger.i(
+          '🤖 Session validation failed - attempting auto-login for development',
+        );
+        
+        final testUser = TestCredentials.getByRole('USER');
 
-      _logger.i('🔐 Auto-logging in as: ${testUser.email}');
+        if (testUser == null) {
+          _logger.w('❌ No test user found for auto-login');
+          return;
+        }
 
-      // Trigger auto-login event
-      context.read<AuthBloc>().add(
-        AuthAutoLoginRequested(
-          email: testUser.email,
-          password: testUser.password,
-        ),
-      );
+        _logger.i('🔐 Auto-logging in as: ${testUser.email}');
 
-      _logger.i('✅ Auto-login request sent for ${testUser.name}');
+        // Trigger auto-login event
+        context.read<AuthBloc>().add(
+          AuthAutoLoginRequested(
+            email: testUser.email,
+            password: testUser.password,
+          ),
+        );
+
+        _logger.i('✅ Auto-login request sent for ${testUser.name}');
+      } else {
+        _logger.i('🚫 Auto-login disabled - not in development mode');
+      }
     } catch (e, stackTrace) {
       _logger.e('💥 Auto-login service error', error: e, stackTrace: stackTrace);
     }
   }
 
-  /// Checks if auto-login should be enabled
+  /// Checks if auto-login should be enabled (only for development builds with failed session validation)
   static bool get shouldAutoLogin {
     return TestCredentials.isDevelopmentMode;
   }

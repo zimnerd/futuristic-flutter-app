@@ -1,53 +1,53 @@
 import 'package:flutter/material.dart';
 
 /// Pulse Dating App Brand Colors
-/// Based on the web app color scheme
+/// Exactly matching the web app color scheme (#6E3BFF, #00C2FF, #00D95F)
 class PulseColors {
-  // Primary brand colors
+  // Primary brand colors - Exact match with web
   static const Color primary = Color(0xFF6E3BFF); // Purple
-  static const Color primaryLight = Color(0xFF8B5FFF);
-  static const Color primaryDark = Color(0xFF5729CC);
+  static const Color primaryLight = Color(0xFFA777FF); // From web primary-400
+  static const Color primaryDark = Color(0xFF4A26B0); // From web primary-700
 
-  // Accent colors
+  // Accent colors - Exact match with web
   static const Color accent = Color(0xFF00C2FF); // Cyan
-  static const Color accentLight = Color(0xFF33D1FF);
-  static const Color accentDark = Color(0xFF0099CC);
+  static const Color accentLight = Color(0xFF33CAFF); // From web accent-400
+  static const Color accentDark = Color(0xFF0074A9); // From web accent-700
 
-  // Success color
-  static const Color success = Color(0xFF00D4AA); // Green
-  static const Color successLight = Color(0xFF33DDBB);
-  static const Color successDark = Color(0xFF00A688);
+  // Success color - Updated to match web
+  static const Color success = Color(0xFF00D95F); // Green - updated from web
+  static const Color successLight = Color(0xFF33FF99); // From web success-400
+  static const Color successDark = Color(0xFF008640); // From web success-700
 
-  // Error colors
-  static const Color error = Color(0xFFFF6B6B);
-  static const Color errorLight = Color(0xFFFF8888);
-  static const Color errorDark = Color(0xFFCC5555);
+  // Error colors - Updated to match web
+  static const Color error = Color(0xFFFF3B5C); // From web destructive
+  static const Color errorLight = Color(0xFFFF6684); // From web destructive-400
+  static const Color errorDark = Color(0xFFA92238); // From web destructive-700
 
-  // Warning colors
-  static const Color warning = Color(0xFFFFB800);
-  static const Color warningLight = Color(0xFFFFC533);
-  static const Color warningDark = Color(0xFFCC9200);
+  // Warning colors - Updated to match web
+  static const Color warning = Color(0xFFFF9900); // From web warning
+  static const Color warningLight = Color(0xFFFFB366); // From web warning-300
+  static const Color warningDark = Color(0xFFA96600); // From web warning-700
 
-  // Neutral colors
+  // Neutral colors - Enhanced system matching web
   static const Color white = Color(0xFFFFFFFF);
   static const Color black = Color(0xFF000000);
-  static const Color grey50 = Color(0xFFF9FAFB);
-  static const Color grey100 = Color(0xFFF3F4F6);
-  static const Color grey200 = Color(0xFFE5E7EB);
-  static const Color grey300 = Color(0xFFD1D5DB);
-  static const Color grey400 = Color(0xFF9CA3AF);
-  static const Color grey500 = Color(0xFF6B7280);
-  static const Color grey600 = Color(0xFF4B5563);
-  static const Color grey700 = Color(0xFF374151);
-  static const Color grey800 = Color(0xFF1F2937);
-  static const Color grey900 = Color(0xFF111827);
+  static const Color grey50 = Color(0xFFF8F9FA); // From web neutral-50
+  static const Color grey100 = Color(0xFFF1F3F4); // From web neutral-100
+  static const Color grey200 = Color(0xFFE8EAED); // From web neutral-200
+  static const Color grey300 = Color(0xFFDADCE0); // From web neutral-300
+  static const Color grey400 = Color(0xFFBDC1C6); // From web neutral-400
+  static const Color grey500 = Color(0xFF8C8CA1); // From web neutral-500
+  static const Color grey600 = Color(0xFF5F6368); // From web neutral-600
+  static const Color grey700 = Color(0xFF3C4043); // From web neutral-700
+  static const Color grey800 = Color(0xFF202124); // From web neutral-800
+  static const Color grey900 = Color(0xFF0A0F2D); // From web neutral-900
 
-  // Dating app specific colors
-  static const Color like = success;
-  static const Color pass = grey400;
-  static const Color superLike = warning;
-  static const Color premium = primary;
-  static const Color verified = accent;
+  // Dating app specific colors - Updated to use new system
+  static const Color like = success; // Green for likes (#00D95F)
+  static const Color pass = grey400; // Neutral gray for pass
+  static const Color superLike = warning; // Orange for super likes
+  static const Color premium = primary; // Purple for premium
+  static const Color verified = accent; // Cyan for verified
   static const Color online = success;
   static const Color away = warning;
   static const Color offline = grey400;

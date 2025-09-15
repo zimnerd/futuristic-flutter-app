@@ -187,15 +187,26 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
                 final isActive = entry.key == _currentPhotoIndex;
                 return Expanded(
                   child: Container(
-                    height: 3,
+                    height: 4,
                     margin: EdgeInsets.only(
-                      right: entry.key < widget.profile.photos.length - 1 ? 4 : 0,
+                      right: entry.key < widget.profile.photos.length - 1
+                          ? 6
+                          : 0,
                     ),
                     decoration: BoxDecoration(
                       color: isActive 
                         ? Colors.white 
-                        : Colors.white.withValues(alpha: 0.3),
+                          : Colors.white.withValues(alpha: 0.4),
                       borderRadius: BorderRadius.circular(2),
+                      boxShadow: isActive
+                          ? [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.2),
+                                blurRadius: 4,
+                                offset: const Offset(0, 2),
+                              ),
+                            ]
+                          : null,
                     ),
                   ),
                 );
@@ -208,18 +219,44 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
           bottom: 20,
           right: 20,
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             decoration: BoxDecoration(
-              color: Colors.black.withValues(alpha: 0.6),
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Text(
-              '${_currentPhotoIndex + 1}/${widget.profile.photos.length}',
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
+              gradient: LinearGradient(
+                colors: [
+                  Colors.black.withValues(alpha: 0.7),
+                  Colors.black.withValues(alpha: 0.5),
+                ],
               ),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.2),
+                width: 1,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.3),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.photo_library_outlined,
+                  color: Colors.white,
+                  size: 16,
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  '${_currentPhotoIndex + 1}/${widget.profile.photos.length}',
+                  style: PulseTextStyles.labelMedium.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
             ),
           ),
         ),
@@ -267,8 +304,27 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
   }
 
   Widget _buildProfileHeader() {
-    return Padding(
+    return Container(
+      margin: const EdgeInsets.all(16),
       padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Colors.white,
+            PulseColors.primaryContainer.withValues(alpha: 0.1),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -280,21 +336,36 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
                   children: [
                     Row(
                       children: [
-                        Text(
-                          widget.profile.name,
-                          style: const TextStyle(
-                            fontSize: 28,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.black87,
+                        Flexible(
+                          child: Text(
+                            widget.profile.name,
+                            style: PulseTextStyles.headlineMedium.copyWith(
+                              color: Colors.black87,
+                            ),
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
                         const SizedBox(width: 8),
                         if (widget.profile.verified)
                           Container(
-                            padding: const EdgeInsets.all(4),
-                            decoration: const BoxDecoration(
-                              color: PulseColors.primary,
+                            padding: const EdgeInsets.all(6),
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  PulseColors.primary,
+                                  PulseColors.secondary,
+                                ],
+                              ),
                               shape: BoxShape.circle,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: PulseColors.primary.withValues(
+                                    alpha: 0.3,
+                                  ),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
                             ),
                             child: const Icon(
                               Icons.verified,
@@ -304,12 +375,26 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
                           ),
                       ],
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      '${widget.profile.age} years old',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.grey[600],
+                    const SizedBox(height: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: PulseColors.primary.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: PulseColors.primary.withValues(alpha: 0.2),
+                          width: 1,
+                        ),
+                      ),
+                      child: Text(
+                        '${widget.profile.age} years old',
+                        style: PulseTextStyles.labelMedium.copyWith(
+                          color: PulseColors.primary,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
                   ],
@@ -325,7 +410,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
                         onTap: _onLikeTap,
                         borderRadius: BorderRadius.circular(30),
                         child: Container(
-                          padding: const EdgeInsets.all(12),
+                          padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
                             gradient: LinearGradient(
                               colors: [PulseColors.primary, PulseColors.secondary],
@@ -333,16 +418,18 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
                             shape: BoxShape.circle,
                             boxShadow: [
                               BoxShadow(
-                                color: PulseColors.primary.withValues(alpha: 0.3),
-                                blurRadius: 8,
-                                offset: const Offset(0, 4),
+                                color: PulseColors.primary.withValues(
+                                  alpha: 0.4,
+                                ),
+                                blurRadius: 16,
+                                offset: const Offset(0, 6),
                               ),
                             ],
                           ),
                           child: const Icon(
                             Icons.favorite,
                             color: Colors.white,
-                            size: 24,
+                            size: 28,
                           ),
                         ),
                       ),
@@ -351,7 +438,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
                 ),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 20),
           _buildLocationRow(),
         ],
       ),
@@ -359,80 +446,148 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
   }
 
   Widget _buildLocationRow() {
-    return Row(
-      children: [
-        Icon(
-          Icons.location_on,
-          color: Colors.grey[500],
-          size: 16,
-        ),
-        const SizedBox(width: 4),
-        Text(
-          '2 km away', // This would be calculated
-          style: TextStyle(
-            color: Colors.grey[600],
-            fontSize: 14,
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.grey.withValues(alpha: 0.1), width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
           ),
-        ),
-        const SizedBox(width: 16),
-        if (widget.profile.isOnline) ...[
+        ],
+      ),
+      child: Row(
+        children: [
           Container(
-            width: 8,
-            height: 8,
-            decoration: const BoxDecoration(
-              color: PulseColors.success,
-              shape: BoxShape.circle,
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: PulseColors.secondary.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(
+              Icons.location_on,
+              color: PulseColors.secondary,
+              size: 20,
             ),
           ),
-          const SizedBox(width: 4),
-          Text(
-            'Online now',
-            style: TextStyle(
-              color: Colors.grey[600],
-              fontSize: 14,
-            ),
-          ),
-        ] else ...[
-          Icon(
-            Icons.access_time,
-            color: Colors.grey[500],
-            size: 16,
-          ),
-          const SizedBox(width: 4),
-          Text(
-            'Active 2 hours ago', // This would be calculated
-            style: TextStyle(
-              color: Colors.grey[600],
-              fontSize: 14,
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '2 km away',
+                  style: PulseTextStyles.bodyMedium.copyWith(
+                    color: Colors.black87,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    if (widget.profile.isOnline) ...[
+                      Container(
+                        width: 8,
+                        height: 8,
+                        decoration: const BoxDecoration(
+                          color: PulseColors.success,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        'Online now',
+                        style: PulseTextStyles.labelSmall.copyWith(
+                          color: PulseColors.success,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ] else ...[
+                      Container(
+                        width: 8,
+                        height: 8,
+                        decoration: BoxDecoration(
+                          color: Colors.grey[400],
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        'Active 2 hours ago',
+                        style: PulseTextStyles.labelSmall.copyWith(
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ],
             ),
           ),
         ],
-      ],
+      ),
     );
   }
 
   Widget _buildAboutSection() {
     if (widget.profile.bio.isEmpty) return const SizedBox.shrink();
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Colors.white,
+            PulseColors.secondaryContainer.withValues(alpha: 0.1),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'About',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.w600,
-              color: Colors.black87,
-            ),
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: PulseColors.secondary.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  Icons.person,
+                  color: PulseColors.secondary,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Text(
+                'About',
+                style: PulseTextStyles.titleLarge.copyWith(
+                  color: Colors.black87,
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 16),
           Text(
             widget.profile.bio,
-            style: const TextStyle(
-              fontSize: 16,
-              height: 1.5,
+            style: PulseTextStyles.bodyLarge.copyWith(
+              height: 1.6,
               color: Colors.black87,
             ),
           ),
@@ -445,31 +600,76 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
     final details = <Widget>[];
 
     if (widget.profile.job?.isNotEmpty == true) {
-      details.add(_buildDetailItem(Icons.work, 'Job', widget.profile.job!));
+      details.add(
+        _buildDetailItem(Icons.work_outline, 'Job', widget.profile.job!),
+      );
     }
     if (widget.profile.company?.isNotEmpty == true) {
-      details.add(_buildDetailItem(Icons.business, 'Company', widget.profile.company!));
+      details.add(
+        _buildDetailItem(
+          Icons.business_outlined,
+          'Company',
+          widget.profile.company!,
+        ),
+      );
     }
     if (widget.profile.school?.isNotEmpty == true) {
-      details.add(_buildDetailItem(Icons.school, 'Education', widget.profile.school!));
+      details.add(
+        _buildDetailItem(
+          Icons.school_outlined,
+          'Education',
+          widget.profile.school!,
+        ),
+      );
     }
 
     if (details.isEmpty) return const SizedBox.shrink();
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Colors.white, PulseColors.primary.withValues(alpha: 0.02)],
+        ),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Details',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.w600,
-              color: Colors.black87,
-            ),
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: PulseColors.primary.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  Icons.info_outline,
+                  color: PulseColors.primary,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Text(
+                'Details',
+                style: PulseTextStyles.titleLarge.copyWith(
+                  color: Colors.black87,
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 20),
           ...details,
         ],
       ),
@@ -477,33 +677,50 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
   }
 
   Widget _buildDetailItem(IconData icon, String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.grey.withValues(alpha: 0.1), width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
       child: Row(
         children: [
-          Icon(
-            icon,
-            color: Colors.grey[600],
-            size: 20,
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: PulseColors.primary.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(icon,
+              color: PulseColors.primary, size: 24),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   label,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey[500],
-                    fontWeight: FontWeight.w500,
+                  style: PulseTextStyles.labelMedium.copyWith(
+                    color: Colors.grey[600],
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
+                const SizedBox(height: 4),
                 Text(
                   value,
-                  style: const TextStyle(
-                    fontSize: 16,
+                  style: PulseTextStyles.bodyLarge.copyWith(
                     color: Colors.black87,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ],
@@ -517,26 +734,60 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
   Widget _buildInterestsSection() {
     if (widget.profile.interests.isEmpty) return const SizedBox.shrink();
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Colors.white, PulseColors.success.withValues(alpha: 0.02)],
+        ),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Interests',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.w600,
-              color: Colors.black87,
-            ),
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: PulseColors.success.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  Icons.favorite_outline,
+                  color: PulseColors.success,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Text(
+                'Interests',
+                style: PulseTextStyles.titleLarge.copyWith(
+                  color: Colors.black87,
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 20),
           Wrap(
-            spacing: 8,
-            runSpacing: 8,
+            spacing: 12,
+            runSpacing: 12,
             children: widget.profile.interests.map((interest) {
               return Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 12,
+                ),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
@@ -544,18 +795,24 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
                       PulseColors.secondary.withValues(alpha: 0.1),
                     ],
                   ),
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(24),
                   border: Border.all(
-                    color: PulseColors.primary.withValues(alpha: 0.3),
+                    color: PulseColors.primary.withValues(alpha: 0.2),
                     width: 1,
                   ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: PulseColors.primary.withValues(alpha: 0.1),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
                 ),
                 child: Text(
                   interest,
-                  style: TextStyle(
+                  style: PulseTextStyles.bodyMedium.copyWith(
                     color: PulseColors.primary,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               );
@@ -634,28 +891,53 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
 
   Widget _buildBottomActions() {
     return Container(
-      color: Colors.white,
-      padding: const EdgeInsets.all(20),
-      child: Row(
-        children: [
-          Expanded(
-            child: PulseButton(
-              text: 'Super Like',
-              onPressed: widget.onSuperLike,
-              variant: PulseButtonVariant.secondary,
-              icon: const Icon(Icons.star, size: 18),
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            flex: 2,
-            child: PulseButton(
-              text: 'Message',
-              onPressed: widget.onMessage,
-              icon: const Icon(Icons.chat_bubble, size: 18),
-            ),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(24),
+          topRight: Radius.circular(24),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.1),
+            blurRadius: 20,
+            offset: const Offset(0, -4),
           ),
         ],
+      ),
+      padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
+      child: SafeArea(
+        top: false,
+        child: Row(
+          children: [
+            Expanded(
+              child: PulseButton(
+                text: 'Super Like',
+                onPressed: widget.onSuperLike,
+                variant: PulseButtonVariant.secondary,
+                icon: Container(
+                  padding: const EdgeInsets.all(2),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [PulseColors.warning, Colors.orange],
+                    ),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.star, size: 16, color: Colors.white),
+                ),
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              flex: 2,
+              child: PulseButton(
+                text: 'Message',
+                onPressed: widget.onMessage,
+                icon: const Icon(Icons.chat_bubble_outline, size: 18),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

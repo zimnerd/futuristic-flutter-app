@@ -192,11 +192,42 @@ class DiscoveryService {
     final user = suggestion['user'] as Map<String, dynamic>;
     final profile = user['profile'] as Map<String, dynamic>?;
 
+    // Handle null or missing values safely
+    final firstName = user['firstName'] as String? ?? '';
+    final lastName = user['lastName'] as String? ?? '';
+    final name = '$firstName $lastName'.trim();
+
+    // Safely parse age with null check
+    final ageValue = user['age'];
+    final int age;
+    if (ageValue == null) {
+      age = 18; // Default age if null
+    } else if (ageValue is int) {
+      age = ageValue;
+    } else if (ageValue is double) {
+      age = ageValue.toInt();
+    } else {
+      age = int.tryParse(ageValue.toString()) ?? 18;
+    }
+
+    // Safely parse height with null check
+    final heightValue = profile?['height'];
+    final int? height;
+    if (heightValue == null) {
+      height = null;
+    } else if (heightValue is int) {
+      height = heightValue;
+    } else if (heightValue is double) {
+      height = heightValue.toInt();
+    } else {
+      height = int.tryParse(heightValue.toString());
+    }
+
     // Create a UserProfile from the API suggestion structure
     return UserProfile(
       id: user['id'] as String,
-      name: '${user['firstName']} ${user['lastName']}'.trim(),
-      age: user['age'] as int,
+      name: name.isNotEmpty ? name : 'Unknown User',
+      age: age,
       bio: user['bio'] as String? ?? '',
       photos:
           (user['photos'] as List<dynamic>?)
@@ -233,7 +264,7 @@ class DiscoveryService {
           [],
       occupation: profile?['occupation'] as String?,
       education: profile?['education'] as String?,
-      height: profile?['height'] as int?,
+      height: height,
       zodiacSign: null,
       lifestyle: <String, dynamic>{},
       preferences: <String, dynamic>{},
