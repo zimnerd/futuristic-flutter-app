@@ -30,10 +30,13 @@ class MatchingService {
       );
 
       final data = response.data as Map<String, dynamic>;
-      final profiles = data['profiles'] as List<dynamic>;
+      final suggestions = data['data'] as List<dynamic>;
 
-      return profiles
-          .map((profile) => _userProfileFromJson(profile as Map<String, dynamic>))
+      return suggestions
+          .map(
+            (suggestion) =>
+                _userProfileFromSuggestion(suggestion as Map<String, dynamic>),
+          )
           .toList();
     } on DioException catch (e) {
       throw _handleDioError(e);
@@ -164,6 +167,59 @@ class MatchingService {
           : null,
       distanceKm: json['distanceKm']?.toDouble(),
     );
+  }
+
+  /// Convert suggestion JSON from API to UserProfile entity
+  UserProfile _userProfileFromSuggestion(Map<String, dynamic> suggestion) {
+    final user = suggestion['user'] as Map<String, dynamic>;
+    final profile = user['profile'] as Map<String, dynamic>?;
+
+    // Create a combined user object for the existing parser
+    final combinedUser = <String, dynamic>{
+      'id': user['id'],
+      'name': '${user['firstName']} ${user['lastName']}'.trim(),
+      'age': user['age'],
+      'bio': user['bio'] ?? '',
+      'photos':
+          (user['photos'] as List<dynamic>?)
+              ?.map(
+                (photo) => {
+                  'id': photo.hashCode.toString(),
+                  'url': photo as String,
+                  'order': 0,
+                  'isVerified': false,
+                },
+              )
+              .toList() ??
+          [],
+      'location': user['coordinates'] != null
+          ? {
+              'latitude': user['coordinates']['latitude'],
+              'longitude': user['coordinates']['longitude'],
+              'city': user['location']?.split(',').first?.trim(),
+              'country': user['location']?.split(',').last?.trim(),
+              'address': user['location'],
+            }
+          : {
+              'latitude': 0.0,
+              'longitude': 0.0,
+              'city': user['location']?.split(',').first?.trim(),
+              'country': user['location']?.split(',').last?.trim(),
+              'address': user['location'],
+            },
+      'isVerified': user['verified'] ?? false,
+      'interests': user['interests'] ?? [],
+      'occupation': profile?['occupation'],
+      'education': profile?['education'],
+      'height': profile?['height'],
+      'zodiacSign': null,
+      'lifestyle': <String, dynamic>{},
+      'preferences': <String, dynamic>{},
+      'lastActiveAt': user['lastActive'],
+      'distanceKm': null,
+    };
+
+    return _userProfileFromJson(combinedUser);
   }
 
   /// Convert JSON to ProfilePhoto entity

@@ -48,9 +48,12 @@ class DiscoveryService {
       );
       
       final Map<String, dynamic> data = response.data as Map<String, dynamic>;
-      final List<dynamic> usersJson = data['profiles'] ?? data['users'] ?? [];
-      return usersJson
-          .map((json) => UserProfile.fromJson(json))
+      final List<dynamic> suggestionsJson = data['data'] ?? [];
+      return suggestionsJson
+          .map(
+            (suggestion) =>
+                _userProfileFromSuggestion(suggestion as Map<String, dynamic>),
+          )
           .toList();
           
     } catch (error) {
@@ -179,5 +182,62 @@ class DiscoveryService {
       // Throw error instead of falling back to mock data
       throw Exception('Failed to get remaining super likes: $error');
     }
+  }
+
+  /// Convert suggestion JSON from API to UserProfile entity
+  UserProfile _userProfileFromSuggestion(Map<String, dynamic> suggestion) {
+    final user = suggestion['user'] as Map<String, dynamic>;
+    final profile = user['profile'] as Map<String, dynamic>?;
+
+    // Create a UserProfile from the API suggestion structure
+    return UserProfile(
+      id: user['id'] as String,
+      name: '${user['firstName']} ${user['lastName']}'.trim(),
+      age: user['age'] as int,
+      bio: user['bio'] as String? ?? '',
+      photos:
+          (user['photos'] as List<dynamic>?)
+              ?.map(
+                (photoUrl) => ProfilePhoto(
+                  id: photoUrl.hashCode.toString(),
+                  url: photoUrl as String,
+                  order: 0,
+                  isVerified: false,
+                ),
+              )
+              .toList() ??
+          [],
+      location: user['coordinates'] != null
+          ? UserLocation(
+              latitude: (user['coordinates']['latitude'] as num).toDouble(),
+              longitude: (user['coordinates']['longitude'] as num).toDouble(),
+              city: user['location']?.split(',').first?.trim(),
+              country: user['location']?.split(',').last?.trim(),
+              address: user['location'] as String?,
+            )
+          : UserLocation(
+              latitude: 0.0,
+              longitude: 0.0,
+              city: user['location']?.split(',').first?.trim(),
+              country: user['location']?.split(',').last?.trim(),
+              address: user['location'] as String?,
+            ),
+      isVerified: user['verified'] as bool? ?? false,
+      interests:
+          (user['interests'] as List<dynamic>?)
+              ?.map((interest) => interest as String)
+              .toList() ??
+          [],
+      occupation: profile?['occupation'] as String?,
+      education: profile?['education'] as String?,
+      height: profile?['height'] as int?,
+      zodiacSign: null,
+      lifestyle: <String, dynamic>{},
+      preferences: <String, dynamic>{},
+      lastActiveAt: user['lastActive'] != null
+          ? DateTime.parse(user['lastActive'] as String)
+          : null,
+      distanceKm: null,
+    );
   }
 }
