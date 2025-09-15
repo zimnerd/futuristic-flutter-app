@@ -89,12 +89,14 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
   }
 
   void _handlePanStart(DragStartDetails details) {
+    if (!mounted) return;
     setState(() {
       _isDragging = true;
     });
   }
 
   void _handlePanUpdate(DragUpdateDetails details) {
+    if (!mounted) return;
     final screenWidth = MediaQuery.of(context).size.width;
     final deltaX = details.delta.dx / screenWidth;
     final deltaY = details.delta.dy / MediaQuery.of(context).size.height;
@@ -118,6 +120,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
   }
 
   void _handlePanEnd(DragEndDetails details) {
+    if (!mounted) return;
     final shouldSwipe = _dragOffset.dx.abs() > 0.4 || _dragOffset.dy < -0.3;
     
     if (shouldSwipe && _currentSwipeDirection != null) {
@@ -133,6 +136,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
   }
 
   void _executeSwipe(SwipeAction direction) {
+    if (!mounted) return;
     final discoveryBloc = context.read<DiscoveryBloc>();
     final state = discoveryBloc.state;
     
@@ -141,6 +145,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
       
       // Trigger animation
       _cardController.forward().then((_) {
+        if (!mounted) return;
         _cardController.reset();
         setState(() {
           _dragOffset = Offset.zero;
@@ -385,6 +390,16 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
                   ),
                 ),
               ),
+            
+            // Main card background to prevent bleed-through
+            Positioned.fill(
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(20),
+                  color: Colors.white,
+                ),
+              ),
+            ),
             
             // Main card (current user)
             Positioned.fill(

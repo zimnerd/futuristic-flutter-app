@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../theme/pulse_colors.dart';
 import '../../blocs/matching/matching_bloc.dart';
+import '../../navigation/app_router.dart';
 import '../../../domain/entities/user_profile.dart';
 
 /// Enhanced matches screen with filters, search, view options and pagination
@@ -134,8 +136,8 @@ class _MatchesScreenState extends State<MatchesScreen>
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            PulseColors.primary.withOpacity(0.05),
-            PulseColors.secondary.withOpacity(0.05),
+            PulseColors.primary.withValues(alpha: 0.05),
+            PulseColors.secondary.withValues(alpha: 0.05),
           ],
         ),
       ),
@@ -147,7 +149,7 @@ class _MatchesScreenState extends State<MatchesScreen>
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: PulseColors.primary.withOpacity(0.1),
+                  color: PulseColors.primary.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: const Icon(
@@ -183,10 +185,10 @@ class _MatchesScreenState extends State<MatchesScreen>
                   vertical: 8,
                 ),
                 decoration: BoxDecoration(
-                  color: PulseColors.success.withOpacity(0.1),
+                  color: PulseColors.success.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
-                    color: PulseColors.success.withOpacity(0.3),
+                    color: PulseColors.success.withValues(alpha: 0.3),
                   ),
                 ),
                 child: Row(
@@ -221,7 +223,7 @@ class _MatchesScreenState extends State<MatchesScreen>
               borderRadius: BorderRadius.circular(12),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
+                  color: Colors.black.withValues(alpha: 0.05),
                   blurRadius: 8,
                   offset: const Offset(0, 2),
                 ),
@@ -315,7 +317,7 @@ class _MatchesScreenState extends State<MatchesScreen>
           border: Border.all(
             color: isSelected
                 ? PulseColors.primary
-                : Colors.grey.withOpacity(0.3),
+                : Colors.grey.withValues(alpha: 0.3),
           ),
         ),
         child: Icon(
@@ -365,7 +367,7 @@ class _MatchesScreenState extends State<MatchesScreen>
       padding: const EdgeInsets.all(16),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
-        childAspectRatio: 0.75,
+        childAspectRatio: 0.8, // Increased from 0.75 to prevent overflow
         crossAxisSpacing: 16,
         mainAxisSpacing: 16,
       ),
@@ -417,9 +419,10 @@ class _MatchesScreenState extends State<MatchesScreen>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Expanded(
+            Flexible(
               flex: 3,
               child: Container(
+                width: double.infinity,
                 decoration: BoxDecoration(
                   borderRadius: const BorderRadius.vertical(
                     top: Radius.circular(16),
@@ -434,7 +437,9 @@ class _MatchesScreenState extends State<MatchesScreen>
                       : null,
                 ),
                 child: profile.photos.isEmpty
-                    ? const Icon(Icons.person, size: 48, color: Colors.grey)
+                    ? const Center(
+                        child: Icon(Icons.person, size: 48, color: Colors.grey),
+                      )
                     : Stack(
                         children: [
                           Positioned(
@@ -457,29 +462,31 @@ class _MatchesScreenState extends State<MatchesScreen>
                       ),
               ),
             ),
-            Expanded(
+            Flexible(
               flex: 1,
               child: Padding(
-                padding: const EdgeInsets.all(8),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
                       '${profile.name}, ${profile.age}',
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
-                        fontSize: 14,
+                        fontSize: 13,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 2),
-                    Text(
-                      profile.bio,
-                      style: TextStyle(fontSize: 12, color: Colors.grey[600],
+                    const SizedBox(height: 1),
+                    Flexible(
+                      child: Text(
+                        profile.bio,
+                        style: TextStyle(fontSize: 11, color: Colors.grey[600]),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
                     ),
                   ],
                 ),
@@ -533,7 +540,7 @@ class _MatchesScreenState extends State<MatchesScreen>
                             vertical: 2,
                           ),
                           decoration: BoxDecoration(
-                            color: PulseColors.primary.withOpacity(0.1),
+                            color: PulseColors.primary.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Text(
@@ -587,7 +594,7 @@ class _MatchesScreenState extends State<MatchesScreen>
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -612,7 +619,10 @@ class _MatchesScreenState extends State<MatchesScreen>
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
-                  colors: [Colors.transparent, Colors.black.withOpacity(0.7)],
+                  colors: [
+                    Colors.transparent,
+                    Colors.black.withValues(alpha: 0.7),
+                  ],
                 ),
               ),
             ),
@@ -696,7 +706,7 @@ class _MatchesScreenState extends State<MatchesScreen>
             shape: BoxShape.circle,
             color: index == _currentIndex
                 ? PulseColors.primary
-                : Colors.grey.withOpacity(0.5),
+                : Colors.grey.withValues(alpha: 0.5),
           ),
         ),
       ),
@@ -850,8 +860,9 @@ class _MatchesScreenState extends State<MatchesScreen>
 
   void _navigateToProfile(UserProfile profile) {
     // Navigate to profile details
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Opening ${profile.name}\'s profile')),
+    context.push(
+      AppRoutes.profileDetails.replaceAll(':profileId', profile.id),
+      extra: profile,
     );
   }
 

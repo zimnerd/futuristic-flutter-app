@@ -28,6 +28,7 @@ import '../screens/voice_messages/voice_messages_screen.dart';
 import '../screens/profile/profile_creation_screen.dart';
 import '../screens/profile/profile_overview_screen.dart';
 import '../screens/profile/profile_section_edit_screen.dart';
+import '../screens/profile/profile_details_screen.dart';
 import '../screens/call/video_call_screen.dart';
 import '../screens/discovery/discovery_screen.dart';
 import '../screens/features/advanced_features_screen.dart';
@@ -242,6 +243,24 @@ class AppRouter {
         },
       ),
       GoRoute(
+        path: AppRoutes.profileDetails,
+        name: 'profileDetails',
+        builder: (context, state) {
+          final profileId = state.pathParameters['profileId'] ?? '';
+          final profile = state.extra as UserProfile?;
+
+          if (profile == null) {
+            // Navigate back if no profile provided
+            return Scaffold(
+              appBar: AppBar(title: const Text('Profile Not Found')),
+              body: const Center(child: Text('Profile not found')),
+            );
+          }
+
+          return ProfileDetailsScreen(profile: profile, isOwnProfile: false);
+        },
+      ),
+      GoRoute(
         path: AppRoutes.videoCall,
         name: 'videoCall',
         builder: (context, state) {
@@ -367,6 +386,7 @@ class AppRoutes {
   static const String profileCreation = '/profile-creation';
   static const String profileOverview = '/profile-overview';
   static const String profileSectionEdit = '/profile-section-edit';
+  static const String profileDetails = '/profile-details/:profileId';
   static const String videoCall = '/video-call/:callId';
   
   // Events routes

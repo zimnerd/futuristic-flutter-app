@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../../core/constants/api_constants.dart';
 import '../../core/utils/logger.dart';
+import '../../core/network/api_client.dart';
 import '../../domain/entities/event.dart';
 
 /// Service for event API integration with NestJS backend
@@ -15,6 +16,11 @@ class EventService {
   /// Set authentication token
   void setAuthToken(String authToken) {
     _authToken = authToken;
+  }
+
+  /// Get current auth token from ApiClient if not set locally
+  String? get _currentAuthToken {
+    return _authToken ?? ApiClient.instance.authToken;
   }
 
   /// Get events with optional location and category filtering
@@ -41,7 +47,7 @@ class EventService {
         Uri.parse('${ApiConstants.baseUrl}/events')
             .replace(queryParameters: queryParams),
         headers: {
-          'Authorization': 'Bearer $_authToken',
+          'Authorization': 'Bearer ${_currentAuthToken}',
           'Content-Type': 'application/json',
         },
       );
@@ -80,7 +86,7 @@ class EventService {
         Uri.parse('${ApiConstants.baseUrl}/events/nearby')
             .replace(queryParameters: queryParams),
         headers: {
-          'Authorization': 'Bearer $_authToken',
+          'Authorization': 'Bearer ${_currentAuthToken}',
           'Content-Type': 'application/json',
         },
       );
@@ -108,7 +114,7 @@ class EventService {
       final response = await http.get(
         Uri.parse('${ApiConstants.baseUrl}/events/$eventId'),
         headers: {
-          'Authorization': 'Bearer $_authToken',
+          'Authorization': 'Bearer ${_currentAuthToken}',
           'Content-Type': 'application/json',
         },
       );
@@ -136,7 +142,7 @@ class EventService {
       final response = await http.post(
         Uri.parse('${ApiConstants.baseUrl}/events'),
         headers: {
-          'Authorization': 'Bearer $_authToken',
+          'Authorization': 'Bearer ${_currentAuthToken}',
           'Content-Type': 'application/json',
         },
         body: json.encode(request.toJson()),
@@ -165,7 +171,7 @@ class EventService {
       final response = await http.put(
         Uri.parse('${ApiConstants.baseUrl}/events/$eventId'),
         headers: {
-          'Authorization': 'Bearer $_authToken',
+          'Authorization': 'Bearer ${_currentAuthToken}',
           'Content-Type': 'application/json',
         },
         body: json.encode(request.toJson()),
@@ -194,7 +200,7 @@ class EventService {
       final response = await http.delete(
         Uri.parse('${ApiConstants.baseUrl}/events/$eventId'),
         headers: {
-          'Authorization': 'Bearer $_authToken',
+          'Authorization': 'Bearer ${_currentAuthToken}',
           'Content-Type': 'application/json',
         },
       );
@@ -219,7 +225,7 @@ class EventService {
       final response = await http.post(
         Uri.parse('${ApiConstants.baseUrl}/events/$eventId/attend'),
         headers: {
-          'Authorization': 'Bearer $_authToken',
+          'Authorization': 'Bearer ${_currentAuthToken}',
           'Content-Type': 'application/json',
         },
       );
@@ -244,7 +250,7 @@ class EventService {
       final response = await http.delete(
         Uri.parse('${ApiConstants.baseUrl}/events/$eventId/attend'),
         headers: {
-          'Authorization': 'Bearer $_authToken',
+          'Authorization': 'Bearer ${_currentAuthToken}',
           'Content-Type': 'application/json',
         },
       );
@@ -269,7 +275,7 @@ class EventService {
       final response = await http.get(
         Uri.parse('${ApiConstants.baseUrl}/events/$eventId/attendees'),
         headers: {
-          'Authorization': 'Bearer $_authToken',
+          'Authorization': 'Bearer ${_currentAuthToken}',
           'Content-Type': 'application/json',
         },
       );
@@ -300,7 +306,7 @@ class EventService {
       final response = await http.post(
         Uri.parse('${ApiConstants.baseUrl}/events/invitations'),
         headers: {
-          'Authorization': 'Bearer $_authToken',
+          'Authorization': 'Bearer ${_currentAuthToken}',
           'Content-Type': 'application/json',
         },
         body: json.encode({'eventId': eventId, 'userIds': userIds}),
@@ -327,7 +333,7 @@ class EventService {
           '${ApiConstants.baseUrl}/events/invitations/$invitationId/respond',
         ),
         headers: {
-          'Authorization': 'Bearer $_authToken',
+          'Authorization': 'Bearer ${_currentAuthToken}',
           'Content-Type': 'application/json',
         },
         body: json.encode({'status': status.toUpperCase()}),
@@ -352,7 +358,7 @@ class EventService {
       final response = await http.get(
         Uri.parse('${ApiConstants.baseUrl}/events/invitations/received'),
         headers: {
-          'Authorization': 'Bearer $_authToken',
+          'Authorization': 'Bearer ${_currentAuthToken}',
           'Content-Type': 'application/json',
         },
       );
@@ -378,7 +384,7 @@ class EventService {
       final response = await http.get(
         Uri.parse('${ApiConstants.baseUrl}/events/invitations/sent'),
         headers: {
-          'Authorization': 'Bearer $_authToken',
+          'Authorization': 'Bearer ${_currentAuthToken}',
           'Content-Type': 'application/json',
         },
       );
