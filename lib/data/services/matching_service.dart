@@ -110,7 +110,7 @@ class MatchingService {
   }) async {
     try {
       await _apiClient.post(
-        ApiConstants.reportProfile,
+        ApiConstants.reportsCreate,
         data: {
           'profileId': profileId,
           'reason': reason,
@@ -126,7 +126,7 @@ class MatchingService {
   Future<void> blockProfile(String profileId) async {
     try {
       await _apiClient.post(
-        ApiConstants.blockProfile,
+        ApiConstants.usersBlock,
         data: {'profileId': profileId},
       );
     } on DioException catch (e) {
@@ -137,7 +137,7 @@ class MatchingService {
   /// Unblock a profile
   Future<void> unblockProfile(String profileId) async {
     try {
-      await _apiClient.delete('${ApiConstants.blockProfile}/$profileId');
+      await _apiClient.delete('${ApiConstants.usersBlock}/$profileId');
     } on DioException catch (e) {
       throw _handleDioError(e);
     }
@@ -299,7 +299,7 @@ class MatchingService {
       };
 
       final response = await _apiClient.get(
-        ApiConstants.matches,
+        ApiConstants.matchingMatches,
         queryParameters: queryParams,
       );
 
@@ -328,7 +328,7 @@ class MatchingService {
       };
 
       final response = await _apiClient.get(
-        ApiConstants.discover,
+        ApiConstants.matchingSuggestions,
         queryParameters: queryParams,
       );
 
@@ -351,7 +351,7 @@ class MatchingService {
   }) async {
     try {
       final response = await _apiClient.post(
-        ApiConstants.likeUser, // Use /matching/like
+        ApiConstants.matchingLike, // Use /matching/like
         data: {
           'targetUserId': targetUserId,
           'likeType': isSuper ? 'SUPER_LIKE' : 'LIKE',
@@ -369,7 +369,7 @@ class MatchingService {
   Future<MatchModel> acceptMatch(String matchId) async {
     try {
       final response = await _apiClient.patch(
-        '${ApiConstants.matches}/$matchId/accept',
+        '${ApiConstants.matchingMatches}/$matchId/accept',
       );
 
       final data = response.data as Map<String, dynamic>;
@@ -382,7 +382,7 @@ class MatchingService {
   /// Reject a pending match
   Future<void> rejectMatch(String matchId) async {
     try {
-      await _apiClient.patch('${ApiConstants.matches}/$matchId/reject');
+      await _apiClient.patch('${ApiConstants.matchingMatches}/$matchId/reject');
     } on DioException catch (e) {
       throw _handleDioError(e);
     }
@@ -391,7 +391,7 @@ class MatchingService {
   /// Unmatch with a user
   Future<void> unmatchUser(String matchId) async {
     try {
-      await _apiClient.delete('${ApiConstants.matches}/$matchId');
+      await _apiClient.delete('${ApiConstants.matchingMatches}/$matchId');
     } on DioException catch (e) {
       throw _handleDioError(e);
     }
@@ -400,7 +400,9 @@ class MatchingService {
   /// Get detailed match information
   Future<MatchModel> getMatchDetails(String matchId) async {
     try {
-      final response = await _apiClient.get('${ApiConstants.matches}/$matchId');
+      final response = await _apiClient.get(
+        '${ApiConstants.matchingMatches}/$matchId',
+      );
 
       final data = response.data as Map<String, dynamic>;
       return MatchModel.fromJson(data['match'] as Map<String, dynamic>);
@@ -416,7 +418,7 @@ class MatchingService {
   }) async {
     try {
       final response = await _apiClient.patch(
-        '${ApiConstants.matches}/$matchId/status',
+        '${ApiConstants.matchingMatches}/$matchId/status',
         data: {'status': status},
       );
 
