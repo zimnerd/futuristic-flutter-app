@@ -27,6 +27,8 @@ import '../screens/live_streaming/live_streaming_screen.dart';
 import '../screens/date_planning/date_planning_screen.dart';
 import '../screens/voice_messages/voice_messages_screen.dart';
 import '../screens/profile/profile_creation_screen.dart';
+import '../screens/profile/profile_overview_screen.dart';
+import '../screens/profile/profile_section_edit_screen.dart';
 import '../screens/call/video_call_screen.dart';
 import '../screens/discovery/discovery_screen.dart';
 import '../screens/features/advanced_features_screen.dart';
@@ -180,6 +182,25 @@ class AppRouter {
         builder: (context, state) => const ProfileCreationScreen(),
       ),
       GoRoute(
+        path: AppRoutes.profileOverview,
+        name: 'profileOverview',
+        builder: (context, state) => const ProfileOverviewScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.profileSectionEdit,
+        name: 'profileSectionEdit',
+        builder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>?;
+          final sectionType = extra?['sectionType'] as String? ?? 'basic_info';
+          final initialData = extra?['initialData'] as Map<String, dynamic>?;
+          
+          return ProfileSectionEditScreen(
+            sectionType: sectionType,
+            initialData: initialData,
+          );
+        },
+      ),
+      GoRoute(
         path: AppRoutes.videoCall,
         name: 'videoCall',
         builder: (context, state) {
@@ -304,6 +325,8 @@ class AppRoutes {
   static const String datePlanning = '/date-planning';
   static const String voiceMessages = '/voice-messages';
   static const String profileCreation = '/profile-creation';
+  static const String profileOverview = '/profile-overview';
+  static const String profileSectionEdit = '/profile-section-edit';
   static const String videoCall = '/video-call/:callId';
 }
 

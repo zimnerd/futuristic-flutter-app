@@ -1,13 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:dio/dio.dart';
+import 'package:hive/hive.dart';
 
+import '../../../services/photo_upload_service.dart';
+import '../../../services/profile_draft_service.dart';
 import '../../blocs/profile/profile_bloc.dart';
 import '../../blocs/user/user_bloc.dart';
 import '../../blocs/user/user_event.dart';
 import '../../theme/pulse_colors.dart';
 import '../../widgets/common/pulse_loading_widget.dart';
 import '../../widgets/profile/interests_selector.dart';
+import '../../widgets/profile/photo_picker_grid.dart';
+import '../../widgets/profile/profile_exit_dialog.dart';
 
 /// Profile creation screen for new users
 class ProfileCreationScreen extends StatefulWidget {
@@ -20,6 +26,8 @@ class ProfileCreationScreen extends StatefulWidget {
 class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
   final PageController _pageController = PageController();
   final _formKey = GlobalKey<FormState>();
+  late final PhotoUploadService _photoUploadService;
+  late final ProfileDraftService _draftService;
 
   // Form controllers
   final _nameController = TextEditingController();
@@ -37,6 +45,71 @@ class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
   String? _selectedLookingFor;
 
   @override
+  void initState() {
+    super.initState();
+    _photoUploadService = PhotoUploadService(
+      httpClient: Dio(),
+      secureStorage: Hive.box<String>('secure_storage'),
+    );
+    _draftService = ProfileDraftService();
+    _initializeDraftService();
+  }
+
+  Future<void> _initializeDraftService() async {
+    await _draftService.init();
+    _checkForExistingDraft();
+  }
+
+  void _checkForExistingDraft() {
+    final existingDraft = _draftService.loadDraft();
+    if (existingDraft != null && !existingDraft.isEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _showDraftRestoreDialog(existingDraft);
+      });
+    }
+  }
+
+  void _showDraftRestoreDialog(ProfileDraft draft) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => ProfileDraftRestoreDialog(
+        draft: draft,
+        onRestore: () {
+          Navigator.of(context).pop();
+          _restoreDraft(draft);
+        },
+        onStartFresh: () {
+          Navigator.of(context).pop();
+          _draftService.clearDraft();
+        },
+      ),
+    );
+  }
+
+  void _restoreDraft(ProfileDraft draft) {
+    setState(() {
+      _nameController.text = draft.name ?? '';
+      _ageController.text = draft.age?.toString() ?? '';
+      _bioController.text = draft.bio ?? '';
+      _selectedPhotos.clear();
+      _selectedPhotos.addAll(draft.photos);
+      _selectedInterests = List<String>.from(draft.interests);
+      _selectedGender = draft.gender;
+      _selectedLookingFor = draft.lookingFor;
+      _currentStep = draft.currentStep;
+    });
+    
+    if (_currentStep > 0) {
+      _pageController.animateToPage(
+        _currentStep,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    }
+  }
+
+  @override
   void dispose() {
     _pageController.dispose();
     _nameController.dispose();
@@ -44,31 +117,38 @@ class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
     _ageController.dispose();
     _heightController.dispose();
     _occupationController.dispose();
+    _draftService.close();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      appBar: AppBar(
-        title: Text('Create Profile'),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        foregroundColor: PulseColors.primary,
-        actions: [
-          TextButton(
-            onPressed: _currentStep > 0 ? _goToPreviousStep : null,
-            child: Text(
-              'Back',
-              style: TextStyle(
-                color: _currentStep > 0 ? PulseColors.primary : Colors.grey,
+    return WillPopScope(
+      onWillPop: () => _handleBackButton(),
+      child: Scaffold(
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        appBar: AppBar(
+          title: Text('Create Profile'),
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          foregroundColor: PulseColors.primary,
+          leading: IconButton(
+            icon: const Icon(Icons.close),
+            onPressed: () => _handleBackButton(),
+          ),
+          actions: [
+            TextButton(
+              onPressed: _currentStep > 0 ? _goToPreviousStep : null,
+              child: Text(
+                'Back',
+                style: TextStyle(
+                  color: _currentStep > 0 ? PulseColors.primary : Colors.grey,
+                ),
               ),
             ),
-          ),
-        ],
-      ),
-      body: BlocConsumer<ProfileBloc, ProfileState>(
+          ],
+        ),
+        body: BlocConsumer<ProfileBloc, ProfileState>(
         listener: (context, state) {
           if (state.status == ProfileStatus.error) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -107,6 +187,7 @@ class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
             ],
           );
         },
+      ),
       ),
     );
   }
@@ -294,7 +375,20 @@ class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
             ).textTheme.bodyLarge?.copyWith(color: Colors.grey[600]),
           ),
           const SizedBox(height: 32),
-          Expanded(child: _buildSimplePhotoPicker()),
+          Expanded(
+            child: PhotoPickerGrid(
+              initialPhotos: _selectedPhotos,
+              onPhotosChanged: (photos) {
+                setState(() {
+                  _selectedPhotos.clear();
+                  _selectedPhotos.addAll(photos);
+                });
+              },
+              maxPhotos: 6,
+              isRequired: true,
+              photoUploadService: _photoUploadService,
+            ),
+          ),
         ],
       ),
     );
@@ -587,6 +681,7 @@ class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
       );
+      _autoSaveDraft(); // Auto-save when proceeding
     } else {
       _createProfile();
     }
@@ -656,136 +751,57 @@ class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
     }
   }
 
-  Widget _buildSimplePhotoPicker() {
-    return GridView.builder(
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        crossAxisSpacing: 12,
-        mainAxisSpacing: 12,
-        childAspectRatio: 1,
+  Future<bool> _handleBackButton() async {
+    final currentDraft = _getCurrentDraft();
+    
+    final shouldExit = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => ProfileExitDialog(
+        currentDraft: currentDraft,
+        onSaveAndExit: () {
+          Navigator.of(context).pop(true);
+          _saveDraftAndExit();
+        },
+        onExitWithoutSaving: () {
+          Navigator.of(context).pop(true);
+          _draftService.clearDraft();
+        },
+        onContinueEditing: () {
+          Navigator.of(context).pop(false);
+        },
       ),
-      itemCount: 6,
-      itemBuilder: (context, index) {
-        final hasPhoto = index < _selectedPhotos.length;
-        return GestureDetector(
-          onTap: () => _handlePhotoTap(index),
-          child: Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: hasPhoto ? PulseColors.primary : Colors.grey[300]!,
-                width: 2,
-              ),
-              color: hasPhoto ? null : Colors.grey[50],
-            ),
-            child: hasPhoto
-                ? Stack(
-                    children: [
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(10),
-                        child: Container(
-                          width: double.infinity,
-                          height: double.infinity,
-                          color: Colors.grey[200],
-                          child: Icon(
-                            Icons.image,
-                            size: 50,
-                            color: Colors.grey[400],
-                          ),
-                        ),
-                      ),
-                      Positioned(
-                        top: 8,
-                        right: 8,
-                        child: GestureDetector(
-                          onTap: () => _removePhoto(index),
-                          child: Container(
-                            padding: const EdgeInsets.all(4),
-                            decoration: BoxDecoration(
-                              color: Colors.red,
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: const Icon(
-                              Icons.close,
-                              color: Colors.white,
-                              size: 16,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  )
-                : Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.add_a_photo,
-                        size: 40,
-                        color: Colors.grey[400],
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Add Photo',
-                        style: TextStyle(color: Colors.grey[600], fontSize: 12),
-                      ),
-                    ],
-                  ),
-          ),
-        );
-      },
+    );
+    
+    return shouldExit ?? false;
+  }
+
+  ProfileDraft _getCurrentDraft() {
+    return ProfileDraft(
+      name: _nameController.text.isNotEmpty ? _nameController.text : null,
+      age: int.tryParse(_ageController.text),
+      bio: _bioController.text.isNotEmpty ? _bioController.text : null,
+      photos: List<String>.from(_selectedPhotos),
+      interests: List<String>.from(_selectedInterests),
+      gender: _selectedGender,
+      lookingFor: _selectedLookingFor,
+      currentStep: _currentStep,
+      savedAt: DateTime.now(),
     );
   }
 
-  void _handlePhotoTap(int index) {
-    if (index < _selectedPhotos.length) {
-      // View or edit existing photo
-      _showPhotoOptions(index);
-    } else {
-      // Add new photo
-      _addPhoto();
+  Future<void> _saveDraftAndExit() async {
+    final draft = _getCurrentDraft();
+    await _draftService.saveDraft(draft);
+    if (mounted) {
+      Navigator.of(context).pop();
     }
   }
 
-  void _showPhotoOptions(int index) {
-    showModalBottomSheet(
-      context: context,
-      builder: (context) => Container(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: Icon(Icons.edit),
-              title: Text('Replace Photo'),
-              onTap: () {
-                Navigator.pop(context);
-                _addPhoto();
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.delete, color: Colors.red),
-              title: Text('Remove Photo'),
-              onTap: () {
-                Navigator.pop(context);
-                _removePhoto(index);
-              },
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _addPhoto() {
-    // Simulate adding a photo
-    setState(() {
-      _selectedPhotos.add('photo_${_selectedPhotos.length + 1}');
-    });
-  }
-
-  void _removePhoto(int index) {
-    setState(() {
-      _selectedPhotos.removeAt(index);
-    });
+  Future<void> _autoSaveDraft() async {
+    final draft = _getCurrentDraft();
+    if (!draft.isEmpty) {
+      await _draftService.saveDraft(draft);
+    }
   }
 }

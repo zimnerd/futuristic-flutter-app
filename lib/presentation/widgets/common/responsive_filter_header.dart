@@ -278,29 +278,31 @@ class _ResponsiveFilterHeaderState extends State<ResponsiveFilterHeader> {
   }
 
   Widget _buildAgeChip(String range) {
+    final isSelected = _isAgeRangeSelected(range);
     return FilterChip(
       label: Text(
         range,
         style: const TextStyle(fontSize: 12),
       ),
-      selected: false, // TODO: Connect to actual filter state
+      selected: isSelected,
       selectedColor: PulseColors.primary.withValues(alpha: 0.2),
       onSelected: (selected) {
-        // TODO: Update age filter
+        _updateAgeFilter(range);
       },
     );
   }
 
   Widget _buildDistanceChip(String distance) {
+    final isSelected = _isDistanceSelected(distance);
     return FilterChip(
       label: Text(
         distance,
         style: const TextStyle(fontSize: 12),
       ),
-      selected: false, // TODO: Connect to actual filter state
+      selected: isSelected,
       selectedColor: PulseColors.primary.withValues(alpha: 0.2),
       onSelected: (selected) {
-        // TODO: Update distance filter
+        _updateDistanceFilter(distance);
       },
     );
   }
@@ -340,5 +342,48 @@ class _ResponsiveFilterHeaderState extends State<ResponsiveFilterHeader> {
         ),
       ),
     );
+  }
+
+  bool _isAgeRangeSelected(String range) {
+    // Parse range and check against current filter state
+    final parts = range.split('-');
+    if (parts.length != 2) return false;
+    
+    final minAge = int.tryParse(parts[0]) ?? 18;
+    final maxAge = parts[1] == '+' ? 99 : int.tryParse(parts[1]) ?? 99;
+    
+    final currentState = context.read<FilterBLoC>().state;
+    if (currentState is FilterLoaded) {
+      final prefs = currentState.preferences;
+      return prefs.minAge == minAge && prefs.maxAge == maxAge;
+    }
+    return false;
+  }
+
+  bool _isDistanceSelected(String distance) {
+    final distanceValue = double.tryParse(distance.replaceAll('km', '')) ?? 50.0;
+    
+    final currentState = context.read<FilterBLoC>().state;
+    if (currentState is FilterLoaded) {
+      final prefs = currentState.preferences;
+      return prefs.maxDistance == distanceValue;
+    }
+    return false;
+  }
+
+  void _updateAgeFilter(String range) {
+    final parts = range.split('-');
+    if (parts.length != 2) return;
+    
+    final minAge = int.tryParse(parts[0]) ?? 18;
+    final maxAge = parts[1] == '+' ? 99 : int.tryParse(parts[1]) ?? 99;
+    
+    context.read<FilterBLoC>().add(UpdateAgeRange(minAge, maxAge));
+  }
+
+  void _updateDistanceFilter(String distance) {
+    final distanceValue = double.tryParse(distance.replaceAll('km', '')) ?? 50.0;
+    
+    context.read<FilterBLoC>().add(UpdateMaxDistance(distanceValue));
   }
 }

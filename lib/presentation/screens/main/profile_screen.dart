@@ -80,7 +80,7 @@ class ProfileScreen extends StatelessWidget {
           // Edit profile button
           IconButton(
             onPressed: () {
-              context.go('/profile-creation');
+              context.go('/profile-overview');
             },
             icon: const Icon(Icons.edit),
             style: IconButton.styleFrom(
