@@ -1,8 +1,7 @@
-import 'dart:convert';
-import '../../core/constants/api_constants.dart';
 import '../../core/utils/logger.dart';
 import '../../core/network/api_client.dart';
 import '../../domain/entities/event.dart';
+import '../../domain/entities/event_message.dart';
 
 /// Service for event API integration with NestJS backend
 /// 
@@ -35,8 +34,31 @@ class EventService {
       );
 
       if (response.statusCode == 200) {
-        final List<dynamic> data = response.data;
-        return data.map((json) => Event.fromJson(json)).toList();
+        // Handle both direct array response and structured response
+        dynamic data = response.data;
+        List<dynamic> eventsList;
+
+        if (data is Map<String, dynamic>) {
+          // Structured response format
+          if (data['success'] == true && data['data'] != null) {
+            eventsList = data['data'] as List<dynamic>;
+          } else {
+            throw EventServiceException(
+              data['message'] ?? 'Failed to load events',
+              statusCode: data['statusCode'] ?? response.statusCode,
+            );
+          }
+        } else if (data is List) {
+          // Direct array response
+          eventsList = data;
+        } else {
+          throw EventServiceException(
+            'Invalid response format',
+            statusCode: response.statusCode,
+          );
+        }
+
+        return eventsList.map((json) => Event.fromJson(json)).toList();
       } else {
         final error = response.data;
         throw EventServiceException(
@@ -47,6 +69,15 @@ class EventService {
     } catch (e) {
       AppLogger.error('Failed to get events: $e');
       if (e is EventServiceException) rethrow;
+      
+      // Handle DioException specifically
+      if (e.toString().contains('500')) {
+        throw EventServiceException(
+          'Server error: The events service is currently unavailable. Please try again later.',
+          statusCode: 500,
+        );
+      }
+      
       throw EventServiceException('Network error: $e');
     }
   }
@@ -65,8 +96,31 @@ class EventService {
       );
 
       if (response.statusCode == 200) {
-        final List<dynamic> data = response.data;
-        return data.map((json) => Event.fromJson(json)).toList();
+        // Handle both direct array response and structured response
+        dynamic data = response.data;
+        List<dynamic> eventsList;
+
+        if (data is Map<String, dynamic>) {
+          // Structured response format
+          if (data['success'] == true && data['data'] != null) {
+            eventsList = data['data'] as List<dynamic>;
+          } else {
+            throw EventServiceException(
+              data['message'] ?? 'Failed to load nearby events',
+              statusCode: data['statusCode'] ?? response.statusCode,
+            );
+          }
+        } else if (data is List) {
+          // Direct array response
+          eventsList = data;
+        } else {
+          throw EventServiceException(
+            'Invalid response format',
+            statusCode: response.statusCode,
+          );
+        }
+
+        return eventsList.map((json) => Event.fromJson(json)).toList();
       } else {
         final error = response.data;
         throw EventServiceException(
@@ -77,6 +131,15 @@ class EventService {
     } catch (e) {
       AppLogger.error('Failed to get nearby events: $e');
       if (e is EventServiceException) rethrow;
+      
+      // Handle DioException specifically
+      if (e.toString().contains('500')) {
+        throw EventServiceException(
+          'Server error: The nearby events service is currently unavailable. Please try again later.',
+          statusCode: 500,
+        );
+      }
+      
       throw EventServiceException('Network error: $e');
     }
   }
@@ -306,6 +369,71 @@ class EventService {
       }
     } catch (e) {
       AppLogger.error('Failed to send event message: $e');
+      if (e is EventServiceException) rethrow;
+      throw EventServiceException('Network error: $e');
+    }
+  }
+
+  /// Get event messages/chat history
+  Future<List<EventMessage>> getEventMessages({
+    required String eventId,
+    int page = 1,
+    int limit = 50,
+  }) async {
+    try {
+      final response = await _apiClient.getEventMessages(
+        eventId: eventId,
+        page: page,
+        limit: limit,
+      );
+
+      if (response.statusCode == 200) {
+        final data = response.data;
+        final List<dynamic> messagesJson;
+
+        // Handle both array response and structured response
+        if (data is List) {
+          messagesJson = data;
+        } else if (data is Map && data.containsKey('messages')) {
+          messagesJson = data['messages'] ?? [];
+        } else if (data is Map && data.containsKey('data')) {
+          final dataContent = data['data'];
+          if (dataContent is List) {
+            messagesJson = dataContent;
+          } else if (dataContent is Map &&
+              dataContent.containsKey('messages')) {
+            messagesJson = dataContent['messages'] ?? [];
+          } else {
+            messagesJson = [];
+          }
+        } else {
+          messagesJson = [];
+        }
+
+        // Get current user ID for 'isMe' flag
+        final currentUserId = await _apiClient.getCurrentUserId();
+
+        return messagesJson
+            .map((json) => EventMessage.fromJson(json, currentUserId))
+            .toList();
+      } else if (response.statusCode == 404) {
+        throw EventServiceException(
+          'Event messages not found',
+          statusCode: response.statusCode,
+        );
+      } else if (response.statusCode == 401) {
+        throw EventServiceException(
+          'Authentication required to view messages',
+          statusCode: response.statusCode,
+        );
+      } else {
+        throw EventServiceException(
+          'Failed to fetch event messages',
+          statusCode: response.statusCode,
+        );
+      }
+    } catch (e) {
+      AppLogger.error('Failed to get event messages: $e');
       if (e is EventServiceException) rethrow;
       throw EventServiceException('Network error: $e');
     }

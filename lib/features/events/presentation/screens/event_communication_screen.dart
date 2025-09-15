@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../presentation/theme/pulse_colors.dart';
 import '../../../../domain/entities/event.dart';
+import '../../../../domain/entities/event_message.dart';
+import '../bloc/event_chat_bloc.dart';
 
 class EventCommunicationScreen extends StatefulWidget {
   final Event event;
@@ -20,70 +23,72 @@ class _EventCommunicationScreenState extends State<EventCommunicationScreen>
     with TickerProviderStateMixin {
   late TabController _tabController;
   final _messageController = TextEditingController();
+  late EventChatBloc _chatBloc;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
+    _chatBloc = EventChatBloc();
+
+    // Load messages when the screen initializes
+    _chatBloc.add(LoadEventMessages(widget.event.id));
   }
 
   @override
   void dispose() {
     _tabController.dispose();
     _messageController.dispose();
+    _chatBloc.close();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: PulseColors.primary,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => context.pop(),
-        ),
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              widget.event.title,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
+    return BlocProvider(
+      create: (context) => _chatBloc,
+      child: Scaffold(
+        backgroundColor: PulseColors.primary,
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back, color: Colors.white),
+            onPressed: () => context.pop(),
+          ),
+          title: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                widget.event.title,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
-            ),
-            Text(
-              '${widget.event.attendees.length} participants',
-              style: const TextStyle(
-                color: Colors.white70,
-                fontSize: 12,
+              Text(
+                '${widget.event.attendees.length} participants',
+                style: const TextStyle(color: Colors.white70, fontSize: 12),
               ),
-            ),
-          ],
+            ],
+          ),
+          bottom: TabBar(
+            controller: _tabController,
+            indicatorColor: PulseColors.secondary,
+            labelColor: Colors.white,
+            unselectedLabelColor: Colors.white70,
+            tabs: const [
+              Tab(icon: Icon(Icons.chat), text: 'Chat'),
+              Tab(icon: Icon(Icons.call), text: 'Voice'),
+              Tab(icon: Icon(Icons.videocam), text: 'Video'),
+            ],
+          ),
         ),
-        bottom: TabBar(
+        body: TabBarView(
           controller: _tabController,
-          indicatorColor: PulseColors.secondary,
-          labelColor: Colors.white,
-          unselectedLabelColor: Colors.white70,
-          tabs: const [
-            Tab(icon: Icon(Icons.chat), text: 'Chat'),
-            Tab(icon: Icon(Icons.call), text: 'Voice'),
-            Tab(icon: Icon(Icons.videocam), text: 'Video'),
-          ],
+          children: [_buildChatTab(), _buildVoiceTab(), _buildVideoTab()],
         ),
-      ),
-      body: TabBarView(
-        controller: _tabController,
-        children: [
-          _buildChatTab(),
-          _buildVoiceTab(),
-          _buildVideoTab(),
-        ],
       ),
     );
   }
@@ -100,55 +105,151 @@ class _EventCommunicationScreenState extends State<EventCommunicationScreen>
       child: Column(
         children: [
           Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: 10, // Placeholder message count
-              itemBuilder: (context, index) => _buildChatMessage(index),
+            child: BlocBuilder<EventChatBloc, EventChatState>(
+              builder: (context, state) {
+                if (state is EventChatLoading) {
+                  return const Center(
+                    child: CircularProgressIndicator(
+                      color: PulseColors.primary,
+                    ),
+                  );
+                } else if (state is EventChatError) {
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.error_outline,
+                          size: 64,
+                          color: Colors.grey[400],
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          state.message,
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.grey[600],
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 16),
+                        ElevatedButton(
+                          onPressed: () {
+                            context.read<EventChatBloc>().add(
+                              LoadEventMessages(widget.event.id),
+                            );
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: PulseColors.primary,
+                            foregroundColor: Colors.white,
+                          ),
+                          child: const Text('Retry'),
+                        ),
+                      ],
+                    ),
+                  );
+                } else if (state is EventChatLoaded ||
+                    state is EventChatSending) {
+                  final messages = state is EventChatLoaded
+                      ? state.messages
+                      : (state as EventChatSending).messages;
+
+                  if (messages.isEmpty) {
+                    return Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.chat_bubble_outline,
+                            size: 64,
+                            color: Colors.grey[400],
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            'No messages yet',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Be the first to say something!',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.grey[500],
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+
+                  return ListView.builder(
+                    padding: const EdgeInsets.all(16),
+                    itemCount: messages.length,
+                    itemBuilder: (context, index) =>
+                        _buildChatMessage(messages[index]),
+                  );
+                } else {
+                  return Center(
+                    child: Text(
+                      'Start a conversation!',
+                      style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+                    ),
+                  );
+                }
+              },
             ),
           ),
-          _buildChatInput(),
+          BlocBuilder<EventChatBloc, EventChatState>(
+            builder: (context, state) {
+              final isSending = state is EventChatSending;
+              return _buildChatInput(isSending);
+            },
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildChatMessage(int index) {
-    final isMe = index % 3 == 0;
+  Widget _buildChatMessage(EventMessage message) {
     return Align(
-      alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
+      alignment: message.isMe ? Alignment.centerRight : Alignment.centerLeft,
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
-          color: isMe ? PulseColors.primary : Colors.grey[100],
+          color: message.isMe ? PulseColors.primary : Colors.grey[100],
           borderRadius: BorderRadius.circular(20),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (!isMe)
+            if (!message.isMe)
               Text(
-                'User ${index + 1}',
+                message.userName,
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w500,
                   color: Colors.grey[600],
                 ),
               ),
-            const SizedBox(height: 4),
+            if (!message.isMe) const SizedBox(height: 4),
             Text(
-              'This is a sample message for the event chat #${index + 1}',
+              message.content,
               style: TextStyle(
-                color: isMe ? Colors.white : Colors.black87,
+                color: message.isMe ? Colors.white : Colors.black87,
                 fontSize: 14,
               ),
             ),
             const SizedBox(height: 4),
             Text(
-              '10:3${index % 10} AM',
+              _formatMessageTime(message.createdAt),
               style: TextStyle(
                 fontSize: 10,
-                color: isMe ? Colors.white70 : Colors.grey[500],
+                color: message.isMe ? Colors.white70 : Colors.grey[500],
               ),
             ),
           ],
@@ -157,7 +258,7 @@ class _EventCommunicationScreenState extends State<EventCommunicationScreen>
     );
   }
 
-  Widget _buildChatInput() {
+  Widget _buildChatInput([bool isSending = false]) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -171,8 +272,9 @@ class _EventCommunicationScreenState extends State<EventCommunicationScreen>
           Expanded(
             child: TextField(
               controller: _messageController,
+              enabled: !isSending,
               decoration: InputDecoration(
-                hintText: 'Type a message...',
+                hintText: isSending ? 'Sending...' : 'Type a message...',
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(24),
                   borderSide: BorderSide(color: Colors.grey[300]!),
@@ -182,25 +284,57 @@ class _EventCommunicationScreenState extends State<EventCommunicationScreen>
                   vertical: 12,
                 ),
               ),
+              onSubmitted: (text) => _sendMessage(),
             ),
           ),
           const SizedBox(width: 12),
           Container(
-            decoration: const BoxDecoration(
-              color: PulseColors.primary,
+            decoration: BoxDecoration(
+              color: isSending ? Colors.grey[400] : PulseColors.primary,
               shape: BoxShape.circle,
             ),
             child: IconButton(
-              icon: const Icon(Icons.send, color: Colors.white),
-              onPressed: () {
-                // TODO: Send message implementation
-                _messageController.clear();
-              },
+              icon: isSending
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        color: Colors.white,
+                        strokeWidth: 2,
+                      ),
+                    )
+                  : const Icon(Icons.send, color: Colors.white),
+              onPressed: isSending ? null : _sendMessage,
             ),
           ),
         ],
       ),
     );
+  }
+
+  void _sendMessage() {
+    final content = _messageController.text.trim();
+    if (content.isNotEmpty) {
+      context.read<EventChatBloc>().add(
+        SendEventMessage(eventId: widget.event.id, content: content),
+      );
+      _messageController.clear();
+    }
+  }
+
+  String _formatMessageTime(DateTime dateTime) {
+    final now = DateTime.now();
+    final difference = now.difference(dateTime);
+
+    if (difference.inDays > 0) {
+      return '${dateTime.day}/${dateTime.month}';
+    } else if (difference.inHours > 0) {
+      return '${difference.inHours}h ago';
+    } else if (difference.inMinutes > 0) {
+      return '${difference.inMinutes}m ago';
+    } else {
+      return 'Just now';
+    }
   }
 
   Widget _buildVoiceTab() {

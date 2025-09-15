@@ -174,7 +174,16 @@ class EventBloc extends Bloc<EventEvent, EventState> {
   ) async {
     emit(EventCreating());
     try {
-      final createdEvent = await _eventService.createEvent(event.request);
+      final createdEvent = await _eventService.createEvent(
+        title: event.request.title,
+        description: event.request.description,
+        location: event.request.location,
+        dateTime: event.request.date,
+        latitude: event.request.coordinates.lat,
+        longitude: event.request.coordinates.lng,
+        category: event.request.category,
+        image: event.request.image,
+      );
       emit(EventCreated(createdEvent));
     } catch (e) {
       emit(EventError('Failed to create event: ${e.toString()}'));
@@ -199,7 +208,7 @@ class EventBloc extends Bloc<EventEvent, EventState> {
     Emitter<EventState> emit,
   ) async {
     try {
-      await _eventService.attendEvent(event.eventId);
+      await _eventService.joinEvent(event.eventId);
       emit(EventAttended(event.eventId));
     } catch (e) {
       emit(EventError('Failed to attend event: ${e.toString()}'));

@@ -8,6 +8,7 @@ import 'blocs/chat_bloc.dart';
 import 'blocs/notification_bloc.dart';
 import 'core/constants/app_constants.dart';
 import 'core/storage/hive_storage_service.dart';
+import 'core/utils/logger.dart';
 import 'data/datasources/local/user_local_data_source.dart';
 import 'data/datasources/remote/chat_remote_data_source.dart';
 import 'data/datasources/remote/notification_remote_data_source.dart';
@@ -65,12 +66,12 @@ Future<void> _initializeStoredTokens() async {
     if (accessToken != null) {
       // Set the stored token in the API client for automatic authentication
       ApiClient.instance.setAuthToken(accessToken);
-      print('✅ Restored stored auth token on app startup');
+      AppLogger.info('✅ Restored stored auth token on app startup');
     } else {
-      print('ℹ️ No stored auth token found');
+      AppLogger.info('ℹ️ No stored auth token found');
     }
   } catch (e) {
-    print('❌ Failed to restore stored tokens: $e');
+    AppLogger.error('❌ Failed to restore stored tokens: $e');
   }
 }
 

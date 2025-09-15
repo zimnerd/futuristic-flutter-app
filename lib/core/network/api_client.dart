@@ -27,6 +27,28 @@ class ApiClient {
   static ApiClient? _instance;
   static ApiClient get instance => _instance ??= ApiClient._();
 
+  /// Get current user ID from stored token or user data
+  Future<String?> getCurrentUserId() async {
+    try {
+      // Try to get user ID from stored user data first
+      final userData = await _tokenService.getUserData();
+      if (userData != null && userData.containsKey('id')) {
+        return userData['id']?.toString();
+      }
+
+      // Fallback to extracting from access token
+      final token = await _tokenService.getAccessToken();
+      if (token != null) {
+        return _tokenService.extractUserIdFromToken(token);
+      }
+
+      return null;
+    } catch (e) {
+      _logger.e('Failed to get current user ID: $e');
+      return null;
+    }
+  }
+
   ApiClient._() {
     _setupDio();
     _setupInterceptors();
@@ -1260,6 +1282,18 @@ class ApiClient {
     return await _dio.post(
       '/events/$eventId/messages',
       data: {'content': content},
+    );
+  }
+
+  /// Get event messages/chat history
+  Future<Response> getEventMessages({
+    required String eventId,
+    int page = 1,
+    int limit = 50,
+  }) async {
+    return await _dio.get(
+      '/events/$eventId/messages',
+      queryParameters: {'page': page, 'limit': limit},
     );
   }
 

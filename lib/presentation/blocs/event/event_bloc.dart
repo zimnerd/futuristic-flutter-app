@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../core/utils/logger.dart';
 import '../../../data/services/event_service.dart';
 import '../../../domain/entities/event.dart';
 import 'event_event.dart';
@@ -55,7 +56,42 @@ class EventBloc extends Bloc<EventEvent, EventState> {
         searchQuery: _searchQuery,
       ));
     } catch (e) {
-      emit(EventError(message: e.toString()));
+      AppLogger.error('Error loading events: $e');
+
+      String errorMessage;
+      if (e is EventServiceException) {
+        // Handle specific error cases based on status code
+        switch (e.statusCode) {
+          case 401:
+            errorMessage = 'Your session has expired. Please log in again.';
+            break;
+          case 403:
+            errorMessage = 'You don\'t have permission to view events.';
+            break;
+          case 404:
+            errorMessage = 'No events found in your area.';
+            break;
+          case 500:
+            errorMessage = 'Server error. Please try again later.';
+            break;
+          case null:
+            // Network errors or other exceptions without status code
+            if (e.message.contains('Network error')) {
+              errorMessage =
+                  'Network connection error. Please check your internet connection.';
+            } else {
+              errorMessage = e.message;
+            }
+            break;
+          default:
+            errorMessage = 'Failed to load events. Please try again.';
+        }
+      } else {
+        // Generic error handling for non-EventServiceException errors
+        errorMessage = 'An unexpected error occurred. Please try again.';
+      }
+
+      emit(EventError(message: errorMessage));
     }
   }
 
@@ -80,7 +116,42 @@ class EventBloc extends Bloc<EventEvent, EventState> {
         searchQuery: _searchQuery,
       ));
     } catch (e) {
-      emit(EventError(message: e.toString()));
+      AppLogger.error('Error loading nearby events: $e');
+
+      String errorMessage;
+      if (e is EventServiceException) {
+        // Handle specific error cases based on status code
+        switch (e.statusCode) {
+          case 401:
+            errorMessage = 'Your session has expired. Please log in again.';
+            break;
+          case 403:
+            errorMessage = 'You don\'t have permission to view events.';
+            break;
+          case 404:
+            errorMessage = 'No events found in your area.';
+            break;
+          case 500:
+            errorMessage = 'Server error. Please try again later.';
+            break;
+          case null:
+            // Network errors or other exceptions without status code
+            if (e.message.contains('Network error')) {
+              errorMessage =
+                  'Network connection error. Please check your internet connection.';
+            } else {
+              errorMessage = e.message;
+            }
+            break;
+          default:
+            errorMessage = 'Failed to load nearby events. Please try again.';
+        }
+      } else {
+        // Generic error handling for non-EventServiceException errors
+        errorMessage = 'An unexpected error occurred. Please try again.';
+      }
+
+      emit(EventError(message: errorMessage));
     }
   }
 
@@ -90,11 +161,10 @@ class EventBloc extends Bloc<EventEvent, EventState> {
       emit(const EventLoading());
 
       final eventDetails = await _eventService.getEventById(event.eventId);
-      final attendees = await _eventService.getEventAttendees(event.eventId);
 
       emit(EventDetailsLoaded(
         event: eventDetails,
-        attendees: attendees,
+        attendees: eventDetails.attendees,
       ));
     } catch (e) {
       emit(EventError(message: e.toString()));
@@ -106,7 +176,16 @@ class EventBloc extends Bloc<EventEvent, EventState> {
     try {
       emit(const EventActionLoading('Creating event...'));
 
-      final newEvent = await _eventService.createEvent(event.request);
+      final newEvent = await _eventService.createEvent(
+        title: event.request.title,
+        description: event.request.description,
+        location: event.request.location,
+        dateTime: event.request.date,
+        latitude: event.request.coordinates.lat,
+        longitude: event.request.coordinates.lng,
+        category: event.request.category,
+        image: event.request.image,
+      );
 
       emit(EventCreated(newEvent));
 
@@ -123,8 +202,15 @@ class EventBloc extends Bloc<EventEvent, EventState> {
       emit(const EventActionLoading('Updating event...'));
 
       final updatedEvent = await _eventService.updateEvent(
-        event.eventId,
-        event.request,
+        eventId: event.eventId,
+        title: event.request.title,
+        description: event.request.description,
+        location: event.request.location,
+        dateTime: event.request.date,
+        latitude: event.request.coordinates.lat,
+        longitude: event.request.coordinates.lng,
+        category: event.request.category,
+        image: event.request.image,
       );
 
       emit(EventUpdated(updatedEvent));
@@ -157,7 +243,7 @@ class EventBloc extends Bloc<EventEvent, EventState> {
     try {
       emit(const EventActionLoading('Joining event...'));
 
-      await _eventService.attendEvent(event.eventId);
+      await _eventService.joinEvent(event.eventId);
 
       // Update the event in our local list
       _updateEventAttendance(event.eventId, true);
@@ -204,11 +290,11 @@ class EventBloc extends Bloc<EventEvent, EventState> {
   Future<void> _onLoadEventAttendees(
       LoadEventAttendees event, Emitter<EventState> emit) async {
     try {
-      final attendees = await _eventService.getEventAttendees(event.eventId);
+      final eventDetails = await _eventService.getEventById(event.eventId);
 
       emit(EventAttendeesLoaded(
         eventId: event.eventId,
-        attendees: attendees,
+        attendees: eventDetails.attendees,
       ));
     } catch (e) {
       emit(EventError(message: e.toString()));
