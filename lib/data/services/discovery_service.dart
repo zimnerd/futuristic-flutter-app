@@ -108,15 +108,15 @@ class DiscoveryService {
   /// Undo the last swipe action (premium feature)
   Future<bool> undoLastSwipe() async {
     try {
-      // Implement actual API call to backend
+      // Use the correct backend endpoint
       final response = await _apiClient.post(
-        '/discovery/undo',
+        '${ApiConstants.matching}/undo',
         data: {},
       );
       
       final Map<String, dynamic> responseData =
           response.data as Map<String, dynamic>;
-      final bool canUndo = responseData['success'] ?? false;
+      final bool canUndo = responseData['canUndo'] ?? false;
       return canUndo;
     } catch (error) {
       // Throw error instead of falling back to mock logic

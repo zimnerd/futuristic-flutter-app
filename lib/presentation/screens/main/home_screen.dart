@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../core/network/api_client.dart';
+import '../../../data/services/discovery_service.dart';
+import '../../blocs/discovery/discovery_bloc.dart';
+import '../../blocs/discovery/discovery_event.dart';
 import '../../blocs/user/user_bloc.dart';
 import '../../blocs/user/user_state.dart';
 import '../../theme/pulse_colors.dart';
@@ -46,7 +50,14 @@ class _HomeScreenState extends State<HomeScreen> {
 
                   // Discovery content
                   Expanded(
-                    child: DiscoveryScreen(),
+                    child: BlocProvider(
+                      create: (context) => DiscoveryBloc(
+                        discoveryService: DiscoveryService(
+                          apiClient: ApiClient.instance,
+                        ),
+                      )..add(const LoadDiscoverableUsers()),
+                      child: DiscoveryScreen(),
+                    ),
                   ),
                 ],
               ),
