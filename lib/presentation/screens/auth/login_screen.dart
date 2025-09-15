@@ -144,7 +144,9 @@ class _LoginScreenState extends State<LoginScreen> {
                       child: TextButton(
                         onPressed: () => setState(() => _isPhoneMode = true),
                         style: TextButton.styleFrom(
-                          backgroundColor: _isPhoneMode ? PulseColors.primary.withOpacity(0.1) : null,
+                          backgroundColor: _isPhoneMode
+                              ? PulseColors.primary.withValues(alpha: 0.1)
+                              : null,
                           foregroundColor: _isPhoneMode ? PulseColors.primary : PulseColors.onSurfaceVariant,
                         ),
                         child: const Text('Phone'),
@@ -155,7 +157,9 @@ class _LoginScreenState extends State<LoginScreen> {
                       child: TextButton(
                         onPressed: () => setState(() => _isPhoneMode = false),
                         style: TextButton.styleFrom(
-                          backgroundColor: !_isPhoneMode ? PulseColors.primary.withOpacity(0.1) : null,
+                          backgroundColor: !_isPhoneMode
+                              ? PulseColors.primary.withValues(alpha: 0.1)
+                              : null,
                           foregroundColor: !_isPhoneMode ? PulseColors.primary : PulseColors.onSurfaceVariant,
                         ),
                         child: const Text('Email'),
