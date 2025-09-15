@@ -5,7 +5,6 @@ import '../../../core/network/api_client.dart';
 import '../../../data/services/discovery_service.dart';
 import '../../blocs/discovery/discovery_bloc.dart';
 import '../../blocs/discovery/discovery_event.dart';
-import '../../blocs/filters/filter_bloc.dart';
 import '../../blocs/user/user_bloc.dart';
 import '../../blocs/user/user_state.dart';
 import '../../theme/pulse_colors.dart';

@@ -196,8 +196,6 @@ class ProfileDraftRestoreDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final progress = (draft.completionPercentage * 100).round();
-    
     return AlertDialog(
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(PulseRadii.lg),

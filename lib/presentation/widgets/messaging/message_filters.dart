@@ -49,22 +49,20 @@ enum MessageStatusFilter {
   all,
   online,
   offline,
-  recently_active,
+  recentlyActive,
 }
 
 enum MessageTimeFilter {
   all,
   today,
   yesterday,
-  this_week,
-  this_month,
+  thisWeek, thisMonth,
 }
 
 enum MessageSortOption {
   recent,
   alphabetical,
-  unread_first,
-  online_first,
+  unreadFirst, onlineFirst,
 }
 
 /// Filter bottom sheet widget for message conversations
@@ -329,7 +327,7 @@ class _MessageFilterBottomSheetState extends State<MessageFilterBottomSheet> {
         return 'Online';
       case MessageStatusFilter.offline:
         return 'Offline';
-      case MessageStatusFilter.recently_active:
+      case MessageStatusFilter.recentlyActive:
         return 'Recently Active';
     }
   }
@@ -342,9 +340,9 @@ class _MessageFilterBottomSheetState extends State<MessageFilterBottomSheet> {
         return 'Today';
       case MessageTimeFilter.yesterday:
         return 'Yesterday';
-      case MessageTimeFilter.this_week:
+      case MessageTimeFilter.thisWeek:
         return 'This Week';
-      case MessageTimeFilter.this_month:
+      case MessageTimeFilter.thisMonth:
         return 'This Month';
     }
   }
@@ -355,9 +353,9 @@ class _MessageFilterBottomSheetState extends State<MessageFilterBottomSheet> {
         return 'Most Recent';
       case MessageSortOption.alphabetical:
         return 'Alphabetical';
-      case MessageSortOption.unread_first:
+      case MessageSortOption.unreadFirst:
         return 'Unread First';
-      case MessageSortOption.online_first:
+      case MessageSortOption.onlineFirst:
         return 'Online First';
     }
   }

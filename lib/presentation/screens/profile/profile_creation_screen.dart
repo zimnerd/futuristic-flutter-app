@@ -123,8 +123,16 @@ class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () => _handleBackButton(),
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) async {
+        if (!didPop) {
+          final shouldPop = await _handleBackButton();
+          if (shouldPop && context.mounted) {
+            if (context.mounted) Navigator.of(context).pop();
+          }
+        }
+      },
       child: Scaffold(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         appBar: AppBar(

@@ -439,7 +439,7 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
         ),
         const SizedBox(height: PulseSpacing.sm),
         DropdownButtonFormField<String>(
-          value: value,
+          initialValue: value,
           onChanged: onChanged,
           decoration: InputDecoration(
             border: OutlineInputBorder(
