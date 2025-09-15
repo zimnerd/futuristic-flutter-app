@@ -119,6 +119,13 @@ class ApiClient {
       InterceptorsWrapper(
         onError: (error, handler) async {
           if (error.response?.statusCode == 401) {
+            // Skip 401 handling for logout endpoint - logout failure is expected when auth is invalid
+            if (error.requestOptions.path.contains('/auth/logout')) {
+              _logger.d('🔓 401 on logout endpoint - this is expected, not triggering auth failure');
+              handler.next(error);
+              return;
+            }
+            
             // Try to refresh token if we have one
             if (_authToken != null) {
               try {
@@ -298,8 +305,22 @@ class ApiClient {
   }
 
   /// Logout current user
-  Future<Response> logout() async {
-    return await _dio.post(ApiConstants.authLogout);
+  /// This method gracefully handles cases where the auth token is invalid or missing
+  Future<Response?> logout() async {
+    try {
+      // Check if we have an auth token
+      if (_authToken == null || _authToken!.isEmpty) {
+        _logger.w('🔓 No auth token available for logout - skipping server call');
+        return null;
+      }
+      
+      return await _dio.post(ApiConstants.authLogout);
+    } catch (e) {
+      // If logout fails (e.g., 401), don't throw - just log and continue
+      // The local cleanup will still happen
+      _logger.w('⚠️ Server logout failed (this is expected if token is invalid): $e');
+      return null;
+    }
   }
 
   /// Send OTP for verification

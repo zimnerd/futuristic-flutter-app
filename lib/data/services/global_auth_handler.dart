@@ -34,9 +34,21 @@ class GlobalAuthHandler {
     String? reason,
     bool clearTokens = true,
   }) async {
-    _logger.w('🚨 Authentication failure detected: ${reason ?? 'Unknown reason'}');
-    
+    // Prevent multiple simultaneous auth failure handling
+    if (_isHandlingAuthFailure) {
+      _logger.i(
+        '🔄 Auth failure already being handled, skipping duplicate call',
+      );
+      return;
+    }
+
+    _isHandlingAuthFailure = true;
+
     try {
+      _logger.w(
+        '🚨 Authentication failure detected: ${reason ?? 'Unknown reason'}',
+      );
+      
       // Clear stored tokens if requested
       if (clearTokens) {
         await _tokenService.clearTokens();
@@ -55,6 +67,11 @@ class GlobalAuthHandler {
       }
     } catch (e) {
       _logger.e('💥 Error during authentication failure handling: $e');
+    } finally {
+      // Reset flag after a short delay to allow for completion
+      Future.delayed(const Duration(milliseconds: 500), () {
+        _isHandlingAuthFailure = false;
+      });
     }
   }
   
