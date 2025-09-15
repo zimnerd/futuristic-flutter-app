@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../presentation/theme/pulse_colors.dart';
+import '../../../../domain/entities/event.dart';
+import '../bloc/event_bloc.dart';
 
 class CreateEventScreen extends StatefulWidget {
   const CreateEventScreen({super.key});
@@ -16,6 +19,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
   final _locationController = TextEditingController();
+  final _maxAttendeesController = TextEditingController();
   
   DateTime? _selectedDateTime;
   String _selectedCategory = 'Social';
@@ -37,12 +41,32 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
     _titleController.dispose();
     _descriptionController.dispose();
     _locationController.dispose();
+    _maxAttendeesController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return BlocListener<EventBloc, EventState>(
+      listener: (context, state) {
+        if (state is EventCreated) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Event created successfully!'),
+              backgroundColor: Colors.green,
+            ),
+          );
+          context.pop();
+        } else if (state is EventError) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Error: ${state.message}'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      },
+      child: Scaffold(
       appBar: AppBar(
         title: const Text('Create Event'),
         leading: IconButton(
@@ -288,6 +312,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
               _buildSectionTitle('Maximum Attendees (Optional)'),
               const SizedBox(height: 8),
               TextFormField(
+                  controller: _maxAttendeesController,
                 decoration: InputDecoration(
                   hintText: 'Leave empty for unlimited',
                   prefixIcon: Icon(Icons.group, color: PulseColors.primary),
@@ -297,11 +322,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                   filled: true,
                   fillColor: PulseColors.surface,
                 ),
-                keyboardType: TextInputType.number,
-                onChanged: (value) {
-                  // TODO: Store max attendees value for event creation
-                  // int.tryParse(value) can be used when implementing the create logic
-                },
+                  keyboardType: TextInputType.number,
               ),
 
               const SizedBox(height: 32),
@@ -362,6 +383,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
           ),
         ),
       ),
+      ),
     );
   }
 
@@ -418,16 +440,20 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
       return;
     }
 
-    // TODO: Implement actual event creation logic with BLoC
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Event "${_titleController.text}" created successfully!'),
-        backgroundColor: Colors.green,
-      ),
+    final request = CreateEventRequest(
+      title: _titleController.text.trim(),
+      description: _descriptionController.text.trim(),
+      location: _locationController.text.trim(),
+      coordinates: const EventCoordinates(
+        lat: 0.0,
+        lng: 0.0,
+      ), // TODO: Get from location service
+      date: _selectedDateTime!,
+      category: _selectedCategory.toLowerCase(),
+      // maxAttendees: int.tryParse(_maxAttendeesController.text),
     );
 
-    // Navigate back to events list
-    context.pop();
+    context.read<EventBloc>().add(CreateEvent(request));
   }
 
   IconData _getEventCategoryIcon(String category) {

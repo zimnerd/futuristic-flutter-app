@@ -17,7 +17,7 @@ import 'presentation/blocs/date_planning/date_planning_bloc.dart';
 import 'presentation/blocs/voice_message/voice_message_bloc.dart';
 import 'presentation/blocs/discovery/discovery_bloc.dart';
 import 'presentation/blocs/call/call_bloc.dart';
-import 'features/events/presentation/bloc/placeholder_event_bloc.dart';
+import 'features/events/presentation/bloc/event_bloc.dart';
 
 /// Clean app setup with simple dependency injection
 class AppProviders extends StatelessWidget {
