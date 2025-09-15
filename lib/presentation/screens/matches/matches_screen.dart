@@ -9,7 +9,13 @@ import '../../widgets/common/loading_indicator.dart';
 import '../../widgets/common/error_message.dart';
 import '../../widgets/match/match_card.dart';
 
-/// Screen displaying user's matches with filtering and management options
+/// Enhanced match view modes
+enum MatchViewMode { list, grid, slider }
+
+/// Enhanced sorting options
+enum MatchSortBy { recent, compatibility, name, distance }
+
+/// Screen displaying user's matches with enhanced filtering, sorting and view modes
 class MatchesScreen extends StatefulWidget {
   const MatchesScreen({super.key});
 
@@ -21,12 +27,23 @@ class _MatchesScreenState extends State<MatchesScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   late MatchBloc _matchBloc;
+  
+  // Enhanced state variables
+  MatchViewMode _currentViewMode = MatchViewMode.list;
+  MatchSortBy _currentSortBy = MatchSortBy.recent;
+  bool _isLoadingMore = false;
+  final ScrollController _scrollController = ScrollController();
+  int _currentPage = 1;
+  static const int _pageSize = 10;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
     _matchBloc = context.read<MatchBloc>();
+
+    // Set up scroll controller for pagination
+    _scrollController.addListener(_onScroll);
 
     // Load initial matches
     _loadMatches('matched');
@@ -35,14 +52,97 @@ class _MatchesScreenState extends State<MatchesScreen>
   @override
   void dispose() {
     _tabController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
+  void _onScroll() {
+    if (mounted && 
+        _scrollController.position.pixels ==
+        _scrollController.position.maxScrollExtent) {
+      _loadMoreMatches();
+    }
+  }
+
+  void _loadMoreMatches() {
+    if (!_isLoadingMore && mounted) {
+      setState(() {
+        _isLoadingMore = true;
+        _currentPage++;
+      });
+
+      final String status;
+      switch (_tabController.index) {
+        case 0:
+          status = 'matched';
+          break;
+        case 1:
+          status = 'pending';
+          break;
+        case 2:
+          status = 'all';
+          break;
+        default:
+          status = 'matched';
+      }
+
+      // Load more matches with pagination using offset
+      _matchBloc.add(
+        LoadMatches(
+          status: status,
+          limit: _pageSize,
+          offset: (_currentPage - 1) * _pageSize,
+        ),
+      );
+
+      if (mounted) {
+        setState(() {
+          _isLoadingMore = false;
+        });
+      }
+    }
+  }
+
   void _loadMatches(String status) {
-    _matchBloc.add(LoadMatches(status: status));
+    if (mounted) {
+      setState(() {
+        _currentPage = 1;
+      });
+    }
+    _matchBloc.add(LoadMatches(status: status, limit: _pageSize, offset: 0));
   }
 
   void _onTabChanged() {
+    final String status;
+    switch (_tabController.index) {
+      case 0:
+        status = 'matched';
+        break;
+      case 1:
+        status = 'pending';
+        break;
+      case 2:
+        status = 'all';
+        break;
+      default:
+        status = 'matched';
+    }
+    _loadMatches(status);
+  }
+
+  IconData _getViewModeIcon() {
+    switch (_currentViewMode) {
+      case MatchViewMode.list:
+        return Icons.list;
+      case MatchViewMode.grid:
+        return Icons.grid_view;
+      case MatchViewMode.slider:
+        return Icons.view_carousel;
+    }
+  }
+
+  void _applySorting() {
+    // Trigger a refresh with the new sorting
     final String status;
     switch (_tabController.index) {
       case 0:
@@ -86,6 +186,105 @@ class _MatchesScreenState extends State<MatchesScreen>
             ),
           ),
         ),
+        actions: [
+          // View mode toggle
+          PopupMenuButton<MatchViewMode>(
+            icon: Icon(_getViewModeIcon()),
+            onSelected: (MatchViewMode mode) {
+              if (mounted) {
+                setState(() {
+                  _currentViewMode = mode;
+                });
+              }
+            },
+            itemBuilder: (context) => [
+              const PopupMenuItem(
+                value: MatchViewMode.list,
+                child: Row(
+                  children: [
+                    Icon(Icons.list),
+                    SizedBox(width: 8),
+                    Text('List View'),
+                  ],
+                ),
+              ),
+              const PopupMenuItem(
+                value: MatchViewMode.grid,
+                child: Row(
+                  children: [
+                    Icon(Icons.grid_view),
+                    SizedBox(width: 8),
+                    Text('Grid View'),
+                  ],
+                ),
+              ),
+              const PopupMenuItem(
+                value: MatchViewMode.slider,
+                child: Row(
+                  children: [
+                    Icon(Icons.view_carousel),
+                    SizedBox(width: 8),
+                    Text('Slider View'),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          // Sort options
+          PopupMenuButton<MatchSortBy>(
+            icon: const Icon(Icons.sort),
+            onSelected: (MatchSortBy sortBy) {
+              if (mounted) {
+                setState(() {
+                  _currentSortBy = sortBy;
+                });
+              }
+              _applySorting();
+            },
+            itemBuilder: (context) => [
+              const PopupMenuItem(
+                value: MatchSortBy.recent,
+                child: Row(
+                  children: [
+                    Icon(Icons.access_time),
+                    SizedBox(width: 8),
+                    Text('Most Recent'),
+                  ],
+                ),
+              ),
+              const PopupMenuItem(
+                value: MatchSortBy.compatibility,
+                child: Row(
+                  children: [
+                    Icon(Icons.favorite),
+                    SizedBox(width: 8),
+                    Text('Compatibility'),
+                  ],
+                ),
+              ),
+              const PopupMenuItem(
+                value: MatchSortBy.name,
+                child: Row(
+                  children: [
+                    Icon(Icons.sort_by_alpha),
+                    SizedBox(width: 8),
+                    Text('Name A-Z'),
+                  ],
+                ),
+              ),
+              const PopupMenuItem(
+                value: MatchSortBy.distance,
+                child: Row(
+                  children: [
+                    Icon(Icons.location_on),
+                    SizedBox(width: 8),
+                    Text('Distance'),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
         bottom: TabBar(
           controller: _tabController,
           onTap: (_) => _onTabChanged(),
@@ -144,19 +343,15 @@ class _MatchesScreenState extends State<MatchesScreen>
 
           return RefreshIndicator(
             onRefresh: () async => _loadMatches(status),
-            child: ListView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: state.matches.length,
-              itemBuilder: (context, index) {
-                final match = state.matches[index];
-                return MatchCard(
-                  match: match,
-                  onTap: () => _onMatchTapped(match),
-                  onAccept: status == 'pending' ? () => _acceptMatch(match.id) : null,
-                  onReject: status == 'pending' ? () => _rejectMatch(match.id) : null,
-                  onUnmatch: status == 'matched' ? () => _unmatchUser(match.id) : null,
-                );
-              },
+            child: Column(
+              children: [
+                Expanded(child: _buildMatchesView(state.matches, status)),
+                if (_isLoadingMore)
+                  const Padding(
+                    padding: EdgeInsets.all(16.0),
+                    child: CircularProgressIndicator(),
+                  ),
+              ],
             ),
           );
         }
@@ -164,6 +359,292 @@ class _MatchesScreenState extends State<MatchesScreen>
         return _buildEmptyState(status);
       },
     );
+  }
+
+  Widget _buildMatchesView(List<MatchModel> matches, String status) {
+    // Apply sorting based on current sort option
+    final sortedMatches = _sortMatches(matches);
+
+    switch (_currentViewMode) {
+      case MatchViewMode.list:
+        return _buildListView(sortedMatches, status);
+      case MatchViewMode.grid:
+        return _buildGridView(sortedMatches, status);
+      case MatchViewMode.slider:
+        return _buildSliderView(sortedMatches, status);
+    }
+  }
+
+  List<MatchModel> _sortMatches(List<MatchModel> matches) {
+    final sortedList = List<MatchModel>.from(matches);
+
+    switch (_currentSortBy) {
+      case MatchSortBy.recent:
+        sortedList.sort(
+          (a, b) => (b.matchedAt ?? DateTime(1970)).compareTo(
+            a.matchedAt ?? DateTime(1970),
+          ),
+        );
+        break;
+      case MatchSortBy.compatibility:
+        sortedList.sort(
+          (a, b) => b.compatibilityScore.compareTo(a.compatibilityScore),
+        );
+        break;
+      case MatchSortBy.name:
+        sortedList.sort(
+          (a, b) => a.user1Id.compareTo(b.user1Id),
+        ); // Placeholder - would use actual name
+        break;
+      case MatchSortBy.distance:
+        // Placeholder sorting - would use actual distance calculation
+        sortedList.sort((a, b) => a.id.compareTo(b.id));
+        break;
+    }
+
+    return sortedList;
+  }
+
+  Widget _buildListView(List<MatchModel> matches, String status) {
+    return ListView.builder(
+      controller: _scrollController,
+      padding: const EdgeInsets.all(16),
+      itemCount: matches.length,
+      itemBuilder: (context, index) {
+        final match = matches[index];
+        return MatchCard(
+          match: match,
+          onTap: () => _onMatchTapped(match),
+          onAccept: status == 'pending' ? () => _acceptMatch(match.id) : null,
+          onReject: status == 'pending' ? () => _rejectMatch(match.id) : null,
+          onUnmatch: status == 'matched' ? () => _unmatchUser(match.id) : null,
+        );
+      },
+    );
+  }
+
+  Widget _buildGridView(List<MatchModel> matches, String status) {
+    return GridView.builder(
+      controller: _scrollController,
+      padding: const EdgeInsets.all(16),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        crossAxisSpacing: 16,
+        mainAxisSpacing: 16,
+        childAspectRatio: 0.75,
+      ),
+      itemCount: matches.length,
+      itemBuilder: (context, index) {
+        final match = matches[index];
+        return _buildGridMatchCard(match, status);
+      },
+    );
+  }
+
+  Widget _buildSliderView(List<MatchModel> matches, String status) {
+    return PageView.builder(
+      controller: PageController(viewportFraction: 0.85),
+      itemCount: matches.length,
+      itemBuilder: (context, index) {
+        final match = matches[index];
+        return Container(
+          margin: const EdgeInsets.all(16),
+          child: _buildSliderMatchCard(match, status),
+        );
+      },
+    );
+  }
+
+  Widget _buildGridMatchCard(MatchModel match, String status) {
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: InkWell(
+        onTap: () => _onMatchTapped(match),
+        borderRadius: BorderRadius.circular(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              flex: 3,
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(16),
+                  ),
+                  color: Colors.grey[300],
+                ),
+                child: const Center(
+                  child: Icon(Icons.person, size: 40, color: Colors.grey),
+                ),
+              ),
+            ),
+            Expanded(
+              flex: 2,
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'User ${match.id.substring(0, 8)}',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '${(match.compatibilityScore * 100).round()}% match',
+                      style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                    ),
+                    const Spacer(),
+                    _buildGridActionButtons(match, status),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSliderMatchCard(MatchModel match, String status) {
+    return Card(
+      elevation: 8,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      child: InkWell(
+        onTap: () => _onMatchTapped(match),
+        borderRadius: BorderRadius.circular(20),
+        child: Column(
+          children: [
+            Expanded(
+              flex: 4,
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(20),
+                  ),
+                  color: Colors.grey[300],
+                ),
+                child: const Center(
+                  child: Icon(Icons.person, size: 80, color: Colors.grey),
+                ),
+              ),
+            ),
+            Expanded(
+              flex: 2,
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  children: [
+                    Text(
+                      'User ${match.id.substring(0, 8)}',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      '${(match.compatibilityScore * 100).round()}% compatibility',
+                      style: TextStyle(color: Colors.grey[600], fontSize: 14),
+                    ),
+                    const Spacer(),
+                    _buildSliderActionButtons(match, status),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildGridActionButtons(MatchModel match, String status) {
+    if (status == 'pending') {
+      return Row(
+        children: [
+          Expanded(
+            child: ElevatedButton(
+              onPressed: () => _acceptMatch(match.id),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.green,
+                minimumSize: const Size(0, 28),
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+              ),
+              child: const Icon(Icons.check, size: 16, color: Colors.white),
+            ),
+          ),
+          const SizedBox(width: 4),
+          Expanded(
+            child: ElevatedButton(
+              onPressed: () => _rejectMatch(match.id),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                minimumSize: const Size(0, 28),
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+              ),
+              child: const Icon(Icons.close, size: 16, color: Colors.white),
+            ),
+          ),
+        ],
+      );
+    }
+    return const SizedBox.shrink();
+  }
+
+  Widget _buildSliderActionButtons(MatchModel match, String status) {
+    if (status == 'pending') {
+      return Row(
+        children: [
+          Expanded(
+            child: ElevatedButton.icon(
+              onPressed: () => _acceptMatch(match.id),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.green,
+                minimumSize: const Size(0, 40),
+              ),
+              icon: const Icon(Icons.check, color: Colors.white),
+              label: const Text(
+                'Accept',
+                style: TextStyle(color: Colors.white),
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: ElevatedButton.icon(
+              onPressed: () => _rejectMatch(match.id),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                minimumSize: const Size(0, 40),
+              ),
+              icon: const Icon(Icons.close, color: Colors.white),
+              label: const Text(
+                'Reject',
+                style: TextStyle(color: Colors.white),
+              ),
+            ),
+          ),
+        ],
+      );
+    } else if (status == 'matched') {
+      return ElevatedButton.icon(
+        onPressed: () => _onMatchTapped(match),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Theme.of(context).primaryColor,
+          minimumSize: const Size(double.infinity, 40),
+        ),
+        icon: const Icon(Icons.message, color: Colors.white),
+        label: const Text('Message', style: TextStyle(color: Colors.white)),
+      );
+    }
+    return const SizedBox.shrink();
   }
 
   Widget _buildEmptyState(String status) {
@@ -234,7 +715,7 @@ class _MatchesScreenState extends State<MatchesScreen>
   }
 
   void _onMatchTapped(MatchModel match) {
-    if (match.status == 'matched') {
+    if (match.status == 'matched' && mounted) {
       // Navigate to chat screen
       Navigator.of(context).pushNamed(
         '/chat',
@@ -252,13 +733,15 @@ class _MatchesScreenState extends State<MatchesScreen>
   void _acceptMatch(String matchId) {
     _matchBloc.add(AcceptMatch(matchId: matchId));
     
-    // Show success message
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Match accepted! You can now start chatting.'),
-        backgroundColor: Colors.green,
-      ),
-    );
+    // Show success message only if widget is still mounted
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Match accepted! You can now start chatting.'),
+          backgroundColor: Colors.green,
+        ),
+      );
+    }
   }
 
   void _rejectMatch(String matchId) {
@@ -270,125 +753,115 @@ class _MatchesScreenState extends State<MatchesScreen>
   }
 
   void _showRejectConfirmation(String matchId) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Reject Match?'),
-        content: const Text(
-          'Are you sure you want to reject this match? This action cannot be undone.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
+    if (mounted) {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Reject Match?'),
+          content: const Text(
+            'Are you sure you want to reject this match? This action cannot be undone.',
           ),
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              _matchBloc.add(RejectMatch(matchId: matchId));
-            },
-            style: TextButton.styleFrom(
-              foregroundColor: Colors.red,
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancel'),
             ),
-            child: const Text('Reject'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showUnmatchConfirmation(String matchId) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Unmatch User?'),
-        content: const Text(
-          'Are you sure you want to unmatch this user? This will remove the match and end your conversation.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              _matchBloc.add(UnmatchUser(matchId: matchId));
-            },
-            style: TextButton.styleFrom(
-              foregroundColor: Colors.red,
-            ),
-            child: const Text('Unmatch'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showMatchDetails(MatchModel match) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        height: MediaQuery.of(context).size.height * 0.7,
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-        ),
-        child: Column(
-          children: [
-            // Handle bar
-            Container(
-              width: 40,
-              height: 4,
-              margin: const EdgeInsets.symmetric(vertical: 8),
-              decoration: BoxDecoration(
-                color: Colors.grey[300],
-                borderRadius: BorderRadius.circular(2),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                _matchBloc.add(RejectMatch(matchId: matchId));
+              },
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.red,
               ),
-            ),
-            // Content
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Match Details',
-                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
-                    ),
-                    const SizedBox(height: 16),
-                    _buildMatchDetailRow('Status', match.status.toUpperCase()),
-                    _buildMatchDetailRow('Compatibility', '${(match.compatibilityScore * 100).round()}%'),
-                    _buildMatchDetailRow('Matched At', _formatDate(match.matchedAt)),
-                    if (match.matchReasons != null) ...[
-                      const SizedBox(height: 16),
-                      Text(
-                        'Why you matched:',
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.w600,
-                            ),
-                      ),
-                      const SizedBox(height: 8),
-                      ...match.matchReasons!.entries.map(
-                        (entry) => Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 2),
-                          child: Text('• ${entry.value}'),
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-              ),
+              child: const Text('Reject'),
             ),
           ],
         ),
-      ),
-    );
+      );
+    }
+  }
+
+  void _showUnmatchConfirmation(String matchId) {
+    if (mounted) {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Unmatch User?'),
+          content: const Text(
+            'Are you sure you want to unmatch this user? This will remove the match and end your conversation.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                _matchBloc.add(UnmatchUser(matchId: matchId));
+              },
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.red,
+              ),
+              child: const Text('Unmatch'),
+            ),
+          ],
+        ),
+      );
+    }
+  }
+
+  void _showMatchDetails(MatchModel match) {
+    if (mounted) {
+      showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        backgroundColor: Colors.transparent,
+        builder: (context) => Container(
+          height: MediaQuery.of(context).size.height * 0.7,
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          child: Column(
+            children: [
+              // Handle bar
+              Container(
+                width: 40,
+                height: 4,
+                margin: const EdgeInsets.symmetric(vertical: 8),
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              // Content
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Match Details',
+                        style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                      ),
+                      const SizedBox(height: 16),
+                      _buildMatchDetailRow('Status', match.status.toUpperCase()),
+                      _buildMatchDetailRow('Compatibility', '${(match.compatibilityScore * 100).round()}%'),
+                      _buildMatchDetailRow('Matched At', _formatDate(match.matchedAt)),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
   }
 
   Widget _buildMatchDetailRow(String label, String value) {
