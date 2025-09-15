@@ -19,6 +19,9 @@ class GlobalAuthHandler {
   /// Callback function to trigger logout in the UI layer
   void Function()? _onLogoutRequired;
   
+  /// Flag to prevent multiple simultaneous logout attempts
+  bool _isHandlingAuthFailure = false;
+  
   /// Register the logout callback (typically called from the main app widget)
   void registerLogoutCallback(void Function() callback) {
     _onLogoutRequired = callback;
