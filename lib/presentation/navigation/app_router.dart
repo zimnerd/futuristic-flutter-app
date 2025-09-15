@@ -247,7 +247,6 @@ class AppRouter {
         path: AppRoutes.profileDetails,
         name: 'profileDetails',
         builder: (context, state) {
-          final profileId = state.pathParameters['profileId'] ?? '';
           final profile = state.extra as UserProfile?;
 
           if (profile == null) {
