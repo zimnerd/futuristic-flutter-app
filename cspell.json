@@ -1,0 +1,34 @@
+{
+  "version": "0.2",
+  "language": "en",
+  "words": [
+    "webp",
+    "jpeg",
+    "androidx",
+    "cupertino",
+    "dio",
+    "hive",
+    "bloc",
+    "pulselink",
+    "onboarding",
+    "camelcase",
+    "multipart",
+    "api",
+    "jwt",
+    "websocket",
+    "webrtc",
+    "glassmorphism",
+    "shimmer",
+    "lottie"
+  ],
+  "ignorePaths": [
+    "build/**",
+    ".dart_tool/**",
+    "ios/**",
+    "android/**",
+    "linux/**",
+    "macos/**",
+    "windows/**",
+    "web/**"
+  ]
+}

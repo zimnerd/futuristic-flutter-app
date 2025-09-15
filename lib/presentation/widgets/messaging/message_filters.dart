@@ -292,16 +292,14 @@ class _MessageFilterBottomSheetState extends State<MessageFilterBottomSheet> {
   Widget _buildSortOptions() {
     return Column(
       children: MessageSortOption.values.map((option) {
+        final isSelected = _filters.sortBy == option;
         return ListTile(
           title: Text(_getSortLabel(option)),
-          leading: Radio<MessageSortOption>(
-            value: option,
-            groupValue: _filters.sortBy,
-            onChanged: (value) {
-              setState(() {
-                _filters = _filters.copyWith(sortBy: value);
-              });
-            },
+          leading: Icon(
+            isSelected
+                ? Icons.radio_button_checked
+                : Icons.radio_button_unchecked,
+            color: isSelected ? Theme.of(context).primaryColor : Colors.grey,
           ),
           onTap: () {
             setState(() {

@@ -499,7 +499,8 @@ class _PhotoPickerGridState extends State<PhotoPickerGrid> {
   }
 
   void _reorderPhotos() {
-    // TODO: Implement drag-and-drop reordering
+    // Feature: Drag-and-drop reordering will be implemented in future version
+    // This would allow users to reorder their photos by dragging them
     _showErrorSnackBar('Reordering feature coming soon');
   }
 
