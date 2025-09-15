@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 
 import '../../theme/pulse_colors.dart';
 import '../../widgets/common/common_widgets.dart';
+import '../../widgets/messaging/message_filters.dart';
+import '../../widgets/messaging/message_search.dart';
 
 /// Enhanced messages screen with conversations list
 class MessagesScreen extends StatefulWidget {
@@ -15,30 +17,66 @@ class MessagesScreen extends StatefulWidget {
 
 class _MessagesScreenState extends State<MessagesScreen> {
   final TextEditingController _searchController = TextEditingController();
+  MessageFilters _currentFilters = const MessageFilters();
+  List<ConversationData> _allConversations = [];
+  List<ConversationData> _filteredConversations = [];
 
   // Mock data for demo
-  List<ConversationData> _conversations = [
-    ConversationData(
-      id: '1',
-      name: 'Emma',
-      avatar:
-          'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=100',
-      lastMessage: 'Hey! How was your day?',
-      timestamp: '2m ago',
-      unreadCount: 2,
-      isOnline: true,
-    ),
-    ConversationData(
-      id: '2',
-      name: 'Sarah',
-      avatar:
-          'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=100',
-      lastMessage: 'Would love to grab coffee sometime ☕️',
-      timestamp: '1h ago',
-      unreadCount: 0,
-      isOnline: false,
-    ),
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _initializeConversations();
+  }
+
+  void _initializeConversations() {
+    _allConversations = [
+      ConversationData(
+        id: '1',
+        name: 'Emma',
+        avatar:
+            'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=100',
+        lastMessage: 'Hey! How was your day?',
+        timestamp: '2m ago',
+        unreadCount: 2,
+        isOnline: true,
+        type: MessageFilterType.matches,
+      ),
+      ConversationData(
+        id: '2',
+        name: 'Sarah',
+        avatar:
+            'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=100',
+        lastMessage: 'Would love to grab coffee sometime ☕️',
+        timestamp: '1h ago',
+        unreadCount: 0,
+        isOnline: false,
+        type: MessageFilterType.connections,
+      ),
+      ConversationData(
+        id: '3',
+        name: 'Alex',
+        avatar:
+            'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100',
+        lastMessage: 'That movie was amazing!',
+        timestamp: '3h ago',
+        unreadCount: 1,
+        isOnline: true,
+        type: MessageFilterType.matches,
+      ),
+      ConversationData(
+        id: '4',
+        name: 'Jessica',
+        avatar:
+            'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100',
+        lastMessage: 'See you tomorrow!',
+        timestamp: '1d ago',
+        unreadCount: 0,
+        isOnline: false,
+        type: MessageFilterType.archived,
+      ),
+    ];
+    _applyFilters();
+  }
 
   @override
   void dispose() {
@@ -60,7 +98,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
 
             // Conversations list
             Expanded(
-              child: _conversations.isEmpty
+              child: _filteredConversations.isEmpty
                   ? _buildEmptyState()
                   : _buildConversationsList(),
             ),
@@ -83,6 +121,39 @@ class _MessagesScreenState extends State<MessagesScreen> {
             ),
           ),
           const Spacer(),
+          // Filter button with indicator
+          Stack(
+            children: [
+              IconButton(
+                onPressed: () {
+                  _showFilterOptions();
+                },
+                icon: const Icon(Icons.filter_list),
+                style: IconButton.styleFrom(
+                  backgroundColor: _hasActiveFilters()
+                      ? PulseColors.primaryContainer
+                      : PulseColors.surfaceVariant,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(PulseRadii.md),
+                  ),
+                ),
+              ),
+              if (_hasActiveFilters())
+                Positioned(
+                  top: 8,
+                  right: 8,
+                  child: Container(
+                    width: 8,
+                    height: 8,
+                    decoration: const BoxDecoration(
+                      color: PulseColors.primary,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(width: PulseSpacing.sm),
           IconButton(
             onPressed: () {
               _showMessageOptions(context);
@@ -103,13 +174,33 @@ class _MessagesScreenState extends State<MessagesScreen> {
   Widget _buildSearchBar() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: PulseSpacing.lg),
-      child: PulseTextField(
-        controller: _searchController,
-        hintText: 'Search conversations...',
-        prefixIcon: const Icon(Icons.search),
-        onChanged: (value) {
-          _handleSearch(value);
-        },
+      child: Row(
+        children: [
+          Expanded(
+            child: MessageSearchBar(
+              controller: _searchController,
+              hint: 'Search conversations...',
+              onChanged: _handleSearch,
+              onClear: () {
+                _handleSearch('');
+              },
+            ),
+          ),
+          const SizedBox(width: PulseSpacing.sm),
+          IconButton(
+            onPressed: () {
+              _showFullSearch();
+            },
+            icon: const Icon(Icons.search),
+            style: IconButton.styleFrom(
+              backgroundColor: PulseColors.primary,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(PulseRadii.md),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -117,9 +208,9 @@ class _MessagesScreenState extends State<MessagesScreen> {
   Widget _buildConversationsList() {
     return ListView.builder(
       padding: const EdgeInsets.all(PulseSpacing.lg),
-      itemCount: _conversations.length,
+      itemCount: _filteredConversations.length,
       itemBuilder: (context, index) {
-        final conversation = _conversations[index];
+        final conversation = _filteredConversations[index];
         return _buildConversationTile(conversation);
       },
     );
@@ -357,86 +448,144 @@ class _MessagesScreenState extends State<MessagesScreen> {
   }
 
   void _handleSearch(String query) {
-    // Simple search implementation - filter conversations by name or last message
     setState(() {
       if (query.isEmpty) {
-        // Show all conversations
-        _conversations = [
-          ConversationData(
-            id: '1',
-            name: 'Emma Wilson',
-            avatar: 'https://example.com/avatar1.jpg',
-            lastMessage: 'Hey! How was your day?',
-            timestamp: '2 min ago',
-            unreadCount: 2,
-            isOnline: true,
-          ),
-          ConversationData(
-            id: '2',
-            name: 'Alex Thompson',
-            avatar: 'https://example.com/avatar2.jpg',
-            lastMessage: 'That sounds great! When should we meet?',
-            timestamp: '5 min ago',
-            unreadCount: 0,
-            isOnline: false,
-          ),
-          ConversationData(
-            id: '3',
-            name: 'Sarah Chen',
-            avatar: 'https://example.com/avatar3.jpg',
-            lastMessage: 'Looking forward to it 😊',
-            timestamp: '1 hour ago',
-            unreadCount: 1,
-            isOnline: true,
-          ),
-        ];
+        _applyFilters();
       } else {
-        // Filter conversations
-        final allConversations = [
-          ConversationData(
-            id: '1',
-            name: 'Emma Wilson',
-            avatar: 'https://example.com/avatar1.jpg',
-            lastMessage: 'Hey! How was your day?',
-            timestamp: '2 min ago',
-            unreadCount: 2,
-            isOnline: true,
-          ),
-          ConversationData(
-            id: '2',
-            name: 'Alex Thompson',
-            avatar: 'https://example.com/avatar2.jpg',
-            lastMessage: 'That sounds great! When should we meet?',
-            timestamp: '5 min ago',
-            unreadCount: 0,
-            isOnline: false,
-          ),
-          ConversationData(
-            id: '3',
-            name: 'Sarah Chen',
-            avatar: 'https://example.com/avatar3.jpg',
-            lastMessage: 'Looking forward to it 😊',
-            timestamp: '1 hour ago',
-            unreadCount: 1,
-            isOnline: true,
-          ),
-        ];
-
-        _conversations = allConversations.where((conversation) {
-          return conversation.name.toLowerCase().contains(
-                query.toLowerCase(),
-              ) ||
+        _filteredConversations = _allConversations.where((conversation) {
+          final matchesQuery =
+              conversation.name.toLowerCase().contains(query.toLowerCase()) ||
               conversation.lastMessage.toLowerCase().contains(
                 query.toLowerCase(),
               );
+          return matchesQuery && _matchesCurrentFilters(conversation);
         }).toList();
+        _sortConversations();
       }
     });
   }
 
+  void _applyFilters() {
+    _filteredConversations = _allConversations.where((conversation) {
+      return _matchesCurrentFilters(conversation);
+    }).toList();
+    _sortConversations();
+  }
+
+  bool _matchesCurrentFilters(ConversationData conversation) {
+    // Type filter
+    if (_currentFilters.type != MessageFilterType.all &&
+        conversation.type != _currentFilters.type) {
+      return false;
+    }
+
+    // Status filter
+    if (_currentFilters.status != MessageStatusFilter.all) {
+      switch (_currentFilters.status) {
+        case MessageStatusFilter.online:
+          if (!conversation.isOnline) return false;
+          break;
+        case MessageStatusFilter.offline:
+          if (conversation.isOnline) return false;
+          break;
+        case MessageStatusFilter.recently_active:
+          // In a real app, you'd check last active time
+          break;
+        case MessageStatusFilter.all:
+          break;
+      }
+    }
+
+    // Quick filters
+    if (_currentFilters.showOnlineOnly && !conversation.isOnline) {
+      return false;
+    }
+
+    if (_currentFilters.showUnreadOnly && conversation.unreadCount == 0) {
+      return false;
+    }
+
+    return true;
+  }
+
+  void _sortConversations() {
+    switch (_currentFilters.sortBy) {
+      case MessageSortOption.recent:
+        // Already sorted by default
+        break;
+      case MessageSortOption.alphabetical:
+        _filteredConversations.sort((a, b) => a.name.compareTo(b.name));
+        break;
+      case MessageSortOption.unread_first:
+        _filteredConversations.sort(
+          (a, b) => b.unreadCount.compareTo(a.unreadCount),
+        );
+        break;
+      case MessageSortOption.online_first:
+        _filteredConversations.sort((a, b) {
+          if (a.isOnline && !b.isOnline) return -1;
+          if (!a.isOnline && b.isOnline) return 1;
+          return 0;
+        });
+        break;
+    }
+  }
+
+  bool _hasActiveFilters() {
+    return _currentFilters.type != MessageFilterType.all ||
+        _currentFilters.status != MessageStatusFilter.all ||
+        _currentFilters.timeFilter != MessageTimeFilter.all ||
+        _currentFilters.showOnlineOnly ||
+        _currentFilters.showUnreadOnly ||
+        _currentFilters.sortBy != MessageSortOption.recent;
+  }
+
+  void _showFilterOptions() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => MessageFilterBottomSheet(
+        currentFilters: _currentFilters,
+        onFiltersChanged: (filters) {
+          setState(() {
+            _currentFilters = filters;
+            _applyFilters();
+          });
+        },
+      ),
+    );
+  }
+
+  void _showFullSearch() {
+    final conversationsForSearch = _allConversations
+        .map(
+          (conv) => {
+            'id': conv.id,
+            'name': conv.name,
+            'avatar': conv.avatar,
+            'lastMessage': conv.lastMessage,
+            'timestamp': conv.timestamp,
+            'unreadCount': conv.unreadCount,
+          },
+        )
+        .toList();
+
+    showSearch(
+      context: context,
+      delegate: MessageSearchDelegate(
+        conversations: conversationsForSearch,
+        onSearch: (query) {
+          _searchController.text = query;
+          _handleSearch(query);
+        },
+      ),
+    );
+  }
+
   void _markAllAsRead() {
     setState(() {
-      _conversations = _conversations.map((conversation) {
+      _allConversations = _allConversations.map((conversation) {
         return ConversationData(
           id: conversation.id,
           name: conversation.name,
@@ -445,8 +594,10 @@ class _MessagesScreenState extends State<MessagesScreen> {
           timestamp: conversation.timestamp,
           unreadCount: 0, // Mark as read
           isOnline: conversation.isOnline,
+          type: conversation.type,
         );
       }).toList();
+      _applyFilters();
     });
     
     ScaffoldMessenger.of(context).showSnackBar(
@@ -468,6 +619,7 @@ class ConversationData {
     required this.timestamp,
     required this.unreadCount,
     required this.isOnline,
+    this.type = MessageFilterType.all,
   });
 
   final String id;
@@ -477,4 +629,5 @@ class ConversationData {
   final String timestamp;
   final int unreadCount;
   final bool isOnline;
+  final MessageFilterType type;
 }
