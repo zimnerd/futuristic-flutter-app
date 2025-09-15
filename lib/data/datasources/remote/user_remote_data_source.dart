@@ -4,6 +4,7 @@ import '../../models/user_model.dart';
 import '../../../core/network/api_client.dart';
 import '../../exceptions/app_exceptions.dart';
 import '../../../core/services/service_locator.dart';
+import '../../services/token_service.dart';
 
 /// Remote data source for user-related API operations
 /// Handles all HTTP requests to the backend user endpoints
@@ -242,12 +243,19 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
     try {
       _logger.i('Signing out user');
 
-      await _apiClient.logout();
+      // Try to call logout API if we have a token, but don't fail if it fails
+      try {
+        await _apiClient.logout();
+      } catch (e) {
+        _logger.w('Logout API call failed (this is expected if token is invalid): $e');
+        // Continue with local cleanup even if server logout fails
+      }
+      
       _apiClient.clearAuthToken();
       
-      // Clear securely stored tokens
+      // Clear securely stored tokens using TokenService directly
       try {
-        final tokenService = ServiceLocator.instance.token;
+        final tokenService = TokenService();
         await tokenService.clearTokens();
         _logger.d('Stored tokens cleared successfully');
       } catch (e) {
@@ -260,7 +268,7 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
       // Even if logout fails on server, clear local tokens
       _apiClient.clearAuthToken();
       try {
-        final tokenService = ServiceLocator.instance.token;
+        final tokenService = TokenService();
         await tokenService.clearTokens();
       } catch (clearError) {
         _logger.w(

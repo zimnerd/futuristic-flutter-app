@@ -138,74 +138,77 @@ class _ModernLandingScreenState extends State<ModernLandingScreen>
               // Background particles/shapes
               _buildBackgroundElements(),
               
-              // Main content
-              Padding(
+              // Main content with skip button
+              SingleChildScrollView(
                 padding: const EdgeInsets.all(PulseSpacing.xl),
-                child: SingleChildScrollView(
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(
-                      minHeight:
-                          MediaQuery.of(context).size.height -
-                          (PulseSpacing.xl * 2) -
-                          MediaQuery.of(context).padding.top -
-                          MediaQuery.of(context).padding.bottom,
-                    ),
-                    child: IntrinsicHeight(
-                      child: Column(
-                        children: [
-                          // Top section with logo and branding
-                          FadeTransition(
-                            opacity: _fadeAnimation,
-                            child: SlideTransition(
-                              position: _slideAnimation,
-                              child: _buildBrandingSection(),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // Skip button at the top
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const SizedBox(width: 60), // Balance for centering
+                        const Spacer(),
+                        FadeTransition(
+                          opacity: _fadeAnimation,
+                          child: TextButton(
+                            onPressed: () => context.go('/login'),
+                            style: TextButton.styleFrom(
+                              foregroundColor: Colors.white70,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: PulseSpacing.md,
+                                vertical: PulseSpacing.sm,
+                              ),
+                            ),
+                            child: const Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text('Skip'),
+                                SizedBox(width: 4),
+                                Icon(Icons.favorite_outline, size: 16),
+                              ],
                             ),
                           ),
+                        ),
+                      ],
+                    ),
 
-                          const SizedBox(height: PulseSpacing.xl),
+                    const SizedBox(height: PulseSpacing.lg),
 
-                          // Features showcase
-                          FadeTransition(
-                            opacity: _fadeAnimation,
-                            child: _buildFeaturesSection(),
-                          ),
-
-                          // Flexible space to push buttons to bottom
-                          Expanded(child: Container()),
-
-                          // Action buttons
-                          ScaleTransition(
-                            scale: _scaleAnimation,
-                            child: _buildActionButtons(),
-                          ),
-
-                          const SizedBox(height: PulseSpacing.lg),
-
-                          // Terms and privacy
-                          _buildTermsSection(),
-
-                          // Extra padding at bottom to ensure content doesn't get cut off
-                          const SizedBox(height: PulseSpacing.lg),
-                        ],
+                    // Top section with logo and branding
+                    FadeTransition(
+                      opacity: _fadeAnimation,
+                      child: SlideTransition(
+                        position: _slideAnimation,
+                        child: _buildBrandingSection(),
                       ),
                     ),
-                  ),
-                ),
-              ),
-              
-              // Skip button for returning users
-              Positioned(
-                top: 60,
-                right: 20,
-                child: FadeTransition(
-                  opacity: _fadeAnimation,
-                  child: TextButton(
-                    onPressed: () => context.go(AppRoutes.login),
-                    style: TextButton.styleFrom(
-                      foregroundColor: Colors.white.withValues(alpha: 0.8),
+
+                    const SizedBox(height: PulseSpacing.xl),
+
+                    // Features showcase
+                    FadeTransition(
+                      opacity: _fadeAnimation,
+                      child: _buildFeaturesSection(),
                     ),
-                    child: const Text('Skip'),
-                  ),
+
+                    const SizedBox(height: PulseSpacing.xxl),
+
+                    // Action buttons
+                    ScaleTransition(
+                      scale: _scaleAnimation,
+                      child: _buildActionButtons(),
+                    ),
+
+                    const SizedBox(height: PulseSpacing.lg),
+
+                    // Terms and privacy
+                    _buildTermsSection(),
+
+                    // Extra padding at bottom to ensure content doesn't get cut off
+                    const SizedBox(height: PulseSpacing.xl),
+                  ],
                 ),
               ),
             ],
@@ -331,7 +334,7 @@ class _ModernLandingScreenState extends State<ModernLandingScreen>
         
         // Enhanced tagline
         Text(
-          'Where Hearts Connect\\nIn Perfect Harmony',
+          'Where Hearts Connect In Perfect Harmony',
           style: PulseTextStyles.headlineSmall.copyWith(
             color: Colors.white.withValues(alpha: 0.9),
             fontWeight: FontWeight.w300,
