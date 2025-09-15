@@ -488,7 +488,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
         case MessageStatusFilter.offline:
           if (conversation.isOnline) return false;
           break;
-        case MessageStatusFilter.recently_active:
+        case MessageStatusFilter.recentlyActive:
           // In a real app, you'd check last active time
           break;
         case MessageStatusFilter.all:
@@ -516,12 +516,12 @@ class _MessagesScreenState extends State<MessagesScreen> {
       case MessageSortOption.alphabetical:
         _filteredConversations.sort((a, b) => a.name.compareTo(b.name));
         break;
-      case MessageSortOption.unread_first:
+      case MessageSortOption.unreadFirst:
         _filteredConversations.sort(
           (a, b) => b.unreadCount.compareTo(a.unreadCount),
         );
         break;
-      case MessageSortOption.online_first:
+      case MessageSortOption.onlineFirst:
         _filteredConversations.sort((a, b) {
           if (a.isOnline && !b.isOnline) return -1;
           if (!a.isOnline && b.isOnline) return 1;

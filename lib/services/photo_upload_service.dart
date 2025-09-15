@@ -67,7 +67,7 @@ class PhotoUploadService {
   /// Upload photo to server
   Future<PhotoUploadResult> uploadPhoto(XFile imageFile) async {
     try {
-      final token = await _secureStorage.get('access_token');
+      final token = _secureStorage.get('access_token');
       if (token == null) {
         throw PhotoUploadException('No authentication token available');
       }
@@ -129,7 +129,7 @@ class PhotoUploadService {
   /// Delete photo from server
   Future<bool> deletePhoto(String photoId) async {
     try {
-      final token = await _secureStorage.get('access_token');
+      final token = _secureStorage.get('access_token');
       if (token == null) {
         throw PhotoUploadException('No authentication token available');
       }
