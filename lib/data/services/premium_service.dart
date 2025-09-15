@@ -1,6 +1,7 @@
 import 'package:logger/logger.dart';
 import '../models/premium.dart';
 import '../../core/network/api_client.dart';
+import '../../core/constants/api_constants.dart';
 
 /// Service for handling premium features and subscriptions
 class PremiumService {
@@ -12,7 +13,7 @@ class PremiumService {
   /// Get available premium plans
   Future<List<PremiumPlan>> getAvailablePlans() async {
     try {
-      final response = await _apiClient.get('/api/premium/plans');
+      final response = await _apiClient.get(ApiConstants.premiumSubscription);
 
       if (response.statusCode == 200 && response.data != null) {
         final List<dynamic> data = response.data['plans'] ?? [];
@@ -33,7 +34,7 @@ class PremiumService {
   /// Get current user's subscription status
   Future<UserSubscription?> getCurrentSubscription() async {
     try {
-      final response = await _apiClient.get('/api/premium/subscription');
+      final response = await _apiClient.get(ApiConstants.premiumSubscription);
 
       if (response.statusCode == 200 && response.data != null) {
         final subscription = UserSubscription.fromJson(response.data!);

@@ -6,6 +6,7 @@ import 'websocket_service.dart';
 import 'webrtc_service.dart';
 import 'api_service_impl.dart';
 import '../../domain/services/api_service.dart';
+import '../../core/constants/api_constants.dart';
 
 /// Service for managing WebRTC calls and real-time communication
 class CallService {
@@ -206,7 +207,7 @@ class CallService {
   }) async {
     try {
       final response = await _apiService.get<Map<String, dynamic>>(
-        '/api/calls/history',
+        ApiConstants.webrtcCallHistory,
         queryParameters: {
           'limit': limit,
           'offset': offset,

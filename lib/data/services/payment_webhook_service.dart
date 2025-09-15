@@ -4,6 +4,7 @@ import 'package:logger/logger.dart';
 import '../services/payment_service.dart';
 import 'api_service_impl.dart';
 import '../../domain/services/api_service.dart';
+import '../../core/constants/api_constants.dart';
 
 /// Service for handling PeachPayments webhook notifications
 class PaymentWebhookService {
@@ -195,7 +196,9 @@ class PaymentWebhookService {
   }) async {
     try {
       // Update payment record via API (which would typically update local cache)
-      await _apiService.patch('/api/payments/$paymentId', data: {
+      await _apiService.patch(
+        '${ApiConstants.payment}/$paymentId',
+        data: {
         'status': status.name,
         'resultCode': resultCode,
         'amount': amount,

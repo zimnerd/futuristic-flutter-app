@@ -43,7 +43,7 @@ class DiscoveryService {
       }
       
       final response = await _apiClient.get(
-        ApiConstants.discover, // This should be /matching/suggestions
+        ApiConstants.matchingSuggestions, // Updated to use new API constant
         queryParameters: queryParams,
       );
       
@@ -73,13 +73,13 @@ class DiscoveryService {
       final Map<String, dynamic> data;
       
       if (action == SwipeAction.right || action == SwipeAction.up) {
-        endpoint = ApiConstants.likeUser; // Use /matching/like
+        endpoint = ApiConstants.matchingLike; // Use /matching/like
         data = {
           'targetUserId': targetUserId,
           'likeType': action == SwipeAction.up ? 'SUPER_LIKE' : 'LIKE',
         };
       } else {
-        endpoint = ApiConstants.passUser; // Use /matching/pass
+        endpoint = ApiConstants.matchingPass; // Use /matching/pass
         data = {'targetUserId': targetUserId};
       }
       
@@ -110,7 +110,7 @@ class DiscoveryService {
     try {
       // Use the correct backend endpoint
       final response = await _apiClient.post(
-        '${ApiConstants.matching}/undo',
+        ApiConstants.matchingUndo,
         data: {},
       );
       
@@ -173,7 +173,7 @@ class DiscoveryService {
   Future<int> getRemainingSuperLikes() async {
     try {
       final response = await _apiClient.get(
-        '/api/discovery/super-likes/remaining',
+        '${ApiConstants.matching}/super-likes/remaining',
       );
       
       if (response.statusCode == 200 && response.data != null) {

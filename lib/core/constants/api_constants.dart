@@ -1,75 +1,238 @@
-/// API constants for backend communication
+/// API constants for backend communication - aligned with NestJS controllers
 class ApiConstants {
-  // Base URLs - Always use production API
+  // Base URLs - Production API
   static const String baseUrl = 'https://apilink.pulsetek.co.za/api/v1';
   static const String websocketUrl = 'wss://apilink.pulsetek.co.za';
   
-  // API Endpoints
+  // ================================
+  // CORE MODULE ENDPOINTS
+  // ================================
+
+  // Auth endpoints (auth.controller.ts)
   static const String auth = '/auth';
+  static const String authRegister = '$auth/register';
+  static const String authLogin = '$auth/login';
+  static const String authAdminLogin = '$auth/admin/login';
+  static const String authRefresh = '$auth/refresh';
+  static const String authLogout = '$auth/logout';
+  static const String authForgotPassword = '$auth/forgot-password';
+  static const String authResetPassword = '$auth/reset-password';
+  static const String authSendOTP = '$auth/send-otp';
+  static const String authVerifyOTP = '$auth/verify-otp';
+  static const String authResendOTP = '$auth/resend-otp';
+  static const String authChangePassword = '$auth/change-password';
+
+  // Users endpoints (users.controller.ts)
   static const String users = '/users';
+  static const String usersMe = '$users/me';
+  static const String usersProfile = '$users/profile';
+  static const String usersSearch = '$users/search';
+  static const String usersBlock = '$users/block';
+  static const String usersUnblock = '$users/unblock';
+  static const String usersReport = '$users/report';
+  static const String usersLocation = '$users/location';
+  static const String usersPreferences = '$users/preferences';
+  static const String usersPrivacy = '$users/privacy';
+  static const String usersDiscovery = '$users/discovery';
+  static const String usersVerification = '$users/verification';
+
+  // Matching endpoints (matching.controller.ts)
   static const String matching = '/matching';
+  static const String matchingLike = '$matching/like';
+  static const String matchingPass = '$matching/pass';
+  static const String matchingSuperLike = '$matching/super-like';
+  static const String matchingUndo = '$matching/undo';
+  static const String matchingSuggestions = '$matching/suggestions';
+  static const String matchingMatches = '$matching/matches';
+  static const String matchingPreferences = '$matching/preferences';
+  static const String matchingFeedback = '$matching/feedback';
+
+  // Messaging endpoints (messaging.controller.ts)
   static const String messaging = '/messaging';
-  static const String conversations = '/conversations';
+  static const String messagingConversations = '$messaging/conversations';
+  static const String messagingMessages = '$messaging/messages';
+  static const String messagingSend = '$messaging/send';
+  static const String messagingMarkRead = '$messaging/mark-read';
+  static const String messagingDelete = '$messaging/delete';
+
+  // Media endpoints (media.controller.ts)
   static const String media = '/media';
-  static const String notifications = '/notifications';
+  static const String mediaUpload = '$media/upload';
+  static const String mediaFiles = '$media/files';
+  static const String mediaDelete = '$media/delete';
+
+  // ================================
+  // PREMIUM & MONETIZATION
+  // ================================
+
+  // Premium endpoints (premium.controller.ts)
   static const String premium = '/premium';
-  static const String socialGaming = '/social-gaming';
-  static const String analytics = '/analytics';
+  static const String premiumSubscribe = '$premium/subscribe';
+  static const String premiumSubscription = '$premium/subscription';
+  static const String premiumStats = '$premium/stats';
+  static const String premiumCancel = '$premium/cancel';
+  static const String premiumPause = '$premium/pause';
+  static const String premiumResume = '$premium/resume';
+  static const String premiumAdminSubscriptions =
+      '$premium/admin/subscriptions';
+  static const String premiumAdminAnalytics = '$premium/admin/analytics';
+
+  // Payment endpoints (payment.controller.ts)
   static const String payment = '/payment';
-  
-  // Analytics endpoints
+  static const String paymentMethods = '$payment/methods';
+  static const String paymentSubscriptions = '$payment/subscriptions';
+  static const String paymentRefunds = '$payment/refunds';
+  static const String paymentCreateIntent = '$payment/create-intent';
+  static const String paymentWebhook = '$payment/webhook';
+
+  // Virtual Gifts endpoints (virtual-gifts.controller.ts)
+  static const String virtualGifts = '/virtual-gifts';
+  static const String virtualGiftsCatalog = '$virtualGifts/catalog';
+  static const String virtualGiftsSend = '$virtualGifts/send';
+  static const String virtualGiftsReceived = '$virtualGifts/received';
+  static const String virtualGiftsSent = '$virtualGifts/sent';
+
+  // ================================
+  // COMMUNICATION & SOCIAL
+  // ================================
+
+  // Voice Messages endpoints (voice-messages.controller.ts)
+  static const String voiceMessages = '/voice-messages';
+  static const String voiceMessagesSend = '$voiceMessages/send';
+  static const String voiceMessagesGet = '$voiceMessages/messages';
+  static const String voiceMessagesDelete = '$voiceMessages/delete';
+
+  // WebRTC endpoints (webrtc.controller.ts)
+  static const String webrtc = '/webrtc';
+  static const String webrtcOffer = '$webrtc/offer';
+  static const String webrtcAnswer = '$webrtc/answer';
+  static const String webrtcCandidate = '$webrtc/candidate';
+  static const String webrtcEndCall = '$webrtc/end-call';
+  static const String webrtcCallHistory = '$webrtc/call-history';
+
+  // Social Gaming endpoints (social-gaming.controller.ts)
+  static const String socialGaming = '/social-gaming';
+  static const String socialGamingGames = '$socialGaming/games';
+  static const String socialGamingJoin = '$socialGaming/join';
+  static const String socialGamingLeaderboard = '$socialGaming/leaderboard';
+  static const String socialGamingAchievements = '$socialGaming/achievements';
+
+  // ================================
+  // ADVANCED FEATURES
+  // ================================
+
+  // AI Companion endpoints (ai-companion.controller.ts)
+  static const String aiCompanion = '/ai-companion';
+  static const String aiCompanionChat = '$aiCompanion/chat';
+  static const String aiCompanionPersonality = '$aiCompanion/personality';
+  static const String aiCompanionSettings = '$aiCompanion/settings';
+
+  // AI Matching endpoints (ai-matching.controller.ts)
+  static const String aiMatching = '/ai-matching';
+  static const String aiMatchingAnalyze = '$aiMatching/analyze';
+  static const String aiMatchingRecommendations = '$aiMatching/recommendations';
+  static const String aiMatchingCompatibility = '$aiMatching/compatibility';
+
+  // AR Features endpoints (ar-features.controller.ts)
+  static const String arFeatures = '/ar-features';
+  static const String arFeaturesIcebreakers = '$arFeatures/icebreakers';
+  static const String arFeaturesAssets = '$arFeatures/assets';
+  static const String arFeaturesSessions = '$arFeatures/sessions';
+  static const String arFeaturesPresets = '$arFeatures/presets';
+
+  // Travel Planning endpoints (travel-planning.controller.ts)
+  static const String travelPlanning = '/travel-planning';
+  static const String travelPlanningPlans = '$travelPlanning/plans';
+  static const String travelPlanningDestinations =
+      '$travelPlanning/destinations';
+  static const String travelPlanningInvite =
+      '$travelPlanning/plans'; // POST /:planId/invite
+  static const String travelPlanningBookings =
+      '$travelPlanning/plans'; // POST /:planId/bookings
+
+  // Speed Dating endpoints (speed-dating.controller.ts)
+  static const String speedDating = '/speed-dating';
+  static const String speedDatingSessions = '$speedDating/sessions';
+  static const String speedDatingJoin = '$speedDating/join';
+  static const String speedDatingResults = '$speedDating/results';
+
+  // ================================
+  // SAFETY & MODERATION
+  // ================================
+
+  // Safety endpoints (safety.controller.ts)
+  static const String safety = '/safety';
+  static const String safetyReports = '$safety/reports';
+  static const String safetyReportUser = '$safetyReports/user';
+  static const String safetyReportContent = '$safetyReports/content';
+  static const String safetyBlockUser = '$safety/block';
+  static const String safetyUnblockUser = '$safety/unblock';
+  static const String safetyBlockedUsers = '$safety/blocked';
+  static const String safetySettings = '$safety/settings';
+  static const String safetyScore = '$safety/score';
+  static const String safetyVerifyPhoto = '$safety/verify-photo';
+  static const String safetyVerifyIdFront = '$safety/verify-id/front';
+  static const String safetyVerifyIdBack = '$safety/verify-id/back';
+  static const String safetyTips = '$safety/tips';
+  static const String safetyReportDateConcern = '$safety/report-date-concern';
+  static const String safetyEmergencyContact = '$safety/emergency-contact';
+  static const String safetyCheckUser = '$safety/check-user';
+  static const String safetyMyReports = '$safety/my-reports';
+  static const String safetyStats = '$safety/stats';
+  static const String safetyDashboard = '$safety/dashboard';
+
+  // Reports endpoints (reports.controller.ts)
+  static const String reports = '/reports';
+  static const String reportsCreate = '$reports/create';
+  static const String reportsStats = '$reports/stats';
+
+  // ================================
+  // ANALYTICS & MONITORING
+  // ================================
+
+  // Analytics endpoints (analytics.controller.ts)
+  static const String analytics = '/analytics';
   static const String analyticsEvents = '$analytics/events';
+  static const String analyticsTrack = '$analytics/track';
   static const String analyticsInsights = '$analytics/insights';
   static const String analyticsUserProperties = '$analytics/user-properties';
+  
+  // Notifications endpoints (notifications.controller.ts)
+  static const String notifications = '/notifications';
+  static const String notificationsSettings = '$notifications/settings';
+  static const String notificationsMarkRead = '$notifications/mark-read';
+  static const String notificationsPush = '$notifications/push';
 
-  // Payment endpoints
-  static const String paymentMethods = '$payment/methods';
-  static const String subscriptions = '$payment/subscriptions';
-  static const String refunds = '$payment/refunds';
+  // ================================
+  // ADDITIONAL SERVICES
+  // ================================
   
-  // Auth endpoints
-  static const String login = '$auth/login';
-  static const String register = '$auth/register';
-  static const String sendOtp = '$auth/send-otp';
-  static const String verifyOtp = '$auth/verify-otp';
-  static const String refreshToken = '$auth/refresh';
-  static const String logout = '$auth/logout';
+  // Maps endpoints (maps.controller.ts)
+  static const String maps = '/maps';
+  static const String mapsNearby = '$maps/nearby';
+  static const String mapsGeocoding = '$maps/geocoding';
   
-  // User endpoints - Aligned with backend structure
-  static const String profile = '$users/me';
-  static const String getCurrentProfile = '$users/me';
-  static const String updateProfile = '$users/me';
-  static const String extendedProfile = '$users/me/profile';
-  static const String uploadPhoto = '$media/upload';
-  static const String deletePhoto = '$media/files';
+  // Email endpoints (email.controller.ts)
+  static const String email = '/email';
+  static const String emailSend = '$email/send';
+  static const String emailTemplates = '$email/templates';
   
-  // Matching endpoints
-  static const String discover = '$matching/suggestions';
-  static const String matches = '$matching/matches';
-  static const String likeUser = '$matching/like';
-  static const String passUser = '$matching/pass';
-  static const String reportProfile = '/reports';
-  static const String blockProfile = '$users/block';
+  // WhatsApp endpoints (whatsapp.controller.ts)
+  static const String whatsapp = '/whatsapp';
+  static const String whatsappSend = '$whatsapp/send';
+  static const String whatsappStatus = '$whatsapp/status';
+  static const String whatsappWebhook = '$whatsapp/webhook';
   
-  // Messaging endpoints - Aligned with backend structure
-  static const String getConversations = '$messaging/conversations';
-  static const String getMessages =
-      '$messaging/conversations'; // Use with /:conversationId/messages
-  static const String sendMessage =
-      '$messaging/conversations'; // Use with /:conversationId/messages
-  static const String markAsRead =
-      '$messaging/conversations'; // Use with /:conversationId/messages
-  static const String deleteMessage =
-      '$messaging/conversations'; // Use with /:conversationId/messages
+  // Events endpoints (events.controller.ts)
+  static const String events = '/events';
+  static const String eventsCreate = '$events/create';
+  static const String eventsJoin = '$events/join';
+  static const String eventsNearby = '$events/nearby';
   
-  // Media endpoints - Unified upload structure
-  static const String uploadImage = '$media/upload';
-  static const String uploadVideo = '$media/upload';
-  static const String uploadAudio = '$media/upload';
-  static const String uploadFile = '$media/upload';
-  static const String deleteFile = '$media/files';
+  // ================================
+  // WEBSOCKET EVENTS
+  // ================================
   
-  // WebSocket events
   static const String wsNewMessage = 'new_message';
   static const String wsMessageRead = 'message_read';
   static const String wsUserOnline = 'user_online';
@@ -78,11 +241,12 @@ class ApiConstants {
   static const String wsCallOffer = 'call_offer';
   static const String wsCallAnswer = 'call_answer';
   static const String wsCallEnd = 'call_end';
+  static const String wsTyping = 'typing';
+  static const String wsStopTyping = 'stop_typing';
   
-  // Preferences endpoints
-  static const String filterPreferences = '$users/preferences/filters';
-  static const String interests = '$users/interests';
-  static const String educationLevels = '$users/education-levels';
+  // ================================
+  // CONFIGURATION
+  // ================================
   
   // Request timeouts
   static const int connectTimeout = 30000; // 30 seconds
@@ -97,4 +261,91 @@ class ApiConstants {
   static const int maxImageSize = 10 * 1024 * 1024; // 10MB
   static const int maxVideoSize = 100 * 1024 * 1024; // 100MB
   static const int maxAudioSize = 20 * 1024 * 1024; // 20MB
+  
+  // ================================
+  // BACKWARD COMPATIBILITY (DEPRECATED)
+  // ================================
+
+  @deprecated
+  static const String register = authRegister;
+  @deprecated
+  static const String login = authLogin;
+  @deprecated
+  static const String logout = authLogout;
+  @deprecated
+  static const String refreshToken = authRefresh;
+  @deprecated
+  static const String forgotPassword = authForgotPassword;
+  @deprecated
+  static const String resetPassword = authResetPassword;
+  @deprecated
+  static const String changePassword = authChangePassword;
+  @deprecated
+  static const String sendOTP = authSendOTP;
+  @deprecated
+  static const String verifyOTP = authVerifyOTP;
+  @deprecated
+  static const String resendOTP = authResendOTP;
+  @deprecated
+  static const String profile = usersProfile;
+  @deprecated
+  static const String updateProfile = usersProfile;
+  @deprecated
+  static const String deleteProfile = usersProfile;
+  @deprecated
+  static const String userSearch = usersSearch;
+  @deprecated
+  static const String discover = matchingSuggestions;
+  @deprecated
+  static const String likeUser = matchingLike;
+  @deprecated
+  static const String passUser = matchingPass;
+  @deprecated
+  static const String superLike = matchingSuperLike;
+  @deprecated
+  static const String undoLastAction = matchingUndo;
+  @deprecated
+  static const String matches = matchingMatches;
+  @deprecated
+  static const String getConversations = messagingConversations;
+  @deprecated
+  static const String getMessages = messagingMessages;
+  @deprecated
+  static const String sendMessage = messagingSend;
+  @deprecated
+  static const String markAsRead = messagingMarkRead;
+  @deprecated
+  static const String deleteMessage = messagingDelete;
+  @deprecated
+  static const String uploadImage = mediaUpload;
+  @deprecated
+  static const String uploadVideo = mediaUpload;
+  @deprecated
+  static const String uploadAudio = mediaUpload;
+  @deprecated
+  static const String uploadFile = mediaUpload;
+  @deprecated
+  static const String deleteFile = mediaDelete;
+  @deprecated
+  static const String subscribe = premiumSubscribe;
+  @deprecated
+  static const String subscription = premiumSubscription;
+  @deprecated
+  static const String cancelSubscription = premiumCancel;
+  @deprecated
+  static const String reportProfile = reportsCreate;
+  @deprecated
+  static const String blockProfile = usersBlock;
+  @deprecated
+  static const String unblockProfile = usersUnblock;
+  @deprecated
+  static const String filterPreferences = usersPreferences;
+  @deprecated
+  static const String notificationSettings = notificationsSettings;
+  @deprecated
+  static const String privacySettings = usersPrivacy;
+  @deprecated
+  static const String interests = '$users/interests';
+  @deprecated
+  static const String educationLevels = '$users/education-levels';
 }
