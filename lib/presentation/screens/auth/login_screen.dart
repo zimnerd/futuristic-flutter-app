@@ -5,13 +5,10 @@ import 'package:go_router/go_router.dart';
 import '../../blocs/auth/auth_bloc.dart';
 import '../../blocs/auth/auth_event.dart';
 import '../../blocs/auth/auth_state.dart';
-import '../../navigation/app_router.dart';
 import '../../theme/pulse_colors.dart';
-import '../../widgets/common/pulse_text_field.dart';
-import '../../widgets/common/pulse_button.dart';
 import '../../widgets/developer_auto_login_fab.dart';
 
-/// Enhanced login screen with auth integration
+/// Simple login screen with phone and email/password options
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
@@ -22,22 +19,66 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _phoneController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  
   bool _isLoading = false;
+  bool _isPhoneMode = true;
+  bool _obscurePassword = true;
 
   @override
   void dispose() {
     _phoneController.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
     super.dispose();
   }
 
   void _handleLogin() {
     if (_formKey.currentState?.validate() == true) {
-      final phone = _phoneController.text.trim();
-      // Use our existing auth event for now (we'll create phone auth later)
-      context.read<AuthBloc>().add(
-        AuthSignInRequested(email: phone, password: 'temp'),
-      );
+      if (_isPhoneMode) {
+        final phone = _phoneController.text.trim();
+        context.read<AuthBloc>().add(
+          AuthSignInRequested(email: phone, password: 'temp'),
+        );
+      } else {
+        final email = _emailController.text.trim();
+        final password = _passwordController.text.trim();
+        context.read<AuthBloc>().add(
+          AuthSignInRequested(email: email, password: password),
+        );
+      }
     }
+  }
+
+  String? _validatePhone(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Please enter your phone number';
+    }
+    if (value.length < 10) {
+      return 'Please enter a valid phone number';
+    }
+    return null;
+  }
+
+  String? _validateEmail(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Please enter your email';
+    }
+    if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
+      return 'Please enter a valid email address';
+    }
+    return null;
+  }
+
+  String? _validatePassword(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Please enter your password';
+    }
+    if (value.length < 6) {
+      return 'Password must be at least 6 characters';
+    }
+    return null;
   }
 
   @override
@@ -50,138 +91,190 @@ class _LoginScreenState extends State<LoginScreen> {
             _isLoading = state is AuthLoading;
           });
 
-          if (state is AuthError) {
+          if (state is AuthAuthenticated) {
+            context.go('/home');
+          } else if (state is AuthError) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(state.message),
                 backgroundColor: PulseColors.error,
               ),
             );
-          } else if (state is AuthAuthenticated) {
-            context.go(AppRoutes.home);
           }
         },
-        child: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [PulseColors.surface, const Color(0xFFF8F9FA)],
-            ),
-          ),
-          child: SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.all(PulseSpacing.xl),
-              child: Form(
-                key: _formKey,
-                child: SingleChildScrollView(
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(
-                      minHeight:
-                          MediaQuery.of(context).size.height -
-                          MediaQuery.of(context).padding.top -
-                          MediaQuery.of(context).padding.bottom -
-                          (PulseSpacing.xl * 2),
-                    ),
-                    child: IntrinsicHeight(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                    // Back button
-                    IconButton(
-                      onPressed: () => context.go(AppRoutes.welcome),
-                      icon: const Icon(Icons.arrow_back),
-                      padding: EdgeInsets.zero,
-                      alignment: Alignment.centerLeft,
-                    ),
-                    const SizedBox(height: PulseSpacing.xl),
-
-                    // Header
-                    Text(
-                      'Welcome back',
-                      style: PulseTextStyles.displayMedium.copyWith(
-                        color: PulseColors.onSurface,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: PulseSpacing.sm),
-                    Text(
-                      'Enter your phone number to continue',
-                      style: PulseTextStyles.bodyLarge.copyWith(
-                        color: PulseColors.onSurfaceVariant,
-                      ),
-                    ),
-                    const SizedBox(height: PulseSpacing.xxl),
-
-                    // Phone input
-                    PulseTextField(
-                      controller: _phoneController,
-                      hintText: '+1 (555) 123-4567',
-                      keyboardType: TextInputType.phone,
-                      prefixIcon: const Icon(Icons.phone),
-                      validator: (value) {
-                        if (value?.isEmpty == true) {
-                          return 'Phone number is required';
-                        }
-                        if (value!.length < 10) {
-                          return 'Please enter a valid phone number';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: PulseSpacing.xl),
-
-                    // Login button
-                    PulseButton(
-                      text: 'Send Verification Code',
-                      onPressed: _isLoading ? null : _handleLogin,
-                      fullWidth: true,
-                      isLoading: _isLoading,
-                    ),
-                    const SizedBox(height: PulseSpacing.lg),
-
-                    // Forgot password
-                    Center(
+        child: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const SizedBox(height: 60),
+                
+                // Logo and title
+                const Icon(
+                  Icons.favorite,
+                  size: 80,
+                  color: PulseColors.primary,
+                ),
+                const SizedBox(height: 24),
+                
+                Text(
+                  'Welcome Back',
+                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: PulseColors.onSurface,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 8),
+                
+                Text(
+                  'Sign in to continue',
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    color: PulseColors.onSurfaceVariant,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 48),
+                
+                // Toggle between phone and email login
+                Row(
+                  children: [
+                    Expanded(
                       child: TextButton(
-                        onPressed: () => context.go(AppRoutes.forgotPassword),
-                        child: Text(
-                          'Having trouble signing in?',
-                          style: PulseTextStyles.bodyMedium.copyWith(
-                            color: PulseColors.primary,
-                          ),
+                        onPressed: () => setState(() => _isPhoneMode = true),
+                        style: TextButton.styleFrom(
+                          backgroundColor: _isPhoneMode ? PulseColors.primary.withOpacity(0.1) : null,
+                          foregroundColor: _isPhoneMode ? PulseColors.primary : PulseColors.onSurfaceVariant,
                         ),
+                        child: const Text('Phone'),
                       ),
                     ),
-                    const Spacer(),
-
-                    // Sign up prompt
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          "Don't have an account? ",
-                          style: PulseTextStyles.bodyMedium.copyWith(
-                            color: PulseColors.onSurfaceVariant,
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: TextButton(
+                        onPressed: () => setState(() => _isPhoneMode = false),
+                        style: TextButton.styleFrom(
+                          backgroundColor: !_isPhoneMode ? PulseColors.primary.withOpacity(0.1) : null,
+                          foregroundColor: !_isPhoneMode ? PulseColors.primary : PulseColors.onSurfaceVariant,
+                        ),
+                        child: const Text('Email'),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 32),
+                
+                // Login form
+                Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      if (_isPhoneMode) ...[
+                        // Phone login
+                        TextFormField(
+                          controller: _phoneController,
+                          keyboardType: TextInputType.phone,
+                          validator: _validatePhone,
+                          decoration: const InputDecoration(
+                            labelText: 'Phone Number',
+                            hintText: 'Enter your phone number',
+                            prefixIcon: Icon(Icons.phone),
                           ),
                         ),
-                        TextButton(
-                          onPressed: () => context.go(AppRoutes.register),
-                          child: Text(
-                            'Sign up',
-                            style: PulseTextStyles.bodyMedium.copyWith(
-                              color: PulseColors.primary,
-                              fontWeight: FontWeight.w600,
+                      ] else ...[
+                        // Email login
+                        TextFormField(
+                          controller: _emailController,
+                          keyboardType: TextInputType.emailAddress,
+                          validator: _validateEmail,
+                          decoration: const InputDecoration(
+                            labelText: 'Email',
+                            hintText: 'Enter your email address',
+                            prefixIcon: Icon(Icons.email),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        
+                        TextFormField(
+                          controller: _passwordController,
+                          obscureText: _obscurePassword,
+                          validator: _validatePassword,
+                          decoration: InputDecoration(
+                            labelText: 'Password',
+                            hintText: 'Enter your password',
+                            prefixIcon: const Icon(Icons.lock),
+                            suffixIcon: IconButton(
+                              icon: Icon(_obscurePassword ? Icons.visibility : Icons.visibility_off),
+                              onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
                             ),
                           ),
                         ),
                       ],
-                    ),
+                      const SizedBox(height: 32),
+                      
+                      // Login button
+                      ElevatedButton(
+                        onPressed: _isLoading ? null : _handleLogin,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: PulseColors.primary,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: _isLoading
+                            ? const SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                ),
+                              )
+                            : Text(
+                                _isPhoneMode ? 'Send OTP' : 'Sign In',
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                      ),
+                      
+                      if (!_isPhoneMode) ...[
+                        const SizedBox(height: 16),
+                        
+                        // Forgot password
+                        TextButton(
+                          onPressed: () => context.push('/forgot-password'),
+                          child: const Text('Forgot Password?'),
+                        ),
+                      ],
+                      
+                      const SizedBox(height: 32),
+                      
+                      // Register link
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            "Don't have an account? ",
+                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              color: PulseColors.onSurfaceVariant,
+                            ),
+                          ),
+                          TextButton(
+                            onPressed: () => context.push('/register'),
+                            child: const Text('Sign Up'),
+                          ),
                         ],
                       ),
-                    ),
+                    ],
                   ),
                 ),
-              ),
+              ],
             ),
           ),
         ),
