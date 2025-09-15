@@ -266,86 +266,90 @@ class ApiConstants {
   // BACKWARD COMPATIBILITY (DEPRECATED)
   // ================================
 
-  @deprecated
+  @Deprecated('Use authRegister instead')
   static const String register = authRegister;
-  @deprecated
+  @Deprecated('Use authLogin instead')
   static const String login = authLogin;
-  @deprecated
+  @Deprecated('Use authLogout instead')
   static const String logout = authLogout;
-  @deprecated
+  @Deprecated('Use authRefresh instead')
   static const String refreshToken = authRefresh;
-  @deprecated
+  @Deprecated('Use authForgotPassword instead')
   static const String forgotPassword = authForgotPassword;
-  @deprecated
+  @Deprecated('Use authResetPassword instead')
   static const String resetPassword = authResetPassword;
-  @deprecated
+  @Deprecated('Use authChangePassword instead')
   static const String changePassword = authChangePassword;
-  @deprecated
+  @Deprecated('Use authSendOTP instead')
   static const String sendOTP = authSendOTP;
-  @deprecated
+  @Deprecated('Use authSendOTP instead')
+  static const String sendOtp = authSendOTP;
+  @Deprecated('Use authVerifyOTP instead')
   static const String verifyOTP = authVerifyOTP;
-  @deprecated
+  @Deprecated('Use authVerifyOTP instead')
+  static const String verifyOtp = authVerifyOTP;
+  @Deprecated('Use authResendOTP instead')
   static const String resendOTP = authResendOTP;
-  @deprecated
+  @Deprecated('Use usersProfile instead')
   static const String profile = usersProfile;
-  @deprecated
+  @Deprecated('Use usersProfile instead')
   static const String updateProfile = usersProfile;
-  @deprecated
+  @Deprecated('Use usersProfile instead')
   static const String deleteProfile = usersProfile;
-  @deprecated
+  @Deprecated('Use usersSearch instead')
   static const String userSearch = usersSearch;
-  @deprecated
+  @Deprecated('Use matchingSuggestions instead')
   static const String discover = matchingSuggestions;
-  @deprecated
+  @Deprecated('Use matchingLike instead')
   static const String likeUser = matchingLike;
-  @deprecated
+  @Deprecated('Use matchingPass instead')
   static const String passUser = matchingPass;
-  @deprecated
+  @Deprecated('Use matchingSuperLike instead')
   static const String superLike = matchingSuperLike;
-  @deprecated
+  @Deprecated('Use matchingUndo instead')
   static const String undoLastAction = matchingUndo;
-  @deprecated
+  @Deprecated('Use matchingMatches instead')
   static const String matches = matchingMatches;
-  @deprecated
+  @Deprecated('Use messagingConversations instead')
   static const String getConversations = messagingConversations;
-  @deprecated
+  @Deprecated('Use messagingMessages instead')
   static const String getMessages = messagingMessages;
-  @deprecated
+  @Deprecated('Use messagingSend instead')
   static const String sendMessage = messagingSend;
-  @deprecated
+  @Deprecated('Use messagingMarkRead instead')
   static const String markAsRead = messagingMarkRead;
-  @deprecated
+  @Deprecated('Use messagingDelete instead')
   static const String deleteMessage = messagingDelete;
-  @deprecated
+  @Deprecated('Use mediaUpload instead')
   static const String uploadImage = mediaUpload;
-  @deprecated
+  @Deprecated('Use mediaUpload instead')
   static const String uploadVideo = mediaUpload;
-  @deprecated
+  @Deprecated('Use mediaUpload instead')
   static const String uploadAudio = mediaUpload;
-  @deprecated
+  @Deprecated('Use mediaUpload instead')
   static const String uploadFile = mediaUpload;
-  @deprecated
+  @Deprecated('Use mediaDelete instead')
   static const String deleteFile = mediaDelete;
-  @deprecated
+  @Deprecated('Use premiumSubscribe instead')
   static const String subscribe = premiumSubscribe;
-  @deprecated
+  @Deprecated('Use premiumSubscription instead')
   static const String subscription = premiumSubscription;
-  @deprecated
+  @Deprecated('Use premiumCancel instead')
   static const String cancelSubscription = premiumCancel;
-  @deprecated
+  @Deprecated('Use reportsCreate instead')
   static const String reportProfile = reportsCreate;
-  @deprecated
+  @Deprecated('Use usersBlock instead')
   static const String blockProfile = usersBlock;
-  @deprecated
+  @Deprecated('Use usersUnblock instead')
   static const String unblockProfile = usersUnblock;
-  @deprecated
+  @Deprecated('Use usersPreferences instead')
   static const String filterPreferences = usersPreferences;
-  @deprecated
+  @Deprecated('Use notificationsSettings instead')
   static const String notificationSettings = notificationsSettings;
-  @deprecated
+  @Deprecated('Use usersPrivacy instead')
   static const String privacySettings = usersPrivacy;
-  @deprecated
+  @Deprecated('Use \$users/interests instead')
   static const String interests = '$users/interests';
-  @deprecated
+  @Deprecated('Use \$users/education-levels instead')
   static const String educationLevels = '$users/education-levels';
 }

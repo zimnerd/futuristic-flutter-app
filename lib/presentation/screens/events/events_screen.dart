@@ -235,7 +235,7 @@ class _EventsScreenState extends State<EventsScreen> {
       children: [
         Container(
           padding: const EdgeInsets.all(8),
-          color: PulseColors.primary.withOpacity(0.1),
+          color: PulseColors.primary.withValues(alpha: 0.1),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [

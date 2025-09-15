@@ -123,11 +123,13 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
               const SizedBox(height: 8),
               Container(
                 decoration: BoxDecoration(
-                  border: Border.all(color: PulseColors.onSurface.withOpacity(0.3)),
+                  border: Border.all(
+                    color: PulseColors.onSurface.withValues(alpha: 0.3),
+                  ),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: DropdownButtonFormField<String>(
-                  value: _selectedCategory,
+                  initialValue: _selectedCategory,
                   decoration: InputDecoration(
                     border: InputBorder.none,
                     contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -167,7 +169,9 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
               const SizedBox(height: 8),
               Container(
                 decoration: BoxDecoration(
-                  border: Border.all(color: PulseColors.onSurface.withOpacity(0.3)),
+                  border: Border.all(
+                    color: PulseColors.onSurface.withValues(alpha: 0.3),
+                  ),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: ListTile(
@@ -222,15 +226,18 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
               const SizedBox(height: 8),
               Container(
                 decoration: BoxDecoration(
-                  border: Border.all(color: PulseColors.onSurface.withOpacity(0.3)),
+                  border: Border.all(
+                    color: PulseColors.onSurface.withValues(alpha: 0.3),
+                  ),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Column(
                   children: [
-                    RadioListTile<bool>(
-                      value: true,
-                      groupValue: _isPublic,
-                      onChanged: (value) => setState(() => _isPublic = value!),
+                    ListTile(
+                      leading: Icon(
+                        _isPublic == true ? Icons.radio_button_checked : Icons.radio_button_unchecked,
+                        color: _isPublic == true ? PulseColors.primary : PulseColors.onSurfaceVariant,
+                      ),
                       title: const Row(
                         children: [
                           Icon(Icons.public, color: Colors.green),
@@ -246,12 +253,14 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                           topRight: Radius.circular(12),
                         ),
                       ),
+                      onTap: () => setState(() => _isPublic = true),
                     ),
                     const Divider(height: 1),
-                    RadioListTile<bool>(
-                      value: false,
-                      groupValue: _isPublic,
-                      onChanged: (value) => setState(() => _isPublic = value!),
+                    ListTile(
+                      leading: Icon(
+                        _isPublic == false ? Icons.radio_button_checked : Icons.radio_button_unchecked,
+                        color: _isPublic == false ? PulseColors.primary : PulseColors.onSurfaceVariant,
+                      ),
                       title: const Row(
                         children: [
                           Icon(Icons.lock, color: Colors.orange),
@@ -267,6 +276,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                           bottomRight: Radius.circular(12),
                         ),
                       ),
+                      onTap: () => setState(() => _isPublic = false),
                     ),
                   ],
                 ),
@@ -329,7 +339,9 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                   onPressed: () => context.pop(),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: PulseColors.onSurfaceVariant,
-                    side: BorderSide(color: PulseColors.onSurface.withOpacity(0.3)),
+                    side: BorderSide(
+                      color: PulseColors.onSurface.withValues(alpha: 0.3),
+                    ),
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),

@@ -24,7 +24,7 @@ class FileUploadService {
       });
 
       final response = await _apiClient.post(
-        ApiConstants.uploadImage,
+        ApiConstants.mediaUpload,
         data: formData,
       );
 
@@ -50,7 +50,7 @@ class FileUploadService {
       });
 
       final response = await _apiClient.post(
-        ApiConstants.uploadVideo,
+        ApiConstants.mediaUpload,
         data: formData,
       );
 
@@ -76,7 +76,7 @@ class FileUploadService {
       });
 
       final response = await _apiClient.post(
-        ApiConstants.uploadAudio,
+        ApiConstants.mediaUpload,
         data: formData,
       );
 
@@ -102,7 +102,7 @@ class FileUploadService {
       });
 
       final response = await _apiClient.post(
-        ApiConstants.uploadFile,
+        ApiConstants.mediaUpload,
         data: formData,
       );
 
@@ -116,7 +116,7 @@ class FileUploadService {
   Future<void> deleteFile(String fileUrl) async {
     try {
       await _apiClient.delete(
-        ApiConstants.deleteFile,
+        ApiConstants.mediaDelete,
         data: {'fileUrl': fileUrl},
       );
     } on DioException catch (e) {

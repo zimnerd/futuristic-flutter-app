@@ -29,7 +29,7 @@ class EventCard extends StatelessWidget {
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       elevation: 4,
-      shadowColor: PulseColors.primary.withOpacity(0.1),
+      shadowColor: PulseColors.primary.withValues(alpha: 0.1),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
       ),
@@ -133,8 +133,8 @@ class EventCard extends StatelessWidget {
         borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
         gradient: LinearGradient(
           colors: [
-            PulseColors.primary.withOpacity(0.1),
-            PulseColors.secondary.withOpacity(0.1),
+            PulseColors.primary.withValues(alpha: 0.1),
+            PulseColors.secondary.withValues(alpha: 0.1),
           ],
         ),
       ),
@@ -168,8 +168,8 @@ class EventCard extends StatelessWidget {
         borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
         gradient: LinearGradient(
           colors: [
-            PulseColors.primary.withOpacity(0.2),
-            PulseColors.secondary.withOpacity(0.2),
+            PulseColors.primary.withValues(alpha: 0.2),
+            PulseColors.secondary.withValues(alpha: 0.2),
           ],
         ),
       ),
@@ -187,10 +187,10 @@ class EventCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: PulseColors.primary.withOpacity(0.1),
+        color: PulseColors.primary.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: PulseColors.primary.withOpacity(0.3),
+          color: PulseColors.primary.withValues(alpha: 0.3),
           width: 1,
         ),
       ),
@@ -279,7 +279,7 @@ class EventCard extends StatelessWidget {
           ),
         ),
         style: TextButton.styleFrom(
-          backgroundColor: PulseColors.success.withOpacity(0.1),
+          backgroundColor: PulseColors.success.withValues(alpha: 0.1),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
           ),

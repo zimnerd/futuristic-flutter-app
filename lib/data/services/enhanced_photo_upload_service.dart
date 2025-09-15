@@ -107,7 +107,7 @@ class PhotoUploadService {
       });
 
       final response = await _apiClient.post(
-        ApiConstants.uploadImage,
+        ApiConstants.mediaUpload,
         data: formData,
         onSendProgress: (sent, total) {
           if (onProgress != null && total > 0) {
@@ -161,7 +161,7 @@ class PhotoUploadService {
   Future<bool> deleteImage(String imageUrl) async {
     try {
       final response = await _apiClient.delete(
-        '${ApiConstants.uploadImage}/$imageUrl',
+        '${ApiConstants.mediaUpload}/$imageUrl',
       );
 
       return response.statusCode == 200;

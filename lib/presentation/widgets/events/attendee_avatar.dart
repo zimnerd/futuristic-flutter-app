@@ -57,7 +57,7 @@ class AttendeeAvatar extends StatelessWidget {
     final initials = _getInitials(user?['firstName'], user?['lastName']);
     
     return Container(
-      color: PulseColors.primary.withOpacity(0.1),
+      color: PulseColors.primary.withValues(alpha: 0.1),
       child: Center(
         child: Text(
           initials,

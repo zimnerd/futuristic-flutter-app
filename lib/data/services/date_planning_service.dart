@@ -1,6 +1,5 @@
 import 'package:logger/logger.dart';
 import '../../core/network/api_client.dart';
-import '../../core/constants/api_constants.dart';
 
 /// Service for date planning and suggestions
 /// TODO: Backend module needs to be created for date-planning features

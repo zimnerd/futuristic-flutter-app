@@ -16,7 +16,7 @@ class PreferencesService {
     try {
       _logger.d('Fetching filter preferences from backend');
       
-      final response = await _apiClient.get(ApiConstants.filterPreferences);
+      final response = await _apiClient.get(ApiConstants.usersPreferences);
       
       if (response.statusCode == 200) {
         final data = response.data as Map<String, dynamic>;
@@ -39,7 +39,7 @@ class PreferencesService {
       _logger.d('Saving filter preferences to backend');
       
       final response = await _apiClient.put(
-        ApiConstants.filterPreferences,
+        ApiConstants.usersPreferences,
         data: preferences.toJson(),
       );
       
@@ -61,7 +61,7 @@ class PreferencesService {
     try {
       _logger.d('Fetching available interests');
       
-      final response = await _apiClient.get(ApiConstants.interests);
+      final response = await _apiClient.get('${ApiConstants.users}/interests');
       
       if (response.statusCode == 200) {
         final data = response.data as Map<String, dynamic>;
@@ -83,7 +83,9 @@ class PreferencesService {
     try {
       _logger.d('Fetching education levels');
       
-      final response = await _apiClient.get(ApiConstants.educationLevels);
+      final response = await _apiClient.get(
+        '${ApiConstants.users}/education-levels',
+      );
       
       if (response.statusCode == 200) {
         final data = response.data as Map<String, dynamic>;

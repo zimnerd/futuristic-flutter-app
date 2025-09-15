@@ -223,7 +223,7 @@ class ApiClient {
     String? location,
   }) async {
     return await _dio.post(
-      ApiConstants.register,
+      ApiConstants.authRegister,
       data: {
         'email': email,
         'password': password,
@@ -244,7 +244,7 @@ class ApiClient {
     required String password,
   }) async {
     return await _dio.post(
-      ApiConstants.login,
+      ApiConstants.authLogin,
       data: {'email': email, 'password': password},
     );
   }
@@ -252,14 +252,14 @@ class ApiClient {
   /// Refresh authentication token
   Future<Response> refreshToken(String refreshToken) async {
     return await _dio.post(
-      ApiConstants.refreshToken,
+      ApiConstants.authRefresh,
       data: {'refreshToken': refreshToken},
     );
   }
 
   /// Logout current user
   Future<Response> logout() async {
-    return await _dio.post(ApiConstants.logout);
+    return await _dio.post(ApiConstants.authLogout);
   }
 
   /// Send OTP for verification
@@ -270,7 +270,7 @@ class ApiClient {
     String? preferredMethod,
   }) async {
     return await _dio.post(
-      ApiConstants.sendOtp,
+      ApiConstants.authSendOTP,
       data: {
         'email': email,
         if (phoneNumber != null) 'phoneNumber': phoneNumber,
@@ -287,7 +287,7 @@ class ApiClient {
     required String email,
   }) async {
     return await _dio.post(
-      ApiConstants.verifyOtp,
+      ApiConstants.authVerifyOTP,
       data: {'sessionId': sessionId, 'code': code, 'email': email},
     );
   }

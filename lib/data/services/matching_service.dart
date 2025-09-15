@@ -25,7 +25,7 @@ class MatchingService {
       };
 
       final response = await _apiClient.get(
-        ApiConstants.discover,
+        ApiConstants.matchingSuggestions,
         queryParameters: queryParams,
       );
 
@@ -53,10 +53,10 @@ class MatchingService {
       final Map<String, dynamic> data;
 
       if (isLike) {
-        endpoint = ApiConstants.likeUser; // Use /matching/like
+        endpoint = ApiConstants.matchingLike; // Use /matching/like
         data = {'targetUserId': profileId, 'likeType': 'LIKE'};
       } else {
-        endpoint = ApiConstants.passUser; // Use /matching/pass
+        endpoint = ApiConstants.matchingPass; // Use /matching/pass
         data = {'targetUserId': profileId};
       }
       
@@ -74,7 +74,7 @@ class MatchingService {
   }) async {
     try {
       final response = await _apiClient.get(
-        ApiConstants.matches,
+        ApiConstants.matchingMatches,
         queryParameters: {
           'limit': limit,
           'offset': offset,

@@ -111,8 +111,8 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                   borderRadius: BorderRadius.circular(12),
                   gradient: LinearGradient(
                     colors: [
-                      PulseColors.primary.withOpacity(0.3),
-                      PulseColors.secondary.withOpacity(0.3),
+                      PulseColors.primary.withValues(alpha: 0.3),
+                      PulseColors.secondary.withValues(alpha: 0.3),
                     ],
                   ),
                 ),
@@ -142,7 +142,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
-                    color: PulseColors.primary.withOpacity(0.1),
+                    color: PulseColors.primary.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
@@ -158,8 +158,8 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
                     color: event.isPublic
-                        ? Colors.green.withOpacity(0.1)
-                        : Colors.orange.withOpacity(0.1),
+                        ? Colors.green.withValues(alpha: 0.1)
+                        : Colors.orange.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Row(
@@ -257,7 +257,9 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
               decoration: BoxDecoration(
                 color: PulseColors.surface,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: PulseColors.onSurface.withOpacity(0.1)),
+                border: Border.all(
+                  color: PulseColors.onSurface.withValues(alpha: 0.1),
+                ),
               ),
               child: Row(
                 children: [
@@ -430,7 +432,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
         backgroundColor: PulseColors.surface,
         foregroundColor: PulseColors.primary,
         elevation: 0,
-        side: BorderSide(color: PulseColors.primary.withOpacity(0.3)),
+        side: BorderSide(color: PulseColors.primary.withValues(alpha: 0.3)),
         padding: const EdgeInsets.symmetric(vertical: 12),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(8),

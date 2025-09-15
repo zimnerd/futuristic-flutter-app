@@ -23,10 +23,12 @@ class CategoryChip extends StatelessWidget {
         decoration: BoxDecoration(
           color: isSelected 
               ? PulseColors.primary 
-              : PulseColors.primary.withOpacity(0.1),
+              : PulseColors.primary.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: PulseColors.primary.withOpacity(isSelected ? 1.0 : 0.3),
+            color: PulseColors.primary.withValues(
+              alpha: isSelected ? 1.0 : 0.3,
+            ),
             width: 1,
           ),
         ),
@@ -113,7 +115,7 @@ class CategoryFilterChips extends StatelessWidget {
                       : PulseColors.surface,
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
-                    color: PulseColors.primary.withOpacity(0.3),
+                    color: PulseColors.primary.withValues(alpha: 0.3),
                     width: 1,
                   ),
                 ),
