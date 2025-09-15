@@ -20,10 +20,18 @@ import 'data/repositories/user_repository_impl.dart';
 import 'core/network/api_client.dart';
 import 'data/services/webrtc_service.dart';
 import 'data/services/websocket_service.dart';
+import 'data/services/event_service.dart';
+import 'data/services/matching_service.dart';
+import 'data/services/preferences_service.dart';
+import 'data/services/discovery_service.dart';
 import 'domain/repositories/user_repository.dart';
 import 'domain/services/api_service.dart';
 import 'presentation/blocs/auth/auth_bloc.dart';
 import 'presentation/blocs/user/user_bloc.dart';
+import 'presentation/blocs/event/event_bloc.dart';
+import 'presentation/blocs/matching/matching_bloc.dart';
+import 'presentation/blocs/filters/filter_bloc.dart';
+import 'presentation/blocs/discovery/discovery_bloc.dart';
 import 'presentation/navigation/app_router.dart';
 import 'presentation/theme/pulse_theme.dart';
 import 'presentation/widgets/auto_login_wrapper.dart';
@@ -127,6 +135,28 @@ class PulseDatingApp extends StatelessWidget {
             create: (context) => CallBloc(
               webRTCService: context.read<WebRTCService>(),
               webSocketService: context.read<WebSocketService>(),
+            ),
+          ),
+          BlocProvider<EventBloc>(
+            create: (context) => EventBloc(eventService: EventService.instance),
+          ),
+          BlocProvider<MatchingBloc>(
+            create: (context) => MatchingBloc(
+              matchingService: MatchingService(
+                apiClient: context.read<ApiClient>(),
+              ),
+            ),
+          ),
+          BlocProvider<FilterBLoC>(
+            create: (context) => FilterBLoC(
+              PreferencesService(context.read<ApiClient>()),
+            ),
+          ),
+          BlocProvider<DiscoveryBloc>(
+            create: (context) => DiscoveryBloc(
+              discoveryService: DiscoveryService(
+                apiClient: context.read<ApiClient>(),
+              ),
             ),
           ),
         ],
