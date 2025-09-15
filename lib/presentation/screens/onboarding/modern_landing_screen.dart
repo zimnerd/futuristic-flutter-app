@@ -168,7 +168,8 @@ class _ModernLandingScreenState extends State<ModernLandingScreen>
                           child: _buildFeaturesSection(),
                         ),
                         
-                        const SizedBox(height: PulseSpacing.xl),
+                        // Add flexible spacer to push buttons to bottom
+                        const Spacer(),
 
                         // Action buttons
                         ScaleTransition(
@@ -176,10 +177,13 @@ class _ModernLandingScreenState extends State<ModernLandingScreen>
                           child: _buildActionButtons(),
                         ),
                         
-                        const SizedBox(height: PulseSpacing.md),
+                        const SizedBox(height: PulseSpacing.lg),
 
                         // Terms and privacy
                         _buildTermsSection(),
+                        
+                        // Extra padding at bottom to ensure content doesn't get cut off
+                        const SizedBox(height: PulseSpacing.lg),
                       ],
                     ),
                   ),
@@ -502,7 +506,7 @@ class _ModernLandingScreenState extends State<ModernLandingScreen>
           ),
         ),
         
-        const SizedBox(height: PulseSpacing.md),
+        const SizedBox(height: PulseSpacing.lg),
         
         // Secondary CTA
         TextButton(
