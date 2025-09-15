@@ -35,7 +35,6 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
   late Animation<double> _likeAnimation;
   
   int _currentPhotoIndex = 0;
-  bool _showPhotosFullscreen = false;
 
   @override
   void initState() {
@@ -58,9 +57,16 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
   }
 
   void _onPhotoTap() {
-    setState(() {
-      _showPhotosFullscreen = true;
-    });
+    _showPhotoModal();
+  }
+
+  void _showPhotoModal() {
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      barrierColor: Colors.black.withOpacity(0.9),
+      builder: (context) => _buildPhotoModal(),
+    );
   }
 
   void _onLikeTap() {
@@ -72,10 +78,6 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
 
   @override
   Widget build(BuildContext context) {
-    if (_showPhotosFullscreen) {
-      return _buildFullscreenPhotos();
-    }
-
     return Scaffold(
       backgroundColor: Colors.white,
       body: CustomScrollView(
@@ -873,8 +875,8 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
                   onTap: () {
                     setState(() {
                       _currentPhotoIndex = index + 1;
-                      _showPhotosFullscreen = true;
                     });
+                    _showPhotoModal();
                   },
                   child: Hero(
                     tag: 'grid-photo-${photo.id}',
@@ -942,44 +944,41 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
     );
   }
 
-  Widget _buildFullscreenPhotos() {
-    return Scaffold(
+  Widget _buildPhotoModal() {
+    return Dialog.fullscreen(
       backgroundColor: Colors.black,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.close, color: Colors.white),
-          onPressed: () {
+      child: Scaffold(
+        backgroundColor: Colors.black,
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.close, color: Colors.white),
+            onPressed: () => Navigator.of(context).pop(),
+          ),
+          title: Text(
+            '${_currentPhotoIndex + 1} of ${widget.profile.photos.length}',
+            style: const TextStyle(color: Colors.white),
+          ),
+        ),
+        body: PageView.builder(
+          controller: PageController(initialPage: _currentPhotoIndex),
+          onPageChanged: (index) {
             setState(() {
-              _showPhotosFullscreen = false;
+              _currentPhotoIndex = index;
             });
           },
-        ),
-        title: Text(
-          '${_currentPhotoIndex + 1} of ${widget.profile.photos.length}',
-          style: const TextStyle(color: Colors.white),
-        ),
-      ),
-      body: PageView.builder(
-        controller: PageController(initialPage: _currentPhotoIndex),
-        onPageChanged: (index) {
-          setState(() {
-            _currentPhotoIndex = index;
-          });
-        },
-        itemCount: widget.profile.photos.length,
-        itemBuilder: (context, index) {
-          final photo = widget.profile.photos[index];
-          return Center(
-            child: Hero(
-              tag: 'profile-photo-${photo.id}',
-              child: InteractiveViewer(
-                child: _buildPhotoWidget(photo),
+          itemCount: widget.profile.photos.length,
+          itemBuilder: (context, index) {
+            final photo = widget.profile.photos[index];
+            return Center(
+              child: Hero(
+                tag: 'profile-photo-${photo.id}',
+                child: InteractiveViewer(child: _buildPhotoWidget(photo)),
               ),
-            ),
-          );
-        },
+            );
+          },
+        ),
       ),
     );
   }

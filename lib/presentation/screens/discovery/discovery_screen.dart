@@ -307,70 +307,16 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              // Profile/Settings button
-              GestureDetector(
-                onTap: () {
-                  context.go('/profile');
-                },
-                child: Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.9),
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.1),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: const Icon(
-                    Icons.person,
-                    color: Colors.grey,
-                    size: 24,
-                  ),
-                ),
-              ),
-              
-              // Center section with logo and undo button
-              Row(
-                children: [
-                  // Undo button (only show if can undo)
-                  if (canUndo) ...[
-                    GestureDetector(
-                      onTap: _handleUndo,
-                      child: Container(
-                        width: 44,
-                        height: 44,
-                        margin: const EdgeInsets.only(right: 12),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.9),
-                          shape: BoxShape.circle,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.1),
-                              blurRadius: 8,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
-                        ),
-                        child: const Icon(
-                          Icons.undo,
-                          color: Color(0xFF6E3BFF),
-                          size: 24,
-                        ),
-                      ),
-                    ),
-                  ],
-                  
-                  // App logo/title
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              // Undo button (only show if can undo) - moved to left
+              if (canUndo)
+                GestureDetector(
+                  onTap: _handleUndo,
+                  child: Container(
+                    width: 44,
+                    height: 44,
                     decoration: BoxDecoration(
                       color: Colors.white.withValues(alpha: 0.9),
-                      borderRadius: BorderRadius.circular(20),
+                      shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
                           color: Colors.black.withValues(alpha: 0.1),
@@ -379,17 +325,16 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
                         ),
                       ],
                     ),
-                    child: const Text(
-                      'PulseLink',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF6E3BFF),
-                      ),
+                    child: const Icon(
+                      Icons.undo,
+                      color: Color(0xFF6E3BFF),
+                      size: 24,
                     ),
                   ),
-                ],
-              ),
+                ),
+              
+              // Spacer to push filter button to the right
+              const Spacer(),
               
               // Filters button
               GestureDetector(

@@ -78,21 +78,7 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       child: Row(
         children: [
-          // User avatar
-          Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: PulseColors.primaryGradient,
-              ),
-              borderRadius: BorderRadius.circular(24),
-            ),
-            child: const Icon(Icons.person, color: Colors.white, size: 24),
-          ),
-          const SizedBox(width: PulseSpacing.md),
-
-          // Greeting - clean and minimal
+          // Greeting - clean and minimal (no profile icon)
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

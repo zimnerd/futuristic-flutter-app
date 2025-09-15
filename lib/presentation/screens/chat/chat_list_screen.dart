@@ -16,9 +16,21 @@ class ChatListScreen extends StatefulWidget {
   State<ChatListScreen> createState() => _ChatListScreenState();
 }
 
+/// Enhanced filtering options for DMs
+enum DmFilterBy { all, recent, unread, online, nearby }
+
+/// Enhanced sorting options for DMs
+enum DmSortBy { recent, name, distance, unreadCount }
+
 class _ChatListScreenState extends State<ChatListScreen> {
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
+  
+  // Enhanced filtering and sorting
+  DmFilterBy _currentFilter = DmFilterBy.all;
+  DmSortBy _currentSort = DmSortBy.recent;
+  bool _isSearchActive = false;
+  bool _showFilters = false;
 
   String? get _currentUserId {
     final authState = context.read<AuthBloc>().state;
@@ -46,146 +58,363 @@ class _ChatListScreenState extends State<ChatListScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        title: const Text(
-          'Messages',
-          style: TextStyle(
-            color: Colors.black87,
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.search, color: Colors.black87),
-            onPressed: () {
-              _showSearchDialog(context);
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.add_comment, color: Colors.black87),
-            onPressed: () {
-              _showNewConversationDialog(context);
-            },
+      appBar: _isSearchActive ? _buildSearchAppBar() : _buildMainAppBar(),
+      body: Column(
+        children: [
+          // Filter bar
+          if (_showFilters) _buildFilterBar(),
+
+          // Main content
+          Expanded(
+            child: BlocBuilder<ChatBloc, ChatState>(
+              builder: (context, state) {
+                if (state is ChatLoading) {
+                  return const Center(
+                    child: CircularProgressIndicator(
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        PulseColors.primary,
+                      ),
+                    ),
+                  );
+                }
+
+                if (state is ChatError) {
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(
+                          Icons.error_outline,
+                          color: Colors.grey,
+                          size: 64,
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          state.message,
+                          style: const TextStyle(color: Colors.grey),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 16),
+                        ElevatedButton(
+                          onPressed: () {
+                            context.read<ChatBloc>().add(
+                              const LoadConversations(),
+                            );
+                          },
+                          child: const Text('Retry'),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+
+                if (state is ConversationsLoaded) {
+                  final conversations = state.conversations;
+
+                  // Apply filtering and search
+                  final filteredConversations = _applyFiltersAndSearch(
+                    conversations,
+                  );
+
+                  if (filteredConversations.isEmpty) {
+                    return _buildEmptyState();
+                  }
+
+                  return ListView.builder(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    itemCount: filteredConversations.length,
+                    itemBuilder: (context, index) {
+                      final conversation = filteredConversations[index];
+                      return _buildConversationTile(context, conversation);
+                    },
+                  );
+                }
+
+                return const SizedBox.shrink();
+              },
+            ),
           ),
         ],
       ),
-      body: BlocBuilder<ChatBloc, ChatState>(
-        builder: (context, state) {
-          if (state is ChatLoading) {
-            return const Center(
-              child: CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(PulseColors.primary),
-              ),
-            );
-          }
+    );
+  }
 
-          if (state is ChatError) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(
-                    Icons.error_outline,
-                    color: Colors.grey,
-                    size: 64,
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    state.message,
-                    style: const TextStyle(color: Colors.grey),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: () {
-                      context.read<ChatBloc>().add(const LoadConversations());
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: PulseColors.primary,
-                      foregroundColor: Colors.white,
-                    ),
-                    child: const Text('Retry'),
-                  ),
-                ],
-              ),
-            );
-          }
+  AppBar _buildMainAppBar() {
+    return AppBar(
+      backgroundColor: Colors.white,
+      elevation: 0,
+      title: const Text(
+        'Messages',
+        style: TextStyle(
+          color: Colors.black87,
+          fontSize: 24,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+      actions: [
+        IconButton(
+          icon: Icon(
+            _showFilters ? Icons.filter_list : Icons.filter_list_outlined,
+            color: _showFilters ? PulseColors.primary : Colors.black87,
+          ),
+          onPressed: () {
+            setState(() {
+              _showFilters = !_showFilters;
+            });
+          },
+        ),
+        IconButton(
+          icon: const Icon(Icons.search, color: Colors.black87),
+          onPressed: () {
+            setState(() {
+              _isSearchActive = true;
+            });
+          },
+        ),
+        IconButton(
+          icon: const Icon(Icons.add_comment, color: Colors.black87),
+          onPressed: () {
+            _showNewConversationDialog(context);
+          },
+        ),
+      ],
+    );
+  }
 
-          if (state is ConversationsLoaded) {
-            // Filter conversations based on search query
-            final filteredConversations = _searchQuery.isEmpty
-                ? state.conversations
-                : state.conversations.where((conversation) {
-                    // Filter by conversation name if available
-                    // In a real app, we'd resolve participant names from UserRepository
-                    if (conversation.name != null) {
-                      return conversation.name!.toLowerCase().contains(
-                        _searchQuery.toLowerCase(),
-                      );
-                    }
-                    // For direct messages, use participant IDs as fallback
-                    return conversation.participantIds.any(
-                      (id) =>
-                          id.toLowerCase().contains(_searchQuery.toLowerCase()),
-                    );
-                  }).toList();
-
-            if (filteredConversations.isEmpty) {
-              return Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      _searchQuery.isEmpty
-                          ? Icons.chat_bubble_outline
-                          : Icons.search_off,
-                      color: Colors.grey,
-                      size: 64,
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      _searchQuery.isEmpty
-                          ? 'No conversations yet'
-                          : 'No conversations found',
-                      style: const TextStyle(
-                        color: Colors.grey,
-                        fontSize: 18,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      _searchQuery.isEmpty
-                          ? 'Start matching with people to begin chatting!'
-                          : 'Try searching with a different name',
-                      style: const TextStyle(
-                        color: Colors.grey,
-                        fontSize: 14,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
-                ),
-              );
-            }
-
-            return ListView.builder(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              itemCount: filteredConversations.length,
-              itemBuilder: (context, index) {
-                final conversation = filteredConversations[index];
-                return _buildConversationTile(context, conversation);
-              },
-            );
-          }
-
-          return const SizedBox.shrink();
+  AppBar _buildSearchAppBar() {
+    return AppBar(
+      backgroundColor: Colors.white,
+      elevation: 0,
+      leading: IconButton(
+        icon: const Icon(Icons.arrow_back, color: Colors.black87),
+        onPressed: () {
+          setState(() {
+            _isSearchActive = false;
+            _searchQuery = '';
+            _searchController.clear();
+          });
         },
       ),
+      title: TextField(
+        controller: _searchController,
+        autofocus: true,
+        decoration: const InputDecoration(
+          hintText: 'Search conversations...',
+          border: InputBorder.none,
+          hintStyle: TextStyle(color: Colors.grey),
+        ),
+        style: const TextStyle(color: Colors.black87, fontSize: 18),
+        onChanged: (value) {
+          setState(() {
+            _searchQuery = value;
+          });
+        },
+      ),
+      actions: [
+        if (_searchController.text.isNotEmpty)
+          IconButton(
+            icon: const Icon(Icons.clear, color: Colors.black87),
+            onPressed: () {
+              setState(() {
+                _searchController.clear();
+                _searchQuery = '';
+              });
+            },
+          ),
+      ],
     );
+  }
+
+  Widget _buildFilterBar() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      color: Colors.grey[50],
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Filter chips
+          const Text(
+            'Filter by:',
+            style: TextStyle(
+              fontWeight: FontWeight.w600,
+              color: Colors.black87,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            children: DmFilterBy.values.map((filter) {
+              return FilterChip(
+                label: Text(_getFilterLabel(filter)),
+                selected: _currentFilter == filter,
+                onSelected: (selected) {
+                  setState(() {
+                    _currentFilter = filter;
+                  });
+                },
+                selectedColor: PulseColors.primary.withValues(alpha: 0.2),
+                checkmarkColor: PulseColors.primary,
+              );
+            }).toList(),
+          ),
+          const SizedBox(height: 12),
+
+          // Sort options
+          const Text(
+            'Sort by:',
+            style: TextStyle(
+              fontWeight: FontWeight.w600,
+              color: Colors.black87,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            children: DmSortBy.values.map((sort) {
+              return ChoiceChip(
+                label: Text(_getSortLabel(sort)),
+                selected: _currentSort == sort,
+                onSelected: (selected) {
+                  setState(() {
+                    _currentSort = sort;
+                  });
+                },
+                selectedColor: PulseColors.primary.withValues(alpha: 0.2),
+              );
+            }).toList(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  List<dynamic> _applyFiltersAndSearch(List<dynamic> conversations) {
+    var filtered = conversations.where((conversation) {
+      // Apply filter
+      switch (_currentFilter) {
+        case DmFilterBy.recent:
+          return conversation.lastMessage?.createdAt != null &&
+              DateTime.now()
+                      .difference(conversation.lastMessage!.createdAt)
+                      .inDays <
+                  7;
+        case DmFilterBy.unread:
+          return conversation.unreadCount > 0;
+        case DmFilterBy.online:
+          // In a real app, check user online status
+          return true;
+        case DmFilterBy.nearby:
+          // In a real app, check user distance
+          return true;
+        case DmFilterBy.all:
+          return true;
+      }
+    }).toList();
+
+    // Apply search
+    if (_searchQuery.isNotEmpty) {
+      filtered = filtered.where((conversation) {
+        // Search in conversation name
+        if (conversation.name != null) {
+          return conversation.name!.toLowerCase().contains(
+            _searchQuery.toLowerCase(),
+          );
+        }
+        // Search in last message content
+        if (conversation.lastMessage?.content != null) {
+          return conversation.lastMessage!.content.toLowerCase().contains(
+            _searchQuery.toLowerCase(),
+          );
+        }
+        // Search in participant IDs as fallback
+        return conversation.participantIds.any(
+          (id) => id.toLowerCase().contains(_searchQuery.toLowerCase()),
+        );
+      }).toList();
+    }
+
+    // Apply sorting
+    filtered.sort((a, b) {
+      switch (_currentSort) {
+        case DmSortBy.recent:
+          final aTime = a.lastMessage?.createdAt ?? DateTime(1970);
+          final bTime = b.lastMessage?.createdAt ?? DateTime(1970);
+          return bTime.compareTo(aTime);
+        case DmSortBy.name:
+          final aName = a.name ?? 'Unknown';
+          final bName = b.name ?? 'Unknown';
+          return aName.compareTo(bName);
+        case DmSortBy.unreadCount:
+          return b.unreadCount.compareTo(a.unreadCount);
+        case DmSortBy.distance:
+          // In a real app, sort by actual distance
+          return 0;
+      }
+    });
+
+    return filtered;
+  }
+
+  Widget _buildEmptyState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            _searchQuery.isEmpty ? Icons.chat_bubble_outline : Icons.search_off,
+            color: Colors.grey,
+            size: 64,
+          ),
+          const SizedBox(height: 16),
+          Text(
+            _searchQuery.isEmpty
+                ? 'No conversations yet'
+                : 'No conversations found',
+            style: const TextStyle(
+              color: Colors.grey,
+              fontSize: 18,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            _searchQuery.isEmpty
+                ? 'Start matching with people to begin chatting!'
+                : 'Try searching with a different name',
+            style: const TextStyle(color: Colors.grey, fontSize: 14),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _getFilterLabel(DmFilterBy filter) {
+    switch (filter) {
+      case DmFilterBy.all:
+        return 'All';
+      case DmFilterBy.recent:
+        return 'Recent';
+      case DmFilterBy.unread:
+        return 'Unread';
+      case DmFilterBy.online:
+        return 'Online';
+      case DmFilterBy.nearby:
+        return 'Nearby';
+    }
+  }
+
+  String _getSortLabel(DmSortBy sort) {
+    switch (sort) {
+      case DmSortBy.recent:
+        return 'Recent';
+      case DmSortBy.name:
+        return 'Name';
+      case DmSortBy.distance:
+        return 'Distance';
+      case DmSortBy.unreadCount:
+        return 'Unread';
+    }
   }
 
   Widget _buildConversationTile(BuildContext context, conversation) {
@@ -302,41 +531,6 @@ class _ChatListScreenState extends State<ChatListScreen> {
             ),
           );
         },
-      ),
-    );
-  }
-
-  void _showSearchDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Search Conversations'),
-        content: TextField(
-          controller: _searchController,
-          decoration: const InputDecoration(
-            hintText: 'Search by name or message...',
-            border: OutlineInputBorder(),
-          ),
-          onChanged: (value) {
-            setState(() {
-              _searchQuery = value;
-            });
-          },
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              // Filter conversations based on search query
-              // Implementation would filter the conversation list
-            },
-            child: const Text('Search'),
-          ),
-        ],
       ),
     );
   }

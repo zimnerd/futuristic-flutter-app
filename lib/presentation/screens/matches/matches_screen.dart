@@ -35,6 +35,12 @@ class _MatchesScreenState extends State<MatchesScreen>
   final ScrollController _scrollController = ScrollController();
   int _currentPage = 1;
   static const int _pageSize = 10;
+  
+  // Search functionality
+  bool _isSearchActive = false;
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
+  List<MatchModel> _filteredMatches = [];
 
   @override
   void initState() {
@@ -53,6 +59,7 @@ class _MatchesScreenState extends State<MatchesScreen>
   void dispose() {
     _tabController.dispose();
     _scrollController.dispose();
+    _searchController.dispose();
     super.dispose();
   }
 
@@ -160,153 +167,282 @@ class _MatchesScreenState extends State<MatchesScreen>
     _loadMatches(status);
   }
 
+  AppBar _buildMainAppBar() {
+    return AppBar(
+      title: const Text(
+        'My Matches',
+        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24),
+      ),
+      centerTitle: true,
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      flexibleSpace: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Theme.of(context).primaryColor,
+              Theme.of(context).primaryColor.withValues(alpha: 0.8),
+            ],
+          ),
+        ),
+      ),
+      actions: [
+        // Search button
+        IconButton(
+          icon: const Icon(Icons.search),
+          onPressed: () {
+            setState(() {
+              _isSearchActive = true;
+            });
+          },
+        ),
+        // View mode toggle
+        PopupMenuButton<MatchViewMode>(
+          icon: Icon(_getViewModeIcon()),
+          onSelected: (MatchViewMode mode) {
+            if (mounted) {
+              setState(() {
+                _currentViewMode = mode;
+              });
+            }
+          },
+          itemBuilder: (context) => [
+            const PopupMenuItem(
+              value: MatchViewMode.list,
+              child: Row(
+                children: [
+                  Icon(Icons.list),
+                  SizedBox(width: 8),
+                  Text('List View'),
+                ],
+              ),
+            ),
+            const PopupMenuItem(
+              value: MatchViewMode.grid,
+              child: Row(
+                children: [
+                  Icon(Icons.grid_view),
+                  SizedBox(width: 8),
+                  Text('Grid View'),
+                ],
+              ),
+            ),
+            const PopupMenuItem(
+              value: MatchViewMode.slider,
+              child: Row(
+                children: [
+                  Icon(Icons.view_carousel),
+                  SizedBox(width: 8),
+                  Text('Slider View'),
+                ],
+              ),
+            ),
+          ],
+        ),
+        // Sort options
+        PopupMenuButton<MatchSortBy>(
+          icon: const Icon(Icons.sort),
+          onSelected: (MatchSortBy sortBy) {
+            if (mounted) {
+              setState(() {
+                _currentSortBy = sortBy;
+              });
+            }
+            _applySorting();
+          },
+          itemBuilder: (context) => [
+            const PopupMenuItem(
+              value: MatchSortBy.recent,
+              child: Row(
+                children: [
+                  Icon(Icons.access_time),
+                  SizedBox(width: 8),
+                  Text('Most Recent'),
+                ],
+              ),
+            ),
+            const PopupMenuItem(
+              value: MatchSortBy.compatibility,
+              child: Row(
+                children: [
+                  Icon(Icons.favorite),
+                  SizedBox(width: 8),
+                  Text('Compatibility'),
+                ],
+              ),
+            ),
+            const PopupMenuItem(
+              value: MatchSortBy.name,
+              child: Row(
+                children: [
+                  Icon(Icons.sort_by_alpha),
+                  SizedBox(width: 8),
+                  Text('Name A-Z'),
+                ],
+              ),
+            ),
+            const PopupMenuItem(
+              value: MatchSortBy.distance,
+              child: Row(
+                children: [
+                  Icon(Icons.location_on),
+                  SizedBox(width: 8),
+                  Text('Distance'),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ],
+      bottom: TabBar(
+        controller: _tabController,
+        onTap: (_) => _onTabChanged(),
+        tabs: const [
+          Tab(icon: Icon(Icons.favorite), text: 'Active'),
+          Tab(icon: Icon(Icons.schedule), text: 'Pending'),
+          Tab(icon: Icon(Icons.all_inclusive), text: 'All'),
+        ],
+        indicatorColor: Colors.white,
+        labelColor: Colors.white,
+        unselectedLabelColor: Colors.white70,
+      ),
+    );
+  }
+
+  AppBar _buildSearchAppBar() {
+    return AppBar(
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      flexibleSpace: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Theme.of(context).primaryColor,
+              Theme.of(context).primaryColor.withValues(alpha: 0.8),
+            ],
+          ),
+        ),
+      ),
+      leading: IconButton(
+        icon: const Icon(Icons.arrow_back),
+        onPressed: () {
+          setState(() {
+            _isSearchActive = false;
+            _searchController.clear();
+            _searchQuery = '';
+            _filterMatches();
+          });
+        },
+      ),
+      title: TextField(
+        controller: _searchController,
+        autofocus: true,
+        style: const TextStyle(color: Colors.white),
+        decoration: const InputDecoration(
+          hintText: 'Search by match ID, status, compatibility...',
+          hintStyle: TextStyle(color: Colors.white70),
+          border: InputBorder.none,
+        ),
+        onChanged: (value) {
+          setState(() {
+            _searchQuery = value;
+          });
+          _filterMatches();
+        },
+      ),
+      actions: [
+        if (_searchController.text.isNotEmpty)
+          IconButton(
+            icon: const Icon(Icons.clear),
+            onPressed: () {
+              setState(() {
+                _searchController.clear();
+                _searchQuery = '';
+              });
+              _filterMatches();
+            },
+          ),
+      ],
+      bottom: TabBar(
+        controller: _tabController,
+        onTap: (_) => _onTabChanged(),
+        tabs: const [
+          Tab(icon: Icon(Icons.favorite), text: 'Active'),
+          Tab(icon: Icon(Icons.schedule), text: 'Pending'),
+          Tab(icon: Icon(Icons.all_inclusive), text: 'All'),
+        ],
+        indicatorColor: Colors.white,
+        labelColor: Colors.white,
+        unselectedLabelColor: Colors.white70,
+      ),
+    );
+  }
+
+  void _filterMatches() {
+    if (_searchQuery.isEmpty) {
+      setState(() {
+        _filteredMatches = [];
+      });
+      return;
+    }
+
+    final state = _matchBloc.state;
+    if (state is MatchesLoaded) {
+      final matches = state.matches;
+
+      setState(() {
+        _filteredMatches = matches.where((match) {
+          final query = _searchQuery.toLowerCase();
+          final matchId = match.id.toLowerCase();
+          final status = match.status.toLowerCase();
+          final compatibility = (match.compatibilityScore * 100)
+              .round()
+              .toString();
+
+          return matchId.contains(query) ||
+              status.contains(query) ||
+              compatibility.contains(query);
+        }).toList();
+      });
+    }
+  }
+
+  Widget _buildSearchNoResults() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.search_off, size: 64, color: Colors.grey[400]),
+            const SizedBox(height: 16),
+            Text(
+              'No matches found',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: Colors.grey[600],
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Try searching with different keywords',
+              style: TextStyle(fontSize: 14, color: Colors.grey[500]),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          'My Matches',
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 24,
-          ),
-        ),
-        centerTitle: true,
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        flexibleSpace: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                Theme.of(context).primaryColor,
-                Theme.of(context).primaryColor.withValues(alpha: 0.8),
-              ],
-            ),
-          ),
-        ),
-        actions: [
-          // View mode toggle
-          PopupMenuButton<MatchViewMode>(
-            icon: Icon(_getViewModeIcon()),
-            onSelected: (MatchViewMode mode) {
-              if (mounted) {
-                setState(() {
-                  _currentViewMode = mode;
-                });
-              }
-            },
-            itemBuilder: (context) => [
-              const PopupMenuItem(
-                value: MatchViewMode.list,
-                child: Row(
-                  children: [
-                    Icon(Icons.list),
-                    SizedBox(width: 8),
-                    Text('List View'),
-                  ],
-                ),
-              ),
-              const PopupMenuItem(
-                value: MatchViewMode.grid,
-                child: Row(
-                  children: [
-                    Icon(Icons.grid_view),
-                    SizedBox(width: 8),
-                    Text('Grid View'),
-                  ],
-                ),
-              ),
-              const PopupMenuItem(
-                value: MatchViewMode.slider,
-                child: Row(
-                  children: [
-                    Icon(Icons.view_carousel),
-                    SizedBox(width: 8),
-                    Text('Slider View'),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          // Sort options
-          PopupMenuButton<MatchSortBy>(
-            icon: const Icon(Icons.sort),
-            onSelected: (MatchSortBy sortBy) {
-              if (mounted) {
-                setState(() {
-                  _currentSortBy = sortBy;
-                });
-              }
-              _applySorting();
-            },
-            itemBuilder: (context) => [
-              const PopupMenuItem(
-                value: MatchSortBy.recent,
-                child: Row(
-                  children: [
-                    Icon(Icons.access_time),
-                    SizedBox(width: 8),
-                    Text('Most Recent'),
-                  ],
-                ),
-              ),
-              const PopupMenuItem(
-                value: MatchSortBy.compatibility,
-                child: Row(
-                  children: [
-                    Icon(Icons.favorite),
-                    SizedBox(width: 8),
-                    Text('Compatibility'),
-                  ],
-                ),
-              ),
-              const PopupMenuItem(
-                value: MatchSortBy.name,
-                child: Row(
-                  children: [
-                    Icon(Icons.sort_by_alpha),
-                    SizedBox(width: 8),
-                    Text('Name A-Z'),
-                  ],
-                ),
-              ),
-              const PopupMenuItem(
-                value: MatchSortBy.distance,
-                child: Row(
-                  children: [
-                    Icon(Icons.location_on),
-                    SizedBox(width: 8),
-                    Text('Distance'),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ],
-        bottom: TabBar(
-          controller: _tabController,
-          onTap: (_) => _onTabChanged(),
-          tabs: const [
-            Tab(
-              icon: Icon(Icons.favorite),
-              text: 'Active',
-            ),
-            Tab(
-              icon: Icon(Icons.schedule),
-              text: 'Pending',
-            ),
-            Tab(
-              icon: Icon(Icons.all_inclusive),
-              text: 'All',
-            ),
-          ],
-          indicatorColor: Colors.white,
-          labelColor: Colors.white,
-          unselectedLabelColor: Colors.white70,
-        ),
-      ),
+      appBar: _isSearchActive ? _buildSearchAppBar() : _buildMainAppBar(),
       body: TabBarView(
         controller: _tabController,
         children: [
@@ -341,11 +477,22 @@ class _MatchesScreenState extends State<MatchesScreen>
             return _buildEmptyState(status);
           }
 
+          // Show search results or no results found when searching
+          final displayMatches = _isSearchActive && _filteredMatches.isNotEmpty
+              ? _filteredMatches
+              : (_isSearchActive ? <MatchModel>[] : state.matches);
+
+          if (_isSearchActive &&
+              _filteredMatches.isEmpty &&
+              _searchQuery.isNotEmpty) {
+            return _buildSearchNoResults();
+          }
+
           return RefreshIndicator(
             onRefresh: () async => _loadMatches(status),
             child: Column(
               children: [
-                Expanded(child: _buildMatchesView(state.matches, status)),
+                Expanded(child: _buildMatchesView(displayMatches, status)),
                 if (_isLoadingMore)
                   const Padding(
                     padding: EdgeInsets.all(16.0),

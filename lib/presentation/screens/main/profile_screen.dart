@@ -43,6 +43,13 @@ class ProfileScreen extends StatelessWidget {
   Widget _buildHeader(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(PulseSpacing.lg),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Colors.white, PulseColors.primary.withValues(alpha: 0.02)],
+        ),
+      ),
       child: Row(
         children: [
           Text(
@@ -53,17 +60,37 @@ class ProfileScreen extends StatelessWidget {
             ),
           ),
           const Spacer(),
+          // Quick signout button
+          Container(
+            margin: const EdgeInsets.only(right: PulseSpacing.sm),
+            child: IconButton(
+              onPressed: () => _showLogoutDialog(context),
+              icon: const Icon(Icons.logout, size: 20),
+              style: IconButton.styleFrom(
+                backgroundColor: PulseColors.error.withValues(alpha: 0.1),
+                foregroundColor: PulseColors.error,
+                padding: const EdgeInsets.all(8),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(PulseRadii.sm),
+                ),
+              ),
+              tooltip: 'Quick Sign Out',
+            ),
+          ),
+          // Edit profile button
           IconButton(
             onPressed: () {
-              context.go('/profile/edit');
+              context.go('/profile-creation');
             },
             icon: const Icon(Icons.edit),
             style: IconButton.styleFrom(
-              backgroundColor: PulseColors.surfaceVariant,
+              backgroundColor: PulseColors.primary.withValues(alpha: 0.1),
+              foregroundColor: PulseColors.primary,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(PulseRadii.md),
+                borderRadius: BorderRadius.circular(PulseRadii.sm),
               ),
             ),
+            tooltip: 'Edit Profile',
           ),
         ],
       ),
@@ -71,17 +98,35 @@ class ProfileScreen extends StatelessWidget {
   }
 
   Widget _buildProfileInfo() {
-    return Padding(
-      padding: const EdgeInsets.all(PulseSpacing.lg),
+    return Container(
+      margin: const EdgeInsets.all(PulseSpacing.lg),
+      padding: const EdgeInsets.all(PulseSpacing.xl),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Colors.white, PulseColors.primary.withValues(alpha: 0.05)],
+        ),
+        borderRadius: BorderRadius.circular(PulseRadii.xl),
+        boxShadow: [
+          BoxShadow(
+            color: PulseColors.primary.withValues(alpha: 0.08),
+            blurRadius: 24,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
       child: Column(
         children: [
-          // Avatar
+          // Avatar with improved design
           Container(
             width: 120,
             height: 120,
             decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: PulseColors.primaryGradient,
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [PulseColors.primary, PulseColors.secondary],
               ),
               shape: BoxShape.circle,
               boxShadow: [
@@ -96,7 +141,7 @@ class ProfileScreen extends StatelessWidget {
           ),
           const SizedBox(height: PulseSpacing.lg),
 
-          // Name and info
+          // Name and info with better colors
           Text(
             'John Doe',
             style: PulseTextStyles.headlineMedium.copyWith(
@@ -108,31 +153,52 @@ class ProfileScreen extends StatelessWidget {
           Text(
             '25 years old • 2.5 km away',
             style: PulseTextStyles.bodyLarge.copyWith(
-              color: PulseColors.onSurfaceVariant,
+              color: PulseColors.onSurface.withValues(alpha: 0.7),
             ),
           ),
           const SizedBox(height: PulseSpacing.xl),
 
-          // Stats
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              _StatItem(
-                value: '127',
-                label: 'Matches',
-                color: PulseColors.primary,
+          // Enhanced stats with better visual hierarchy
+          Container(
+            padding: const EdgeInsets.all(PulseSpacing.lg),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.7),
+              borderRadius: BorderRadius.circular(PulseRadii.lg),
+              border: Border.all(
+                color: PulseColors.primary.withValues(alpha: 0.1),
+                width: 1,
               ),
-              _StatItem(
-                value: '89',
-                label: 'Likes',
-                color: PulseColors.success,
-              ),
-              _StatItem(
-                value: '23',
-                label: 'Visits',
-                color: PulseColors.secondary,
-              ),
-            ],
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                _StatItem(
+                  value: '127',
+                  label: 'Matches',
+                  color: PulseColors.primary,
+                ),
+                Container(
+                  width: 1,
+                  height: 40,
+                  color: PulseColors.primary.withValues(alpha: 0.1),
+                ),
+                _StatItem(
+                  value: '89',
+                  label: 'Likes',
+                  color: PulseColors.success,
+                ),
+                Container(
+                  width: 1,
+                  height: 40,
+                  color: PulseColors.primary.withValues(alpha: 0.1),
+                ),
+                _StatItem(
+                  value: '23',
+                  label: 'Visits',
+                  color: PulseColors.secondary,
+                ),
+              ],
+            ),
           ),
         ],
       ),
