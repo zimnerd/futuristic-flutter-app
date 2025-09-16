@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import '../../blocs/call/call_bloc.dart';
 import '../../theme/pulse_colors.dart';
 import '../../../domain/entities/call.dart';
 import '../../../domain/entities/user_profile.dart';
 import '../../../data/services/service_locator.dart';
+import '../common/robust_network_image.dart';
 
 /// Widget for displaying incoming call UI
 class IncomingCallWidget extends StatefulWidget {
@@ -242,16 +242,10 @@ class _IncomingCallWidgetState extends State<IncomingCallWidget>
 
   Widget _buildProfileImage(UserProfile? profile) {
     if (profile?.photos.isNotEmpty == true) {
-      return CachedNetworkImage(
+      return ProfileNetworkImage(
         imageUrl: profile!.photos.first.url,
-        fit: BoxFit.cover,
-        placeholder: (context, url) => Container(
-          color: Colors.grey[300],
-          child: const Center(
-            child: CircularProgressIndicator(),
-          ),
-        ),
-        errorWidget: (context, url, error) => _buildDefaultAvatar(),
+        size: 150, // Set appropriate size for call widget
+        userGender: profile.gender,
       );
     }
     

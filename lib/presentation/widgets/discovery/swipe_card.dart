@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import '../../../domain/entities/user_profile.dart';
 import '../../animations/pulse_animations.dart';
 import '../../screens/profile/profile_details_screen.dart';
+import '../common/robust_network_image.dart';
 
 /// Enhanced swipeable card widget with smooth animations
 /// 
@@ -431,41 +431,14 @@ class _SwipeCardState extends State<SwipeCard>
     return AnimatedSwitcher(
       duration: const Duration(milliseconds: 300),
       child: currentPhoto != null
-          ? CachedNetworkImage(
+          ? RobustNetworkImage(
               key: ValueKey(currentPhoto.url),
               imageUrl: currentPhoto.url,
               fit: BoxFit.cover,
-              placeholder: (context, url) => _buildShimmerPlaceholder(),
-              errorWidget: (context, url, error) => _buildErrorPlaceholder(),
+              width: double.infinity,
+              height: double.infinity,
             )
           : _buildErrorPlaceholder(),
-    );
-  }
-
-  /// Shimmer loading placeholder with modern design
-  Widget _buildShimmerPlaceholder() {
-    return AnimatedBuilder(
-      animation: _shimmerController,
-      builder: (context, child) {
-        return Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment(-1.0, -0.3),
-              end: Alignment(1.0, 0.3),
-              colors: [Colors.grey[200]!, Colors.grey[100]!, Colors.grey[200]!],
-              stops: [
-                _shimmerController.value - 0.3,
-                _shimmerController.value,
-                _shimmerController.value + 0.3,
-              ].map((e) => e.clamp(0.0, 1.0)).toList(),
-            ),
-          ),
-          child: const Center(
-            child: Icon(
-              Icons.image_outlined, size: 80, color: Colors.grey),
-          ),
-        );
-      },
     );
   }
 

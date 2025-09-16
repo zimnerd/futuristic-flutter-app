@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 
 import '../../../domain/entities/event.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../theme/pulse_colors.dart';
+import '../common/robust_network_image.dart';
 
 class AttendeeAvatar extends StatelessWidget {
   final EventAttendance attendance;
@@ -38,13 +38,12 @@ class AttendeeAvatar extends StatelessWidget {
         ),
         child: ClipOval(
           child: profileImageUrl != null
-              ? CachedNetworkImage(
+              ? ProfileNetworkImage(
                   imageUrl: profileImageUrl.startsWith('http') 
                       ? profileImageUrl 
                       : '${AppConstants.baseUrl}/$profileImageUrl',
-                  fit: BoxFit.cover,
-                  placeholder: (context, url) => _buildPlaceholder(),
-                  errorWidget: (context, url, error) => _buildPlaceholder(),
+                  size: size,
+                  userGender: attendance.user?['gender'] as String?,
                 )
               : _buildPlaceholder(),
         ),

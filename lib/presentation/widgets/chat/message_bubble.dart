@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:intl/intl.dart';
 
 import '../../theme/pulse_colors.dart';
 import '../../../domain/entities/message.dart';
+import '../common/robust_network_image.dart';
 
 class MessageBubble extends StatelessWidget {
   final Message message;
@@ -109,28 +109,12 @@ class MessageBubble extends StatelessWidget {
   }
 
   Widget _buildImageMessage() {
-    return ClipRRect(
+    return RobustNetworkImage(
+      imageUrl: message.content,
+      width: 200,
+      height: 200,
+      fit: BoxFit.cover,
       borderRadius: BorderRadius.circular(12),
-      child: CachedNetworkImage(
-        imageUrl: message.content,
-        width: 200,
-        height: 200,
-        fit: BoxFit.cover,
-        placeholder: (context, url) => Container(
-          width: 200,
-          height: 200,
-          color: Colors.grey[200],
-          child: const Center(
-            child: CircularProgressIndicator(),
-          ),
-        ),
-        errorWidget: (context, url, error) => Container(
-          width: 200,
-          height: 200,
-          color: Colors.grey[200],
-          child: const Icon(Icons.error),
-        ),
-      ),
     );
   }
 

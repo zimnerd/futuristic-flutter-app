@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:cached_network_image/cached_network_image.dart';
+import 'common/robust_network_image.dart';
 
 /// Enhanced swipeable card for dating profiles with gesture recognition
 /// Supports like, pass, and super like actions with smooth animations
@@ -304,19 +304,11 @@ class _SwipeableProfileCardState extends State<SwipeableProfileCard>
       children: [
         // Background image
         Positioned.fill(
-          child: CachedNetworkImage(
+          child: RobustNetworkImage(
             imageUrl: widget.profile.imageUrl,
             fit: BoxFit.cover,
-            placeholder: (context, url) => Container(
-              color: Colors.grey[300],
-              child: const Center(
-                child: CircularProgressIndicator(),
-              ),
-            ),
-            errorWidget: (context, url, error) => Container(
-              color: Colors.grey[300],
-              child: const Icon(Icons.error),
-            ),
+            width: double.infinity,
+            height: double.infinity,
           ),
         ),
         
