@@ -183,15 +183,23 @@ class PulseDatingApp extends StatelessWidget {
             ),
           ),
         ],
-        child: AutoLoginWrapper(
-          child: MaterialApp.router(
-            title: AppConstants.appName,
-            theme: PulseTheme.light,
-            darkTheme: PulseTheme.dark,
-            themeMode: ThemeMode.system,
-            debugShowCheckedModeBanner: false,
-            routerConfig: AppRouter.router,
-          ),
+        child: Builder(
+          builder: (context) {
+            // Initialize AppRouter with AuthBloc once it's available
+            final authBloc = context.read<AuthBloc>();
+            AppRouter.initialize(authBloc);
+            
+            return AutoLoginWrapper(
+              child: MaterialApp.router(
+                title: AppConstants.appName,
+                theme: PulseTheme.light,
+                darkTheme: PulseTheme.dark,
+                themeMode: ThemeMode.system,
+                debugShowCheckedModeBanner: false,
+                routerConfig: AppRouter.router,
+              ),
+            );
+          },
         ),
       ),
     );

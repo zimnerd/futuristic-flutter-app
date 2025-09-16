@@ -41,14 +41,32 @@ import '../../../features/events/presentation/screens/event_details_screen.dart'
 import '../../../features/events/presentation/screens/create_event_screen.dart';
 import '../../../features/events/presentation/screens/event_communication_screen.dart';
 
+/// Listenable adapter for AuthBloc to work with GoRouter refreshListenable
+class AuthBlocListenable extends ChangeNotifier {
+  AuthBlocListenable(this._authBloc) {
+    _authBloc.stream.listen((_) {
+      notifyListeners();
+    });
+  }
+
+  final AuthBloc _authBloc;
+}
+
 /// Application routes configuration using GoRouter
 /// Provides type-safe navigation with route guards and transitions
 class AppRouter {
-  static final GoRouter _router = GoRouter(
-    debugLogDiagnostics: kDebugMode,
-    initialLocation: AppRoutes.welcome,
-    redirect: _handleRedirect,
-    routes: [
+  static GoRouter? _router;
+  
+  /// Initialize router with AuthBloc for navigation state updates
+  static void initialize(AuthBloc authBloc) {
+    final authListenable = AuthBlocListenable(authBloc);
+    
+    _router = GoRouter(
+      debugLogDiagnostics: kDebugMode,
+      initialLocation: AppRoutes.welcome,
+      redirect: _handleRedirect,
+      refreshListenable: authListenable,
+      routes: [
       // Onboarding routes
       GoRoute(
         path: AppRoutes.welcome,
@@ -329,15 +347,17 @@ class AppRouter {
         ),
       ),
     ),
-  );
+    );
+  }
 
-  static GoRouter get router => _router;
+  static GoRouter get router => _router ?? (throw StateError('AppRouter not initialized. Call AppRouter.initialize() first.'));
 
   /// Handle route redirects based on authentication state
   static String? _handleRedirect(BuildContext context, GoRouterState state) {
     final authBloc = context.read<AuthBloc>();
     final isAuthenticated = authBloc.isAuthenticated;
     final isLoading = authBloc.isLoading;
+    final currentState = authBloc.state;
 
     final isAuthRoute =
         state.fullPath?.startsWith('/auth') == true ||
@@ -349,23 +369,40 @@ class AppRouter {
         state.fullPath == AppRoutes.welcome ||
         state.fullPath == AppRoutes.onboarding;
 
+    // Debug logging
+    debugPrint('🔄 Navigation Debug:');
+    debugPrint('  Current Path: ${state.fullPath}');
+    debugPrint('  Auth State: ${currentState.runtimeType}');
+    debugPrint('  Is Authenticated: $isAuthenticated');
+    debugPrint('  Is Loading: $isLoading');
+    debugPrint('  Is Auth Route: $isAuthRoute');
+    debugPrint('  Is Welcome Route: $isWelcomeRoute');
+
     // Don't redirect while authentication is loading
     if (isLoading) {
+      debugPrint('  ⏳ Auth loading - no redirect');
       return null;
     }
 
     // If user is authenticated and trying to access auth/welcome routes,
     // redirect to home
     if (isAuthenticated && (isAuthRoute || isWelcomeRoute)) {
+      debugPrint(
+        '  ✅ Authenticated user accessing welcome/auth route - redirecting to home',
+      );
       return AppRoutes.home;
     }
 
     // If user is not authenticated and trying to access protected routes,
     // redirect to welcome screen
     if (!isAuthenticated && !isAuthRoute && !isWelcomeRoute) {
+      debugPrint(
+        '  🚫 Unauthenticated user accessing protected route - redirecting to welcome',
+      );
       return AppRoutes.welcome;
     }
 
+    debugPrint('  ➡️ No redirect needed');
     // Allow the navigation
     return null;
   }
