@@ -71,20 +71,26 @@ class Event {
       attendeesList = (json['attendees'] as List<dynamic>)
           .map((attendee) {
             if (attendee is Map<String, dynamic>) {
-              return EventAttendance(
-                id: attendee['id'] as String? ?? '',
-                userId: attendee['id'] as String,
-                eventId: json['id'] as String,
-                status:
-                    'attending', // Default status since API doesn't provide this
-                timestamp: DateTime.now(), // Default timestamp
-                user: {
-                  'id': attendee['id'],
-                  'firstName': attendee['firstName'],
-                  'lastName': attendee['lastName'],
-                  'username': attendee['username'],
-                },
-              );
+              final attendeeId = attendee['id'] as String? ?? '';
+              final eventId = json['id'] as String? ?? '';
+
+              if (attendeeId.isNotEmpty && eventId.isNotEmpty) {
+                return EventAttendance(
+                  id: attendeeId,
+                  userId: attendeeId,
+                  eventId: eventId,
+                  status:
+                      'attending', // Default status since API doesn't provide this
+                  timestamp: DateTime.now(), // Default timestamp
+                  user: {
+                    'id': attendeeId,
+                    'firstName': attendee['firstName'] as String? ?? 'Unknown',
+                    'lastName': attendee['lastName'] as String? ?? 'User',
+                    'username':
+                        attendee['username'] as String? ?? 'unknown_user',
+                  },
+                );
+              }
             }
             return null;
           })
@@ -96,7 +102,12 @@ class Event {
     // Handle date parsing - API uses 'startTime'
     DateTime eventDate;
     try {
-      eventDate = DateTime.parse(json['startTime'] as String);
+      final startTimeStr = json['startTime'] as String?;
+      if (startTimeStr != null && startTimeStr.isNotEmpty) {
+        eventDate = DateTime.parse(startTimeStr);
+      } else {
+        eventDate = DateTime.now(); // Fallback to current time
+      }
     } catch (e) {
       eventDate = DateTime.now(); // Fallback to current time
     }
@@ -121,15 +132,15 @@ class Event {
     }
 
     return Event(
-      id: json['id'] as String,
-      title: json['title'] as String,
-      description: json['description'] as String,
-      location: json['location'] as String,
+      id: json['id'] as String? ?? '',
+      title: json['title'] as String? ?? 'Untitled Event',
+      description: json['description'] as String? ?? 'No description available',
+      location: json['location'] as String? ?? 'Location TBD',
       coordinates: eventCoordinates,
       date: eventDate,
       image: json['image'] as String?,
       category: eventCategory,
-      createdBy: json['creatorId'], // Remove explicit cast to allow null
+      createdBy: json['creatorId'] as String?, // Safe null handling
       createdAt: eventDate, // Use startTime as createdAt fallback
       attendees: attendeesList,
       isAttending: false, // Default to false, will be determined by app logic

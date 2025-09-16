@@ -258,8 +258,18 @@ class EventNetworkImage extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            eventColor.withOpacity(0.3),
-            eventColor.withOpacity(0.1),
+            Color.fromRGBO(
+              (eventColor.r * 255.0).round() & 0xff,
+              (eventColor.g * 255.0).round() & 0xff,
+              (eventColor.b * 255.0).round() & 0xff,
+              0.3,
+            ),
+            Color.fromRGBO(
+              (eventColor.r * 255.0).round() & 0xff,
+              (eventColor.g * 255.0).round() & 0xff,
+              (eventColor.b * 255.0).round() & 0xff,
+              0.1,
+            ),
           ],
         ),
         borderRadius: borderRadius,

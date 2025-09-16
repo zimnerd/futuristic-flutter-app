@@ -365,7 +365,12 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
     
     return Positioned.fill(
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 120, 16, 140),
+        padding: const EdgeInsets.fromLTRB(
+          12,
+          90,
+          12,
+          100,
+        ), // Maximized image area with minimal padding
         child: Stack(
           children: [
             // Background cards (next users)

@@ -19,7 +19,8 @@
     "webrtc",
     "glassmorphism",
     "shimmer",
-    "lottie"
+    "lottie",
+    "placemarks"
   ],
   "ignorePaths": [
     "build/**",
