@@ -65,22 +65,75 @@ class Event {
   });
 
   factory Event.fromJson(Map<String, dynamic> json) {
+    // Handle attendees array - convert from the API format to EventAttendance
+    List<EventAttendance> attendeesList = [];
+    if (json['attendees'] is List) {
+      attendeesList = (json['attendees'] as List<dynamic>)
+          .map((attendee) {
+            if (attendee is Map<String, dynamic>) {
+              return EventAttendance(
+                id: attendee['id'] as String? ?? '',
+                userId: attendee['id'] as String,
+                eventId: json['id'] as String,
+                status:
+                    'attending', // Default status since API doesn't provide this
+                timestamp: DateTime.now(), // Default timestamp
+                user: {
+                  'id': attendee['id'],
+                  'firstName': attendee['firstName'],
+                  'lastName': attendee['lastName'],
+                  'username': attendee['username'],
+                },
+              );
+            }
+            return null;
+          })
+          .where((attendee) => attendee != null)
+          .cast<EventAttendance>()
+          .toList();
+    }
+
+    // Handle date parsing - API uses 'startTime'
+    DateTime eventDate;
+    try {
+      eventDate = DateTime.parse(json['startTime'] as String);
+    } catch (e) {
+      eventDate = DateTime.now(); // Fallback to current time
+    }
+
+    // Handle coordinates - provide default if missing
+    EventCoordinates eventCoordinates;
+    if (json['coordinates'] != null) {
+      eventCoordinates = EventCoordinates.fromJson(
+        json['coordinates'] as Map<String, dynamic>,
+      );
+    } else {
+      // Default to Cape Town coordinates if missing
+      eventCoordinates = const EventCoordinates(lat: -33.9249, lng: 18.4241);
+    }
+
+    // Handle category - extract from tags array or use default
+    String eventCategory = 'general';
+    if (json['tags'] is List && (json['tags'] as List).isNotEmpty) {
+      eventCategory = json['tags'][0] as String;
+    } else if (json['category'] is String) {
+      eventCategory = json['category'] as String;
+    }
+
     return Event(
       id: json['id'] as String,
       title: json['title'] as String,
       description: json['description'] as String,
       location: json['location'] as String,
-      coordinates: EventCoordinates.fromJson(json['coordinates'] as Map<String, dynamic>),
-      date: DateTime.parse(json['date'] as String),
+      coordinates: eventCoordinates,
+      date: eventDate,
       image: json['image'] as String?,
-      category: json['category'] as String,
-      createdBy: json['createdBy'] as String?,
-      createdAt: DateTime.parse(json['createdAt'] as String),
-      attendees: (json['attendees'] as List<dynamic>?)
-          ?.map((e) => EventAttendance.fromJson(e as Map<String, dynamic>))
-          .toList() ?? [],
-      isAttending: json['isAttending'] as bool? ?? false,
-      attendeeCount: json['attendeeCount'] as int? ?? 0,
+      category: eventCategory,
+      createdBy: json['creatorId'] as String?,
+      createdAt: eventDate, // Use startTime as createdAt fallback
+      attendees: attendeesList,
+      isAttending: false, // Default to false, will be determined by app logic
+      attendeeCount: json['currentAttendees'] as int? ?? attendeesList.length,
     );
   }
 
