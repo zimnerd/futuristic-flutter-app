@@ -66,6 +66,8 @@ class PhotoGrid extends StatelessWidget {
   ) async {
     final cameraPermission = await Permission.camera.request();
 
+    if (!context.mounted) return;
+
     if (cameraPermission.isGranted) {
       final XFile? image = await picker.pickImage(
         source: ImageSource.camera,
@@ -101,6 +103,8 @@ class PhotoGrid extends StatelessWidget {
     }
 
     final permission = await galleryPermission.request();
+
+    if (!context.mounted) return;
 
     if (permission.isGranted) {
       final XFile? image = await picker.pickImage(
