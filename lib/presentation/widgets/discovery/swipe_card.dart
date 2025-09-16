@@ -300,6 +300,45 @@ class _SwipeCardState extends State<SwipeCard>
       ),
     );
   }
+
+  /// Enhanced photo section with shimmer loading and smooth transitions
+  Widget _buildEnhancedPhotoSection(ProfilePhoto? currentPhoto) {
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 300),
+      child: currentPhoto != null
+          ? RobustNetworkImage(
+              key: ValueKey(currentPhoto.url),
+              imageUrl: currentPhoto.url,
+              fit: BoxFit.cover,
+              width: double.infinity,
+              height: double.infinity,
+            )
+          : _buildErrorPlaceholder(),
+    );
+  }
+
+  /// Error placeholder with modern design
+  Widget _buildErrorPlaceholder() {
+    return Container(
+      color: Colors.grey[200],
+      child: const Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.broken_image_outlined, size: 80, color: Colors.grey),
+            SizedBox(height: 8),
+            Text(
+              'Photo unavailable',
+              style: TextStyle(color: Colors.grey, fontSize: 14),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+
+
 }
 
 /// Performance-optimized card content to minimize rebuilds
@@ -373,7 +412,47 @@ class _PerformanceOptimizedCard extends StatelessWidget {
 
               // Swipe overlay with enhanced animations  
               if (swipeProgress.abs() > 0.1)
-                _buildEnhancedSwipeOverlay(swipeDirection, swipeProgress),
+                Positioned.fill(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: _getSwipeColor(
+                        swipeDirection,
+                      ).withValues(alpha: swipeProgress.abs() * 0.2),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Center(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 16,
+                        ),
+                        decoration: BoxDecoration(
+                          color: _getSwipeColor(swipeDirection),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              _getSwipeIcon(swipeDirection),
+                              color: Colors.white,
+                              size: 28,
+                            ),
+                            const SizedBox(width: 12),
+                            Text(
+                              _getSwipeLabel(swipeDirection),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
 
               // Enhanced user info overlay with glassmorphism
               if (showDetails) buildUserInfo(),
@@ -383,105 +462,10 @@ class _PerformanceOptimizedCard extends StatelessWidget {
       ),
     );
   }
-}
-
-  /// Enhanced photo section with shimmer loading and smooth transitions
-  Widget _buildEnhancedPhotoSection(ProfilePhoto? currentPhoto) {
-    return AnimatedSwitcher(
-      duration: const Duration(milliseconds: 300),
-      child: currentPhoto != null
-          ? RobustNetworkImage(
-              key: ValueKey(currentPhoto.url),
-              imageUrl: currentPhoto.url,
-              fit: BoxFit.cover,
-              width: double.infinity,
-              height: double.infinity,
-            )
-          : _buildErrorPlaceholder(),
-    );
-  }
-
-  /// Error placeholder with modern design
-  Widget _buildErrorPlaceholder() {
-    return Container(
-      color: Colors.grey[200],
-      child: const Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.broken_image_outlined, size: 80, color: Colors.grey),
-            SizedBox(height: 8),
-            Text(
-              'Photo unavailable',
-              style: TextStyle(color: Colors.grey, fontSize: 14,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  /// Enhanced swipe overlay with smooth animations
-  Widget _buildEnhancedSwipeOverlay(SwipeDirection? direction, double progress) {
-    if (direction == null || progress.abs() < 0.1) {
-      return const SizedBox.shrink();
-    }
-
-    final opacity = (progress.abs() * 2).clamp(0.0, 1.0);
-    final scale = (1.0 + progress.abs() * 0.2).clamp(1.0, 1.2);
-    
-    return Positioned.fill(
-      child: Container(
-        decoration: BoxDecoration(
-          color: _getSwipeColor(direction).withValues(alpha: opacity * 0.2),
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Center(
-          child: Transform.scale(
-            scale: scale,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-              decoration: BoxDecoration(
-                color: _getSwipeColor(direction),
-                borderRadius: BorderRadius.circular(12),
-                boxShadow: [
-                  BoxShadow(
-                    color: _getSwipeColor(direction).withValues(alpha: 0.4),
-                    blurRadius: 16,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    _getSwipeIcon(direction),
-                    color: Colors.white,
-                    size: 28,
-                  ),
-                  const SizedBox(width: 12),
-                  Text(
-                    _getSwipeLabel(direction),
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 1.2,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
 
   /// Get swipe color based on direction
-  Color _getSwipeColor(SwipeDirection direction) {
+  Color _getSwipeColor(SwipeDirection? direction) {
+    if (direction == null) return Colors.grey;
     switch (direction) {
       case SwipeDirection.right:
         return const Color(0xFF4CAF50); // Green for like
@@ -493,7 +477,8 @@ class _PerformanceOptimizedCard extends StatelessWidget {
   }
 
   /// Get swipe icon based on direction
-  IconData _getSwipeIcon(SwipeDirection direction) {
+  IconData _getSwipeIcon(SwipeDirection? direction) {
+    if (direction == null) return Icons.help;
     switch (direction) {
       case SwipeDirection.right:
         return Icons.favorite;
@@ -505,7 +490,8 @@ class _PerformanceOptimizedCard extends StatelessWidget {
   }
 
   /// Get swipe label based on direction
-  String _getSwipeLabel(SwipeDirection direction) {
+  String _getSwipeLabel(SwipeDirection? direction) {
+    if (direction == null) return '';
     switch (direction) {
       case SwipeDirection.right:
         return 'LIKE';
