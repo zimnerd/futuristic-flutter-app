@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'dart:io';
 
 import '../../theme/pulse_colors.dart';
+import '../common/robust_network_image.dart';
 
 class PhotoGrid extends StatelessWidget {
   final List<String> photos;
@@ -266,19 +266,10 @@ class PhotoGrid extends StatelessWidget {
 
   Widget _buildImage(String photo) {
     if (photo.startsWith('http')) {
-      return CachedNetworkImage(
+      return RobustNetworkImage(
         imageUrl: photo,
         fit: BoxFit.cover,
-        placeholder: (context, url) => Container(
-          color: Colors.grey[200],
-          child: const Center(
-            child: CircularProgressIndicator(),
-          ),
-        ),
-        errorWidget: (context, url, error) => Container(
-          color: Colors.grey[200],
-          child: const Icon(Icons.error),
-        ),
+        borderRadius: BorderRadius.circular(12),
       );
     } else {
       return Image.file(

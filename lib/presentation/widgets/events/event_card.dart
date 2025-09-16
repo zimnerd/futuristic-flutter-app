@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:intl/intl.dart';
 
 import '../../../domain/entities/event.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../theme/pulse_colors.dart';
+import '../common/robust_network_image.dart';
 
 class EventCard extends StatelessWidget {
   final Event event;
@@ -138,46 +138,18 @@ class EventCard extends StatelessWidget {
           ],
         ),
       ),
-      child: event.image != null
-          ? ClipRRect(
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-              child: CachedNetworkImage(
-                imageUrl: event.image!.startsWith('http') 
-                    ? event.image! 
-                    : '${AppConstants.baseUrl}/${event.image}',
-                fit: BoxFit.cover,
-                placeholder: (context, url) => Container(
-                  color: PulseColors.surface,
-                  child: Center(
-                    child: CircularProgressIndicator(
-                      color: PulseColors.primary,
-                      strokeWidth: 2,
-                    ),
-                  ),
-                ),
-                errorWidget: (context, url, error) => _buildPlaceholderImage(),
-              ),
-            )
-          : _buildPlaceholderImage(),
-    );
-  }
-
-  Widget _buildPlaceholderImage() {
-    return Container(
-      decoration: BoxDecoration(
+      child: ClipRRect(
         borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-        gradient: LinearGradient(
-          colors: [
-            PulseColors.primary.withValues(alpha: 0.2),
-            PulseColors.secondary.withValues(alpha: 0.2),
-          ],
-        ),
-      ),
-      child: Center(
-        child: Icon(
-          _getCategoryIcon(),
-          size: 48,
-          color: PulseColors.primary,
+        child: EventNetworkImage(
+          imageUrl: event.image != null
+              ? (event.image!.startsWith('http')
+                    ? event.image! 
+                    : '${AppConstants.baseUrl}/${event.image}')
+              : null,
+          width: double.infinity,
+          height: 200,
+          eventCategory: event.category,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
         ),
       ),
     );
@@ -302,32 +274,5 @@ class EventCard extends StatelessWidget {
         elevation: 0,
       ),
     );
-  }
-
-  IconData _getCategoryIcon() {
-    switch (event.category) {
-      case EventCategories.music:
-        return Icons.music_note;
-      case EventCategories.sports:
-        return Icons.sports_soccer;
-      case EventCategories.food:
-        return Icons.restaurant;
-      case EventCategories.drinks:
-        return Icons.local_bar;
-      case EventCategories.culture:
-        return Icons.palette;
-      case EventCategories.outdoors:
-        return Icons.nature;
-      case EventCategories.networking:
-        return Icons.people;
-      case EventCategories.education:
-        return Icons.school;
-      case EventCategories.wellness:
-        return Icons.spa;
-      case EventCategories.social:
-        return Icons.group;
-      default:
-        return Icons.event;
-    }
   }
 }

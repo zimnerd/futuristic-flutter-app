@@ -129,7 +129,7 @@ class Event {
       date: eventDate,
       image: json['image'] as String?,
       category: eventCategory,
-      createdBy: json['creatorId'] as String?,
+      createdBy: json['creatorId'], // Remove explicit cast to allow null
       createdAt: eventDate, // Use startTime as createdAt fallback
       attendees: attendeesList,
       isAttending: false, // Default to false, will be determined by app logic
