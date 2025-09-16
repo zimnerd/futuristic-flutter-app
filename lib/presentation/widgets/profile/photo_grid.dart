@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:device_info_plus/device_info_plus.dart';
 import 'dart:io';
 
 import '../../theme/pulse_colors.dart';
@@ -41,15 +43,7 @@ class PhotoGrid extends StatelessWidget {
               title: const Text('Take Photo'),
               onTap: () async {
                 Navigator.pop(context);
-                final XFile? image = await picker.pickImage(
-                  source: ImageSource.camera,
-                  maxWidth: 1080,
-                  maxHeight: 1080,
-                  imageQuality: 80,
-                );
-                if (image != null) {
-                  _addPhoto(image.path);
-                }
+                await _requestCameraPermissionAndPick(context, picker);
               },
             ),
             ListTile(
@@ -57,19 +51,108 @@ class PhotoGrid extends StatelessWidget {
               title: const Text('Choose from Gallery'),
               onTap: () async {
                 Navigator.pop(context);
-                final XFile? image = await picker.pickImage(
-                  source: ImageSource.gallery,
-                  maxWidth: 1080,
-                  maxHeight: 1080,
-                  imageQuality: 80,
-                );
-                if (image != null) {
-                  _addPhoto(image.path);
-                }
+                await _requestGalleryPermissionAndPick(context, picker);
               },
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Future<void> _requestCameraPermissionAndPick(
+    BuildContext context,
+    ImagePicker picker,
+  ) async {
+    final cameraPermission = await Permission.camera.request();
+
+    if (cameraPermission.isGranted) {
+      final XFile? image = await picker.pickImage(
+        source: ImageSource.camera,
+        maxWidth: 1080,
+        maxHeight: 1080,
+        imageQuality: 80,
+      );
+      if (image != null) {
+        _addPhoto(image.path);
+      }
+    } else if (cameraPermission.isDenied) {
+      _showPermissionDeniedDialog(context);
+    } else if (cameraPermission.isPermanentlyDenied) {
+      _showPermissionPermanentlyDeniedDialog(context);
+    }
+  }
+
+  Future<void> _requestGalleryPermissionAndPick(
+    BuildContext context,
+    ImagePicker picker,
+  ) async {
+    Permission galleryPermission;
+
+    if (Platform.isAndroid) {
+      final androidInfo = await DeviceInfoPlugin().androidInfo;
+      if (androidInfo.version.sdkInt >= 33) {
+        galleryPermission = Permission.photos;
+      } else {
+        galleryPermission = Permission.storage;
+      }
+    } else {
+      galleryPermission = Permission.photos;
+    }
+
+    final permission = await galleryPermission.request();
+
+    if (permission.isGranted) {
+      final XFile? image = await picker.pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 1080,
+        maxHeight: 1080,
+        imageQuality: 80,
+      );
+      if (image != null) {
+        _addPhoto(image.path);
+      }
+    } else if (permission.isDenied) {
+      _showPermissionDeniedDialog(context);
+    } else if (permission.isPermanentlyDenied) {
+      _showPermissionPermanentlyDeniedDialog(context);
+    }
+  }
+
+  void _showPermissionDeniedDialog(BuildContext context) {
+    // Show a simple snackbar for permission denied
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text(
+          'Permission denied. Please grant camera/photos access to upload photos.',
+        ),
+        backgroundColor: Colors.red,
+      ),
+    );
+  }
+
+  void _showPermissionPermanentlyDeniedDialog(BuildContext context) {
+    // Show dialog with option to open app settings
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Permission Required'),
+        content: const Text(
+          'To upload photos, please grant camera and photo library access in your device settings.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              openAppSettings();
+            },
+            child: const Text('Open Settings'),
+          ),
+        ],
       ),
     );
   }
