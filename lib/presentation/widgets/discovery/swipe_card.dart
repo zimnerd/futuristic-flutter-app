@@ -1,9 +1,93 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+
 import '../../../domain/entities/user_profile.dart';
 import '../../animations/pulse_animations.dart';
 import '../../screens/profile/profile_details_screen.dart';
 import '../common/robust_network_image.dart';
+
+// Animation durations for consistent timing
+class _SwipeCardConstants {
+  static const Duration photoAnimationDuration = Duration(milliseconds: 800);
+  static const Duration overlayAnimationDuration = Duration(milliseconds: 600);
+  static const Duration actionAnimationDuration = Duration(milliseconds: 400);
+  static const Duration shimmerAnimationDuration = Duration(milliseconds: 1500);
+  static const Duration enterDelayDuration = Duration(milliseconds: 100);
+  static const Duration overlayDelayDuration = Duration(milliseconds: 200);
+  static const Duration photoSwitchDuration = Duration(milliseconds: 300);
+  static const Duration routeTransitionDuration = Duration(milliseconds: 300);
+  static const Duration routeReverseTransitionDuration = Duration(
+    milliseconds: 250,
+  );
+
+  // Scale animation values
+  static const double scaleBegin = 0.8;
+  static const double scaleEnd = 1.0;
+
+  // Swipe progress threshold
+  static const double swipeProgressThreshold = 0.1;
+
+  // UI dimensions
+  static const double cardBorderRadius = 20.0;
+  static const double photoIndicatorHeight = 3.0;
+  static const double photoIndicatorSpacing = 4.0;
+  static const double photoIndicatorRadius = 1.5;
+  static const double userInfoHorizontalPadding = 20.0;
+  static const double userInfoVerticalPadding = 16.0;
+  static const double swipeOverlayHorizontalPadding = 24.0;
+  static const double swipeOverlayVerticalPadding = 16.0;
+  static const double swipeOverlayBorderRadius = 12.0;
+  static const double swipeIconSize = 28.0;
+  static const double swipeIconSpacing = 12.0;
+
+  // Colors with opacity
+  static const double overlayMaxOpacity = 0.2;
+  static const double indicatorActiveOpacity = 1.0;
+  static const double indicatorInactiveOpacity = 0.3;
+
+  // Swipe colors
+  static const Color likeColor = Color(0xFF4CAF50);
+  static const Color nopeColor = Color(0xFFFF5722);
+  static const Color superLikeColor = Color(0xFF2196F3);
+}
+
+/// Swipe direction configuration
+class _SwipeConfig {
+  const _SwipeConfig({
+    required this.color,
+    required this.icon,
+    required this.label,
+  });
+
+  final Color color;
+  final IconData icon;
+  final String label;
+
+  static const Map<SwipeDirection, _SwipeConfig> configs = {
+    SwipeDirection.right: _SwipeConfig(
+      color: _SwipeCardConstants.likeColor,
+      icon: Icons.favorite,
+      label: 'LIKE',
+    ),
+    SwipeDirection.left: _SwipeConfig(
+      color: _SwipeCardConstants.nopeColor,
+      icon: Icons.close,
+      label: 'NOPE',
+    ),
+    SwipeDirection.up: _SwipeConfig(
+      color: _SwipeCardConstants.superLikeColor,
+      icon: Icons.star,
+      label: 'SUPER LIKE',
+    ),
+  };
+
+  static const _SwipeConfig? Function(SwipeDirection?) getConfig =
+      _getConfigImpl;
+
+  static _SwipeConfig? _getConfigImpl(SwipeDirection? direction) {
+    return direction != null ? configs[direction] : null;
+  }
+}
 
 /// Enhanced swipeable card widget with optimized performance
 /// 
@@ -67,28 +151,29 @@ class _SwipeCardState extends State<SwipeCard>
     
     // Enhanced animation controllers for smooth micro-interactions
     _photoController = AnimationController(
-      duration: const Duration(milliseconds: 800),
+      duration: _SwipeCardConstants.photoAnimationDuration,
       vsync: this,
     );
 
     _overlayController = AnimationController(
-      duration: const Duration(milliseconds: 600),
+      duration: _SwipeCardConstants.overlayAnimationDuration,
       vsync: this,
     );
 
     _actionController = AnimationController(
-      duration: const Duration(milliseconds: 400),
+      duration: _SwipeCardConstants.actionAnimationDuration,
       vsync: this,
     );
 
     _shimmerController = AnimationController(
-      duration: const Duration(milliseconds: 1500),
+      duration: _SwipeCardConstants.shimmerAnimationDuration,
       vsync: this,
     )..repeat();
 
     // Create smooth animations with enhanced curves
     _scaleAnimation = Tween<double>(
-      begin: 0.8, end: 1.0,
+          begin: _SwipeCardConstants.scaleBegin,
+          end: _SwipeCardConstants.scaleEnd,
     ).animate(CurvedAnimation(
       parent: _photoController,
         curve: PulseCurves.easeOutQuart,
@@ -99,10 +184,10 @@ class _SwipeCardState extends State<SwipeCard>
   }
 
   void _startEnterAnimation() {
-    Future.delayed(const Duration(milliseconds: 100), () {
+    Future.delayed(_SwipeCardConstants.enterDelayDuration, () {
       if (mounted) {
         _photoController.forward();
-        Future.delayed(const Duration(milliseconds: 200), () {
+        Future.delayed(_SwipeCardConstants.overlayDelayDuration, () {
           if (mounted) {
             _overlayController.forward();
           }
@@ -144,128 +229,16 @@ class _SwipeCardState extends State<SwipeCard>
             child: child,
           );
         },
-        transitionDuration: const Duration(milliseconds: 300),
-        reverseTransitionDuration: const Duration(milliseconds: 250),
-      ),
-    );
-  }
-
-  Widget _buildPhotoIndicators() {
-    if (widget.user.photos.length <= 1) return const SizedBox.shrink();
-    
-    return Positioned(
-      top: 16,
-      left: 16,
-      right: 16,
-      child: Row(
-        children: List.generate(
-          widget.user.photos.length,
-          (index) => Expanded(
-            child: Container(
-              height: 3,
-              margin: EdgeInsets.only(
-                right: index < widget.user.photos.length - 1 ? 4 : 0,
-              ),
-              decoration: BoxDecoration(
-                color: index == _currentPhotoIndex 
-                    ? Colors.white 
-                    : Colors.white.withValues(alpha: 0.3),
-                borderRadius: BorderRadius.circular(1.5),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  /// Build user information overlay with glassmorphism
-  Widget _buildUserInfo() {
-    return Positioned(
-      bottom: 0,
-      left: 0,
-      right: 0,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Color.fromRGBO(0, 0, 0, 0),
-              Color.fromRGBO(0, 0, 0, 0.8),
-            ],
-          ),
-          borderRadius: BorderRadius.only(
-            bottomLeft: Radius.circular(20),
-            bottomRight: Radius.circular(20),
-          ),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    '${widget.user.name}, ${widget.user.age}',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-                if (widget.user.isVerified)
-                  const Icon(
-                    Icons.verified,
-                    color: Colors.blue,
-                    size: 20,
-                  ),
-              ],
-            ),
-            if (widget.user.bio.isNotEmpty) ...[
-              const SizedBox(height: 4),
-              Text(
-                widget.user.bio,
-                style: const TextStyle(
-                  color: Colors.white70,
-                  fontSize: 14,
-                ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ],
-            if (widget.user.distanceKm != null) ...[
-              const SizedBox(height: 4),
-              Row(
-                children: [
-                  const Icon(
-                    Icons.location_on,
-                    color: Colors.white70,
-                    size: 14,
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
-                    widget.user.distanceString,
-                    style: const TextStyle(
-                      color: Colors.white70,
-                      fontSize: 12,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ],
-        ),
+        transitionDuration: _SwipeCardConstants.routeTransitionDuration,
+        reverseTransitionDuration:
+            _SwipeCardConstants.routeReverseTransitionDuration,
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final currentPhoto = widget.user.photos.isNotEmpty 
+    final currentPhoto = widget.user.photos.isNotEmpty
         ? widget.user.photos[_currentPhotoIndex]
         : null;
     
@@ -288,11 +261,17 @@ class _SwipeCardState extends State<SwipeCard>
                   _showProfileDetails();
                 }
               },
-              buildEnhancedPhotoSection: () => _buildEnhancedPhotoSection(currentPhoto),
-              buildPhotoIndicators: _buildPhotoIndicators,
-              buildUserInfo: _buildUserInfo,
-              swipeProgress: widget.swipeProgress,
-              swipeDirection: widget.swipeDirection,
+              buildEnhancedPhotoSection: () =>
+                  _buildEnhancedPhotoSection(currentPhoto),
+              photoIndicators: _PhotoIndicators(
+                photoCount: widget.user.photos.length,
+                currentIndex: _currentPhotoIndex,
+              ),
+              userInfoOverlay: _UserInfoOverlay(user: widget.user),
+              swipeOverlay: _SwipeOverlay(
+                swipeProgress: widget.swipeProgress,
+                swipeDirection: widget.swipeDirection,
+              ),
               showDetails: widget.showDetails,
             ),
           );
@@ -304,7 +283,7 @@ class _SwipeCardState extends State<SwipeCard>
   /// Enhanced photo section with shimmer loading and smooth transitions
   Widget _buildEnhancedPhotoSection(ProfilePhoto? currentPhoto) {
     return AnimatedSwitcher(
-      duration: const Duration(milliseconds: 300),
+      duration: _SwipeCardConstants.photoSwitchDuration,
       child: currentPhoto != null
           ? RobustNetworkImage(
               key: ValueKey(currentPhoto.url),
@@ -336,9 +315,217 @@ class _SwipeCardState extends State<SwipeCard>
       ),
     );
   }
+}
 
+/// User information overlay widget with glassmorphism effect
+class _UserInfoOverlay extends StatelessWidget {
+  const _UserInfoOverlay({required this.user});
 
+  final UserProfile user;
 
+  @override
+  Widget build(BuildContext context) {
+    return Positioned(
+      bottom: 0,
+      left: 0,
+      right: 0,
+      child: Container(
+        padding: EdgeInsets.symmetric(
+          horizontal: _SwipeCardConstants.userInfoHorizontalPadding,
+          vertical: _SwipeCardConstants.userInfoVerticalPadding,
+        ),
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Color.fromRGBO(0, 0, 0, 0),
+              Color.fromRGBO(0, 0, 0, 0.8),
+            ],
+          ),
+          borderRadius: BorderRadius.only(
+            bottomLeft: Radius.circular(_SwipeCardConstants.cardBorderRadius),
+            bottomRight: Radius.circular(_SwipeCardConstants.cardBorderRadius),
+          ),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    '${user.name}, ${user.age}',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                if (user.isVerified)
+                  const Icon(
+                    Icons.verified,
+                    color: Colors.blue,
+                    size: 20,
+                  ),
+              ],
+            ),
+            if (user.bio.isNotEmpty) ...[
+              const SizedBox(height: 4),
+              Text(
+                user.bio,
+                style: const TextStyle(
+                  color: Colors.white70,
+                  fontSize: 14,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+            if (user.distanceKm != null) ...[
+              const SizedBox(height: 4),
+              Row(
+                children: [
+                  const Icon(
+                    Icons.location_on,
+                    color: Colors.white70,
+                    size: 14,
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    user.distanceString,
+                    style: const TextStyle(
+                      color: Colors.white70,
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Photo indicators widget for multiple photos
+class _PhotoIndicators extends StatelessWidget {
+  const _PhotoIndicators({
+    required this.photoCount,
+    required this.currentIndex,
+  });
+
+  final int photoCount;
+  final int currentIndex;
+
+  @override
+  Widget build(BuildContext context) {
+    if (photoCount <= 1) return const SizedBox.shrink();
+    
+    return Positioned(
+      top: 16,
+      left: 16,
+      right: 16,
+      child: Row(
+        children: List.generate(
+          photoCount,
+          (index) => Expanded(
+            child: Container(
+              height: _SwipeCardConstants.photoIndicatorHeight,
+              margin: EdgeInsets.only(
+                right: index < photoCount - 1
+                    ? _SwipeCardConstants.photoIndicatorSpacing
+                    : 0,
+              ),
+              decoration: BoxDecoration(
+                color: index == currentIndex
+                    ? Colors.white.withValues(
+                        alpha: _SwipeCardConstants.indicatorActiveOpacity,
+                      )
+                    : Colors.white.withValues(
+                        alpha: _SwipeCardConstants.indicatorInactiveOpacity,
+                      ),
+                borderRadius: BorderRadius.circular(
+                  _SwipeCardConstants.photoIndicatorRadius,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Swipe overlay widget with direction-based styling
+class _SwipeOverlay extends StatelessWidget {
+  const _SwipeOverlay({
+    required this.swipeProgress,
+    required this.swipeDirection,
+  });
+
+  final double swipeProgress;
+  final SwipeDirection? swipeDirection;
+
+  @override
+  Widget build(BuildContext context) {
+    // Early return for better performance
+    if (swipeProgress.abs() <= _SwipeCardConstants.swipeProgressThreshold) {
+      return const SizedBox.shrink();
+    }
+
+    final config = _SwipeConfig.getConfig(swipeDirection);
+    if (config == null) return const SizedBox.shrink();
+
+    return Positioned.fill(
+      child: Container(
+        decoration: BoxDecoration(
+          color: config.color.withValues(
+            alpha: swipeProgress.abs() * _SwipeCardConstants.overlayMaxOpacity,
+          ),
+          borderRadius: BorderRadius.circular(
+            _SwipeCardConstants.cardBorderRadius,
+          ),
+        ),
+        child: Center(
+          child: Container(
+            padding: EdgeInsets.symmetric(
+              horizontal: _SwipeCardConstants.swipeOverlayHorizontalPadding,
+              vertical: _SwipeCardConstants.swipeOverlayVerticalPadding,
+            ),
+            decoration: BoxDecoration(
+              color: config.color,
+              borderRadius: BorderRadius.circular(
+                _SwipeCardConstants.swipeOverlayBorderRadius,
+              ),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  config.icon,
+                  color: Colors.white,
+                  size: _SwipeCardConstants.swipeIconSize,
+                ),
+                SizedBox(width: _SwipeCardConstants.swipeIconSpacing),
+                Text(
+                  config.label,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 /// Performance-optimized card content to minimize rebuilds
@@ -349,10 +536,9 @@ class _PerformanceOptimizedCard extends StatelessWidget {
     required this.actionController,
     required this.onTap,
     required this.buildEnhancedPhotoSection,
-    required this.buildPhotoIndicators,
-    required this.buildUserInfo,
-    required this.swipeProgress,
-    required this.swipeDirection,
+    required this.photoIndicators,
+    required this.userInfoOverlay,
+    required this.swipeOverlay,
     required this.showDetails,
   });
 
@@ -361,15 +547,16 @@ class _PerformanceOptimizedCard extends StatelessWidget {
   final AnimationController actionController;
   final VoidCallback onTap;
   final Widget Function() buildEnhancedPhotoSection;
-  final Widget Function() buildPhotoIndicators;
-  final Widget Function() buildUserInfo;
-  final double swipeProgress;
-  final SwipeDirection? swipeDirection;
+  final Widget photoIndicators;
+  final Widget userInfoOverlay;
+  final Widget swipeOverlay;
   final bool showDetails;
 
   // Pre-calculated decorations for better performance
   static const _cardDecoration = BoxDecoration(
-    borderRadius: BorderRadius.all(Radius.circular(20)),
+    borderRadius: BorderRadius.all(
+      Radius.circular(_SwipeCardConstants.cardBorderRadius),
+    ),
     boxShadow: [
       BoxShadow(
         color: Color.fromRGBO(0, 0, 0, 0.15),
@@ -399,7 +586,9 @@ class _PerformanceOptimizedCard extends StatelessWidget {
       child: Container(
         decoration: _cardDecoration,
         child: ClipRRect(
-          borderRadius: const BorderRadius.all(Radius.circular(20)),
+          borderRadius: BorderRadius.all(
+            Radius.circular(_SwipeCardConstants.cardBorderRadius),
+          ),
           child: Stack(
             children: [
               // Enhanced photo background with shimmer loading
@@ -408,54 +597,13 @@ class _PerformanceOptimizedCard extends StatelessWidget {
               ),
 
               // Photo indicators with smooth transitions
-              buildPhotoIndicators(),
+              photoIndicators,
 
               // Swipe overlay with enhanced animations  
-              if (swipeProgress.abs() > 0.1)
-                Positioned.fill(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: _getSwipeColor(
-                        swipeDirection,
-                      ).withValues(alpha: swipeProgress.abs() * 0.2),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Center(
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 24,
-                          vertical: 16,
-                        ),
-                        decoration: BoxDecoration(
-                          color: _getSwipeColor(swipeDirection),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              _getSwipeIcon(swipeDirection),
-                              color: Colors.white,
-                              size: 28,
-                            ),
-                            const SizedBox(width: 12),
-                            Text(
-                              _getSwipeLabel(swipeDirection),
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
+              swipeOverlay,
 
               // Enhanced user info overlay with glassmorphism
-              if (showDetails) buildUserInfo(),
+              if (showDetails) userInfoOverlay,
             ],
           ),
         ),
@@ -463,44 +611,6 @@ class _PerformanceOptimizedCard extends StatelessWidget {
     );
   }
 
-  /// Get swipe color based on direction
-  Color _getSwipeColor(SwipeDirection? direction) {
-    if (direction == null) return Colors.grey;
-    switch (direction) {
-      case SwipeDirection.right:
-        return const Color(0xFF4CAF50); // Green for like
-      case SwipeDirection.left:
-        return const Color(0xFFFF5722); // Red for nope  
-      case SwipeDirection.up:
-        return const Color(0xFF2196F3); // Blue for super like
-    }
-  }
-
-  /// Get swipe icon based on direction
-  IconData _getSwipeIcon(SwipeDirection? direction) {
-    if (direction == null) return Icons.help;
-    switch (direction) {
-      case SwipeDirection.right:
-        return Icons.favorite;
-      case SwipeDirection.left:
-        return Icons.close;
-      case SwipeDirection.up:
-        return Icons.star;
-    }
-  }
-
-  /// Get swipe label based on direction
-  String _getSwipeLabel(SwipeDirection? direction) {
-    if (direction == null) return '';
-    switch (direction) {
-      case SwipeDirection.right:
-        return 'LIKE';
-      case SwipeDirection.left:
-        return 'NOPE';
-      case SwipeDirection.up:
-        return 'SUPER LIKE';
-    }
-  }
 }
 
 /// Direction of swipe gesture
