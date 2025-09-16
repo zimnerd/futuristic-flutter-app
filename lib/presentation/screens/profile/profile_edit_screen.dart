@@ -30,6 +30,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
   String _selectedGender = 'Woman';
   String _selectedPreference = 'Men';
   List<String> _photos = [];
+  bool _hasPopulatedFields = false;
 
   /// Gets the current user ID from the AuthBloc state
   String? get _currentUserId {
@@ -207,9 +208,12 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
             );
           }
 
-          if (state.profile != null) {
+          if (state.profile != null && !_hasPopulatedFields) {
             WidgetsBinding.instance.addPostFrameCallback((_) {
               _populateFields(state.profile!);
+              setState(() {
+                _hasPopulatedFields = true;
+              });
             });
           }
 

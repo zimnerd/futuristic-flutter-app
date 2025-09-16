@@ -37,7 +37,7 @@ import '../../../domain/entities/user_profile.dart';
 import '../../../domain/entities/event.dart';
 // Events screens
 import '../screens/events/events_screen.dart';
-import '../../../features/events/presentation/screens/event_details_screen.dart';
+import '../screens/events/event_details_screen.dart';
 import '../../../features/events/presentation/screens/create_event_screen.dart';
 import '../../../features/events/presentation/screens/event_communication_screen.dart';
 
