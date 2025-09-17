@@ -151,7 +151,7 @@ class ApiConstants {
       '$travelPlanning/plans'; // POST /:planId/bookings
 
   // Speed Dating endpoints (speed-dating.controller.ts)
-  static const String speedDating = '/speed-dating';
+  static const String speedDating = '/api/v1/speed-dating';
   static const String speedDatingSessions = '$speedDating/sessions';
   static const String speedDatingJoin = '$speedDating/join';
   static const String speedDatingResults = '$speedDating/results';
@@ -161,7 +161,7 @@ class ApiConstants {
   // ================================
 
   // Safety endpoints (safety.controller.ts)
-  static const String safety = '/safety';
+  static const String safety = '/api/v1/safety';
   static const String safetyReports = '$safety/reports';
   static const String safetyReportUser = '$safetyReports/user';
   static const String safetyReportContent = '$safetyReports/content';

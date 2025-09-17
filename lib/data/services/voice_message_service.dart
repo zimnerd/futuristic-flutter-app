@@ -147,9 +147,10 @@ class VoiceMessageService {
 
       // Upload the voice message file
       final response = await _apiClient.post(
-        '/api/messages/$conversationId/voice',
+        '/api/v1/voice-messages',
         data: FormData.fromMap({
-          'voiceMessage': await MultipartFile.fromFile(filePath),
+          'audio': await MultipartFile.fromFile(filePath),
+          'conversationId': conversationId,
           'duration': duration?.toString() ?? '0',
         }),
       );
@@ -222,8 +223,8 @@ class VoiceMessageService {
   /// Mark voice message as played
   Future<bool> markAsPlayed(String messageId) async {
     try {
-      final response = await _apiClient.patch(
-        '/api/messages/$messageId/played',
+      final response = await _apiClient.put(
+        '/api/v1/voice-messages/$messageId/play',
         data: {'isPlayed': true},
       );
 
@@ -244,7 +245,7 @@ class VoiceMessageService {
   Future<List<VoiceMessage>> getVoiceMessages(String conversationId) async {
     try {
       final response = await _apiClient.get(
-        '/api/conversations/$conversationId/voice-messages',
+        '/api/v1/voice-messages/conversation/$conversationId',
       );
 
       if (response.statusCode == 200 && response.data != null) {

@@ -20,7 +20,7 @@ class DatePlanningService {
   }) async {
     try {
       final response = await _apiClient.post(
-        '/api/date-planning/suggestions',
+        '/api/v1/date-planning/suggestions',
         data: {
           'matchId': matchId,
           'location': location,
@@ -57,7 +57,7 @@ class DatePlanningService {
   }) async {
     try {
       final response = await _apiClient.post(
-        '/api/date-planning/plan',
+        '/api/v1/date-planning/plan',
         data: {
           'matchId': matchId,
           'venue': venue,
@@ -85,7 +85,7 @@ class DatePlanningService {
   Future<bool> acceptDateInvitation(String dateId) async {
     try {
       final response = await _apiClient.post(
-        '/api/date-planning/accept',
+        '/api/v1/date-planning/accept',
         data: {
           'dateId': dateId,
           'acceptedAt': DateTime.now().toIso8601String(),
@@ -109,7 +109,7 @@ class DatePlanningService {
   Future<bool> declineDateInvitation(String dateId, {String? reason}) async {
     try {
       final response = await _apiClient.post(
-        '/api/date-planning/decline',
+        '/api/v1/date-planning/decline',
         data: {
           'dateId': dateId,
           'reason': reason,
@@ -138,7 +138,7 @@ class DatePlanningService {
   }) async {
     try {
       final response = await _apiClient.post(
-        '/api/date-planning/reschedule',
+        '/api/v1/date-planning/reschedule',
         data: {
           'dateId': dateId,
           'newDateTime': newDateTime.toIso8601String(),
@@ -164,7 +164,7 @@ class DatePlanningService {
   Future<bool> cancelDate(String dateId, {String? reason}) async {
     try {
       final response = await _apiClient.post(
-        '/api/date-planning/cancel',
+        '/api/v1/date-planning/cancel',
         data: {
           'dateId': dateId,
           'reason': reason,
@@ -188,7 +188,7 @@ class DatePlanningService {
   /// Get upcoming dates
   Future<List<Map<String, dynamic>>> getUpcomingDates() async {
     try {
-      final response = await _apiClient.get('/api/date-planning/upcoming');
+      final response = await _apiClient.get('/api/v1/date-planning/upcoming');
 
       if (response.statusCode == 200 && response.data != null) {
         final List<dynamic> data = response.data['dates'] ?? [];
@@ -213,7 +213,7 @@ class DatePlanningService {
   }) async {
     try {
       final response = await _apiClient.get(
-        '/api/date-planning/history',
+        '/api/v1/date-planning/history',
         queryParameters: {
           'page': page.toString(),
           'limit': limit.toString(),
@@ -245,7 +245,7 @@ class DatePlanningService {
   }) async {
     try {
       final response = await _apiClient.post(
-        '/api/date-planning/rate',
+        '/api/v1/date-planning/rate',
         data: {
           'dateId': dateId,
           'rating': rating,
@@ -277,7 +277,7 @@ class DatePlanningService {
   }) async {
     try {
       final response = await _apiClient.get(
-        '/api/date-planning/venues',
+        '/api/v1/date-planning/venues',
         queryParameters: {
           'latitude': latitude.toString(),
           'longitude': longitude.toString(),
@@ -311,7 +311,7 @@ class DatePlanningService {
   }) async {
     try {
       final response = await _apiClient.post(
-        '/api/date-planning/ideas',
+        '/api/v1/date-planning/ideas',
         data: {
           'interests': interests ?? [],
           'season': season,

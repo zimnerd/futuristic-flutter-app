@@ -18,7 +18,7 @@ class AiCompanionService {
   }) async {
     try {
       final response = await _apiClient.post(
-        '/api/ai-companion/create',
+        '/api/v1/ai-companions',
         data: {
           'name': name,
           'personality': personality.name,
@@ -44,7 +44,7 @@ class AiCompanionService {
   /// Get user's AI companions
   Future<List<AICompanion>> getUserCompanions() async {
     try {
-      final response = await _apiClient.get('/api/ai-companion/my-companions');
+      final response = await _apiClient.get('/api/v1/ai-companions');
 
       if (response.statusCode == 200 && response.data != null) {
         final List<dynamic> data = response.data['companions'] ?? [];
@@ -65,7 +65,9 @@ class AiCompanionService {
   /// Get specific AI companion
   Future<AICompanion?> getCompanion(String companionId) async {
     try {
-      final response = await _apiClient.get('/api/ai-companion/$companionId');
+      final response = await _apiClient.get(
+        '/api/v1/ai-companions/$companionId',
+      );
 
       if (response.statusCode == 200 && response.data != null) {
         final companion = AICompanion.fromJson(response.data!);
@@ -97,7 +99,7 @@ class AiCompanionService {
       if (customPrompt != null) updateData['customPrompt'] = customPrompt;
 
       final response = await _apiClient.put(
-        '/api/ai-companion/$companionId',
+        '/api/v1/ai-companions/$companionId',
         data: updateData,
       );
 
@@ -118,7 +120,9 @@ class AiCompanionService {
   /// Delete AI companion
   Future<bool> deleteCompanion(String companionId) async {
     try {
-      final response = await _apiClient.delete('/api/ai-companion/$companionId');
+      final response = await _apiClient.delete(
+        '/api/v1/ai-companions/$companionId',
+      );
 
       if (response.statusCode == 200) {
         _logger.d('AI companion deleted successfully: $companionId');
@@ -142,7 +146,7 @@ class AiCompanionService {
   }) async {
     try {
       final response = await _apiClient.post(
-        '/api/ai-companion/$companionId/message',
+        '/api/v1/ai-companions/$companionId/message',
         data: {
           'message': message,
           'messageType': messageType.name,
@@ -173,7 +177,7 @@ class AiCompanionService {
   }) async {
     try {
       final response = await _apiClient.get(
-        '/api/ai-companion/$companionId/conversation',
+        '/api/v1/ai-companions/$companionId/conversation',
         queryParameters: {
           'page': page.toString(),
           'limit': limit.toString(),
@@ -199,7 +203,9 @@ class AiCompanionService {
   /// Get AI companion analytics
   Future<CompanionAnalytics?> getCompanionAnalytics(String companionId) async {
     try {
-      final response = await _apiClient.get('/api/ai-companion/$companionId/analytics');
+      final response = await _apiClient.get(
+        '/api/v1/ai-companions/$companionId/analytics',
+      );
 
       if (response.statusCode == 200 && response.data != null) {
         final analytics = CompanionAnalytics.fromJson(response.data!);
@@ -223,7 +229,7 @@ class AiCompanionService {
   }) async {
     try {
       final response = await _apiClient.post(
-        '/api/ai-companion/$companionId/advice',
+        '/api/v1/ai-companions/$companionId/advice',
         data: {
           'situation': situation,
           'context': context,
@@ -249,7 +255,7 @@ class AiCompanionService {
   Future<List<String>> getProfileOptimizationTips(String companionId) async {
     try {
       final response = await _apiClient.post(
-        '/api/ai-companion/$companionId/profile-tips',
+        '/api/v1/ai-companions/$companionId/profile-tips',
         data: {'requestType': 'profile_optimization'},
       );
 
@@ -277,7 +283,7 @@ class AiCompanionService {
   }) async {
     try {
       final response = await _apiClient.post(
-        '/api/ai-companion/$companionId/conversation-starters',
+        '/api/v1/ai-companions/$companionId/conversation-starters',
         data: {
           'matchProfile': matchProfile,
           'context': context,
@@ -309,7 +315,7 @@ class AiCompanionService {
   }) async {
     try {
       final response = await _apiClient.post(
-        '/api/ai-companion/$companionId/suggest-response',
+        '/api/v1/ai-companions/$companionId/suggest-response',
         data: {
           'receivedMessage': receivedMessage,
           'conversationContext': conversationContext,
@@ -340,7 +346,7 @@ class AiCompanionService {
   }) async {
     try {
       final response = await _apiClient.post(
-        '/api/ai-companion/$companionId/feedback',
+        '/api/v1/ai-companions/$companionId/feedback',
         data: {
           'messageId': messageId,
           'feedbackType': feedbackType.name,
@@ -365,7 +371,9 @@ class AiCompanionService {
   /// Get AI companion settings
   Future<CompanionSettings?> getCompanionSettings(String companionId) async {
     try {
-      final response = await _apiClient.get('/api/ai-companion/$companionId/settings');
+      final response = await _apiClient.get(
+        '/api/v1/ai-companions/$companionId/settings',
+      );
 
       if (response.statusCode == 200 && response.data != null) {
         final settings = CompanionSettings.fromJson(response.data!);
@@ -388,7 +396,7 @@ class AiCompanionService {
   }) async {
     try {
       final response = await _apiClient.put(
-        '/api/ai-companion/$companionId/settings',
+        '/api/v1/ai-companions/$companionId/settings',
         data: settings.toJson(),
       );
 
@@ -408,7 +416,9 @@ class AiCompanionService {
   /// Get available companion personalities
   Future<List<CompanionPersonality>> getAvailablePersonalities() async {
     try {
-      final response = await _apiClient.get('/api/ai-companion/personalities');
+      final response = await _apiClient.get(
+        '/api/v1/ai-companions/personalities',
+      );
 
       if (response.statusCode == 200 && response.data != null) {
         final List<dynamic> data = response.data['personalities'] ?? [];

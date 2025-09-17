@@ -12,7 +12,7 @@ class VirtualGiftService {
   /// Get all available virtual gifts
   Future<List<VirtualGift>> getAvailableGifts() async {
     try {
-      final response = await _apiClient.get('/api/gifts/available');
+      final response = await _apiClient.get('/api/v1/virtual-gifts/catalog');
 
       if (response.statusCode == 200 && response.data != null) {
         final List<dynamic> data = response.data['gifts'] ?? [];
@@ -34,7 +34,7 @@ class VirtualGiftService {
   Future<List<VirtualGift>> getGiftsByCategory(GiftCategory category) async {
     try {
       final response = await _apiClient.get(
-        '/api/gifts/category/${category.name}',
+        '/api/v1/virtual-gifts/category/${category.name}',
       );
 
       if (response.statusCode == 200 && response.data != null) {
@@ -62,7 +62,7 @@ class VirtualGiftService {
   }) async {
     try {
       final response = await _apiClient.post(
-        '/api/gifts/send',
+        '/api/v1/virtual-gifts/send',
         data: {
           'recipientId': recipientId,
           'giftId': giftId,
@@ -92,7 +92,7 @@ class VirtualGiftService {
   }) async {
     try {
       final response = await _apiClient.get(
-        '/api/gifts/received',
+        '/api/v1/virtual-gifts/transactions',
         queryParameters: {
           'page': page.toString(),
           'limit': limit.toString(),
@@ -122,7 +122,7 @@ class VirtualGiftService {
   }) async {
     try {
       final response = await _apiClient.get(
-        '/api/gifts/sent',
+        '/api/v1/virtual-gifts/transactions',
         queryParameters: {
           'page': page.toString(),
           'limit': limit.toString(),
@@ -149,7 +149,7 @@ class VirtualGiftService {
   Future<bool> thankForGift(String transactionId, String message) async {
     try {
       final response = await _apiClient.post(
-        '/api/gifts/thank',
+        '/api/v1/virtual-gifts/transactions/$transactionId/receive',
         data: {
           'transactionId': transactionId,
           'thankYouMessage': message,
@@ -173,7 +173,7 @@ class VirtualGiftService {
   Future<GiftTransaction?> getGiftTransaction(String transactionId) async {
     try {
       final response = await _apiClient.get(
-        '/api/gifts/transaction/$transactionId',
+        '/api/v1/virtual-gifts/transactions/$transactionId',
       );
 
       if (response.statusCode == 200 && response.data != null) {
@@ -193,7 +193,7 @@ class VirtualGiftService {
   /// Get user's gift statistics
   Future<Map<String, dynamic>?> getUserGiftStats() async {
     try {
-      final response = await _apiClient.get('/api/gifts/stats');
+      final response = await _apiClient.get('/api/v1/virtual-gifts/stats');
 
       if (response.statusCode == 200 && response.data != null) {
         final stats = {
@@ -222,7 +222,7 @@ class VirtualGiftService {
   Future<bool> markGiftNotificationAsRead(String transactionId) async {
     try {
       final response = await _apiClient.patch(
-        '/api/gifts/notification/$transactionId/read',
+        '/api/v1/virtual-gifts/notification/$transactionId/read',
         data: {'isRead': true},
       );
 
@@ -243,7 +243,7 @@ class VirtualGiftService {
   Future<List<VirtualGift>> getPopularGifts({int limit = 10}) async {
     try {
       final response = await _apiClient.get(
-        '/api/gifts/popular',
+        '/api/v1/virtual-gifts/popular',
         queryParameters: {'limit': limit.toString()},
       );
 
@@ -270,7 +270,7 @@ class VirtualGiftService {
   }) async {
     try {
       final response = await _apiClient.get(
-        '/api/gifts/activity',
+        '/api/v1/virtual-gifts/activity',
         queryParameters: {
           'page': page.toString(),
           'limit': limit.toString(),
