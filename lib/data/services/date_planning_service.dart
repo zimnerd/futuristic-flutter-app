@@ -185,7 +185,8 @@ class DatePlanningService {
       final response = await _apiClient.get('/date-planning/plans');
 
       if (response.statusCode == 200 && response.data != null) {
-        final List<dynamic> data = response.data['plans'] ?? response.data['dates'] ?? [];
+        final List<dynamic> data =
+            response.data['plans'] ?? response.data['dates'] ?? [];
         final dates = data.map((date) => Map<String, dynamic>.from(date)).toList();
         
         _logger.d('Retrieved ${dates.length} upcoming dates');
