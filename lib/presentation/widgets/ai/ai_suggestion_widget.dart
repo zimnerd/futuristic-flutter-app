@@ -101,16 +101,16 @@ class _AiSuggestionWidgetState extends State<AiSuggestionWidget>
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              Colors.white.withOpacity(0.1),
-              Colors.white.withOpacity(0.05),
+              Colors.white.withValues(alpha: 0.1),
+              Colors.white.withValues(alpha: 0.05),
             ],
           ),
           border: Border.all(
-            color: Colors.white.withOpacity(0.2),
+            color: Colors.white.withValues(alpha: 0.2),
           ),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF6E3BFF).withOpacity(0.1),
+              color: const Color(0xFF6E3BFF).withValues(alpha: 0.1),
               blurRadius: 10,
               offset: const Offset(0, 5),
             ),
@@ -148,7 +148,7 @@ class _AiSuggestionWidgetState extends State<AiSuggestionWidget>
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(0xFF6E3BFF).withOpacity(0.3),
+                        color: const Color(0xFF6E3BFF).withValues(alpha: 0.3),
                         blurRadius: 8,
                         spreadRadius: 0,
                       ),
@@ -193,7 +193,7 @@ class _AiSuggestionWidgetState extends State<AiSuggestionWidget>
                       ),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(8),
-                        color: const Color(0xFF6E3BFF).withOpacity(0.2),
+                        color: const Color(0xFF6E3BFF).withValues(alpha: 0.2),
                       ),
                       child: const Text(
                         'AI Generated',
@@ -233,7 +233,7 @@ class _AiSuggestionWidgetState extends State<AiSuggestionWidget>
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(8),
-        color: color.withOpacity(0.2),
+        color: color.withValues(alpha: 0.2),
       ),
       child: Text(
         '${confidence.round()}%',
@@ -253,7 +253,7 @@ class _AiSuggestionWidgetState extends State<AiSuggestionWidget>
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(8),
-          color: Colors.black.withOpacity(0.2),
+          color: Colors.black.withValues(alpha: 0.2),
         ),
         child: Text(
           widget.suggestion,
@@ -298,9 +298,9 @@ class _AiSuggestionWidgetState extends State<AiSuggestionWidget>
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(8),
-                color: Colors.orange.withOpacity(0.1),
+                color: Colors.orange.withValues(alpha: 0.1),
                 border: Border.all(
-                  color: Colors.orange.withOpacity(0.3),
+                  color: Colors.orange.withValues(alpha: 0.3),
                 ),
               ),
               child: Text(
@@ -326,7 +326,7 @@ class _AiSuggestionWidgetState extends State<AiSuggestionWidget>
           bottomLeft: Radius.circular(16),
           bottomRight: Radius.circular(16),
         ),
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
       ),
       child: Row(
         children: [
@@ -350,7 +350,7 @@ class _AiSuggestionWidgetState extends State<AiSuggestionWidget>
             icon: const Icon(Icons.copy_rounded, size: 18),
             tooltip: 'Copy',
             style: IconButton.styleFrom(
-              backgroundColor: Colors.white.withOpacity(0.1),
+              backgroundColor: Colors.white.withValues(alpha: 0.1),
               foregroundColor: Colors.white70,
             ),
           ),
@@ -360,7 +360,7 @@ class _AiSuggestionWidgetState extends State<AiSuggestionWidget>
             icon: const Icon(Icons.close_rounded, size: 18),
             tooltip: 'Dismiss',
             style: IconButton.styleFrom(
-              backgroundColor: Colors.white.withOpacity(0.1),
+              backgroundColor: Colors.white.withValues(alpha: 0.1),
               foregroundColor: Colors.white70,
             ),
           ),
@@ -499,9 +499,9 @@ class CompactAiSuggestion extends StatelessWidget {
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(12),
-          color: Colors.white.withOpacity(0.1),
+          color: Colors.white.withValues(alpha: 0.1),
           border: Border.all(
-            color: Colors.white.withOpacity(0.2),
+            color: Colors.white.withValues(alpha: 0.2),
           ),
         ),
         child: Row(

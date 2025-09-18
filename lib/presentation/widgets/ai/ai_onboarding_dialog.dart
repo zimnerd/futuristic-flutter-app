@@ -87,10 +87,10 @@ class _AiOnboardingDialogState extends State<AiOnboardingDialog>
         height: MediaQuery.of(context).size.height * 0.8,
         margin: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: Colors.black.withOpacity(0.9),
+          color: Colors.black.withValues(alpha: 0.9),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: Colors.white.withOpacity(0.2),
+            color: Colors.white.withValues(alpha: 0.2),
             width: 1,
           ),
         ),
@@ -313,10 +313,10 @@ class _AiOnboardingDialogState extends State<AiOnboardingDialog>
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: Colors.white.withOpacity(0.1),
+          color: Colors.white.withValues(alpha: 0.1),
           width: 1,
         ),
       ),
@@ -348,8 +348,8 @@ class _AiOnboardingDialogState extends State<AiOnboardingDialog>
             value: value,
             onChanged: onChanged,
             activeColor: Colors.cyan,
-            activeTrackColor: Colors.cyan.withOpacity(0.3),
-            inactiveTrackColor: Colors.grey.withOpacity(0.3),
+            activeTrackColor: Colors.cyan.withValues(alpha: 0.3),
+            inactiveTrackColor: Colors.grey.withValues(alpha: 0.3),
           ),
         ],
       ),

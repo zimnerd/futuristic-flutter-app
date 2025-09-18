@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:logger/logger.dart';
 import 'package:pulse_dating_app/data/models/ai_profile_models.dart';
 import 'package:pulse_dating_app/domain/entities/user_profile.dart';
 import 'package:pulse_dating_app/core/network/api_client.dart';
@@ -13,6 +14,7 @@ class AiProfileAnalysisService {
   AiProfileAnalysisService._();
 
   final ApiClient _apiClient = ApiClient.instance;
+  final Logger logger = Logger();
 
   /// Get AI-powered profile analysis from backend
   Future<AiProfileAnalysisResponse?> analyzeProfile({
@@ -32,7 +34,7 @@ class AiProfileAnalysisService {
         throw Exception('Failed to analyze profile: ${response.statusMessage}');
       }
     } catch (e) {
-      print('Error analyzing profile: $e');
+      logger.e('Error analyzing profile: $e');
       rethrow;
     }
   }
@@ -146,7 +148,7 @@ class AiProfileAnalysisService {
         );
       }
     } catch (e) {
-      print('Error getting profile suggestions: $e');
+      logger.e('Error getting profile suggestions: $e');
       rethrow;
     }
   }
@@ -169,7 +171,7 @@ class AiProfileAnalysisService {
         throw Exception('Failed to analyze photos: ${response.statusMessage}');
       }
     } catch (e) {
-      print('Error analyzing photos: $e');
+      logger.e('Error analyzing photos: $e');
       rethrow;
     }
   }
@@ -195,7 +197,7 @@ class AiProfileAnalysisService {
         );
       }
     } catch (e) {
-      print('Error getting compatibility assessment: $e');
+      logger.e('Error getting compatibility assessment: $e');
       rethrow;
     }
   }

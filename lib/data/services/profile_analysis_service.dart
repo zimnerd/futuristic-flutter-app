@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'package:logger/logger.dart';
+
 import '../models/user_profile.dart';
 import 'ai_preferences_service.dart';
 import '../../core/services/service_locator.dart';
@@ -9,6 +11,7 @@ class ProfileAnalysisService {
   static ProfileAnalysisService get instance => _instance ??= ProfileAnalysisService._();
   ProfileAnalysisService._();
 
+  final Logger logger = Logger();
   AiPreferencesService get _preferencesService => ServiceLocator.instance.aiPreferences;
 
   /// Analyze a match's profile for conversation starters
@@ -55,7 +58,7 @@ class ProfileAnalysisService {
         ..sort((a, b) => b.confidence.compareTo(a.confidence))
         ..take(10).toList();
     } catch (e) {
-      print('Error analyzing profile for conversation: $e');
+      logger.e('Error analyzing profile for conversation: $e');
       return [];
     }
   }
