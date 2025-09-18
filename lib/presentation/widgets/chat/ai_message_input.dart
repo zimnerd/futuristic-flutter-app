@@ -352,7 +352,7 @@ class _AiMessageInputState extends State<AiMessageInput>
   }
 
   Widget _buildLoadingIndicator() {
-    return Container(
+    return SizedBox(
       height: 60,
       child: Center(
         child: Row(

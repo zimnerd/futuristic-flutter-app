@@ -19,7 +19,7 @@ class _AiFeaturesDemoState extends State<AiFeaturesDemo>
   late AnimationController _fadeController;
   late Animation<double> _fadeAnimation;
   
-  String _lastReceivedMessage = "Hey! How are you doing today? 😊";
+  final String _lastReceivedMessage = "Hey! How are you doing today? 😊";
 
   @override
   void initState() {

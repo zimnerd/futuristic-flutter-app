@@ -199,7 +199,7 @@ class _AiSettingsScreenState extends State<AiSettingsScreen>
                     onChanged: (value) {
                       context.read<AiPreferencesBloc>().add(SetAiEnabled(value));
                     },
-                    activeColor: Colors.cyan,
+                    activeThumbColor: Colors.cyan,
                     activeTrackColor: Colors.cyan.withValues(alpha: 0.3),
                     inactiveTrackColor: Colors.grey.withValues(alpha: 0.3),
                   ),
