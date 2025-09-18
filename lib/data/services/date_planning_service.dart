@@ -2,8 +2,7 @@ import 'package:logger/logger.dart';
 import '../../core/network/api_client.dart';
 
 /// Service for date planning and suggestions
-/// TODO: Backend module needs to be created for date-planning features
-/// Currently using placeholder endpoints - requires backend implementation
+/// Uses production backend date-planning module endpoints
 class DatePlanningService {
   final ApiClient _apiClient;
   final Logger _logger = Logger();
@@ -67,7 +66,7 @@ class DatePlanningService {
       );
 
       if (response.statusCode == 200 && response.data != null) {
-        _logger.d('Successfully planned date: ${response.data['dateId']}');
+        _logger.d('Successfully planned date: ${response.data['id'] ?? response.data['dateId']}');
         return response.data;
       } else {
         _logger.e('Failed to plan date: ${response.statusMessage}');
@@ -160,10 +159,6 @@ class DatePlanningService {
     try {
       final response = await _apiClient.delete(
         '/date-planning/plans/$dateId',
-        data: {
-          'dateId': dateId,
-          if (reason != null) 'reason': reason,
-        },
       );
 
       if (response.statusCode == 200) {
@@ -185,8 +180,7 @@ class DatePlanningService {
       final response = await _apiClient.get('/date-planning/plans');
 
       if (response.statusCode == 200 && response.data != null) {
-        final List<dynamic> data =
-            response.data['plans'] ?? response.data['dates'] ?? [];
+        final List<dynamic> data = response.data['items'] ?? response.data['plans'] ?? response.data['dates'] ?? [];
         final dates = data.map((date) => Map<String, dynamic>.from(date)).toList();
         
         _logger.d('Retrieved ${dates.length} upcoming dates');
@@ -209,14 +203,10 @@ class DatePlanningService {
     try {
       final response = await _apiClient.get(
         '/date-planning/plans/history',
-        queryParameters: {
-          'page': page.toString(),
-          'limit': limit.toString(),
-        },
       );
 
       if (response.statusCode == 200 && response.data != null) {
-        final List<dynamic> data = response.data['dates'] ?? [];
+        final List<dynamic> data = response.data['items'] ?? response.data['dates'] ?? [];
         final dates = data.map((date) => Map<String, dynamic>.from(date)).toList();
         
         _logger.d('Retrieved ${dates.length} date history records');
