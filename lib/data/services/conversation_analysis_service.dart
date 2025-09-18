@@ -1,6 +1,5 @@
 import 'dart:async';
 import '../models/conversation_analysis.dart';
-import '../models/compatibility_analysis.dart';
 import '../models/user_profile.dart';
 import '../models/message.dart';
 
@@ -156,16 +155,38 @@ class ConversationAnalysisService {
     
     final overall = (communicationStyle + interests + values + humor + pace) / 5;
     
+    // Determine compatibility level based on overall score
+    CompatibilityLevel level = CompatibilityLevel.incompatible;
+    if (overall >= 0.9)
+      level = CompatibilityLevel.excellent;
+    else if (overall >= 0.8)
+      level = CompatibilityLevel.high;
+    else if (overall >= 0.7)
+      level = CompatibilityLevel.good;
+    else if (overall >= 0.6)
+      level = CompatibilityLevel.moderate;
+    else if (overall >= 0.4)
+      level = CompatibilityLevel.low;
+    
     return CompatibilityScore(
-      overall: overall,
-      communicationStyle: communicationStyle,
-      interests: interests,
-      values: values,
-      humor: humor,
-      pace: pace,
-      explanation: _generateCompatibilityExplanation(
-        overall, communicationStyle, interests, values, humor, pace
+      overallScore: overall,
+      personalityMatch: humor,
+      communicationStyleMatch: communicationStyle,
+      interestAlignment: interests,
+      valuesCompatibility: values,
+      strengthAreas: _getStrengthAreas(
+        overall,
+        communicationStyle,
+        interests,
+        values,
       ),
+      potentialChallenges: _getPotentialChallenges(
+        overall,
+        communicationStyle,
+        interests,
+        values,
+      ),
+      level: level,
     );
   }
 
@@ -247,7 +268,7 @@ class ConversationAnalysisService {
     }
     
     // Compatibility insights
-    if (compatibility.overall > 0.7) {
+    if (compatibility.overallScore > 0.7) {
       insights.add(ConversationInsight(
         type: InsightType.compatibility,
         title: 'Great Compatibility!',
@@ -431,8 +452,32 @@ class ConversationAnalysisService {
   double _assessHumorCompatibility(List<Message> messages) => 0.8;
   double _assessConversationPaceCompatibility(List<Message> messages) => 0.7;
 
-  String _generateCompatibilityExplanation(double overall, double comm, double interests, double values, double humor, double pace) {
-    return 'You have strong compatibility with great communication style and shared interests.';
+  List<String> _getStrengthAreas(
+    double overall,
+    double comm,
+    double interests,
+    double values,
+  ) {
+    final areas = <String>[];
+    if (comm > 0.7) areas.add('Communication style');
+    if (interests > 0.7) areas.add('Shared interests');
+    if (values > 0.7) areas.add('Similar values');
+    if (overall > 0.8) areas.add('Overall compatibility');
+    return areas.isEmpty ? ['Building rapport'] : areas;
+  }
+
+  List<String> _getPotentialChallenges(
+    double overall,
+    double comm,
+    double interests,
+    double values,
+  ) {
+    final challenges = <String>[];
+    if (comm < 0.5) challenges.add('Communication differences');
+    if (interests < 0.5) challenges.add('Different interests');
+    if (values < 0.5) challenges.add('Value misalignment');
+    if (overall < 0.6) challenges.add('Overall compatibility needs work');
+    return challenges.isEmpty ? ['Minor style differences'] : challenges;
   }
 
   Future<List<RedFlag>> _detectInappropriateContent(String text) async => [];

@@ -49,12 +49,7 @@ class SmartConversationAssistant {
           'conversation_analysis',
         );
         AiErrorHandler.logError(errorResult);
-
-        if (errorResult.shouldFallbackToMock) {
-          return _getMockAnalysisResponse(conversationId);
-        } else {
-          return null;
-        }
+        return null;
       }
     } catch (e) {
       // Use enhanced error handling
@@ -63,13 +58,7 @@ class SmartConversationAssistant {
         'conversation_analysis',
       );
       AiErrorHandler.logError(errorResult);
-
-      // Fallback to mock data based on error type
-      if (errorResult.shouldFallbackToMock) {
-        return _getMockAnalysisResponse(conversationId);
-      } else {
-        return null;
-      }
+      return null;
     }
   }
 
@@ -156,10 +145,55 @@ class SmartConversationAssistant {
     int maxSuggestions = 3,
   }) async {
     try {
-      // Mock suggestions for development - replace with actual API call
-      return _getMockSuggestions(maxSuggestions);
+      // Convert recent messages to strings for API
+      final messageStrings = recentMessages.map((m) {
+        final senderName = m.sender?.firstName ?? 'User';
+        return '$senderName: ${m.content}';
+      }).toList();
+
+      final response = await _apiClient.post(
+        '/ai/response-suggestions',
+        data: {
+          'conversationId': conversationId,
+          'lastMessage': messageStrings.join('\n'),
+          'tone': 'friendly',
+          'count': maxSuggestions,
+        },
+      );
+
+      if (response.statusCode == 200 && response.data != null) {
+        final suggestions =
+            response.data['suggestions'] as List<dynamic>? ?? [];
+        return suggestions
+            .asMap()
+            .entries
+            .map(
+              (entry) => AiConversationSuggestion(
+                id: 'suggestion_${entry.key}',
+                type: 'reply',
+                content: entry.value.toString(),
+                reasoning:
+                    'AI-generated response suggestion based on conversation context',
+                confidence: 0.8,
+                tags: const ['ai-generated', 'response'],
+                category: 'response',
+              ),
+            )
+            .toList();
+      } else {
+        final errorResult = AiErrorHandler.handleError(
+          'API returned status ${response.statusCode}',
+          'conversation_suggestions',
+        );
+        AiErrorHandler.logError(errorResult);
+        return _getEmergencySuggestions(maxSuggestions);
+      }
     } catch (e) {
-      print('Error getting conversation suggestions: $e');
+      final errorResult = AiErrorHandler.handleError(
+        e,
+        'conversation_suggestions',
+      );
+      AiErrorHandler.logError(errorResult);
       return _getEmergencySuggestions(maxSuggestions);
     }
   }
@@ -172,10 +206,45 @@ class SmartConversationAssistant {
     required UserProfile matchProfile,
   }) async {
     try {
-      // Mock revival plan for development - replace with actual API call
-      return _getMockRevivalPlan();
+      // Use conversation starters endpoint for revival suggestions
+      final response = await _apiClient.post(
+        '/ai/conversation-starters',
+        data: {
+          'targetUserId': matchProfile.id,
+          'style': 'revival',
+          'includeQuestion': true,
+          'referencePoint': 'previous_conversation',
+        },
+      );
+
+      if (response.statusCode == 200 && response.data != null) {
+        final messages = response.data['messages'] as List<dynamic>? ?? [];
+
+        return AiConversationRevivalPlan(
+          planId: 'revival_$conversationId',
+          strategy: 'Restart conversation with personalized approach',
+          suggestedMessages: messages.map((m) => m.toString()).toList(),
+          topicsToExplore: const [
+            'shared interests',
+            'recent activities',
+            'future plans',
+          ],
+          reasoning:
+              'AI-generated revival strategy based on conversation history and user compatibility',
+          successProbability: 0.75,
+          timeToAct: 'within 24-48 hours',
+        );
+      } else {
+        final errorResult = AiErrorHandler.handleError(
+          'API returned status ${response.statusCode}',
+          'revival_plan',
+        );
+        AiErrorHandler.logError(errorResult);
+        return null;
+      }
     } catch (e) {
-      print('Error creating revival plan: $e');
+      final errorResult = AiErrorHandler.handleError(e, 'revival_plan');
+      AiErrorHandler.logError(errorResult);
       return null;
     }
   }
@@ -187,112 +256,43 @@ class SmartConversationAssistant {
     List<Message>? conversationHistory,
   }) async {
     try {
-      // Mock compatibility insights for development - replace with actual API call
-      return _getMockCompatibilityInsights();
+      final response = await _apiClient.post(
+        '/ai/compatibility-insights',
+        data: {
+          'targetUserId': matchProfile.id,
+          'conversationHistory':
+              conversationHistory
+                  ?.map((m) => '${m.sender?.firstName ?? 'User'}: ${m.content}')
+                  .toList() ??
+              [],
+        },
+      );
+
+      if (response.statusCode == 200 && response.data != null) {
+        final insights = response.data['insights'] as List<dynamic>? ?? [];
+        return insights.asMap().entries.map((entry) => AiCompatibilityInsight(
+          type: 'strength',
+          category: 'communication',
+          insight: entry.value.toString(),
+          impact: 0.7,
+          evidence: const ['conversation analysis', 'profile compatibility'],
+        )).toList();
+      } else {
+        final errorResult = AiErrorHandler.handleError(
+          'API returned status ${response.statusCode}',
+          'compatibility_insights',
+        );
+        AiErrorHandler.logError(errorResult);
+        return [];
+      }
     } catch (e) {
-      print('Error getting compatibility insights: $e');
+      final errorResult = AiErrorHandler.handleError(
+        e,
+        'compatibility_insights',
+      );
+      AiErrorHandler.logError(errorResult);
       return [];
     }
-  }
-
-  // Mock data for development
-
-  AiConversationAnalysisResponse _getMockAnalysisResponse(String conversationId) {
-    return AiConversationAnalysisResponse(
-      requestId: 'mock_request_$conversationId',
-      health: AiConversationHealth(
-        status: 'healthy',
-        score: 0.8,
-        concerns: [],
-        strengths: ['Good engagement', 'Balanced participation'],
-        summary: 'Conversation is progressing well with positive engagement',
-      ),
-      metrics: AiConversationMetrics(
-        messageCount: 15,
-        engagementScore: 0.8,
-        responseTimeScore: 0.7,
-        topicDiversityScore: 0.6,
-        emotionalConnectionScore: 0.75,
-        dominantTopics: ['travel', 'hobbies', 'lifestyle'],
-        sentimentAnalysis: {'positive': 0.8, 'neutral': 0.15, 'negative': 0.05},
-      ),
-      suggestions: _getMockSuggestions(3),
-      compatibilityInsights: _getMockCompatibilityInsights(),
-      confidence: 0.85,
-      generatedAt: DateTime.now(),
-    );
-  }
-
-  List<AiConversationSuggestion> _getMockSuggestions(int maxSuggestions) {
-    final suggestions = [
-      AiConversationSuggestion(
-        id: 'suggestion_1',
-        type: 'question',
-        content: "What's your favorite travel destination?",
-        reasoning: 'Both users mentioned loving travel',
-        confidence: 0.9,
-        tags: ['travel', 'interests'],
-      ),
-      AiConversationSuggestion(
-        id: 'suggestion_2',
-        type: 'topic_change',
-        content: "Tell me about your weekend plans",
-        reasoning: 'Natural conversation progression',
-        confidence: 0.8,
-        tags: ['casual', 'plans'],
-      ),
-      AiConversationSuggestion(
-        id: 'suggestion_3',
-        type: 'reply',
-        content: "I love your sense of humor!",
-        reasoning: 'User has shown appreciation for humor',
-        confidence: 0.7,
-        tags: ['compliment', 'personality'],
-      ),
-    ];
-    
-    return suggestions.take(maxSuggestions).toList();
-  }
-
-  AiConversationRevivalPlan _getMockRevivalPlan() {
-    return AiConversationRevivalPlan(
-      planId: 'revival_plan_1',
-      strategy: 'light_topic',
-      suggestedMessages: [
-        'Hope you\'re having a great week! 😊',
-        'I saw something that reminded me of our conversation about travel...',
-      ],
-      topicsToExplore: ['weekend plans', 'favorite foods', 'music preferences'],
-      reasoning: 'Conversation slowed down, suggest a light topic to re-engage',
-      successProbability: 0.8,
-      timeToAct: '2-4 hours',
-    );
-  }
-
-    List<AiCompatibilityInsight> _getMockCompatibilityInsights() {
-    return [
-      AiCompatibilityInsight(
-        type: 'strength',
-        category: 'communication',
-        insight: 'Both users prefer casual, friendly conversation',
-        impact: 0.9,
-        evidence: ['Similar response styles', 'Shared humor appreciation'],
-      ),
-      AiCompatibilityInsight(
-        type: 'strength',
-        category: 'interests',
-        insight: 'Common interests in travel and outdoor activities',
-        impact: 0.85,
-        evidence: ['Both mentioned travel', 'Outdoor activity preferences'],
-      ),
-      AiCompatibilityInsight(
-        type: 'concern',
-        category: 'communication',
-        insight: 'Noticeable difference in typical response times',
-        impact: -0.3,
-        evidence: ['Response time patterns', 'Online activity differences'],
-      ),
-    ];
   }
 
   List<AiConversationSuggestion> _getEmergencySuggestions(int maxSuggestions) {

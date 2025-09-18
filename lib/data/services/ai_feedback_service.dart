@@ -203,11 +203,37 @@ class AiFeedbackService {
     DateTime? endDate,
   }) async {
     try {
-      // For now, return mock data. Real API integration will come later
-      return _getMockFeedbackHistory(userId);
+      // Use analytics API to get user behavior data that includes feedback
+      final response = await _apiClient.get(
+        '/analytics/user/behavior',
+        queryParameters: {
+          'timeframe': 'month',
+          'includeEvents': 'ai_feedback',
+          if (featureType != null) 'featureType': featureType,
+          if (limit != null) 'limit': limit.toString(),
+          if (startDate != null) 'startDate': startDate.toIso8601String(),
+          if (endDate != null) 'endDate': endDate.toIso8601String(),
+        },
+      );
+
+      if (response.statusCode == 200 && response.data != null) {
+        final data = response.data as Map<String, dynamic>;
+        final events = data['events'] as List? ?? [];
+
+        // Filter for feedback events and transform to expected format
+        final feedbackHistory = events
+            .where((event) => event['type'] == 'ai_feedback')
+            .map((event) => Map<String, dynamic>.from(event))
+            .toList();
+
+        return feedbackHistory;
+      } else {
+        print('Failed to get feedback history: ${response.statusCode}');
+        return [];
+      }
     } catch (e) {
       print('Error getting feedback history: $e');
-      return null;
+      return [];
     }
   }
 
@@ -216,8 +242,34 @@ class AiFeedbackService {
     required String userId,
   }) async {
     try {
-      // For now, return mock data. Real API integration will come later
-      return _getMockFeedbackAnalytics();
+      // Use analytics API to get engagement metrics that include feedback data
+      final response = await _apiClient.get(
+        '/analytics/engagement',
+        queryParameters: {
+          'timeframe': 'month',
+          'includeMetrics': 'ai_feedback,satisfaction,ratings',
+        },
+      );
+
+      if (response.statusCode == 200 && response.data != null) {
+        final data = response.data as Map<String, dynamic>;
+
+        // Transform analytics data to feedback-specific format
+        return {
+          'summary': {
+            'totalFeedbacks': data['totalInteractions'] ?? 0,
+            'averageRating': data['averageRating'] ?? 0.0,
+            'positivePercentage': data['positivePercentage'] ?? 0.0,
+            'responseRate': data['responseRate'] ?? 0.0,
+          },
+          'byFeature': data['byFeature'] ?? {},
+          'trends': data['trends'] ?? {},
+          'topImprovements': data['suggestions'] ?? [],
+        };
+      } else {
+        print('Failed to get feedback analytics: ${response.statusCode}');
+        return null;
+      }
     } catch (e) {
       print('Error getting feedback analytics: $e');
       return null;
@@ -286,61 +338,5 @@ class AiFeedbackService {
   void _logFeedbackSubmission(String category, String featureType, int rating) {
     print('Feedback logged: $category.$featureType - Rating: $rating');
     // Could expand this to send to analytics service
-  }
-
-  /// Mock feedback history for development
-  List<Map<String, dynamic>> _getMockFeedbackHistory(String userId) {
-    return [
-      {
-        'id': 'feedback_1',
-        'type': 'conversation_ai_feedback',
-        'featureType': 'suggestion',
-        'ratings': {'overall': 4, 'helpfulness': 5, 'accuracy': 4},
-        'comment': 'Really helpful conversation starter!',
-        'timestamp': DateTime.now().subtract(const Duration(days: 2)).toIso8601String(),
-      },
-      {
-        'id': 'feedback_2',
-        'type': 'profile_ai_feedback',
-        'featureType': 'analysis',
-        'ratings': {'overall': 5, 'relevance': 5, 'usefulness': 4},
-        'comment': 'Spot-on analysis of my profile',
-        'timestamp': DateTime.now().subtract(const Duration(days: 5)).toIso8601String(),
-      },
-      {
-        'id': 'feedback_3',
-        'type': 'onboarding_ai_feedback',
-        'ratings': {'overall': 4, 'questionQuality': 4, 'profileAccuracy': 5},
-        'comment': 'Great onboarding experience',
-        'timestamp': DateTime.now().subtract(const Duration(days: 10)).toIso8601String(),
-      },
-    ];
-  }
-
-  /// Mock feedback analytics for development
-  Map<String, dynamic> _getMockFeedbackAnalytics() {
-    return {
-      'summary': {
-        'totalFeedbacks': 15,
-        'averageRating': 4.2,
-        'positivePercentage': 87.5,
-        'responseRate': 73.2,
-      },
-      'byFeature': {
-        'conversation_suggestions': {'count': 8, 'avgRating': 4.3, 'satisfaction': 89.0},
-        'profile_analysis': {'count': 4, 'avgRating': 4.5, 'satisfaction': 92.0},
-        'onboarding': {'count': 3, 'avgRating': 3.8, 'satisfaction': 78.0},
-      },
-      'trends': {
-        'ratingTrend': 'improving',
-        'usageTrend': 'increasing',
-        'lastUpdated': DateTime.now().toIso8601String(),
-      },
-      'topImprovements': [
-        'More conversation context needed',
-        'Faster response times',
-        'More personalized suggestions',
-      ],
-    };
   }
 }

@@ -37,7 +37,6 @@ class _AiMessageInputState extends State<AiMessageInput>
   bool _showAttachments = false;
   bool _showAiSuggestions = false;
   bool _isLoadingSuggestions = false;
-  bool _isAiEnabled = false;
   
   List<String> _suggestions = [];
   String _selectedSuggestion = '';
@@ -74,18 +73,6 @@ class _AiMessageInputState extends State<AiMessageInput>
     );
     
     _aiGlowController.repeat(reverse: true);
-    _checkAiEnabled();
-  }
-
-  Future<void> _checkAiEnabled() async {
-    final aiPreferences = core.ServiceLocator.instance.aiPreferences;
-    final isEnabled = await aiPreferences.isFeatureEnabled('smart_replies') ||
-                     await aiPreferences.isFeatureEnabled('auto_suggestions') ||
-                     await aiPreferences.isFeatureEnabled('custom_reply');
-    
-    setState(() {
-      _isAiEnabled = isEnabled;
-    });
   }
 
   @override
