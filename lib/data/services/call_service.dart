@@ -72,21 +72,36 @@ class CallService {
     required CallType type,
   }) async {
     try {
-      // Generate call ID and channel name
-      final callId = DateTime.now().millisecondsSinceEpoch.toString();
-      final channelName = 'call_$callId';
+      // First, initiate call through backend API
+      final response = await _apiService.post(
+        '/webrtc/calls',
+        data: {
+          'participantIds': [recipientId],
+          'type': type.name,
+        },
+      );
+
+      final callData = response.data;
+      final callId = callData['id'] as String;
+
+      // Get Agora token from backend
+      final tokenResponse = await _apiService.post(
+        '/webrtc/calls/$callId/token',
+      );
+      final tokenData = tokenResponse.data;
+      final token = tokenData['token'] as String;
+      final channelName = tokenData['channelName'] as String;
       
       // Send call initiation through WebSocket
       _webSocketService.initiateCall(recipientId, type.name);
       
-      // Start WebRTC call (token should come from backend)
-      // For now using a placeholder token - in production get from API
+      // Start WebRTC call with real token from backend
       await _webRTCService.startCall(
         receiverId: recipientId,
         receiverName: 'User $recipientId', // Should come from user data
         callType: type == CallType.video ? model.CallType.video : model.CallType.audio,
         channelName: channelName,
-        token: 'placeholder_token', // Get from backend API
+        token: token,
       );
       
       return callId;

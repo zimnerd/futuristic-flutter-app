@@ -20,6 +20,8 @@ import 'call_service.dart';
 import 'auth_service.dart';
 import 'subscription_service.dart';
 import 'saved_payment_methods_service.dart';
+import 'ai_matching_service.dart';
+import 'icebreaker_service.dart';
 
 /// Simple service locator without external dependencies
 class ServiceLocator {
@@ -47,6 +49,8 @@ class ServiceLocator {
   late final CallService _callService;
   late final AuthService _authService;
   late final SubscriptionService _subscriptionService;
+  late final AiMatchingService _aiMatchingService;
+  late final IcebreakerService _icebreakerService;
 
   bool _isInitialized = false;
 
@@ -87,6 +91,10 @@ class ServiceLocator {
     _datePlanningService = DatePlanningService(_apiClient);
     _voiceMessageService = VoiceMessageService(_apiClient);
     _callService = CallService.instance;
+
+    // Initialize AI services
+    _aiMatchingService = AiMatchingService(_apiClient);
+    _icebreakerService = IcebreakerService(_apiClient);
 
     // Initialize SubscriptionService
     _subscriptionService = SubscriptionService(
@@ -212,5 +220,17 @@ class ServiceLocator {
   SubscriptionService get subscriptionService {
     if (!_isInitialized) initialize();
     return _subscriptionService;
+  }
+
+  /// Get AiMatchingService instance
+  AiMatchingService get aiMatchingService {
+    if (!_isInitialized) initialize();
+    return _aiMatchingService;
+  }
+
+  /// Get IcebreakerService instance
+  IcebreakerService get icebreakerService {
+    if (!_isInitialized) initialize();
+    return _icebreakerService;
   }
 }
