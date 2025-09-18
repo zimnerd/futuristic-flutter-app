@@ -494,7 +494,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
       category: _selectedCategory.toLowerCase(),
       // maxAttendees: int.tryParse(_maxAttendeesController.text),
     );
-
+    if (!mounted) return;
     context.read<EventBloc>().add(CreateEvent(request));
   }
 
