@@ -86,16 +86,16 @@ class _AiFeedbackWidgetState extends State<AiFeedbackWidget>
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            Colors.white.withOpacity(0.1),
-            Colors.white.withOpacity(0.05),
+            Colors.white.withValues(alpha: 0.1),
+            Colors.white.withValues(alpha: 0.05),
           ],
         ),
         border: Border.all(
-          color: Colors.white.withOpacity(0.2),
+          color: Colors.white.withValues(alpha: 0.2),
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.2),
+            color: Colors.black.withValues(alpha: 0.2),
             blurRadius: 10,
             offset: const Offset(0, 5),
           ),
@@ -335,9 +335,9 @@ class _AiFeedbackWidgetState extends State<AiFeedbackWidget>
         Container(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(8),
-            color: Colors.white.withOpacity(0.1),
+            color: Colors.white.withValues(alpha: 0.1),
             border: Border.all(
-              color: Colors.white.withOpacity(0.3),
+              color: Colors.white.withValues(alpha: 0.3),
             ),
           ),
           child: TextField(
@@ -519,9 +519,9 @@ class AiQuickFeedbackButton extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
-          color: Colors.white.withOpacity(0.1),
+          color: Colors.white.withValues(alpha: 0.1),
           border: Border.all(
-            color: Colors.white.withOpacity(0.3),
+            color: Colors.white.withValues(alpha: 0.3),
           ),
         ),
         child: Row(

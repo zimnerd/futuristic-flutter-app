@@ -93,8 +93,8 @@ class _AiInsightsDashboardState extends State<AiInsightsDashboard>
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            const Color(0xFF6E3BFF).withOpacity(0.1),
-            Colors.black.withOpacity(0.9),
+            const Color(0xFF6E3BFF).withValues(alpha: 0.1),
+            Colors.black.withValues(alpha: 0.9),
           ],
         ),
       ),
@@ -171,7 +171,7 @@ class _AiInsightsDashboardState extends State<AiInsightsDashboard>
       margin: const EdgeInsets.symmetric(horizontal: 20),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
-        color: Colors.white.withOpacity(0.1),
+        color: Colors.white.withValues(alpha: 0.1),
       ),
       child: TabBar(
         controller: _tabController,
@@ -345,9 +345,9 @@ class _AiInsightsDashboardState extends State<AiInsightsDashboard>
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
-        color: Colors.white.withOpacity(0.1),
+        color: Colors.white.withValues(alpha: 0.1),
         border: Border.all(
-          color: Colors.white.withOpacity(0.2),
+          color: Colors.white.withValues(alpha: 0.2),
         ),
       ),
       child: Column(
@@ -399,9 +399,9 @@ class _AiInsightsDashboardState extends State<AiInsightsDashboard>
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
-        color: Colors.white.withOpacity(0.1),
+        color: Colors.white.withValues(alpha: 0.1),
         border: Border.all(
-          color: Colors.white.withOpacity(0.2),
+          color: Colors.white.withValues(alpha: 0.2),
         ),
       ),
       child: Column(
@@ -454,9 +454,9 @@ class _AiInsightsDashboardState extends State<AiInsightsDashboard>
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
-        color: Colors.white.withOpacity(0.1),
+        color: Colors.white.withValues(alpha: 0.1),
         border: Border.all(
-          color: Colors.white.withOpacity(0.2),
+          color: Colors.white.withValues(alpha: 0.2),
         ),
       ),
       child: Row(
@@ -466,7 +466,7 @@ class _AiInsightsDashboardState extends State<AiInsightsDashboard>
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(8),
               color: (isImproving ? Colors.green : Colors.orange)
-                  .withOpacity(0.2),
+                  .withValues(alpha: 0.2),
             ),
             child: Icon(
               isImproving ? Icons.trending_up_rounded : Icons.trending_flat_rounded,
@@ -509,9 +509,9 @@ class _AiInsightsDashboardState extends State<AiInsightsDashboard>
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
-        color: Colors.white.withOpacity(0.1),
+        color: Colors.white.withValues(alpha: 0.1),
         border: Border.all(
-          color: Colors.white.withOpacity(0.2),
+          color: Colors.white.withValues(alpha: 0.2),
         ),
       ),
       child: Column(

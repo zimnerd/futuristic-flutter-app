@@ -242,8 +242,12 @@ class _AiMessageInputState extends State<AiMessageInput>
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [
-                PulseColors.primary.withOpacity(0.7 + 0.3 * _aiGlowAnimation.value),
-                PulseColors.secondary.withOpacity(0.7 + 0.3 * _aiGlowAnimation.value),
+                PulseColors.primary.withValues(
+                  alpha: 0.7 + 0.3 * _aiGlowAnimation.value,
+                ),
+                PulseColors.secondary.withValues(
+                  alpha: 0.7 + 0.3 * _aiGlowAnimation.value,
+                ),
               ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
@@ -251,7 +255,9 @@ class _AiMessageInputState extends State<AiMessageInput>
             shape: BoxShape.circle,
             boxShadow: [
               BoxShadow(
-                color: PulseColors.primary.withOpacity(0.3 * _aiGlowAnimation.value),
+                color: PulseColors.primary.withValues(
+                  alpha: 0.3 * _aiGlowAnimation.value,
+                ),
                 blurRadius: 8,
                 spreadRadius: 2,
               ),
@@ -288,15 +294,15 @@ class _AiMessageInputState extends State<AiMessageInput>
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  PulseColors.primary.withOpacity(0.1),
-                  PulseColors.secondary.withOpacity(0.1),
+                  PulseColors.primary.withValues(alpha: 0.1),
+                  PulseColors.secondary.withValues(alpha: 0.1),
                 ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                color: PulseColors.primary.withOpacity(0.3),
+                color: PulseColors.primary.withValues(alpha: 0.3),
                 width: 1,
               ),
             ),
@@ -387,10 +393,10 @@ class _AiMessageInputState extends State<AiMessageInput>
               child: Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.7),
+                  color: Colors.white.withValues(alpha: 0.7),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: Colors.grey.withOpacity(0.2),
+                    color: Colors.grey.withValues(alpha: 0.2),
                   ),
                 ),
                 child: Row(
@@ -445,7 +451,7 @@ class _AiMessageInputState extends State<AiMessageInput>
             height: 4,
             margin: const EdgeInsets.symmetric(vertical: 12),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.3),
+              color: Colors.white.withValues(alpha: 0.3),
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -484,7 +490,7 @@ class _AiMessageInputState extends State<AiMessageInput>
                       Text(
                         'Describe how AI should reply',
                         style: TextStyle(
-                          color: Colors.white.withOpacity(0.7),
+                          color: Colors.white.withValues(alpha: 0.7),
                           fontSize: 14,
                         ),
                       ),
@@ -508,10 +514,10 @@ class _AiMessageInputState extends State<AiMessageInput>
                   // AI Prompt Input
                   Container(
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.1),
+                      color: Colors.white.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(
-                        color: PulseColors.primary.withOpacity(0.3),
+                        color: PulseColors.primary.withValues(alpha: 0.3),
                       ),
                     ),
                     child: TextField(
@@ -521,7 +527,7 @@ class _AiMessageInputState extends State<AiMessageInput>
                       decoration: InputDecoration(
                         hintText: 'e.g., "Reply with a funny response" or "Be supportive and caring"',
                         hintStyle: TextStyle(
-                          color: Colors.white.withOpacity(0.5),
+                          color: Colors.white.withValues(alpha: 0.5),
                           fontSize: 14,
                         ),
                         border: InputBorder.none,
@@ -578,10 +584,10 @@ class _AiMessageInputState extends State<AiMessageInput>
                       width: double.infinity,
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.1),
+                        color: Colors.white.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(
-                          color: PulseColors.secondary.withOpacity(0.3),
+                          color: PulseColors.secondary.withValues(alpha: 0.3),
                         ),
                       ),
                       child: Column(

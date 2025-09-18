@@ -34,22 +34,22 @@ class AiFeatureCard extends StatelessWidget {
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: [
-                    Colors.white.withOpacity(0.1),
-                    Colors.white.withOpacity(0.05),
+                    Colors.white.withValues(alpha: 0.1),
+                    Colors.white.withValues(alpha: 0.05),
                   ],
                 )
               : null,
-          color: enabled ? null : Colors.grey.shade900.withOpacity(0.3),
+          color: enabled ? null : Colors.grey.shade900.withValues(alpha: 0.3),
           border: Border.all(
             color: enabled 
-                ? Colors.white.withOpacity(0.2)
-                : Colors.grey.withOpacity(0.2),
+                ? Colors.white.withValues(alpha: 0.2)
+                : Colors.grey.withValues(alpha: 0.2),
             width: 1,
           ),
           boxShadow: enabled
               ? [
                   BoxShadow(
-                    color: Colors.purple.withOpacity(0.1),
+                    color: Colors.purple.withValues(alpha: 0.1),
                     blurRadius: 20,
                     offset: const Offset(0, 4),
                   ),
@@ -66,7 +66,7 @@ class AiFeatureCard extends StatelessWidget {
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
                     gradient: enabled ? iconGradient : null,
-                    color: enabled ? null : Colors.grey.withOpacity(0.3),
+                    color: enabled ? null : Colors.grey.withValues(alpha: 0.3),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(
@@ -125,13 +125,13 @@ class AiFeatureCard extends StatelessWidget {
                   ),
                   decoration: BoxDecoration(
                     color: enabled 
-                        ? Colors.white.withOpacity(0.1)
-                        : Colors.grey.withOpacity(0.1),
+                              ? Colors.white.withValues(alpha: 0.1)
+                              : Colors.grey.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(
                       color: enabled 
-                          ? Colors.white.withOpacity(0.2)
-                          : Colors.grey.withOpacity(0.2),
+                                ? Colors.white.withValues(alpha: 0.2)
+                                : Colors.grey.withValues(alpha: 0.2),
                       width: 1,
                     ),
                   ),
