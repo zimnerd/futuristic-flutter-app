@@ -8,6 +8,7 @@ import '../../data/services/matching_service.dart';
 import '../../data/services/ai_preferences_service.dart';
 import '../network/api_client.dart';
 import '../utils/logger.dart';
+import 'location_service.dart';
 
 /// Service locator for managing app services
 /// 
@@ -31,6 +32,7 @@ class ServiceLocator {
   PushNotificationService? _pushNotificationService;
   TokenService? _tokenService;
   AiPreferencesService? _aiPreferencesService;
+  LocationService? _locationService;
 
   /// Initialize all services
   Future<void> initialize({String? authToken}) async {
@@ -58,6 +60,7 @@ class ServiceLocator {
       _pushNotificationService = PushNotificationService.instance;
       _tokenService = TokenService();
       _aiPreferencesService = AiPreferencesService();
+      _locationService = LocationService();
 
       // Initialize push notifications
       await _pushNotificationService!.initialize(authToken: authToken);
@@ -165,6 +168,12 @@ class ServiceLocator {
     return _aiPreferencesService!;
   }
 
+  /// Get location service
+  LocationService get location {
+    _ensureInitialized();
+    return _locationService!;
+  }
+
   // ===========================================
   // DIRECT API ACCESS (for convenience)
   // ===========================================
@@ -205,6 +214,7 @@ class ServiceLocator {
     _pushNotificationService = null;
     _tokenService = null;
     _aiPreferencesService = null;
+    _locationService = null;
     _initialized = false;
   }
 }

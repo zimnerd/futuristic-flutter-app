@@ -107,7 +107,7 @@ class ProfileAnalysisService {
         estimatedImpact: _estimateImpact(suggestions),
       );
     } catch (e) {
-      print('Error analyzing profile for improvement: $e');
+      logger.e('Error analyzing profile for improvement: $e');
       return ProfileImprovementPlan.empty();
     }
   }
@@ -176,7 +176,7 @@ class ProfileAnalysisService {
         ),
       );
     } catch (e) {
-      print('Error analyzing compatibility: $e');
+      logger.e('Error analyzing compatibility: $e');
       return ProfileCompatibilityInsight.empty();
     }
   }
@@ -202,7 +202,7 @@ class ProfileAnalysisService {
 
       return results;
     } catch (e) {
-      print('Error analyzing images: $e');
+      logger.e('Error analyzing images: $e');
       return [];
     }
   }
@@ -224,7 +224,7 @@ class ProfileAnalysisService {
           .take(5)
           .toList();
     } catch (e) {
-      print('Error generating profile-based ice breakers: $e');
+      logger.e('Error generating profile-based ice breakers: $e');
       return [];
     }
   }

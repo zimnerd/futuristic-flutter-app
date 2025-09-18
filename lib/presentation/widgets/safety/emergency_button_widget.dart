@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:geolocator/geolocator.dart';
 
 import '../../blocs/safety/safety_bloc.dart';
+import '../../../core/services/service_locator.dart';
 
 /// Emergency button widget for quick access to safety features
 class EmergencyButtonWidget extends StatelessWidget {
@@ -154,35 +154,22 @@ class EmergencyButtonWidget extends StatelessWidget {
     String location = "Location unavailable";
     
     try {
-      // Check location permission
-      final permission = await Geolocator.checkPermission();
-      if (permission == LocationPermission.denied) {
-        final newPermission = await Geolocator.requestPermission();
-        if (newPermission == LocationPermission.denied || 
-            newPermission == LocationPermission.deniedForever) {
-          location = "Location permission denied";
+      // Use the location service from service locator
+      final position = await ServiceLocator.instance.location.getCurrentLocation();
+      
+      if (position != null) {
+        location = "Lat: ${position.latitude}, Lng: ${position.longitude}";
+        
+        // Try to get a readable address
+        final address = await ServiceLocator.instance.location.getAddressFromCoordinates(
+          position.latitude, 
+          position.longitude,
+        );
+        if (address != null) {
+          location = "$address (${position.latitude}, ${position.longitude})";
         }
-      }
-
-      // Get location if permission granted
-      if (permission != LocationPermission.denied && 
-          permission != LocationPermission.deniedForever) {
-        final serviceEnabled = await Geolocator.isLocationServiceEnabled();
-        if (serviceEnabled) {
-          try {
-            final position = await Geolocator.getCurrentPosition(
-              locationSettings: const LocationSettings(
-                accuracy: LocationAccuracy.high,
-                timeLimit: Duration(seconds: 5),
-              ),
-            );
-            location = "Lat: ${position.latitude}, Lng: ${position.longitude}";
-          } catch (e) {
-            location = "Unable to get precise location";
-          }
-        } else {
-          location = "Location services disabled";
-        }
+      } else {
+        location = "Unable to get location - please check permissions";
       }
     } catch (e) {
       location = "Location error: $e";

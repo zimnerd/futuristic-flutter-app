@@ -6,10 +6,10 @@ import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:record/record.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:geolocator/geolocator.dart';
 import '../../../domain/entities/message.dart';
 import '../../blocs/messaging/messaging_bloc.dart';
 import '../../theme/pulse_colors.dart';
+import '../../../core/services/service_locator.dart';
 
 /// Enhanced message composer with voice, attachments, and rich features
 class MessageComposer extends StatefulWidget {
@@ -852,33 +852,15 @@ class _MessageComposerState extends State<MessageComposer>
 
   Future<void> _handleLocationAttachment() async {
     try {
-      // Check location permission
-      final permission = await Geolocator.checkPermission();
-      if (permission == LocationPermission.denied) {
-        final newPermission = await Geolocator.requestPermission();
-        if (newPermission == LocationPermission.denied || 
-            newPermission == LocationPermission.deniedForever) {
-          _showSnackbar('Location permission required');
-          return;
-        }
-      }
-
-      // Check if location service is enabled
-      final serviceEnabled = await Geolocator.isLocationServiceEnabled();
-      if (!serviceEnabled) {
-        _showSnackbar('Please enable location services');
-        return;
-      }
-
       _showSnackbar('Getting your location...');
 
-      // Get current position
-      final position = await Geolocator.getCurrentPosition(
-        locationSettings: const LocationSettings(
-          accuracy: LocationAccuracy.high,
-          timeLimit: Duration(seconds: 10),
-        ),
-      );
+      // Use the location service from service locator
+      final position = await ServiceLocator.instance.location.getCurrentLocation();
+      
+      if (position == null) {
+        _showSnackbar('Unable to get location. Please check permissions.');
+        return;
+      }
 
       // Send location message
       if (mounted) {
