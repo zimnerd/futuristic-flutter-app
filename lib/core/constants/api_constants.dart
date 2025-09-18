@@ -133,6 +133,16 @@ class ApiConstants {
   static const String aiMatchingRecommendations = '$aiMatching/recommendations';
   static const String aiMatchingCompatibility = '$aiMatching/compatibility';
 
+  // AI Services endpoints (ai.controller.ts)
+  static const String ai = '/ai';
+  static const String aiConversationAnalyze = '$ai/conversation/analyze';
+  static const String aiProfileAnalyze = '$ai/profile/analyze';
+  static const String aiProfileConversationStarters =
+      '$ai/profile/conversation-starters';
+  static const String aiProfileCompatibility = '$ai/profile/compatibility';
+  static const String aiPhotosAnalyze = '$ai/photos/analyze';
+  static const String aiFeedback = '$ai/feedback';
+
   // AR Features endpoints (ar-features.controller.ts)
   static const String arFeatures = '/ar-features';
   static const String arFeaturesIcebreakers = '$arFeatures/icebreakers';

@@ -639,6 +639,118 @@ class ApiClient {
   }
 
   // ===========================================
+  // NEW AI SERVICES ENDPOINTS
+  // ===========================================
+
+  /// Analyze conversation health and sentiment
+  Future<Response> analyzeConversation({
+    required List<String> messages,
+    String? targetUserId,
+    String? analysisType,
+  }) async {
+    return await _dio.post(
+      ApiConstants.aiConversationAnalyze,
+      data: {
+        'messages': messages,
+        if (targetUserId != null) 'targetUserId': targetUserId,
+        if (analysisType != null) 'analysisType': analysisType,
+      },
+    );
+  }
+
+  /// Analyze user profile for improvements
+  Future<Response> analyzeProfile({
+    required String profileId,
+    String? analysisType,
+    String? targetProfileId,
+    List<String>? images,
+    Map<String, dynamic>? context,
+  }) async {
+    return await _dio.post(
+      ApiConstants.aiProfileAnalyze,
+      data: {
+        'profileId': profileId,
+        if (analysisType != null) 'analysisType': analysisType,
+        if (targetProfileId != null) 'targetProfileId': targetProfileId,
+        if (images != null) 'images': images,
+        if (context != null) 'context': context,
+      },
+    );
+  }
+
+  /// Get AI-generated conversation starters for a profile
+  Future<Response> getProfileConversationStarters({
+    required String profileId,
+    String? analysisType,
+    Map<String, dynamic>? context,
+  }) async {
+    return await _dio.post(
+      ApiConstants.aiProfileConversationStarters,
+      data: {
+        'profileId': profileId,
+        if (analysisType != null) 'analysisType': analysisType,
+        if (context != null) 'context': context,
+      },
+    );
+  }
+
+  /// Analyze compatibility between profiles
+  Future<Response> analyzeProfileCompatibility({
+    required String profileId,
+    String? analysisType,
+    Map<String, dynamic>? context,
+  }) async {
+    return await _dio.post(
+      ApiConstants.aiProfileCompatibility,
+      data: {
+        'profileId': profileId,
+        if (analysisType != null) 'analysisType': analysisType,
+        if (context != null) 'context': context,
+      },
+    );
+  }
+
+  /// Analyze photos for conversation ideas
+  Future<Response> analyzePhotos({
+    required List<String> photoUrls,
+    String? analysisType,
+  }) async {
+    return await _dio.post(
+      ApiConstants.aiPhotosAnalyze,
+      data: {
+        'photoUrls': photoUrls,
+        if (analysisType != null) 'analysisType': analysisType,
+      },
+    );
+  }
+
+  /// Submit feedback for AI suggestions
+  Future<Response> submitAiFeedback({
+    required String aiResponseId,
+    required String featureType,
+    String? suggestionId,
+    required int rating,
+    String? comment,
+    bool? helpful,
+    bool? implemented,
+    Map<String, dynamic>? context,
+  }) async {
+    return await _dio.post(
+      ApiConstants.aiFeedback,
+      data: {
+        'aiResponseId': aiResponseId,
+        'featureType': featureType,
+        if (suggestionId != null) 'suggestionId': suggestionId,
+        'rating': rating,
+        if (comment != null) 'comment': comment,
+        if (helpful != null) 'helpful': helpful,
+        if (implemented != null) 'implemented': implemented,
+        if (context != null) 'context': context,
+      },
+    );
+  }
+
+  // ===========================================
   // PREMIUM FEATURES ENDPOINTS
   // ===========================================
 

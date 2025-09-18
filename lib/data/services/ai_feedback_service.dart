@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'dart:convert';
+import 'package:pulse_dating_app/core/network/api_client.dart';
 
 /// AI Feedback and Rating Service - manages user feedback for all AI features
 /// Collects ratings, satisfaction data, and improvement suggestions
@@ -10,8 +10,7 @@ class AiFeedbackService {
       _instance ??= AiFeedbackService._();
   AiFeedbackService._();
 
-  // TODO: Replace with actual API service injection when dependencies are resolved
-  // final ApiService _apiService = ServiceLocator.instance.get<ApiService>();
+  final ApiClient _apiClient = ApiClient.instance;
 
   /// Submit feedback for conversation AI features
   Future<bool> submitConversationFeedback({
@@ -28,36 +27,33 @@ class AiFeedbackService {
     Map<String, dynamic>? context,
   }) async {
     try {
-      final feedback = {
-        'type': 'conversation_ai_feedback',
-        'userId': userId,
-        'conversationId': conversationId,
-        'suggestionId': suggestionId,
-        'featureType': featureType,
-        'ratings': {
-          'overall': rating,
+      final response = await _apiClient.submitAiFeedback(
+        aiResponseId: suggestionId,
+        featureType: featureType,
+        rating: rating,
+        helpful: helpfulness >= 4,
+        comment: comment ?? '',
+        context: {
+          'conversationId': conversationId,
           'helpfulness': helpfulness,
           'accuracy': accuracy,
-          'wouldRecommend': rating >= 4,
-        },
-        'usage': {
           'wasUsed': wasUsed,
-          'usageContext': context,
-        },
-        'feedback': {
-          'comment': comment,
           'improvementSuggestions': improvementSuggestions,
+          ...?context,
         },
-        'metadata': {
-          'platform': 'mobile',
-          'timestamp': DateTime.now().toIso8601String(),
-          'version': '1.0.0',
-        },
-      };
+      );
 
-      return await _submitFeedback(feedback);
+      if (response.statusCode == 200) {
+        _logFeedbackSubmission('conversation', featureType, rating);
+        return true;
+      } else {
+        print('Failed to submit conversation feedback: ${response.statusCode}');
+        return false;
+      }
     } catch (e) {
       print('Error submitting conversation feedback: $e');
+      // Even if API fails, we'll log locally
+      _logFeedbackSubmission('conversation', featureType, rating);
       return false;
     }
   }
@@ -207,28 +203,7 @@ class AiFeedbackService {
     DateTime? endDate,
   }) async {
     try {
-      final queryParams = {
-        'userId': userId,
-        if (featureType != null) 'featureType': featureType,
-        if (limit != null) 'limit': limit.toString(),
-        if (startDate != null) 'startDate': startDate.toIso8601String(),
-        if (endDate != null) 'endDate': endDate.toIso8601String(),
-      };
-
-      // TODO: Implement actual API call when dependencies are available
-      /*
-      final response = await _apiService.get(
-        '/ai/feedback/history',
-        queryParameters: queryParams,
-      );
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        return List<Map<String, dynamic>>.from(data['feedbackHistory']);
-      }
-      */
-
-      // Return mock feedback history for now
+      // For now, return mock data. Real API integration will come later
       return _getMockFeedbackHistory(userId);
     } catch (e) {
       print('Error getting feedback history: $e');
@@ -241,26 +216,7 @@ class AiFeedbackService {
     required String userId,
   }) async {
     try {
-      final queryParams = {
-        'userId': userId,
-        'includeAggregates': 'true',
-        'includeTrends': 'true',
-      };
-
-      // TODO: Implement actual API call when dependencies are available
-      /*
-      final response = await _apiService.get(
-        '/ai/feedback/analytics',
-        queryParameters: queryParams,
-      );
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        return data['analytics'];
-      }
-      */
-
-      // Return mock analytics for now
+      // For now, return mock data. Real API integration will come later
       return _getMockFeedbackAnalytics();
     } catch (e) {
       print('Error getting feedback analytics: $e');
@@ -268,7 +224,7 @@ class AiFeedbackService {
     }
   }
 
-  /// Request feedback reminder for incomplete interactions
+  /// Request feedback reminder for a later time
   Future<bool> requestFeedbackReminder({
     required String userId,
     required String interactionId,
@@ -276,27 +232,8 @@ class AiFeedbackService {
     DateTime? reminderTime,
   }) async {
     try {
-      final request = {
-        'userId': userId,
-        'interactionId': interactionId,
-        'featureType': featureType,
-        'reminderTime': reminderTime?.toIso8601String() ?? 
-            DateTime.now().add(const Duration(hours: 24)).toIso8601String(),
-        'requestedAt': DateTime.now().toIso8601String(),
-      };
-
-      // TODO: Implement actual API call when dependencies are available
-      /*
-      final response = await _apiService.post(
-        '/ai/feedback/request-reminder',
-        body: request,
-      );
-
-      return response.statusCode == 200;
-      */
-
-      // Mock success for now
-      print('Feedback reminder scheduled for $featureType');
+      // For now, just log the reminder request
+      print('Feedback reminder requested for $featureType at ${reminderTime ?? DateTime.now().add(const Duration(hours: 24))}');
       return true;
     } catch (e) {
       print('Error requesting feedback reminder: $e');
@@ -335,29 +272,20 @@ class AiFeedbackService {
   /// Submit feedback to backend
   Future<bool> _submitFeedback(Map<String, dynamic> feedback) async {
     try {
-      // TODO: Implement actual API call when dependencies are available
-      /*
-      final response = await _apiService.post(
-        '/ai/feedback',
-        body: feedback,
-      );
-
-      if (response.statusCode == 200) {
-        print('Feedback submitted successfully');
-        return true;
-      } else {
-        print('Failed to submit feedback: ${response.statusCode}');
-        return false;
-      }
-      */
-
-      // Mock success for now
+      // For complex feedback objects, we'll log them locally for now
+      // Real API integration will be added when the backend endpoints are ready
       print('Feedback submitted: ${feedback['type']} - Rating: ${feedback['ratings']?['overall'] ?? 'N/A'}');
       return true;
     } catch (e) {
       print('Error submitting feedback: $e');
       return false;
     }
+  }
+
+  /// Log feedback submission for analytics
+  void _logFeedbackSubmission(String category, String featureType, int rating) {
+    print('Feedback logged: $category.$featureType - Rating: $rating');
+    // Could expand this to send to analytics service
   }
 
   /// Mock feedback history for development
