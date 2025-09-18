@@ -222,7 +222,9 @@ class _AiDemoContentState extends State<_AiDemoContent>
   Widget _buildMiniFeatureCard(String title, bool enabled, IconData icon) {
     return Container(
       decoration: BoxDecoration(
-        color: enabled ? Colors.blue.withOpacity(0.1) : Colors.grey.withOpacity(0.1),
+        color: enabled
+            ? Colors.blue.withValues(alpha: 0.1)
+            : Colors.grey.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
           color: enabled ? Colors.blue : Colors.grey,
@@ -401,7 +403,7 @@ class _AiDemoContentState extends State<_AiDemoContent>
             Container(
               height: 100,
               decoration: BoxDecoration(
-                color: Colors.grey.withOpacity(0.1),
+                color: Colors.grey.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: const Center(
@@ -481,7 +483,7 @@ class _AiDemoContentState extends State<_AiDemoContent>
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.blue.withOpacity(0.1),
+                color: Colors.blue.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: const Column(

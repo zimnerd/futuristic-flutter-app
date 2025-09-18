@@ -3,7 +3,12 @@ import 'package:dio/dio.dart';
 
 /// Enhanced error handling for AI service calls
 /// Provides structured error responses and appropriate fallback strategies
+import 'package:flutter/foundation.dart';
+import 'package:logger/logger.dart';
+
+/// Comprehensive error handling for AI services with categorization and recovery strategies
 class AiErrorHandler {
+  static final Logger _logger = Logger();
   /// Handle API errors and provide structured error information
   static AiErrorResult handleError(dynamic error, String operationType) {
     if (error is DioException) {
@@ -139,41 +144,39 @@ class AiErrorHandler {
 
   /// Log error with appropriate level based on error type
   static void logError(AiErrorResult error) {
-    final logLevel = _getLogLevel(error.type);
     final message = '[AI Error] ${error.operationType}: ${error.message}';
     
-    switch (logLevel) {
-      case 'DEBUG':
-        print('🐛 $message');
-        break;
-      case 'INFO':
-        print('ℹ️ $message');
-        break;
-      case 'WARNING':
-        print('⚠️ $message');
-        break;
-      case 'ERROR':
-        print('❌ $message');
-        break;
-    }
-  }
-
-  static String _getLogLevel(AiErrorType type) {
-    switch (type) {
+    switch (error.type) {
       case AiErrorType.network:
-      case AiErrorType.timeout:
-        return 'WARNING';
+      case AiErrorType.server:
+        _logger.e(message);
+        break;
       case AiErrorType.authentication:
       case AiErrorType.authorization:
-      case AiErrorType.server:
-        return 'ERROR';
+        _logger.w(message);
+        break;
       case AiErrorType.validation:
+      case AiErrorType.rateLimited:
+        _logger.w(message);
+        break;
+      case AiErrorType.timeout:
+        _logger.i(message);
+        break;
+      case AiErrorType.api:
+        _logger.e(message);
+        break;
       case AiErrorType.parsing:
-        return 'WARNING';
+        _logger.e(message);
+        break;
+      case AiErrorType.notFound:
+        _logger.w(message);
+        break;
       case AiErrorType.cancelled:
-        return 'INFO';
-      default:
-        return 'ERROR';
+        _logger.d(message);
+        break;
+      case AiErrorType.unknown:
+        _logger.d(message);
+        break;
     }
   }
 }

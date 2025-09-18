@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:logger/logger.dart';
 import 'package:pulse_dating_app/core/network/api_client.dart';
 
 /// AI Feedback and Rating Service - manages user feedback for all AI features
@@ -11,6 +12,7 @@ class AiFeedbackService {
   AiFeedbackService._();
 
   final ApiClient _apiClient = ApiClient.instance;
+  static final Logger _logger = Logger();
 
   /// Submit feedback for conversation AI features
   Future<bool> submitConversationFeedback({
@@ -47,11 +49,13 @@ class AiFeedbackService {
         _logFeedbackSubmission('conversation', featureType, rating);
         return true;
       } else {
-        print('Failed to submit conversation feedback: ${response.statusCode}');
+        _logger.e(
+          'Failed to submit conversation feedback: ${response.statusCode}',
+        );
         return false;
       }
     } catch (e) {
-      print('Error submitting conversation feedback: $e');
+      _logger.e('Error submitting conversation feedback: $e');
       // Even if API fails, we'll log locally
       _logFeedbackSubmission('conversation', featureType, rating);
       return false;
@@ -100,7 +104,7 @@ class AiFeedbackService {
 
       return await _submitFeedback(feedback);
     } catch (e) {
-      print('Error submitting profile feedback: $e');
+      _logger.e('Error submitting profile feedback: $e');
       return false;
     }
   }
@@ -150,7 +154,7 @@ class AiFeedbackService {
 
       return await _submitFeedback(feedback);
     } catch (e) {
-      print('Error submitting onboarding feedback: $e');
+      _logger.e('Error submitting onboarding feedback: $e');
       return false;
     }
   }
@@ -189,7 +193,7 @@ class AiFeedbackService {
 
       return await _submitFeedback(feedback);
     } catch (e) {
-      print('Error submitting general AI feedback: $e');
+      _logger.e('Error submitting general AI feedback: $e');
       return false;
     }
   }
@@ -228,11 +232,11 @@ class AiFeedbackService {
 
         return feedbackHistory;
       } else {
-        print('Failed to get feedback history: ${response.statusCode}');
+        _logger.e('Failed to get feedback history: ${response.statusCode}');
         return [];
       }
     } catch (e) {
-      print('Error getting feedback history: $e');
+      _logger.e('Error getting feedback history: $e');
       return [];
     }
   }
@@ -267,11 +271,11 @@ class AiFeedbackService {
           'topImprovements': data['suggestions'] ?? [],
         };
       } else {
-        print('Failed to get feedback analytics: ${response.statusCode}');
+        _logger.e('Failed to get feedback analytics: ${response.statusCode}');
         return null;
       }
     } catch (e) {
-      print('Error getting feedback analytics: $e');
+      _logger.e('Error getting feedback analytics: $e');
       return null;
     }
   }
@@ -285,10 +289,10 @@ class AiFeedbackService {
   }) async {
     try {
       // For now, just log the reminder request
-      print('Feedback reminder requested for $featureType at ${reminderTime ?? DateTime.now().add(const Duration(hours: 24))}');
+      _logger.i('Feedback reminder requested for $featureType at ${reminderTime ?? DateTime.now().add(const Duration(hours: 24))}');
       return true;
     } catch (e) {
-      print('Error requesting feedback reminder: $e');
+      _logger.e('Error requesting feedback reminder: $e');
       return false;
     }
   }
@@ -314,7 +318,7 @@ class AiFeedbackService {
 
       return await _submitFeedback(quickRating);
     } catch (e) {
-      print('Error submitting quick rating: $e');
+      _logger.e('Error submitting quick rating: $e');
       return false;
     }
   }
@@ -326,17 +330,19 @@ class AiFeedbackService {
     try {
       // For complex feedback objects, we'll log them locally for now
       // Real API integration will be added when the backend endpoints are ready
-      print('Feedback submitted: ${feedback['type']} - Rating: ${feedback['ratings']?['overall'] ?? 'N/A'}');
+      _logger.i(
+        'Feedback submitted: ${feedback['type']} - Rating: ${feedback['ratings']?['overall'] ?? 'N/A'}',
+      );
       return true;
     } catch (e) {
-      print('Error submitting feedback: $e');
+      _logger.e('Error submitting feedback: $e');
       return false;
     }
   }
 
   /// Log feedback submission for analytics
   void _logFeedbackSubmission(String category, String featureType, int rating) {
-    print('Feedback logged: $category.$featureType - Rating: $rating');
+    _logger.d('Feedback logged: $category.$featureType - Rating: $rating');
     // Could expand this to send to analytics service
   }
 }

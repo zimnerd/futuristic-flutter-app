@@ -73,7 +73,7 @@ class _AiSettingsScreenState extends State<AiSettingsScreen>
             end: Alignment.bottomRight,
             colors: [
               Colors.black,
-              Colors.purple.shade900.withOpacity(0.3),
+              Colors.purple.shade900.withValues(alpha: 0.3),
               Colors.black,
             ],
             stops: const [0.0, 0.5, 1.0],
@@ -200,8 +200,8 @@ class _AiSettingsScreenState extends State<AiSettingsScreen>
                       context.read<AiPreferencesBloc>().add(SetAiEnabled(value));
                     },
                     activeColor: Colors.cyan,
-                    activeTrackColor: Colors.cyan.withOpacity(0.3),
-                    inactiveTrackColor: Colors.grey.withOpacity(0.3),
+                    activeTrackColor: Colors.cyan.withValues(alpha: 0.3),
+                    inactiveTrackColor: Colors.grey.withValues(alpha: 0.3),
                   ),
                 ],
               ),
@@ -228,9 +228,9 @@ class _AiSettingsScreenState extends State<AiSettingsScreen>
             padding: const EdgeInsets.all(32),
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: Colors.grey.shade800.withOpacity(0.3),
+              color: Colors.grey.shade800.withValues(alpha: 0.3),
               border: Border.all(
-                color: Colors.grey.shade600.withOpacity(0.5),
+                color: Colors.grey.shade600.withValues(alpha: 0.5),
                 width: 2,
               ),
             ),

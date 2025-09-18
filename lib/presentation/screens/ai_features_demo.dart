@@ -173,7 +173,7 @@ class _AiFeaturesDemoState extends State<AiFeaturesDemo>
                 Text(
                   'Experience the future of dating',
                   style: TextStyle(
-                    color: Colors.white.withOpacity(0.7),
+                    color: Colors.white.withValues(alpha: 0.7),
                     fontSize: 12,
                   ),
                 ),
@@ -196,10 +196,10 @@ class _AiFeaturesDemoState extends State<AiFeaturesDemo>
             margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.1),
+              color: Colors.white.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                color: PulseColors.primary.withOpacity(0.3),
+                color: PulseColors.primary.withValues(alpha: 0.3),
               ),
             ),
             child: Column(
@@ -246,9 +246,9 @@ class _AiFeaturesDemoState extends State<AiFeaturesDemo>
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.2),
+        color: color.withValues(alpha: 0.2),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withOpacity(0.4)),
+        border: Border.all(color: color.withValues(alpha: 0.4)),
       ),
       child: Text(
         label,
@@ -266,7 +266,7 @@ class _AiFeaturesDemoState extends State<AiFeaturesDemo>
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(20),
       ),
       child: ListView.builder(
@@ -305,11 +305,13 @@ class _AiFeaturesDemoState extends State<AiFeaturesDemo>
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: BoxDecoration(
                 color: message.isAi 
-                    ? Colors.white.withOpacity(0.1)
-                    : PulseColors.primary.withOpacity(0.8),
+                    ? Colors.white.withValues(alpha: 0.1)
+                    : PulseColors.primary.withValues(alpha: 0.8),
                 borderRadius: BorderRadius.circular(16),
                 border: message.isAi 
-                    ? Border.all(color: PulseColors.primary.withOpacity(0.3))
+                    ? Border.all(
+                        color: PulseColors.primary.withValues(alpha: 0.3),
+                      )
                     : null,
               ),
               child: Column(
@@ -326,7 +328,7 @@ class _AiFeaturesDemoState extends State<AiFeaturesDemo>
                   Text(
                     _formatTime(message.timestamp),
                     style: TextStyle(
-                      color: Colors.white.withOpacity(0.6),
+                      color: Colors.white.withValues(alpha: 0.6),
                       fontSize: 11,
                     ),
                   ),
@@ -355,10 +357,10 @@ class _AiFeaturesDemoState extends State<AiFeaturesDemo>
     return Container(
       margin: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.1),
+        color: Colors.white.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: PulseColors.primary.withOpacity(0.3),
+          color: PulseColors.primary.withValues(alpha: 0.3),
         ),
       ),
       child: AiMessageInput(

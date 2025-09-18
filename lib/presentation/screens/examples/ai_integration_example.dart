@@ -296,7 +296,7 @@ class ExampleChatScreen extends StatelessWidget {
             feature: 'smart_replies',
             child: Container(
               padding: const EdgeInsets.all(8),
-              color: Colors.blue.withOpacity(0.1),
+              color: Colors.blue.withValues(alpha: 0.1),
               child: const Text('AI Suggestions: "How are you?", "Tell me more!"'),
             ),
           ),
