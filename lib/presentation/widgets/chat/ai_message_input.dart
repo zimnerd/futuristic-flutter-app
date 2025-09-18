@@ -549,7 +549,9 @@ class _AiMessageInputState extends State<AiMessageInput>
                           ? null
                           : () async {
                               await _generateCustomAiReply();
-                              Navigator.pop(context);
+                              if (mounted) {
+                                Navigator.pop(context);
+                              }
                             },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: PulseColors.primary,

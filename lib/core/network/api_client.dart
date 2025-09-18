@@ -1389,12 +1389,12 @@ class ApiClient {
 
   /// Join an event
   Future<Response> joinEvent(String eventId) async {
-    return await _dio.post('/events/$eventId/join');
+    return await _dio.post('/speed-dating/events/$eventId/join');
   }
 
   /// Leave an event
   Future<Response> leaveEvent(String eventId) async {
-    return await _dio.delete('/events/$eventId/join');
+    return await _dio.delete('/speed-dating/events/$eventId/join');
   }
 
   /// Get event participants
