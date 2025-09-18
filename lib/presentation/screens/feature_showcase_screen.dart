@@ -106,7 +106,8 @@ class _FeatureShowcaseScreenState extends State<FeatureShowcaseScreen>
                 id: 'demo_conversation',
                 otherUserId: 'user2',
                 otherUserName: 'Sarah Chen',
-                otherUserAvatar: 'https://images.unsplash.com/photo-1494790108755-2616b9e3b8d8',
+                otherUserAvatar:
+                    'https://apilink.pulsetek.co.za/uploads/images-seeder/image-1783.jpg',
                 lastMessage: 'Hey! How are you?',
                 lastMessageTime: DateTime.now(),
               ),
@@ -311,7 +312,7 @@ class _FeatureShowcaseScreenState extends State<FeatureShowcaseScreen>
                 const SizedBox(height: 12),
                 const UserStatusIndicator(
                   status: UserStatus.online,
-                  profileImageUrl: 'https://images.unsplash.com/photo-1494790108755-2616b9e3b8d8',
+                  profileImageUrl: 'https://apilink.pulsetek.co.za/uploads/images-seeder/image-1787.jpg',
                   size: 80,
                 ),
               ],

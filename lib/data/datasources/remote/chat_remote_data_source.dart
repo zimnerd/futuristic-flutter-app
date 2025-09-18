@@ -224,7 +224,11 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
       );
 
       if (response.statusCode == 200) {
-        final List<dynamic> messagesData = response.data['messages'];
+        final dynamic responseData = response.data['data'];
+        // Handle both null and empty array cases
+        final List<dynamic> messagesData = (responseData is List)
+            ? responseData
+            : <dynamic>[];
         return messagesData.map((json) => MessageModel.fromJson(json)).toList();
       } else {
         throw ApiException('Failed to get messages: ${response.statusMessage}');
@@ -427,7 +431,11 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
       );
 
       if (response.statusCode == 200) {
-        final List<dynamic> messagesData = response.data['messages'];
+        final dynamic responseData = response.data['data'];
+        // Handle both null and empty array cases
+        final List<dynamic> messagesData = (responseData is List)
+            ? responseData
+            : <dynamic>[];
         return messagesData.map((json) => MessageModel.fromJson(json)).toList();
       } else {
         throw ApiException('Failed to search messages: ${response.statusMessage}');

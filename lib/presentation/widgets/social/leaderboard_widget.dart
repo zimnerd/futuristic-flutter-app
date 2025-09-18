@@ -29,7 +29,8 @@ class _LeaderboardWidgetState extends State<LeaderboardWidget>
       name: 'Sarah Chen',
       score: 2845,
       rank: 1,
-      avatar: 'https://images.unsplash.com/photo-1494790108755-2616b9e3b8d8',
+      avatar:
+          'https://apilink.pulsetek.co.za/uploads/images-seeder/image-1761.jpg',
       badgeType: BadgeType.gold,
       isCurrentUser: false,
       streak: 12,
@@ -40,7 +41,8 @@ class _LeaderboardWidgetState extends State<LeaderboardWidget>
       name: 'Alex Rivera',
       score: 2720,
       rank: 2,
-      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d',
+      avatar:
+          'https://apilink.pulsetek.co.za/uploads/images-seeder/image-1763.jpg',
       badgeType: BadgeType.silver,
       isCurrentUser: false,
       streak: 8,
@@ -51,7 +53,8 @@ class _LeaderboardWidgetState extends State<LeaderboardWidget>
       name: 'Emma Johnson',
       score: 2650,
       rank: 3,
-      avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80',
+      avatar:
+          'https://apilink.pulsetek.co.za/uploads/images-seeder/image-1766.jpg',
       badgeType: BadgeType.bronze,
       isCurrentUser: false,
       streak: 15,
@@ -62,7 +65,8 @@ class _LeaderboardWidgetState extends State<LeaderboardWidget>
       name: 'You',
       score: 2420,
       rank: 7,
-      avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e',
+      avatar:
+          'https://apilink.pulsetek.co.za/uploads/images-seeder/image-1769.jpg',
       badgeType: BadgeType.none,
       isCurrentUser: true,
       streak: 5,

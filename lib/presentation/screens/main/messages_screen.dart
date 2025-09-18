@@ -34,7 +34,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
         id: '1',
         name: 'Emma',
         avatar:
-            'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=100',
+            'https://apilink.pulsetek.co.za/uploads/images-seeder/image-1771.jpg',
         lastMessage: 'Hey! How was your day?',
         timestamp: '2m ago',
         unreadCount: 2,
@@ -45,7 +45,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
         id: '2',
         name: 'Sarah',
         avatar:
-            'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=100',
+            'https://apilink.pulsetek.co.za/uploads/images-seeder/image-1776.jpg',
         lastMessage: 'Would love to grab coffee sometime ☕️',
         timestamp: '1h ago',
         unreadCount: 0,
@@ -56,7 +56,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
         id: '3',
         name: 'Alex',
         avatar:
-            'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100',
+            'https://apilink.pulsetek.co.za/uploads/images-seeder/image-1777.jpg',
         lastMessage: 'That movie was amazing!',
         timestamp: '3h ago',
         unreadCount: 1,
@@ -67,7 +67,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
         id: '4',
         name: 'Jessica',
         avatar:
-            'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100',
+            'https://apilink.pulsetek.co.za/uploads/images-seeder/image-1780.jpg',
         lastMessage: 'See you tomorrow!',
         timestamp: '1d ago',
         unreadCount: 0,
