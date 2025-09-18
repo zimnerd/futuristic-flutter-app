@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pulse_dating_app/data/services/ai_feedback_service.dart';
 
 /// AI Feedback Widget - collects user feedback and ratings for AI features
 /// Supports quick ratings, detailed feedback, and improvement suggestions
@@ -403,19 +404,12 @@ class _AiFeedbackWidgetState extends State<AiFeedbackWidget>
     setState(() => _isSubmitting = true);
 
     try {
-      // TODO: Submit via AiFeedbackService when dependencies are resolved
-      /*
       final success = await AiFeedbackService.instance.quickRateSuggestion(
         userId: widget.userId,
         suggestionId: widget.featureId,
         featureType: widget.featureType,
         isPositive: _overallRating >= 3,
       );
-      */
-
-      // Mock success
-      await Future.delayed(const Duration(seconds: 1));
-      const success = true;
 
       if (success && mounted) {
         _showSuccessMessage('Thank you for your feedback!');
@@ -437,13 +431,16 @@ class _AiFeedbackWidgetState extends State<AiFeedbackWidget>
     setState(() => _isSubmitting = true);
 
     try {
-      // TODO: Submit via AiFeedbackService when dependencies are resolved
-      /*
       final success = await AiFeedbackService.instance.submitGeneralAiFeedback(
         userId: widget.userId,
+        aiResponseId: widget.featureId,
         featureType: widget.featureType,
-        rating: _overallRating,
-        satisfaction: _helpfulnessRating,
+        rating: _overallRating > 0
+            ? _overallRating
+            : (_helpfulnessRating > 0 ? _helpfulnessRating : 3),
+        satisfaction: _helpfulnessRating > 0
+            ? _helpfulnessRating
+            : (_overallRating > 0 ? _overallRating : 3),
         comment: _commentController.text.isEmpty ? null : _commentController.text,
         context: {
           'helpfulness': _helpfulnessRating,
@@ -451,11 +448,6 @@ class _AiFeedbackWidgetState extends State<AiFeedbackWidget>
           'feature_id': widget.featureId,
         },
       );
-      */
-
-      // Mock success
-      await Future.delayed(const Duration(seconds: 1));
-      const success = true;
 
       if (success && mounted) {
         _showSuccessMessage('Thank you for your detailed feedback!');
@@ -548,15 +540,12 @@ class AiQuickFeedbackButton extends StatelessWidget {
 
   Future<void> _submitQuickFeedback(BuildContext context) async {
     try {
-      // TODO: Submit via AiFeedbackService when dependencies are resolved
-      /*
       await AiFeedbackService.instance.quickRateSuggestion(
         userId: userId,
         suggestionId: featureId,
         featureType: featureType,
         isPositive: isPositive,
       );
-      */
 
       onPressed?.call();
       

@@ -162,6 +162,7 @@ class AiFeedbackService {
   /// Submit general AI feature feedback
   Future<bool> submitGeneralAiFeedback({
     required String userId,
+    required String aiResponseId,
     required String featureType, // 'smart_notifications', 'insights_dashboard', 'ai_matching'
     required int rating, // 1-5 scale
     required int satisfaction, // 1-5 scale
@@ -170,30 +171,32 @@ class AiFeedbackService {
     Map<String, dynamic>? context,
   }) async {
     try {
-      final feedback = {
-        'type': 'general_ai_feedback',
-        'userId': userId,
-        'featureType': featureType,
-        'ratings': {
-          'overall': rating,
+      final response = await _apiClient.submitAiFeedback(
+        aiResponseId: aiResponseId,
+        featureType: featureType,
+        rating: rating,
+        comment: comment,
+        helpful: satisfaction >= 4,
+        context: {
+          'type': 'general_ai_feedback',
           'satisfaction': satisfaction,
-          'wouldContinueUsing': rating >= 3,
+          if (improvementSuggestions != null)
+            'improvementSuggestions': improvementSuggestions,
+          ...?context,
         },
-        'feedback': {
-          'comment': comment,
-          'improvementSuggestions': improvementSuggestions,
-        },
-        'context': context,
-        'metadata': {
-          'platform': 'mobile',
-          'timestamp': DateTime.now().toIso8601String(),
-          'version': '1.0.0',
-        },
-      };
+      );
 
-      return await _submitFeedback(feedback);
+      if (response.statusCode == 200) {
+        _logFeedbackSubmission('general', featureType, rating);
+        return true;
+      }
+
+      _logger.e('Failed to submit general AI feedback: ${response.statusCode}');
+      return false;
     } catch (e) {
       _logger.e('Error submitting general AI feedback: $e');
+      // Log locally for analytics even if API fails
+      _logFeedbackSubmission('general', featureType, rating);
       return false;
     }
   }
@@ -306,17 +309,23 @@ class AiFeedbackService {
     String? quickComment,
   }) async {
     try {
-      final quickRating = {
-        'type': 'quick_rating',
-        'userId': userId,
-        'suggestionId': suggestionId,
-        'featureType': featureType,
-        'rating': isPositive ? 'positive' : 'negative',
-        'quickComment': quickComment,
-        'timestamp': DateTime.now().toIso8601String(),
-      };
+      final response = await _apiClient.submitAiFeedback(
+        aiResponseId: suggestionId,
+        featureType: featureType,
+        rating: isPositive ? 5 : 1,
+        comment: quickComment,
+        helpful: isPositive,
+        context: {'type': 'quick_rating',
+        },
+      );
 
-      return await _submitFeedback(quickRating);
+      if (response.statusCode == 200) {
+        _logFeedbackSubmission('quick', featureType, isPositive ? 5 : 1);
+        return true;
+      }
+
+      _logger.e('Failed to submit quick rating: ${response.statusCode}');
+      return false;
     } catch (e) {
       _logger.e('Error submitting quick rating: $e');
       return false;
