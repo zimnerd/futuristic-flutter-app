@@ -9,6 +9,7 @@ import 'blocs/notification_bloc.dart';
 import 'core/constants/app_constants.dart';
 import 'core/storage/hive_storage_service.dart';
 import 'core/utils/logger.dart';
+import 'core/services/service_locator.dart';
 import 'data/datasources/local/user_local_data_source.dart';
 import 'data/datasources/remote/chat_remote_data_source.dart';
 import 'data/datasources/remote/notification_remote_data_source.dart';
@@ -27,7 +28,6 @@ import 'data/services/preferences_service.dart';
 import 'data/services/discovery_service.dart';
 import 'data/services/token_service.dart';
 import 'domain/repositories/user_repository.dart';
-import 'domain/services/api_service.dart';
 import 'presentation/blocs/auth/auth_bloc.dart';
 import 'presentation/blocs/user/user_bloc.dart';
 import 'presentation/blocs/event/event_bloc.dart';
@@ -50,6 +50,9 @@ void main() async {
   // Initialize local storage
   final hiveStorage = HiveStorageService();
   await hiveStorage.initialize();
+
+  // Initialize ServiceLocator (required for token storage)
+  await ServiceLocator.instance.initialize();
 
   // Initialize authentication tokens
   await _initializeStoredTokens();
@@ -111,11 +114,11 @@ class PulseDatingApp extends StatelessWidget {
           ),
           RepositoryProvider<ChatRemoteDataSource>(
             create: (context) =>
-                ChatRemoteDataSourceImpl(context.read<ApiService>()),
+                ChatRemoteDataSourceImpl(context.read<ApiClient>()),
           ),
           RepositoryProvider<NotificationRemoteDataSource>(
             create: (context) =>
-                NotificationRemoteDataSourceImpl(context.read<ApiService>()),
+                NotificationRemoteDataSourceImpl(context.read<ApiClient>()),
           ),
 
           // Initialize repositories with complete implementation

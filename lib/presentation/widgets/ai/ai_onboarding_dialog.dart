@@ -347,7 +347,7 @@ class _AiOnboardingDialogState extends State<AiOnboardingDialog>
           Switch(
             value: value,
             onChanged: onChanged,
-            activeColor: Colors.cyan,
+            activeThumbColor: Colors.cyan,
             activeTrackColor: Colors.cyan.withValues(alpha: 0.3),
             inactiveTrackColor: Colors.grey.withValues(alpha: 0.3),
           ),

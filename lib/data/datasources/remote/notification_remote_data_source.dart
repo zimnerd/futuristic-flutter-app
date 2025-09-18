@@ -1,7 +1,7 @@
 import 'package:logger/logger.dart';
 
 import '../../models/notification_model.dart';
-import '../../../domain/services/api_service.dart';
+import '../../../core/network/api_client.dart';
 import '../../exceptions/app_exceptions.dart';
 
 /// Remote data source for notification-related API operations
@@ -21,7 +21,7 @@ abstract class NotificationRemoteDataSource {
 
 /// Implementation of NotificationRemoteDataSource using API service
 class NotificationRemoteDataSourceImpl implements NotificationRemoteDataSource {
-  final ApiService _apiService;
+  final ApiClient _apiService;
   final Logger _logger = Logger();
 
   NotificationRemoteDataSourceImpl(this._apiService);

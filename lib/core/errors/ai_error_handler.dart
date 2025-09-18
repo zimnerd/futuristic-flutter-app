@@ -3,7 +3,6 @@ import 'package:dio/dio.dart';
 
 /// Enhanced error handling for AI service calls
 /// Provides structured error responses and appropriate fallback strategies
-import 'package:flutter/foundation.dart';
 import 'package:logger/logger.dart';
 
 /// Comprehensive error handling for AI services with categorization and recovery strategies

@@ -2,7 +2,7 @@ import 'package:logger/logger.dart';
 
 import '../../models/chat_model.dart';
 import '../../models/message.dart';
-import '../../../domain/services/api_service.dart';
+import '../../../core/network/api_client.dart';
 import '../../exceptions/app_exceptions.dart';
 
 /// Remote data source for chat-related API operations
@@ -63,7 +63,7 @@ abstract class ChatRemoteDataSource {
 
 /// Implementation of ChatRemoteDataSource using API service
 class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
-  final ApiService _apiService;
+  final ApiClient _apiService;
   final Logger _logger = Logger();
 
   ChatRemoteDataSourceImpl(this._apiService);

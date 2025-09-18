@@ -157,16 +157,19 @@ class ConversationAnalysisService {
     
     // Determine compatibility level based on overall score
     CompatibilityLevel level = CompatibilityLevel.incompatible;
-    if (overall >= 0.9)
+    if (overall >= 0.9) {
       level = CompatibilityLevel.excellent;
-    else if (overall >= 0.8)
+    } else if (overall >= 0.8) {
       level = CompatibilityLevel.high;
-    else if (overall >= 0.7)
+    } else if (overall >= 0.7) {
       level = CompatibilityLevel.good;
-    else if (overall >= 0.6)
+    } else if (overall >= 0.6) {
       level = CompatibilityLevel.moderate;
-    else if (overall >= 0.4)
+    } else if (overall >= 0.4) {
       level = CompatibilityLevel.low;
+    } else {
+      level = CompatibilityLevel.incompatible;
+    }
     
     return CompatibilityScore(
       overallScore: overall,
