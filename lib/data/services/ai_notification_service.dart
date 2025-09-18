@@ -20,7 +20,9 @@ class AiNotificationService {
   // Singleton getter with lazy initialization
   static AiNotificationService get instance {
     if (_instance == null) {
-      throw StateError('AiNotificationService must be initialized with dependencies first');
+      throw StateError(
+        'AiNotificationService must be initialized with dependencies first',
+      );
     }
     return _instance!;
   }
@@ -55,10 +57,14 @@ class AiNotificationService {
       if (response.statusCode == 200 && response.data != null) {
         final data = response.data as List;
         final notifications = data
-            .map((item) => AiNotification.fromJson(item as Map<String, dynamic>))
+            .map(
+              (item) => AiNotification.fromJson(item as Map<String, dynamic>),
+            )
             .toList();
-        
-        _logger.d('Successfully generated ${notifications.length} conversation prompts');
+
+        _logger.d(
+          'Successfully generated ${notifications.length} conversation prompts',
+        );
         return notifications;
       }
 
@@ -94,10 +100,14 @@ class AiNotificationService {
       if (response.statusCode == 200 && response.data != null) {
         final data = response.data as List;
         final notifications = data
-            .map((item) => AiNotification.fromJson(item as Map<String, dynamic>))
+            .map(
+              (item) => AiNotification.fromJson(item as Map<String, dynamic>),
+            )
             .toList();
-        
-        _logger.d('Successfully generated ${notifications.length} match suggestions');
+
+        _logger.d(
+          'Successfully generated ${notifications.length} match suggestions',
+        );
         return notifications;
       }
 
@@ -123,7 +133,9 @@ class AiNotificationService {
         },
       };
 
-      _logger.d('Generating profile optimization recommendations for user $userId');
+      _logger.d(
+        'Generating profile optimization recommendations for user $userId',
+      );
 
       final response = await _apiService.post(
         '/ai/notifications/profile-optimization',
@@ -133,10 +145,14 @@ class AiNotificationService {
       if (response.statusCode == 200 && response.data != null) {
         final data = response.data as List;
         final notifications = data
-            .map((item) => AiNotification.fromJson(item as Map<String, dynamic>))
+            .map(
+              (item) => AiNotification.fromJson(item as Map<String, dynamic>),
+            )
             .toList();
-        
-        _logger.d('Successfully generated ${notifications.length} profile optimization recommendations');
+
+        _logger.d(
+          'Successfully generated ${notifications.length} profile optimization recommendations',
+        );
         return notifications;
       }
 
@@ -192,7 +208,9 @@ class AiNotificationService {
     required String notificationType,
   }) async {
     try {
-      _logger.d('Getting optimal notification time for user $userId, type: $notificationType');
+      _logger.d(
+        'Getting optimal notification time for user $userId, type: $notificationType',
+      );
 
       final response = await _apiService.get(
         '/ai/notifications/optimal-timing',
@@ -235,7 +253,9 @@ class AiNotificationService {
         },
       };
 
-      _logger.d('Tracking notification interaction for user $userId: $notificationId - $interactionType');
+      _logger.d(
+        'Tracking notification interaction for user $userId: $notificationId - $interactionType',
+      );
 
       final response = await _apiService.post(
         '/ai/notifications/interaction',
