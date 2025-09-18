@@ -1,16 +1,34 @@
 import 'dart:async';
+import 'package:logger/logger.dart';
+
+import '../../domain/services/api_service.dart';
 
 /// AI Smart Notification Service - provides AI-driven notifications for conversation prompts,
 /// match suggestions, and profile optimization recommendations
 class AiNotificationService {
   static AiNotificationService? _instance;
-  static AiNotificationService get instance => 
-      _instance ??= AiNotificationService._();
-  AiNotificationService._();
+  
+  final ApiService _apiService;
+  final Logger _logger = Logger();
 
-  // TODO: Replace with actual service injections when dependencies are resolved
-  // final ApiService _apiService = ServiceLocator.instance.get<ApiService>();
-  // final NotificationService _notificationService = ServiceLocator.instance.get<NotificationService>();
+  // Private constructor for singleton
+  AiNotificationService._(this._apiService);
+
+  // Constructor for dependency injection
+  AiNotificationService.withDependencies(this._apiService);
+
+  // Singleton getter with lazy initialization
+  static AiNotificationService get instance {
+    if (_instance == null) {
+      throw StateError('AiNotificationService must be initialized with dependencies first');
+    }
+    return _instance!;
+  }
+
+  // Initialize singleton with dependencies
+  static void initialize(ApiService apiService) {
+    _instance = AiNotificationService._(apiService);
+  }
 
   /// Generate conversation prompt notifications based on user behavior
   Future<List<AiNotification>?> generateConversationPrompts({
@@ -19,8 +37,6 @@ class AiNotificationService {
   }) async {
     try {
       final request = {
-        'userId': userId,
-        'notificationType': 'conversation_prompts',
         'limit': limit,
         'context': {
           'platform': 'mobile',
@@ -29,25 +45,26 @@ class AiNotificationService {
         },
       };
 
-      // TODO: Call backend AI service when dependencies are available
-      /*
+      _logger.d('Generating conversation prompts for user $userId');
+
       final response = await _apiService.post(
         '/ai/notifications/conversation-prompts',
-        body: request,
+        data: request,
       );
 
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        return List<AiNotification>.from(
-          data['notifications'].map((n) => AiNotification.fromJson(n))
-        );
+      if (response.statusCode == 200 && response.data != null) {
+        final data = response.data as List;
+        final notifications = data
+            .map((item) => AiNotification.fromJson(item as Map<String, dynamic>))
+            .toList();
+        
+        _logger.d('Successfully generated ${notifications.length} conversation prompts');
+        return notifications;
       }
-      */
 
-      // Return mock notifications for now
-      return _generateMockConversationPrompts(userId);
+      return null;
     } catch (e) {
-      print('Error generating conversation prompts: $e');
+      _logger.e('Error generating conversation prompts: $e');
       return null;
     }
   }
@@ -59,8 +76,6 @@ class AiNotificationService {
   }) async {
     try {
       final request = {
-        'userId': userId,
-        'notificationType': 'match_suggestions',
         'limit': limit,
         'context': {
           'platform': 'mobile',
@@ -69,38 +84,37 @@ class AiNotificationService {
         },
       };
 
-      // TODO: Call backend AI service when dependencies are available
-      /*
+      _logger.d('Generating match suggestions for user $userId');
+
       final response = await _apiService.post(
         '/ai/notifications/match-suggestions',
-        body: request,
+        data: request,
       );
 
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        return List<AiNotification>.from(
-          data['notifications'].map((n) => AiNotification.fromJson(n))
-        );
+      if (response.statusCode == 200 && response.data != null) {
+        final data = response.data as List;
+        final notifications = data
+            .map((item) => AiNotification.fromJson(item as Map<String, dynamic>))
+            .toList();
+        
+        _logger.d('Successfully generated ${notifications.length} match suggestions');
+        return notifications;
       }
-      */
 
-      // Return mock notifications for now
-      return _generateMockMatchSuggestions(userId);
+      return null;
     } catch (e) {
-      print('Error generating match suggestions: $e');
+      _logger.e('Error generating match suggestions: $e');
       return null;
     }
   }
 
-  /// Generate profile optimization notifications
-  Future<List<AiNotification>?> generateProfileOptimizations({
+  /// Generate profile optimization recommendations
+  Future<List<AiNotification>?> generateProfileOptimization({
     required String userId,
-    int? limit = 4,
+    int? limit = 3,
   }) async {
     try {
       final request = {
-        'userId': userId,
-        'notificationType': 'profile_optimizations',
         'limit': limit,
         'context': {
           'platform': 'mobile',
@@ -109,25 +123,26 @@ class AiNotificationService {
         },
       };
 
-      // TODO: Call backend AI service when dependencies are available
-      /*
+      _logger.d('Generating profile optimization recommendations for user $userId');
+
       final response = await _apiService.post(
-        '/ai/notifications/profile-optimizations',
-        body: request,
+        '/ai/notifications/profile-optimization',
+        data: request,
       );
 
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        return List<AiNotification>.from(
-          data['notifications'].map((n) => AiNotification.fromJson(n))
-        );
+      if (response.statusCode == 200 && response.data != null) {
+        final data = response.data as List;
+        final notifications = data
+            .map((item) => AiNotification.fromJson(item as Map<String, dynamic>))
+            .toList();
+        
+        _logger.d('Successfully generated ${notifications.length} profile optimization recommendations');
+        return notifications;
       }
-      */
 
-      // Return mock notifications for now
-      return _generateMockProfileOptimizations(userId);
+      return null;
     } catch (e) {
-      print('Error generating profile optimizations: $e');
+      _logger.e('Error generating profile optimization recommendations: $e');
       return null;
     }
   }
@@ -140,7 +155,6 @@ class AiNotificationService {
   }) async {
     try {
       final request = {
-        'userId': userId,
         'notification': notification.toJson(),
         'scheduling': {
           'preferredTime': preferredTime?.toIso8601String(),
@@ -153,25 +167,21 @@ class AiNotificationService {
         },
       };
 
-      // TODO: Schedule via backend when dependencies are available
-      /*
+      _logger.d('Scheduling smart notification for user $userId');
+
       final response = await _apiService.post(
         '/ai/notifications/schedule',
-        body: request,
+        data: request,
       );
 
-      if (response.statusCode == 200) {
-        // Also schedule local notification as backup
-        await _scheduleLocalNotification(notification, preferredTime);
+      if (response.statusCode == 201) {
+        _logger.d('Successfully scheduled notification: ${notification.title}');
         return true;
       }
-      */
 
-      // Mock success and simulate local scheduling
-      print('Scheduled smart notification: ${notification.title}');
-      return true;
+      return false;
     } catch (e) {
-      print('Error scheduling smart notification: $e');
+      _logger.e('Error scheduling smart notification: $e');
       return false;
     }
   }
@@ -182,36 +192,28 @@ class AiNotificationService {
     required String notificationType,
   }) async {
     try {
-      final request = {
-        'userId': userId,
-        'notificationType': notificationType,
-        'currentTime': DateTime.now().toIso8601String(),
-      };
+      _logger.d('Getting optimal notification time for user $userId, type: $notificationType');
 
-      // TODO: Get from backend AI analysis when dependencies are available
-      /*
-      final response = await _apiService.post(
+      final response = await _apiService.get(
         '/ai/notifications/optimal-timing',
-        body: request,
+        queryParameters: {
+          'notificationType': notificationType,
+          'currentTime': DateTime.now().toIso8601String(),
+        },
       );
 
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        return DateTime.parse(data['optimalTime']);
+      if (response.statusCode == 200 && response.data != null) {
+        final data = response.data as Map<String, dynamic>;
+        if (data['optimalTime'] != null) {
+          final optimalTime = DateTime.parse(data['optimalTime']);
+          _logger.d('Retrieved optimal notification time: $optimalTime');
+          return optimalTime;
+        }
       }
-      */
 
-      // Return mock optimal time (evening hours when users are most active)
-      final now = DateTime.now();
-      return DateTime(
-        now.year,
-        now.month,
-        now.day,
-        19 + (now.hour % 3), // Between 7-9 PM
-        15 + (now.minute % 30), // Random minutes
-      );
+      return null;
     } catch (e) {
-      print('Error getting optimal notification time: $e');
+      _logger.e('Error getting optimal notification time: $e');
       return null;
     }
   }
@@ -225,7 +227,6 @@ class AiNotificationService {
   }) async {
     try {
       final request = {
-        'userId': userId,
         'notificationId': notificationId,
         'interaction': {
           'type': interactionType,
@@ -234,21 +235,21 @@ class AiNotificationService {
         },
       };
 
-      // TODO: Track via backend when dependencies are available
-      /*
+      _logger.d('Tracking notification interaction for user $userId: $notificationId - $interactionType');
+
       final response = await _apiService.post(
         '/ai/notifications/interaction',
-        body: request,
+        data: request,
       );
 
-      return response.statusCode == 200;
-      */
+      if (response.statusCode == 200) {
+        _logger.d('Successfully tracked notification interaction');
+        return true;
+      }
 
-      // Mock success for now
-      print('Tracked notification interaction: $notificationId - $interactionType');
-      return true;
+      return false;
     } catch (e) {
-      print('Error tracking notification interaction: $e');
+      _logger.e('Error tracking notification interaction: $e');
       return false;
     }
   }
@@ -258,30 +259,26 @@ class AiNotificationService {
     required String userId,
   }) async {
     try {
-      final request = {
-        'userId': userId,
-        'includeEngagementPatterns': true,
-        'includePreferences': true,
-        'includeOptimalTiming': true,
-      };
+      _logger.d('Getting notification insights for user $userId');
 
-      // TODO: Get insights from backend when dependencies are available
-      /*
       final response = await _apiService.get(
         '/ai/notifications/insights',
-        queryParameters: request,
+        queryParameters: {
+          'includeEngagementPatterns': 'true',
+          'includePreferences': 'true',
+          'includeOptimalTiming': 'true',
+        },
       );
 
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        return data['insights'];
+      if (response.statusCode == 200 && response.data != null) {
+        final data = response.data as Map<String, dynamic>;
+        _logger.d('Successfully retrieved notification insights');
+        return data;
       }
-      */
 
-      // Return mock insights for now
-      return _getMockNotificationInsights();
+      return null;
     } catch (e) {
-      print('Error getting notification insights: $e');
+      _logger.e('Error getting notification insights: $e');
       return null;
     }
   }
@@ -293,160 +290,27 @@ class AiNotificationService {
   }) async {
     try {
       final request = {
-        'userId': userId,
         'preferences': preferences,
         'updatedAt': DateTime.now().toIso8601String(),
       };
 
-      // TODO: Update via backend when dependencies are available
-      /*
+      _logger.d('Updating notification preferences for user $userId');
+
       final response = await _apiService.put(
         '/ai/notifications/preferences',
-        body: request,
+        data: request,
       );
 
-      return response.statusCode == 200;
-      */
+      if (response.statusCode == 200) {
+        _logger.d('Successfully updated notification preferences');
+        return true;
+      }
 
-      // Mock success for now
-      print('Updated notification preferences for user: $userId');
-      return true;
+      return false;
     } catch (e) {
-      print('Error updating notification preferences: $e');
+      _logger.e('Error updating notification preferences: $e');
       return false;
     }
-  }
-
-  // Private helper methods
-
-  Future<void> _scheduleLocalNotification(
-    AiNotification notification,
-    DateTime? scheduledTime,
-  ) async {
-    // TODO: Schedule local notification when dependencies are available
-    /*
-    await _notificationService.scheduleNotification(
-      id: notification.id.hashCode,
-      title: notification.title,
-      body: notification.message,
-      scheduledDate: scheduledTime ?? DateTime.now().add(Duration(minutes: 5)),
-      payload: jsonEncode(notification.toJson()),
-    );
-    */
-    
-    print('Local notification scheduled: ${notification.title}');
-  }
-
-  /// Mock data generation for development
-
-  List<AiNotification> _generateMockConversationPrompts(String userId) {
-    return [
-      AiNotification(
-        id: 'conv_prompt_1',
-        type: 'conversation_prompt',
-        title: '💬 Start a conversation',
-        message: 'Sarah viewed your profile! Try: "I noticed you love hiking too..."',
-        priority: NotificationPriority.medium,
-        actionData: {
-          'conversationId': 'conv_123',
-          'suggestedMessage': 'I noticed you love hiking too! What\'s your favorite trail?',
-          'reasoning': 'Shared interest in hiking provides natural conversation starter',
-        },
-        generatedAt: DateTime.now(),
-        expiresAt: DateTime.now().add(const Duration(hours: 6)),
-      ),
-      AiNotification(
-        id: 'conv_prompt_2',
-        type: 'conversation_prompt',
-        title: '🎯 Keep the conversation going',
-        message: 'Emma hasn\'t replied in 2 days. Try a follow-up question?',
-        priority: NotificationPriority.low,
-        actionData: {
-          'conversationId': 'conv_456',
-          'suggestedMessage': 'How was your weekend adventure? 😊',
-          'reasoning': 'Light, friendly follow-up after 2-day gap',
-        },
-        generatedAt: DateTime.now(),
-        expiresAt: DateTime.now().add(const Duration(hours: 12)),
-      ),
-    ];
-  }
-
-  List<AiNotification> _generateMockMatchSuggestions(String userId) {
-    return [
-      AiNotification(
-        id: 'match_sugg_1',
-        type: 'match_suggestion',
-        title: '✨ Perfect match found',
-        message: 'Alex has 92% compatibility with you! Check their profile.',
-        priority: NotificationPriority.high,
-        actionData: {
-          'matchUserId': 'user_789',
-          'compatibilityScore': 92,
-          'sharedInterests': ['photography', 'travel', 'cooking'],
-          'reasoning': 'High compatibility based on shared interests and personality analysis',
-        },
-        generatedAt: DateTime.now(),
-        expiresAt: DateTime.now().add(const Duration(days: 1)),
-      ),
-    ];
-  }
-
-  List<AiNotification> _generateMockProfileOptimizations(String userId) {
-    return [
-      AiNotification(
-        id: 'profile_opt_1',
-        type: 'profile_optimization',
-        title: '📸 Boost your profile',
-        message: 'Add a photo with friends to increase matches by 23%',
-        priority: NotificationPriority.medium,
-        actionData: {
-          'optimizationType': 'photo_suggestion',
-          'expectedImprovement': '23% more matches',
-          'reasoning': 'Profiles with social photos receive more engagement',
-        },
-        generatedAt: DateTime.now(),
-        expiresAt: DateTime.now().add(const Duration(days: 3)),
-      ),
-      AiNotification(
-        id: 'profile_opt_2',
-        type: 'profile_optimization',
-        title: '✍️ Perfect your bio',
-        message: 'Your bio could mention your sense of humor more',
-        priority: NotificationPriority.low,
-        actionData: {
-          'optimizationType': 'bio_suggestion',
-          'suggestion': 'Add a light joke or mention your favorite comedy',
-          'reasoning': 'Humor is highly valued by your potential matches',
-        },
-        generatedAt: DateTime.now(),
-        expiresAt: DateTime.now().add(const Duration(days: 7)),
-      ),
-    ];
-  }
-
-  Map<String, dynamic> _getMockNotificationInsights() {
-    return {
-      'engagementPatterns': {
-        'bestTimes': ['19:00', '20:30', '21:15'],
-        'worstTimes': ['06:00', '14:00', '23:00'],
-        'averageResponseTime': '4.2 minutes',
-        'engagementRate': 0.73,
-      },
-      'preferences': {
-        'conversationPrompts': true,
-        'matchSuggestions': true,
-        'profileOptimizations': false,
-        'frequency': 'moderate', // low, moderate, high
-        'quietHours': {'start': '22:00', 'end': '08:00'},
-      },
-      'effectiveness': {
-        'conversationStartRate': 0.68,
-        'profileImprovementRate': 0.45,
-        'notificationActedUpon': 0.82,
-        'userSatisfaction': 4.3,
-      },
-    };
   }
 }
 
