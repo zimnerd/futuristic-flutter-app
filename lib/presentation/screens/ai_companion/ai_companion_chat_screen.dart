@@ -7,6 +7,7 @@ import '../../blocs/ai_companion/ai_companion_event.dart';
 import '../../blocs/ai_companion/ai_companion_state.dart';
 import '../../widgets/common/pulse_loading_widget.dart';
 import '../../widgets/common/pulse_error_widget.dart';
+import '../../widgets/chat/ai_message_input.dart';
 import '../../theme/pulse_colors.dart';
 
 /// Chat screen for AI companion conversations
@@ -259,64 +260,56 @@ class _AiCompanionChatScreenState extends State<AiCompanionChatScreen> {
   }
 
   Widget _buildMessageInput() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border(
-          top: BorderSide(color: Colors.grey[300]!),
-        ),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: TextField(
-              controller: _messageController,
-              decoration: InputDecoration(
-                hintText: 'Type a message...',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(25),
-                  borderSide: BorderSide.none,
-                ),
-                filled: true,
-                fillColor: Colors.grey[100],
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 12,
-                ),
+    return BlocBuilder<AiCompanionBloc, AiCompanionState>(
+      builder: (context, state) {
+        String? lastAiMessage;
+
+        // Get the last AI message for context
+        if (state is AiCompanionLoaded &&
+            state.conversationHistory.isNotEmpty) {
+          final aiMessages = state.conversationHistory
+              .where((msg) => msg.isFromCompanion)
+              .toList();
+          if (aiMessages.isNotEmpty) {
+            lastAiMessage = aiMessages.last.content;
+          }
+        }
+
+        return AiMessageInput(
+          controller: _messageController,
+          onSend: () {
+            final message = _messageController.text.trim();
+            if (message.isNotEmpty) {
+              _sendMessage(message);
+            }
+          },
+          chatId: 'ai_companion_${widget.companion.id}',
+          lastReceivedMessage: lastAiMessage,
+          onTyping: () {
+            // Handle typing indicator if needed
+          },
+          onCamera: () {
+            // Handle camera functionality
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Camera feature coming soon!')),
+            );
+          },
+          onGallery: () {
+            // Handle gallery functionality
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Gallery feature coming soon!')),
+            );
+          },
+          onVoice: () {
+            // Handle voice message functionality
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Voice message feature coming soon!'),
               ),
-              maxLines: null,
-              textInputAction: TextInputAction.send,
-              onSubmitted: (value) {
-                if (value.trim().isNotEmpty) {
-                  _sendMessage(value.trim());
-                }
-              },
-            ),
-          ),
-          const SizedBox(width: 12),
-          GestureDetector(
-            onTap: () {
-              final message = _messageController.text.trim();
-              if (message.isNotEmpty) {
-                _sendMessage(message);
-              }
-            },
-            child: Container(
-              padding: const EdgeInsets.all(12),
-              decoration: const BoxDecoration(
-                color: PulseColors.primary,
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.send,
-                color: Colors.white,
-                size: 20,
-              ),
-            ),
-          ),
-        ],
-      ),
+            );
+          },
+        );
+      },
     );
   }
 

@@ -22,6 +22,7 @@ import 'subscription_service.dart';
 import 'saved_payment_methods_service.dart';
 import 'ai_matching_service.dart';
 import 'icebreaker_service.dart';
+import 'auto_reply_service.dart';
 
 /// Simple service locator without external dependencies
 class ServiceLocator {
@@ -51,6 +52,7 @@ class ServiceLocator {
   late final SubscriptionService _subscriptionService;
   late final AiMatchingService _aiMatchingService;
   late final IcebreakerService _icebreakerService;
+  late final AutoReplyService _autoReplyService;
 
   bool _isInitialized = false;
 
@@ -95,6 +97,7 @@ class ServiceLocator {
     // Initialize AI services
     _aiMatchingService = AiMatchingService(_apiClient);
     _icebreakerService = IcebreakerService(_apiClient);
+    _autoReplyService = AutoReplyService(_apiClient);
 
     // Initialize SubscriptionService
     _subscriptionService = SubscriptionService(
@@ -232,5 +235,11 @@ class ServiceLocator {
   IcebreakerService get icebreakerService {
     if (!_isInitialized) initialize();
     return _icebreakerService;
+  }
+
+  /// Get AutoReplyService instance
+  AutoReplyService get autoReplyService {
+    if (!_isInitialized) initialize();
+    return _autoReplyService;
   }
 }

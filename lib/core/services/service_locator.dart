@@ -5,6 +5,7 @@ import '../../data/services/payment_service.dart';
 import '../../data/services/push_notification_service.dart';
 import '../../data/services/token_service.dart';
 import '../../data/services/matching_service.dart';
+import '../../data/services/ai_preferences_service.dart';
 import '../network/api_client.dart';
 import '../utils/logger.dart';
 
@@ -29,6 +30,7 @@ class ServiceLocator {
   AnalyticsService? _analyticsService;
   PushNotificationService? _pushNotificationService;
   TokenService? _tokenService;
+  AiPreferencesService? _aiPreferencesService;
 
   /// Initialize all services
   Future<void> initialize({String? authToken}) async {
@@ -55,6 +57,7 @@ class ServiceLocator {
       _analyticsService = AnalyticsService.instance;
       _pushNotificationService = PushNotificationService.instance;
       _tokenService = TokenService();
+      _aiPreferencesService = AiPreferencesService();
 
       // Initialize push notifications
       await _pushNotificationService!.initialize(authToken: authToken);
@@ -156,6 +159,12 @@ class ServiceLocator {
     return _tokenService!;
   }
 
+  /// Get AI preferences service
+  AiPreferencesService get aiPreferences {
+    _ensureInitialized();
+    return _aiPreferencesService!;
+  }
+
   // ===========================================
   // DIRECT API ACCESS (for convenience)
   // ===========================================
@@ -195,6 +204,7 @@ class ServiceLocator {
     _paymentService = null;
     _pushNotificationService = null;
     _tokenService = null;
+    _aiPreferencesService = null;
     _initialized = false;
   }
 }
