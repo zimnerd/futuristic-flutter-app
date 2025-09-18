@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import '../../../../presentation/theme/pulse_colors.dart';
 import '../../../../domain/entities/event.dart';
 import '../bloc/event_bloc.dart';
+import '../../../../core/services/location_service.dart';
 
 class CreateEventScreen extends StatefulWidget {
   const CreateEventScreen({super.key});
@@ -20,6 +21,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
   final _descriptionController = TextEditingController();
   final _locationController = TextEditingController();
   final _maxAttendeesController = TextEditingController();
+  final LocationService _locationService = LocationService();
   
   DateTime? _selectedDateTime;
   String _selectedCategory = 'Social';
@@ -435,8 +437,51 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
     }
   }
 
-  void _saveEvent() {
+  void _saveEvent() async {
     if (!_formKey.currentState!.validate() || !_canSave()) {
+      return;
+    }
+
+    // Resolve coordinates from address or current location
+    EventCoordinates? resolvedCoordinates;
+    try {
+      final address = _locationController.text.trim();
+      if (address.isNotEmpty) {
+        final positionFromAddress = await _locationService
+            .getCoordinatesFromAddress(address);
+        if (positionFromAddress != null) {
+          resolvedCoordinates = EventCoordinates(
+            lat: positionFromAddress.latitude,
+            lng: positionFromAddress.longitude,
+          );
+        }
+      }
+
+      // Fallback to current location if geocoding didn't work
+      if (resolvedCoordinates == null) {
+        final currentPosition = await _locationService.getCurrentLocation();
+        if (currentPosition != null) {
+          resolvedCoordinates = EventCoordinates(
+            lat: currentPosition.latitude,
+            lng: currentPosition.longitude,
+          );
+        }
+      }
+    } catch (_) {
+      // Silently handle and show a friendly error below
+    }
+
+    if (resolvedCoordinates == null) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Unable to determine location coordinates. Please enter a valid address or enable location services.',
+            ),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
       return;
     }
 
@@ -444,10 +489,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
       title: _titleController.text.trim(),
       description: _descriptionController.text.trim(),
       location: _locationController.text.trim(),
-      coordinates: const EventCoordinates(
-        lat: 0.0,
-        lng: 0.0,
-      ), // TODO: Get from location service
+      coordinates: resolvedCoordinates,
       date: _selectedDateTime!,
       category: _selectedCategory.toLowerCase(),
       // maxAttendees: int.tryParse(_maxAttendeesController.text),
