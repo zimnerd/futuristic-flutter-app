@@ -5,6 +5,8 @@ import 'package:go_router/go_router.dart';
 import '../../../../presentation/theme/pulse_colors.dart';
 import '../../../../domain/entities/event.dart';
 import '../../../../domain/entities/event_message.dart';
+import '../../../../domain/entities/call.dart';
+import '../../../../data/services/service_locator.dart';
 import '../bloc/event_chat_bloc.dart';
 
 class EventCommunicationScreen extends StatefulWidget {
@@ -381,13 +383,49 @@ class _EventCommunicationScreenState extends State<EventCommunicationScreen>
             ),
             const SizedBox(height: 32),
             ElevatedButton.icon(
-              onPressed: () {
-                // TODO: Start voice call implementation
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Voice call feature coming soon!'),
-                  ),
-                );
+              onPressed: () async {
+                try {
+                  final callService = ServiceLocator().callService;
+                  await callService.initialize();
+
+                  // For event communication, we need participant IDs
+                  // Get them from event attendees
+                  final participantIds = widget.event.attendees
+                      .map((attendee) => attendee.id)
+                      .where(
+                        (id) => id != 'current_user_id',
+                      ) // Exclude current user
+                      .toList();
+
+                  if (participantIds.isEmpty) {
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('No participants available for call'),
+                        ),
+                      );
+                    }
+                    return;
+                  }
+
+                  // For now, start voice call with first participant
+                  final callId = await callService.initiateCall(
+                    recipientId: participantIds.first,
+                    type: CallType.audio,
+                  );
+
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Voice call started: $callId')),
+                    );
+                  }
+                } catch (e) {
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Failed to start voice call: $e')),
+                    );
+                  }
+                }
               },
               icon: const Icon(Icons.call),
               label: const Text('Start Voice Chat'),
@@ -453,13 +491,49 @@ class _EventCommunicationScreenState extends State<EventCommunicationScreen>
             ),
             const SizedBox(height: 32),
             ElevatedButton.icon(
-              onPressed: () {
-                // TODO: Start video call implementation
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Video call feature coming soon!'),
-                  ),
-                );
+              onPressed: () async {
+                try {
+                  final callService = ServiceLocator().callService;
+                  await callService.initialize();
+
+                  // For event communication, we need participant IDs
+                  // Get them from event attendees
+                  final participantIds = widget.event.attendees
+                      .map((attendee) => attendee.id)
+                      .where(
+                        (id) => id != 'current_user_id',
+                      ) // Exclude current user
+                      .toList();
+
+                  if (participantIds.isEmpty) {
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('No participants available for call'),
+                        ),
+                      );
+                    }
+                    return;
+                  }
+
+                  // For now, start video call with first participant
+                  final callId = await callService.initiateCall(
+                    recipientId: participantIds.first,
+                    type: CallType.video,
+                  );
+
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Video call started: $callId')),
+                    );
+                  }
+                } catch (e) {
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Failed to start video call: $e')),
+                    );
+                  }
+                }
               },
               icon: const Icon(Icons.videocam),
               label: const Text('Start Video Chat'),

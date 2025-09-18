@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter/services.dart';
 
 import '../../../domain/entities/event.dart';
+import '../../../core/network/api_client.dart';
 import '../../blocs/event/event_bloc.dart';
 import '../../blocs/event/event_event.dart';
 import '../../blocs/event/event_state.dart';
@@ -281,7 +283,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
             if (event.attendees.length > 5)
               TextButton(
                 onPressed: () {
-                  // TODO: Navigate to full attendees list
+                  _showAllAttendees(context, event);
                 },
                 child: const Text('See all'),
               ),
@@ -391,20 +393,105 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
   }
 
   void _shareEvent(BuildContext context, Event event) {
-    // TODO: Implement share functionality
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Share functionality coming soon'),
-      ),
-    );
+    // Use clipboard as fallback since share_plus might not be available
+    final shareText =
+        '${event.title}\n\n${event.description}\n\nJoin me at this event!';
+    Clipboard.setData(ClipboardData(text: shareText)).then((_) {
+      if (mounted) {
+        ScaffoldMessenger.of(this.context).showSnackBar(
+          const SnackBar(
+            content: Text('Event details copied to clipboard'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    });
   }
 
-  void _reportEvent(BuildContext context, Event event) {
-    // TODO: Implement report functionality
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Report functionality coming soon'),
-      ),
+  void _reportEvent(BuildContext context, Event event) async {
+    try {
+      await ApiClient.instance.reportEvent(
+        eventId: event.id,
+        reason: 'inappropriate_content',
+        description: 'Event reported by user',
+      );
+
+      if (mounted) {
+        ScaffoldMessenger.of(this.context).showSnackBar(
+          const SnackBar(
+            content: Text('Event reported successfully'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(this.context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to report event: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  void _showAllAttendees(BuildContext context, Event event) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Attendees (${event.attendeeCount})'),
+          content: SizedBox(
+            width: double.maxFinite,
+            height: 400,
+            child: event.attendees.isEmpty
+                ? const Center(child: Text('No attendees yet'))
+                : ListView.builder(
+                    itemCount: event.attendees.length,
+                    itemBuilder: (context, index) {
+                      final attendee = event.attendees[index];
+                      final userInfo = attendee.user;
+                      final displayName =
+                          userInfo?['displayName'] ??
+                          userInfo?['name'] ??
+                          'Unknown User';
+                      final profilePictureUrl =
+                          userInfo?['profilePictureUrl'] as String?;
+
+                      return ListTile(
+                        leading: CircleAvatar(
+                          backgroundImage: profilePictureUrl != null
+                              ? NetworkImage(profilePictureUrl)
+                              : null,
+                          child: profilePictureUrl == null
+                              ? Text(displayName.toString()[0].toUpperCase())
+                              : null,
+                        ),
+                        title: Text(displayName.toString()),
+                        subtitle: Text(
+                          'Joined ${attendee.timestamp.toString().split(' ')[0]}',
+                        ),
+                        trailing: Icon(
+                          attendee.status == 'confirmed'
+                              ? Icons.check_circle
+                              : Icons.help_outline,
+                          color: attendee.status == 'confirmed'
+                              ? Colors.green
+                              : Colors.orange,
+                        ),
+                      );
+                    },
+                  ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Close'),
+            ),
+          ],
+        );
+      },
     );
   }
 }

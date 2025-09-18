@@ -500,6 +500,23 @@ class ApiClient {
     );
   }
 
+  /// Report an event
+  Future<Response> reportEvent({
+    required String eventId,
+    required String reason,
+    String? description,
+  }) async {
+    return await _dio.post(
+      '/reports',
+      data: {
+        'eventId': eventId,
+        'type': 'event',
+        'reason': reason,
+        if (description != null) 'description': description,
+      },
+    );
+  }
+
   // ===========================================
   // MESSAGING ENDPOINTS
   // ===========================================
