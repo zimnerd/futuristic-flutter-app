@@ -123,11 +123,21 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper>
         child: Container(
           height: 80,
           decoration: BoxDecoration(
-            color: PulseColors.grey900,
+            gradient: const LinearGradient(
+              // Use gradient instead of solid color
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Color(0xFF2C1810),
+                Color(0xFF3A1F15),
+              ], // Warmer brown-burgundy
+            ),
             borderRadius: BorderRadius.circular(40),
             boxShadow: [
               BoxShadow(
-                color: PulseColors.grey900.withValues(alpha: 0.3),
+                color: Color(
+                  0xFF2C1810,
+                ).withValues(alpha: 0.4), // Match the gradient
                 blurRadius: 20,
                 offset: const Offset(0, 8),
               ),
@@ -193,17 +203,24 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper>
           width: 56,
           height: 56,
           decoration: BoxDecoration(
-            color: PulseColors.white,
+            gradient: LinearGradient(
+              // Add gradient to match the theme
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [PulseColors.primary, PulseColors.accent],
+            ),
             borderRadius: BorderRadius.circular(28),
             boxShadow: [
               BoxShadow(
-                color: PulseColors.grey800.withValues(alpha: 0.1),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
+                color: PulseColors.primary.withValues(
+                  alpha: 0.3,
+                ), // Match primary color
+                blurRadius: 12,
+                offset: const Offset(0, 4),
               ),
             ],
           ),
-          child: Icon(Icons.menu_rounded, color: PulseColors.primary, size: 28),
+          child: Icon(Icons.menu_rounded, color: PulseColors.white, size: 28),
         ),
       ),
     );
@@ -307,9 +324,12 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper>
                   ),
                 ),
 
-                // Enhanced Menu Items with better spacing
+                // Enhanced Menu Items with optimized spacing
                 Padding(
-                  padding: const EdgeInsets.all(PulseSpacing.lg),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: PulseSpacing.lg,
+                    vertical: PulseSpacing.sm, // Reduced vertical padding
+                  ),
                   child: Column(
                     children: [
                       _buildMenuTile(
@@ -384,24 +404,34 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper>
     required VoidCallback onTap,
   }) {
     return Container(
-      margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+      margin: const EdgeInsets.symmetric(
+        vertical: 2,
+        horizontal: 4,
+      ), // Reduced margins
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [Color(0xFF1C1C1E), Color(0xFF2C2C2E)],
+          colors: [
+            Color(0xFF2C1810),
+            Color(0xFF3A1F15),
+          ], // Warmer brown-burgundy tones
           stops: [0.0, 1.0],
         ),
-        borderRadius: BorderRadius.circular(PulseBorderRadius.lg),
+        borderRadius: BorderRadius.circular(
+          PulseBorderRadius.md,
+        ), // Slightly smaller radius
         border: Border.all(
-          color: PulseColors.grey800.withValues(alpha: 0.3),
+          color: PulseColors.primary.withValues(
+            alpha: 0.2,
+          ), // Warmer border using primary color
           width: 1,
         ),
         boxShadow: [
           BoxShadow(
             color: PulseColors.primary.withValues(alpha: 0.1),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+            blurRadius: 6, // Reduced shadow
+            offset: const Offset(0, 1),
           ),
         ],
       ),
@@ -412,16 +442,16 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper>
             HapticFeedback.lightImpact();
             onTap();
           },
-          borderRadius: BorderRadius.circular(PulseBorderRadius.lg),
+          borderRadius: BorderRadius.circular(PulseBorderRadius.md),
           splashColor: PulseColors.primary.withValues(alpha: 0.1),
           highlightColor: PulseColors.primary.withValues(alpha: 0.05),
           child: Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(12), // Reduced padding from 16 to 12
             child: Row(
               children: [
                 Container(
-                  width: 50,
-                  height: 50,
+                  width: 40, // Reduced from 50 to 40
+                  height: 40, // Reduced from 50 to 40
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       begin: Alignment.topLeft,
@@ -431,47 +461,52 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper>
                         PulseColors.primary.withValues(alpha: 0.1),
                       ],
                     ),
-                    borderRadius: BorderRadius.circular(PulseBorderRadius.md),
+                    borderRadius: BorderRadius.circular(PulseBorderRadius.sm),
                     border: Border.all(
                       color: PulseColors.primary.withValues(alpha: 0.3),
                       width: 1,
                     ),
                   ),
                   child: Icon(icon, color: PulseColors.primary,
-                    size: 24),
+                    size: 20,
+                  ), // Reduced from 24 to 20
                 ),
-                const SizedBox(width: 16),
+                const SizedBox(width: 12), // Reduced from 16 to 12
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         title,
-                        style: PulseTypography.bodyLarge.copyWith(
+                        style: PulseTypography.bodyMedium.copyWith(
+                          // Changed from bodyLarge
                           fontWeight: FontWeight.w600,
                           color: Colors.white,
                         ),
                       ),
-                      const SizedBox(height: 2),
+                      // Removed the SizedBox to save space
                       Text(
                         subtitle,
                         style: PulseTypography.bodySmall.copyWith(
                           color: PulseColors.grey400,
+                          fontSize: 12, // Made slightly smaller
                         ),
                       ),
                     ],
                   ),
                 ),
                 Container(
-                  width: 32,
-                  height: 32,
+                  width: 24, // Reduced from 32 to 24
+                  height: 24, // Reduced from 32 to 24
                   decoration: BoxDecoration(
-                    color: PulseColors.grey800.withValues(alpha: 0.5),
+                    color: Color(
+                      0xFF4A2B1A,
+                    ).withValues(alpha: 0.7), // Warmer background
                     borderRadius: BorderRadius.circular(PulseBorderRadius.sm),
                   ),
                   child: const Icon(
                     Icons.arrow_forward_ios_rounded,
-                    size: 14,
+                    size: 12, // Reduced from 14 to 12
                     color: PulseColors.grey400,
                   ),
                 ),

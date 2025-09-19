@@ -382,7 +382,13 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
                       icon: PulseIcons.filters,
                       color: PulseColors.primary,
                       onTap: () {
-                        // TODO: Open filters
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Filters feature coming soon!'),
+                            backgroundColor: PulseColors.primary,
+                            duration: Duration(seconds: 2),
+                          ),
+                        );
                       },
                     ),
                     const SizedBox(width: PulseSpacing.sm),
@@ -390,7 +396,13 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
                       icon: PulseIcons.ai,
                       color: PulseColors.accent,
                       onTap: () {
-                        // TODO: Open AI settings
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('AI companion settings coming soon!'),
+                            backgroundColor: PulseColors.accent,
+                            duration: Duration(seconds: 2),
+                          ),
+                        );
                       },
                     ),
                     const SizedBox(width: PulseSpacing.sm),
@@ -398,7 +410,13 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
                       icon: PulseIcons.notifications,
                       color: PulseColors.grey600,
                       onTap: () {
-                        // TODO: Open notifications
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Notifications panel coming soon!'),
+                            backgroundColor: PulseColors.grey600,
+                            duration: Duration(seconds: 2),
+                          ),
+                        );
                       },
                     ),
                   ],
@@ -453,54 +471,48 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
     final users = state.userStack;
     if (users.isEmpty) return const SizedBox.shrink();
     
-    return Positioned.fill(
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(
-          PulseSpacing.lg,
-          0,
-          PulseSpacing.lg,
-          100, // Space for modern action buttons
-        ),
-        child: Stack(
-          children: [
-            // Background cards with modern stacking effect
-            if (users.length > 1)
-              Positioned.fill(
-                child: Transform.scale(
-                  scale: 0.96,
-                  child: Transform.translate(
-                    offset: const Offset(0, 4),
-                    child: Container(
-                      decoration: PulseDecorations.swipeCard(),
-                      child: swipe_widget.SwipeCard(
-                        user: users[1],
-                        showDetails: false,
-                      ),
-                    ),
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        PulseSpacing.lg,
+        0,
+        PulseSpacing.lg,
+        100, // Space for modern action buttons
+      ),
+      child: Stack(
+        children: [
+          // Background cards with modern stacking effect
+          if (users.length > 1)
+            Transform.scale(
+              scale: 0.96,
+              child: Transform.translate(
+                offset: const Offset(0, 4),
+                child: Container(
+                  decoration: PulseDecorations.swipeCard(),
+                  child: swipe_widget.SwipeCard(
+                    user: users[1],
+                    showDetails: false,
                   ),
                 ),
               ),
-            
-            if (users.length > 2)
-              Positioned.fill(
-                child: Transform.scale(
-                  scale: 0.92,
-                  child: Transform.translate(
-                    offset: const Offset(0, 8),
-                    child: Container(
-                      decoration: PulseDecorations.swipeCard(),
-                      child: swipe_widget.SwipeCard(
-                        user: users[2],
-                        showDetails: false,
-                      ),
-                    ),
+            ),
+          
+          if (users.length > 2)
+            Transform.scale(
+              scale: 0.92,
+              child: Transform.translate(
+                offset: const Offset(0, 8),
+                child: Container(
+                  decoration: PulseDecorations.swipeCard(),
+                  child: swipe_widget.SwipeCard(
+                    user: users[2],
+                    showDetails: false,
                   ),
                 ),
               ),
-            
-            // Main interactive card
-            Positioned.fill(
-              child: GestureDetector(
+            ),
+          
+          // Main interactive card
+          GestureDetector(
                 onPanStart: _handlePanStart,
                 onPanUpdate: _handlePanUpdate,
                 onPanEnd: _handlePanEnd,
@@ -549,17 +561,16 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
                     );
                   },
                 ),
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildModernActionButtons() {
     return Positioned(
-      bottom: 30,
+      bottom:
+          120, // Optimal balance: clear navigation bar + comfortable thumb reach
       left: 0,
       right: 0,
       child: Container(
@@ -568,7 +579,21 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
           horizontal: PulseSpacing.lg,
           vertical: PulseSpacing.md,
         ),
-        decoration: PulseDecorations.glassmorphism(),
+        decoration: BoxDecoration(
+          color: PulseColors.white.withValues(alpha: 0.9),
+          borderRadius: BorderRadius.circular(PulseBorderRadius.xl),
+          border: Border.all(
+            color: PulseColors.primary.withValues(alpha: 0.1),
+            width: 1,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.1),
+              blurRadius: 20,
+              offset: const Offset(0, 10),
+            ),
+          ],
+        ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
