@@ -143,8 +143,12 @@ class UserLocalDataSourceImpl implements UserLocalDataSource {
     try {
       _logger.i('Clearing user cache');
 
+      // Clear cached users data
       await _storageService.deleteKey(_currentUserKey, 'preferences');
       await _storageService.deleteKey(_cachedUsersKey, 'preferences');
+      
+      // Clear stored user data (used by getCurrentUser)
+      await _storageService.clearUserData();
 
       _logger.i('User cache cleared successfully');
     } catch (e) {

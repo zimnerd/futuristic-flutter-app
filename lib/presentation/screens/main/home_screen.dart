@@ -67,13 +67,6 @@ class _HomeScreenState extends State<HomeScreen> {
           );
         },
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => context.go('/ai-companion'),
-        backgroundColor: PulseColors.primary,
-        foregroundColor: Colors.white,
-        icon: const Icon(Icons.smart_toy),
-        label: const Text('AI Companion'),
-      ),
     );
   }
 
@@ -119,6 +112,29 @@ class _HomeScreenState extends State<HomeScreen> {
               final discoveryBloc = context.read<DiscoveryBloc>();
               discoveryBloc.add(const LoadDiscoverableUsers(resetStack: true));
             },
+          ),
+
+          const SizedBox(width: 8),
+
+          // AI Companion button
+          IconButton(
+            onPressed: () {
+              // Navigate to AI companion
+              context.push('/ai-companion');
+            },
+            icon: Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: PulseColors.primaryContainer,
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.psychology,
+                color: PulseColors.primary,
+                size: 24,
+              ),
+            ),
           ),
 
           // Notification button

@@ -82,6 +82,10 @@ class HiveStorageService {
     return data != null ? Map<String, dynamic>.from(data) : null;
   }
 
+  Future<void> clearUserData() async {
+    await _userPrefsStorage.delete('user_data');
+  }
+
   Future<void> saveUserPreference(String key, dynamic value) async {
     await _userPrefsStorage.put(key, value);
   }

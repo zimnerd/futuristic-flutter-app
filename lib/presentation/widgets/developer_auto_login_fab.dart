@@ -60,45 +60,41 @@ class _DeveloperAutoLoginFABState extends State<DeveloperAutoLoginFAB>
       return const SizedBox.shrink();
     }
 
-    return Positioned(
-      bottom: 16,
-      right: 16,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          // Expanded auto-login options
-          AnimatedBuilder(
-            animation: _expandAnimation,
-            builder: (context, child) {
-              return Transform.scale(
-                scale: _expandAnimation.value,
-                alignment: Alignment.bottomRight,
-                child: Opacity(
-                  opacity: _expandAnimation.value,
-                  child: _isExpanded ? _buildExpandedOptions() : const SizedBox(),
-                ),
-              );
-            },
-          ),
-          
-          const SizedBox(height: 8),
-          
-          // Main FAB
-          FloatingActionButton(
-            onPressed: _toggleExpanded,
-            backgroundColor: PulseColors.primary,
-            child: AnimatedRotation(
-              turns: _isExpanded ? 0.5 : 0,
-              duration: const Duration(milliseconds: 300),
-              child: Icon(
-                _isExpanded ? Icons.close : Icons.developer_mode,
-                color: Colors.white,
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        // Expanded auto-login options
+        AnimatedBuilder(
+          animation: _expandAnimation,
+          builder: (context, child) {
+            return Transform.scale(
+              scale: _expandAnimation.value,
+              alignment: Alignment.bottomRight,
+              child: Opacity(
+                opacity: _expandAnimation.value,
+                child: _isExpanded ? _buildExpandedOptions() : const SizedBox(),
               ),
+            );
+          },
+        ),
+
+        const SizedBox(height: 8),
+
+        // Main FAB
+        FloatingActionButton(
+          onPressed: _toggleExpanded,
+          backgroundColor: PulseColors.primary,
+          child: AnimatedRotation(
+            turns: _isExpanded ? 0.5 : 0,
+            duration: const Duration(milliseconds: 300),
+            child: Icon(
+              _isExpanded ? Icons.close : Icons.developer_mode,
+              color: Colors.white,
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 

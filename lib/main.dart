@@ -63,18 +63,22 @@ void main() async {
 /// Initialize stored authentication tokens in API client
 Future<void> _initializeStoredTokens() async {
   try {
-    final tokenService = TokenService();
-    final accessToken = await tokenService.getAccessToken();
-    
-    if (accessToken != null) {
-      // Set the stored token in the API client for automatic authentication
-      ApiClient.instance.setAuthToken(accessToken);
-      AppLogger.info('✅ Restored stored auth token on app startup');
-    } else {
-      AppLogger.info('ℹ️ No stored auth token found');
-    }
+    // Use ApiClient's comprehensive token initialization which includes:
+    // - Token existence check
+    // - Token expiry validation
+    // - Automatic token refresh if needed
+    // - Token clearing if refresh fails
+    await ApiClient.instance.initializeAuthToken();
+    AppLogger.info('✅ Authentication tokens initialized');
   } catch (e) {
-    AppLogger.error('❌ Failed to restore stored tokens: $e');
+    AppLogger.error('❌ Failed to initialize stored tokens: $e');
+    // Clear any invalid tokens on initialization failure
+    try {
+      final tokenService = TokenService();
+      await tokenService.clearTokens();
+    } catch (clearError) {
+      AppLogger.error('❌ Failed to clear invalid tokens: $clearError');
+    }
   }
 }
 

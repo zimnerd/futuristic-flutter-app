@@ -6,7 +6,6 @@ import '../../../domain/entities/discovery_types.dart';
 import '../../blocs/discovery/discovery_bloc.dart';
 import '../../blocs/discovery/discovery_event.dart';
 import '../../blocs/discovery/discovery_state.dart';
-import '../../widgets/common/responsive_filter_header.dart';
 import '../../widgets/discovery/swipe_card.dart' as swipe_widget;
 
 /// Main discovery screen with swipeable user cards
@@ -176,14 +175,6 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
     _executeSwipe(direction);
   }
 
-  void _handleUndo() {
-    final discoveryBloc = context.read<DiscoveryBloc>();
-    discoveryBloc.add(const UndoLastSwipe());
-    
-    // Add some haptic feedback for undo
-    HapticFeedback.mediumImpact();
-  }
-
   Widget _buildActionButtons() {
     return Positioned(
       bottom: 40,
@@ -301,64 +292,6 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
     );
   }
 
-  Widget _buildTopBar() {
-    return BlocBuilder<DiscoveryBloc, DiscoveryState>(
-      builder: (context, state) {
-        final canUndo = state is DiscoveryLoaded ? state.canUndo : false;
-        
-        return Positioned(
-          top: MediaQuery.of(context).padding.top + 16,
-          left: 16,
-          right: 16,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              // Undo button (only show if can undo) - moved to left
-              if (canUndo)
-                GestureDetector(
-                  onTap: _handleUndo,
-                  child: Container(
-                    width: 44,
-                    height: 44,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.9),
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.1),
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: const Icon(
-                      Icons.undo,
-                      color: Color(0xFF6E3BFF),
-                      size: 24,
-                    ),
-                  ),
-                ),
-              
-              // Spacer to push filter button to the right
-              const Spacer(),
-              
-              // Filters button - modern responsive filter
-              ResponsiveFilterHeader(
-                showCompactView: true,
-                onFiltersChanged: () {
-                  // Refresh discovery when filters change
-                  context.read<DiscoveryBloc>().add(
-                    const LoadDiscoverableUsers(resetStack: true),
-                  );
-                },
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
   Widget _buildCardStack(DiscoveryLoaded state) {
     final users = state.userStack;
     if (users.isEmpty) return const SizedBox.shrink();
@@ -367,10 +300,10 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
       child: Padding(
         padding: const EdgeInsets.fromLTRB(
           12,
-          90,
+          75, // Reduced from 90 to increase image height
           12,
           100,
-        ), // Maximized image area with minimal padding
+        ), // Maximized image area with increased height
         child: Stack(
           children: [
             // Background cards (next users)
@@ -655,9 +588,6 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
                         ],
                       ),
                     ),
-                  
-                  // Top bar
-                  _buildTopBar(),
                   
                   // Action buttons
                   if (state is DiscoveryLoaded && state.hasUsers)
