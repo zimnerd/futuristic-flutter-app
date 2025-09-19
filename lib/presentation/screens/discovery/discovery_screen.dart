@@ -177,7 +177,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
 
   Widget _buildActionButtons() {
     return Positioned(
-      bottom: 40,
+      bottom: 16, // Increased from 40 to create more space above action buttons
       left: 0,
       right: 0,
       child: Row(
@@ -299,11 +299,11 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
     return Positioned.fill(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(
-          12,
-          75, // Reduced from 90 to increase image height
-          12,
-          100,
-        ), // Maximized image area with increased height
+          24,
+          0, // Final optimization: maximum card height while clearing header
+          24,
+          84, // Final optimization: maximum space while maintaining action button accessibility
+        ), // Maximum possible card area - optimal screen real estate utilization
         child: Stack(
           children: [
             // Background cards (next users)
