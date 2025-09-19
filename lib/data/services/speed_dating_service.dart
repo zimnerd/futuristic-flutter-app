@@ -14,14 +14,7 @@ class SpeedDatingService {
     Map<String, dynamic>? preferences,
   }) async {
     try {
-      final response = await _apiClient.post(
-        '/api/speed-dating/join',
-        data: {
-          'sessionId': sessionId,
-          'preferences': preferences ?? {},
-          'joinedAt': DateTime.now().toIso8601String(),
-        },
-      );
+      final response = await _apiClient.joinSpeedDatingEvent(sessionId);
 
       if (response.statusCode == 200 && response.data != null) {
         _logger.d('Successfully joined speed dating session: $sessionId');

@@ -22,8 +22,11 @@ class AiCompanionService {
         data: {
           'name': name,
           'personality': personality.name,
-          'appearance': appearance.toJson(),
-          'customPrompt': customPrompt,
+          'gender': 'female', // Default to female, should be configurable in UI
+          'ageGroup': 'adult', // Default to adult, should be configurable in UI
+          'description':
+              'A personalized AI companion to help with dating advice',
+          'interests': ['dating', 'relationships', 'conversation'],
         },
       );
 

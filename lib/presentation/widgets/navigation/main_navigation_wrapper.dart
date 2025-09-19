@@ -110,46 +110,37 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper>
   Widget build(BuildContext context) {
     return Scaffold(
       body: widget.child,
-      bottomNavigationBar: _buildModernBottomBar(),
-      floatingActionButton: _buildBurgerMenuFAB(),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
+      extendBody: true,
+      bottomNavigationBar: _buildCurvedBottomBar(),
     );
   }
 
-  Widget _buildModernBottomBar() {
+  Widget _buildCurvedBottomBar() {
     return Container(
-      margin: const EdgeInsets.symmetric(
-        horizontal: 16,
-        vertical: 8,
-      ),
+      margin: const EdgeInsets.fromLTRB(20, 0, 20, 20),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(40),
         child: Container(
-          height: 70,
+          height: 80,
           decoration: BoxDecoration(
-            color: PulseColors.surfaceLight,
-            borderRadius: BorderRadius.circular(24),
+            color: PulseColors.grey900,
+            borderRadius: BorderRadius.circular(40),
             boxShadow: [
               BoxShadow(
-                color: PulseColors.black.withValues(alpha: 0.1),
-                blurRadius: 16,
-                offset: const Offset(0, 4),
+                color: PulseColors.grey900.withValues(alpha: 0.3),
+                blurRadius: 20,
+                offset: const Offset(0, 8),
               ),
             ],
           ),
           child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              ..._navigationItems.asMap().entries.map((entry) {
-                final index = entry.key;
-                final item = entry.value;
-                final isActive = index == _currentIndex;
-
-                return Expanded(
-                  child: _buildNavigationItem(item, index, isActive),
-                );
-              }),
-              // Space for FAB
-              const SizedBox(width: 60),
+              _buildCurvedNavItem(_navigationItems[0], 0),
+              _buildCurvedNavItem(_navigationItems[1], 1),
+              _buildCentralBurgerButton(),
+              _buildCurvedNavItem(_navigationItems[2], 2),
+              _buildCurvedNavItem(_navigationItems[3], 3),
             ],
           ),
         ),
@@ -157,7 +148,9 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper>
     );
   }
 
-  Widget _buildNavigationItem(NavigationItem item, int index, bool isActive) {
+  Widget _buildCurvedNavItem(NavigationItem item, int index) {
+    final isActive = index == _currentIndex;
+    
     return AnimatedBuilder(
       animation: _animationController,
       builder: (context, child) {
@@ -169,41 +162,20 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper>
           scale: scale,
           child: InkWell(
             onTap: () => _onItemTapped(index),
-            borderRadius: BorderRadius.circular(PulseBorderRadius.lg),
+            borderRadius: BorderRadius.circular(20),
             child: Container(
-              padding: const EdgeInsets.symmetric(vertical: PulseSpacing.sm),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Icon with active indicator
-                  Container(
-                    width: 28,
-                    height: 28,
-                    decoration: isActive
-                        ? BoxDecoration(
-                            color: PulseColors.primary.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(PulseBorderRadius.sm),
-                          )
-                        : null,
-                    child: Icon(
-                      isActive ? item.activeIcon : item.icon,
-                      color: isActive ? PulseColors.primary : PulseColors.grey600,
-                      size: 20,
-                    ),
-                  ),
-                  
-                  const SizedBox(height: 4),
-                  
-                  // Label
-                  AnimatedDefaultTextStyle(
-                    duration: const Duration(milliseconds: 150),
-                    style: PulseTypography.labelSmall.copyWith(
-                      color: isActive ? PulseColors.primary : PulseColors.grey600,
-                      fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
-                    ),
-                    child: Text(item.label),
-                  ),
-                ],
+              width: 50,
+              height: 50,
+              decoration: isActive
+                  ? BoxDecoration(
+                      color: PulseColors.primary,
+                      borderRadius: BorderRadius.circular(16),
+                    )
+                  : null,
+              child: Icon(
+                isActive ? item.activeIcon : item.icon,
+                color: isActive ? PulseColors.white : PulseColors.grey400,
+                size: 24,
               ),
             ),
           ),
@@ -212,17 +184,26 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper>
     );
   }
 
-  Widget _buildBurgerMenuFAB() {
+  Widget _buildCentralBurgerButton() {
     return ScaleTransition(
       scale: _fabController,
-      child: FloatingActionButton(
-        onPressed: _onBurgerMenuTapped,
-        backgroundColor: PulseColors.primary,
-        foregroundColor: PulseColors.white,
-        elevation: 8,
-        child: const Icon(
-          Icons.menu_rounded,
-          size: 24,
+      child: GestureDetector(
+        onTap: _onBurgerMenuTapped,
+        child: Container(
+          width: 56,
+          height: 56,
+          decoration: BoxDecoration(
+            color: PulseColors.white,
+            borderRadius: BorderRadius.circular(28),
+            boxShadow: [
+              BoxShadow(
+                color: PulseColors.grey800.withValues(alpha: 0.1),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Icon(Icons.menu_rounded, color: PulseColors.primary, size: 28),
         ),
       ),
     );
@@ -231,51 +212,109 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper>
   Widget _buildBurgerMenu() {
     return Container(
       margin: const EdgeInsets.all(PulseSpacing.lg),
+      constraints: BoxConstraints(
+        maxHeight:
+            MediaQuery.of(context).size.height *
+            0.7, // Limit height to prevent overflow
+      ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(PulseBorderRadius.xl),
         child: Container(
-          decoration: PulseDecorations.glassmorphism(),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Header
-              Container(
-                padding: const EdgeInsets.all(PulseSpacing.lg),
-                decoration: BoxDecoration(
-                  gradient: PulseGradients.primary,
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(PulseBorderRadius.xl),
-                    topRight: Radius.circular(PulseBorderRadius.xl),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                PulseColors.surfaceLight,
+                PulseColors.surfaceLight.withValues(alpha: 0.98),
+              ],
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+            ),
+            borderRadius: BorderRadius.circular(PulseBorderRadius.xl),
+            boxShadow: [
+              BoxShadow(
+                color: PulseColors.primary.withValues(alpha: 0.1),
+                blurRadius: 30,
+                offset: const Offset(0, 10),
+              ),
+              BoxShadow(
+                color: PulseColors.grey800.withValues(alpha: 0.05),
+                blurRadius: 10,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Enhanced Header with gradient
+                Container(
+                  padding: const EdgeInsets.all(PulseSpacing.lg),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [PulseColors.primary, PulseColors.accent],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(PulseBorderRadius.xl),
+                      topRight: Radius.circular(PulseBorderRadius.xl),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      // Menu icon with background
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: PulseColors.white.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(
+                            PulseBorderRadius.sm,
+                          ),
+                        ),
+                        child: Icon(
+                          Icons.apps_rounded,
+                          color: PulseColors.white,
+                          size: 20,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Text(
+                        'Menu',
+                        style: PulseTypography.h3.copyWith(
+                          color: PulseColors.white,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const Spacer(),
+                      Container(
+                        decoration: BoxDecoration(
+                          color: PulseColors.white.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(
+                            PulseBorderRadius.sm,
+                          ),
+                        ),
+                        child: IconButton(
+                          onPressed: () => Navigator.of(context).pop(),
+                          icon: Icon(
+                            Icons.close_rounded,
+                            color: PulseColors.white,
+                            size: 20,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                child: Row(
-                  children: [
-                    Text(
-                      'Menu',
-                      style: PulseTypography.h3.copyWith(
-                        color: PulseColors.white,
-                      ),
-                    ),
-                    const Spacer(),
-                    IconButton(
-                      onPressed: () => Navigator.of(context).pop(),
-                      icon: const Icon(
-                        Icons.close_rounded,
-                        color: PulseColors.white,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
 
-              // Menu Items
-              Padding(
-                padding: const EdgeInsets.all(PulseSpacing.md),
-                child: Column(
-                  children: [
-                    _buildMenuTile(
-                      icon: Icons.person_outline_rounded,
-                      title: 'Profile',
+                // Enhanced Menu Items with better spacing
+                Padding(
+                  padding: const EdgeInsets.all(PulseSpacing.lg),
+                  child: Column(
+                    children: [
+                      _buildMenuTile(
+                        icon: Icons.person_outline_rounded,
+                        title: 'Profile',
                       subtitle: 'Edit your profile',
                       onTap: () {
                         Navigator.of(context).pop();
@@ -327,14 +366,15 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper>
                         context.push('/safety');
                       },
                     ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
+                    ], // Close children array
+                  ), // Close Column
+                ), // Close Padding
+              ], // Close children array for main Column
+            ), // Close main Column
+          ), // Close SingleChildScrollView
+        ), // Close inner Container
+      ), // Close ClipRRect
+    ); // Close outer Container and return statement
   }
 
   Widget _buildMenuTile({
@@ -344,44 +384,100 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper>
     required VoidCallback onTap,
   }) {
     return Container(
-      margin: const EdgeInsets.symmetric(vertical: 4),
-      child: ListTile(
-        leading: Container(
-          width: 44,
-          height: 44,
-          decoration: BoxDecoration(
+      margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFF1C1C1E), Color(0xFF2C2C2E)],
+          stops: [0.0, 1.0],
+        ),
+        borderRadius: BorderRadius.circular(PulseBorderRadius.lg),
+        border: Border.all(
+          color: PulseColors.grey800.withValues(alpha: 0.3),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
             color: PulseColors.primary.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(PulseBorderRadius.md),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
           ),
-          child: Icon(
-            icon,
-            color: PulseColors.primary,
-            size: 22,
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () {
+            HapticFeedback.lightImpact();
+            onTap();
+          },
+          borderRadius: BorderRadius.circular(PulseBorderRadius.lg),
+          splashColor: PulseColors.primary.withValues(alpha: 0.1),
+          highlightColor: PulseColors.primary.withValues(alpha: 0.05),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                Container(
+                  width: 50,
+                  height: 50,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        PulseColors.primary.withValues(alpha: 0.2),
+                        PulseColors.primary.withValues(alpha: 0.1),
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(PulseBorderRadius.md),
+                    border: Border.all(
+                      color: PulseColors.primary.withValues(alpha: 0.3),
+                      width: 1,
+                    ),
+                  ),
+                  child: Icon(icon, color: PulseColors.primary,
+                    size: 24),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: PulseTypography.bodyLarge.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        subtitle,
+                        style: PulseTypography.bodySmall.copyWith(
+                          color: PulseColors.grey400,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  width: 32,
+                  height: 32,
+                  decoration: BoxDecoration(
+                    color: PulseColors.grey800.withValues(alpha: 0.5),
+                    borderRadius: BorderRadius.circular(PulseBorderRadius.sm),
+                  ),
+                  child: const Icon(
+                    Icons.arrow_forward_ios_rounded,
+                    size: 14,
+                    color: PulseColors.grey400,
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
-        title: Text(
-          title,
-          style: PulseTypography.bodyLarge.copyWith(
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        subtitle: Text(
-          subtitle,
-          style: PulseTypography.bodySmall.copyWith(
-            color: PulseColors.grey600,
-          ),
-        ),
-        trailing: const Icon(
-          Icons.arrow_forward_ios_rounded,
-          size: 16,
-          color: PulseColors.grey600,
-        ),
-        onTap: () {
-          HapticFeedback.lightImpact();
-          onTap();
-        },
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(PulseBorderRadius.md),
         ),
       ),
     );

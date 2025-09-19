@@ -112,7 +112,7 @@ class _PremiumTierCardState extends State<PremiumTierCard>
                   BoxShadow(
                     color: widget.isSelected 
                         ? PulseColors.primary.withValues(alpha: 0.3)
-                        : Colors.black.withValues(alpha: 0.1),
+                        : PulseColors.outline.withValues(alpha: 0.2),
                     blurRadius: widget.isSelected ? 20 : 10,
                     offset: const Offset(0, 5),
                     spreadRadius: widget.isSelected ? 2 : 0,
@@ -145,7 +145,7 @@ class _PremiumTierCardState extends State<PremiumTierCard>
                                       fontWeight: FontWeight.bold,
                                       color: widget.isSelected 
                                           ? Colors.white 
-                                          : Colors.black87,
+                                          : PulseColors.onSurface,
                                     ),
                                   ),
                                   Text(

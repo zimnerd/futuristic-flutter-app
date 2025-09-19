@@ -526,7 +526,7 @@ class ApiClient {
     required List<String> participantIds,
   }) async {
     return await _dio.post(
-      '/messaging/conversations',
+      '/api/v1/chat/conversations',
       data: {'participantIds': participantIds},
     );
   }
@@ -534,7 +534,7 @@ class ApiClient {
   /// Get all conversations
   Future<Response> getConversations({int limit = 50, int offset = 0}) async {
     return await _dio.get(
-      '/messaging/conversations',
+      '/api/v1/chat/conversations',
       queryParameters: {'limit': limit, 'offset': offset},
     );
   }
@@ -546,7 +546,7 @@ class ApiClient {
     String? before,
   }) async {
     return await _dio.get(
-      '/messaging/conversations/$conversationId/messages',
+      '/api/v1/chat/conversations/$conversationId/messages',
       queryParameters: {'limit': limit, if (before != null) 'before': before},
     );
   }
@@ -559,8 +559,9 @@ class ApiClient {
     Map<String, dynamic>? metadata,
   }) async {
     return await _dio.post(
-      '/messaging/conversations/$conversationId/messages',
+      '/api/v1/chat/messages',
       data: {
+        'conversationId': conversationId,
         'content': content,
         'type': type,
         if (metadata != null) 'metadata': metadata,
@@ -574,19 +575,19 @@ class ApiClient {
     required List<String> messageIds,
   }) async {
     return await _dio.post(
-      '/messaging/conversations/$conversationId/messages/read',
+      '/api/v1/chat/conversations/$conversationId/read',
       data: {'messageIds': messageIds},
     );
   }
 
   /// Mark conversation as read
   Future<Response> markConversationAsRead(String conversationId) async {
-    return await _dio.patch('/messaging/conversations/$conversationId/read');
+    return await _dio.patch('/api/v1/chat/conversations/$conversationId/read');
   }
 
   /// Delete conversation
   Future<Response> deleteConversation(String conversationId) async {
-    return await _dio.delete('/messaging/conversations/$conversationId');
+    return await _dio.delete('/api/v1/chat/conversations/$conversationId');
   }
 
   /// Block a user
@@ -622,7 +623,7 @@ class ApiClient {
     String? initialMessage,
   }) async {
     return await _dio.post(
-      '/messaging/conversations/start-from-match',
+      '/api/v1/chat/conversations/start-from-match',
       data: {
         'matchId': matchId,
         if (initialMessage != null) 'initialMessage': initialMessage,
@@ -1404,13 +1405,23 @@ class ApiClient {
     return await _dio.delete('/events/$eventId');
   }
 
-  /// Join an event
+  /// Join a regular event
   Future<Response> joinEvent(String eventId) async {
+    return await _dio.post('/events/$eventId/attend');
+  }
+
+  /// Join a speed dating event
+  Future<Response> joinSpeedDatingEvent(String eventId) async {
     return await _dio.post('/speed-dating/events/$eventId/join');
   }
 
-  /// Leave an event
+  /// Leave a regular event
   Future<Response> leaveEvent(String eventId) async {
+    return await _dio.delete('/events/$eventId/attend');
+  }
+
+  /// Leave a speed dating event
+  Future<Response> leaveSpeedDatingEvent(String eventId) async {
     return await _dio.delete('/speed-dating/events/$eventId/join');
   }
 

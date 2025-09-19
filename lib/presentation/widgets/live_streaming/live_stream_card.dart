@@ -116,7 +116,7 @@ class LiveStreamCard extends StatelessWidget {
                       vertical: 4,
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.black.withValues(alpha: 0.6),
+                      color: PulseColors.photoOverlay,
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Row(
@@ -183,7 +183,7 @@ class LiveStreamCard extends StatelessWidget {
                       icon: Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: Colors.black.withValues(alpha: 0.6),
+                          color: PulseColors.photoOverlay,
                           shape: BoxShape.circle,
                         ),
                         child: const Icon(

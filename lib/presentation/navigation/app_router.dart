@@ -40,6 +40,7 @@ import '../screens/events/events_screen.dart';
 import '../screens/events/event_details_screen.dart';
 import '../../../features/events/presentation/screens/create_event_screen.dart';
 import '../../../features/events/presentation/screens/event_communication_screen.dart';
+import '../widgets/navigation/main_navigation_wrapper.dart';
 
 /// Listenable adapter for AuthBloc to work with GoRouter refreshListenable
 class AuthBlocListenable extends ChangeNotifier {
@@ -446,99 +447,4 @@ class AppRoutes {
   static const String eventDetails = '/events/:eventId';
   static const String createEvent = '/events/create';
   static const String eventCommunication = '/events/:eventId/communication';
-}
-
-/// Main navigation wrapper with bottom navigation bar
-class MainNavigationWrapper extends StatelessWidget {
-  const MainNavigationWrapper({super.key, required this.child});
-
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: child,
-      bottomNavigationBar: const MainBottomNavigation(),
-    );
-  }
-}
-
-/// Bottom navigation bar for main app sections
-class MainBottomNavigation extends StatelessWidget {
-  const MainBottomNavigation({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    final location = GoRouterState.of(context).uri.path;
-
-    return BottomNavigationBar(
-      type: BottomNavigationBarType.fixed,
-      currentIndex: _getSelectedIndex(location),
-      onTap: (index) => _onItemTapped(context, index),
-      items: const [
-        BottomNavigationBarItem(
-          icon: Icon(Icons.home_outlined),
-          activeIcon: Icon(Icons.home),
-          label: '✨ Explore',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.favorite_outline),
-          activeIcon: Icon(Icons.favorite),
-          label: '🔥 Sparks',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.event_outlined),
-          activeIcon: Icon(Icons.event),
-          label: '🎉 Events',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.chat_bubble_outline),
-          activeIcon: Icon(Icons.chat_bubble),
-          label: '💭 DMs',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.person_outline),
-          activeIcon: Icon(Icons.person),
-          label: '🎭 Me',
-        ),
-      ],
-    );
-  }
-
-  int _getSelectedIndex(String location) {
-    switch (location) {
-      case AppRoutes.home:
-        return 0;
-      case AppRoutes.matches:
-        return 1;
-      case AppRoutes.events:
-        return 2;
-      case AppRoutes.messages:
-        return 3;
-      case AppRoutes.profile:
-        return 4;
-      default:
-        return 0;
-    }
-  }
-
-  void _onItemTapped(BuildContext context, int index) {
-    switch (index) {
-      case 0:
-        context.go(AppRoutes.home);
-        break;
-      case 1:
-        context.go(AppRoutes.matches);
-        break;
-      case 2:
-        context.go(AppRoutes.events);
-        break;
-      case 3:
-        context.go(AppRoutes.messages);
-        break;
-      case 4:
-        context.go(AppRoutes.profile);
-        break;
-    }
-  }
 }

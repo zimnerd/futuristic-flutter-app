@@ -215,7 +215,7 @@ class _EventsScreenState extends State<EventsScreen> {
       color: PulseColors.primary,
       child: ListView.builder(
         controller: _scrollController,
-        padding: const EdgeInsets.only(bottom: 80),
+        padding: const EdgeInsets.only(bottom: 56),
         itemCount: state.filteredEvents.length,
         itemBuilder: (context, index) {
           final event = state.filteredEvents[index];
@@ -261,7 +261,7 @@ class _EventsScreenState extends State<EventsScreen> {
         Expanded(
           child: ListView.builder(
             controller: _scrollController,
-            padding: const EdgeInsets.only(bottom: 80),
+            padding: const EdgeInsets.only(bottom: 56),
             itemCount: state.currentEvents.length,
             itemBuilder: (context, index) {
               final event = state.currentEvents[index];
