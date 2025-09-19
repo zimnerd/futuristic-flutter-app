@@ -3,13 +3,15 @@ import 'dart:io';
 import '../models/ai_companion.dart';
 import '../../core/network/api_client.dart';
 import '../../core/utils/http_status_utils.dart';
+import 'file_upload_service.dart';
 
 /// Service for AI Companion interactions and management
 class AiCompanionService {
   final ApiClient _apiClient;
+  final FileUploadService _fileUploadService;
   final Logger _logger = Logger();
 
-  AiCompanionService(this._apiClient);
+  AiCompanionService(this._apiClient, this._fileUploadService);
 
   /// Create a new AI companion
   Future<AICompanion?> createCompanion({
@@ -192,14 +194,16 @@ class AiCompanionService {
     required File imageFile,
   }) async {
     try {
-      // For now, we'll upload the image and send the URL as a text message
-      // This can be extended to support proper image message types
+      // Upload image first
+      final imageUrl = await _fileUploadService.uploadImage(imageFile.path);
+
+      // Send message with image URL
       final response = await _apiClient.post(
         '/ai-companions/$companionId/message',
         data: {
-          'message': '[Image uploaded]',
+          'message': 'I shared an image with you',
           'messageType': 'image',
-          // TODO: Add image file upload logic here
+          'imageUrl': imageUrl,
         },
       );
 
@@ -236,14 +240,16 @@ class AiCompanionService {
     required File audioFile,
   }) async {
     try {
-      // For now, we'll send a placeholder message
-      // This can be extended to support proper audio message types and transcription
+      // Upload audio first
+      final audioUrl = await _fileUploadService.uploadAudio(audioFile.path);
+
+      // Send message with audio URL
       final response = await _apiClient.post(
         '/ai-companions/$companionId/message',
         data: {
-          'message': '[Audio message sent]',
+          'message': 'I sent you an audio message',
           'messageType': 'audio',
-          // TODO: Add audio file upload and transcription logic here
+          'audioUrl': audioUrl,
         },
       );
 
@@ -340,8 +346,8 @@ class AiCompanionService {
   /// Get AI companion analytics
   Future<CompanionAnalytics?> getCompanionAnalytics(String companionId) async {
     try {
-      // TODO: Backend endpoint not implemented yet
-      // For now, return null until analytics service is ready
+      // Analytics endpoint not implemented in backend yet
+      // Return null until backend analytics service is ready
       await Future.delayed(const Duration(milliseconds: 300));
       _logger.d('AI companion analytics not yet implemented for: $companionId');
       return null;
@@ -358,11 +364,17 @@ class AiCompanionService {
     String? context,
   }) async {
     try {
-      // TODO: Backend endpoint not implemented yet
-      // For now, return mock advice
-      await Future.delayed(const Duration(milliseconds: 500));
+      // Dating advice endpoint not implemented in backend yet
+      // Use sendMessage instead to get advice through regular chat
+      final adviceMessage =
+          "I need some dating advice about this situation: $situation${context != null ? ' Additional context: $context' : ''}";
+
+      final response = await sendMessage(
+        companionId: companionId,
+        message: adviceMessage,
+      );
       
-      return "Thanks for sharing your situation with me! Here's some advice: Remember to be authentic and genuine in your interactions. Focus on building meaningful connections rather than trying to impress. Good communication and active listening are key to successful relationships.";
+      return response.content;
     } catch (e) {
       _logger.e('Error getting dating advice: $e');
       return null;
@@ -372,11 +384,25 @@ class AiCompanionService {
   /// Get profile optimization suggestions
   Future<List<String>> getProfileOptimizationTips(String companionId) async {
     try {
-      // TODO: Backend endpoint not implemented yet
-      // For now, return mock tips
-      await Future.delayed(const Duration(milliseconds: 400));
+      // Profile optimization endpoint not implemented in backend yet
+      // Use sendMessage to get profile tips through regular chat
+      final response = await sendMessage(
+        companionId: companionId,
+        message:
+            "Can you give me some tips on how to optimize my dating profile to be more attractive and engaging?",
+      );
+
+      // Parse the response into tips (split by line breaks or bullets)
+      final tips = response.content
+          .split(RegExp(r'[•\n-]'))
+          .map((tip) => tip.trim())
+          .where((tip) => tip.isNotEmpty && tip.length > 10)
+          .take(5)
+          .toList();
       
-      return [
+      return tips.isNotEmpty
+          ? tips
+          : [
         'Add more variety to your photos - show different activities and settings',
         'Write a bio that showcases your personality and interests',
         'Include photos that show you smiling and having fun',
@@ -385,18 +411,43 @@ class AiCompanionService {
       ];
     } catch (e) {
       _logger.e('Error getting profile optimization tips: $e');
-      return [];
+      return [
+        'Add more variety to your photos',
+        'Write an engaging bio',
+        'Show your personality',
+        'Include recent photos',
+        'Mention your interests',
+      ];
     }
   }
 
   /// Generate conversation starters
   Future<List<String>> generateConversationStarters(String companionId) async {
     try {
-      // TODO: Backend endpoint not implemented yet
-      // For now, return mock conversation starters
-      await Future.delayed(const Duration(milliseconds: 400));
+      // Conversation starters endpoint not implemented in backend yet
+      // Use sendMessage to get conversation starters through regular chat
+      final response = await sendMessage(
+        companionId: companionId,
+        message:
+            "Can you suggest some good conversation starters for dating apps? Give me 5 interesting questions or topics.",
+      );
+
+      // Parse the response into conversation starters
+      final starters = response.content
+          .split(RegExp(r'[•\n-]|\d+\.'))
+          .map((starter) => starter.trim())
+          .where(
+            (starter) =>
+                starter.isNotEmpty &&
+                starter.length > 10 &&
+                starter.contains('?'),
+          )
+          .take(5)
+          .toList();
       
-      return [
+      return starters.isNotEmpty
+          ? starters
+          : [
         'What\'s been the highlight of your week so far?',
         'If you could travel anywhere right now, where would you go?',
         'What\'s something you\'ve learned recently that excited you?',
@@ -405,7 +456,13 @@ class AiCompanionService {
       ];
     } catch (e) {
       _logger.e('Error generating conversation starters: $e');
-      return [];
+      return [
+        'What\'s your favorite way to spend weekends?',
+        'What\'s the most interesting place you\'ve visited?',
+        'What are you passionate about?',
+        'What\'s your favorite type of music?',
+        'What\'s something that always makes you smile?',
+      ];
     }
   }
 
@@ -416,18 +473,19 @@ class AiCompanionService {
     String? conversationContext,
   }) async {
     try {
-      // TODO: Backend endpoint not implemented yet
-      // For now, return mock suggestions
-      await Future.delayed(const Duration(milliseconds: 500));
+      // Response suggestion endpoint not implemented in backend yet
+      // Use sendMessage to get response suggestions through regular chat
+      final contextMessage = conversationContext != null
+          ? "Given this conversation context: '$conversationContext', "
+          : "";
+
+      final response = await sendMessage(
+        companionId: companionId,
+        message:
+            "${contextMessage}Someone sent me this message: '$receivedMessage'. What would be a good way to respond?",
+      );
       
-      // Simple response suggestions based on message analysis
-      if (receivedMessage.toLowerCase().contains('how are you')) {
-        return "I'm doing great, thanks for asking! How about you?";
-      } else if (receivedMessage.toLowerCase().contains('what')) {
-        return "That's an interesting question! Let me think about that...";
-      } else {
-        return "That sounds really interesting! Tell me more about it.";
-      }
+      return response.content;
     } catch (e) {
       _logger.e('Error getting response suggestion: $e');
       return null;
@@ -442,10 +500,13 @@ class AiCompanionService {
     String? comments,
   }) async {
     try {
-      // TODO: Backend endpoint not implemented yet
-      // For now, return success to avoid errors
+      // Feedback endpoint not implemented in backend yet
+      // For now, log the feedback locally and return success
+      _logger.d('Feedback collected for companion $companionId: $feedbackType');
+      if (comments != null) {
+        _logger.d('Feedback comments: $comments');
+      }
       await Future.delayed(const Duration(milliseconds: 300));
-      _logger.d('AI companion feedback not yet implemented for: $companionId');
       return true;
     } catch (e) {
       _logger.e('Error providing feedback: $e');
@@ -456,8 +517,8 @@ class AiCompanionService {
   /// Get AI companion settings
   Future<CompanionSettings?> getCompanionSettings(String companionId) async {
     try {
-      // TODO: Backend endpoint not implemented yet
-      // For now, return null until settings service is ready
+      // Settings endpoint not implemented in backend yet
+      // Return null until backend settings service is ready
       await Future.delayed(const Duration(milliseconds: 300));
       _logger.d('AI companion settings not yet implemented for: $companionId');
       return null;
@@ -473,12 +534,10 @@ class AiCompanionService {
     required CompanionSettings settings,
   }) async {
     try {
-      // TODO: Backend endpoint not implemented yet
-      // For now, return success to avoid errors
+      // Settings update endpoint not implemented in backend yet
+      // For now, log the settings and return success
+      _logger.d('Settings update not yet implemented for: $companionId');
       await Future.delayed(const Duration(milliseconds: 300));
-      _logger.d(
-        'AI companion settings update not yet implemented for: $companionId',
-      );
       return true;
     } catch (e) {
       _logger.e('Error updating companion settings: $e');
@@ -489,12 +548,10 @@ class AiCompanionService {
   /// Get available companion personalities
   Future<List<CompanionPersonality>> getAvailablePersonalities() async {
     try {
-      // TODO: Backend endpoint not implemented yet
-      // For now, return all available personalities
+      // Personalities endpoint not implemented in backend yet
+      // Return all available personalities from the enum
       await Future.delayed(const Duration(milliseconds: 300));
-      _logger.d(
-        'AI companion personalities not yet implemented, returning defaults',
-      );
+      _logger.d('Using local companion personalities');
       return CompanionPersonality.values;
     } catch (e) {
       _logger.e('Error getting available personalities: $e');

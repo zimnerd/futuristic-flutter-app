@@ -87,7 +87,7 @@ class ServiceLocator {
     _virtualGiftService = VirtualGiftService(_apiClient);
     _safetyService = SafetyService(_apiClient);
     _premiumService = PremiumService(_apiClient);
-    _aiCompanionService = AiCompanionService(_apiClient);
+    _aiCompanionService = AiCompanionService(_apiClient, _fileUploadService);
     _speedDatingService = SpeedDatingService(_apiClient);
     _liveStreamingService = LiveStreamingService(_apiClient);
     _datePlanningService = DatePlanningService(_apiClient);
