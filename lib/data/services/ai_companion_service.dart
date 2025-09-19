@@ -1,6 +1,7 @@
 import 'package:logger/logger.dart';
 import '../models/ai_companion.dart';
 import '../../core/network/api_client.dart';
+import '../../core/utils/http_status_utils.dart';
 
 /// Service for AI Companion interactions and management
 class AiCompanionService {
@@ -30,7 +31,8 @@ class AiCompanionService {
         },
       );
 
-      if (response.statusCode == 200 && response.data != null) {
+      if (HttpStatusUtils.isPostSuccess(response.statusCode) &&
+          response.data != null) {
         final companion = AICompanion.fromJson(response.data!);
         _logger.d('AI companion created successfully: ${companion.id}');
         return companion;
@@ -49,7 +51,8 @@ class AiCompanionService {
     try {
       final response = await _apiClient.get('/ai-companions/user/companions');
 
-      if (response.statusCode == 200 && response.data != null) {
+      if (HttpStatusUtils.isGetSuccess(response.statusCode) &&
+          response.data != null) {
         final List<dynamic> data = response.data['companions'] ?? [];
         final companions = data.map((json) => AICompanion.fromJson(json)).toList();
         
@@ -72,7 +75,8 @@ class AiCompanionService {
         '/ai-companions/$companionId',
       );
 
-      if (response.statusCode == 200 && response.data != null) {
+      if (HttpStatusUtils.isGetSuccess(response.statusCode) &&
+          response.data != null) {
         final companion = AICompanion.fromJson(response.data!);
         _logger.d('Retrieved AI companion: $companionId');
         return companion;
@@ -106,7 +110,8 @@ class AiCompanionService {
         data: updateData,
       );
 
-      if (response.statusCode == 200 && response.data != null) {
+      if (HttpStatusUtils.isPutSuccess(response.statusCode) &&
+          response.data != null) {
         final companion = AICompanion.fromJson(response.data!);
         _logger.d('AI companion updated successfully: $companionId');
         return companion;
@@ -127,7 +132,7 @@ class AiCompanionService {
         '/ai-companions/$companionId',
       );
 
-      if (response.statusCode == 200) {
+      if (HttpStatusUtils.isDeleteSuccess(response.statusCode)) {
         _logger.d('AI companion deleted successfully: $companionId');
         return true;
       } else {
@@ -178,7 +183,8 @@ class AiCompanionService {
     int limit = 20,
   }) async {
     try {
-      // TODO: Backend endpoint not implemented yet
+      // 
+      
       // For now, return mock conversation history
       await Future.delayed(const Duration(milliseconds: 300));
       
