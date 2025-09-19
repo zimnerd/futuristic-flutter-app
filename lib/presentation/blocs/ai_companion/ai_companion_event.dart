@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'dart:io';
 import '../../../data/models/ai_companion.dart';
 
 abstract class AiCompanionEvent extends Equatable {
@@ -117,3 +118,23 @@ class GenerateCompanionSuggestion extends AiCompanionEvent {
 }
 
 class RefreshCompanionData extends AiCompanionEvent {}
+
+class SendImageMessage extends AiCompanionEvent {
+  final String companionId;
+  final File imageFile;
+
+  const SendImageMessage({required this.companionId, required this.imageFile});
+
+  @override
+  List<Object> get props => [companionId, imageFile];
+}
+
+class SendAudioMessage extends AiCompanionEvent {
+  final String companionId;
+  final File audioFile;
+
+  const SendAudioMessage({required this.companionId, required this.audioFile});
+
+  @override
+  List<Object> get props => [companionId, audioFile];
+}

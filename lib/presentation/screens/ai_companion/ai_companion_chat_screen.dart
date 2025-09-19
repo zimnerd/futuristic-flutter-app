@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:record/record.dart';
+import 'dart:io';
 
 import '../../../data/models/ai_companion.dart';
 import '../../blocs/ai_companion/ai_companion_bloc.dart';
@@ -288,25 +291,14 @@ class _AiCompanionChatScreenState extends State<AiCompanionChatScreen> {
           onTyping: () {
             // Handle typing indicator if needed
           },
-          onCamera: () {
-            // Handle camera functionality
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Camera feature coming soon!')),
-            );
+          onCamera: () async {
+            await _handleCameraImage();
           },
-          onGallery: () {
-            // Handle gallery functionality
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Gallery feature coming soon!')),
-            );
+          onGallery: () async {
+            await _handleGalleryImage();
           },
-          onVoice: () {
-            // Handle voice message functionality
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Voice message feature coming soon!'),
-              ),
-            );
+          onVoice: () async {
+            await _handleVoiceMessage();
           },
         );
       },
@@ -332,6 +324,130 @@ class _AiCompanionChatScreenState extends State<AiCompanionChatScreen> {
         );
       }
     });
+  }
+
+  Future<void> _handleCameraImage() async {
+    try {
+      final ImagePicker picker = ImagePicker();
+      final XFile? image = await picker.pickImage(
+        source: ImageSource.camera,
+        maxWidth: 1024,
+        maxHeight: 1024,
+        imageQuality: 80,
+      );
+
+      if (image != null) {
+        final File imageFile = File(image.path);
+        // Send image message to AI companion
+        context.read<AiCompanionBloc>().add(
+          SendImageMessage(
+            companionId: widget.companion.id,
+            imageFile: imageFile,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to capture image: $e')));
+      }
+    }
+  }
+
+  Future<void> _handleGalleryImage() async {
+    try {
+      final ImagePicker picker = ImagePicker();
+      final XFile? image = await picker.pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 1024,
+        maxHeight: 1024,
+        imageQuality: 80,
+      );
+
+      if (image != null) {
+        final File imageFile = File(image.path);
+        // Send image message to AI companion
+        context.read<AiCompanionBloc>().add(
+          SendImageMessage(
+            companionId: widget.companion.id,
+            imageFile: imageFile,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to pick image: $e')));
+      }
+    }
+  }
+
+  Future<void> _handleVoiceMessage() async {
+    try {
+      final record = AudioRecorder();
+
+      // Check permission
+      if (await record.hasPermission()) {
+        // Show recording dialog
+        if (mounted) {
+          showDialog(
+            context: context,
+            barrierDismissible: false,
+            builder: (context) => AlertDialog(
+              title: const Text('Recording Voice Message'),
+              content: const Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.mic, size: 64, color: Colors.red),
+                  SizedBox(height: 16),
+                  Text('Tap stop when finished'),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () async {
+                    final path = await record.stop();
+                    Navigator.of(context).pop();
+
+                    if (path != null) {
+                      final File audioFile = File(path);
+                      // Send audio message to AI companion
+                      context.read<AiCompanionBloc>().add(
+                        SendAudioMessage(
+                          companionId: widget.companion.id,
+                          audioFile: audioFile,
+                        ),
+                      );
+                    }
+                  },
+                  child: const Text('Stop Recording'),
+                ),
+              ],
+            ),
+          );
+
+          // Start recording
+          await record.start(
+            const RecordConfig(),
+            path: '/tmp/voice_message.m4a',
+          );
+        }
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Microphone permission is required')),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to record audio: $e')));
+      }
+    }
   }
 
   void _showCompanionInfo() {

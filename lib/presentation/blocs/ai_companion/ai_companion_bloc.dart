@@ -18,6 +18,8 @@ class AiCompanionBloc extends Bloc<AiCompanionEvent, AiCompanionState> {
     on<UpdateCompanion>(_onUpdateCompanion);
     on<DeleteCompanion>(_onDeleteCompanion);
     on<SendMessageToCompanion>(_onSendMessageToCompanion);
+    on<SendImageMessage>(_onSendImageMessage);
+    on<SendAudioMessage>(_onSendAudioMessage);
     on<LoadConversationHistory>(_onLoadConversationHistory);
     on<UpdateCompanionSettings>(_onUpdateCompanionSettings);
     on<GetCompanionAnalytics>(_onGetCompanionAnalytics);
@@ -140,18 +142,86 @@ class AiCompanionBloc extends Bloc<AiCompanionEvent, AiCompanionState> {
         message: event.message,
       );
 
+      emit(AiCompanionMessageSent(result, null));
+      _logger.d('$_tag: Message sent successfully');
+
+      // Refresh conversation history
+      add(LoadConversationHistory(companionId: event.companionId));
+    } catch (e, stackTrace) {
+      _logger.e(
+        '$_tag: Failed to send message',
+        error: e,
+        stackTrace: stackTrace,
+      );
+      emit(AiCompanionError('Failed to send message: ${e.toString()}'));
+    }
+  }
+
+  Future<void> _onSendImageMessage(
+    SendImageMessage event,
+    Emitter<AiCompanionState> emit,
+  ) async {
+    try {
+      emit(AiCompanionMessageSending(event.companionId, 'Sending image...'));
+      _logger.d(
+        '$_tag: Sending image message to companion: ${event.companionId}',
+      );
+
+      final result = await _aiCompanionService.sendImageMessage(
+        companionId: event.companionId,
+        imageFile: event.imageFile,
+      );
+
       if (result != null) {
         emit(AiCompanionMessageSent(result, null));
-        _logger.d('$_tag: Message sent successfully');
+        _logger.d('$_tag: Image message sent successfully');
+
+        // Refresh conversation history
+        add(LoadConversationHistory(companionId: event.companionId));
+      } else {
+        emit(AiCompanionError('Failed to send image message'));
+      }
+    } catch (e, stackTrace) {
+      _logger.e(
+        '$_tag: Failed to send image message',
+        error: e,
+        stackTrace: stackTrace,
+      );
+      emit(AiCompanionError('Failed to send image message: ${e.toString()}'));
+    }
+  }
+
+  Future<void> _onSendAudioMessage(
+    SendAudioMessage event,
+    Emitter<AiCompanionState> emit,
+  ) async {
+    try {
+      emit(AiCompanionMessageSending(event.companionId, 'Sending audio...'));
+      _logger.d(
+        '$_tag: Sending audio message to companion: ${event.companionId}',
+      );
+
+      final result = await _aiCompanionService.sendAudioMessage(
+        companionId: event.companionId,
+        audioFile: event.audioFile,
+      );
+
+      if (result != null) {
+        emit(AiCompanionMessageSent(result, null));
+        _logger.d('$_tag: Audio message sent successfully');
         
         // Refresh conversation history
         add(LoadConversationHistory(companionId: event.companionId));
       } else {
-        emit(AiCompanionError('Failed to send message'));
+        emit(AiCompanionError('Failed to send audio message'));
       }
     } catch (e, stackTrace) {
-      _logger.e('$_tag: Failed to send message', error: e, stackTrace: stackTrace);
-      emit(AiCompanionError('Failed to send message: ${e.toString()}'));
+      _logger.e(
+        '$_tag: Failed to send audio message',
+        error: e,
+        stackTrace: stackTrace,
+      );
+      emit(AiCompanionError('Failed to send audio message: ${e.toString()}'));
     }
   }
 

@@ -1,4 +1,5 @@
 import 'package:logger/logger.dart';
+import 'dart:io';
 import '../models/ai_companion.dart';
 import '../../core/network/api_client.dart';
 import '../../core/utils/http_status_utils.dart';
@@ -146,33 +147,130 @@ class AiCompanionService {
   }
 
   /// Send message to AI companion
-  Future<CompanionMessage?> sendMessage({
+  Future<CompanionMessage> sendMessage({
     required String companionId,
     required String message,
   }) async {
     try {
-      // TODO: Backend endpoint not implemented yet
-      // For now, return a mock response as CompanionMessage
-      await Future.delayed(const Duration(milliseconds: 500));
-
-      final now = DateTime.now();
-      return CompanionMessage(
-        id: 'msg_${now.millisecondsSinceEpoch}',
-        companionId: companionId,
-        userId: 'current-user', // TODO: Get from auth service
-        content:
-            "Thank you for your message: '$message'. I appreciate you reaching out! How can I help you today?",
-        isFromCompanion: true,
-        timestamp: now,
-        type: MessageType.text,
-        suggestedResponses: [
-          'Tell me more about that',
-          'That sounds interesting!',
-          'How did that make you feel?',
-        ],
+      final response = await _apiClient.post(
+        '/ai-companions/$companionId/message',
+        data: {'message': message, 'messageType': 'text'},
       );
+
+      if (HttpStatusUtils.isPostSuccess(response.statusCode) &&
+          response.data != null) {
+        final messageData = response.data['data'];
+        _logger.d('Message sent successfully to companion: $companionId');
+
+        // Convert the response to CompanionMessage format
+        return CompanionMessage(
+          id: messageData['aiResponse']['id'],
+          companionId: companionId,
+          userId:
+              messageData['userMessage']['id'], // Using user message ID for user field
+          content: messageData['aiResponse']['content'],
+          isFromCompanion: true,
+          timestamp: DateTime.parse(messageData['aiResponse']['createdAt']),
+          type: MessageType.text,
+          suggestedResponses:
+              messageData['aiResponse']['suggestedResponses']?.cast<String>() ??
+              [],
+        );
+      } else {
+        _logger.e('Failed to send message: ${response.statusMessage}');
+        throw Exception('Failed to send message');
+      }
     } catch (e) {
+      _logger.e('Error sending message: $e');
       throw Exception('Failed to send message: $e');
+    }
+  }
+
+  /// Send image message to AI companion
+  Future<CompanionMessage?> sendImageMessage({
+    required String companionId,
+    required File imageFile,
+  }) async {
+    try {
+      // For now, we'll upload the image and send the URL as a text message
+      // This can be extended to support proper image message types
+      final response = await _apiClient.post(
+        '/ai-companions/$companionId/message',
+        data: {
+          'message': '[Image uploaded]',
+          'messageType': 'image',
+          // TODO: Add image file upload logic here
+        },
+      );
+
+      if (HttpStatusUtils.isPostSuccess(response.statusCode) &&
+          response.data != null) {
+        final messageData = response.data['data'];
+        _logger.d('Image message sent successfully to companion: $companionId');
+
+        return CompanionMessage(
+          id: messageData['aiResponse']['id'],
+          companionId: companionId,
+          userId: messageData['userMessage']['id'],
+          content: messageData['aiResponse']['content'],
+          isFromCompanion: true,
+          timestamp: DateTime.parse(messageData['aiResponse']['createdAt']),
+          type: MessageType.text,
+          suggestedResponses:
+              messageData['aiResponse']['suggestedResponses']?.cast<String>() ??
+              [],
+        );
+      } else {
+        _logger.e('Failed to send image message: ${response.statusMessage}');
+        return null;
+      }
+    } catch (e) {
+      _logger.e('Error sending image message: $e');
+      return null;
+    }
+  }
+
+  /// Send audio message to AI companion
+  Future<CompanionMessage?> sendAudioMessage({
+    required String companionId,
+    required File audioFile,
+  }) async {
+    try {
+      // For now, we'll send a placeholder message
+      // This can be extended to support proper audio message types and transcription
+      final response = await _apiClient.post(
+        '/ai-companions/$companionId/message',
+        data: {
+          'message': '[Audio message sent]',
+          'messageType': 'audio',
+          // TODO: Add audio file upload and transcription logic here
+        },
+      );
+
+      if (HttpStatusUtils.isPostSuccess(response.statusCode) &&
+          response.data != null) {
+        final messageData = response.data['data'];
+        _logger.d('Audio message sent successfully to companion: $companionId');
+
+        return CompanionMessage(
+          id: messageData['aiResponse']['id'],
+          companionId: companionId,
+          userId: messageData['userMessage']['id'],
+          content: messageData['aiResponse']['content'],
+          isFromCompanion: true,
+          timestamp: DateTime.parse(messageData['aiResponse']['createdAt']),
+          type: MessageType.text,
+          suggestedResponses:
+              messageData['aiResponse']['suggestedResponses']?.cast<String>() ??
+              [],
+        );
+      } else {
+        _logger.e('Failed to send audio message: ${response.statusMessage}');
+        return null;
+      }
+    } catch (e) {
+      _logger.e('Error sending audio message: $e');
+      return null;
     }
   }
 
@@ -183,40 +281,59 @@ class AiCompanionService {
     int limit = 20,
   }) async {
     try {
-      // 
-      
-      // For now, return mock conversation history
-      await Future.delayed(const Duration(milliseconds: 300));
-      
-      final now = DateTime.now();
-      return [
-        CompanionMessage(
-          id: 'msg_1',
-          companionId: companionId,
-          userId: 'current-user', // TODO: Get from auth service
-          content: 'Hello! I\'m excited to chat with you!',
-          isFromCompanion: true,
-          timestamp: now.subtract(const Duration(minutes: 5)),
-          type: MessageType.text,
-          suggestedResponses: [
-            'Hi there!',
-            'Great to meet you!',
-            'How are you?',
-          ],
-        ),
-        CompanionMessage(
-          id: 'msg_2',
-          companionId: companionId,
-          userId: 'current-user', // TODO: Get from auth service
-          content: 'Hi there! How are you doing today?',
-          isFromCompanion: false,
-          timestamp: now.subtract(const Duration(minutes: 3)),
-          type: MessageType.text,
-          suggestedResponses: [],
-        ),
-      ];
+      final response = await _apiClient.get(
+        '/ai-companions/$companionId/conversation',
+        queryParameters: {'page': page, 'limit': limit},
+      );
+
+      if (HttpStatusUtils.isGetSuccess(response.statusCode) &&
+          response.data != null) {
+        final conversationData = response.data['data'];
+        final messagesList =
+            conversationData['messages'] as List<dynamic>? ?? [];
+        
+        _logger.d(
+          'Retrieved ${messagesList.length} messages for companion: $companionId',
+        );
+
+        // Convert backend messages to CompanionMessage format
+        return messagesList.map((msgData) {
+          return CompanionMessage(
+            id: msgData['id'],
+            companionId: companionId,
+            userId: msgData['isFromUser'] ? 'current-user' : companionId,
+            content: msgData['content'],
+            isFromCompanion: !msgData['isFromUser'],
+            timestamp: DateTime.parse(msgData['createdAt']),
+            type: _parseMessageType(msgData['messageType']),
+            suggestedResponses:
+                (msgData['metadata']?['suggestedResponses'] as List<dynamic>?)
+                    ?.cast<String>() ??
+                [],
+          );
+        }).toList();
+      } else {
+        _logger.e(
+          'Failed to get conversation history: ${response.statusMessage}',
+        );
+        return [];
+      }
     } catch (e) {
-      throw Exception('Failed to get conversation history: $e');
+      _logger.e('Error getting conversation history: $e');
+      return [];
+    }
+  }
+
+  MessageType _parseMessageType(String? type) {
+    switch (type) {
+      case 'text':
+        return MessageType.text;
+      case 'image':
+        return MessageType.text; // TODO: Add image type to enum
+      case 'audio':
+        return MessageType.text; // TODO: Add audio type to enum
+      default:
+        return MessageType.text;
     }
   }
 
