@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'package:http/http.dart' as http;
 import '../../core/constants/api_constants.dart';
 import '../../core/utils/logger.dart';
@@ -41,14 +42,16 @@ class PushNotificationService {
     
     try {
       final response = await http.post(
-        Uri.parse('${ApiConstants.baseUrl}${ApiConstants.notifications}/register-token'),
+        Uri.parse(
+          '${ApiConstants.baseUrl}${ApiConstants.notifications}/subscribe',
+        ),
         headers: {
           'Authorization': 'Bearer $_authToken',
           'Content-Type': 'application/json',
         },
         body: json.encode({
-          'deviceToken': token,
-          'platform': 'mobile',
+          'token': token,
+          'platform': Platform.isIOS ? 'ios' : 'android',
         }),
       );
 
@@ -322,14 +325,13 @@ class PushNotificationService {
     
     try {
       final response = await http.delete(
-        Uri.parse('${ApiConstants.baseUrl}${ApiConstants.notifications}/unregister-token'),
+        Uri.parse(
+          '${ApiConstants.baseUrl}${ApiConstants.notifications}/unsubscribe?deviceId=$token',
+        ),
         headers: {
           'Authorization': 'Bearer $_authToken',
           'Content-Type': 'application/json',
         },
-        body: json.encode({
-          'deviceToken': token,
-        }),
       );
 
       if (response.statusCode == 200) {

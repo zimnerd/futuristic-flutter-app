@@ -85,7 +85,7 @@ class NotificationRemoteDataSourceImpl implements NotificationRemoteDataSource {
     try {
       _logger.i('Marking notification as read: $notificationId');
 
-      final response = await _apiService.patch(
+      final response = await _apiService.put(
         '/notifications/$notificationId/read',
       );
 

@@ -821,12 +821,12 @@ class ApiClient {
 
   /// Mark notification as read
   Future<Response> markNotificationAsRead(String notificationId) async {
-    return await _dio.patch('/notifications/$notificationId/read');
+    return await _dio.put('/notifications/$notificationId/read');
   }
 
   /// Mark all notifications as read
   Future<Response> markAllNotificationsAsRead() async {
-    return await _dio.post('/notifications/mark-all-read');
+    return await _dio.patch('/notifications/mark-all-read');
   }
 
   /// Delete notification
