@@ -428,4 +428,25 @@ class MatchingService {
       throw _handleDioError(e);
     }
   }
+
+  /// Rewind/undo the last swipe action (premium feature)
+  Future<Map<String, dynamic>> undoLastSwipe() async {
+    try {
+      final response = await _apiClient.post(ApiConstants.matchingUndo);
+      return response.data as Map<String, dynamic>;
+    } on DioException catch (e) {
+      throw _handleDioError(e);
+    }
+  }
+
+  /// Boost profile for increased visibility (premium feature)
+  Future<Map<String, dynamic>> boostProfile() async {
+    try {
+      // Use dedicated boost endpoint
+      final response = await _apiClient.post(ApiConstants.premiumBoost);
+      return response.data as Map<String, dynamic>;
+    } on DioException catch (e) {
+      throw _handleDioError(e);
+    }
+  }
 }

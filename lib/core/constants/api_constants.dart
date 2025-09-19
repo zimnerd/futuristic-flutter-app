@@ -70,6 +70,7 @@ class ApiConstants {
   static const String premiumSubscribe = '$premium/subscribe';
   static const String premiumSubscription = '$premium/subscription';
   static const String premiumStats = '$premium/stats';
+  static const String premiumBoost = '$premium/boost';
   static const String premiumCancel = '$premium/cancel';
   static const String premiumPause = '$premium/pause';
   static const String premiumResume = '$premium/resume';

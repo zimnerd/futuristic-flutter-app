@@ -127,15 +127,15 @@ class DiscoveryService {
     /// Activate boost feature to increase profile visibility
   Future<BoostResult> activateBoost() async {
     try {
-      // Implement actual API call to backend
+      // Use dedicated boost endpoint
       final response = await _apiClient.post(
-        '/discovery/boost',
+        ApiConstants.premiumBoost,
         data: {},
       );
       
       final Map<String, dynamic> responseData =
           response.data as Map<String, dynamic>;
-      final bool success = responseData['success'] ?? false;
+      final bool success = responseData['success'] ?? true;
       final int durationMinutes = responseData['durationMinutes'] ?? 30;
       final String startTimeStr =
           responseData['startTime'] ?? DateTime.now().toIso8601String();

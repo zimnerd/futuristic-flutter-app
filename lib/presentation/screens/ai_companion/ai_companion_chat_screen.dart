@@ -339,12 +339,14 @@ class _AiCompanionChatScreenState extends State<AiCompanionChatScreen> {
       if (image != null) {
         final File imageFile = File(image.path);
         // Send image message to AI companion
-        context.read<AiCompanionBloc>().add(
-          SendImageMessage(
-            companionId: widget.companion.id,
-            imageFile: imageFile,
-          ),
-        );
+        if (mounted) {
+          context.read<AiCompanionBloc>().add(
+            SendImageMessage(
+              companionId: widget.companion.id,
+              imageFile: imageFile,
+            ),
+          );
+        }
       }
     } catch (e) {
       if (mounted) {
@@ -368,12 +370,14 @@ class _AiCompanionChatScreenState extends State<AiCompanionChatScreen> {
       if (image != null) {
         final File imageFile = File(image.path);
         // Send image message to AI companion
-        context.read<AiCompanionBloc>().add(
-          SendImageMessage(
-            companionId: widget.companion.id,
-            imageFile: imageFile,
-          ),
-        );
+        if (mounted) {
+          context.read<AiCompanionBloc>().add(
+            SendImageMessage(
+              companionId: widget.companion.id,
+              imageFile: imageFile,
+            ),
+          );
+        }
       }
     } catch (e) {
       if (mounted) {
@@ -395,7 +399,7 @@ class _AiCompanionChatScreenState extends State<AiCompanionChatScreen> {
           showDialog(
             context: context,
             barrierDismissible: false,
-            builder: (context) => AlertDialog(
+            builder: (dialogContext) => AlertDialog(
               title: const Text('Recording Voice Message'),
               content: const Column(
                 mainAxisSize: MainAxisSize.min,
@@ -409,9 +413,9 @@ class _AiCompanionChatScreenState extends State<AiCompanionChatScreen> {
                 TextButton(
                   onPressed: () async {
                     final path = await record.stop();
-                    Navigator.of(context).pop();
+                    Navigator.of(dialogContext).pop();
 
-                    if (path != null) {
+                    if (path != null && mounted) {
                       final File audioFile = File(path);
                       // Send audio message to AI companion
                       context.read<AiCompanionBloc>().add(

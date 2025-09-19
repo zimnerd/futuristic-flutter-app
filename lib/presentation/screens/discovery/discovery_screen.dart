@@ -294,14 +294,9 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
     if (_rewindHistory.isNotEmpty) {
       HapticFeedback.heavyImpact();
       _rewindHistory.removeLast();
-      // TODO: Implement rewind logic with backend
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Rewound last action'),
-          backgroundColor: PulseColors.rewind,
-          duration: const Duration(seconds: 2),
-        ),
-      );
+      
+      // Trigger rewind event through DiscoveryBloc
+      context.read<DiscoveryBloc>().add(const UndoLastSwipe());
     }
   }
 
@@ -310,25 +305,64 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(gradient: PulseGradients.background),
-        child: BlocBuilder<DiscoveryBloc, DiscoveryState>(
-          builder: (context, state) {
-            return Stack(
-              children: [
-                // Modern curved header
-                _buildModernHeader(),
-
-                // Main content area
-                Positioned.fill(top: 120, child: _buildMainContent(state)),
-
-                // Enhanced action buttons
-                if (state is DiscoveryLoaded && state.hasUsers)
-                  _buildModernActionButtons(),
-
-                // Match celebration
-                if (state is DiscoveryMatchFound) _buildMatchDialog(state),
-              ],
-            );
+        child: BlocListener<DiscoveryBloc, DiscoveryState>(
+          listener: (context, state) {
+            // Handle rewind success/error feedback
+            if (state is DiscoveryLoaded && state.lastSwipedUser == null) {
+              // Rewind was successful
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: const Text('Rewound last action'),
+                  backgroundColor: PulseColors.rewind,
+                  duration: const Duration(seconds: 2),
+                ),
+              );
+            }
+            
+            // Handle boost success feedback
+            if (state is DiscoveryBoostActivated) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    'Boost activated for ${state.boostDuration.inMinutes} minutes!',
+                  ),
+                  backgroundColor: PulseColors.accent,
+                  duration: const Duration(seconds: 3),
+                ),
+              );
+            }
+            
+            // Handle errors
+            if (state is DiscoveryError) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(state.message),
+                  backgroundColor: PulseColors.reject,
+                  duration: const Duration(seconds: 3),
+                ),
+              );
+            }
           },
+          child: BlocBuilder<DiscoveryBloc, DiscoveryState>(
+            builder: (context, state) {
+              return Stack(
+                children: [
+                  // Modern curved header
+                  _buildModernHeader(),
+
+                  // Main content area
+                  Positioned.fill(top: 120, child: _buildMainContent(state)),
+
+                  // Enhanced action buttons
+                  if (state is DiscoveryLoaded && state.hasUsers)
+                    _buildModernActionButtons(),
+
+                  // Match celebration
+                  if (state is DiscoveryMatchFound) _buildMatchDialog(state),
+                ],
+              );
+            },
+          ),
         ),
       ),
     );
@@ -612,13 +646,9 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
               config: ActionButtonConfig.boost,
               isActive: false,
               onTap: () {
-                // TODO: Implement boost
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Boost feature coming soon!'),
-                    backgroundColor: PulseColors.accent,
-                  ),
-                );
+                HapticFeedback.heavyImpact();
+                // Trigger boost event through DiscoveryBloc
+                context.read<DiscoveryBloc>().add(const UseBoost());
               },
             ),
           ],
@@ -998,7 +1028,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
                     Container(
                       padding: const EdgeInsets.all(PulseSpacing.lg),
                       decoration: BoxDecoration(
-                        color: PulseColors.accent.withOpacity(0.1),
+                        color: PulseColors.accent.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(PulseSpacing.md),
                       ),
                       child: Column(
@@ -1203,12 +1233,12 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
       margin: const EdgeInsets.only(bottom: PulseSpacing.sm),
       decoration: BoxDecoration(
         color: isUnread
-            ? PulseColors.primary.withOpacity(0.05)
+            ? PulseColors.primary.withValues(alpha: 0.05)
             : Colors.transparent,
         borderRadius: BorderRadius.circular(PulseSpacing.sm),
         border: Border.all(
           color: isUnread
-              ? PulseColors.primary.withOpacity(0.2)
+              ? PulseColors.primary.withValues(alpha: 0.2)
               : PulseColors.grey200,
         ),
       ),

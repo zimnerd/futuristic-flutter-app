@@ -77,3 +77,8 @@ class UpdateFilters extends MatchingEvent {
   @override
   List<Object?> get props => [filters];
 }
+
+/// Event to boost profile visibility
+class BoostProfile extends MatchingEvent {
+  const BoostProfile();
+}

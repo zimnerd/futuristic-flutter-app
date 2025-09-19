@@ -5,6 +5,8 @@ import 'package:go_router/go_router.dart';
 import '../../../core/theme/pulse_design_system.dart';
 import '../../blocs/user/user_bloc.dart';
 import '../../blocs/user/user_state.dart';
+import '../../blocs/auth/auth_bloc.dart';
+import '../../blocs/auth/auth_event.dart';
 
 /// Modern burger menu with sliding drawer animation
 /// Provides access to profile, settings, and other user features
@@ -416,9 +418,31 @@ class _BurgerMenuState extends State<BurgerMenu>
             color: Colors.transparent,
             child: InkWell(
               borderRadius: BorderRadius.circular(12),
-              onTap: () {
-                // TODO: Implement sign out
-                _closeMenu();
+              onTap: () async {
+                // Show confirmation dialog
+                final shouldSignOut = await showDialog<bool>(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: const Text('Sign Out'),
+                    content: const Text('Are you sure you want to sign out?'),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.of(context).pop(false),
+                        child: const Text('Cancel'),
+                      ),
+                      TextButton(
+                        onPressed: () => Navigator.of(context).pop(true),
+                        child: const Text('Sign Out'),
+                      ),
+                    ],
+                  ),
+                );
+
+                if (shouldSignOut == true && mounted) {
+                  // Trigger sign out event
+                  context.read<AuthBloc>().add(const AuthSignOutRequested());
+                  _closeMenu();
+                }
               },
               child: Container(
                 padding: const EdgeInsets.symmetric(

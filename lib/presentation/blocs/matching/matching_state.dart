@@ -20,6 +20,8 @@ class MatchingState extends Equatable {
     this.matchedProfile,
     this.superLikesRemaining = 5,
     this.undosRemaining = 3,
+    this.boostActive = false,
+    this.boostExpiresAt,
     this.error,
   });
 
@@ -32,6 +34,8 @@ class MatchingState extends Equatable {
   final UserProfile? matchedProfile;
   final int superLikesRemaining;
   final int undosRemaining;
+  final bool boostActive;
+  final DateTime? boostExpiresAt;
   final String? error;
 
   MatchingState copyWith({
@@ -44,6 +48,8 @@ class MatchingState extends Equatable {
     UserProfile? matchedProfile,
     int? superLikesRemaining,
     int? undosRemaining,
+    bool? boostActive,
+    DateTime? boostExpiresAt,
     String? error,
   }) {
     return MatchingState(
@@ -56,6 +62,8 @@ class MatchingState extends Equatable {
       matchedProfile: matchedProfile ?? this.matchedProfile,
       superLikesRemaining: superLikesRemaining ?? this.superLikesRemaining,
       undosRemaining: undosRemaining ?? this.undosRemaining,
+      boostActive: boostActive ?? this.boostActive,
+      boostExpiresAt: boostExpiresAt ?? this.boostExpiresAt,
       error: error,
     );
   }
@@ -71,6 +79,8 @@ class MatchingState extends Equatable {
         matchedProfile,
         superLikesRemaining,
         undosRemaining,
+    boostActive,
+    boostExpiresAt,
         error,
       ];
 }

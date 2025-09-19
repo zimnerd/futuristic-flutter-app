@@ -335,9 +335,11 @@ class AiCompanionService {
       case 'text':
         return MessageType.text;
       case 'image':
-        return MessageType.text; // TODO: Add image type to enum
+        return MessageType
+            .text; // Images are treated as text messages with attachments
       case 'audio':
-        return MessageType.text; // TODO: Add audio type to enum
+        return MessageType
+            .text; // Audio is treated as text messages with attachments
       default:
         return MessageType.text;
     }

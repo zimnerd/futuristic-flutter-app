@@ -22,6 +22,7 @@ class MatchingBloc extends Bloc<MatchingEvent, MatchingState> {
     on<SuperLikeProfile>(_onSuperLikeProfile);
     on<ReportProfile>(_onReportProfile);
     on<UpdateFilters>(_onUpdateFilters);
+    on<BoostProfile>(_onBoostProfile);
   }
 
   Future<void> _onLoadPotentialMatches(
@@ -142,11 +143,9 @@ class MatchingBloc extends Bloc<MatchingEvent, MatchingState> {
       matchedProfile: null,
     ));
 
-    // Note: MatchingService doesn't have undo functionality yet
-    // In a real implementation, you'd call the backend to undo the swipe
+    // Call backend to undo the swipe
     try {
-      // For now, just keep the local state change
-      // await _matchingService.undoSwipe(lastSwipe.profile.id);
+      await _matchingService.undoLastSwipe();
     } catch (e) {
       // Revert the undo on error
       final revertedProfiles = List<UserProfile>.from(updatedProfiles)..removeAt(0);
@@ -158,6 +157,35 @@ class MatchingBloc extends Bloc<MatchingEvent, MatchingState> {
         undosRemaining: state.undosRemaining + 1,
         error: 'Failed to undo swipe: ${e.toString()}',
       ));
+    }
+  }
+
+  Future<void> _onBoostProfile(
+    BoostProfile event,
+    Emitter<MatchingState> emit,
+  ) async {
+    try {
+      emit(state.copyWith(status: MatchingStatus.loading));
+
+      await _matchingService.boostProfile();
+
+      emit(
+        state.copyWith(
+          status: MatchingStatus.loaded,
+          boostActive: true,
+          boostExpiresAt: DateTime.now().add(
+            const Duration(hours: 1),
+          ), // Typical boost duration
+          error: null,
+        ),
+      );
+    } catch (e) {
+      emit(
+        state.copyWith(
+          status: MatchingStatus.error,
+          error: 'Failed to activate boost: ${e.toString()}',
+        ),
+      );
     }
   }
 
