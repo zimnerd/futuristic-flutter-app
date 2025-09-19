@@ -482,37 +482,42 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
         children: [
           // Background cards with modern stacking effect
           if (users.length > 1)
-            Transform.scale(
-              scale: 0.96,
-              child: Transform.translate(
-                offset: const Offset(0, 4),
-                child: Container(
-                  decoration: PulseDecorations.swipeCard(),
-                  child: swipe_widget.SwipeCard(
-                    user: users[1],
-                    showDetails: false,
+            SizedBox.expand(
+              child: Transform.scale(
+                scale: 0.96,
+                child: Transform.translate(
+                  offset: const Offset(0, 4),
+                  child: Container(
+                    decoration: PulseDecorations.swipeCard(),
+                    child: swipe_widget.SwipeCard(
+                      user: users[1],
+                      showDetails: false,
+                    ),
                   ),
                 ),
               ),
             ),
           
           if (users.length > 2)
-            Transform.scale(
-              scale: 0.92,
-              child: Transform.translate(
-                offset: const Offset(0, 8),
-                child: Container(
-                  decoration: PulseDecorations.swipeCard(),
-                  child: swipe_widget.SwipeCard(
-                    user: users[2],
-                    showDetails: false,
+            SizedBox.expand(
+              child: Transform.scale(
+                scale: 0.92,
+                child: Transform.translate(
+                  offset: const Offset(0, 8),
+                  child: Container(
+                    decoration: PulseDecorations.swipeCard(),
+                    child: swipe_widget.SwipeCard(
+                      user: users[2],
+                      showDetails: false,
+                    ),
                   ),
                 ),
               ),
             ),
           
           // Main interactive card
-          GestureDetector(
+          SizedBox.expand(
+            child: GestureDetector(
                 onPanStart: _handlePanStart,
                 onPanUpdate: _handlePanUpdate,
                 onPanEnd: _handlePanEnd,
@@ -561,6 +566,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
                     );
                   },
                 ),
+            ),
           ),
         ],
       ),
