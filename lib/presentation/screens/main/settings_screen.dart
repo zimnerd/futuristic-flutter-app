@@ -72,6 +72,12 @@ class SettingsScreen extends StatelessWidget {
             subtitle: 'App language and region',
             onTap: () => context.go('/settings/language'),
           ),
+          _buildSettingsTile(
+            icon: Icons.smart_toy,
+            title: 'AI Features',
+            subtitle: 'Smart suggestions and AI assistance',
+            onTap: () => context.go('/settings/ai'),
+          ),
           const SizedBox(height: PulseSpacing.lg),
 
           // App Section

@@ -121,6 +121,16 @@ class _MessagesScreenState extends State<MessagesScreen> {
             ),
           ),
           const Spacer(),
+          // AI Companion button
+          IconButton(
+            onPressed: () => context.go('/ai-companion'),
+            icon: const Icon(Icons.smart_toy),
+            style: IconButton.styleFrom(
+              backgroundColor: PulseColors.primaryContainer,
+              foregroundColor: PulseColors.primary,
+            ),
+          ),
+          const SizedBox(width: 8),
           // Filter button with indicator
           Stack(
             children: [

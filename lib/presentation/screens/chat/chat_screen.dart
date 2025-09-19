@@ -10,7 +10,7 @@ import '../../../presentation/blocs/auth/auth_bloc.dart';
 import '../../../presentation/blocs/auth/auth_state.dart';
 import '../../theme/pulse_colors.dart';
 import '../../widgets/chat/message_bubble_new.dart';
-import '../../widgets/chat/message_input_new.dart';
+import '../../widgets/chat/ai_message_input.dart';
 import '../../../data/models/call_model.dart';
 
 class ChatScreen extends StatefulWidget {
@@ -126,9 +126,13 @@ class _ChatScreenState extends State<ChatScreen> {
             ),
           ),
           _buildTypingIndicator(),
-          MessageInput(
+          AiMessageInput(
             controller: _messageController,
+            chatId: widget.conversationId,
             onSend: _sendMessage,
+            onCamera: _handleCameraAction,
+            onGallery: _handleGalleryAction,
+            onVoice: _handleVoiceAction,
             onTyping: () {
               // Update typing status when user is typing
               context.read<ChatBloc>().add(
@@ -536,6 +540,29 @@ class _ChatScreenState extends State<ChatScreen> {
           ],
         );
       },
+    );
+  }
+
+  void _handleCameraAction() {
+    // Handle camera action - open camera for photo/video
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Camera feature will be implemented')),
+    );
+  }
+
+  void _handleGalleryAction() {
+    // Handle gallery action - open gallery for media selection
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Gallery feature will be implemented')),
+    );
+  }
+
+  void _handleVoiceAction() {
+    // Handle voice message recording
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Voice message feature will be implemented'),
+      ),
     );
   }
 }

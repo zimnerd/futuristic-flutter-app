@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../core/network/api_client.dart';
 import '../../../data/services/discovery_service.dart';
@@ -65,6 +66,13 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           );
         },
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () => context.go('/ai-companion'),
+        backgroundColor: PulseColors.primary,
+        foregroundColor: Colors.white,
+        icon: const Icon(Icons.smart_toy),
+        label: const Text('AI Companion'),
       ),
     );
   }
