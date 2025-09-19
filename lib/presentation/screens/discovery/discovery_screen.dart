@@ -8,6 +8,7 @@ import '../../blocs/discovery/discovery_bloc.dart';
 import '../../blocs/discovery/discovery_event.dart';
 import '../../blocs/discovery/discovery_state.dart';
 import '../../widgets/discovery/swipe_card.dart' as swipe_widget;
+import '../ai_companion/ai_companion_screen.dart';
 
 /// Modern Discovery Screen - PulseLink's unique swipe interface
 /// 
@@ -586,7 +587,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
   Widget _buildModernActionButtons() {
     return Positioned(
       bottom:
-          120, // Optimal balance: clear navigation bar + comfortable thumb reach
+          0, // Optimal balance: clear navigation bar + comfortable thumb reach
       left: 0,
       right: 0,
       child: Container(
@@ -754,49 +755,55 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
 
   Widget _buildErrorState(DiscoveryError state) {
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            width: 120,
-            height: 120,
-            decoration: BoxDecoration(
-              color: PulseColors.reject.withValues(alpha: 0.1),
-              shape: BoxShape.circle,
+      child: Padding(
+        padding: const EdgeInsets.all(PulseSpacing.lg),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                color: PulseColors.reject.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.error_outline,
+                size: 40,
+                color: PulseColors.reject,
+              ),
             ),
-            child: const Icon(
-              Icons.error_outline,
-              size: 60,
-              color: PulseColors.reject,
+            const SizedBox(height: PulseSpacing.lg),
+            Text(
+              'Something went wrong',
+              style: PulseTypography.h4.copyWith(color: PulseColors.grey900),
             ),
-          ),
-          const SizedBox(height: PulseSpacing.xl),
-          Text(
-            'Something went wrong',
-            style: PulseTypography.h3.copyWith(color: PulseColors.grey900),
-          ),
-          const SizedBox(height: PulseSpacing.sm),
-          Text(
-            state.message,
-            style: PulseTypography.bodyMedium.copyWith(
-              color: PulseColors.grey600,
+            const SizedBox(height: PulseSpacing.sm),
+            Text(
+              state.message,
+              style: PulseTypography.bodyMedium.copyWith(
+                color: PulseColors.grey600,
+              ),
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
             ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: PulseSpacing.xl),
-          ElevatedButton(
-            onPressed: () {
-              context.read<DiscoveryBloc>().add(
-                const LoadDiscoverableUsers(resetStack: true),
-              );
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: PulseColors.primary,
-              foregroundColor: PulseColors.white,
+            const SizedBox(height: PulseSpacing.lg),
+            ElevatedButton(
+              onPressed: () {
+                context.read<DiscoveryBloc>().add(
+                  const LoadDiscoverableUsers(resetStack: true),
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: PulseColors.primary,
+                foregroundColor: PulseColors.white,
+              ),
+              child: const Text('Try Again'),
             ),
-            child: const Text('Try Again'),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -910,65 +917,112 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        height: MediaQuery.of(context).size.height * 0.8,
-        decoration: const BoxDecoration(
-          color: PulseColors.white,
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(PulseSpacing.xl),
-            topRight: Radius.circular(PulseSpacing.xl),
+      useSafeArea: true,
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.8,
+        minChildSize: 0.5,
+        maxChildSize: 0.95,
+        builder: (context, scrollController) => Container(
+          decoration: const BoxDecoration(
+            color: PulseColors.white,
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(PulseSpacing.xl),
+              topRight: Radius.circular(PulseSpacing.xl),
+            ),
           ),
-        ),
-        child: Column(
-          children: [
-            Container(
-              width: 40,
-              height: 4,
-              margin: const EdgeInsets.only(top: PulseSpacing.md),
-              decoration: BoxDecoration(
-                color: PulseColors.grey400,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(PulseSpacing.lg),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Filters',
-                    style: PulseTypography.h3.copyWith(
-                      color: PulseColors.black,
-                    ),
-                  ),
-                  IconButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    icon: const Icon(Icons.close, color: PulseColors.grey600),
-                  ),
-                ],
-              ),
-            ),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: PulseSpacing.lg,
+          child: Column(
+            children: [
+              // Drag handle
+              Container(
+                width: 40,
+                height: 4,
+                margin: const EdgeInsets.only(top: PulseSpacing.md),
+                decoration: BoxDecoration(
+                  color: PulseColors.grey400,
+                  borderRadius: BorderRadius.circular(2),
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+              ),
+              // Header
+              Padding(
+                padding: const EdgeInsets.all(PulseSpacing.lg),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    _buildFilterSection('Age Range', '18 - 35'),
-                    _buildFilterSection('Distance', 'Within 50 km'),
-                    _buildFilterSection('Interests', 'Music, Travel, Fitness'),
-                    _buildFilterSection('Education', 'Any'),
-                    _buildFilterSection(
-                      'Looking for',
-                      'Long-term relationship',
+                    Text(
+                      'Filters',
+                      style: PulseTypography.h3.copyWith(
+                        color: PulseColors.black,
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      icon: const Icon(Icons.close, color: PulseColors.grey600),
                     ),
                   ],
                 ),
               ),
-            ),
-          ],
+              // Scrollable content
+              Expanded(
+                child: SingleChildScrollView(
+                  controller: scrollController,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: PulseSpacing.lg,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildFilterSection('Age Range', '18 - 35'),
+                      _buildFilterSection('Distance', 'Within 50 km'),
+                      _buildFilterSection(
+                        'Interests',
+                        'Music, Travel, Fitness',
+                      ),
+                      _buildFilterSection('Education', 'Any'),
+                      _buildFilterSection(
+                        'Looking for',
+                        'Long-term relationship',
+                      ),
+                      const SizedBox(height: PulseSpacing.xl),
+                      // Apply filters button
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                            // Apply filters logic here
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: PulseColors.primary,
+                            foregroundColor: PulseColors.white,
+                            padding: const EdgeInsets.symmetric(
+                              vertical: PulseSpacing.md,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(
+                                PulseSpacing.md,
+                              ),
+                            ),
+                          ),
+                          child: Text(
+                            'Apply Filters',
+                            style: PulseTypography.bodyLarge.copyWith(
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ),
+                      // Bottom padding to ensure button is accessible
+                      SizedBox(
+                        height:
+                            MediaQuery.of(context).padding.bottom +
+                            PulseSpacing.lg,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -979,103 +1033,153 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        height: MediaQuery.of(context).size.height * 0.7,
-        decoration: const BoxDecoration(
-          color: PulseColors.white,
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(PulseSpacing.xl),
-            topRight: Radius.circular(PulseSpacing.xl),
+      useSafeArea: true,
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.7,
+        minChildSize: 0.5,
+        maxChildSize: 0.9,
+        builder: (context, scrollController) => Container(
+          decoration: const BoxDecoration(
+            color: PulseColors.white,
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(PulseSpacing.xl),
+              topRight: Radius.circular(PulseSpacing.xl),
+            ),
           ),
-        ),
-        child: Column(
-          children: [
-            Container(
-              width: 40,
-              height: 4,
-              margin: const EdgeInsets.only(top: PulseSpacing.md),
-              decoration: BoxDecoration(
-                color: PulseColors.grey400,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(PulseSpacing.lg),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'AI Companion',
-                    style: PulseTypography.h3.copyWith(
-                      color: PulseColors.black,
-                    ),
-                  ),
-                  IconButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    icon: const Icon(Icons.close, color: PulseColors.grey600),
-                  ),
-                ],
-              ),
-            ),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: PulseSpacing.lg,
+          child: Column(
+            children: [
+              // Drag handle
+              Container(
+                width: 40,
+                height: 4,
+                margin: const EdgeInsets.only(top: PulseSpacing.md),
+                decoration: BoxDecoration(
+                  color: PulseColors.grey400,
+                  borderRadius: BorderRadius.circular(2),
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+              ),
+              // Header
+              Padding(
+                padding: const EdgeInsets.all(PulseSpacing.lg),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Container(
-                      padding: const EdgeInsets.all(PulseSpacing.lg),
-                      decoration: BoxDecoration(
-                        color: PulseColors.accent.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(PulseSpacing.md),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Your AI Dating Coach',
-                            style: PulseTypography.h4.copyWith(
-                              color: PulseColors.accent,
-                            ),
-                          ),
-                          const SizedBox(height: PulseSpacing.sm),
-                          Text(
-                            'Get personalized advice, conversation starters, and dating insights powered by AI.',
-                            style: PulseTypography.bodyMedium.copyWith(
-                              color: PulseColors.black,
-                            ),
-                          ),
-                        ],
+                    Text(
+                      'AI Companion',
+                      style: PulseTypography.h3.copyWith(
+                        color: PulseColors.black,
                       ),
                     ),
-                    const SizedBox(height: PulseSpacing.lg),
-                    _buildAIFeature(
-                      '💬',
-                      'Conversation Starters',
-                      'Get personalized icebreakers',
-                    ),
-                    _buildAIFeature(
-                      '📊',
-                      'Profile Analysis',
-                      'Optimize your dating profile',
-                    ),
-                    _buildAIFeature(
-                      '💡',
-                      'Dating Tips',
-                      'Personalized advice for better matches',
-                    ),
-                    _buildAIFeature(
-                      '🎯',
-                      'Match Insights',
-                      'Understand compatibility scores',
+                    IconButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      icon: const Icon(Icons.close, color: PulseColors.grey600),
                     ),
                   ],
                 ),
               ),
-            ),
-          ],
+              // Scrollable content
+              Expanded(
+                child: SingleChildScrollView(
+                  controller: scrollController,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: PulseSpacing.lg,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // AI Dating Coach section
+                      Container(
+                        padding: const EdgeInsets.all(PulseSpacing.lg),
+                        decoration: BoxDecoration(
+                          color: PulseColors.accent.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(PulseSpacing.md),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Your AI Dating Coach',
+                              style: PulseTypography.h4.copyWith(
+                                color: PulseColors.accent,
+                              ),
+                            ),
+                            const SizedBox(height: PulseSpacing.sm),
+                            Text(
+                              'Get personalized advice, conversation starters, and dating insights powered by AI.',
+                              style: PulseTypography.bodyMedium.copyWith(
+                                color: PulseColors.black,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: PulseSpacing.lg),
+                      // AI Features
+                      _buildAIFeature(
+                        '💬',
+                        'Conversation Starters',
+                        'Get personalized icebreakers',
+                      ),
+                      _buildAIFeature(
+                        '📊',
+                        'Profile Analysis',
+                        'Optimize your dating profile',
+                      ),
+                      _buildAIFeature(
+                        '💡',
+                        'Dating Tips',
+                        'Personalized advice for better matches',
+                      ),
+                      _buildAIFeature(
+                        '🎯',
+                        'Match Insights',
+                        'Understand compatibility scores',
+                      ),
+                      const SizedBox(height: PulseSpacing.xl),
+                      // CTA Button
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) => const AiCompanionScreen(),
+                              ),
+                            );
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: PulseColors.primary,
+                            foregroundColor: PulseColors.white,
+                            padding: const EdgeInsets.symmetric(
+                              vertical: PulseSpacing.md,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(
+                                PulseSpacing.md,
+                              ),
+                            ),
+                          ),
+                          child: Text(
+                            'Start Chat with AI Companion',
+                            style: PulseTypography.bodyLarge.copyWith(
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ),
+                      // Bottom padding to ensure button is accessible
+                      SizedBox(
+                        height:
+                            MediaQuery.of(context).padding.bottom +
+                            PulseSpacing.lg,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -1086,81 +1190,108 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        height: MediaQuery.of(context).size.height * 0.8,
-        decoration: const BoxDecoration(
-          color: PulseColors.white,
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(PulseSpacing.xl),
-            topRight: Radius.circular(PulseSpacing.xl),
+      useSafeArea: true,
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.8,
+        minChildSize: 0.5,
+        maxChildSize: 0.95,
+        builder: (context, scrollController) => Container(
+          decoration: const BoxDecoration(
+            color: PulseColors.white,
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(PulseSpacing.xl),
+              topRight: Radius.circular(PulseSpacing.xl),
+            ),
           ),
-        ),
-        child: Column(
-          children: [
-            Container(
-              width: 40,
-              height: 4,
-              margin: const EdgeInsets.only(top: PulseSpacing.md),
-              decoration: BoxDecoration(
-                color: PulseColors.grey400,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(PulseSpacing.lg),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Notifications',
-                    style: PulseTypography.h3.copyWith(
-                      color: PulseColors.black,
-                    ),
-                  ),
-                  IconButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    icon: const Icon(Icons.close, color: PulseColors.grey600),
-                  ),
-                ],
-              ),
-            ),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: PulseSpacing.lg,
+          child: Column(
+            children: [
+              // Drag handle
+              Container(
+                width: 40,
+                height: 4,
+                margin: const EdgeInsets.only(top: PulseSpacing.md),
+                decoration: BoxDecoration(
+                  color: PulseColors.grey400,
+                  borderRadius: BorderRadius.circular(2),
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+              ),
+              // Header
+              Padding(
+                padding: const EdgeInsets.all(PulseSpacing.lg),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    _buildNotificationItem(
-                      'New Match! 💕',
-                      'You and Sarah have matched',
-                      '2 minutes ago',
-                      true,
+                    Text(
+                      'Notifications',
+                      style: PulseTypography.h3.copyWith(
+                        color: PulseColors.black,
+                      ),
                     ),
-                    _buildNotificationItem(
-                      'Message from Alex',
-                      'Hey! How\'s your day going?',
-                      '1 hour ago',
-                      true,
-                    ),
-                    _buildNotificationItem(
-                      'Profile View',
-                      'Mike viewed your profile',
-                      '3 hours ago',
-                      false,
-                    ),
-                    _buildNotificationItem(
-                      'Event Reminder',
-                      'Coffee meetup starts in 30 minutes',
-                      '5 hours ago',
-                      false,
+                    IconButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      icon: const Icon(Icons.close, color: PulseColors.grey600),
                     ),
                   ],
                 ),
               ),
-            ),
-          ],
+              // Scrollable content
+              Expanded(
+                child: SingleChildScrollView(
+                  controller: scrollController,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: PulseSpacing.lg,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildNotificationItem(
+                        'New Match! 💕',
+                        'You and Sarah have matched',
+                        '2 minutes ago',
+                        true,
+                      ),
+                      _buildNotificationItem(
+                        'Message from Alex',
+                        'Hey! How\'s your day going?',
+                        '1 hour ago',
+                        true,
+                      ),
+                      _buildNotificationItem(
+                        'Profile View',
+                        'Mike viewed your profile',
+                        '3 hours ago',
+                        false,
+                      ),
+                      _buildNotificationItem(
+                        'Event Reminder',
+                        'Coffee meetup starts in 30 minutes',
+                        '5 hours ago',
+                        false,
+                      ),
+                      _buildNotificationItem(
+                        'Like Received',
+                        'Someone liked your profile',
+                        '1 day ago',
+                        false,
+                      ),
+                      _buildNotificationItem(
+                        'Profile Boost',
+                        'Your profile was boosted successfully',
+                        '2 days ago',
+                        false,
+                      ),
+                      // Bottom padding to ensure content is accessible
+                      SizedBox(
+                        height:
+                            MediaQuery.of(context).padding.bottom +
+                            PulseSpacing.lg,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

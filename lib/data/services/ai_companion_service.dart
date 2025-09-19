@@ -36,7 +36,7 @@ class AiCompanionService {
 
       if (HttpStatusUtils.isPostSuccess(response.statusCode) &&
           response.data != null) {
-        final companion = AICompanion.fromJson(response.data!);
+        final companion = AICompanion.fromJson(response.data['data']);
         _logger.d('AI companion created successfully: ${companion.id}');
         return companion;
       } else {
@@ -56,7 +56,9 @@ class AiCompanionService {
 
       if (HttpStatusUtils.isGetSuccess(response.statusCode) &&
           response.data != null) {
-        final List<dynamic> data = response.data['companions'] ?? [];
+        // Try data wrapper first, then direct response
+        final responseData = response.data['data'] ?? response.data;
+        final List<dynamic> data = responseData['companions'] ?? [];
         final companions = data.map((json) => AICompanion.fromJson(json)).toList();
         
         _logger.d('Retrieved ${companions.length} AI companions');

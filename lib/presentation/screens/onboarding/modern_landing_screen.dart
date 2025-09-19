@@ -193,7 +193,7 @@ class _ModernLandingScreenState extends State<ModernLandingScreen>
                       child: _buildFeaturesSection(),
                     ),
 
-                    const SizedBox(height: PulseSpacing.xxl),
+                    const SizedBox(height: PulseSpacing.sm),
 
                     // Action buttons
                     ScaleTransition(
@@ -207,7 +207,7 @@ class _ModernLandingScreenState extends State<ModernLandingScreen>
                     _buildTermsSection(),
 
                     // Extra padding at bottom to ensure content doesn't get cut off
-                    const SizedBox(height: PulseSpacing.xl),
+                    const SizedBox(height: PulseSpacing.md),
                   ],
                 ),
               ),
@@ -367,7 +367,7 @@ class _ModernLandingScreenState extends State<ModernLandingScreen>
           },
         ),
         
-        const SizedBox(height: PulseSpacing.md),
+        const SizedBox(height: PulseSpacing.xs),
         
         AnimatedBuilder(
           animation: _slideController,
@@ -386,7 +386,7 @@ class _ModernLandingScreenState extends State<ModernLandingScreen>
           },
         ),
         
-        const SizedBox(height: PulseSpacing.md),
+        const SizedBox(height: PulseSpacing.xs),
         
         AnimatedBuilder(
           animation: _slideController,
@@ -492,6 +492,7 @@ class _ModernLandingScreenState extends State<ModernLandingScreen>
                 borderRadius: BorderRadius.circular(PulseRadii.lg),
               ),
             ),
+            
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [

@@ -56,7 +56,7 @@ class AICompanion extends Equatable {
         (e) => e.name == json['personality'],
         orElse: () => CompanionPersonality.friend,
       ),
-      avatarUrl: json['avatarUrl'] as String,
+      avatarUrl: json['avatarUrl'] as String? ?? '',
       description: json['description'] as String,
       traits: Map<String, dynamic>.from(json['traits'] as Map? ?? {}),
       relationshipLevel: json['relationshipLevel'] as int? ?? 1,

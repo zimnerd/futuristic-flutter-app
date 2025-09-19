@@ -147,6 +147,7 @@ class _AiCompanionScreenState extends State<AiCompanionScreen> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
+      useSafeArea: true,
       builder: (context) => DraggableScrollableSheet(
         initialChildSize: 0.8,
         maxChildSize: 0.95,

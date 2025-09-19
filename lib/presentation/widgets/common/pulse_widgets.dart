@@ -59,12 +59,14 @@ class PulseBottomSheet {
     bool isDismissible = true,
     bool enableDrag = true,
     bool isScrollControlled = false,
+    bool useSafeArea = true,
   }) {
     return showModalBottomSheet<T>(
       context: context,
       isDismissible: isDismissible,
       enableDrag: enableDrag,
       isScrollControlled: isScrollControlled,
+      useSafeArea: useSafeArea,
       backgroundColor: Colors.transparent,
       builder: (context) => Container(
         decoration: BoxDecoration(
