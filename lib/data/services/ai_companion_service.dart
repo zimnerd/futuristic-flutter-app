@@ -168,16 +168,16 @@ class AiCompanionService {
 
         // Convert the response to CompanionMessage format
         return CompanionMessage(
-          id: messageData['aiResponse']['id'],
+          id: messageData['id'],
           companionId: companionId,
-          userId:
-              messageData['userMessage']['id'], // Using user message ID for user field
-          content: messageData['aiResponse']['content'],
-          isFromCompanion: true,
-          timestamp: DateTime.parse(messageData['aiResponse']['createdAt']),
-          type: MessageType.text,
+          userId: messageData['isFromUser'] ? 'current-user' : companionId,
+          content: messageData['content'],
+          isFromCompanion: !messageData['isFromUser'],
+          timestamp: DateTime.parse(messageData['sentAt']),
+          type: _parseMessageType(messageData['messageType']),
           suggestedResponses:
-              messageData['aiResponse']['suggestedResponses']?.cast<String>() ??
+              (messageData['metadata']?['suggestedResponses'] as List<dynamic>?)
+                  ?.cast<String>() ??
               [],
         );
       } else {
@@ -333,17 +333,16 @@ class AiCompanionService {
   }
 
   MessageType _parseMessageType(String? type) {
-    switch (type) {
+    // For AI companion messages, we primarily use text type
+    // The backend might send different types, but we treat most as text
+    switch (type?.toLowerCase()) {
       case 'text':
-        return MessageType.text;
       case 'image':
-        return MessageType
-            .text; // Images are treated as text messages with attachments
       case 'audio':
-        return MessageType
-            .text; // Audio is treated as text messages with attachments
+      case 'video':
       default:
-        return MessageType.text;
+        return MessageType
+            .text; // AI companion MessageType only has specific conversation types
     }
   }
 
