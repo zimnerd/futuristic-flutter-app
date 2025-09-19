@@ -312,7 +312,7 @@ class AiCompanionService {
             userId: msgData['isFromUser'] ? 'current-user' : companionId,
             content: msgData['content'],
             isFromCompanion: !msgData['isFromUser'],
-            timestamp: DateTime.parse(msgData['createdAt']),
+            timestamp: DateTime.parse(msgData['sentAt']),
             type: _parseMessageType(msgData['messageType']),
             suggestedResponses:
                 (msgData['metadata']?['suggestedResponses'] as List<dynamic>?)
