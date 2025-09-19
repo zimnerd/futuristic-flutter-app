@@ -142,6 +142,53 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
     if (state is DiscoveryLoaded && state.currentUser != null) {
       final user = state.currentUser!;
       
+      // Configure direction-specific animation
+      late Animation<Offset> directionAnimation;
+      switch (direction) {
+        case SwipeAction.left:
+          // Slide left for reject/pass
+          directionAnimation =
+              Tween<Offset>(
+                begin: Offset.zero,
+                end: const Offset(-1.5, 0),
+              ).animate(
+                CurvedAnimation(
+                  parent: _cardController,
+                  curve: Curves.easeInOut,
+                ),
+              );
+          break;
+        case SwipeAction.right:
+          // Slide right for like
+          directionAnimation =
+              Tween<Offset>(
+                begin: Offset.zero,
+                end: const Offset(1.5, 0),
+              ).animate(
+                CurvedAnimation(
+                  parent: _cardController,
+                  curve: Curves.easeInOut,
+                ),
+              );
+          break;
+        case SwipeAction.up:
+          // Slide up for super like
+          directionAnimation =
+              Tween<Offset>(
+                begin: Offset.zero,
+                end: const Offset(0, -1.5),
+              ).animate(
+                CurvedAnimation(
+                  parent: _cardController,
+                  curve: Curves.easeInOut,
+                ),
+              );
+          break;
+      }
+
+      // Update the animation reference
+      _cardSlideAnimation = directionAnimation;
+      
       // Trigger animation
       _cardController.forward().then((_) {
         if (!mounted) return;
