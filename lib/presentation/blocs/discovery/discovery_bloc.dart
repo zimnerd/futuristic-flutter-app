@@ -29,7 +29,7 @@ class DiscoveryBloc extends Bloc<DiscoveryEvent, DiscoveryState> {
     on<LoadMoreUsers>(_onLoadMoreUsers);
     on<MatchDetected>(_onMatchDetected);
     on<RefreshDiscovery>(_onRefreshDiscovery);
-    on<_DismissMatchEvent>(_onDismissMatch);
+    on<DismissMatch>(_onDismissMatch);
   }
 
   final DiscoveryService _discoveryService;
@@ -354,7 +354,7 @@ class DiscoveryBloc extends Bloc<DiscoveryEvent, DiscoveryState> {
 
   /// Handle dismissing match celebration
   Future<void> _onDismissMatch(
-    _DismissMatchEvent event,
+    DismissMatch event,
     Emitter<DiscoveryState> emit,
   ) async {
     if (state is DiscoveryMatchFound) {

@@ -100,3 +100,8 @@ class MatchDetected extends DiscoveryEvent {
 class RefreshDiscovery extends DiscoveryEvent {
   const RefreshDiscovery();
 }
+
+/// Dismiss the match dialog and return to discovery
+class DismissMatch extends DiscoveryEvent {
+  const DismissMatch();
+}
