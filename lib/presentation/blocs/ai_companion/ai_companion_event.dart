@@ -138,3 +138,21 @@ class SendAudioMessage extends AiCompanionEvent {
   @override
   List<Object> get props => [companionId, audioFile];
 }
+
+class MessageReceived extends AiCompanionEvent {
+  final CompanionMessage message;
+
+  const MessageReceived(this.message);
+
+  @override
+  List<Object> get props => [message];
+}
+
+class MessageError extends AiCompanionEvent {
+  final String error;
+
+  const MessageError(this.error);
+
+  @override
+  List<Object> get props => [error];
+}

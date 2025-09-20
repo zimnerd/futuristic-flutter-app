@@ -5,7 +5,8 @@ import 'matching_service.dart';
 import 'messaging_service.dart';
 import 'profile_service.dart';
 import 'file_upload_service.dart';
-import 'websocket_service.dart';
+import '../../domain/services/websocket_service.dart';
+import 'websocket_service_impl.dart';
 import 'preferences_service.dart';
 import 'discovery_service.dart';
 import 'virtual_gift_service.dart';
@@ -79,7 +80,7 @@ class ServiceLocator {
       authService: _authService,
     );
     _fileUploadService = FileUploadService(apiClient: _apiClient);
-    _webSocketService = WebSocketService.instance;
+    _webSocketService = WebSocketServiceImpl();
     _preferencesService = PreferencesService(_apiClient);
 
     // Initialize feature services
@@ -87,7 +88,11 @@ class ServiceLocator {
     _virtualGiftService = VirtualGiftService(_apiClient);
     _safetyService = SafetyService(_apiClient);
     _premiumService = PremiumService(_apiClient);
-    _aiCompanionService = AiCompanionService(_apiClient, _fileUploadService);
+    _aiCompanionService = AiCompanionService(
+      _apiClient,
+      _webSocketService,
+      _fileUploadService,
+    );
     _speedDatingService = SpeedDatingService(_apiClient);
     _liveStreamingService = LiveStreamingService(_apiClient);
     _datePlanningService = DatePlanningService(_apiClient);

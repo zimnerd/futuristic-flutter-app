@@ -135,6 +135,7 @@ class PulseDatingApp extends StatelessWidget {
           RepositoryProvider<ChatRepository>(
             create: (context) => ChatRepositoryImpl(
               remoteDataSource: context.read<ChatRemoteDataSource>(),
+              webSocketService: context.read<WebSocketService>(),
             ),
           ),
           RepositoryProvider<NotificationRepository>(

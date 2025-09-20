@@ -1,6 +1,8 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:logger/logger.dart';
+import 'dart:async';
 import '../../../data/services/ai_companion_service.dart';
+import '../../../data/models/ai_companion.dart';
 import 'ai_companion_event.dart';
 import 'ai_companion_state.dart';
 
@@ -8,6 +10,9 @@ class AiCompanionBloc extends Bloc<AiCompanionEvent, AiCompanionState> {
   final AiCompanionService _aiCompanionService;
   final Logger _logger = Logger();
   static const String _tag = 'AiCompanionBloc';
+  
+  StreamSubscription<CompanionMessage>? _messageSubscription;
+  StreamSubscription<Map<String, dynamic>>? _errorSubscription;
 
   AiCompanionBloc({
     required AiCompanionService aiCompanionService,
@@ -25,6 +30,30 @@ class AiCompanionBloc extends Bloc<AiCompanionEvent, AiCompanionState> {
     on<GetCompanionAnalytics>(_onGetCompanionAnalytics);
     on<GenerateCompanionSuggestion>(_onGenerateCompanionSuggestion);
     on<RefreshCompanionData>(_onRefreshCompanionData);
+    on<MessageReceived>(_onMessageReceived);
+    on<MessageError>(_onMessageError);
+
+    _setupStreamListeners();
+  }
+
+  void _setupStreamListeners() {
+    // Listen for real-time messages
+    _messageSubscription = _aiCompanionService.messageStream.listen((message) {
+      add(MessageReceived(message));
+    });
+
+    // Listen for errors
+    _errorSubscription = _aiCompanionService.errorStream.listen((error) {
+      add(MessageError(error['error'] ?? 'Unknown error'));
+    });
+  }
+
+  @override
+  Future<void> close() {
+    _messageSubscription?.cancel();
+    _errorSubscription?.cancel();
+    _aiCompanionService.dispose();
+    return super.close();
   }
 
   Future<void> _onLoadUserCompanions(
@@ -134,19 +163,17 @@ class AiCompanionBloc extends Bloc<AiCompanionEvent, AiCompanionState> {
     Emitter<AiCompanionState> emit,
   ) async {
     try {
-      emit(AiCompanionMessageSending(event.companionId, event.message));
       _logger.d('$_tag: Sending message to companion: ${event.companionId}');
 
-      final result = await _aiCompanionService.sendMessage(
+      // Send message via WebSocket (non-blocking)
+      _aiCompanionService.sendMessage(
         companionId: event.companionId,
         message: event.message,
       );
 
-      emit(AiCompanionMessageSent(result, null));
-      _logger.d('$_tag: Message sent successfully');
-
-      // Refresh conversation history
-      add(LoadConversationHistory(companionId: event.companionId));
+      // No loading state needed - WebSocket messages are instant
+      // The UI will be updated via the messageStream when response comes back
+      _logger.d('$_tag: Message sent via WebSocket');
     } catch (e, stackTrace) {
       _logger.e(
         '$_tag: Failed to send message',
@@ -155,6 +182,28 @@ class AiCompanionBloc extends Bloc<AiCompanionEvent, AiCompanionState> {
       );
       emit(AiCompanionError('Failed to send message: ${e.toString()}'));
     }
+  }
+
+  void _onMessageReceived(
+    MessageReceived event,
+    Emitter<AiCompanionState> emit,
+  ) {
+    _logger.d('$_tag: Real-time message received: ${event.message.id}');
+
+    // Update the current state with the new message
+    if (state is AiCompanionLoaded) {
+      final currentState = state as AiCompanionLoaded;
+      final updatedMessages = [
+        ...currentState.conversationHistory,
+        event.message,
+      ];
+      emit(currentState.copyWith(conversationHistory: updatedMessages));
+    }
+  }
+
+  void _onMessageError(MessageError event, Emitter<AiCompanionState> emit) {
+    _logger.e('$_tag: Message error: ${event.error}');
+    emit(AiCompanionError(event.error));
   }
 
   Future<void> _onSendImageMessage(
@@ -318,17 +367,9 @@ class AiCompanionBloc extends Bloc<AiCompanionEvent, AiCompanionState> {
       emit(AiCompanionGeneratingSuggestion(event.companionId, event.topic));
       _logger.d('$_tag: Generating suggestion for topic: ${event.topic}');
 
-      final suggestion = await _aiCompanionService.getDatingAdvice(
-        companionId: event.companionId,
-        situation: event.topic,
-      );
-
-      if (suggestion != null) {
-        emit(AiCompanionSuggestionGenerated(suggestion));
-        _logger.d('$_tag: Suggestion generated successfully');
-      } else {
-        emit(AiCompanionError('Failed to generate suggestion'));
-      }
+      final suggestion = "Please use regular messaging for advice requests";
+      emit(AiCompanionSuggestionGenerated(suggestion));
+      _logger.d('$_tag: Redirected to regular messaging');
     } catch (e, stackTrace) {
       _logger.e('$_tag: Failed to generate suggestion', error: e, stackTrace: stackTrace);
       emit(AiCompanionError('Failed to generate suggestion: ${e.toString()}'));

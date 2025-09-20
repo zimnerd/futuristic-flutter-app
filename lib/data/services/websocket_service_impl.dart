@@ -342,6 +342,39 @@ class WebSocketServiceImpl implements WebSocketService {
     on('typing_stop', (data) => callback(data as Map<String, dynamic>));
   }
 
+  // AI Companion Events
+  @override
+  void sendAiMessage(String message, String? conversationId) {
+    if (!isConnected) {
+      _logger.w('Cannot send AI message: not connected');
+      return;
+    }
+
+    final messageData = {
+      'message': message,
+      if (conversationId != null) 'conversationId': conversationId,
+      'timestamp': DateTime.now().toIso8601String(),
+    };
+
+    _logger.d('Sending AI message: $messageData');
+    emit('sendAiMessage', messageData);
+  }
+
+  @override
+  void onAiMessageSent(Function(Map<String, dynamic>) callback) {
+    on('ai_message_sent', (data) => callback(data as Map<String, dynamic>));
+  }
+
+  @override
+  void onAiMessageReceived(Function(Map<String, dynamic>) callback) {
+    on('ai_message_received', (data) => callback(data as Map<String, dynamic>));
+  }
+
+  @override
+  void onAiMessageFailed(Function(Map<String, dynamic>) callback) {
+    on('ai_message_failed', (data) => callback(data as Map<String, dynamic>));
+  }
+
   // User Presence
   @override
   void onUserOnline(Function(String) callback) {

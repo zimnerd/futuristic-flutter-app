@@ -1,17 +1,80 @@
 import 'package:logger/logger.dart';
 import 'dart:io';
+import 'dart:async';
 import '../models/ai_companion.dart';
 import '../../core/network/api_client.dart';
 import '../../core/utils/http_status_utils.dart';
+import '../../domain/services/websocket_service.dart';
 import 'file_upload_service.dart';
 
 /// Service for AI Companion interactions and management
 class AiCompanionService {
   final ApiClient _apiClient;
+  final WebSocketService _webSocketService;
   final FileUploadService _fileUploadService;
   final Logger _logger = Logger();
+  
+  // Stream controllers for real-time events
+  final StreamController<CompanionMessage> _messageController =
+      StreamController<CompanionMessage>.broadcast();
+  final StreamController<Map<String, dynamic>> _errorController =
+      StreamController<Map<String, dynamic>>.broadcast();
 
-  AiCompanionService(this._apiClient, this._fileUploadService);
+  AiCompanionService(
+    this._apiClient,
+    this._webSocketService,
+    this._fileUploadService,
+  ) {
+    _setupWebSocketListeners();
+  }
+
+  // Streams for real-time events
+  Stream<CompanionMessage> get messageStream => _messageController.stream;
+  Stream<Map<String, dynamic>> get errorStream => _errorController.stream;
+
+  void _setupWebSocketListeners() {
+    // Listen for AI message events
+    _webSocketService.onAiMessageSent((data) {
+      try {
+        final message = _mapWebSocketDataToMessage(data);
+        _messageController.add(message);
+        _logger.d('AI message sent: ${message.id}');
+      } catch (e) {
+        _logger.e('Error processing AI message sent: $e');
+      }
+    });
+
+    _webSocketService.onAiMessageReceived((data) {
+      try {
+        final message = _mapWebSocketDataToMessage(data);
+        _messageController.add(message);
+        _logger.d('AI message received: ${message.id}');
+      } catch (e) {
+        _logger.e('Error processing AI message received: $e');
+      }
+    });
+
+    _webSocketService.onAiMessageFailed((data) {
+      _errorController.add(data);
+      _logger.e('AI message failed: $data');
+    });
+  }
+
+  CompanionMessage _mapWebSocketDataToMessage(Map<String, dynamic> data) {
+    return CompanionMessage(
+      id: data['id'] ?? '',
+      companionId: data['companionId'] ?? '',
+      userId: data['userId'] ?? '',
+      content: data['content'] ?? '',
+      isFromCompanion: data['isFromCompanion'] ?? false,
+      timestamp: DateTime.parse(
+        data['timestamp'] ?? DateTime.now().toIso8601String(),
+      ),
+      type: _parseMessageType(data['messageType']),
+      suggestedResponses:
+          (data['suggestedResponses'] as List<dynamic>?)?.cast<String>() ?? [],
+    );
+  }
 
   /// Create a new AI companion
   Future<AICompanion?> createCompanion({
@@ -150,43 +213,23 @@ class AiCompanionService {
     }
   }
 
-  /// Send message to AI companion
-  Future<CompanionMessage> sendMessage({
+  /// Send message to AI companion via WebSocket
+  void sendMessage({
     required String companionId,
     required String message,
-  }) async {
+    String? conversationId,
+  }) {
     try {
-      final response = await _apiClient.post(
-        '/ai-companions/$companionId/message',
-        data: {'message': message, 'messageType': 'text'},
-      );
-
-      if (HttpStatusUtils.isPostSuccess(response.statusCode) &&
-          response.data != null) {
-        final messageData = response.data['data'];
-        _logger.d('Message sent successfully to companion: $companionId');
-
-        // Convert the response to CompanionMessage format
-        return CompanionMessage(
-          id: messageData['id'],
-          companionId: companionId,
-          userId: messageData['isFromUser'] ? 'current-user' : companionId,
-          content: messageData['content'],
-          isFromCompanion: !messageData['isFromUser'],
-          timestamp: DateTime.parse(messageData['sentAt']),
-          type: _parseMessageType(messageData['messageType']),
-          suggestedResponses:
-              (messageData['metadata']?['suggestedResponses'] as List<dynamic>?)
-                  ?.cast<String>() ??
-              [],
-        );
-      } else {
-        _logger.e('Failed to send message: ${response.statusMessage}');
-        throw Exception('Failed to send message');
-      }
+      _logger.d('Sending message to AI companion: $companionId');
+      _webSocketService.sendAiMessage(message, conversationId);
     } catch (e) {
-      _logger.e('Error sending message: $e');
-      throw Exception('Failed to send message: $e');
+      _logger.e('Error sending AI message: $e');
+      _errorController.add({
+        'error': 'Failed to send message',
+        'details': e.toString(),
+        'companionId': companionId,
+        'message': message,
+      });
     }
   }
 
@@ -393,140 +436,6 @@ class AiCompanionService {
     return {};
   }
 
-  /// Request dating advice from AI companion
-  Future<String?> getDatingAdvice({
-    required String companionId,
-    required String situation,
-    String? context,
-  }) async {
-    try {
-      // Dating advice endpoint not implemented in backend yet
-      // Use sendMessage instead to get advice through regular chat
-      final adviceMessage =
-          "I need some dating advice about this situation: $situation${context != null ? ' Additional context: $context' : ''}";
-
-      final response = await sendMessage(
-        companionId: companionId,
-        message: adviceMessage,
-      );
-      
-      return response.content;
-    } catch (e) {
-      _logger.e('Error getting dating advice: $e');
-      return null;
-    }
-  }
-
-  /// Get profile optimization suggestions
-  Future<List<String>> getProfileOptimizationTips(String companionId) async {
-    try {
-      // Profile optimization endpoint not implemented in backend yet
-      // Use sendMessage to get profile tips through regular chat
-      final response = await sendMessage(
-        companionId: companionId,
-        message:
-            "Can you give me some tips on how to optimize my dating profile to be more attractive and engaging?",
-      );
-
-      // Parse the response into tips (split by line breaks or bullets)
-      final tips = response.content
-          .split(RegExp(r'[•\n-]'))
-          .map((tip) => tip.trim())
-          .where((tip) => tip.isNotEmpty && tip.length > 10)
-          .take(5)
-          .toList();
-      
-      return tips.isNotEmpty
-          ? tips
-          : [
-        'Add more variety to your photos - show different activities and settings',
-        'Write a bio that showcases your personality and interests',
-        'Include photos that show you smiling and having fun',
-        'Mention specific hobbies or activities you enjoy',
-        'Keep your profile updated with recent photos',
-      ];
-    } catch (e) {
-      _logger.e('Error getting profile optimization tips: $e');
-      return [
-        'Add more variety to your photos',
-        'Write an engaging bio',
-        'Show your personality',
-        'Include recent photos',
-        'Mention your interests',
-      ];
-    }
-  }
-
-  /// Generate conversation starters
-  Future<List<String>> generateConversationStarters(String companionId) async {
-    try {
-      // Conversation starters endpoint not implemented in backend yet
-      // Use sendMessage to get conversation starters through regular chat
-      final response = await sendMessage(
-        companionId: companionId,
-        message:
-            "Can you suggest some good conversation starters for dating apps? Give me 5 interesting questions or topics.",
-      );
-
-      // Parse the response into conversation starters
-      final starters = response.content
-          .split(RegExp(r'[•\n-]|\d+\.'))
-          .map((starter) => starter.trim())
-          .where(
-            (starter) =>
-                starter.isNotEmpty &&
-                starter.length > 10 &&
-                starter.contains('?'),
-          )
-          .take(5)
-          .toList();
-      
-      return starters.isNotEmpty
-          ? starters
-          : [
-        'What\'s been the highlight of your week so far?',
-        'If you could travel anywhere right now, where would you go?',
-        'What\'s something you\'ve learned recently that excited you?',
-        'What kind of music have you been listening to lately?',
-        'Do you have any fun plans for the weekend?',
-      ];
-    } catch (e) {
-      _logger.e('Error generating conversation starters: $e');
-      return [
-        'What\'s your favorite way to spend weekends?',
-        'What\'s the most interesting place you\'ve visited?',
-        'What are you passionate about?',
-        'What\'s your favorite type of music?',
-        'What\'s something that always makes you smile?',
-      ];
-    }
-  }
-
-  /// Analyze message and suggest response
-  Future<String?> suggestResponse({
-    required String companionId,
-    required String receivedMessage,
-    String? conversationContext,
-  }) async {
-    try {
-      // Response suggestion endpoint not implemented in backend yet
-      // Use sendMessage to get response suggestions through regular chat
-      final contextMessage = conversationContext != null
-          ? "Given this conversation context: '$conversationContext', "
-          : "";
-
-      final response = await sendMessage(
-        companionId: companionId,
-        message:
-            "${contextMessage}Someone sent me this message: '$receivedMessage'. What would be a good way to respond?",
-      );
-      
-      return response.content;
-    } catch (e) {
-      _logger.e('Error getting response suggestion: $e');
-      return null;
-    }
-  }
 
   /// Train AI companion with user feedback
   Future<bool> provideFeedback({
@@ -593,5 +502,11 @@ class AiCompanionService {
       _logger.e('Error getting available personalities: $e');
       return CompanionPersonality.values;
     }
+  }
+
+  /// Dispose of streams and cleanup resources
+  void dispose() {
+    _messageController.close();
+    _errorController.close();
   }
 }

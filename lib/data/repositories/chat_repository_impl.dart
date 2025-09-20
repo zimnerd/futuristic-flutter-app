@@ -3,16 +3,21 @@ import 'package:pulse_dating_app/data/models/message.dart';
 
 import '../models/chat_model.dart';
 import '../datasources/remote/chat_remote_data_source.dart';
+import '../services/websocket_service.dart';
+import '../../domain/entities/message.dart' as domain;
 import 'chat_repository.dart';
 
-/// Implementation of ChatRepository
+/// Implementation of ChatRepository with real-time Socket.IO support
 class ChatRepositoryImpl implements ChatRepository {
   final ChatRemoteDataSource _remoteDataSource;
+  final WebSocketService _webSocketService;
   final Logger _logger = Logger();
 
   ChatRepositoryImpl({
     required ChatRemoteDataSource remoteDataSource,
-  }) : _remoteDataSource = remoteDataSource;
+    WebSocketService? webSocketService,
+  }) : _remoteDataSource = remoteDataSource,
+       _webSocketService = webSocketService ?? WebSocketService.instance;
 
   @override
   Future<List<ConversationModel>> getConversations() async {
@@ -35,6 +40,10 @@ class ChatRepositoryImpl implements ChatRepository {
   }) async {
     try {
       _logger.d('Fetching messages for conversation: $conversationId');
+      
+      // Join conversation for real-time updates
+      _webSocketService.joinConversation(conversationId);
+      
       final messages = await _remoteDataSource.getMessages(
         conversationId,
         limit: limit,
@@ -58,7 +67,17 @@ class ChatRepositoryImpl implements ChatRepository {
     String? replyToMessageId,
   }) async {
     try {
-      _logger.d('Sending message to conversation: $conversationId');
+      _logger.d('Sending message to conversation: $conversationId via Socket.IO');
+      
+      // Send via Socket.IO for real-time delivery
+      _webSocketService.sendMessage(
+        conversationId,
+        content ?? '',
+        _convertTodomainMessageType(type),
+      );
+      
+      // For now, still get the message from HTTP endpoint to ensure consistency
+      // TODO: Remove HTTP call once backend fully supports Socket.IO-only messaging
       final message = await _remoteDataSource.sendMessage(
         conversationId: conversationId,
         type: type,
@@ -67,6 +86,7 @@ class ChatRepositoryImpl implements ChatRepository {
         metadata: metadata,
         replyToMessageId: replyToMessageId,
       );
+      
       _logger.d('Successfully sent message: ${message.id}');
       return message;
     } catch (e) {
@@ -102,8 +122,15 @@ class ChatRepositoryImpl implements ChatRepository {
   @override
   Future<void> updateTypingStatus(String conversationId, bool isTyping) async {
     try {
-      _logger.d('Updating typing status for conversation: $conversationId');
-      await _remoteDataSource.sendTypingIndicator(conversationId, isTyping);
+      _logger.d('Updating typing status for conversation: $conversationId via Socket.IO');
+      
+      // Use Socket.IO for real-time typing indicators
+      if (isTyping) {
+        _webSocketService.sendTyping(conversationId);
+      } else {
+        _webSocketService.sendStoppedTyping(conversationId);
+      }
+      
       _logger.d('Successfully updated typing status');
     } catch (e) {
       _logger.e('Error updating typing status: $e');
@@ -302,6 +329,33 @@ class ChatRepositoryImpl implements ChatRepository {
     } catch (e) {
       _logger.e('Error updating message status: $e');
       rethrow;
+    }
+  }
+
+  /// Convert data model MessageType to domain MessageType
+  domain.MessageType _convertTodomainMessageType(MessageType type) {
+    switch (type) {
+      case MessageType.text:
+        return domain.MessageType.text;
+      case MessageType.image:
+        return domain.MessageType.image;
+      case MessageType.video:
+        return domain.MessageType.video;
+      case MessageType.audio:
+        return domain.MessageType.audio;
+      case MessageType.gif:
+        return domain.MessageType.gif;
+      case MessageType.sticker:
+        return domain.MessageType.sticker;
+      case MessageType.location:
+        return domain.MessageType.location;
+      case MessageType.contact:
+        return domain.MessageType.contact;
+      case MessageType.file:
+        return domain.MessageType.file;
+      case MessageType.system:
+        // Map system to text as domain doesn't have system type
+        return domain.MessageType.text;
     }
   }
 }
