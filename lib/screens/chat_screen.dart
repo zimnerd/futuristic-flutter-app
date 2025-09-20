@@ -290,21 +290,25 @@ class _ChatScreenState extends State<ChatScreen> {
       },
     ).catchError((error) {
       // If route doesn't exist, show temporary message
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            '${isVideo ? 'Video' : 'Voice'} call feature will be available soon!\n'
-            'This would normally open the WebRTC call screen.',
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              '${isVideo ? 'Video' : 'Voice'} call feature will be available soon!\n'
+              'This would normally open the WebRTC call screen.',
+            ),
+            duration: const Duration(seconds: 3),
+            action: SnackBarAction(
+              label: 'OK',
+              onPressed: () {
+                if (mounted) {
+                  ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                }
+              },
+            ),
           ),
-          duration: const Duration(seconds: 3),
-          action: SnackBarAction(
-            label: 'OK',
-            onPressed: () {
-              ScaffoldMessenger.of(context).hideCurrentSnackBar();
-            },
-          ),
-        ),
-      );
+        );
+      }
       return null; // Return null for error case
     });
   }
@@ -1132,15 +1136,46 @@ class _PrivacyControlsDialog extends StatelessWidget {
               Text('Why are you reporting $participantName?'),
               const SizedBox(height: 16),
               ...reasons.map(
-                (reason) => RadioListTile<String>(
-                  title: Text(reason),
-                  value: reason,
-                  groupValue: selectedReason,
-                  onChanged: (value) {
+                (reason) => GestureDetector(
+                  onTap: () {
                     setState(() {
-                      selectedReason = value;
+                      selectedReason = reason;
                     });
                   },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 20,
+                          height: 20,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: selectedReason == reason 
+                                ? Theme.of(context).primaryColor 
+                                : Colors.grey,
+                              width: 2,
+                            ),
+                          ),
+                          child: selectedReason == reason
+                              ? Center(
+                                  child: Container(
+                                    width: 10,
+                                    height: 10,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: Theme.of(context).primaryColor,
+                                    ),
+                                  ),
+                                )
+                              : null,
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(child: Text(reason)),
+                      ],
+                    ),
+                  ),
                 ),
               ),
             ],
