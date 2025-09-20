@@ -871,22 +871,10 @@ class _ChatInterfaceState extends State<ChatInterface>
   }
 
   void _handleForwardMessage(Message message) {
-    // TODO: Show forward dialog or navigation with conversation selection
-    context.read<chat.ChatBloc>().add(
-      chat.ForwardMessage(
-        messageId: message.id,
-        targetConversationIds: [], // Will be populated from dialog selection
-      ),
-    );
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text(
-          'Forward feature will be implemented with conversation selection',
-        ),
-        behavior: SnackBarBehavior.floating,
-        duration: Duration(seconds: 2),
-      ),
+    // Show forward dialog with conversation selection
+    showDialog(
+      context: context,
+      builder: (context) => _buildForwardMessageDialog(message),
     );
   }
 
@@ -973,6 +961,139 @@ class _ChatInterfaceState extends State<ChatInterface>
         content: Text('Message reported. Thank you for helping keep our community safe.'),
         behavior: SnackBarBehavior.floating,
         duration: Duration(seconds: 3),
+      ),
+    );
+  }
+
+  Widget _buildForwardMessageDialog(Message message) {
+    List<String> selectedConversations = [];
+    
+    // Mock conversation data - in a real app, this would come from the conversations list
+    final mockConversations = [
+      {'id': '1', 'name': 'Sarah Johnson', 'avatar': '👩'},
+      {'id': '2', 'name': 'Mike Chen', 'avatar': '👨'},
+      {'id': '3', 'name': 'Emily Davis', 'avatar': '👩‍💼'},
+      {'id': '4', 'name': 'Alex Rivera', 'avatar': '👨‍💻'},
+    ];
+
+    return StatefulBuilder(
+      builder: (context, setState) => AlertDialog(
+        title: const Text('Forward Message'),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade100,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.forward, size: 16),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        message.content,
+                        style: const TextStyle(fontSize: 14),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'Select conversations:',
+                style: TextStyle(fontWeight: FontWeight.w500),
+              ),
+              const SizedBox(height: 8),
+              SizedBox(
+                height: 200,
+                child: ListView.builder(
+                  itemCount: mockConversations.length,
+                  itemBuilder: (context, index) {
+                    final conversation = mockConversations[index];
+                    final isSelected = selectedConversations.contains(conversation['id']);
+                    
+                    return CheckboxListTile(
+                      value: isSelected,
+                      onChanged: (bool? value) {
+                        setState(() {
+                          if (value == true) {
+                            selectedConversations.add(conversation['id']!);
+                          } else {
+                            selectedConversations.remove(conversation['id']);
+                          }
+                        });
+                      },
+                      title: Row(
+                        children: [
+                          Text(
+                            conversation['avatar']!,
+                            style: const TextStyle(fontSize: 20),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              conversation['name']!,
+                              style: const TextStyle(fontWeight: FontWeight.w500),
+                            ),
+                          ),
+                        ],
+                      ),
+                      controlAffinity: ListTileControlAffinity.leading,
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: selectedConversations.isEmpty
+                ? null
+                : () {
+                    Navigator.pop(context);
+                    _forwardMessageToConversations(message, selectedConversations);
+                  },
+            child: Text(
+              'Forward (${selectedConversations.length})',
+              style: TextStyle(
+                color: selectedConversations.isEmpty ? Colors.grey : const Color(0xFF6E3BFF),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _forwardMessageToConversations(Message message, List<String> conversationIds) {
+    // In a real app, this would forward the message to selected conversations
+    context.read<chat.ChatBloc>().add(
+      chat.ForwardMessage(
+        messageId: message.id,
+        targetConversationIds: conversationIds,
+      ),
+    );
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          'Message forwarded to ${conversationIds.length} conversation${conversationIds.length == 1 ? '' : 's'}',
+        ),
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 2),
       ),
     );
   }

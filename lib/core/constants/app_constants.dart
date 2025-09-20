@@ -66,6 +66,12 @@ class AppConstants {
     'stun:stun.l.google.com:19302',
     'stun:stun1.l.google.com:19302',
   ];
+
+  // Chat Configuration
+  static const String aiCompanionId = 'ai_companion_system';
+  static const String systemUserId = 'system_user';
+  static const int maxMessageLength = 1000;
+  static const int messageLoadBatchSize = 50;
 }
 
 /// API endpoint constants
