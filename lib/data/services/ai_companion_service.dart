@@ -349,15 +349,48 @@ class AiCompanionService {
   /// Get AI companion analytics
   Future<CompanionAnalytics?> getCompanionAnalytics(String companionId) async {
     try {
-      // Analytics endpoint not implemented in backend yet
-      // Return null until backend analytics service is ready
-      await Future.delayed(const Duration(milliseconds: 300));
-      _logger.d('AI companion analytics not yet implemented for: $companionId');
+      final response = await _apiClient.get(
+        '/ai-companions/$companionId/analytics',
+      );
+
+      if (response.data != null) {
+        return CompanionAnalytics(
+          companionId: companionId,
+          totalInteractions: response.data['totalConversations'] ?? 0,
+          totalMessages: response.data['totalMessages'] ?? 0,
+          averageResponseTime: 0.0, // Backend doesn't provide this yet
+          userSatisfactionScore: 0.0, // Backend doesn't provide this yet
+          topicFrequency: _convertTopTopicsToFrequency(
+            response.data['topTopics'],
+          ),
+          emotionalTones: const {}, // Backend doesn't provide this yet
+          mostUsedFeatures: const [], // Backend doesn't provide this yet
+          lastAnalysisDate: DateTime.now(),
+        );
+      }
       return null;
     } catch (e) {
       _logger.e('Error getting companion analytics: $e');
       return null;
     }
+  }
+
+  /// Helper method to convert top topics array to frequency map
+  Map<String, int> _convertTopTopicsToFrequency(dynamic topTopics) {
+    if (topTopics is List) {
+      final Map<String, int> frequency = {};
+      for (final item in topTopics) {
+        if (item is Map<String, dynamic>) {
+          final topic = item['topic'] as String?;
+          final count = item['count'] as int?;
+          if (topic != null && count != null) {
+            frequency[topic] = count;
+          }
+        }
+      }
+      return frequency;
+    }
+    return {};
   }
 
   /// Request dating advice from AI companion
