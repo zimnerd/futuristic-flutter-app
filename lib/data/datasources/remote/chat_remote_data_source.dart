@@ -59,6 +59,26 @@ abstract class ChatRemoteDataSource {
 
   // Online status
   Future<void> updateOnlineStatus(bool isOnline);
+
+  // Advanced message actions
+  Future<MessageModel> getMessage(String messageId);
+  Future<void> copyMessageToClipboard(String messageId);
+  Future<MessageModel> replyToMessage(
+    String originalMessageId,
+    String content,
+    String conversationId,
+  );
+  Future<void> forwardMessage(
+    String messageId,
+    List<String> targetConversationIds,
+  );
+  Future<void> bookmarkMessage(String messageId, bool isBookmarked);
+  Future<String> performContextualAction(
+    String actionId,
+    String actionType,
+    Map<String, dynamic> actionData,
+  );
+  Future<void> updateMessageStatus(String messageId, String status);
 }
 
 /// Implementation of ChatRemoteDataSource using API service
@@ -461,6 +481,153 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
       _logger.e('Update online status error: $e');
       if (e is ApiException) rethrow;
       throw ApiException('Failed to update online status: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<MessageModel> getMessage(String messageId) async {
+    try {
+      _logger.i('Getting message: $messageId');
+
+      final response = await _apiService.get('/chat/messages/$messageId');
+
+      if (response.statusCode == 200) {
+        return MessageModel.fromJson(response.data);
+      } else {
+        throw ApiException('Failed to get message: ${response.statusMessage}');
+      }
+    } catch (e) {
+      _logger.e('Get message error: $e');
+      if (e is ApiException) rethrow;
+      throw ApiException('Failed to get message: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<void> copyMessageToClipboard(String messageId) async {
+    try {
+      _logger.i('Copying message to clipboard: $messageId');
+
+      await _apiService.post('/chat/messages/$messageId/copy');
+      _logger.i('Message copied to clipboard');
+    } catch (e) {
+      _logger.e('Copy message error: $e');
+      if (e is ApiException) rethrow;
+      throw ApiException('Failed to copy message: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<MessageModel> replyToMessage(
+    String originalMessageId,
+    String content,
+    String conversationId,
+  ) async {
+    try {
+      _logger.i('Replying to message: $originalMessageId');
+
+      final response = await _apiService.post(
+        '/chat/messages/$originalMessageId/reply',
+        data: {'content': content, 'conversationId': conversationId},
+      );
+
+      if (response.statusCode == 201) {
+        return MessageModel.fromJson(response.data);
+      } else {
+        throw ApiException(
+          'Failed to reply to message: ${response.statusMessage}',
+        );
+      }
+    } catch (e) {
+      _logger.e('Reply to message error: $e');
+      if (e is ApiException) rethrow;
+      throw ApiException('Failed to reply to message: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<void> forwardMessage(
+    String messageId,
+    List<String> targetConversationIds,
+  ) async {
+    try {
+      _logger.i('Forwarding message: $messageId');
+
+      await _apiService.post(
+        '/chat/messages/$messageId/forward',
+        data: {'targetConversationIds': targetConversationIds},
+      );
+      _logger.i('Message forwarded');
+    } catch (e) {
+      _logger.e('Forward message error: $e');
+      if (e is ApiException) rethrow;
+      throw ApiException('Failed to forward message: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<void> bookmarkMessage(String messageId, bool isBookmarked) async {
+    try {
+      _logger.i('Updating bookmark for message: $messageId');
+
+      await _apiService.patch(
+        '/chat/messages/$messageId/bookmark',
+        data: {'isBookmarked': isBookmarked},
+      );
+      _logger.i('Message bookmark updated');
+    } catch (e) {
+      _logger.e('Bookmark message error: $e');
+      if (e is ApiException) rethrow;
+      throw ApiException('Failed to update bookmark: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<String> performContextualAction(
+    String actionId,
+    String actionType,
+    Map<String, dynamic> actionData,
+  ) async {
+    try {
+      _logger.i('Performing contextual action: $actionId');
+
+      final response = await _apiService.post(
+        '/chat/actions/contextual',
+        data: {
+          'actionId': actionId,
+          'actionType': actionType,
+          'actionData': actionData,
+        },
+      );
+
+      if (response.statusCode == 200) {
+        return response.data['result'] ?? 'Action completed';
+      } else {
+        throw ApiException(
+          'Failed to perform action: ${response.statusMessage}',
+        );
+      }
+    } catch (e) {
+      _logger.e('Contextual action error: $e');
+      if (e is ApiException) rethrow;
+      throw ApiException('Failed to perform action: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<void> updateMessageStatus(String messageId, String status) async {
+    try {
+      _logger.i('Updating message status: $messageId -> $status');
+
+      await _apiService.patch(
+        '/chat/messages/$messageId/status',
+        data: {'status': status},
+      );
+      _logger.i('Message status updated');
+    } catch (e) {
+      _logger.e('Update message status error: $e');
+      if (e is ApiException) rethrow;
+      throw ApiException('Failed to update message status: ${e.toString()}');
     }
   }
 }

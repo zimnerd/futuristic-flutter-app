@@ -182,4 +182,126 @@ class ChatRepositoryImpl implements ChatRepository {
       rethrow;
     }
   }
+
+  @override
+  Future<MessageModel> getMessage(String messageId) async {
+    try {
+      _logger.d('Fetching message: $messageId');
+      final message = await _remoteDataSource.getMessage(messageId);
+      _logger.d('Successfully fetched message');
+      return message;
+    } catch (e) {
+      _logger.e('Error fetching message: $e');
+      rethrow;
+    }
+  }
+
+  @override
+  Future<void> copyMessageToClipboard(String messageId) async {
+    try {
+      _logger.d('Copying message to clipboard: $messageId');
+      await _remoteDataSource.copyMessageToClipboard(messageId);
+      _logger.d('Successfully copied message to clipboard');
+    } catch (e) {
+      _logger.e('Error copying message to clipboard: $e');
+      rethrow;
+    }
+  }
+
+  @override
+  Future<MessageModel> editMessage(String messageId, String newContent) async {
+    try {
+      _logger.d('Editing message: $messageId');
+      final editedMessage = await _remoteDataSource.editMessage(
+        messageId,
+        newContent,
+      );
+      _logger.d('Successfully edited message');
+      return editedMessage;
+    } catch (e) {
+      _logger.e('Error editing message: $e');
+      rethrow;
+    }
+  }
+
+  @override
+  Future<MessageModel> replyToMessage(
+    String originalMessageId,
+    String content,
+    String conversationId,
+  ) async {
+    try {
+      _logger.d('Replying to message: $originalMessageId');
+      final replyMessage = await _remoteDataSource.replyToMessage(
+        originalMessageId,
+        content,
+        conversationId,
+      );
+      _logger.d('Successfully sent reply');
+      return replyMessage;
+    } catch (e) {
+      _logger.e('Error sending reply: $e');
+      rethrow;
+    }
+  }
+
+  @override
+  Future<void> forwardMessage(
+    String messageId,
+    List<String> targetConversationIds,
+  ) async {
+    try {
+      _logger.d('Forwarding message: $messageId');
+      await _remoteDataSource.forwardMessage(messageId, targetConversationIds);
+      _logger.d('Successfully forwarded message');
+    } catch (e) {
+      _logger.e('Error forwarding message: $e');
+      rethrow;
+    }
+  }
+
+  @override
+  Future<void> bookmarkMessage(String messageId, bool isBookmarked) async {
+    try {
+      _logger.d('Bookmarking message: $messageId ($isBookmarked)');
+      await _remoteDataSource.bookmarkMessage(messageId, isBookmarked);
+      _logger.d('Successfully updated bookmark');
+    } catch (e) {
+      _logger.e('Error updating bookmark: $e');
+      rethrow;
+    }
+  }
+
+  @override
+  Future<String> performContextualAction(
+    String actionId,
+    String actionType,
+    Map<String, dynamic> actionData,
+  ) async {
+    try {
+      _logger.d('Performing contextual action: $actionId');
+      final result = await _remoteDataSource.performContextualAction(
+        actionId,
+        actionType,
+        actionData,
+      );
+      _logger.d('Successfully performed contextual action');
+      return result;
+    } catch (e) {
+      _logger.e('Error performing contextual action: $e');
+      rethrow;
+    }
+  }
+
+  @override
+  Future<void> updateMessageStatus(String messageId, String status) async {
+    try {
+      _logger.d('Updating message status: $messageId -> $status');
+      await _remoteDataSource.updateMessageStatus(messageId, status);
+      _logger.d('Successfully updated message status');
+    } catch (e) {
+      _logger.e('Error updating message status: $e');
+      rethrow;
+    }
+  }
 }

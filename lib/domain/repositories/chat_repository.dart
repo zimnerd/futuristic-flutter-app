@@ -61,4 +61,24 @@ abstract class ChatRepository {
   Stream<MessageModel> getMessageUpdates();
   Stream<ConversationModel> getConversationUpdates();
   Stream<Map<String, bool>> getTypingUpdates();
+
+  // Advanced message actions
+  Future<MessageModel> getMessage(String messageId);
+  Future<void> copyMessageToClipboard(String messageId);
+  Future<MessageModel> replyToMessage(
+    String originalMessageId,
+    String content,
+    String conversationId,
+  );
+  Future<void> forwardMessage(
+    String messageId,
+    List<String> targetConversationIds,
+  );
+  Future<void> bookmarkMessage(String messageId, bool isBookmarked);
+  Future<String> performContextualAction(
+    String actionId,
+    String actionType,
+    Map<String, dynamic> actionData,
+  );
+  Future<void> updateMessageStatus(String messageId, String status);
 }

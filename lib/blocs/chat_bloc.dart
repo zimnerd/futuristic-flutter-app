@@ -103,6 +103,90 @@ class CreateConversation extends ChatEvent {
   List<Object?> get props => [participantId];
 }
 
+class EditMessage extends ChatEvent {
+  final String messageId;
+  final String newContent;
+
+  const EditMessage({required this.messageId, required this.newContent});
+
+  @override
+  List<Object?> get props => [messageId, newContent];
+}
+
+class CopyMessage extends ChatEvent {
+  final String messageId;
+
+  const CopyMessage({required this.messageId});
+
+  @override
+  List<Object?> get props => [messageId];
+}
+
+class ReplyToMessage extends ChatEvent {
+  final String originalMessageId;
+  final String conversationId;
+  final String content;
+  final MessageType type;
+
+  const ReplyToMessage({
+    required this.originalMessageId,
+    required this.conversationId,
+    required this.content,
+    this.type = MessageType.text,
+  });
+
+  @override
+  List<Object?> get props => [originalMessageId, conversationId, content, type];
+}
+
+class ForwardMessage extends ChatEvent {
+  final String messageId;
+  final List<String> targetConversationIds;
+
+  const ForwardMessage({
+    required this.messageId,
+    required this.targetConversationIds,
+  });
+
+  @override
+  List<Object?> get props => [messageId, targetConversationIds];
+}
+
+class BookmarkMessage extends ChatEvent {
+  final String messageId;
+  final bool isBookmarked;
+
+  const BookmarkMessage({required this.messageId, required this.isBookmarked});
+
+  @override
+  List<Object?> get props => [messageId, isBookmarked];
+}
+
+class PerformContextualAction extends ChatEvent {
+  final String actionId;
+  final String actionType;
+  final Map<String, dynamic> actionData;
+
+  const PerformContextualAction({
+    required this.actionId,
+    required this.actionType,
+    required this.actionData,
+  });
+
+  @override
+  List<Object?> get props => [actionId, actionType, actionData];
+}
+
+class UpdateMessageStatus extends ChatEvent {
+  final String messageId;
+  final String status;
+
+  const UpdateMessageStatus({required this.messageId, required this.status});
+
+  @override
+  List<Object?> get props => [messageId, status];
+}
+
 // States
 abstract class ChatState extends Equatable {
   const ChatState();
@@ -200,6 +284,54 @@ class ChatError extends ChatState {
   List<Object?> get props => [message];
 }
 
+class MessageCopied extends ChatState {
+  final String content;
+
+  const MessageCopied({required this.content});
+
+  @override
+  List<Object?> get props => [content];
+}
+
+class MessageEdited extends ChatState {
+  final MessageModel editedMessage;
+
+  const MessageEdited({required this.editedMessage});
+
+  @override
+  List<Object?> get props => [editedMessage];
+}
+
+class ContextualActionPerformed extends ChatState {
+  final String actionId;
+  final String result;
+
+  const ContextualActionPerformed({
+    required this.actionId,
+    required this.result,
+  });
+
+  @override
+  List<Object?> get props => [actionId, result];
+}
+
+class MessageStatusUpdated extends ChatState {
+  final String messageId;
+  final String status;
+
+  const MessageStatusUpdated({required this.messageId, required this.status});
+
+  @override
+  List<Object?> get props => [messageId, status];
+}
+
+class MessageForwarded extends ChatState {
+  const MessageForwarded();
+
+  @override
+  List<Object?> get props => [];
+}
+
 // BLoC
 class ChatBloc extends Bloc<ChatEvent, ChatState> {
   final ChatRepository _chatRepository;
@@ -216,6 +348,13 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     on<UpdateTypingStatus>(_onUpdateTypingStatus);
     on<MarkConversationAsRead>(_onMarkConversationAsRead);
     on<CreateConversation>(_onCreateConversation);
+    on<EditMessage>(_onEditMessage);
+    on<CopyMessage>(_onCopyMessage);
+    on<ReplyToMessage>(_onReplyToMessage);
+    on<ForwardMessage>(_onForwardMessage);
+    on<BookmarkMessage>(_onBookmarkMessage);
+    on<PerformContextualAction>(_onPerformContextualAction);
+    on<UpdateMessageStatus>(_onUpdateMessageStatus);
   }
 
   Future<void> _onLoadConversations(
@@ -376,6 +515,134 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     } catch (e) {
       _logger.e('Error creating conversation: $e');
       emit(ChatError(message: 'Failed to create conversation: $e'));
+    }
+  }
+
+  Future<void> _onEditMessage(
+    EditMessage event,
+    Emitter<ChatState> emit,
+  ) async {
+    try {
+      final editedMessage = await _chatRepository.editMessage(
+        event.messageId,
+        event.newContent,
+      );
+
+      emit(MessageEdited(editedMessage: editedMessage));
+      _logger.d('Message edited: ${event.messageId}');
+    } catch (e) {
+      _logger.e('Error editing message: $e');
+      emit(ChatError(message: 'Failed to edit message: $e'));
+    }
+  }
+
+  Future<void> _onCopyMessage(
+    CopyMessage event,
+    Emitter<ChatState> emit,
+  ) async {
+    try {
+      await _chatRepository.copyMessageToClipboard(event.messageId);
+
+      // Get the message content for the state
+      final message = await _chatRepository.getMessage(event.messageId);
+      emit(MessageCopied(content: message.content ?? ''));
+      _logger.d('Message copied: ${event.messageId}');
+    } catch (e) {
+      _logger.e('Error copying message: $e');
+      emit(ChatError(message: 'Failed to copy message: $e'));
+    }
+  }
+
+  Future<void> _onReplyToMessage(
+    ReplyToMessage event,
+    Emitter<ChatState> emit,
+  ) async {
+    try {
+      final replyMessage = await _chatRepository.replyToMessage(
+        event.originalMessageId,
+        event.content,
+        event.conversationId,
+      );
+
+      emit(MessageSent(message: replyMessage));
+      _logger.d('Reply sent to message: ${event.originalMessageId}');
+    } catch (e) {
+      _logger.e('Error replying to message: $e');
+      emit(ChatError(message: 'Failed to send reply: $e'));
+    }
+  }
+
+  Future<void> _onForwardMessage(
+    ForwardMessage event,
+    Emitter<ChatState> emit,
+  ) async {
+    try {
+      await _chatRepository.forwardMessage(
+        event.messageId,
+        event.targetConversationIds,
+      );
+
+      emit(const MessageForwarded());
+      _logger.d('Message forwarded: ${event.messageId}');
+    } catch (e) {
+      _logger.e('Error forwarding message: $e');
+      emit(ChatError(message: 'Failed to forward message: $e'));
+    }
+  }
+
+  Future<void> _onBookmarkMessage(
+    BookmarkMessage event,
+    Emitter<ChatState> emit,
+  ) async {
+    try {
+      await _chatRepository.bookmarkMessage(
+        event.messageId,
+        event.isBookmarked,
+      );
+
+      // Optionally emit a state to update UI
+      _logger.d('Message bookmark updated: ${event.messageId}');
+    } catch (e) {
+      _logger.e('Error updating bookmark: $e');
+      emit(ChatError(message: 'Failed to update bookmark: $e'));
+    }
+  }
+
+  Future<void> _onPerformContextualAction(
+    PerformContextualAction event,
+    Emitter<ChatState> emit,
+  ) async {
+    try {
+      final result = await _chatRepository.performContextualAction(
+        event.actionId,
+        event.actionType,
+        event.actionData,
+      );
+
+      emit(ContextualActionPerformed(actionId: event.actionId, result: result));
+      _logger.d('Contextual action performed: ${event.actionId}');
+    } catch (e) {
+      _logger.e('Error performing contextual action: $e');
+      emit(ChatError(message: 'Failed to perform action: $e'));
+    }
+  }
+
+  Future<void> _onUpdateMessageStatus(
+    UpdateMessageStatus event,
+    Emitter<ChatState> emit,
+  ) async {
+    try {
+      await _chatRepository.updateMessageStatus(event.messageId, event.status);
+
+      emit(
+        MessageStatusUpdated(messageId: event.messageId, status: event.status),
+      );
+      _logger.d(
+        'Message status updated: ${event.messageId} -> ${event.status}',
+      );
+    } catch (e) {
+      _logger.e('Error updating message status: $e');
+      emit(ChatError(message: 'Failed to update message status: $e'));
     }
   }
 }

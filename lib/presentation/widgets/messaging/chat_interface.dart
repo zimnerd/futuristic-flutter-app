@@ -6,6 +6,7 @@ import 'package:logger/logger.dart';
 import '../../../domain/entities/conversation.dart';
 import '../../../domain/entities/message.dart';
 import '../../blocs/messaging/messaging_bloc.dart';
+import '../../../blocs/chat_bloc.dart' as chat;
 import '../../theme/pulse_colors.dart';
 import '../common/pulse_button.dart';
 import 'message_bubble.dart';
@@ -229,6 +230,34 @@ class _ChatInterfaceState extends State<ChatInterface>
               onTap: () {
                 Navigator.pop(context);
                 _handleReplyToMessage(message);
+              },
+            ),
+            
+            if (message.senderId == 'current_user') // Current user's message
+              _buildActionTile(
+                icon: Icons.edit,
+                title: 'Edit Message',
+                onTap: () {
+                  Navigator.pop(context);
+                  _handleEditMessage(message);
+                },
+              ),
+
+            _buildActionTile(
+              icon: Icons.forward,
+              title: 'Forward',
+              onTap: () {
+                Navigator.pop(context);
+                _handleForwardMessage(message);
+              },
+            ),
+
+            _buildActionTile(
+              icon: Icons.bookmark_border,
+              title: 'Bookmark',
+              onTap: () {
+                Navigator.pop(context);
+                _handleBookmarkMessage(message);
               },
             ),
             
@@ -830,6 +859,97 @@ class _ChatInterfaceState extends State<ChatInterface>
         behavior: SnackBarBehavior.floating,
         duration: const Duration(seconds: 2),
       ),
+    );
+  }
+
+  void _handleEditMessage(Message message) {
+    // Show edit dialog
+    showDialog(
+      context: context,
+      builder: (context) => _buildEditMessageDialog(message),
+    );
+  }
+
+  void _handleForwardMessage(Message message) {
+    // TODO: Show forward dialog or navigation with conversation selection
+    context.read<chat.ChatBloc>().add(
+      chat.ForwardMessage(
+        messageId: message.id,
+        targetConversationIds: [], // Will be populated from dialog selection
+      ),
+    );
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text(
+          'Forward feature will be implemented with conversation selection',
+        ),
+        behavior: SnackBarBehavior.floating,
+        duration: Duration(seconds: 2),
+      ),
+    );
+  }
+
+  void _handleBookmarkMessage(Message message) {
+    // Add/remove bookmark via chat bloc
+    context.read<chat.ChatBloc>().add(
+      chat.BookmarkMessage(
+        messageId: message.id,
+        isBookmarked: true, // In real app, check current bookmark status
+      ),
+    );
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Message bookmarked'),
+        behavior: SnackBarBehavior.floating,
+        duration: Duration(seconds: 2),
+      ),
+    );
+  }
+
+  Widget _buildEditMessageDialog(Message message) {
+    final TextEditingController editController = TextEditingController(
+      text: message.content,
+    );
+
+    return AlertDialog(
+      title: const Text('Edit Message'),
+      content: TextField(
+        controller: editController,
+        decoration: const InputDecoration(
+          hintText: 'Edit your message...',
+          border: OutlineInputBorder(),
+        ),
+        maxLines: 3,
+        autofocus: true,
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cancel'),
+        ),
+        TextButton(
+          onPressed: () {
+            final newContent = editController.text.trim();
+            if (newContent.isNotEmpty && newContent != message.content) {
+              // Trigger edit message event via chat BLoC
+              context.read<chat.ChatBloc>().add(
+                chat.EditMessage(messageId: message.id, newContent: newContent),
+              );
+
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Message edited'),
+                  behavior: SnackBarBehavior.floating,
+                ),
+              );
+            }
+            Navigator.pop(context);
+          },
+          child: const Text('Save'),
+        ),
+      ],
     );
   }
 

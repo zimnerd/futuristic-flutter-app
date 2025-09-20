@@ -49,4 +49,40 @@ abstract class ChatRepository {
 
   /// Mark conversation as read
   Future<void> markConversationAsRead(String conversationId);
+
+  // Advanced message actions
+  /// Get a specific message by ID
+  Future<MessageModel> getMessage(String messageId);
+
+  /// Copy message content to clipboard
+  Future<void> copyMessageToClipboard(String messageId);
+
+  /// Edit an existing message
+  Future<MessageModel> editMessage(String messageId, String newContent);
+
+  /// Reply to a specific message
+  Future<MessageModel> replyToMessage(
+    String originalMessageId,
+    String content,
+    String conversationId,
+  );
+
+  /// Forward a message to other conversations
+  Future<void> forwardMessage(
+    String messageId,
+    List<String> targetConversationIds,
+  );
+
+  /// Bookmark or unbookmark a message
+  Future<void> bookmarkMessage(String messageId, bool isBookmarked);
+
+  /// Perform contextual AI actions
+  Future<String> performContextualAction(
+    String actionId,
+    String actionType,
+    Map<String, dynamic> actionData,
+  );
+
+  /// Update message status (delivered, read, etc.)
+  Future<void> updateMessageStatus(String messageId, String status);
 }

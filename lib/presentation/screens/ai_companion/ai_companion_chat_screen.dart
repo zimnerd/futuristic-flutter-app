@@ -391,6 +391,10 @@ class _AiCompanionChatScreenState extends State<AiCompanionChatScreen> {
   Future<void> _handleVoiceMessage() async {
     try {
       final record = AudioRecorder();
+      
+      // Capture bloc reference and navigator before any async operations
+      final bloc = context.read<AiCompanionBloc>();
+      final navigator = Navigator.of(context);
 
       // Check permission
       if (await record.hasPermission()) {
@@ -413,12 +417,12 @@ class _AiCompanionChatScreenState extends State<AiCompanionChatScreen> {
                 TextButton(
                   onPressed: () async {
                     final path = await record.stop();
-                    Navigator.of(dialogContext).pop();
+                    navigator.pop();
 
                     if (path != null && mounted) {
                       final File audioFile = File(path);
                       // Send audio message to AI companion
-                      context.read<AiCompanionBloc>().add(
+                      bloc.add(
                         SendAudioMessage(
                           companionId: widget.companion.id,
                           audioFile: audioFile,
