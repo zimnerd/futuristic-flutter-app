@@ -9,7 +9,6 @@ import 'profile/profile_bloc.dart';
 import 'auth/auth_bloc.dart';
 import 'user/user_bloc.dart';
 import 'messaging/messaging_bloc.dart';
-import '../../data/services/websocket_service.dart';
 import '../../data/services/discovery_service.dart';
 import '../../data/services/matching_service.dart';
 import '../../data/services/messaging_service.dart';
@@ -38,7 +37,7 @@ class BlocProviders extends StatelessWidget {
         // Call Management BLoC - Real-time communication
         BlocProvider<CallBloc>(
           create: (context) =>
-              CallBloc(webSocketService: WebSocketService.instance),
+              CallBloc(webSocketService: ServiceLocator().webSocketService),
         ),
 
         // Discovery BLoC - User discovery and swiping

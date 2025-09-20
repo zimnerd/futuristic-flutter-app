@@ -428,15 +428,7 @@ class WebSocketServiceImpl implements WebSocketService {
     on('call_declined', (data) => callback(data as Map<String, dynamic>));
   }
 
-  @override
-  void onCallEnded(Function(Map<String, dynamic>) callback) {
-    on('call_ended', (data) => callback(data as Map<String, dynamic>));
-  }
 
-  @override
-  void onCallUpdate(Function(Map<String, dynamic>) callback) {
-    on('call_update', (data) => callback(data as Map<String, dynamic>));
-  }
 
   // Notification Events
   @override
@@ -677,6 +669,74 @@ class WebSocketServiceImpl implements WebSocketService {
     _currentReconnectAttempt = 0;
     _eventHistory.clear();
     _logger.i('📊 Connection stats reset');
+  }
+
+  // Call Management Actions
+  @override
+  void initiateCall(String recipientId, String type) {
+    emit('initiate_call', {'recipientId': recipientId, 'type': type});
+  }
+
+  @override
+  void acceptCall(String callId) {
+    emit('accept_call', {'callId': callId});
+  }
+
+  @override
+  void rejectCall(String callId) {
+    emit('reject_call', {'callId': callId});
+  }
+
+  @override
+  void endCall(String callId) {
+    emit('end_call', {'callId': callId});
+  }
+
+  @override
+  void toggleCallVideo(String callId, bool enabled) {
+    emit('toggle_call_video', {'callId': callId, 'enabled': enabled});
+  }
+
+  @override
+  void toggleCallAudio(String callId, bool enabled) {
+    emit('toggle_call_audio', {'callId': callId, 'enabled': enabled});
+  }
+
+  @override
+  void switchCallCamera(String callId, bool frontCamera) {
+    emit('switch_call_camera', {'callId': callId, 'frontCamera': frontCamera});
+  }
+
+  @override
+  void sendWebRTCSignaling(String callId, Map<String, dynamic> signalingData) {
+    emit('webrtc_signaling', {
+      'callId': callId,
+      'signalingData': signalingData,
+    });
+  }
+
+  @override
+  void onWebRTCSignaling(Function(Map<String, dynamic>) callback) {
+    on('webrtc_signaling', (data) => callback(data as Map<String, dynamic>));
+  }
+
+  // Legacy setters for backward compatibility
+  @override
+  set onCallReceived(Function(String) callback) {
+    on('call_received', (data) {
+      if (data is Map<String, dynamic> && data['callId'] != null) {
+        callback(data['callId'] as String);
+      }
+    });
+  }
+
+  @override
+  set onCallEnded(Function(String) callback) {
+    on('call_ended', (data) {
+      if (data is Map<String, dynamic> && data['callId'] != null) {
+        callback(data['callId'] as String);
+      }
+    });
   }
 
   void dispose() {

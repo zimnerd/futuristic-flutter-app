@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import '../../../domain/entities/call.dart';
-import '../../../data/services/websocket_service.dart';
+import '../../../domain/services/websocket_service.dart';
 import '../auth/auth_bloc.dart';
 import '../auth/auth_state.dart';
 

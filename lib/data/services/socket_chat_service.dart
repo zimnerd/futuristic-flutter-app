@@ -107,19 +107,13 @@ class SocketChatService {
       });
     });
 
-    _webSocketService.onCallEnded((data) {
+    // Use setter for call ended events
+    _webSocketService.onCallEnded = (callId) {
       _callController.add({
         'type': 'call_ended',
-        'data': data,
+        'data': {'callId': callId},
       });
-    });
-
-    _webSocketService.onCallUpdate((data) {
-      _callController.add({
-        'type': 'call_updated',
-        'data': data,
-      });
-    });
+    };
 
     // Generic event listeners for conversation updates
     _webSocketService.on('conversation_created', (data) {

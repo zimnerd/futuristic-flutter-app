@@ -59,8 +59,21 @@ abstract class WebSocketService {
   void onIncomingCall(Function(Map<String, dynamic>) callback);
   void onCallAccepted(Function(Map<String, dynamic>) callback);
   void onCallDeclined(Function(Map<String, dynamic>) callback);
-  void onCallEnded(Function(Map<String, dynamic>) callback);
-  void onCallUpdate(Function(Map<String, dynamic>) callback);
+  void onWebRTCSignaling(Function(Map<String, dynamic>) callback);
+
+  // Call Actions
+  void initiateCall(String recipientId, String type);
+  void acceptCall(String callId);
+  void rejectCall(String callId);
+  void endCall(String callId);
+  void toggleCallVideo(String callId, bool enabled);
+  void toggleCallAudio(String callId, bool enabled);
+  void switchCallCamera(String callId, bool frontCamera);
+  void sendWebRTCSignaling(String callId, Map<String, dynamic> signalingData);
+
+  // Callback setters for call events (legacy support)
+  set onCallReceived(Function(String) callback);
+  set onCallEnded(Function(String) callback);
 
   // Notification Events
   void onNotification(Function(Map<String, dynamic>) callback);
