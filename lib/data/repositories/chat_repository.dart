@@ -1,8 +1,14 @@
+import 'dart:async';
 import '../models/chat_model.dart';
-import '../models/message.dart';
+import '../models/message.dart' as msg;
 
 /// Abstract repository for chat operations
 abstract class ChatRepository {
+  /// Stream of incoming messages
+  Stream<MessageModel> get incomingMessages;
+
+  /// Stream of message delivery confirmations
+  Stream<msg.MessageDeliveryUpdate> get messageDeliveryUpdates;
   /// Get list of conversations for the current user
   Future<List<ConversationModel>> getConversations();
 
@@ -16,7 +22,7 @@ abstract class ChatRepository {
   /// Send a new message
   Future<MessageModel> sendMessage({
     required String conversationId,
-    required MessageType type,
+    required msg.MessageType type,
     String? content,
     List<String>? mediaIds,
     Map<String, dynamic>? metadata,

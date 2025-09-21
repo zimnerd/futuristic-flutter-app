@@ -21,23 +21,33 @@ class MatchStoriesSection extends StatelessWidget {
     if (matches.isEmpty) return const SizedBox.shrink();
 
     return Container(
-      height: 130, // Increased height to prevent overflow
+      height:
+          134, // Precise height to prevent overflow: 24 (title) + 8 (gap) + 102 (content)
       margin: const EdgeInsets.only(bottom: 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Text(
-              'New Matches',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.w600,
-                color: PulseColors.onSurface,
+          // Title section: exactly 24px
+          SizedBox(
+            height: 24,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'New Matches',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: PulseColors.onSurface,
+                  ),
+                ),
               ),
             ),
           ),
-          const SizedBox(height: 8),
-          Expanded(
+          const SizedBox(height: 8), // Gap
+          // Stories section: exactly 102px
+          SizedBox(
+            height: 102,
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -72,107 +82,108 @@ class _MatchStoryAvatar extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 4),
       child: GestureDetector(
         onTap: onTap,
-        child: Column(
-          mainAxisSize: MainAxisSize.min, // Use minimum space needed
-          children: [
-            // Avatar with border styling
-            Container(
-              width: 68,
-              height: 68,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: match.isSuperLike 
-                  ? const LinearGradient(
-                      colors: [
-                        Color(0xFFFFD700), // Gold
-                        Color(0xFFFFA500), // Orange
-                        Color(0xFFFF4500), // Red-orange
-                      ],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    )
-                  : const LinearGradient(
-                      colors: [
-                        PulseColors.primary,
-                        Color(0xFF8B5FFF),
-                      ],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                boxShadow: [
-                  BoxShadow(
-                    color: (match.isSuperLike 
-                        ? const Color(0xFFFFD700) 
-                        : PulseColors.primary)
-                        .withValues(alpha: 0.3),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: Container(
-                margin: const EdgeInsets.all(3),
+        child: SizedBox(
+          width: 76, // Fixed width to prevent horizontal overflow
+          height: 102, // Fixed height: 68 (avatar) + 4 (gap) + 30 (text area)
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Avatar with border styling: exactly 68px
+              Container(
+                width: 68,
+                height: 68,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  border: Border.all(
-                    color: Colors.white,
-                    width: 2,
-                  ),
-                ),
-                child: ClipOval(
-                  child: CachedNetworkImage(
-                    imageUrl: match.avatarUrl,
-                    fit: BoxFit.cover,
-                    placeholder: (context, url) => Container(
-                      color: PulseColors.surfaceVariant,
-                      child: const Icon(
-                        Icons.person,
-                        color: PulseColors.onSurfaceVariant,
-                        size: 30,
-                      ),
+                  gradient: match.isSuperLike
+                      ? const LinearGradient(
+                          colors: [
+                            Color(0xFFFFD700), // Gold
+                            Color(0xFFFFA500), // Orange
+                            Color(0xFFFF4500), // Red-orange
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        )
+                      : const LinearGradient(
+                          colors: [PulseColors.primary, Color(0xFF8B5FFF)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                  boxShadow: [
+                    BoxShadow(
+                      color:
+                          (match.isSuperLike
+                                  ? const Color(0xFFFFD700)
+                                  : PulseColors.primary)
+                              .withValues(alpha: 0.3),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
                     ),
-                    errorWidget: (context, url, error) => Container(
-                      color: PulseColors.surfaceVariant,
-                      child: const Icon(
-                        Icons.person,
-                        color: PulseColors.onSurfaceVariant,
-                        size: 30,
+                  ],
+                ),
+                child: Container(
+                  margin: const EdgeInsets.all(3),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.white, width: 2),
+                  ),
+                  child: ClipOval(
+                    child: CachedNetworkImage(
+                      imageUrl: match.avatarUrl,
+                      fit: BoxFit.cover,
+                      placeholder: (context, url) => Container(
+                        color: PulseColors.surfaceVariant,
+                        child: const Icon(
+                          Icons.person,
+                          color: PulseColors.onSurfaceVariant,
+                          size: 30,
+                        ),
+                      ),
+                      errorWidget: (context, url, error) => Container(
+                        color: PulseColors.surfaceVariant,
+                        child: const Icon(
+                          Icons.person,
+                          color: PulseColors.onSurfaceVariant,
+                          size: 30,
+                        ),
                       ),
                     ),
                   ),
                 ),
               ),
-            ),
-            const SizedBox(height: 2), // Reduced spacing
-            // Name with time indicator
-            SizedBox(
-              width: 68,
-              child: Column(
-                mainAxisSize: MainAxisSize.min, // Use minimum space needed
-                children: [
-                  Text(
-                    match.name,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      fontWeight: FontWeight.w500,
-                      color: PulseColors.onSurface,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    textAlign: TextAlign.center,
-                  ),
-                  if (match.matchedTime != null)
+              const SizedBox(height: 4), // Fixed 4px gap
+              // Text area: exactly 30px
+              SizedBox(
+                width: 68,
+                height: 30,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
                     Text(
-                      _formatMatchTime(match.matchedTime!),
+                      match.name,
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        fontSize: 10,
-                        color: PulseColors.onSurfaceVariant,
+                        fontWeight: FontWeight.w500,
+                        color: PulseColors.onSurface,
+                        fontSize: 12,
                       ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       textAlign: TextAlign.center,
                     ),
-                ],
+                    if (match.matchedTime != null)
+                      Text(
+                        _formatMatchTime(match.matchedTime!),
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          fontSize: 10,
+                          color: PulseColors.onSurfaceVariant,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

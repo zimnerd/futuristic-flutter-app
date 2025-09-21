@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../blocs/chat_bloc.dart';
 import '../../../data/models/message.dart';
@@ -36,6 +37,7 @@ class _ChatScreenState extends State<ChatScreen> {
   final ScrollController _scrollController = ScrollController();
   final TextEditingController _messageController = TextEditingController();
   Timer? _typingTimer;
+  bool _isCurrentlyTyping = false;
   
   String? get _currentUserId {
     final authState = context.read<AuthBloc>().state;
@@ -49,18 +51,41 @@ class _ChatScreenState extends State<ChatScreen> {
   void initState() {
     super.initState();
     
-    // Load messages for this conversation
-    context.read<ChatBloc>().add(
-      LoadMessages(conversationId: widget.conversationId),
-    );
-    
-    // Mark conversation as read
-    context.read<ChatBloc>().add(
-      MarkConversationAsRead(conversationId: widget.conversationId),
-    );
+    // Check if this is a new conversation that needs to be created
+    if (widget.conversationId == 'new') {
+      _createNewConversation();
+    } else {
+      // Load messages for existing conversation
+      context.read<ChatBloc>().add(
+        LoadMessages(conversationId: widget.conversationId),
+      );
+
+      // Mark conversation as read
+      context.read<ChatBloc>().add(
+        MarkConversationAsRead(conversationId: widget.conversationId),
+      );
+    }
     
     // Auto-scroll to bottom when keyboard appears
     _scrollController.addListener(_scrollListener);
+  }
+
+  /// Create a new conversation with the other user
+  void _createNewConversation() async {
+    if (widget.otherUserId.isEmpty) {
+      // Handle error - no other user ID provided
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Error: No user specified for conversation'),
+        ),
+      );
+      return;
+    }
+
+    // Create conversation via ChatBloc
+    context.read<ChatBloc>().add(
+      CreateConversation(participantId: widget.otherUserId),
+    );
   }
 
   @override
@@ -95,6 +120,16 @@ class _ChatScreenState extends State<ChatScreen> {
     final text = _messageController.text.trim();
     if (text.isEmpty) return;
 
+    // Don't allow sending messages to "new" conversation
+    if (widget.conversationId == 'new') {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please wait for conversation to be created'),
+        ),
+      );
+      return;
+    }
+
     context.read<ChatBloc>().add(
       SendMessage(
         conversationId: widget.conversationId,
@@ -119,6 +154,20 @@ class _ChatScreenState extends State<ChatScreen> {
               listener: (context, state) {
                 if (state is MessagesLoaded) {
                   _scrollToBottom();
+                } else if (state is ConversationCreated) {
+                  // Navigate to the actual conversation ID
+                  final realConversationId = state.conversation.id;
+
+                  // Replace current route with real conversation ID
+                  context.go(
+                    '/chat/$realConversationId',
+                    extra: {
+                      'otherUserId': widget.otherUserId,
+                      'otherUserName': widget.otherUserName,
+                      'otherUserPhoto': widget.otherUserPhoto,
+                      'otherUserProfile': widget.otherUserProfile,
+                    },
+                  );
                 }
               },
               builder: (context, state) {
@@ -135,23 +184,30 @@ class _ChatScreenState extends State<ChatScreen> {
             onGallery: _handleGalleryAction,
             onVoice: _handleVoiceAction,
             onTyping: () {
-              // Update typing status when user is typing
-              context.read<ChatBloc>().add(
-                UpdateTypingStatus(
-                  conversationId: widget.conversationId,
-                  isTyping: true,
-                ),
-              );
-
-              // Set a timer to stop typing indicator after inactivity
-              _typingTimer?.cancel();
-              _typingTimer = Timer(const Duration(seconds: 2), () {
+              // Debounce typing status to avoid spam
+              // Only send typing_start if we're not already typing
+              if (!_isCurrentlyTyping) {
+                _isCurrentlyTyping = true;
                 context.read<ChatBloc>().add(
                   UpdateTypingStatus(
                     conversationId: widget.conversationId,
-                    isTyping: false,
+                    isTyping: true,
                   ),
                 );
+              }
+
+              // Reset the stop typing timer
+              _typingTimer?.cancel();
+              _typingTimer = Timer(const Duration(seconds: 2), () {
+                if (_isCurrentlyTyping) {
+                  _isCurrentlyTyping = false;
+                  context.read<ChatBloc>().add(
+                    UpdateTypingStatus(
+                      conversationId: widget.conversationId,
+                      isTyping: false,
+                    ),
+                  );
+                }
               });
             },
           ),

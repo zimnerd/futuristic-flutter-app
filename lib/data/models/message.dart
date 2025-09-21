@@ -266,3 +266,30 @@ class Message extends Equatable {
         updatedAt,
       ];
 }
+
+/// Message delivery update model for real-time status updates
+class MessageDeliveryUpdate extends Equatable {
+  final String messageId;
+  final MessageStatus status;
+  final DateTime timestamp;
+
+  const MessageDeliveryUpdate({
+    required this.messageId,
+    required this.status,
+    required this.timestamp,
+  });
+
+  factory MessageDeliveryUpdate.fromJson(Map<String, dynamic> json) {
+    return MessageDeliveryUpdate(
+      messageId: json['messageId'] as String,
+      status: MessageStatus.values.firstWhere(
+        (status) => status.name == json['status'],
+        orElse: () => MessageStatus.sent,
+      ),
+      timestamp: DateTime.parse(json['timestamp'] as String),
+    );
+  }
+
+  @override
+  List<Object?> get props => [messageId, status, timestamp];
+}

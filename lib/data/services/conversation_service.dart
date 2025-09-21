@@ -22,7 +22,53 @@ class ConversationService {
 
       if (response.statusCode == 200 && response.data != null) {
         final List<dynamic> data = response.data['data'] ?? response.data['conversations'] ?? [];
-        final conversations = data.map((json) => Conversation.fromJson(json)).toList();
+        final conversations = data.map((json) {
+          // Transform backend ConversationResult to frontend Conversation format
+          final participants = (json['participants'] as List?) ?? [];
+
+          final transformedJson = {
+            'id': json['id'] as String? ?? '',
+            'title': json['title'] as String?,
+            'participants': participants
+                .map(
+                  (p) => {
+                    'id': p['userId'] as String? ?? '',
+                    'email':
+                        '${p['username']}@temp.com', // Required field - use temp email
+                    'username': p['username'] as String? ?? 'Unknown',
+                    'displayName': p['username'] as String? ?? 'Unknown',
+                    'profileImageUrl': p['avatar'] as String?,
+                    'isOnline': p['isOnline'] as bool? ?? false,
+                    'lastSeen': p['lastReadAt'] as String?,
+                    'interests': <String>[],
+                    'photos': <String>[],
+                    'isVerified': false,
+                    'isPremium': false,
+                    'createdAt':
+                        p['joinedAt'] as String? ??
+                        DateTime.now().toIso8601String(),
+                    'updatedAt':
+                        p['joinedAt'] as String? ??
+                        DateTime.now().toIso8601String(),
+                  },
+                )
+                .toList(),
+            'lastMessage':
+                null, // We don't have lastMessage in this format from API
+            'lastActivity': json['updatedAt'] as String?,
+            'unreadCount': json['unreadCount'] as int? ?? 0,
+            'isActive': true,
+            'isBlocked': false,
+            'metadata': null,
+            'createdAt':
+                json['createdAt'] as String? ??
+                DateTime.now().toIso8601String(),
+            'updatedAt':
+                json['updatedAt'] as String? ??
+                DateTime.now().toIso8601String(),
+          };
+          return Conversation.fromJson(transformedJson);
+        }).toList();
         
         _logger.d('Retrieved ${conversations.length} conversations');
         return conversations;
@@ -96,15 +142,21 @@ class ConversationService {
 
   /// Create a new conversation
   Future<Conversation?> createConversation({
-    required List<String> participantIds,
+    required String participantId,
+    String? title,
+    bool isGroup = false,
+    String? initialMessage,
   }) async {
     try {
       final response = await _apiClient.createConversation(
-        participantIds: participantIds,
+        participantId: participantId,
+        title: title,
+        isGroup: isGroup,
+        initialMessage: initialMessage,
       );
 
       if (response.statusCode == 201 && response.data != null) {
-        final conversation = Conversation.fromJson(response.data['data'] ?? response.data);
+        final conversation = Conversation.fromJson(response.data);
         _logger.d('Conversation created successfully: ${conversation.id}');
         return conversation;
       } else {

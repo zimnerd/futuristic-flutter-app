@@ -146,39 +146,43 @@ class _MessageInputState extends State<MessageInput> {
     return Container(
       height: 60,
       margin: const EdgeInsets.only(bottom: 8),
-      child: Row(
-        children: [
-          _buildAttachmentOption(
-            icon: Icons.camera_alt,
-            label: 'Camera',
-            color: Colors.blue,
-            onTap: widget.onCamera,
-          ),
-          const SizedBox(width: 16),
-          _buildAttachmentOption(
-            icon: Icons.photo_library,
-            label: 'Gallery',
-            color: Colors.green,
-            onTap: widget.onGallery,
-          ),
-          const SizedBox(width: 16),
-          _buildAttachmentOption(
-            icon: Icons.location_on,
-            label: 'Location',
-            color: Colors.orange,
-            onTap: () {
-              // Implement location sharing
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Sharing current location...'),
-                  duration: Duration(seconds: 2),
-                ),
-              );
-              // In real implementation: get current location and send as message
-            },
-          ),
-        ],
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: Row(
+          children: [
+            _buildAttachmentOption(
+              icon: Icons.camera_alt,
+              label: 'Camera',
+              color: Colors.blue,
+              onTap: widget.onCamera,
+            ),
+            const SizedBox(width: 16),
+            _buildAttachmentOption(
+              icon: Icons.photo_library,
+              label: 'Gallery',
+              color: Colors.green,
+              onTap: widget.onGallery,
+            ),
+            const SizedBox(width: 16),
+            _buildAttachmentOption(
+              icon: Icons.location_on,
+              label: 'Location',
+              color: Colors.orange,
+              onTap: () {
+                // Implement location sharing
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Sharing current location...'),
+                    duration: Duration(seconds: 2),
+                  ),
+                );
+                // In real implementation: get current location and send as message
+              },
+            ),
+          ],
+        ),
       ),
     );
   }

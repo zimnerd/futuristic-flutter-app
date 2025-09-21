@@ -61,6 +61,13 @@ abstract class ChatRepository {
   Stream<MessageModel> getMessageUpdates();
   Stream<ConversationModel> getConversationUpdates();
   Stream<Map<String, bool>> getTypingUpdates();
+  
+  // Message delivery status updates
+  Stream<MessageDeliveryUpdate> getDeliveryUpdates();
+
+  // Convenient getters for streams (for backward compatibility)
+  Stream<MessageModel> get messageStream => getMessageUpdates();
+  Stream<MessageDeliveryUpdate> get deliveryUpdates => getDeliveryUpdates();
 
   // Advanced message actions
   Future<MessageModel> getMessage(String messageId);

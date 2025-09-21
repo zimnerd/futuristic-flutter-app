@@ -262,8 +262,11 @@ class _MessagesScreenState extends State<MessagesScreen> {
                 icon: const Icon(Icons.filter_list),
                 style: IconButton.styleFrom(
                   backgroundColor: _hasActiveFilters()
-                      ? PulseColors.primaryContainer
+                      ? PulseColors.primary
                       : PulseColors.surfaceVariant,
+                  foregroundColor: _hasActiveFilters()
+                      ? Colors.white
+                      : PulseColors.primary,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(PulseRadii.md),
                   ),
@@ -271,14 +274,16 @@ class _MessagesScreenState extends State<MessagesScreen> {
               ),
               if (_hasActiveFilters())
                 Positioned(
-                  top: 8,
-                  right: 8,
+                  top: 6,
+                  right: 6,
                   child: Container(
-                    width: 8,
-                    height: 8,
-                    decoration: const BoxDecoration(
-                      color: PulseColors.primary,
+                    width: 10,
+                    height: 10,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
                       shape: BoxShape.circle,
+                      border: Border.all(color: PulseColors.primary,
+                        width: 1),
                     ),
                   ),
                 ),

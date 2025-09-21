@@ -3,30 +3,86 @@ import 'package:logger/logger.dart';
 import 'package:pulse_dating_app/data/models/message.dart' as data_message;
 
 import '../models/chat_model.dart';
+import '../models/message.dart' as msg;
 import '../datasources/remote/chat_remote_data_source.dart';
 import '../../domain/services/websocket_service.dart';
 import '../services/websocket_service_impl.dart';
-import '../services/socket_chat_service.dart';
 import '../../domain/entities/message.dart' as domain;
 import '../exceptions/app_exceptions.dart';
+import '../../core/network/api_client.dart';
 import 'chat_repository.dart';
 
 /// Implementation of ChatRepository with real-time Socket.IO support
 class ChatRepositoryImpl implements ChatRepository {
   final ChatRemoteDataSource _remoteDataSource;
   final WebSocketService _webSocketService;
-  final SocketChatService _socketChatService;
+  final ApiClient _apiClient;
   final Logger _logger = Logger();
+
+  // Stream controllers for real-time events
+  final StreamController<MessageModel> _incomingMessagesController =
+      StreamController<MessageModel>.broadcast();
+  final StreamController<msg.MessageDeliveryUpdate> _deliveryUpdatesController =
+      StreamController<msg.MessageDeliveryUpdate>.broadcast();
 
   ChatRepositoryImpl({
     required ChatRemoteDataSource remoteDataSource,
     WebSocketService? webSocketService,
-    SocketChatService? socketChatService,
+    ApiClient? apiClient,
   }) : _remoteDataSource = remoteDataSource,
        _webSocketService = webSocketService ?? WebSocketServiceImpl.instance,
-       _socketChatService =
-           socketChatService ??
-           SocketChatService(webSocketService ?? WebSocketServiceImpl.instance);
+       _apiClient = apiClient ?? ApiClient.instance {
+    _setupWebSocketListeners();
+  }
+
+  @override
+  Stream<MessageModel> get incomingMessages =>
+      _incomingMessagesController.stream;
+
+  @override
+  Stream<msg.MessageDeliveryUpdate> get messageDeliveryUpdates =>
+      _deliveryUpdatesController.stream;
+
+  /// Setup WebSocket listeners for real-time message events
+  void _setupWebSocketListeners() {
+    // Listen for incoming messages
+    _webSocketService.on('messageReceived', (data) {
+      try {
+        _logger.d('Received messageReceived event: $data');
+
+        // Parse the backend event structure: { type, data, timestamp }
+        if (data is Map<String, dynamic> && data.containsKey('data')) {
+          final messageData = data['data'] as Map<String, dynamic>;
+          final message = MessageModel.fromJson(messageData);
+          _incomingMessagesController.add(message);
+          _logger.d('Added incoming message to stream: ${message.id}');
+        }
+      } catch (e) {
+        _logger.e('Error processing incoming message: $e');
+      }
+    });
+
+    // Listen for message delivery confirmations
+    _webSocketService.on('messageDelivered', (data) {
+      try {
+        _logger.d('Received messageDelivered event: $data');
+
+        if (data is Map<String, dynamic>) {
+          final update = msg.MessageDeliveryUpdate.fromJson(data);
+          _deliveryUpdatesController.add(update);
+          _logger.d('Added delivery update to stream: ${update.messageId}');
+        }
+      } catch (e) {
+        _logger.e('Error processing delivery update: $e');
+      }
+    });
+  }
+
+  /// Dispose of stream controllers
+  void dispose() {
+    _incomingMessagesController.close();
+    _deliveryUpdatesController.close();
+  }
 
   @override
   Future<List<ConversationModel>> getConversations() async {
@@ -69,7 +125,7 @@ class ChatRepositoryImpl implements ChatRepository {
   @override
   Future<MessageModel> sendMessage({
     required String conversationId,
-    required data_message.MessageType type,
+    required msg.MessageType type,
     String? content,
     List<String>? mediaIds,
     Map<String, dynamic>? metadata,
@@ -158,39 +214,29 @@ class ChatRepositoryImpl implements ChatRepository {
 
   @override
   Future<ConversationModel> createConversation(String matchId) async {
-    final completer = Completer<ConversationModel>();
+    try {
+      _logger.d(
+        'Creating conversation with participant: $matchId via REST API',
+      );
+      
+      final response = await _apiClient.createConversation(
+        participantId: matchId,
+        isGroup: false,
+      );
 
-    // Listen for conversation creation response
-    late StreamSubscription subscription;
-    subscription = _socketChatService.conversationStream.listen((event) {
-      if (event['type'] == 'conversation_created') {
-        try {
-          final conversation = ConversationModel.fromJson(event['data']);
-          completer.complete(conversation);
-          subscription.cancel();
-        } catch (e) {
-          completer.completeError(
-            NetworkException('Invalid conversation data: $e'),
-          );
-          subscription.cancel();
-        }
+      if (response.statusCode == 201 && response.data != null) {
+        final conversation = ConversationModel.fromJson(response.data);
+        _logger.d('Successfully created conversation: ${conversation.id}');
+        return conversation;
+      } else {
+        throw NetworkException(
+          'Failed to create conversation: ${response.statusMessage}',
+        );
       }
-    });
-
-    // Create conversation via socket chat service
-    await _socketChatService.createConversation(
-      participantId: matchId,
-      type: 'direct',
-    );
-
-    // Wait for response with timeout
-    return completer.future.timeout(
-      const Duration(seconds: 10),
-      onTimeout: () {
-        subscription.cancel();
-        throw const TimeoutException();
-      },
-    );
+    } catch (e) {
+      _logger.e('Error creating conversation: $e');
+      throw NetworkException('Failed to create conversation: $e');
+    }
   }
 
   @override

@@ -532,11 +532,19 @@ class ApiClient {
 
   /// Create a new conversation
   Future<Response> createConversation({
-    required List<String> participantIds,
+    required String participantId,
+    String? title,
+    bool isGroup = false,
+    String? initialMessage,
   }) async {
     return await _dio.post(
-      '/api/v1/chat/conversations',
-      data: {'participantIds': participantIds},
+      '/messaging/conversations',
+      data: {
+        'participantId': participantId,
+        if (title != null) 'title': title,
+        'isGroup': isGroup,
+        if (initialMessage != null) 'initialMessage': initialMessage,
+      },
     );
   }
 

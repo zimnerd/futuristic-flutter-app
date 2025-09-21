@@ -1,9 +1,10 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:logger/logger.dart';
+import 'dart:async';
 
 import '../data/models/chat_model.dart';
-import '../data/models/message.dart';
+import '../data/models/message.dart' as msg;
 import '../data/repositories/chat_repository.dart';
 
 // Events
@@ -35,7 +36,7 @@ class LoadMessages extends ChatEvent {
 
 class SendMessage extends ChatEvent {
   final String conversationId;
-  final MessageType type;
+  final msg.MessageType type;
   final String? content;
   final List<String>? mediaIds;
   final Map<String, dynamic>? metadata;
@@ -126,13 +127,13 @@ class ReplyToMessage extends ChatEvent {
   final String originalMessageId;
   final String conversationId;
   final String content;
-  final MessageType type;
+  final msg.MessageType type;
 
   const ReplyToMessage({
     required this.originalMessageId,
     required this.conversationId,
     required this.content,
-    this.type = MessageType.text,
+    this.type = msg.MessageType.text,
   });
 
   @override
@@ -182,6 +183,28 @@ class UpdateMessageStatus extends ChatEvent {
   final String status;
 
   const UpdateMessageStatus({required this.messageId, required this.status});
+
+  @override
+  List<Object?> get props => [messageId, status];
+}
+
+class MessageReceived extends ChatEvent {
+  final MessageModel message;
+
+  const MessageReceived({required this.message});
+
+  @override
+  List<Object?> get props => [message];
+}
+
+class MessageDeliveryStatusUpdated extends ChatEvent {
+  final String messageId;
+  final msg.MessageStatus status;
+
+  const MessageDeliveryStatusUpdated({
+    required this.messageId,
+    required this.status,
+  });
 
   @override
   List<Object?> get props => [messageId, status];
@@ -355,6 +378,20 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     on<BookmarkMessage>(_onBookmarkMessage);
     on<PerformContextualAction>(_onPerformContextualAction);
     on<UpdateMessageStatus>(_onUpdateMessageStatus);
+    on<MessageReceived>(_onMessageReceived);
+    on<MessageDeliveryStatusUpdated>(_onMessageDeliveryStatusUpdated);
+
+    // TODO: Add stream subscriptions once repository interface is updated
+    // _chatRepository.messageStream.listen((message) {
+    //   add(MessageReceived(message: message));
+    // });
+
+    // _chatRepository.deliveryUpdates.listen((update) {
+    //   add(MessageDeliveryStatusUpdated(
+    //     messageId: update.messageId,
+    //     status: update.status,
+    //   ));
+    // });
   }
 
   Future<void> _onLoadConversations(
@@ -417,7 +454,17 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
         replyToMessageId: event.replyToMessageId,
       );
       
-      emit(MessageSent(message: message));
+      // Update the current messages list if we're viewing this conversation
+      final currentState = state;
+      if (currentState is MessagesLoaded &&
+          currentState.conversationId == event.conversationId) {
+        final updatedMessages = List<MessageModel>.from(currentState.messages)
+          ..add(message);
+        emit(currentState.copyWith(messages: updatedMessages));
+      } else {
+        emit(MessageSent(message: message));
+      }
+      
       _logger.d('Message sent: ${message.id}');
     } catch (e) {
       _logger.e('Error sending message: $e');
@@ -462,23 +509,9 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       );
       _logger.d('Typing status updated: ${event.isTyping}');
       
-      // Update local typing state if we're currently viewing messages
-      final currentState = state;
-      if (currentState is MessagesLoaded &&
-          currentState.conversationId == event.conversationId) {
-        final updatedTypingUsers = Map<String, bool>.from(
-          currentState.typingUsers,
-        );
-        // Note: In a real app, you'd track specific user IDs who are typing
-        // For now, we'll use a placeholder key for other users typing
-        if (event.isTyping) {
-          updatedTypingUsers['others'] = true;
-        } else {
-          updatedTypingUsers.remove('others');
-        }
-
-        emit(currentState.copyWith(typingUsers: updatedTypingUsers));
-      }
+      // Don't add fake typing indicators - only real ones from backend WebSocket
+      // should show typing status. The current implementation creates fake typing
+      // indicators that confuse users.
     } catch (e) {
       _logger.e('Error updating typing status: $e');
     }
@@ -643,6 +676,54 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     } catch (e) {
       _logger.e('Error updating message status: $e');
       emit(ChatError(message: 'Failed to update message status: $e'));
+    }
+  }
+
+  Future<void> _onMessageReceived(
+    MessageReceived event,
+    Emitter<ChatState> emit,
+  ) async {
+    try {
+      // Add the new message to the current state
+      if (state is MessagesLoaded) {
+        final currentState = state as MessagesLoaded;
+        final updatedMessages = [...currentState.messages, event.message];
+        emit(
+          MessagesLoaded(
+            messages: updatedMessages,
+            conversationId: currentState.conversationId,
+            hasMoreMessages: currentState.hasMoreMessages,
+          ),
+        );
+      }
+      _logger.d('New message received: ${event.message.id}');
+    } catch (e) {
+      _logger.e('Error handling received message: $e');
+      emit(ChatError(message: 'Failed to handle received message: $e'));
+    }
+  }
+
+  Future<void> _onMessageDeliveryStatusUpdated(
+    MessageDeliveryStatusUpdated event,
+    Emitter<ChatState> emit,
+  ) async {
+    try {
+      // For now, just log the status update
+      // TODO: Update message status when MessageModel supports delivery status
+      _logger.d(
+        'Message delivery status updated: ${event.messageId} -> ${event.status}',
+      );
+
+      // Optionally emit a specific status update state
+      emit(
+        MessageStatusUpdated(
+          messageId: event.messageId,
+          status: event.status.toString(),
+        ),
+      );
+    } catch (e) {
+      _logger.e('Error handling delivery status update: $e');
+      emit(ChatError(message: 'Failed to handle delivery status update: $e'));
     }
   }
 }
