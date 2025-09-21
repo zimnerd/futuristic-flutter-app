@@ -46,9 +46,9 @@ class ChatRepositoryImpl implements ChatRepository {
   /// Setup WebSocket listeners for real-time message events
   void _setupWebSocketListeners() {
     // Listen for incoming messages
-    _webSocketService.on('messageReceived', (data) {
+    _webSocketService.on('new_message', (data) {
       try {
-        _logger.d('Received messageReceived event: $data');
+        _logger.d('Received new_message event: $data');
 
         // Parse the backend event structure: { type, data, timestamp }
         if (data is Map<String, dynamic> && data.containsKey('data')) {
@@ -225,7 +225,10 @@ class ChatRepositoryImpl implements ChatRepository {
       );
 
       if (response.statusCode == 201 && response.data != null) {
-        final conversation = ConversationModel.fromJson(response.data);
+        final conversation = _conversationFromApiResponse(
+          response.data,
+          matchId,
+        );
         _logger.d('Successfully created conversation: ${conversation.id}');
         return conversation;
       } else {
@@ -237,6 +240,41 @@ class ChatRepositoryImpl implements ChatRepository {
       _logger.e('Error creating conversation: $e');
       throw NetworkException('Failed to create conversation: $e');
     }
+  }
+
+  /// Transform API response to ConversationModel
+  ConversationModel _conversationFromApiResponse(
+    Map<String, dynamic> data,
+    String otherUserId,
+  ) {
+    // Get participants list
+    final participants = (data['participants'] as List<dynamic>?) ?? [];
+    final participantIds = participants
+        .map((p) => p['userId']?.toString())
+        .where((id) => id != null)
+        .cast<String>()
+        .toList();
+
+    return ConversationModel(
+      id: data['id']?.toString() ?? '',
+      type: ConversationType.direct, // Direct conversation for 1-on-1 chat
+      participantIds: participantIds,
+      name: null, // Direct chats don't have names
+      description: null,
+      imageUrl: null,
+      lastMessage: null, // Will be populated when messages are loaded
+      lastMessageAt: data['lastMessageAt'] != null
+          ? DateTime.tryParse(data['lastMessageAt'].toString())
+          : null,
+      unreadCount: (data['unreadCount'] as num?)?.toInt() ?? 0,
+      settings: null, // Default settings
+      createdAt: data['createdAt'] != null
+          ? DateTime.tryParse(data['createdAt'].toString()) ?? DateTime.now()
+          : DateTime.now(),
+      updatedAt: data['updatedAt'] != null
+          ? DateTime.tryParse(data['updatedAt'].toString()) ?? DateTime.now()
+          : DateTime.now(),
+    );
   }
 
   @override

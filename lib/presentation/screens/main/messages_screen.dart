@@ -12,7 +12,7 @@ import '../../../data/services/conversation_service.dart';
 import '../../blocs/match/match_bloc.dart';
 import '../../blocs/match/match_event.dart';
 import '../../blocs/match/match_state.dart';
-import '../../../data/models/match_model.dart';
+import '../../../blocs/chat_bloc.dart';
 
 /// Enhanced messages screen with conversations list
 class MessagesScreen extends StatefulWidget {
@@ -30,6 +30,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
   List<ConversationData> _filteredConversations = [];
   Map<String, MatchStoryData> _enrichedMatches =
       {}; // Cache enriched matches by match ID
+  Map<String, dynamic>? _pendingMatchNavigation; // Store match data for navigation after conversation creation
   bool _isLoading = true;
   String? _error;
 
@@ -129,16 +130,15 @@ class _MessagesScreenState extends State<MessagesScreen> {
     }
   }
   void _onMatchStoryTap(MatchStoryData match) {
-    // Create a conversation and navigate to chat screen
-    // Use push instead of go to maintain navigation stack
-    context.push(
-      '/chat/new', // Use 'new' as conversation ID for new chats
-      extra: {
-        'otherUserId': match.userId,
-        'otherUserName': match.name,
-        'otherUserPhoto': match.avatarUrl,
-      },
-    );
+    // Create a conversation first, then navigate to chat when it's ready
+    context.read<ChatBloc>().add(CreateConversation(participantId: match.userId));
+    
+    // Store match data for navigation after conversation is created
+    _pendingMatchNavigation = {
+      'otherUserId': match.userId,
+      'otherUserName': match.name,
+      'otherUserPhoto': match.avatarUrl,
+    };
   }
 
   @override
@@ -149,19 +149,31 @@ class _MessagesScreenState extends State<MessagesScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: SafeArea(
-        child: Column(
-          children: [
-            // Header
-            _buildHeader(),
+    return BlocListener<ChatBloc, ChatState>(
+      listener: (context, state) {
+        if (state is ConversationCreated && _pendingMatchNavigation != null) {
+          // Navigate to the newly created conversation
+          context.push(
+            '/chat/${state.conversation.id}',
+            extra: _pendingMatchNavigation,
+          );
+          // Clear pending navigation
+          _pendingMatchNavigation = null;
+        }
+      },
+      child: Scaffold(
+        body: SafeArea(
+          child: Column(
+            children: [
+              // Header
+              _buildHeader(),
 
-            // Search bar
-            _buildSearchBar(),
+              // Search bar
+              _buildSearchBar(),
 
-            // Match stories section - using BlocBuilder to get real match data
-            BlocBuilder<MatchBloc, MatchState>(
-              builder: (context, matchState) {
+              // Match stories section - using BlocBuilder to get real match data
+              BlocBuilder<MatchBloc, MatchState>(
+                builder: (context, matchState) {
                 if (matchState is MatchesLoaded) {
                   // Convert MatchModel to MatchStoryData synchronously for now
                   final matchStories = matchState.matches.map((match) {
@@ -178,12 +190,19 @@ class _MessagesScreenState extends State<MessagesScreen> {
                         ? match.user2Id
                         : match.user1Id;
 
+                    // Extract user data from matchReasons if available
+                    final userData =
+                        match.matchReasons?['user'] as Map<String, dynamic>?;
+                    final userName =
+                        userData?['name'] as String? ??
+                        'Match ${match.id.substring(0, 8)}';
+                    final avatarUrl = userData?['avatarUrl'] as String? ?? '';
+
                     final matchStory = MatchStoryData(
                       id: match.id,
                       userId: otherUserId,
-                      name:
-                          'Match ${match.id.substring(0, 8)}', // Basic fallback name
-                      avatarUrl: '', // Empty for now - could show placeholder
+                      name: userName, // Use real user name from API
+                      avatarUrl: avatarUrl, // Use real photo from API
                       isSuperLike: false, // MatchModel doesn't have this info
                       matchedTime: match.matchedAt,
                     );
@@ -263,6 +282,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
           ],
         ),
       ),
+    ),
     );
   }
 

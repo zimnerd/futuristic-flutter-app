@@ -82,10 +82,16 @@ class MatchingService {
       );
 
       final data = response.data as Map<String, dynamic>;
-      final matches = data['matches'] as List<dynamic>;
+      final matches = data['data'] as List<dynamic>?;
+
+      if (matches == null) {
+        return [];
+      }
 
       return matches
-          .map((match) => _userProfileFromJson(match as Map<String, dynamic>))
+          .map(
+            (match) => _userProfileFromMatchJson(match as Map<String, dynamic>),
+          )
           .toList();
     } on DioException catch (e) {
       throw _handleDioError(e);
@@ -250,6 +256,62 @@ class MatchingService {
     );
   }
 
+  /// Convert match JSON from API to UserProfile entity
+  UserProfile _userProfileFromMatchJson(Map<String, dynamic> matchJson) {
+    final user = matchJson['user'] as Map<String, dynamic>;
+
+    // Create a combined user object for the existing parser
+    final combinedUser = <String, dynamic>{
+      'id': user['id'],
+      'name': '${user['firstName'] ?? ''} ${user['lastName'] ?? ''}'.trim(),
+      'age': user['age'],
+      'bio': user['bio'] ?? '',
+      'photos':
+          (user['photos'] as List<dynamic>?)
+              ?.map(
+                (photo) => {
+                  'id': photo.hashCode.toString(),
+                  'url': photo as String,
+                  'order': 0,
+                  'isVerified': false,
+                },
+              )
+              .toList() ??
+          [],
+      'location': user['coordinates'] != null
+          ? {
+              'latitude': user['coordinates']['lat'] ?? 0.0,
+              'longitude': user['coordinates']['lng'] ?? 0.0,
+              'city': user['location'],
+              'country': 'Unknown',
+              'address': user['location'],
+            }
+          : {
+              'latitude': 0.0,
+              'longitude': 0.0,
+              'city': 'Unknown',
+              'country': 'Unknown',
+              'address': 'Unknown',
+            },
+      'isVerified': user['verified'] ?? false,
+      'interests':
+          (user['interests'] as List<dynamic>?)
+              ?.map((interest) => interest as String)
+              .toList() ??
+          [],
+      'occupation': null,
+      'education': null,
+      'height': null,
+      'zodiacSign': null,
+      'lifestyle': <String, dynamic>{},
+      'preferences': <String, dynamic>{},
+      'lastActiveAt': user['updatedAt'],
+      'distanceKm': null,
+    };
+
+    return _userProfileFromJson(combinedUser);
+  }
+
   /// Handle Dio errors and convert them to meaningful exceptions
   Exception _handleDioError(DioException e) {
     switch (e.type) {
@@ -295,7 +357,9 @@ class MatchingService {
       final queryParams = <String, dynamic>{
         'offset': offset,
         if (limit != null) 'limit': limit,
-        if (status != null) 'status': status,
+        // Note: status parameter removed - backend doesn't support it
+        // Status filtering should be done client-side after fetching
+        'sortBy': 'recent', // Use backend-supported parameter
       };
 
       final response = await _apiClient.get(
@@ -304,11 +368,41 @@ class MatchingService {
       );
 
       final data = response.data as Map<String, dynamic>;
-      final matches = data['matches'] as List<dynamic>;
+      final matches = data['data'] as List<dynamic>?;
 
-      return matches
-          .map((match) => MatchModel.fromJson(match as Map<String, dynamic>))
+      if (matches == null) {
+        return [];
+      }
+
+      List<MatchModel> matchModels = matches
+          .map(
+            (match) =>
+                _matchModelFromApiResponse(match as Map<String, dynamic>),
+          )
           .toList();
+
+      // Apply client-side status filtering if needed
+      if (status != null) {
+        matchModels = matchModels.where((match) {
+          // Map various status values to backend statuses
+          switch (status.toLowerCase()) {
+            case 'accepted':
+            case 'mutual':
+            case 'matched':
+              return match.status == 'matched' || match.status == 'mutual';
+            case 'pending':
+              return match.status == 'pending';
+            case 'expired':
+              return match.status == 'expired';
+            case 'rejected':
+              return match.status == 'rejected';
+            default:
+              return true; // Return all if unknown status
+          }
+        }).toList();
+      }
+
+      return matchModels;
     } on DioException catch (e) {
       throw _handleDioError(e);
     }
@@ -448,5 +542,46 @@ class MatchingService {
     } on DioException catch (e) {
       throw _handleDioError(e);
     }
+  }
+
+  /// Convert API match response to MatchModel 
+  /// The API returns match entries with nested user objects, not MatchModel structure
+  MatchModel _matchModelFromApiResponse(Map<String, dynamic> apiMatch) {
+    final user = apiMatch['user'] as Map<String, dynamic>?;
+    final userId = user?['id'] as String? ?? '';
+    final firstName = user?['firstName'] as String? ?? '';
+    final lastName = user?['lastName'] as String? ?? '';
+    final photos = user?['photos'] as List<dynamic>? ?? [];
+    final primaryPhoto = photos.isNotEmpty ? photos.first as String : '';
+
+    // Store user data in matchReasons for UI access (temporary solution)
+    final enrichedMatchReasons = <String, dynamic>{
+      'user': {
+        'id': userId,
+        'name': '$firstName $lastName'.trim(),
+        'firstName': firstName,
+        'lastName': lastName,
+        'avatarUrl': primaryPhoto,
+        'photos': photos,
+        'age': user?['age'],
+        'bio': user?['bio'],
+        'interests': user?['interests'],
+      },
+    };
+
+    // Create a simplified MatchModel from the API response
+    // Since the API doesn't return full MatchModel data, we'll simulate it
+    return MatchModel(
+      id: apiMatch['id'] as String? ?? '',
+      user1Id: 'current_user', // Assuming current user is user1
+      user2Id: userId, // The matched user
+      isMatched: true, // If it's in matches, it's matched
+      compatibilityScore: 0.85, // Default score since API doesn't provide it
+      matchReasons: enrichedMatchReasons, // Store user data here
+      status: 'matched', // Default to matched status
+      matchedAt: DateTime.now(), // Use current time as fallback
+      createdAt: DateTime.now(), // Use current time as fallback
+      updatedAt: DateTime.now(), // Use current time as fallback
+    );
   }
 }
