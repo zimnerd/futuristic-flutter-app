@@ -381,17 +381,20 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     on<MessageReceived>(_onMessageReceived);
     on<MessageDeliveryStatusUpdated>(_onMessageDeliveryStatusUpdated);
 
-    // TODO: Add stream subscriptions once repository interface is updated
-    // _chatRepository.messageStream.listen((message) {
-    //   add(MessageReceived(message: message));
-    // });
+    // Subscribe to incoming messages stream
+    _chatRepository.incomingMessages.listen((message) {
+      add(MessageReceived(message: message));
+    });
 
-    // _chatRepository.deliveryUpdates.listen((update) {
-    //   add(MessageDeliveryStatusUpdated(
-    //     messageId: update.messageId,
-    //     status: update.status,
-    //   ));
-    // });
+    // Subscribe to delivery status updates
+    _chatRepository.messageDeliveryUpdates.listen((update) {
+      add(
+        MessageDeliveryStatusUpdated(
+          messageId: update.messageId,
+          status: update.status,
+        ),
+      );
+    });
   }
 
   Future<void> _onLoadConversations(

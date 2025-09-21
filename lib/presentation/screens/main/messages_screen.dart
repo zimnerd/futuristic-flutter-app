@@ -9,8 +9,9 @@ import '../../widgets/messaging/message_filters.dart';
 import '../../widgets/messaging/message_search.dart';
 import '../../widgets/messaging/match_stories_section.dart';
 import '../../../data/services/conversation_service.dart';
-import '../../blocs/matching/matching_bloc.dart';
-import '../../../domain/entities/user_profile.dart';
+import '../../blocs/match/match_bloc.dart';
+import '../../blocs/match/match_event.dart';
+import '../../blocs/match/match_state.dart';
 import '../../../data/models/match_model.dart';
 
 /// Enhanced messages screen with conversations list
@@ -27,9 +28,9 @@ class _MessagesScreenState extends State<MessagesScreen> {
   MessageFilters _currentFilters = const MessageFilters();
   List<ConversationData> _allConversations = [];
   List<ConversationData> _filteredConversations = [];
-  List<MatchStoryData> _matchStories = [];
+  Map<String, MatchStoryData> _enrichedMatches =
+      {}; // Cache enriched matches by match ID
   bool _isLoading = true;
-  bool _isLoadingMatches = true;
   String? _error;
 
   @override
@@ -103,78 +104,30 @@ class _MessagesScreenState extends State<MessagesScreen> {
 
   /// Load match stories for users that haven't been chatted with yet
   Future<void> _loadMatchStories() async {
-    setState(() {
-      _isLoadingMatches = true;
-    });
+    // Use MatchBloc to load real matches
+    context.read<MatchBloc>().add(
+      const LoadMatches(
+        status: 'accepted', // Load accepted matches (mutual matches)
+        limit: 20,
+        offset: 0,
+      ),
+    );
+  }
 
-    try {
-      // Get matches from bloc - for now we'll use dummy data
-      // In a real app, this would filter matches that don't have conversations yet
-      final sampleMatches = _generateSampleMatches();
-
-      setState(() {
-        _matchStories = sampleMatches;
-        _isLoadingMatches = false;
-      });
-    } catch (e) {
-      setState(() {
-        _isLoadingMatches = false;
-      });
+  /// Load more matches for pagination
+  void _loadMoreMatches() {
+    final currentState = context.read<MatchBloc>().state;
+    if (currentState is MatchesLoaded && currentState.hasMore) {
+      // Load more matches with offset
+      context.read<MatchBloc>().add(
+        LoadMatches(
+          status: 'accepted',
+          limit: 20,
+          offset: currentState.matches.length,
+        ),
+      );
     }
   }
-
-  /// Generate sample match data - replace with real data from MatchingBloc
-  List<MatchStoryData> _generateSampleMatches() {
-    return [
-      MatchStoryData(
-        id: '1',
-        userId: 'user1',
-        name: 'Emma',
-        avatarUrl:
-            'https://images.unsplash.com/photo-1494790108755-2616b612b789?w=150',
-        isSuperLike: true,
-        matchedTime: DateTime.now().subtract(const Duration(minutes: 30)),
-      ),
-      MatchStoryData(
-        id: '2',
-        userId: 'user2',
-        name: 'Sophia',
-        avatarUrl:
-            'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150',
-        isSuperLike: false,
-        matchedTime: DateTime.now().subtract(const Duration(hours: 2)),
-      ),
-      MatchStoryData(
-        id: '3',
-        userId: 'user3',
-        name: 'Olivia',
-        avatarUrl:
-            'https://images.unsplash.com/photo-1544725176-7c40e5a71c5e?w=150',
-        isSuperLike: false,
-        matchedTime: DateTime.now().subtract(const Duration(hours: 5)),
-      ),
-      MatchStoryData(
-        id: '4',
-        userId: 'user4',
-        name: 'Isabella',
-        avatarUrl:
-            'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
-        isSuperLike: true,
-        matchedTime: DateTime.now().subtract(const Duration(hours: 8)),
-      ),
-      MatchStoryData(
-        id: '5',
-        userId: 'user5',
-        name: 'Ava',
-        avatarUrl:
-            'https://images.unsplash.com/photo-1489424731084-a5d8b219a5bb?w=150',
-        isSuperLike: false,
-        matchedTime: DateTime.now().subtract(const Duration(hours: 12)),
-      ),
-    ];
-  }
-
-  /// Handle tapping on a match story to start a conversation
   void _onMatchStoryTap(MatchStoryData match) {
     // Create a conversation and navigate to chat screen
     // For now, navigate directly to chat screen with match data
@@ -206,12 +159,96 @@ class _MessagesScreenState extends State<MessagesScreen> {
             // Search bar
             _buildSearchBar(),
 
-            // Match stories section
-            if (_matchStories.isNotEmpty && !_isLoadingMatches)
-              MatchStoriesSection(
-                matches: _matchStories,
-                onMatchTap: _onMatchStoryTap,
-              ),
+            // Match stories section - using BlocBuilder to get real match data
+            BlocBuilder<MatchBloc, MatchState>(
+              builder: (context, matchState) {
+                if (matchState is MatchesLoaded) {
+                  // Convert MatchModel to MatchStoryData synchronously for now
+                  final matchStories = matchState.matches.map((match) {
+                    // Use cached enriched match if available, otherwise create basic one
+                    if (_enrichedMatches.containsKey(match.id)) {
+                      return _enrichedMatches[match.id]!;
+                    }
+
+                    // Determine which user is the other user (not current user)
+                    // For now, assume user1Id is current user and user2Id is the other user
+                    const currentUserId =
+                        'current_user'; // TODO: Get from auth state
+                    final otherUserId = match.user1Id == currentUserId
+                        ? match.user2Id
+                        : match.user1Id;
+
+                    final matchStory = MatchStoryData(
+                      id: match.id,
+                      userId: otherUserId,
+                      name:
+                          'Match ${match.id.substring(0, 8)}', // Basic fallback name
+                      avatarUrl: '', // Empty for now - could show placeholder
+                      isSuperLike: false, // MatchModel doesn't have this info
+                      matchedTime: match.matchedAt,
+                    );
+
+                    // Cache for future use
+                    _enrichedMatches[match.id] = matchStory;
+                    return matchStory;
+                  }).toList();
+
+                  if (matchStories.isNotEmpty) {
+                    return MatchStoriesSection(
+                      matches: matchStories,
+                      onMatchTap: _onMatchStoryTap,
+                      hasMore: matchState.hasMore,
+                      onLoadMore: _loadMoreMatches,
+                    );
+                  }
+                }
+
+                if (matchState is MatchLoading) {
+                  return Container(
+                    height: 120,
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    child: const Center(child: CircularProgressIndicator()),
+                  );
+                }
+
+                if (matchState is MatchError) {
+                  return Container(
+                    height: 60,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.error_outline,
+                          color: Theme.of(context).colorScheme.error,
+                          size: 20,
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Failed to load matches: ${matchState.message}',
+                            style: Theme.of(context).textTheme.bodySmall
+                                ?.copyWith(
+                                  color: Theme.of(context).colorScheme.error,
+                                ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: _loadMatchStories,
+                          child: const Text('Retry'),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+
+                return const SizedBox.shrink();
+              },
+            ),
 
             // Conversations list
             Expanded(

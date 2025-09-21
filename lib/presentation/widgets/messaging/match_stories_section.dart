@@ -9,11 +9,15 @@ import '../../theme/pulse_colors.dart';
 class MatchStoriesSection extends StatelessWidget {
   final List<MatchStoryData> matches;
   final Function(MatchStoryData match) onMatchTap;
+  final bool hasMore;
+  final VoidCallback? onLoadMore;
 
   const MatchStoriesSection({
     super.key,
     required this.matches,
     required this.onMatchTap,
+    this.hasMore = false,
+    this.onLoadMore,
   });
 
   @override
@@ -48,17 +52,49 @@ class MatchStoriesSection extends StatelessWidget {
           // Stories section: exactly 102px
           SizedBox(
             height: 102,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              itemCount: matches.length,
-              itemBuilder: (context, index) {
-                final match = matches[index];
-                return _MatchStoryAvatar(
-                  match: match,
-                  onTap: () => onMatchTap(match),
-                );
+            child: NotificationListener<ScrollNotification>(
+              onNotification: (notification) {
+                if (notification is ScrollEndNotification &&
+                    hasMore &&
+                    onLoadMore != null) {
+                  // Check if we're near the end (80% through)
+                  final pixels = notification.metrics.pixels;
+                  final maxScrollExtent = notification.metrics.maxScrollExtent;
+
+                  if (pixels >= maxScrollExtent * 0.8) {
+                    onLoadMore!();
+                  }
+                }
+                return false;
               },
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                itemCount:
+                    matches.length +
+                    (hasMore ? 1 : 0), // Add 1 for loading indicator
+                itemBuilder: (context, index) {
+                  // Show loading indicator at the end
+                  if (index == matches.length && hasMore) {
+                    return const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 20),
+                      child: Center(
+                        child: SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
+                      ),
+                    );
+                  }
+                  
+                  final match = matches[index];
+                  return _MatchStoryAvatar(
+                    match: match,
+                    onTap: () => onMatchTap(match),
+                  );
+                },
+              ),
             ),
           ),
         ],
