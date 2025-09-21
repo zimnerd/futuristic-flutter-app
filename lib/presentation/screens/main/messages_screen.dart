@@ -30,7 +30,8 @@ class _MessagesScreenState extends State<MessagesScreen> {
   List<ConversationData> _filteredConversations = [];
   Map<String, MatchStoryData> _enrichedMatches =
       {}; // Cache enriched matches by match ID
-  Map<String, dynamic>? _pendingMatchNavigation; // Store match data for navigation after conversation creation
+  Map<String, dynamic>?
+  _pendingMatchNavigation; // Store match data for navigation after conversation creation
   bool _isLoading = true;
   String? _error;
 
@@ -131,8 +132,10 @@ class _MessagesScreenState extends State<MessagesScreen> {
   }
   void _onMatchStoryTap(MatchStoryData match) {
     // Create a conversation first, then navigate to chat when it's ready
-    context.read<ChatBloc>().add(CreateConversation(participantId: match.userId));
-    
+    context.read<ChatBloc>().add(
+      CreateConversation(participantId: match.userId),
+    );
+
     // Store match data for navigation after conversation is created
     _pendingMatchNavigation = {
       'otherUserId': match.userId,
@@ -190,19 +193,19 @@ class _MessagesScreenState extends State<MessagesScreen> {
                         ? match.user2Id
                         : match.user1Id;
 
-                    // Extract user data from matchReasons if available
-                    final userData =
-                        match.matchReasons?['user'] as Map<String, dynamic>?;
-                    final userName =
-                        userData?['name'] as String? ??
-                        'Match ${match.id.substring(0, 8)}';
-                    final avatarUrl = userData?['avatarUrl'] as String? ?? '';
+                      // Extract user data from matchReasons if available
+                      final userData =
+                          match.matchReasons?['user'] as Map<String, dynamic>?;
+                      final userName =
+                          userData?['name'] as String? ??
+                          'Match ${match.id.substring(0, 8)}';
+                      final avatarUrl = userData?['avatarUrl'] as String? ?? '';
 
                     final matchStory = MatchStoryData(
                       id: match.id,
                       userId: otherUserId,
-                      name: userName, // Use real user name from API
-                      avatarUrl: avatarUrl, // Use real photo from API
+                        name: userName, // Use real user name from API
+                        avatarUrl: avatarUrl, // Use real photo from API
                       isSuperLike: false, // MatchModel doesn't have this info
                       matchedTime: match.matchedAt,
                     );
@@ -282,7 +285,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
           ],
         ),
       ),
-    ),
+      ),
     );
   }
 
