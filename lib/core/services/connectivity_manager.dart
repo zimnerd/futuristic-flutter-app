@@ -1,6 +1,6 @@
 import 'package:logger/logger.dart';
 
-import '../../data/services/websocket_service.dart';
+import '../../data/services/websocket_service_impl.dart';
 
 /// Manages network connectivity and app state
 class ConnectivityManager {
@@ -21,7 +21,7 @@ class ConnectivityManager {
   Future<void> _checkConnectivity() async {
     try {
       // Check WebSocket connection
-      final webSocketService = WebSocketService.instance;
+      final webSocketService = WebSocketServiceImpl.instance;
       if (!webSocketService.isConnected) {
         _logger.w('WebSocket disconnected - attempting reconnect');
         _isConnected = false;

@@ -4,7 +4,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:logger/logger.dart';
 
 import '../models/call_model.dart';
-import 'websocket_service.dart';
+import '../../domain/services/websocket_service.dart';
 
 class WebRTCService {
   static final WebRTCService _instance = WebRTCService._internal();
@@ -429,7 +429,7 @@ class WebRTCService {
       },
     );
 
-    _webSocketService!.sendCallSignal(signal);
+    _webSocketService!.sendWebRTCSignaling(_currentCall!.id, signal.toJson());
   }
 
   /// Dispose resources

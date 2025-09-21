@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:logger/logger.dart';
 
-import '../../data/services/websocket_service.dart';
+import '../../data/services/websocket_service_impl.dart';
 import '../../presentation/blocs/auth/auth_bloc.dart';
 import '../../presentation/blocs/auth/auth_state.dart';
 
@@ -51,18 +51,18 @@ class AppLifecycleManager extends WidgetsBindingObserver {
     }
   }
 
-  void _onAppResumed() {
+  void _onAppResumed() async {
     _logger.i('App resumed - reconnecting services');
     
     // Reconnect WebSocket if needed
-    final webSocketService = WebSocketService.instance;
+    final webSocketService = WebSocketServiceImpl.instance;
     if (!webSocketService.isConnected) {
       // Get auth data for reconnection
       if (_context != null) {
         final authBloc = _context!.read<AuthBloc>();
         final currentState = authBloc.state;
         if (currentState is AuthAuthenticated) {
-          webSocketService.connect(currentState.user.id, 'auth_token');
+          await webSocketService.connect();
         }
       }
     }
@@ -89,7 +89,7 @@ class AppLifecycleManager extends WidgetsBindingObserver {
 
   void _onAppDetached() {
     _logger.i('App detached - cleaning up');
-    WebSocketService.instance.disconnect();
+    WebSocketServiceImpl.instance.disconnect();
   }
 
   void _onAppHidden() {

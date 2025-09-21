@@ -2,7 +2,8 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import '../../../domain/entities/call.dart';
 import '../models/call_model.dart' as model;
-import 'websocket_service.dart';
+import '../../domain/services/websocket_service.dart';
+import 'websocket_service_impl.dart';
 import 'webrtc_service.dart';
 import 'api_service_impl.dart';
 import '../../domain/services/api_service.dart';
@@ -15,7 +16,7 @@ class CallService {
   
   CallService._();
 
-  final WebSocketService _webSocketService = WebSocketService.instance;
+  final WebSocketService _webSocketService = WebSocketServiceImpl.instance;
   final WebRTCService _webRTCService = WebRTCService();
   final ApiService _apiService = ApiServiceImpl();
   
@@ -312,7 +313,9 @@ class CallService {
   /// Connect WebSocket if not already connected
   Future<void> ensureConnection(String userId, String token) async {
     if (!_webSocketService.isConnected) {
-      await _webSocketService.connect(userId, token);
+      _webSocketService.setAuthToken(token);
+      await _webSocketService.connect();
+      await _webSocketService.authenticate(token);
     }
   }
 

@@ -3,7 +3,8 @@ import 'package:pulse_dating_app/data/models/message.dart' as data_message;
 
 import '../models/chat_model.dart';
 import '../datasources/remote/chat_remote_data_source.dart';
-import '../services/websocket_service.dart';
+import '../../domain/services/websocket_service.dart';
+import '../services/websocket_service_impl.dart';
 import '../../domain/entities/message.dart' as domain;
 import 'chat_repository.dart';
 
@@ -17,7 +18,7 @@ class ChatRepositoryImpl implements ChatRepository {
     required ChatRemoteDataSource remoteDataSource,
     WebSocketService? webSocketService,
   }) : _remoteDataSource = remoteDataSource,
-       _webSocketService = webSocketService ?? WebSocketService.instance;
+       _webSocketService = webSocketService ?? WebSocketServiceImpl.instance;
 
   @override
   Future<List<ConversationModel>> getConversations() async {
@@ -42,7 +43,7 @@ class ChatRepositoryImpl implements ChatRepository {
       _logger.d('Fetching messages for conversation: $conversationId');
       
       // Join conversation for real-time updates
-      _webSocketService.joinConversation(conversationId);
+      _webSocketService.joinRoom(conversationId);
       
       final messages = await _remoteDataSource.getMessages(
         conversationId,
@@ -70,14 +71,12 @@ class ChatRepositoryImpl implements ChatRepository {
       _logger.d('Sending message to conversation: $conversationId via Socket.IO');
       
       // Send via Socket.IO for real-time delivery
-      _webSocketService.sendMessage(
-        conversationId,
-        content ?? '',
-        _convertToDomainMessageType(type),
-        mediaIds: mediaIds,
-        metadata: metadata,
-        replyToMessageId: replyToMessageId,
-      );
+      _webSocketService.emit('send_message', {
+        'conversationId': conversationId,
+        'content': content,
+        'type': type.name,
+        'metadata': metadata,
+      });
       
       // Create optimistic message for immediate UI update
       final optimisticMessage = MessageModel(
@@ -133,9 +132,13 @@ class ChatRepositoryImpl implements ChatRepository {
       
       // Use Socket.IO for real-time typing indicators
       if (isTyping) {
-        _webSocketService.sendTyping(conversationId);
+        _webSocketService.emit('typing_start', {
+          'conversationId': conversationId,
+        });
       } else {
-        _webSocketService.sendStoppedTyping(conversationId);
+        _webSocketService.emit('typing_stop', {
+          'conversationId': conversationId,
+        });
       }
       
       _logger.d('Successfully updated typing status');

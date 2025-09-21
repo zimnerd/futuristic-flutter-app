@@ -4,7 +4,7 @@ import 'package:logger/logger.dart';
 
 import '../data/models/call_model.dart';
 import '../data/services/webrtc_service.dart';
-import '../data/services/websocket_service.dart';
+import '../domain/services/websocket_service.dart';
 
 // Events
 abstract class CallEvent extends Equatable {
@@ -175,9 +175,9 @@ class CallBloc extends Bloc<CallEvent, CallState> {
     on<CallSignalReceived>(_onCallSignalReceived);
 
     // Listen to WebSocket call signals
-    _webSocketService.onCallSignalReceived = (signal) {
-      add(CallSignalReceived(signal: signal));
-    };
+    _webSocketService.onWebRTCSignaling((signal) {
+      add(CallSignalReceived(signal: CallSignalModel.fromJson(signal)));
+    });
   }
 
   Future<void> _onInitiateCall(

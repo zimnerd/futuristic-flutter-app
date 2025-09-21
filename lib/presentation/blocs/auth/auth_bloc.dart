@@ -3,10 +3,10 @@ import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:logger/logger.dart';
 
-import '../../../core/services/realtime_coordinator.dart';
 import '../../../data/exceptions/app_exceptions.dart';
 import '../../../data/models/user_model.dart';
 import '../../../data/services/token_service.dart';
+import '../../../data/services/websocket_service_impl.dart';
 import '../../../domain/repositories/user_repository.dart';
 import 'auth_event.dart';
 import 'auth_state.dart';
@@ -522,9 +522,11 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       final authToken = await tokenService.getAccessToken();
 
       if (authToken != null) {
-        // Initialize RealTimeCoordinator with user credentials
-        await RealTimeCoordinator().initialize(user.id, authToken);
-        _logger.i('✅ RealTimeCoordinator initialized successfully');
+        // Initialize WebSocket service with user credentials
+        final webSocketService = WebSocketServiceImpl.instance;
+        webSocketService.setAuthToken(authToken);
+        await webSocketService.connect();
+        _logger.i('✅ WebSocket service initialized successfully');
       } else {
         _logger.w('⚠️ No auth token available for real-time services');
       }

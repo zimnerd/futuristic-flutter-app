@@ -27,11 +27,11 @@ class AppConfig {
 
   static const String websocketUrl = isDevelopment
       ? 'ws://localhost:3000'
-      : 'wss://apilink.pulsetek.co.za:443';
+      : 'wss://apilink.pulsetek.co.za';
 
   static const String aiCompanionWebSocketUrl = isDevelopment
       ? 'http://localhost:3000'
-      : 'https://apilink.pulsetek.co.za:443';
+      : 'https://apilink.pulsetek.co.za';
 
   // PeachPayments Configuration - Environment-based
   static const String peachPaymentsBaseUrl = isDevelopment || isStaging

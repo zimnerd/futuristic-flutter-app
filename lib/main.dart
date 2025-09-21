@@ -21,7 +21,8 @@ import 'data/repositories/notification_repository_impl.dart';
 import 'data/repositories/user_repository_impl.dart';
 import 'core/network/api_client.dart';
 import 'data/services/webrtc_service.dart';
-import 'data/services/websocket_service.dart';
+import 'data/services/websocket_service_impl.dart';
+import 'domain/services/websocket_service.dart';
 import 'data/services/event_service.dart';
 import 'data/services/matching_service.dart';
 import 'data/services/preferences_service.dart';
@@ -101,7 +102,7 @@ class PulseDatingApp extends StatelessWidget {
             create: (context) => hiveStorage,
           ),
           RepositoryProvider<WebSocketService>(
-            create: (context) => WebSocketService.instance,
+            create: (context) => WebSocketServiceImpl.instance,
           ),
           RepositoryProvider<WebRTCService>(
             create: (context) => WebRTCService(),
