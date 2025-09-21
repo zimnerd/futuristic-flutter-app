@@ -5,6 +5,7 @@ import '../../core/network/api_client.dart';
 import '../../core/utils/http_status_utils.dart';
 import 'ai_companion_websocket_service.dart';
 import 'token_service.dart';
+import 'local_chat_storage_service.dart';
 
 /// Service for AI Companion interactions and management
 class AiCompanionService {
@@ -16,15 +17,64 @@ class AiCompanionService {
   final AiCompanionWebSocketService _aiWebSocketService =
       AiCompanionWebSocketService.instance;
   final ApiClient _apiClient = ApiClient.instance;
+  final LocalChatStorageService _localStorage = LocalChatStorageService();
   final Logger _logger = Logger();
+  
+  StreamSubscription<Map<String, dynamic>>? _webSocketMessageSubscription;
+  StreamSubscription<Map<String, dynamic>>? _webSocketErrorSubscription;
 
-  AiCompanionService();
+  AiCompanionService() {
+    _initializeWebSocketListeners();
+  }
+
+  void _initializeWebSocketListeners() {
+    // Listen to WebSocket messages and forward to our stream
+    _webSocketMessageSubscription = _aiWebSocketService.messageStream.listen((
+      data,
+    ) {
+      try {
+        // Handle ai_message_received events
+        if (data.containsKey('message') && data.containsKey('companionId')) {
+          final messageData = data['message'] as Map<String, dynamic>;
+          
+          // Add companionId and conversationId from the outer data to the message data
+          if (data.containsKey('companionId')) {
+            messageData['companionId'] = data['companionId'];
+          }
+          if (data.containsKey('conversationId') && data['conversationId'] != null) {
+            messageData['conversationId'] = data['conversationId'];
+          }
+          
+          final message = CompanionMessage.fromJson(messageData);
+          _messageController.add(message);
+
+          // Save to local storage
+          _localStorage.saveAiMessage(message);
+
+          _logger.d(
+            'Received WebSocket message and forwarded to stream: ${message.id}',
+          );
+        }
+      } catch (e) {
+        _logger.e('Error processing WebSocket message: $e');
+      }
+    });
+
+    // Listen to WebSocket errors
+    _webSocketErrorSubscription = _aiWebSocketService.errorStream.listen((
+      error,
+    ) {
+      _errorController.add(error);
+    });
+  }
 
   // Streams for real-time events
   Stream<CompanionMessage> get messageStream => _messageController.stream;
   Stream<Map<String, dynamic>> get errorStream => _errorController.stream;
 
   void dispose() {
+    _webSocketMessageSubscription?.cancel();
+    _webSocketErrorSubscription?.cancel();
     _messageController.close();
     _errorController.close();
   }
@@ -49,38 +99,43 @@ class AiCompanionService {
     );
   }
 
-  /// Fetch paginated conversation history for a companion (WebSocket preferred, REST fallback)
+  /// Fetch paginated conversation history for a companion (local first, then REST)
   Future<List<CompanionMessage>> getConversationHistory({
     required String companionId,
-    required String conversationId,
+    String? conversationId, // Optional since backend doesn't use it
     int page = 1,
     int limit = 20,
   }) async {
     try {
-      // Try WebSocket first (if supported)
-      if (_aiWebSocketService.isConnected &&
-          _aiWebSocketService.supportsHistory) {
-        final messages = await _aiWebSocketService.getConversationHistory(
-          companionId: companionId,
-          conversationId: conversationId,
-          page: page,
-          limit: limit,
+      // First try local storage for offline access
+      final localMessages = await _localStorage.getAiMessages(companionId);
+      if (localMessages.isNotEmpty) {
+        _logger.d(
+          'Retrieved ${localMessages.length} messages from local storage',
         );
-        _logger.d('Fetched ${messages.length} messages via WebSocket');
-        return messages;
+        // If we have local messages, return them and sync in background
+        _syncMessagesInBackground(companionId, page, limit);
+        return localMessages;
       }
-      // Fallback to REST if WebSocket not available or not supported
+      
+      // If no local messages, fetch from server
       final response = await _apiClient.get(
-        '/ai-companions/$companionId/conversations/$conversationId/messages',
+        '/ai-companions/$companionId/conversation',
         queryParameters: {'page': page, 'limit': limit},
       );
       if (HttpStatusUtils.isGetSuccess(response.statusCode) &&
           response.data != null) {
-        final List<dynamic> data = response.data['data']['messages'] ?? [];
+        final List<dynamic> data = response.data['data']?['messages'] ?? [];
         final messages = data
             .map((json) => CompanionMessage.fromJson(json))
             .toList();
         _logger.d('Fetched ${messages.length} messages via REST');
+        
+        // Save to local storage for offline access
+        for (final message in messages) {
+          await _localStorage.saveAiMessage(message);
+        }
+        
         return messages;
       } else {
         _logger.e(
@@ -92,6 +147,36 @@ class AiCompanionService {
       _logger.e('Error fetching conversation history: $e');
       return [];
     }
+  }
+
+  /// Background sync for messages when local cache exists
+  void _syncMessagesInBackground(String companionId, int page, int limit) {
+    // Run sync in background without blocking UI
+    Future.delayed(Duration.zero, () async {
+      try {
+        final response = await _apiClient.get(
+          '/ai-companions/$companionId/conversation',
+          queryParameters: {'page': page, 'limit': limit},
+        );
+        if (HttpStatusUtils.isGetSuccess(response.statusCode) &&
+            response.data != null) {
+          final List<dynamic> data = response.data['messages'] ?? [];
+          final serverMessages = data
+              .map((json) => CompanionMessage.fromJson(json))
+              .toList();
+
+          // Update local storage with server messages
+          for (final message in serverMessages) {
+            await _localStorage.saveAiMessage(message);
+          }
+          _logger.d(
+            'Background sync: Updated ${serverMessages.length} messages',
+          );
+        }
+      } catch (e) {
+        _logger.w('Background sync failed: $e');
+      }
+    });
   }
 
   // Stub for updating companion settings

@@ -191,13 +191,14 @@ class CompanionMessage extends Equatable {
   factory CompanionMessage.fromJson(Map<String, dynamic> json) {
     return CompanionMessage(
       id: json['id'] as String,
-      companionId: json['companionId'] as String,
-      userId: json['userId'] as String,
+      companionId: (json['companionId'] as String?) ?? '',
+      userId: json['userId'] ?? '', // May not be in response
       content: json['content'] as String,
-      isFromCompanion: json['isFromCompanion'] as bool,
-      timestamp: DateTime.parse(json['timestamp'] as String),
+      isFromCompanion:
+          json['isFromCompanion'] ?? !(json['isFromUser'] ?? false),
+      timestamp: DateTime.parse((json['timestamp'] ?? json['sentAt']) as String),
       type: MessageType.values.firstWhere(
-        (e) => e.name == json['type'],
+        (e) => e.name == (json['type'] ?? json['messageType'] ?? 'text'),
         orElse: () => MessageType.text,
       ),
       status: MessageStatus.values.firstWhere(
