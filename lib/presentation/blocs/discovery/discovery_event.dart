@@ -105,3 +105,8 @@ class RefreshDiscovery extends DiscoveryEvent {
 class DismissMatch extends DiscoveryEvent {
   const DismissMatch();
 }
+
+/// Clear the rewind just completed flag to prevent showing the toast again
+class ClearRewindFlag extends DiscoveryEvent {
+  const ClearRewindFlag();
+}

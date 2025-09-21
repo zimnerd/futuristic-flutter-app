@@ -309,7 +309,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
         child: BlocListener<DiscoveryBloc, DiscoveryState>(
           listener: (context, state) {
             // Handle rewind success/error feedback
-            if (state is DiscoveryLoaded && state.lastSwipedUser == null) {
+            if (state is DiscoveryLoaded && state.rewindJustCompleted) {
               // Rewind was successful
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
@@ -318,6 +318,9 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
                   duration: const Duration(seconds: 2),
                 ),
               );
+              
+              // Reset the flag to prevent showing the toast again
+              context.read<DiscoveryBloc>().add(const ClearRewindFlag());
             }
             
             // Handle boost success feedback

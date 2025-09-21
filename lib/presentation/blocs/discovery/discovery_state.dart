@@ -39,6 +39,7 @@ class DiscoveryLoaded extends DiscoveryState {
     this.hasMoreUsers = true,
     this.isBoostActive = false,
     this.boostTimeRemaining,
+    this.rewindJustCompleted = false,
   });
 
   final List<UserProfile> userStack;
@@ -49,6 +50,7 @@ class DiscoveryLoaded extends DiscoveryState {
   final bool hasMoreUsers;
   final bool isBoostActive;
   final Duration? boostTimeRemaining;
+  final bool rewindJustCompleted;
 
   /// Get the current top card (user to be swiped)
   UserProfile? get currentUser => userStack.isNotEmpty ? userStack.first : null;
@@ -68,6 +70,7 @@ class DiscoveryLoaded extends DiscoveryState {
     bool? hasMoreUsers,
     bool? isBoostActive,
     Duration? boostTimeRemaining,
+    bool? rewindJustCompleted,
   }) {
     return DiscoveryLoaded(
       userStack: userStack ?? this.userStack,
@@ -78,6 +81,7 @@ class DiscoveryLoaded extends DiscoveryState {
       hasMoreUsers: hasMoreUsers ?? this.hasMoreUsers,
       isBoostActive: isBoostActive ?? this.isBoostActive,
       boostTimeRemaining: boostTimeRemaining ?? this.boostTimeRemaining,
+      rewindJustCompleted: rewindJustCompleted ?? this.rewindJustCompleted,
     );
   }
 
@@ -91,6 +95,7 @@ class DiscoveryLoaded extends DiscoveryState {
         hasMoreUsers,
         isBoostActive,
         boostTimeRemaining,
+        rewindJustCompleted,
       ];
 }
 

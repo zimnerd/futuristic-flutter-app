@@ -30,6 +30,7 @@ class DiscoveryBloc extends Bloc<DiscoveryEvent, DiscoveryState> {
     on<MatchDetected>(_onMatchDetected);
     on<RefreshDiscovery>(_onRefreshDiscovery);
     on<DismissMatch>(_onDismissMatch);
+    on<ClearRewindFlag>(_onClearRewindFlag);
   }
 
   final DiscoveryService _discoveryService;
@@ -230,6 +231,7 @@ class DiscoveryBloc extends Bloc<DiscoveryEvent, DiscoveryState> {
         lastSwipedUser: null,
         lastSwipeAction: null,
         canUndo: false,
+        rewindJustCompleted: true,
       ));
     } catch (error) {
       emit(DiscoveryError(
@@ -367,6 +369,17 @@ class DiscoveryBloc extends Bloc<DiscoveryEvent, DiscoveryState> {
   void dismissMatch() {
     if (state is DiscoveryMatchFound) {
       add(const _DismissMatchEvent());
+    }
+  }
+
+  /// Clear the rewind just completed flag
+  Future<void> _onClearRewindFlag(
+    ClearRewindFlag event,
+    Emitter<DiscoveryState> emit,
+  ) async {
+    if (state is DiscoveryLoaded) {
+      final currentState = state as DiscoveryLoaded;
+      emit(currentState.copyWith(rewindJustCompleted: false));
     }
   }
 }

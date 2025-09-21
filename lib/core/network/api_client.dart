@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:logger/logger.dart';
 import '../constants/api_constants.dart';
+import '../config/app_config.dart';
 import '../../data/services/token_service.dart';
 import '../../data/services/global_auth_handler.dart';
 
@@ -61,11 +62,19 @@ class ApiClient {
   }
 
   void _setupDio({String? baseUrl}) {
+    // Use longer timeouts for production to handle network latency
+    final connectTimeout = AppConfig.isProduction 
+        ? const Duration(seconds: 60) 
+        : const Duration(seconds: 30);
+    final receiveTimeout = AppConfig.isProduction 
+        ? const Duration(seconds: 60) 
+        : const Duration(seconds: 30);
+        
     _dio = Dio(
       BaseOptions(
         baseUrl: baseUrl ?? ApiConstants.baseUrl,
-        connectTimeout: const Duration(seconds: 30),
-        receiveTimeout: const Duration(seconds: 30),
+        connectTimeout: connectTimeout,
+        receiveTimeout: receiveTimeout,
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',

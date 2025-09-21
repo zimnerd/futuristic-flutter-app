@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'dart:io';
 
+import '../../../domain/entities/user_profile.dart';
+import '../../../blocs/chat_bloc.dart';
 import '../../theme/pulse_colors.dart';
 import '../../widgets/common/pulse_button.dart';
-import '../../../domain/entities/user_profile.dart';
 import 'enhanced_profile_edit_screen.dart';
 
 /// Comprehensive profile details screen with social media style layout
@@ -67,6 +70,42 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
       barrierColor: Colors.black.withValues(alpha: 0.9),
       builder: (context) => _buildPhotoModal(),
     );
+  }
+
+  /// Handles starting a conversation with the user
+  void _startConversation(BuildContext context) {
+    // Create conversation using ChatBloc
+    context.read<ChatBloc>().add(CreateConversation(
+      participantId: widget.profile.id,
+    ));
+    
+    // Listen for conversation creation result
+    final subscription = context.read<ChatBloc>().stream.listen((state) {
+      if (state is ConversationCreated) {
+        // Navigate to chat screen with the new conversation
+        context.go('/chat/${state.conversation.id}', extra: {
+          'otherUserId': widget.profile.id,
+          'otherUserName': widget.profile.name,
+          'otherUserPhoto': widget.profile.photos.isNotEmpty 
+              ? widget.profile.photos.first.url 
+              : null,
+        });
+      } else if (state is ChatError) {
+        // Show error message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to start conversation: ${state.message}'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    });
+    
+    // Auto-cancel subscription after reasonable timeout
+    Future.delayed(const Duration(seconds: 10), () {
+      subscription.cancel();
+    });
   }
 
   void _onLikeTap() {
@@ -910,35 +949,49 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
       padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
       child: SafeArea(
         top: false,
-        child: Row(
-          children: [
-            Expanded(
-              child: PulseButton(
-                text: 'Super Like',
-                onPressed: widget.onSuperLike,
-                variant: PulseButtonVariant.secondary,
-                icon: Container(
-                  padding: const EdgeInsets.all(2),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [PulseColors.warning, Colors.orange],
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 10,
+                offset: const Offset(0, -2),
+              ),
+            ],
+          ),
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              Expanded(
+                child: PulseButton(
+                  text: '⭐ Super Like',
+                  onPressed: widget.onSuperLike,
+                  variant: PulseButtonVariant.secondary,
+                  icon: Container(
+                    padding: const EdgeInsets.all(2),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [PulseColors.warning, Colors.orange],
+                      ),
+                      shape: BoxShape.circle,
                     ),
-                    shape: BoxShape.circle,
+                    child: const Icon(Icons.star, size: 16, color: Colors.white),
                   ),
-                  child: const Icon(Icons.star, size: 16, color: Colors.white),
                 ),
               ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              flex: 2,
-              child: PulseButton(
-                text: 'Message',
-                onPressed: widget.onMessage,
-                icon: const Icon(Icons.chat_bubble_outline, size: 18),
+              const SizedBox(width: 16),
+              Expanded(
+                flex: 2,
+                child: PulseButton(
+                  text: '💬 Start Chat',
+                  onPressed: widget.onMessage ?? () => _startConversation(context),
+                  icon: const Icon(Icons.chat_bubble_outline, size: 18),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
