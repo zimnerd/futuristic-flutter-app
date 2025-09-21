@@ -543,7 +543,7 @@ class ApiClient {
   /// Get all conversations
   Future<Response> getConversations({int limit = 50, int offset = 0}) async {
     return await _dio.get(
-      '/api/v1/chat/conversations',
+      '/chat/conversations',
       queryParameters: {'limit': limit, 'offset': offset},
     );
   }
@@ -555,7 +555,7 @@ class ApiClient {
     String? before,
   }) async {
     return await _dio.get(
-      '/api/v1/chat/conversations/$conversationId/messages',
+      '/chat/conversations/$conversationId/messages',
       queryParameters: {'limit': limit, if (before != null) 'before': before},
     );
   }

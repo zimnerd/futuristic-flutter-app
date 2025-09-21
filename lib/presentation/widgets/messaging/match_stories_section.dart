@@ -1,0 +1,233 @@
+import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import '../../../domain/entities/user_profile.dart';
+import '../../../data/models/match_model.dart';
+import '../../theme/pulse_colors.dart';
+
+/// Stories-like horizontal scrollable match thumbnails
+/// Shows matches that haven't been chatted with yet
+class MatchStoriesSection extends StatelessWidget {
+  final List<MatchStoryData> matches;
+  final Function(MatchStoryData match) onMatchTap;
+
+  const MatchStoriesSection({
+    super.key,
+    required this.matches,
+    required this.onMatchTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (matches.isEmpty) return const SizedBox.shrink();
+
+    return Container(
+      height: 130, // Increased height to prevent overflow
+      margin: const EdgeInsets.only(bottom: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Text(
+              'New Matches',
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w600,
+                color: PulseColors.onSurface,
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Expanded(
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              itemCount: matches.length,
+              itemBuilder: (context, index) {
+                final match = matches[index];
+                return _MatchStoryAvatar(
+                  match: match,
+                  onTap: () => onMatchTap(match),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _MatchStoryAvatar extends StatelessWidget {
+  final MatchStoryData match;
+  final VoidCallback onTap;
+
+  const _MatchStoryAvatar({
+    required this.match,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4),
+      child: GestureDetector(
+        onTap: onTap,
+        child: Column(
+          mainAxisSize: MainAxisSize.min, // Use minimum space needed
+          children: [
+            // Avatar with border styling
+            Container(
+              width: 68,
+              height: 68,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: match.isSuperLike 
+                  ? const LinearGradient(
+                      colors: [
+                        Color(0xFFFFD700), // Gold
+                        Color(0xFFFFA500), // Orange
+                        Color(0xFFFF4500), // Red-orange
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    )
+                  : const LinearGradient(
+                      colors: [
+                        PulseColors.primary,
+                        Color(0xFF8B5FFF),
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                boxShadow: [
+                  BoxShadow(
+                    color: (match.isSuperLike 
+                        ? const Color(0xFFFFD700) 
+                        : PulseColors.primary)
+                        .withValues(alpha: 0.3),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Container(
+                margin: const EdgeInsets.all(3),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: Colors.white,
+                    width: 2,
+                  ),
+                ),
+                child: ClipOval(
+                  child: CachedNetworkImage(
+                    imageUrl: match.avatarUrl,
+                    fit: BoxFit.cover,
+                    placeholder: (context, url) => Container(
+                      color: PulseColors.surfaceVariant,
+                      child: const Icon(
+                        Icons.person,
+                        color: PulseColors.onSurfaceVariant,
+                        size: 30,
+                      ),
+                    ),
+                    errorWidget: (context, url, error) => Container(
+                      color: PulseColors.surfaceVariant,
+                      child: const Icon(
+                        Icons.person,
+                        color: PulseColors.onSurfaceVariant,
+                        size: 30,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 2), // Reduced spacing
+            // Name with time indicator
+            SizedBox(
+              width: 68,
+              child: Column(
+                mainAxisSize: MainAxisSize.min, // Use minimum space needed
+                children: [
+                  Text(
+                    match.name,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      fontWeight: FontWeight.w500,
+                      color: PulseColors.onSurface,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.center,
+                  ),
+                  if (match.matchedTime != null)
+                    Text(
+                      _formatMatchTime(match.matchedTime!),
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        fontSize: 10,
+                        color: PulseColors.onSurfaceVariant,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _formatMatchTime(DateTime matchTime) {
+    final now = DateTime.now();
+    final difference = now.difference(matchTime);
+
+    if (difference.inMinutes < 60) {
+      return '${difference.inMinutes}m';
+    } else if (difference.inHours < 24) {
+      return '${difference.inHours}h';
+    } else {
+      return '${difference.inDays}d';
+    }
+  }
+}
+
+/// Data model for match stories
+class MatchStoryData {
+  final String id;
+  final String userId;
+  final String name;
+  final String avatarUrl;
+  final bool isSuperLike;
+  final DateTime? matchedTime;
+  final UserProfile? userProfile;
+
+  const MatchStoryData({
+    required this.id,
+    required this.userId,
+    required this.name,
+    required this.avatarUrl,
+    this.isSuperLike = false,
+    this.matchedTime,
+    this.userProfile,
+  });
+
+  /// Create from MatchModel and UserProfile
+  factory MatchStoryData.fromMatch({
+    required MatchModel match,
+    required UserProfile userProfile,
+    bool isSuperLike = false,
+  }) {
+    return MatchStoryData(
+      id: match.id,
+      userId: userProfile.id,
+      name: userProfile.name,
+      avatarUrl: userProfile.photos.isNotEmpty 
+          ? userProfile.photos.first.url 
+          : '',
+      isSuperLike: isSuperLike,
+      matchedTime: match.matchedAt,
+      userProfile: userProfile,
+    );
+  }
+}

@@ -4,20 +4,20 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 import '../../../blocs/chat_bloc.dart';
-import '../../../blocs/call_bloc.dart';
 import '../../../data/models/message.dart';
 import '../../../presentation/blocs/auth/auth_bloc.dart';
 import '../../../presentation/blocs/auth/auth_state.dart';
+import '../../../data/models/user_model.dart';
 import '../../theme/pulse_colors.dart';
 import '../../widgets/chat/message_bubble_new.dart';
 import '../../widgets/chat/ai_message_input.dart';
-import '../../../data/models/call_model.dart';
 
 class ChatScreen extends StatefulWidget {
   final String conversationId;
   final String otherUserId;
   final String otherUserName;
   final String? otherUserPhoto;
+  final UserModel? otherUserProfile;
 
   const ChatScreen({
     super.key,
@@ -25,6 +25,7 @@ class ChatScreen extends StatefulWidget {
     required this.otherUserId,
     required this.otherUserName,
     this.otherUserPhoto,
+    this.otherUserProfile,
   });
 
   @override
@@ -160,86 +161,239 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   PreferredSizeWidget _buildAppBar() {
-    return AppBar(
-      backgroundColor: Colors.white,
-      elevation: 1,
-      leading: IconButton(
-        icon: const Icon(Icons.arrow_back, color: Colors.black87),
-        onPressed: () => Navigator.of(context).pop(),
-      ),
-      title: Row(
-        children: [
-          CircleAvatar(
-            radius: 20,
-            backgroundImage: widget.otherUserPhoto != null
-                ? CachedNetworkImageProvider(widget.otherUserPhoto!)
-                : null,
-            child: widget.otherUserPhoto == null
-                ? Text(
-                    widget.otherUserName[0].toUpperCase(),
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  )
-                : null,
+    return PreferredSize(
+      preferredSize: const Size.fromHeight(80),
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [PulseColors.primary, PulseColors.primary.withOpacity(0.8)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 10,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Row(
               children: [
-                Text(
-                  widget.otherUserName,
-                  style: const TextStyle(
-                    color: Colors.black87,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
+                // Back button
+                IconButton(
+                  onPressed: () => Navigator.pop(context),
+                  icon: const Icon(
+                    Icons.arrow_back_ios,
+                    color: Colors.white,
+                    size: 20,
                   ),
                 ),
-                const Text(
-                  'Online',
-                  style: TextStyle(color: PulseColors.success, fontSize: 12),
+                const SizedBox(width: 8),
+
+                // Profile avatar with online indicator
+                GestureDetector(
+                  onTap: () => _viewFullProfile(context),
+                  child: Stack(
+                    children: [
+                      Container(
+                        width: 48,
+                        height: 48,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.white, width: 2),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.2),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: ClipOval(
+                          child: widget.otherUserPhoto != null
+                              ? CachedNetworkImage(
+                                  imageUrl: widget.otherUserPhoto!,
+                                  fit: BoxFit.cover,
+                                  placeholder: (context, url) => Container(
+                                    color: Colors.grey[300],
+                                    child: const Icon(
+                                      Icons.person,
+                                      color: Colors.grey,
+                                    ),
+                                  ),
+                                  errorWidget: (context, url, error) =>
+                                      Container(
+                                        color: Colors.grey[300],
+                                        child: const Icon(
+                                          Icons.person,
+                                          color: Colors.grey,
+                                        ),
+                                      ),
+                                )
+                              : Container(
+                                  color: PulseColors.primary.withOpacity(0.3),
+                                  child: Text(
+                                    widget.otherUserName[0].toUpperCase(),
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 18,
+                                    ),
+                                  ),
+                                ),
+                        ),
+                      ),
+                      // Online indicator
+                      Positioned(
+                        bottom: 0,
+                        right: 0,
+                        child: Container(
+                          width: 14,
+                          height: 14,
+                          decoration: BoxDecoration(
+                            color: PulseColors.success,
+                            shape: BoxShape.circle,
+                            border: Border.all(color: Colors.white, width: 2),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                
+                const SizedBox(width: 12),
+                
+                // User info
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () => _viewFullProfile(context),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          widget.otherUserName,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 2),
+                        if (widget.otherUserProfile != null) ...[
+                          Text(
+                            '${widget.otherUserProfile!.age ?? 'Unknown'} • ${widget.otherUserProfile!.location ?? 'Location unknown'}',
+                            style: TextStyle(
+                              color: Colors.white.withOpacity(0.9),
+                              fontSize: 13,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          if (widget.otherUserProfile!.bio?.isNotEmpty == true)
+                            Text(
+                              widget.otherUserProfile!.bio!,
+                              style: TextStyle(
+                                color: Colors.white.withOpacity(0.8),
+                                fontSize: 12,
+                                fontStyle: FontStyle.italic,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                        ] else
+                          Text(
+                            'Active now',
+                            style: TextStyle(
+                              color: Colors.white.withOpacity(0.9),
+                              fontSize: 13,
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                ),
+
+                // Action buttons
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      onPressed: () => _initiateCall(context, false),
+                      icon: const Icon(
+                        Icons.phone,
+                        color: Colors.white,
+                        size: 22,
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () => _initiateCall(context, true),
+                      icon: const Icon(
+                        Icons.videocam,
+                        color: Colors.white,
+                        size: 24,
+                      ),
+                    ),
+                    PopupMenuButton<String>(
+                      icon: const Icon(
+                        Icons.more_vert,
+                        color: Colors.white,
+                        size: 22,
+                      ),
+                      onSelected: (value) => _handleMenuAction(context, value),
+                      itemBuilder: (context) => [
+                        const PopupMenuItem(
+                          value: 'profile',
+                          child: Row(
+                            children: [
+                              Icon(Icons.person, size: 20),
+                              SizedBox(width: 12),
+                              Text('View Profile'),
+                            ],
+                          ),
+                        ),
+                        const PopupMenuItem(
+                          value: 'block',
+                          child: Row(
+                            children: [
+                              Icon(Icons.block, size: 20, color: Colors.red),
+                              SizedBox(width: 12),
+                              Text(
+                                'Block User',
+                                style: TextStyle(color: Colors.red),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const PopupMenuItem(
+                          value: 'report',
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.report,
+                                size: 20,
+                                color: Colors.orange,
+                              ),
+                              SizedBox(width: 12),
+                              Text(
+                                'Report User',
+                                style: TextStyle(color: Colors.orange),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               ],
             ),
           ),
-        ],
+        ),
       ),
-      actions: [
-        IconButton(
-          icon: const Icon(Icons.videocam, color: Colors.black87),
-          onPressed: () {
-            context.read<CallBloc>().add(
-              InitiateCall(
-                receiverId: widget.otherUserId,
-                receiverName: widget.otherUserName,
-                receiverAvatar: widget.otherUserPhoto,
-                callType: CallType.video,
-              ),
-            );
-          },
-        ),
-        IconButton(
-          icon: const Icon(Icons.call, color: Colors.black87),
-          onPressed: () {
-            context.read<CallBloc>().add(
-              InitiateCall(
-                receiverId: widget.otherUserId,
-                receiverName: widget.otherUserName,
-                receiverAvatar: widget.otherUserPhoto,
-                callType: CallType.audio,
-              ),
-            );
-          },
-        ),
-        IconButton(
-          icon: const Icon(Icons.more_vert, color: Colors.black87),
-          onPressed: () {
-            _showChatOptions(context);
-          },
-        ),
-      ],
     );
   }
 
@@ -383,6 +537,144 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
+  void _viewFullProfile(BuildContext context) {
+    // Show a placeholder dialog since profile viewing needs to be implemented
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('${widget.otherUserName}\'s Profile'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (widget.otherUserPhoto != null) ...[
+              Center(
+                child: CircleAvatar(
+                  radius: 40,
+                  backgroundImage: CachedNetworkImageProvider(
+                    widget.otherUserPhoto!,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+            ],
+            if (widget.otherUserProfile != null) ...[
+              if (widget.otherUserProfile!.age != null)
+                Text('Age: ${widget.otherUserProfile!.age}'),
+              if (widget.otherUserProfile!.location != null)
+                Text('Location: ${widget.otherUserProfile!.location}'),
+              if (widget.otherUserProfile!.bio != null)
+                Text('Bio: ${widget.otherUserProfile!.bio}'),
+            ] else
+              const Text('Profile information not available'),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _initiateCall(BuildContext context, bool isVideo) {
+    // Show a placeholder dialog since call functionality needs to be implemented
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(isVideo ? 'Video Call' : 'Voice Call'),
+        content: Text(
+          '${isVideo ? 'Video' : 'Voice'} calling ${widget.otherUserName}...',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _handleMenuAction(BuildContext context, String action) {
+    switch (action) {
+      case 'profile':
+        _viewFullProfile(context);
+        break;
+      case 'block':
+        _showBlockDialog(context);
+        break;
+      case 'report':
+        _showReportDialog(context);
+        break;
+    }
+  }
+
+  void _showBlockDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Block User'),
+        content: Text(
+          'Are you sure you want to block ${widget.otherUserName}?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              // Implement block functionality
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('${widget.otherUserName} has been blocked'),
+                ),
+              );
+            },
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Block'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showReportDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Report User'),
+        content: Text(
+          'Report ${widget.otherUserName} for inappropriate behavior?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              // Implement report functionality
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('${widget.otherUserName} has been reported'),
+                ),
+              );
+            },
+            style: TextButton.styleFrom(foregroundColor: Colors.orange),
+            child: const Text('Report'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ignore: unused_element
   void _showChatOptions(BuildContext context) {
     showModalBottomSheet(
       context: context,

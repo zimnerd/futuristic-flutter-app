@@ -1,12 +1,17 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../theme/pulse_colors.dart';
 import '../../widgets/common/common_widgets.dart';
 import '../../widgets/messaging/message_filters.dart';
 import '../../widgets/messaging/message_search.dart';
+import '../../widgets/messaging/match_stories_section.dart';
 import '../../../data/services/conversation_service.dart';
+import '../../blocs/matching/matching_bloc.dart';
+import '../../../domain/entities/user_profile.dart';
+import '../../../data/models/match_model.dart';
 
 /// Enhanced messages screen with conversations list
 class MessagesScreen extends StatefulWidget {
@@ -22,13 +27,16 @@ class _MessagesScreenState extends State<MessagesScreen> {
   MessageFilters _currentFilters = const MessageFilters();
   List<ConversationData> _allConversations = [];
   List<ConversationData> _filteredConversations = [];
+  List<MatchStoryData> _matchStories = [];
   bool _isLoading = true;
+  bool _isLoadingMatches = true;
   String? _error;
 
   @override
   void initState() {
     super.initState();
     _loadConversations();
+    _loadMatchStories();
   }
 
   /// Load conversations from backend API
@@ -93,6 +101,93 @@ class _MessagesScreenState extends State<MessagesScreen> {
     }
   }
 
+  /// Load match stories for users that haven't been chatted with yet
+  Future<void> _loadMatchStories() async {
+    setState(() {
+      _isLoadingMatches = true;
+    });
+
+    try {
+      // Get matches from bloc - for now we'll use dummy data
+      // In a real app, this would filter matches that don't have conversations yet
+      final sampleMatches = _generateSampleMatches();
+
+      setState(() {
+        _matchStories = sampleMatches;
+        _isLoadingMatches = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoadingMatches = false;
+      });
+    }
+  }
+
+  /// Generate sample match data - replace with real data from MatchingBloc
+  List<MatchStoryData> _generateSampleMatches() {
+    return [
+      MatchStoryData(
+        id: '1',
+        userId: 'user1',
+        name: 'Emma',
+        avatarUrl:
+            'https://images.unsplash.com/photo-1494790108755-2616b612b789?w=150',
+        isSuperLike: true,
+        matchedTime: DateTime.now().subtract(const Duration(minutes: 30)),
+      ),
+      MatchStoryData(
+        id: '2',
+        userId: 'user2',
+        name: 'Sophia',
+        avatarUrl:
+            'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150',
+        isSuperLike: false,
+        matchedTime: DateTime.now().subtract(const Duration(hours: 2)),
+      ),
+      MatchStoryData(
+        id: '3',
+        userId: 'user3',
+        name: 'Olivia',
+        avatarUrl:
+            'https://images.unsplash.com/photo-1544725176-7c40e5a71c5e?w=150',
+        isSuperLike: false,
+        matchedTime: DateTime.now().subtract(const Duration(hours: 5)),
+      ),
+      MatchStoryData(
+        id: '4',
+        userId: 'user4',
+        name: 'Isabella',
+        avatarUrl:
+            'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
+        isSuperLike: true,
+        matchedTime: DateTime.now().subtract(const Duration(hours: 8)),
+      ),
+      MatchStoryData(
+        id: '5',
+        userId: 'user5',
+        name: 'Ava',
+        avatarUrl:
+            'https://images.unsplash.com/photo-1489424731084-a5d8b219a5bb?w=150',
+        isSuperLike: false,
+        matchedTime: DateTime.now().subtract(const Duration(hours: 12)),
+      ),
+    ];
+  }
+
+  /// Handle tapping on a match story to start a conversation
+  void _onMatchStoryTap(MatchStoryData match) {
+    // Create a conversation and navigate to chat screen
+    // For now, navigate directly to chat screen with match data
+    context.go(
+      '/chat/new',
+      extra: {
+        'otherUserId': match.userId,
+        'otherUserName': match.name,
+        'otherUserPhoto': match.avatarUrl,
+      },
+    );
+  }
+
   @override
   void dispose() {
     _searchController.dispose();
@@ -110,6 +205,13 @@ class _MessagesScreenState extends State<MessagesScreen> {
 
             // Search bar
             _buildSearchBar(),
+
+            // Match stories section
+            if (_matchStories.isNotEmpty && !_isLoadingMatches)
+              MatchStoriesSection(
+                matches: _matchStories,
+                onMatchTap: _onMatchStoryTap,
+              ),
 
             // Conversations list
             Expanded(

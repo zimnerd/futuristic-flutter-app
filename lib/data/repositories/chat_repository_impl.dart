@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:logger/logger.dart';
 import 'package:pulse_dating_app/data/models/message.dart' as data_message;
 
@@ -5,20 +6,27 @@ import '../models/chat_model.dart';
 import '../datasources/remote/chat_remote_data_source.dart';
 import '../../domain/services/websocket_service.dart';
 import '../services/websocket_service_impl.dart';
+import '../services/socket_chat_service.dart';
 import '../../domain/entities/message.dart' as domain;
+import '../exceptions/app_exceptions.dart';
 import 'chat_repository.dart';
 
 /// Implementation of ChatRepository with real-time Socket.IO support
 class ChatRepositoryImpl implements ChatRepository {
   final ChatRemoteDataSource _remoteDataSource;
   final WebSocketService _webSocketService;
+  final SocketChatService _socketChatService;
   final Logger _logger = Logger();
 
   ChatRepositoryImpl({
     required ChatRemoteDataSource remoteDataSource,
     WebSocketService? webSocketService,
+    SocketChatService? socketChatService,
   }) : _remoteDataSource = remoteDataSource,
-       _webSocketService = webSocketService ?? WebSocketServiceImpl.instance;
+       _webSocketService = webSocketService ?? WebSocketServiceImpl.instance,
+       _socketChatService =
+           socketChatService ??
+           SocketChatService(webSocketService ?? WebSocketServiceImpl.instance);
 
   @override
   Future<List<ConversationModel>> getConversations() async {
@@ -149,19 +157,40 @@ class ChatRepositoryImpl implements ChatRepository {
   }
 
   @override
-  Future<ConversationModel> createConversation(String participantId) async {
-    try {
-      _logger.d('Creating conversation with participant: $participantId');
-      final conversation = await _remoteDataSource.createConversation(
-        type: ConversationType.direct, // Default to direct conversation
-        participantIds: [participantId],
-      );
-      _logger.d('Successfully created conversation: ${conversation.id}');
-      return conversation;
-    } catch (e) {
-      _logger.e('Error creating conversation: $e');
-      rethrow;
-    }
+  Future<ConversationModel> createConversation(String matchId) async {
+    final completer = Completer<ConversationModel>();
+
+    // Listen for conversation creation response
+    late StreamSubscription subscription;
+    subscription = _socketChatService.conversationStream.listen((event) {
+      if (event['type'] == 'conversation_created') {
+        try {
+          final conversation = ConversationModel.fromJson(event['data']);
+          completer.complete(conversation);
+          subscription.cancel();
+        } catch (e) {
+          completer.completeError(
+            NetworkException('Invalid conversation data: $e'),
+          );
+          subscription.cancel();
+        }
+      }
+    });
+
+    // Create conversation via socket chat service
+    await _socketChatService.createConversation(
+      participantId: matchId,
+      type: 'direct',
+    );
+
+    // Wait for response with timeout
+    return completer.future.timeout(
+      const Duration(seconds: 10),
+      onTimeout: () {
+        subscription.cancel();
+        throw const TimeoutException();
+      },
+    );
   }
 
   @override
