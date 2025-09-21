@@ -69,17 +69,19 @@ class SendMessageToCompanion extends AiCompanionEvent {
 
 class LoadConversationHistory extends AiCompanionEvent {
   final String companionId;
+  final String conversationId;
   final int page;
   final int limit;
 
   const LoadConversationHistory({
     required this.companionId,
+    required this.conversationId,
     this.page = 1,
     this.limit = 50,
   });
 
   @override
-  List<Object> get props => [companionId, page, limit];
+  List<Object> get props => [companionId, conversationId, page, limit];
 }
 
 class UpdateCompanionSettings extends AiCompanionEvent {
@@ -121,22 +123,32 @@ class RefreshCompanionData extends AiCompanionEvent {}
 
 class SendImageMessage extends AiCompanionEvent {
   final String companionId;
+  final String conversationId;
   final File imageFile;
 
-  const SendImageMessage({required this.companionId, required this.imageFile});
+  const SendImageMessage({
+    required this.companionId,
+    required this.conversationId,
+    required this.imageFile,
+  });
 
   @override
-  List<Object> get props => [companionId, imageFile];
+  List<Object> get props => [companionId, conversationId, imageFile];
 }
 
 class SendAudioMessage extends AiCompanionEvent {
   final String companionId;
+  final String conversationId;
   final File audioFile;
 
-  const SendAudioMessage({required this.companionId, required this.audioFile});
+  const SendAudioMessage({
+    required this.companionId,
+    required this.conversationId,
+    required this.audioFile,
+  });
 
   @override
-  List<Object> get props => [companionId, audioFile];
+  List<Object> get props => [companionId, conversationId, audioFile];
 }
 
 class MessageReceived extends AiCompanionEvent {

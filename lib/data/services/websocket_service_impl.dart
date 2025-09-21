@@ -9,6 +9,13 @@ import '../exceptions/app_exceptions.dart';
 
 /// Concrete implementation of WebSocketService using socket_io_client
 class WebSocketServiceImpl implements WebSocketService {
+  // Singleton pattern
+  static WebSocketServiceImpl? _instance;
+  static WebSocketServiceImpl get instance =>
+      _instance ??= WebSocketServiceImpl._internal();
+
+  WebSocketServiceImpl._internal();
+
   socket_io.Socket? _socket;
   final Logger _logger = Logger();
   String? _authToken;
@@ -37,8 +44,8 @@ class WebSocketServiceImpl implements WebSocketService {
   final StreamController<Duration> _latencyController =
       StreamController<Duration>.broadcast();
 
-  // Current namespace
-  String _currentNamespace = '/';
+  // Current namespace - matches backend chat gateway
+  String _currentNamespace = '/chat';
 
   @override
   bool get isConnected => _isConnected;
@@ -66,20 +73,38 @@ class WebSocketServiceImpl implements WebSocketService {
         return;
       }
 
-      _logger.i('🔌 Connecting to WebSocket...');
+      _logger.i('🔌 🔍 WebSocketServiceImpl: Starting connection process...');
       _connectionStateController.add('connecting');
+
+      // Build connection options
+      final optionsBuilder = socket_io.OptionBuilder()
+          .setTransports(['websocket'])
+          .enableAutoConnect()
+          .enableReconnection()
+          .setReconnectionAttempts(_maxReconnectAttempts)
+          .setReconnectionDelay(_initialReconnectDelay.inMilliseconds)
+          .setReconnectionDelayMax(_maxReconnectDelay.inMilliseconds)
+          .setTimeout(AppConfig.websocketTimeout.inMilliseconds);
+
+      // Add authentication if token is available
+      if (_authToken != null) {
+        optionsBuilder.setAuth({'token': _authToken});
+        _logger.i(
+          '🔑 🔍 WebSocketServiceImpl: Including auth token in connection',
+        );
+      } else {
+        _logger.w(
+          '⚠️ 🔍 WebSocketServiceImpl: No auth token available for connection',
+        );
+      }
+
+      _logger.i(
+        '🔌 🔍 WebSocketServiceImpl: Creating socket connection to ${AppConfig.websocketUrl}$_currentNamespace',
+      );
 
       _socket = socket_io.io(
         '${AppConfig.websocketUrl}$_currentNamespace',
-        socket_io.OptionBuilder()
-            .setTransports(['websocket'])
-            .enableAutoConnect()
-            .enableReconnection()
-            .setReconnectionAttempts(_maxReconnectAttempts)
-            .setReconnectionDelay(_initialReconnectDelay.inMilliseconds)
-            .setReconnectionDelayMax(_maxReconnectDelay.inMilliseconds)
-            .setTimeout(AppConfig.websocketTimeout.inMilliseconds)
-            .build(),
+        optionsBuilder.build(),
       );
 
       _setupEventHandlers();
@@ -87,12 +112,18 @@ class WebSocketServiceImpl implements WebSocketService {
       // Wait for connection
       final completer = Completer<void>();
       _socket!.onConnect((_) {
+        _logger.i(
+          '✅ 🔍 WebSocketServiceImpl: onConnect event received - completing future',
+        );
         if (!completer.isCompleted) {
           completer.complete();
         }
       });
 
       _socket!.onConnectError((error) {
+        _logger.e(
+          '❌ 🔍 WebSocketServiceImpl: onConnectError event received: $error',
+        );
         if (!completer.isCompleted) {
           completer.completeError(
             NetworkException('Failed to connect: $error'),
@@ -100,9 +131,21 @@ class WebSocketServiceImpl implements WebSocketService {
         }
       });
 
+      _logger.i(
+        '🔌 🔍 WebSocketServiceImpl: Waiting for connection completion...',
+      );
       await completer.future.timeout(
         const Duration(seconds: 30),
-        onTimeout: () => throw const TimeoutException(),
+        onTimeout: () {
+          _logger.e(
+            '⏰ 🔍 WebSocketServiceImpl: Connection timeout after 30 seconds',
+          );
+          throw const TimeoutException();
+        },
+      );
+
+      _logger.i(
+        '🎉 🔍 WebSocketServiceImpl: Connection process completed successfully',
       );
     } catch (e) {
       _logger.e('❌ WebSocket connection failed: $e');
@@ -148,6 +191,9 @@ class WebSocketServiceImpl implements WebSocketService {
 
   @override
   void setAuthToken(String token) {
+    _logger.i(
+      '🔑 WebSocketServiceImpl: Auth token set: ${token.substring(0, 20)}...',
+    );
     _authToken = token;
   }
 
@@ -161,11 +207,15 @@ class WebSocketServiceImpl implements WebSocketService {
 
     // Connection events
     _socket!.onConnect((_) {
-      _logger.i('✅ WebSocket connected');
+      _logger.i('✅ WebSocketServiceImpl: Connected successfully!');
       _isConnected = true;
       _currentReconnectAttempt = 0;
       _connectionStatusController.add(true);
       _connectionStateController.add('connected');
+      
+      _logger.i(
+        '🔍 WebSocketServiceImpl: Connection established - isConnected now: $_isConnected',
+      );
 
       // Authenticate if token is available
       if (_authToken != null) {
@@ -247,6 +297,10 @@ class WebSocketServiceImpl implements WebSocketService {
       _socket!.on(event, (data) {
         _addToEventHistory(event, data, 'received');
         _logger.d('📥 Received: $event with data: $data');
+        // Debug: Log all incoming events for diagnosis
+        _logger.i(
+          '🪵 [DEBUG] Incoming event: $event | Payload: ${data.toString()}',
+        );
         callback(data);
       });
     }
@@ -344,16 +398,20 @@ class WebSocketServiceImpl implements WebSocketService {
 
   // AI Companion Events
   @override
-  void sendAiMessage(String message, String? conversationId) {
+  void sendAiMessage(String message, String? companionId) {
+    _logger.d(
+      '🔍 WebSocketServiceImpl: sendAiMessage called - isConnected: $_isConnected',
+    );
     if (!isConnected) {
       _logger.w('Cannot send AI message: not connected');
       return;
     }
 
     final messageData = {
+      'companionId': companionId,
       'message': message,
-      if (conversationId != null) 'conversationId': conversationId,
-      'timestamp': DateTime.now().toIso8601String(),
+      'messageType': 'text',
+      'metadata': {},
     };
 
     _logger.d('Sending AI message: $messageData');

@@ -3,8 +3,10 @@ import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:logger/logger.dart';
 
+import '../../../core/services/realtime_coordinator.dart';
 import '../../../data/exceptions/app_exceptions.dart';
 import '../../../data/models/user_model.dart';
+import '../../../data/services/token_service.dart';
 import '../../../domain/repositories/user_repository.dart';
 import 'auth_event.dart';
 import 'auth_state.dart';
@@ -55,6 +57,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       if (user != null) {
         _logger.i('✅ User is authenticated: ${user.username}');
         emit(AuthAuthenticated(user: user));
+        
+        // Initialize real-time services after successful authentication
+        await _initializeRealTimeServices(user);
       } else {
         _logger.i('❌ User is not authenticated');
         emit(const AuthUnauthenticated());
@@ -93,6 +98,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       if (user != null) {
         _logger.i('✅ Sign in successful: ${user.username}');
         emit(AuthAuthenticated(user: user));
+        
+        // Initialize real-time services after successful authentication
+        await _initializeRealTimeServices(user);
       } else {
         _logger.w('❌ Sign in failed: Invalid credentials');
         emit(
@@ -130,6 +138,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       if (user != null) {
         _logger.i('✅ 🤖 Auto-login successful: ${user.username}');
         emit(AuthAuthenticated(user: user));
+        
+        // Initialize real-time services after successful authentication
+        await _initializeRealTimeServices(user);
       } else {
         _logger.w('❌ 🤖 Auto-login failed: Invalid credentials');
         emit(
@@ -499,5 +510,27 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       return currentState.message;
     }
     return null;
+  }
+
+  /// Initialize real-time services after successful authentication
+  Future<void> _initializeRealTimeServices(UserModel user) async {
+    try {
+      _logger.i('🔗 Initializing real-time services for user: ${user.id}');
+
+      // Get auth token from storage for WebSocket authentication
+      final tokenService = TokenService();
+      final authToken = await tokenService.getAccessToken();
+
+      if (authToken != null) {
+        // Initialize RealTimeCoordinator with user credentials
+        await RealTimeCoordinator().initialize(user.id, authToken);
+        _logger.i('✅ RealTimeCoordinator initialized successfully');
+      } else {
+        _logger.w('⚠️ No auth token available for real-time services');
+      }
+    } catch (e) {
+      _logger.e('💥 Failed to initialize real-time services: $e');
+      // Don't throw error as this is not critical for basic app functionality
+    }
   }
 }

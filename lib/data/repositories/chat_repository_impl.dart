@@ -74,6 +74,9 @@ class ChatRepositoryImpl implements ChatRepository {
         conversationId,
         content ?? '',
         _convertToDomainMessageType(type),
+        mediaIds: mediaIds,
+        metadata: metadata,
+        replyToMessageId: replyToMessageId,
       );
       
       // Create optimistic message for immediate UI update

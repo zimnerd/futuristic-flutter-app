@@ -39,7 +39,7 @@ abstract class WebSocketService {
   void onTypingStop(Function(Map<String, dynamic>) callback);
 
   // AI Companion Events
-  void sendAiMessage(String message, String? conversationId);
+  void sendAiMessage(String message, String? companionId);
   void onAiMessageSent(Function(Map<String, dynamic>) callback);
   void onAiMessageReceived(Function(Map<String, dynamic>) callback);
   void onAiMessageFailed(Function(Map<String, dynamic>) callback);

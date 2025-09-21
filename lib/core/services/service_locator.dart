@@ -6,7 +6,9 @@ import '../../data/services/push_notification_service.dart';
 import '../../data/services/token_service.dart';
 import '../../data/services/matching_service.dart';
 import '../../data/services/ai_preferences_service.dart';
+import '../../data/services/service_locator.dart' as data_services;
 import '../network/api_client.dart';
+import 'package:logger/logger.dart';
 import '../utils/logger.dart';
 import 'location_service.dart';
 
@@ -76,9 +78,30 @@ class ServiceLocator {
   /// Set auth token for all services
   Future<void> setAuthToken(String authToken) async {
     try {
+      Logger().d(
+        '🔑 CoreServiceLocator: setAuthToken called with token: ${authToken.substring(0, 20)}...',
+      );
+      
       _apiClient?.setAuthToken(authToken);
       _paymentService?.setAuthToken(authToken);
       _pushNotificationService?.updateAuthToken(authToken);
+
+      // Also set auth token for data services (including WebSocket)
+      try {
+        Logger().d(
+          '🔗 CoreServiceLocator: Calling data_services.ServiceLocator().setAuthToken...',
+        );
+        await data_services.ServiceLocator().setAuthToken(authToken);
+        Logger().d(
+          '✅ CoreServiceLocator: Auth token set for data services including WebSocket',
+        );
+        AppLogger.info('Auth token set for data services including WebSocket');
+      } catch (e) {
+        Logger().d(
+          '❌ CoreServiceLocator: Failed to set auth token for data services: $e',
+        );
+        AppLogger.error('Failed to set auth token for data services: $e');
+      }
 
       // Get user ID from token (you might need to decode the JWT)
       final userId = _extractUserIdFromToken(authToken);
@@ -86,8 +109,10 @@ class ServiceLocator {
         _analyticsService?.setUser(authToken: authToken, userId: userId);
       }
 
+      Logger().d('✅ CoreServiceLocator: Auth token set for all services');
       AppLogger.info('Auth token set for all services');
     } catch (e) {
+      Logger().d('❌ CoreServiceLocator: Failed to set auth token: $e');
       AppLogger.error('Failed to set auth token: $e');
     }
   }

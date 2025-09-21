@@ -169,6 +169,7 @@ class CompanionMessage extends Equatable {
   final bool isFromCompanion;
   final DateTime timestamp;
   final MessageType type;
+  final MessageStatus status;
   final Map<String, dynamic>? metadata;
   final double? sentimentScore;
   final List<String> suggestedResponses;
@@ -181,6 +182,7 @@ class CompanionMessage extends Equatable {
     required this.isFromCompanion,
     required this.timestamp,
     this.type = MessageType.text,
+    this.status = MessageStatus.sent,
     this.metadata,
     this.sentimentScore,
     this.suggestedResponses = const [],
@@ -197,6 +199,10 @@ class CompanionMessage extends Equatable {
       type: MessageType.values.firstWhere(
         (e) => e.name == json['type'],
         orElse: () => MessageType.text,
+      ),
+      status: MessageStatus.values.firstWhere(
+        (e) => e.name == (json['status'] ?? 'sent'),
+        orElse: () => MessageStatus.sent,
       ),
       metadata: json['metadata'] as Map<String, dynamic>?,
       sentimentScore: (json['sentimentScore'] as num?)?.toDouble(),
@@ -216,6 +222,7 @@ class CompanionMessage extends Equatable {
       'isFromCompanion': isFromCompanion,
       'timestamp': timestamp.toIso8601String(),
       'type': type.name,
+      'status': status.name,
       'metadata': metadata,
       'sentimentScore': sentimentScore,
       'suggestedResponses': suggestedResponses,
@@ -231,10 +238,40 @@ class CompanionMessage extends Equatable {
         isFromCompanion,
         timestamp,
         type,
+    status,
         metadata,
         sentimentScore,
         suggestedResponses,
       ];
+
+  /// Create a copy of this message with updated fields
+  CompanionMessage copyWith({
+    String? id,
+    String? companionId,
+    String? userId,
+    String? content,
+    bool? isFromCompanion,
+    DateTime? timestamp,
+    MessageType? type,
+    MessageStatus? status,
+    Map<String, dynamic>? metadata,
+    double? sentimentScore,
+    List<String>? suggestedResponses,
+  }) {
+    return CompanionMessage(
+      id: id ?? this.id,
+      companionId: companionId ?? this.companionId,
+      userId: userId ?? this.userId,
+      content: content ?? this.content,
+      isFromCompanion: isFromCompanion ?? this.isFromCompanion,
+      timestamp: timestamp ?? this.timestamp,
+      type: type ?? this.type,
+      status: status ?? this.status,
+      metadata: metadata ?? this.metadata,
+      sentimentScore: sentimentScore ?? this.sentimentScore,
+      suggestedResponses: suggestedResponses ?? this.suggestedResponses,
+    );
+  }
 }
 
 /// Message types for AI conversations
@@ -248,6 +285,18 @@ enum MessageType {
   celebration('Celebration');
 
   const MessageType(this.displayName);
+  final String displayName;
+}
+
+/// Message status for tracking delivery and read status
+enum MessageStatus {
+  sending('Sending'),
+  sent('Sent'),
+  delivered('Delivered'),
+  read('Read'),
+  failed('Failed');
+
+  const MessageStatus(this.displayName);
   final String displayName;
 }
 

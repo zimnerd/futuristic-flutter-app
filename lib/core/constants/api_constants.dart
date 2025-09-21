@@ -1,8 +1,8 @@
 /// API constants for backend communication - aligned with NestJS controllers
 class ApiConstants {
-  // Base URLs - Production API
-  static const String baseUrl = 'https://apilink.pulsetek.co.za/api/v1';
-  static const String websocketUrl = 'wss://apilink.pulsetek.co.za';
+  // Base URLs - Development API (local backend running on port 3000)
+  static const String baseUrl = 'http://localhost:3000/api/v1';
+  static const String websocketUrl = 'ws://localhost:3000/chat';
   
   // ================================
   // CORE MODULE ENDPOINTS

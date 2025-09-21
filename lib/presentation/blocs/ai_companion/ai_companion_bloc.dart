@@ -162,14 +162,53 @@ class AiCompanionBloc extends Bloc<AiCompanionEvent, AiCompanionState> {
     SendMessageToCompanion event,
     Emitter<AiCompanionState> emit,
   ) async {
+    // Create user message immediately for instant UI update with 'sending' status
+    final userMessage = CompanionMessage(
+      id: 'temp_${DateTime.now().millisecondsSinceEpoch}',
+      companionId: event.companionId,
+      userId: '', // Will be filled by backend
+      content: event.message,
+      isFromCompanion: false,
+      timestamp: DateTime.now(),
+      type: MessageType.text,
+      status: MessageStatus.sending,
+      suggestedResponses: [],
+    );
+
     try {
       _logger.d('$_tag: Sending message to companion: ${event.companionId}');
 
-      // Send message via WebSocket (non-blocking)
-      _aiCompanionService.sendMessage(
+      // Update UI immediately with user message
+      List<CompanionMessage> updatedMessages = [];
+      if (state is AiCompanionLoaded) {
+        final currentState = state as AiCompanionLoaded;
+        updatedMessages = [...currentState.conversationHistory, userMessage];
+        emit(currentState.copyWith(conversationHistory: updatedMessages));
+      }
+
+      // Send message via WebSocket (now async for connection check)
+      await _aiCompanionService.sendMessage(
         companionId: event.companionId,
         message: event.message,
       );
+
+      // Update message status to 'sent' after server confirmation
+      if (state is AiCompanionLoaded) {
+        final currentState = state as AiCompanionLoaded;
+        final messageIndex = currentState.conversationHistory.indexWhere(
+          (m) => m.id == userMessage.id,
+        );
+
+        if (messageIndex != -1) {
+          final updatedMessages = List<CompanionMessage>.from(
+            currentState.conversationHistory,
+          );
+          updatedMessages[messageIndex] = userMessage.copyWith(
+            status: MessageStatus.sent,
+          );
+          emit(currentState.copyWith(conversationHistory: updatedMessages));
+        }
+      }
 
       // No loading state needed - WebSocket messages are instant
       // The UI will be updated via the messageStream when response comes back
@@ -180,6 +219,25 @@ class AiCompanionBloc extends Bloc<AiCompanionEvent, AiCompanionState> {
         error: e,
         stackTrace: stackTrace,
       );
+
+      // Update message status to 'failed' on error
+      if (state is AiCompanionLoaded) {
+        final currentState = state as AiCompanionLoaded;
+        final messageIndex = currentState.conversationHistory.indexWhere(
+          (m) => m.id == userMessage.id,
+        );
+
+        if (messageIndex != -1) {
+          final updatedMessages = List<CompanionMessage>.from(
+            currentState.conversationHistory,
+          );
+          updatedMessages[messageIndex] = userMessage.copyWith(
+            status: MessageStatus.failed,
+          );
+          emit(currentState.copyWith(conversationHistory: updatedMessages));
+        }
+      }
+
       emit(AiCompanionError('Failed to send message: ${e.toString()}'));
     }
   }
@@ -193,11 +251,35 @@ class AiCompanionBloc extends Bloc<AiCompanionEvent, AiCompanionState> {
     // Update the current state with the new message
     if (state is AiCompanionLoaded) {
       final currentState = state as AiCompanionLoaded;
-      final updatedMessages = [
-        ...currentState.conversationHistory,
-        event.message,
-      ];
+      
+      // Check if message already exists to avoid duplicates
+      final existingMessageIndex = currentState.conversationHistory.indexWhere(
+        (msg) => msg.id == event.message.id,
+      );
+
+      List<CompanionMessage> updatedMessages;
+      if (existingMessageIndex >= 0) {
+        // Update existing message - ensure AI messages have 'delivered' status
+        final updatedMessage = event.message.isFromCompanion
+            ? event.message.copyWith(status: MessageStatus.delivered)
+            : event.message;
+        updatedMessages = [...currentState.conversationHistory];
+        updatedMessages[existingMessageIndex] = updatedMessage;
+      } else {
+        // Add new message - ensure AI messages have 'delivered' status
+        final newMessage = event.message.isFromCompanion
+            ? event.message.copyWith(status: MessageStatus.delivered)
+            : event.message;
+        updatedMessages = [...currentState.conversationHistory, newMessage];
+      }
+      
       emit(currentState.copyWith(conversationHistory: updatedMessages));
+    } else {
+      // Initialize state with this message if no state exists
+      final initialMessage = event.message.isFromCompanion
+          ? event.message.copyWith(status: MessageStatus.delivered)
+          : event.message;
+      emit(AiCompanionLoaded(conversationHistory: [initialMessage]));
     }
   }
 
@@ -226,7 +308,12 @@ class AiCompanionBloc extends Bloc<AiCompanionEvent, AiCompanionState> {
         _logger.d('$_tag: Image message sent successfully');
 
         // Refresh conversation history
-        add(LoadConversationHistory(companionId: event.companionId));
+        add(
+          LoadConversationHistory(
+            companionId: event.companionId,
+            conversationId: event.conversationId,
+          ),
+        );
       } else {
         emit(AiCompanionError('Failed to send image message'));
       }
@@ -260,7 +347,12 @@ class AiCompanionBloc extends Bloc<AiCompanionEvent, AiCompanionState> {
         _logger.d('$_tag: Audio message sent successfully');
         
         // Refresh conversation history
-        add(LoadConversationHistory(companionId: event.companionId));
+        add(
+          LoadConversationHistory(
+            companionId: event.companionId,
+            conversationId: event.conversationId,
+          ),
+        );
       } else {
         emit(AiCompanionError('Failed to send audio message'));
       }
@@ -284,6 +376,7 @@ class AiCompanionBloc extends Bloc<AiCompanionEvent, AiCompanionState> {
 
       final messages = await _aiCompanionService.getConversationHistory(
         companionId: event.companionId,
+        conversationId: event.conversationId,
         page: event.page,
         limit: event.limit,
       );
@@ -312,7 +405,7 @@ class AiCompanionBloc extends Bloc<AiCompanionEvent, AiCompanionState> {
 
       final success = await _aiCompanionService.updateCompanionSettings(
         companionId: event.companionId,
-        settings: event.settings,
+        settings: event.settings.toJson(),
       );
 
       if (success) {

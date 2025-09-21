@@ -1,4 +1,5 @@
 import '../../../core/network/api_client.dart';
+import 'package:logger/logger.dart';
 import 'package:dio/dio.dart';
 import 'package:hive/hive.dart';
 import 'matching_service.dart';
@@ -7,6 +8,7 @@ import 'profile_service.dart';
 import 'file_upload_service.dart';
 import '../../domain/services/websocket_service.dart';
 import 'websocket_service_impl.dart';
+import 'ai_companion_websocket_service.dart';
 import 'preferences_service.dart';
 import 'discovery_service.dart';
 import 'virtual_gift_service.dart';
@@ -38,6 +40,7 @@ class ServiceLocator {
   late final ProfileService _profileService;
   late final FileUploadService _fileUploadService;
   late final WebSocketService _webSocketService;
+  late final AiCompanionWebSocketService _aiCompanionWebSocketService;
   late final PreferencesService _preferencesService;
   late final DiscoveryService _discoveryService;
   late final VirtualGiftService _virtualGiftService;
@@ -80,7 +83,8 @@ class ServiceLocator {
       authService: _authService,
     );
     _fileUploadService = FileUploadService(apiClient: _apiClient);
-    _webSocketService = WebSocketServiceImpl();
+    _webSocketService = WebSocketServiceImpl.instance;
+    _aiCompanionWebSocketService = AiCompanionWebSocketService.instance;
     _preferencesService = PreferencesService(_apiClient);
 
     // Initialize feature services
@@ -88,11 +92,7 @@ class ServiceLocator {
     _virtualGiftService = VirtualGiftService(_apiClient);
     _safetyService = SafetyService(_apiClient);
     _premiumService = PremiumService(_apiClient);
-    _aiCompanionService = AiCompanionService(
-      _apiClient,
-      _webSocketService,
-      _fileUploadService,
-    );
+    _aiCompanionService = AiCompanionService();
     _speedDatingService = SpeedDatingService(_apiClient);
     _liveStreamingService = LiveStreamingService(_apiClient);
     _datePlanningService = DatePlanningService(_apiClient);
@@ -246,5 +246,101 @@ class ServiceLocator {
   AutoReplyService get autoReplyService {
     if (!_isInitialized) initialize();
     return _autoReplyService;
+  }
+
+  /// Set auth token for all services that require authentication
+  Future<void> setAuthToken(String token) async {
+    if (!_isInitialized) initialize();
+
+    Logger().d('🔑 ServiceLocator: Setting auth token for WebSocket services');
+
+    // Set auth token for WebSocket service
+    _webSocketService.setAuthToken(token);
+
+    // Connect WebSocket service if not already connected
+    Logger().d(
+      '🔌 ServiceLocator: Checking WebSocket connection status: ${_webSocketService.isConnected}',
+    );
+    if (!_webSocketService.isConnected) {
+      try {
+        Logger().d(
+          '🔌 ServiceLocator: Attempting to connect WebSocket service...',
+        );
+        await _webSocketService.connect();
+
+        // Wait a moment for connection to be established
+        int attempts = 0;
+        const maxAttempts = 10;
+        while (!_webSocketService.isConnected && attempts < maxAttempts) {
+          await Future.delayed(const Duration(milliseconds: 100));
+          attempts++;
+          Logger().d(
+            '🔍 ServiceLocator: Waiting for connection... attempt $attempts/$maxAttempts',
+          );
+        }
+
+        if (_webSocketService.isConnected) {
+          Logger().d(
+            '✅ ServiceLocator: WebSocket service connected successfully',
+          );
+        } else {
+          Logger().d(
+            '⚠️ ServiceLocator: WebSocket connection timed out after ${maxAttempts * 100}ms',
+          );
+        }
+      } catch (e) {
+        // Log error but don't fail the entire auth process
+        Logger().e('❌ ServiceLocator: Failed to connect WebSocket service: $e');
+      }
+    } else {
+      Logger().d('✅ ServiceLocator: WebSocket service already connected');
+    }
+
+    // Set auth token for AI companion WebSocket service and connect
+    Logger().d(
+      '🤖 ServiceLocator: Checking AI companion WebSocket connection status: ${_aiCompanionWebSocketService.isConnected}',
+    );
+    if (!_aiCompanionWebSocketService.isConnected) {
+      try {
+        Logger().d(
+          '🤖 ServiceLocator: Attempting to connect AI companion WebSocket service...',
+        );
+        await _aiCompanionWebSocketService.connect(token);
+
+        // Wait a moment for connection to be established
+        int attempts = 0;
+        const maxAttempts = 10;
+        while (!_aiCompanionWebSocketService.isConnected &&
+            attempts < maxAttempts) {
+          await Future.delayed(const Duration(milliseconds: 100));
+          attempts++;
+          Logger().d(
+            '🔍 ServiceLocator: Waiting for AI companion connection... attempt $attempts/$maxAttempts',
+          );
+        }
+
+        if (_aiCompanionWebSocketService.isConnected) {
+          Logger().d(
+            '✅ ServiceLocator: AI companion WebSocket service connected successfully',
+          );
+        } else {
+          Logger().d(
+            '⚠️ ServiceLocator: AI companion WebSocket connection timed out after ${maxAttempts * 100}ms',
+          );
+        }
+      } catch (e) {
+        // Log error but don't fail the entire auth process
+        Logger().e(
+          '❌ ServiceLocator: Failed to connect AI companion WebSocket service: $e',
+        );
+      }
+    } else {
+      Logger().d(
+        '✅ ServiceLocator: AI companion WebSocket service already connected',
+      );
+    }
+
+    // Set auth token for API client (which sets it for all HTTP services)
+    _apiClient.setAuthToken(token);
   }
 }

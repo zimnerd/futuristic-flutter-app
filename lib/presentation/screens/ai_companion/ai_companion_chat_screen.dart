@@ -34,7 +34,10 @@ class _AiCompanionChatScreenState extends State<AiCompanionChatScreen> {
   void initState() {
     super.initState();
     context.read<AiCompanionBloc>().add(
-      LoadConversationHistory(companionId: widget.companion.id),
+      LoadConversationHistory(
+        companionId: widget.companion.id,
+        conversationId: widget.companion.id,
+      ),
     );
   }
 
@@ -110,7 +113,10 @@ class _AiCompanionChatScreenState extends State<AiCompanionChatScreen> {
                     message: state.message,
                     onRetry: () {
                       context.read<AiCompanionBloc>().add(
-                        LoadConversationHistory(companionId: widget.companion.id),
+                        LoadConversationHistory(
+                          companionId: widget.companion.id,
+                          conversationId: widget.companion.id,
+                        ),
                       );
                     },
                   );
@@ -120,7 +126,12 @@ class _AiCompanionChatScreenState extends State<AiCompanionChatScreen> {
                   return _buildMessagesList(state.conversationHistory);
                 }
 
-                return const Center(child: PulseLoadingWidget());
+                if (state is AiCompanionConversationLoading) {
+                  return const Center(child: PulseLoadingWidget());
+                }
+
+                // Initialize empty conversation if no state
+                return _buildMessagesList([]);
               },
             ),
           ),
@@ -135,6 +146,17 @@ class _AiCompanionChatScreenState extends State<AiCompanionChatScreen> {
     if (messages.isEmpty) {
       return _buildEmptyChat();
     }
+
+    // Auto-scroll to bottom when new messages are added
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_scrollController.hasClients) {
+        _scrollController.animateTo(
+          _scrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      }
+    });
 
     return ListView.builder(
       controller: _scrollController,
@@ -233,33 +255,83 @@ class _AiCompanionChatScreenState extends State<AiCompanionChatScreen> {
   Widget _buildMessageBubble(CompanionMessage message) {
     final isUser = !message.isFromCompanion;
     
+    // Don't render empty messages
+    if (message.content.trim().isEmpty) {
+      return const SizedBox.shrink();
+    }
+    
     return Align(
       alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
-      child: Container(
-        margin: EdgeInsets.only(
-          bottom: 8,
-          left: isUser ? 48 : 0,
-          right: isUser ? 0 : 48,
-        ),
-        padding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 12,
-        ),
-        decoration: BoxDecoration(
-          color: isUser 
-            ? PulseColors.primary
-            : Colors.grey[200],
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Text(
-          message.content,
-          style: TextStyle(
-            color: isUser ? Colors.white : Colors.black87,
-            fontSize: 16,
+      child: GestureDetector(
+        onTap: () {
+          // Handle message tap - show message details, copy, etc.
+          _showMessageActions(message);
+        },
+        child: Container(
+          margin: EdgeInsets.only(
+            bottom: 8,
+            left: isUser ? 48 : 0,
+            right: isUser ? 0 : 48,
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            color: isUser ? PulseColors.primary : Colors.grey[200],
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                message.content,
+                style: TextStyle(
+                  color: isUser ? Colors.white : Colors.black87,
+                  fontSize: 16,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    _formatTimestamp(message.timestamp),
+                    style: TextStyle(
+                      color: isUser ? Colors.white70 : Colors.grey[600],
+                      fontSize: 12,
+                    ),
+                  ),
+                  if (isUser) ...[
+                    const SizedBox(width: 4),
+                    _buildStatusIndicator(message.status),
+                  ],
+                ],
+              ),
+            ],
           ),
         ),
       ),
     );
+  }
+
+  Widget _buildStatusIndicator(MessageStatus? status) {
+    switch (status) {
+      case MessageStatus.sending:
+        return const SizedBox(
+          width: 12,
+          height: 12,
+          child: CircularProgressIndicator(
+            strokeWidth: 1.5,
+            valueColor: AlwaysStoppedAnimation<Color>(Colors.white70),
+          ),
+        );
+      case MessageStatus.sent:
+        return const Icon(Icons.check, size: 14, color: Colors.white70);
+      case MessageStatus.delivered:
+        return const Icon(Icons.done_all, size: 14, color: Colors.white70);
+      case MessageStatus.failed:
+        return const Icon(Icons.error_outline, size: 14, color: Colors.red);
+      default:
+        return const SizedBox.shrink();
+    }
   }
 
   Widget _buildMessageInput() {
@@ -343,6 +415,7 @@ class _AiCompanionChatScreenState extends State<AiCompanionChatScreen> {
           context.read<AiCompanionBloc>().add(
             SendImageMessage(
               companionId: widget.companion.id,
+              conversationId: widget.companion.id,
               imageFile: imageFile,
             ),
           );
@@ -374,6 +447,7 @@ class _AiCompanionChatScreenState extends State<AiCompanionChatScreen> {
           context.read<AiCompanionBloc>().add(
             SendImageMessage(
               companionId: widget.companion.id,
+              conversationId: widget.companion.id,
               imageFile: imageFile,
             ),
           );
@@ -425,6 +499,7 @@ class _AiCompanionChatScreenState extends State<AiCompanionChatScreen> {
                       bloc.add(
                         SendAudioMessage(
                           companionId: widget.companion.id,
+                          conversationId: widget.companion.id,
                           audioFile: audioFile,
                         ),
                       );
@@ -563,5 +638,51 @@ class _AiCompanionChatScreenState extends State<AiCompanionChatScreen> {
         ),
       ],
     );
+  }
+
+  void _showMessageActions(CompanionMessage message) {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.copy),
+              title: const Text('Copy Message'),
+              onTap: () {
+                // Copy message to clipboard logic here
+                Navigator.pop(context);
+              },
+            ),
+            if (!message.isFromCompanion)
+              ListTile(
+                leading: const Icon(Icons.edit),
+                title: const Text('Edit Message'),
+                onTap: () {
+                  Navigator.pop(context);
+                  // Edit message logic here
+                },
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _formatTimestamp(DateTime timestamp) {
+    final now = DateTime.now();
+    final difference = now.difference(timestamp);
+
+    if (difference.inDays > 0) {
+      return '${difference.inDays}d ago';
+    } else if (difference.inHours > 0) {
+      return '${difference.inHours}h ago';
+    } else if (difference.inMinutes > 0) {
+      return '${difference.inMinutes}m ago';
+    } else {
+      return 'Now';
+    }
   }
 }

@@ -14,10 +14,18 @@ class AppConfig {
   static const bool isProduction = _flavor == 'production';
   static const bool isStaging = _flavor == 'staging';
 
-  // API Configuration - Always use production API
-  static const String apiBaseUrl = 'https://apilink.pulsetek.co.za/api/v1';
+  // API Configuration - Environment-based for development
+  static const String apiBaseUrl = isDevelopment
+      ? 'http://localhost:3000/api/v1'
+      : 'https://apilink.pulsetek.co.za/api/v1';
 
-  static const String websocketUrl = 'wss://apilink.pulsetek.co.za';
+  static const String websocketUrl = isDevelopment
+      ? 'ws://localhost:3000'
+      : 'wss://apilink.pulsetek.co.za';
+
+  static const String aiCompanionWebSocketUrl = isDevelopment
+      ? 'http://localhost:3000'
+      : 'https://apilink.pulsetek.co.za';
 
   // PeachPayments Configuration - Environment-based
   static const String peachPaymentsBaseUrl = isDevelopment || isStaging

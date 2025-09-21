@@ -91,9 +91,9 @@ class WebSocketService {
 
   void _setupEventListeners() {
     // Message events
-    _socket?.on('new_message', (data) {
+    _socket?.on('messageReceived', (data) {
       try {
-        final messageData = data as Map<String, dynamic>;
+        final messageData = data['data'] as Map<String, dynamic>;
         final message = domain.Message.fromJson(messageData);
         onMessageReceived?.call(message);
         
@@ -103,65 +103,71 @@ class WebSocketService {
           _messageController.add(messageModel);
         }
       } catch (e) {
-        _logger.e('Error parsing new message: $e');
+        _logger.e('Error parsing messageReceived: $e');
+      }
+    });
+
+    _socket?.on('messageDelivered', (data) {
+      try {
+        _logger.d('Message delivered: $data');
+        // Handle message delivery confirmation
+      } catch (e) {
+        _logger.e('Error parsing messageDelivered: $e');
+      }
+    });
+
+    _socket?.on('messageFailed', (data) {
+      try {
+        _logger.e('Message failed: $data');
+        // Handle message failure
+      } catch (e) {
+        _logger.e('Error parsing messageFailed: $e');
       }
     });
 
     // Typing events
-    _socket?.on('user_typing', (data) {
+    _socket?.on('typingIndicatorUpdate', (data) {
       try {
         final typingData = data as Map<String, dynamic>;
         final userId = typingData['userId'] as String;
         final conversationId = typingData['conversationId'] as String;
-        onTypingReceived?.call(userId, conversationId);
-      } catch (e) {
-        _logger.e('Error parsing typing event: $e');
-      }
-    });
+        final isTyping = typingData['isTyping'] as bool;
 
-    _socket?.on('user_stopped_typing', (data) {
-      try {
-        final typingData = data as Map<String, dynamic>;
-        final userId = typingData['userId'] as String;
-        onTypingStoppedReceived?.call(userId);
+        if (isTyping) {
+          onTypingReceived?.call(userId, conversationId);
+        } else {
+          onTypingStoppedReceived?.call(userId);
+        }
       } catch (e) {
-        _logger.e('Error parsing stopped typing event: $e');
+        _logger.e('Error parsing typing indicator: $e');
       }
     });
 
     // User status events
-    _socket?.on('user_online', (data) {
+    _socket?.on('userStatusUpdate', (data) {
       try {
         final statusData = data as Map<String, dynamic>;
         final userId = statusData['userId'] as String;
-        onUserStatusChanged?.call(userId, true);
+        final status = statusData['status'] as String;
+        final isOnline = status == 'ONLINE';
+        onUserStatusChanged?.call(userId, isOnline);
       } catch (e) {
-        _logger.e('Error parsing user online event: $e');
-      }
-    });
-
-    _socket?.on('user_offline', (data) {
-      try {
-        final statusData = data as Map<String, dynamic>;
-        final userId = statusData['userId'] as String;
-        onUserStatusChanged?.call(userId, false);
-      } catch (e) {
-        _logger.e('Error parsing user offline event: $e');
+        _logger.e('Error parsing user status event: $e');
       }
     });
 
     // Call events
-    _socket?.on('incoming_call', (data) {
+    _socket?.on('callInitiated', (data) {
       try {
         final callData = data as Map<String, dynamic>;
         final callId = callData['callId'] as String;
         onCallReceived?.call(callId);
       } catch (e) {
-        _logger.e('Error parsing incoming call: $e');
+        _logger.e('Error parsing call initiated: $e');
       }
     });
 
-    _socket?.on('call_ended', (data) {
+    _socket?.on('callEnded', (data) {
       try {
         final callData = data as Map<String, dynamic>;
         final callId = callData['callId'] as String;
@@ -172,7 +178,7 @@ class WebSocketService {
     });
 
     // Call signal events
-    _socket?.on('call_signal', (data) {
+    _socket?.on('callSignal', (data) {
       try {
         final signalData = data as Map<String, dynamic>;
         final signal = CallSignalModel.fromJson(signalData);
@@ -184,7 +190,7 @@ class WebSocketService {
     });
 
     // Notification events
-    _socket?.on('new_notification', (data) {
+    _socket?.on('newNotification', (data) {
       try {
         final notificationData = data as Map<String, dynamic>;
         final notification = NotificationModel.fromJson(notificationData);
@@ -200,42 +206,84 @@ class WebSocketService {
   void sendMessage(
     String conversationId,
     String content,
-    domain.MessageType type,
-  ) {
+    domain.MessageType type, {
+    List<String>? mediaIds,
+    Map<String, dynamic>? metadata,
+    String? replyToMessageId,
+    bool? isForwarded,
+    String? forwardedFromConversationId,
+  }) {
     if (!_isConnected) return;
 
-    _socket?.emit('send_message', {
+    // Match backend SendMessageDto structure exactly
+    final Map<String, dynamic> payload = {
       'conversationId': conversationId,
-      'content': content,
       'type': type.name,
-      'timestamp': DateTime.now().toIso8601String(),
-    });
+      'content': content,
+    };
+
+    // Add optional fields only if provided
+    if (mediaIds != null && mediaIds.isNotEmpty) {
+      payload['mediaIds'] = mediaIds;
+    }
+    if (metadata != null && metadata.isNotEmpty) {
+      payload['metadata'] = metadata;
+    }
+    if (replyToMessageId != null && replyToMessageId.isNotEmpty) {
+      payload['replyToMessageId'] = replyToMessageId;
+    }
+    if (isForwarded != null) {
+      payload['isForwarded'] = isForwarded;
+    }
+    if (forwardedFromConversationId != null &&
+        forwardedFromConversationId.isNotEmpty) {
+      payload['forwardedFromConversationId'] = forwardedFromConversationId;
+    }
+
+    _logger.d('Sending message with payload: $payload');
+    _socket?.emit('sendMessage', payload);
   }
 
   // Send typing indicator
   void sendTyping(String conversationId) {
     if (!_isConnected) return;
 
-    _socket?.emit('typing', {
+    _socket?.emit('typingIndicator', {
       'conversationId': conversationId,
+      'isTyping': true,
     });
   }
 
   void sendTypingIndicator(String conversationId, bool isTyping) {
     if (!_isConnected) return;
 
-    if (isTyping) {
-      sendTyping(conversationId);
-    } else {
-      sendStoppedTyping(conversationId);
-    }
+    _socket?.emit('typingIndicator', {
+      'conversationId': conversationId,
+      'isTyping': isTyping,
+    });
   }
 
   void sendStoppedTyping(String conversationId) {
     if (!_isConnected) return;
 
-    _socket?.emit('stopped_typing', {
+    _socket?.emit('typingIndicator', {
       'conversationId': conversationId,
+      'isTyping': false,
+    });
+  }
+
+  // Send AI message
+  void sendAiMessage(String message, String? companionId) {
+    if (!_isConnected) {
+      _logger.w('Cannot send AI message: not connected');
+      return;
+    }
+
+    _socket?.emit('sendAiMessage', {
+      'companionId': companionId,
+      'message': message,
+      'messageType': 'text',
+      'metadata': {},
     });
   }
 
@@ -243,7 +291,7 @@ class WebSocketService {
   void joinConversation(String conversationId) {
     if (!_isConnected) return;
 
-    _socket?.emit('join_conversation', {
+    _socket?.emit('joinConversation', {
       'conversationId': conversationId,
     });
   }
@@ -251,7 +299,7 @@ class WebSocketService {
   void leaveConversation(String conversationId) {
     if (!_isConnected) return;
 
-    _socket?.emit('leave_conversation', {
+    _socket?.emit('leaveConversation', {
       'conversationId': conversationId,
     });
   }
@@ -260,7 +308,7 @@ class WebSocketService {
   void initiateCall(String userId, String callType) {
     if (!_isConnected) return;
 
-    _socket?.emit('initiate_call', {
+    _socket?.emit('initiateCall', {
       'targetUserId': userId,
       'callType': callType, // 'video' or 'audio'
     });
@@ -269,7 +317,7 @@ class WebSocketService {
   void acceptCall(String callId) {
     if (!_isConnected) return;
 
-    _socket?.emit('accept_call', {
+    _socket?.emit('acceptCall', {
       'callId': callId,
     });
   }
@@ -277,7 +325,7 @@ class WebSocketService {
   void rejectCall(String callId) {
     if (!_isConnected) return;
 
-    _socket?.emit('reject_call', {
+    _socket?.emit('rejectCall', {
       'callId': callId,
     });
   }
