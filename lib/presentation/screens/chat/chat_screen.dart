@@ -51,6 +51,12 @@ class _ChatScreenState extends State<ChatScreen> {
   void initState() {
     super.initState();
     
+    // Debug information
+    print('ChatScreen initialized with:');
+    print('  conversationId: ${widget.conversationId}');
+    print('  otherUserId: ${widget.otherUserId}');
+    print('  otherUserName: ${widget.otherUserName}');
+    
     // Check if this is a new conversation that needs to be created
     if (widget.conversationId == 'new') {
       _createNewConversation();
@@ -72,17 +78,22 @@ class _ChatScreenState extends State<ChatScreen> {
 
   /// Create a new conversation with the other user
   void _createNewConversation() async {
-    if (widget.otherUserId.isEmpty) {
-      // Handle error - no other user ID provided
+    print('Creating new conversation with otherUserId: ${widget.otherUserId}');
+    
+    if (widget.otherUserId.isEmpty || widget.otherUserId == 'current_user_id') {
+      // Handle error - no valid other user ID provided
+      print('Error: Invalid otherUserId: ${widget.otherUserId}');
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Error: No user specified for conversation'),
+          content: Text('Error: Cannot create conversation - invalid user ID'),
+          backgroundColor: Colors.red,
         ),
       );
+      Navigator.of(context).pop(); // Go back
       return;
     }
-
-    // Create conversation via ChatBloc
+    
+    // Dispatch the create conversation event
     context.read<ChatBloc>().add(
       CreateConversation(participantId: widget.otherUserId),
     );

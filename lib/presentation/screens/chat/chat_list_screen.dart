@@ -418,9 +418,15 @@ class _ChatListScreenState extends State<ChatListScreen> {
   }
 
   Widget _buildConversationTile(BuildContext context, conversation) {
+    // Get the current user ID from auth state
+    final currentUserId = _currentUserId;
+    
+    // Don't show conversations if we don't have a valid current user ID
+    if (currentUserId == null) {
+      return const SizedBox.shrink();
+    }
+    
     // Get the other participant (not current user)
-    final currentUserId =
-        _currentUserId ?? 'current_user_id'; // Fallback for safety
     final otherParticipant = conversation.participants?.firstWhere(
       (p) => p.id != currentUserId,
       orElse: () => null,
@@ -520,16 +526,27 @@ class _ChatListScreenState extends State<ChatListScreen> {
               )
             : null,
         onTap: () {
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (context) => ChatScreen(
-                conversationId: conversation.id,
-                otherUserId: otherParticipant?.id ?? '',
-                otherUserName: otherUserName,
-                otherUserPhoto: otherUserPhoto,
+          // Only navigate if we have a valid other user ID
+          if (otherParticipant?.id != null && otherParticipant!.id.isNotEmpty) {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => ChatScreen(
+                  conversationId: conversation.id,
+                  otherUserId: otherParticipant.id,
+                  otherUserName: otherUserName,
+                  otherUserPhoto: otherUserPhoto,
+                ),
               ),
-            ),
-          );
+            );
+          } else {
+            // Show error if no valid participant
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Unable to open conversation: Invalid user data'),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
         },
       ),
     );
