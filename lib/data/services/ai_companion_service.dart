@@ -39,7 +39,12 @@ class AiCompanionService {
           
           // Only process messages from AI companions (not user message confirmations)
           // This prevents duplicate user messages in the chat
-          if (messageData['isFromCompanion'] == true) {
+          final isFromUser = messageData['isFromUser'];
+          _logger.d(
+            '🐛 DEBUG: isFromUser value: $isFromUser (type: ${isFromUser.runtimeType})',
+          );
+
+          if (isFromUser == false) {
             // Add companionId and conversationId from the outer data to the message data
             if (data.containsKey('companionId')) {
               messageData['companionId'] = data['companionId'];
