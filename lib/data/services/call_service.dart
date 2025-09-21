@@ -117,10 +117,18 @@ class CallService {
       _connectionStateController.add(CallConnectionState.connecting);
       
       // Answer WebRTC call with channel name and token from incoming call
-      // In production, these should be provided by the incoming call data
+      // Get call token from backend API
+      final tokenResponse = await _apiService.post(
+        '/webrtc/calls/$callId/token',
+        data: {},
+      );
+
+      final responseData = tokenResponse.data as Map<String, dynamic>;
+      final String token = responseData['token'];
+      final String channelName = responseData['channelName'];
+      
       await _webRTCService.answerCall(
-        channelName: 'call_$callId',
-        token: 'placeholder_token', // Get from backend API
+        channelName: channelName, token: token,
       );
     } catch (e) {
       throw CallException('Failed to accept call: $e');

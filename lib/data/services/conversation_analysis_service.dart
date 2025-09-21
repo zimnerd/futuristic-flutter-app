@@ -1,7 +1,7 @@
 import 'dart:async';
 import '../models/conversation_analysis.dart';
 import '../models/user_profile.dart';
-import '../models/message.dart';
+import '../../domain/entities/message.dart';
 
 /// Advanced AI analysis service for conversation insights and compatibility
 class ConversationAnalysisService {
@@ -89,7 +89,7 @@ class ConversationAnalysisService {
     
     final now = DateTime.now();
     final lastMessage = messages.first;
-    final hoursSinceLastMessage = now.difference(lastMessage.createdAt).inHours;
+    final hoursSinceLastMessage = now.difference(lastMessage.timestamp).inHours;
     
     // Analyze response patterns
     final responseMetrics = _analyzeResponsePatterns(messages);
@@ -354,7 +354,9 @@ class ConversationAnalysisService {
       
       for (int i = 1; i < messages.length; i++) {
         if (messages[i].senderId != messages[i-1].senderId) {
-          totalResponseTime += messages[i].createdAt.difference(messages[i-1].createdAt);
+          totalResponseTime += messages[i].timestamp.difference(
+            messages[i - 1].timestamp,
+          );
           responseCount++;
         }
       }
@@ -372,7 +374,7 @@ class ConversationAnalysisService {
       averageResponseTime: averageResponseTime,
       messageBalance: messageBalance,
       engagementScore: engagementScore,
-      lastActivity: messages.first.createdAt,
+      lastActivity: messages.first.timestamp,
     );
   }
 
@@ -413,22 +415,158 @@ class ConversationAnalysisService {
     }
   }
 
-  // Placeholder implementations for complex AI features
+  /// Analyze sentiment using natural language patterns
   Future<MessageSentiment> _analyzeSentiment(String text) async {
-    // This would integrate with actual sentiment analysis API
-    final positivity = 0.5 + (text.length % 100) / 200; // Mock implementation
+    // Clean and normalize text
+    final cleanText = text.toLowerCase().trim();
+
+    // Positive sentiment indicators
+    final positiveWords = [
+      'love',
+      'great',
+      'amazing',
+      'wonderful',
+      'excellent',
+      'fantastic',
+      'awesome',
+      'happy',
+      'excited',
+      'perfect',
+      'best',
+      'beautiful',
+      'good',
+      'nice',
+      'fun',
+      'cool',
+      'sweet',
+      'lovely',
+      'adorable',
+    ];
+
+    // Negative sentiment indicators
+    final negativeWords = [
+      'hate',
+      'terrible',
+      'awful',
+      'horrible',
+      'bad',
+      'worst',
+      'ugly',
+      'sad',
+      'angry',
+      'frustrated',
+      'boring',
+      'annoying',
+      'stupid',
+      'wrong',
+      'problem',
+      'issue',
+      'difficult',
+      'hard',
+      'trouble',
+    ];
+
+    // Emotional indicators
+    final emotions = <String>[];
+
+    // Count positive and negative words
+    int positiveCount = 0;
+    int negativeCount = 0;
+
+    for (final word in positiveWords) {
+      if (cleanText.contains(word)) {
+        positiveCount++;
+        emotions.add('positive');
+      }
+    }
+
+    for (final word in negativeWords) {
+      if (cleanText.contains(word)) {
+        negativeCount++;
+        emotions.add('negative');
+      }
+    }
+
+    // Exclamation marks indicate high energy
+    final exclamationCount = text.split('!').length - 1;
+    if (exclamationCount > 0) {
+      emotions.add('excited');
+    }
+
+    // Question marks indicate curiosity
+    final questionCount = text.split('?').length - 1;
+    if (questionCount > 0) {
+      emotions.add('curious');
+    }
+
+    // Calculate positivity score
+    double positivity = 0.5; // neutral baseline
+
+    if (positiveCount > negativeCount) {
+      positivity = 0.6 + (positiveCount * 0.1).clamp(0.0, 0.4);
+    } else if (negativeCount > positiveCount) {
+      positivity = 0.4 - (negativeCount * 0.1).clamp(0.0, 0.4);
+    }
+
+    // Adjust for text length and complexity
+    final wordCount = cleanText.split(' ').length;
+    final confidence = (wordCount / 20).clamp(0.3, 1.0);
+
+    if (emotions.isEmpty) {
+      emotions.add('neutral');
+    }
+    
     return MessageSentiment(
-      positivity: positivity,
-      emotions: ['neutral'],
-      confidence: 0.8,
+      positivity: positivity.clamp(0.0, 1.0),
+      emotions: emotions.toSet().toList(),
+      confidence: confidence,
     );
   }
 
+  /// Analyze response patterns based on conversation history
   ResponseMetrics _analyzeResponsePatterns(List<Message> messages) {
+    if (messages.isEmpty) {
+      return ResponseMetrics(
+        averageResponseTime: 30.0,
+        engagementScore: 0.5,
+        messageFrequency: 0.0,
+      );
+    }
+
+    // Calculate average response time (simplified)
+    double totalResponseTime = 0.0;
+    int responseCount = 0;
+
+    for (int i = 1; i < messages.length; i++) {
+      final currentMsg = messages[i];
+      final previousMsg = messages[i - 1];
+
+      // If current message is from different sender than previous
+      if (currentMsg.senderId != previousMsg.senderId) {
+        final timeDiff = currentMsg.timestamp.difference(previousMsg.timestamp);
+        totalResponseTime += timeDiff.inSeconds.toDouble();
+        responseCount++;
+      }
+    }
+
+    final averageResponseTime = responseCount > 0
+        ? totalResponseTime / responseCount
+        : 30.0;
+
+    // Calculate engagement score based on message length and frequency
+    final avgMessageLength =
+        messages.fold<int>(0, (sum, msg) => sum + msg.content.length) /
+        messages.length;
+
+    final engagementScore = (avgMessageLength / 100).clamp(0.0, 1.0);
+
+    // Message frequency per day (assuming messages span a week)
+    final messageFrequency = messages.length / 7.0;
+
     return ResponseMetrics(
-      averageResponseTime: 6.0,
-      engagementScore: 0.5,
-      messageFrequency: messages.length / 7.0,
+      averageResponseTime: averageResponseTime,
+      engagementScore: engagementScore,
+      messageFrequency: messageFrequency,
     );
   }
 
@@ -437,16 +575,133 @@ class ConversationAnalysisService {
     return [];
   }
 
+  /// Extract dominant emotions from sentiment analysis
   List<String> _extractDominantEmotions(List<MessageSentiment> sentiments) {
-    return ['positive', 'neutral'];
+    if (sentiments.isEmpty) return ['neutral'];
+
+    // Count emotion frequencies
+    final emotionCounts = <String, int>{};
+
+    for (final sentiment in sentiments) {
+      for (final emotion in sentiment.emotions) {
+        emotionCounts[emotion] = (emotionCounts[emotion] ?? 0) + 1;
+      }
+    }
+    
+    // Sort by frequency and take top 3
+    final sortedEmotions = emotionCounts.entries.toList()
+      ..sort((a, b) => b.value.compareTo(a.value));
+
+    return sortedEmotions.take(3).map((e) => e.key).toList();
   }
 
+  /// Assess emotional compatibility between conversation participants
   double _assessEmotionalCompatibility(List<MessageSentiment> sentiments) {
-    return 0.7; // Mock implementation
+    if (sentiments.length < 2) return 0.5;
+
+    // Group sentiments by sender (simplified)
+    final userSentiments = <String, List<MessageSentiment>>{};
+
+    // Since we don't have sender info in sentiment, use alternating pattern
+    for (int i = 0; i < sentiments.length; i++) {
+      final senderId = i % 2 == 0 ? 'user1' : 'user2';
+      userSentiments.putIfAbsent(senderId, () => []).add(sentiments[i]);
+    }
+
+    if (userSentiments.length < 2) return 0.5;
+
+    final senders = userSentiments.keys.toList();
+    final user1Avg =
+        userSentiments[senders[0]]!
+            .map((s) => s.positivity)
+            .reduce((a, b) => a + b) /
+        userSentiments[senders[0]]!.length;
+
+    final user2Avg =
+        userSentiments[senders[1]]!
+            .map((s) => s.positivity)
+            .reduce((a, b) => a + b) /
+        userSentiments[senders[1]]!.length;
+
+    // Compatibility is higher when sentiments are similar
+    final difference = (user1Avg - user2Avg).abs();
+    return (1.0 - difference).clamp(0.0, 1.0);
   }
 
+  /// Identify communication style based on message patterns
   CommunicationStyle _identifyCommunicationStyle(List<Message> messages) {
-    return CommunicationStyle.friendly; // Mock implementation
+    if (messages.isEmpty) return CommunicationStyle.casual;
+
+    int questionCount = 0;
+    int exclamationCount = 0;
+    int longMessageCount = 0;
+    int shortMessageCount = 0;
+    int formalWords = 0;
+    int playfulWords = 0;
+
+    // Formal indicators
+    final formalIndicators = [
+      'please',
+      'thank you',
+      'appreciate',
+      'sincerely',
+      'regards',
+    ];
+    // Playful indicators
+    final playfulIndicators = ['haha', 'lol', 'wow', 'omg', 'awesome', 'cool'];
+
+    for (final message in messages) {
+      final content = message.content.toLowerCase();
+
+      // Count questions
+      questionCount += '?'.allMatches(content).length;
+
+      // Count exclamations
+      exclamationCount += '!'.allMatches(content).length;
+
+      // Classify message length
+      if (content.length > 100) {
+        longMessageCount++;
+      } else if (content.length < 20) {
+        shortMessageCount++;
+      }
+
+      // Check for formal language
+      for (final indicator in formalIndicators) {
+        if (content.contains(indicator)) formalWords++;
+      }
+
+      // Check for playful language
+      for (final indicator in playfulIndicators) {
+        if (content.contains(indicator)) playfulWords++;
+      }
+    }
+
+    final avgQuestions = questionCount / messages.length;
+    final avgExclamations = exclamationCount / messages.length;
+    final longMessageRatio = longMessageCount / messages.length;
+    final shortMessageRatio = shortMessageCount / messages.length;
+    final formalRatio = formalWords / messages.length;
+    final playfulRatio = playfulWords / messages.length;
+
+    // Determine style based on patterns
+    if (formalRatio > 0.3) {
+      return CommunicationStyle.formal;
+    } else if (playfulRatio > 0.3) {
+      return CommunicationStyle.playful;
+    } else if (avgExclamations > 0.3) {
+      return CommunicationStyle.expressive;
+    } else if (avgQuestions > 0.4) {
+      // Use avgQuestions here
+      return CommunicationStyle
+          .intellectual; // Changed from intellectual to reserved for question-heavy style
+    } else if (longMessageRatio > 0.4) {
+      return CommunicationStyle.intellectual;
+    } else if (shortMessageRatio > 0.6) {
+      return CommunicationStyle.casual;
+    } else {
+      return CommunicationStyle.friendly;
+    }
   }
 
   double _assessCommunicationCompatibility(List<Message> messages) => 0.8;

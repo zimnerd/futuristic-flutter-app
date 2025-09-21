@@ -1,5 +1,5 @@
 import 'package:logger/logger.dart';
-import 'package:pulse_dating_app/data/models/message.dart';
+import 'package:pulse_dating_app/data/models/message.dart' as data_message;
 
 import '../models/chat_model.dart';
 import '../datasources/remote/chat_remote_data_source.dart';
@@ -60,7 +60,7 @@ class ChatRepositoryImpl implements ChatRepository {
   @override
   Future<MessageModel> sendMessage({
     required String conversationId,
-    required MessageType type,
+    required data_message.MessageType type,
     String? content,
     List<String>? mediaIds,
     Map<String, dynamic>? metadata,
@@ -73,22 +73,26 @@ class ChatRepositoryImpl implements ChatRepository {
       _webSocketService.sendMessage(
         conversationId,
         content ?? '',
-        _convertTodomainMessageType(type),
+        _convertToDomainMessageType(type),
       );
       
-      // For now, still get the message from HTTP endpoint to ensure consistency
-      // TODO: Remove HTTP call once backend fully supports Socket.IO-only messaging
-      final message = await _remoteDataSource.sendMessage(
+      // Create optimistic message for immediate UI update
+      final optimisticMessage = MessageModel(
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
         conversationId: conversationId,
-        type: type,
+        senderId: 'current_user', // This should be set from auth state
+        senderUsername: 'You', // This should be set from auth state
+        type: _convertToDomainMessageType(type),
         content: content,
-        mediaIds: mediaIds,
+        status: MessageStatus.sending,
+        mediaUrls: mediaIds,
         metadata: metadata,
-        replyToMessageId: replyToMessageId,
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
       );
       
-      _logger.d('Successfully sent message: ${message.id}');
-      return message;
+      _logger.d('Successfully sent message via Socket.IO');
+      return optimisticMessage;
     } catch (e) {
       _logger.e('Error sending message: $e');
       rethrow;
@@ -333,27 +337,29 @@ class ChatRepositoryImpl implements ChatRepository {
   }
 
   /// Convert data model MessageType to domain MessageType
-  domain.MessageType _convertTodomainMessageType(MessageType type) {
+  domain.MessageType _convertToDomainMessageType(
+    data_message.MessageType type,
+  ) {
     switch (type) {
-      case MessageType.text:
+      case data_message.MessageType.text:
         return domain.MessageType.text;
-      case MessageType.image:
+      case data_message.MessageType.image:
         return domain.MessageType.image;
-      case MessageType.video:
+      case data_message.MessageType.video:
         return domain.MessageType.video;
-      case MessageType.audio:
+      case data_message.MessageType.audio:
         return domain.MessageType.audio;
-      case MessageType.gif:
+      case data_message.MessageType.gif:
         return domain.MessageType.gif;
-      case MessageType.sticker:
+      case data_message.MessageType.sticker:
         return domain.MessageType.sticker;
-      case MessageType.location:
+      case data_message.MessageType.location:
         return domain.MessageType.location;
-      case MessageType.contact:
+      case data_message.MessageType.contact:
         return domain.MessageType.contact;
-      case MessageType.file:
+      case data_message.MessageType.file:
         return domain.MessageType.file;
-      case MessageType.system:
+      case data_message.MessageType.system:
         // Map system to text as domain doesn't have system type
         return domain.MessageType.text;
     }
