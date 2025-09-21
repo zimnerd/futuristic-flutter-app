@@ -33,27 +33,36 @@ class AiCompanionService {
       data,
     ) {
       try {
-        // Handle ai_message_received events
+        // Handle ai_message_received events (only AI companion responses, not user message confirmations)
         if (data.containsKey('message') && data.containsKey('companionId')) {
           final messageData = data['message'] as Map<String, dynamic>;
           
-          // Add companionId and conversationId from the outer data to the message data
-          if (data.containsKey('companionId')) {
-            messageData['companionId'] = data['companionId'];
-          }
-          if (data.containsKey('conversationId') && data['conversationId'] != null) {
-            messageData['conversationId'] = data['conversationId'];
-          }
-          
-          final message = CompanionMessage.fromJson(messageData);
-          _messageController.add(message);
+          // Only process messages from AI companions (not user message confirmations)
+          // This prevents duplicate user messages in the chat
+          if (messageData['isFromCompanion'] == true) {
+            // Add companionId and conversationId from the outer data to the message data
+            if (data.containsKey('companionId')) {
+              messageData['companionId'] = data['companionId'];
+            }
+            if (data.containsKey('conversationId') &&
+                data['conversationId'] != null) {
+              messageData['conversationId'] = data['conversationId'];
+            }
 
-          // Save to local storage
-          _localStorage.saveAiMessage(message);
+            final message = CompanionMessage.fromJson(messageData);
+            _messageController.add(message);
 
-          _logger.d(
-            'Received WebSocket message and forwarded to stream: ${message.id}',
-          );
+            // Save to local storage
+            _localStorage.saveAiMessage(message);
+
+            _logger.d(
+              'Received AI companion response and forwarded to stream: ${message.id}',
+            );
+          } else {
+            _logger.d(
+              'Ignored user message confirmation from WebSocket: ${messageData['id']} (already handled by BLoC)',
+            );
+          }
         }
       } catch (e) {
         _logger.e('Error processing WebSocket message: $e');
@@ -199,20 +208,33 @@ class AiCompanionService {
     required String name,
     required CompanionPersonality personality,
     required CompanionAppearance appearance,
+    CompanionGender? gender,
+    CompanionAge? ageGroup,
+    String? description,
+    List<String>? interests,
+    Map<String, dynamic>? voiceSettings,
     String? customPrompt,
   }) async {
     try {
+      final requestData = {
+        'name': name,
+        'personality': personality.name,
+        'gender': gender?.name ?? 'female', // Default to female
+        'ageGroup': ageGroup?.name ?? 'adult', // Default to adult
+        'description':
+            description ??
+            'A personalized AI companion to help with dating advice',
+        'interests': interests ?? ['dating', 'relationships', 'conversation'],
+      };
+
+      // Add voice settings if provided
+      if (voiceSettings != null && voiceSettings.isNotEmpty) {
+        requestData['voiceSettings'] = voiceSettings;
+      }
+
       final response = await _apiClient.post(
         '/ai-companions',
-        data: {
-          'name': name,
-          'personality': personality.name,
-          'gender': 'female', // Default to female, should be configurable in UI
-          'ageGroup': 'adult', // Default to adult, should be configurable in UI
-          'description':
-              'A personalized AI companion to help with dating advice',
-          'interests': ['dating', 'relationships', 'conversation'],
-        },
+        data: requestData,
       );
 
       if (HttpStatusUtils.isPostSuccess(response.statusCode) &&
@@ -325,7 +347,23 @@ class AiCompanionService {
       }
     } catch (e) {
       _logger.e('Error deleting AI companion: $e');
-      return false;
+      
+      // Check if it's a foreign key constraint error
+      final errorString = e.toString().toLowerCase();
+      if (errorString.contains('foreign key') ||
+          errorString.contains('constraint') ||
+          errorString.contains('companion_conversations_companionid_fkey')) {
+        throw Exception(
+          'Cannot delete companion: Active conversations exist. Please delete conversations first.',
+        );
+      } else if (errorString.contains('500')) {
+        throw Exception(
+          'Server error occurred while deleting companion. Please try again.',
+        );
+      }
+
+      // Re-throw original error if not a known case
+      rethrow;
     }
   }
 

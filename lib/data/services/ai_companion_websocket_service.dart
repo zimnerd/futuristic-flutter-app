@@ -209,14 +209,15 @@ class AiCompanionWebSocketService {
 
     _socket!.on('aiMessageSent', (data) {
   _logger.d('[AI Companion WS] [EVENT] aiMessageSent | Payload: ${data.toString()}');
-  // Emit this as a status update for the sent message
-  _messageController.add(data as Map<String, dynamic>);
+      // Don't forward user message confirmations to stream - BLoC handles user messages immediately
+      // This prevents duplicate user messages from appearing in the chat
     });
 
     _socket!.on('ai_message_received', (data) {
   _logger.d('[AI Companion WS] [EVENT] ai_message_received | RAW Payload: ${data.toString()}');
   final dataMap = data as Map<String, dynamic>;
   _logger.d('[AI Companion WS] [EVENT] ai_message_received | MAPPED Payload: $dataMap');
+      // Only forward AI companion responses to the stream, not user message confirmations
   _messageController.add(dataMap);
     });
 

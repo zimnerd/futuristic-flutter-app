@@ -15,14 +15,41 @@ enum CompanionPersonality {
   final String description;
 }
 
+/// AI Companion gender types
+enum CompanionGender {
+  male('Male', '♂️'),
+  female('Female', '♀️'),
+  nonBinary('Non-Binary', '⚧️');
+
+  const CompanionGender(this.displayName, this.icon);
+  final String displayName;
+  final String icon;
+}
+
+/// AI Companion age groups
+enum CompanionAge {
+  youngAdult('Young Adult (18-25)', '🌟'),
+  adult('Adult (26-35)', '💼'),
+  mature('Mature (36-45)', '🎯'),
+  experienced('Experienced (46+)', '🌿');
+
+  const CompanionAge(this.displayName, this.icon);
+  final String displayName;
+  final String icon;
+}
+
 /// AI Companion model
 class AICompanion extends Equatable {
   final String id;
   final String userId;
   final String name;
   final CompanionPersonality personality;
+  final CompanionGender? gender;
+  final CompanionAge? ageGroup;
   final String avatarUrl;
   final String description;
+  final List<String> interests;
+  final Map<String, dynamic> voiceSettings;
   final Map<String, dynamic> traits;
   final int relationshipLevel; // 1-10 scale
   final int conversationCount;
@@ -36,8 +63,12 @@ class AICompanion extends Equatable {
     required this.userId,
     required this.name,
     required this.personality,
+    this.gender,
+    this.ageGroup,
     required this.avatarUrl,
     required this.description,
+    this.interests = const [],
+    this.voiceSettings = const {},
     this.traits = const {},
     this.relationshipLevel = 1,
     this.conversationCount = 0,
@@ -56,8 +87,24 @@ class AICompanion extends Equatable {
         (e) => e.name == json['personality'],
         orElse: () => CompanionPersonality.friend,
       ),
+      gender: json['gender'] != null
+          ? CompanionGender.values.firstWhere(
+              (e) => e.name == json['gender'],
+              orElse: () => CompanionGender.female,
+            )
+          : null,
+      ageGroup: json['ageGroup'] != null
+          ? CompanionAge.values.firstWhere(
+              (e) => e.name == json['ageGroup'],
+              orElse: () => CompanionAge.adult,
+            )
+          : null,
       avatarUrl: json['avatarUrl'] as String? ?? '',
       description: json['description'] as String,
+      interests: List<String>.from(json['interests'] as List? ?? []),
+      voiceSettings: Map<String, dynamic>.from(
+        json['voiceSettings'] as Map? ?? {},
+      ),
       traits: Map<String, dynamic>.from(json['traits'] as Map? ?? {}),
       relationshipLevel: json['relationshipLevel'] as int? ?? 1,
       conversationCount: json['conversationCount'] as int? ?? 0,
@@ -74,8 +121,12 @@ class AICompanion extends Equatable {
       'userId': userId,
       'name': name,
       'personality': personality.name,
+      'gender': gender?.name,
+      'ageGroup': ageGroup?.name,
       'avatarUrl': avatarUrl,
       'description': description,
+      'interests': interests,
+      'voiceSettings': voiceSettings,
       'traits': traits,
       'relationshipLevel': relationshipLevel,
       'conversationCount': conversationCount,
@@ -91,8 +142,12 @@ class AICompanion extends Equatable {
     String? userId,
     String? name,
     CompanionPersonality? personality,
+    CompanionGender? gender,
+    CompanionAge? ageGroup,
     String? avatarUrl,
     String? description,
+    List<String>? interests,
+    Map<String, dynamic>? voiceSettings,
     Map<String, dynamic>? traits,
     int? relationshipLevel,
     int? conversationCount,
@@ -106,8 +161,12 @@ class AICompanion extends Equatable {
       userId: userId ?? this.userId,
       name: name ?? this.name,
       personality: personality ?? this.personality,
+      gender: gender ?? this.gender,
+      ageGroup: ageGroup ?? this.ageGroup,
       avatarUrl: avatarUrl ?? this.avatarUrl,
       description: description ?? this.description,
+      interests: interests ?? this.interests,
+      voiceSettings: voiceSettings ?? this.voiceSettings,
       traits: traits ?? this.traits,
       relationshipLevel: relationshipLevel ?? this.relationshipLevel,
       conversationCount: conversationCount ?? this.conversationCount,
@@ -148,8 +207,12 @@ class AICompanion extends Equatable {
         userId,
         name,
         personality,
+    gender,
+    ageGroup,
         avatarUrl,
         description,
+    interests,
+    voiceSettings,
         traits,
         relationshipLevel,
         conversationCount,

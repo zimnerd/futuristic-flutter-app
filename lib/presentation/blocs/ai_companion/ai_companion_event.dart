@@ -15,15 +15,34 @@ class CreateCompanion extends AiCompanionEvent {
   final String name;
   final CompanionPersonality personality;
   final CompanionAppearance appearance;
+  final CompanionGender? gender;
+  final CompanionAge? ageGroup;
+  final String? description;
+  final List<String>? interests;
+  final Map<String, dynamic>? voiceSettings;
 
   const CreateCompanion({
     required this.name,
     required this.personality,
     required this.appearance,
+    this.gender,
+    this.ageGroup,
+    this.description,
+    this.interests,
+    this.voiceSettings,
   });
 
   @override
-  List<Object> get props => [name, personality, appearance];
+  List<Object?> get props => [
+    name,
+    personality,
+    appearance,
+    gender,
+    ageGroup,
+    description,
+    interests,
+    voiceSettings,
+  ];
 }
 
 class UpdateCompanion extends AiCompanionEvent {

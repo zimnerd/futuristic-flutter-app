@@ -86,13 +86,18 @@ class AiCompanionBloc extends Bloc<AiCompanionEvent, AiCompanionState> {
         name: event.name,
         personality: event.personality,
         appearance: event.appearance,
+        gender: event.gender,
+        ageGroup: event.ageGroup,
+        description: event.description,
+        interests: event.interests,
+        voiceSettings: event.voiceSettings,
       );
 
       if (companion != null) {
         emit(AiCompanionCreated(companion));
         _logger.d('$_tag: Companion created successfully: ${companion.id}');
         
-        // Refresh companions list
+        // Refresh companions list to get back to loaded state
         add(RefreshCompanionData());
       } else {
         emit(AiCompanionError('Failed to create companion'));
@@ -147,14 +152,26 @@ class AiCompanionBloc extends Bloc<AiCompanionEvent, AiCompanionState> {
         emit(AiCompanionDeleted(event.companionId));
         _logger.d('$_tag: Companion deleted successfully');
         
-        // Refresh companions list
+        // Refresh companions list to get back to loaded state
         add(RefreshCompanionData());
       } else {
         emit(AiCompanionError('Failed to delete companion'));
       }
     } catch (e, stackTrace) {
       _logger.e('$_tag: Failed to delete companion', error: e, stackTrace: stackTrace);
-      emit(AiCompanionError('Failed to delete companion: ${e.toString()}'));
+      
+      // Provide user-friendly error messages
+      String errorMessage = 'Failed to delete companion';
+      if (e.toString().contains('Active conversations exist')) {
+        errorMessage =
+            'Cannot delete this companion because you have active conversations. Please delete your chat history first.';
+      } else if (e.toString().contains('Server error')) {
+        errorMessage = 'Server error occurred. Please try again in a moment.';
+      } else {
+        errorMessage = 'Failed to delete companion: ${e.toString()}';
+      }
+
+      emit(AiCompanionError(errorMessage));
     }
   }
 
@@ -473,9 +490,11 @@ class AiCompanionBloc extends Bloc<AiCompanionEvent, AiCompanionState> {
     RefreshCompanionData event,
     Emitter<AiCompanionState> emit,
   ) async {
-    // Only refresh if we're currently in a loaded state
-    if (state is AiCompanionLoaded) {
-      add(LoadUserCompanions());
-    }
+    // Refresh companions data regardless of current state
+    // This ensures loading states transition back to loaded properly
+    _logger.d(
+      '$_tag: Refreshing companion data from state: ${state.runtimeType}',
+    );
+    add(LoadUserCompanions());
   }
 }

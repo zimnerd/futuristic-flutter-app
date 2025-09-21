@@ -148,29 +148,98 @@ class _AiCompanionScreenState extends State<AiCompanionScreen> {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       useSafeArea: true,
-      builder: (context) => DraggableScrollableSheet(
-        initialChildSize: 0.8,
-        maxChildSize: 0.95,
-        minChildSize: 0.5,
-        builder: (context, scrollController) => Container(
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.vertical(
-              top: Radius.circular(20),
-            ),
-          ),
-          child: CompanionCreationWidget(
-            scrollController: scrollController,
-            onCompanionCreated: (name, personality, appearance) {
-              context.read<AiCompanionBloc>().add(
-                CreateCompanion(
-                  name: name,
-                  personality: personality,
-                  appearance: appearance,
+      builder: (context) => BlocListener<AiCompanionBloc, AiCompanionState>(
+        listener: (context, state) {
+          if (state is AiCompanionCreated) {
+            Navigator.pop(context);
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  'Companion "${state.companion.name}" created successfully!',
                 ),
-              );
-              Navigator.pop(context);
-            },
+                backgroundColor: PulseColors.success,
+              ),
+            );
+          } else if (state is AiCompanionError) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Error: ${state.message}'),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+        },
+        child: DraggableScrollableSheet(
+          initialChildSize: 0.8,
+          maxChildSize: 0.95,
+          minChildSize: 0.5,
+          builder: (context, scrollController) => Container(
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+            ),
+            child: BlocBuilder<AiCompanionBloc, AiCompanionState>(
+              builder: (context, state) {
+                final isCreating = state is AiCompanionCreating;
+
+                return Stack(
+                  children: [
+                    CompanionCreationWidget(
+                      scrollController: scrollController,
+                      onCompanionCreated:
+                          (
+                            name,
+                            personality,
+                            appearance, {
+                            CompanionGender? gender,
+                            CompanionAge? ageGroup,
+                            String? description,
+                            List<String>? interests,
+                            Map<String, dynamic>? voiceSettings,
+                          }) {
+                            context.read<AiCompanionBloc>().add(
+                              CreateCompanion(
+                                name: name,
+                                personality: personality,
+                                appearance: appearance,
+                                gender: gender,
+                                ageGroup: ageGroup,
+                                description: description,
+                                interests: interests,
+                                voiceSettings: voiceSettings,
+                              ),
+                            );
+                            // Note: No longer calling Navigator.pop() here -
+                            // BlocListener will handle navigation on success
+                          },
+                    ),
+                    if (isCreating)
+                      Container(
+                        color: Colors.black54,
+                        child: const Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              CircularProgressIndicator(
+                                color: PulseColors.primary,
+                              ),
+                              SizedBox(height: 16),
+                              Text(
+                                'Creating your AI companion...',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                  ],
+                );
+              },
+            ),
           ),
         ),
       ),
@@ -196,7 +265,17 @@ class _AiCompanionScreenState extends State<AiCompanionScreen> {
           child: CompanionCreationWidget(
             scrollController: scrollController,
             existingCompanion: companion,
-            onCompanionCreated: (name, personality, appearance) {
+            onCompanionCreated:
+                (
+                  name,
+                  personality,
+                  appearance, {
+                  CompanionGender? gender,
+                  CompanionAge? ageGroup,
+                  String? description,
+                  List<String>? interests,
+                  Map<String, dynamic>? voiceSettings,
+                }) {
               context.read<AiCompanionBloc>().add(
                 UpdateCompanion(
                   companionId: companion.id,
@@ -243,12 +322,17 @@ class _AiCompanionScreenState extends State<AiCompanionScreen> {
     );
   }
 
-  void _navigateToChat(AICompanion companion) {
-    Navigator.push(
+  void _navigateToChat(AICompanion companion) async {
+    await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => AiCompanionChatScreen(companion: companion),
       ),
     );
+    
+    // Refresh companions list when returning from chat
+    if (mounted) {
+      context.read<AiCompanionBloc>().add(LoadUserCompanions());
+    }
   }
 }
