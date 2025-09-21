@@ -1,8 +1,10 @@
+import '../config/app_config.dart';
+
 /// API constants for backend communication - aligned with NestJS controllers
 class ApiConstants {
-  // Base URLs - Development API (local backend running on port 3000)
-  static const String baseUrl = 'http://localhost:3000/api/v1';
-  static const String websocketUrl = 'ws://localhost:3000/chat';
+  // Base URLs - Uses AppConfig for environment-aware URLs
+  static String get baseUrl => AppConfig.apiBaseUrl;
+  static String get websocketUrl => AppConfig.websocketUrl;
   
   // ================================
   // CORE MODULE ENDPOINTS

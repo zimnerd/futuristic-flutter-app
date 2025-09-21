@@ -1,18 +1,24 @@
-// cSpell:ignore pulsetek
 /// Environment configuration for the app
 class AppConfig {
   AppConfig._();
 
-  // Environment detection based on flavor or debug mode
+  // ================================
+  // 🎯 MANUAL ENVIRONMENT CONTROL
+  // ================================
+  // Change this manually to switch between dev/prod
+  static const bool _useProductionEnvironment =
+      true; // Set to true for production
+
+  // Environment flags based on manual setting
+  static const bool isDevelopment = !_useProductionEnvironment;
+  static const bool isProduction = _useProductionEnvironment;
+  static const bool isStaging = false; // Can be controlled separately if needed
+
+  // Environment detection based on flavor or debug mode (for legacy support)
   static const String _flavor = String.fromEnvironment(
     'FLAVOR',
-    defaultValue: 'development',
+    defaultValue: _useProductionEnvironment ? 'production' : 'development',
   );
-  static const bool isDevelopment =
-      _flavor == 'development' ||
-      bool.fromEnvironment('dart.vm.product') == false;
-  static const bool isProduction = _flavor == 'production';
-  static const bool isStaging = _flavor == 'staging';
 
   // API Configuration - Environment-based for development
   static const String apiBaseUrl = isDevelopment

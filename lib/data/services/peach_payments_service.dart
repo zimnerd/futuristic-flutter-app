@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:logger/logger.dart';
 import '../../core/utils/logger.dart';
+import '../../core/config/app_config.dart';
 
 /// PeachPayments API integration service
 /// Documentation: https://developer.peachpayments.com/
@@ -16,7 +17,7 @@ class PeachPaymentsService {
   final Logger _logger = Logger();
 
   // PeachPayments API configuration
-  static const String _baseUrl = 'https://test.oppwa.com'; // Use production URL for live
+  String get _baseUrl => AppConfig.peachPaymentsBaseUrl;
   static const String _checkoutEndpoint = '/v1/checkouts';
   static const String _paymentStatusEndpoint = '/v1/payments';
   

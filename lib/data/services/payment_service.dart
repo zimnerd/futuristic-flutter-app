@@ -33,7 +33,7 @@ class PaymentService {
 
   String? _authToken;
   final PeachPaymentsService _peachPayments = PeachPaymentsService.instance;
-  final String _baseUrl = 'https://api.yourbackend.com/v1';
+  String get _baseUrl => ApiConstants.baseUrl;
 
   /// Set authentication token
   void setAuthToken(String token) {
