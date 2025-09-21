@@ -33,6 +33,7 @@ import 'presentation/blocs/auth/auth_bloc.dart';
 import 'presentation/blocs/user/user_bloc.dart';
 import 'presentation/blocs/event/event_bloc.dart';
 import 'presentation/blocs/matching/matching_bloc.dart';
+import 'presentation/blocs/match/match_bloc.dart';
 import 'presentation/blocs/filters/filter_bloc.dart';
 import 'presentation/blocs/discovery/discovery_bloc.dart';
 import 'presentation/navigation/app_router.dart';
@@ -174,6 +175,13 @@ class PulseDatingApp extends StatelessWidget {
           ),
           BlocProvider<MatchingBloc>(
             create: (context) => MatchingBloc(
+              matchingService: MatchingService(
+                apiClient: context.read<ApiClient>(),
+              ),
+            ),
+          ),
+          BlocProvider<MatchBloc>(
+            create: (context) => MatchBloc(
               matchingService: MatchingService(
                 apiClient: context.read<ApiClient>(),
               ),

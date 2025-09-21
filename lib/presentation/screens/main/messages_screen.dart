@@ -130,9 +130,9 @@ class _MessagesScreenState extends State<MessagesScreen> {
   }
   void _onMatchStoryTap(MatchStoryData match) {
     // Create a conversation and navigate to chat screen
-    // For now, navigate directly to chat screen with match data
-    context.go(
-      '/chat/new',
+    // Use push instead of go to maintain navigation stack
+    context.push(
+      '/chat/new', // Use 'new' as conversation ID for new chats
       extra: {
         'otherUserId': match.userId,
         'otherUserName': match.name,
@@ -617,7 +617,8 @@ class _MessagesScreenState extends State<MessagesScreen> {
 
   void _openConversation(ConversationData conversation) {
     // Navigate to chat screen with proper data
-    context.go(
+    // Use push instead of go to maintain navigation stack
+    context.push(
       '/chat/${conversation.id}',
       extra: {
         'otherUserId':

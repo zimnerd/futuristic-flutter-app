@@ -83,7 +83,10 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
     final subscription = context.read<ChatBloc>().stream.listen((state) {
       if (state is ConversationCreated) {
         // Navigate to chat screen with the new conversation
-        context.go('/chat/${state.conversation.id}', extra: {
+        // Use push instead of go to maintain navigation stack
+        context.push(
+          '/chat/${state.conversation.id}',
+          extra: {
           'otherUserId': widget.profile.id,
           'otherUserName': widget.profile.name,
           'otherUserPhoto': widget.profile.photos.isNotEmpty 

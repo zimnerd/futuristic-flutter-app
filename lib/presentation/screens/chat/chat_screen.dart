@@ -155,10 +155,17 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: _buildAppBar(),
-      body: Column(
+    return PopScope(
+      onPopInvoked: (didPop) {
+        // Clean up when leaving chat screen
+        if (_typingTimer?.isActive == true) {
+          _typingTimer?.cancel();
+        }
+      },
+      child: Scaffold(
+        backgroundColor: Colors.white,
+        appBar: _buildAppBar(),
+        body: Column(
         children: [
           Expanded(
             child: BlocConsumer<ChatBloc, ChatState>(
@@ -223,6 +230,7 @@ class _ChatScreenState extends State<ChatScreen> {
             },
           ),
         ],
+      ),
       ),
     );
   }
