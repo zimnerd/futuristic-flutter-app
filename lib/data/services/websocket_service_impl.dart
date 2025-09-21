@@ -352,12 +352,14 @@ class WebSocketServiceImpl implements WebSocketService {
   // Room Management
   @override
   void joinRoom(String roomId) {
-    emit('joinConversation', {'conversationId': roomId});
+    _logger.d('🔍 joinRoom called with roomId: $roomId');
+    emit('join_conversation', {'conversationId': roomId});
+    _logger.d('✅ join_conversation event emitted for room: $roomId');
   }
 
   @override
   void leaveRoom(String roomId) {
-    emit('leaveConversation', {'conversationId': roomId});
+    emit('leave_conversation', {'conversationId': roomId});
   }
 
   @override

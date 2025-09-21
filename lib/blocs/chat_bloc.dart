@@ -427,6 +427,10 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
         limit: event.limit,
       );
       
+      // Join the conversation room for real-time updates
+      await _chatRepository.joinConversation(event.conversationId);
+      _logger.d('Joined conversation room: ${event.conversationId}');
+      
       // Check if there are more messages available
       final hasMoreMessages = messages.length == event.limit;
       
@@ -525,8 +529,23 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     Emitter<ChatState> emit,
   ) async {
     try {
-      await _chatRepository.markConversationAsRead(event.conversationId);
-      _logger.d('Conversation marked as read: ${event.conversationId}');
+      // Get current message IDs to mark as read
+      List<String> messageIds = [];
+      if (state is MessagesLoaded) {
+        final messagesState = state as MessagesLoaded;
+        // Get all message IDs (backend will filter out own messages)
+        messageIds = messagesState.messages
+            .map((message) => message.id)
+            .toList();
+      }
+
+      await _chatRepository.markConversationAsRead(
+        event.conversationId,
+        messageIds: messageIds,
+      );
+      _logger.d(
+        'Conversation marked as read: ${event.conversationId} (${messageIds.length} messages)',
+      );
 
       // Reload conversations to update unread count
       add(const LoadConversations());

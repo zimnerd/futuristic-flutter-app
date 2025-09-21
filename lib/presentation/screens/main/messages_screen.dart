@@ -131,6 +131,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
     }
   }
   void _onMatchStoryTap(MatchStoryData match) {
+    print('🔄 Match tapped: ${match.name} (${match.userId})');
     // Create a conversation first, then navigate to chat when it's ready
     context.read<ChatBloc>().add(
       CreateConversation(participantId: match.userId),
@@ -142,6 +143,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
       'otherUserName': match.name,
       'otherUserPhoto': match.avatarUrl,
     };
+    print('🔄 Stored pending navigation: $_pendingMatchNavigation');
   }
 
   @override
@@ -154,7 +156,11 @@ class _MessagesScreenState extends State<MessagesScreen> {
   Widget build(BuildContext context) {
     return BlocListener<ChatBloc, ChatState>(
       listener: (context, state) {
+        print('🔄 ChatBloc state changed: ${state.runtimeType}');
         if (state is ConversationCreated && _pendingMatchNavigation != null) {
+          print(
+            '🔄 Navigating to chat with conversation ID: ${state.conversation.id}',
+          );
           // Navigate to the newly created conversation
           context.push(
             '/chat/${state.conversation.id}',
@@ -162,6 +168,10 @@ class _MessagesScreenState extends State<MessagesScreen> {
           );
           // Clear pending navigation
           _pendingMatchNavigation = null;
+        } else if (state is ConversationCreated) {
+          print(
+            '🔄 ConversationCreated state received but _pendingMatchNavigation is null',
+          );
         }
       },
       child: Scaffold(

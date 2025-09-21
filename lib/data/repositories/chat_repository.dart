@@ -54,7 +54,10 @@ abstract class ChatRepository {
   Future<void> deleteConversation(String conversationId);
 
   /// Mark conversation as read
-  Future<void> markConversationAsRead(String conversationId);
+  Future<void> markConversationAsRead(
+    String conversationId, {
+    List<String>? messageIds,
+  });
 
   // Advanced message actions
   /// Get a specific message by ID
@@ -91,4 +94,10 @@ abstract class ChatRepository {
 
   /// Update message status (delivered, read, etc.)
   Future<void> updateMessageStatus(String messageId, String status);
+
+  /// Join a conversation room for real-time updates
+  Future<void> joinConversation(String conversationId);
+
+  /// Leave a conversation room
+  Future<void> leaveConversation(String conversationId);
 }

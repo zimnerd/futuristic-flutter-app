@@ -225,8 +225,14 @@ class ChatRepositoryImpl implements ChatRepository {
       );
 
       if (response.statusCode == 201 && response.data != null) {
+        _logger.d('🐛 Full API response: ${response.data}');
+
+        // Check if response is wrapped in 'data' field like other endpoints
+        final responseData = response.data['data'] ?? response.data;
+        _logger.d('🐛 Extracted response data: $responseData');
+        
         final conversation = _conversationFromApiResponse(
-          response.data,
+          responseData,
           matchId,
         );
         _logger.d('Successfully created conversation: ${conversation.id}');
@@ -247,6 +253,8 @@ class ChatRepositoryImpl implements ChatRepository {
     Map<String, dynamic> data,
     String otherUserId,
   ) {
+    _logger.d('🐛 Transforming API response to ConversationModel: $data');
+    
     // Get participants list
     final participants = (data['participants'] as List<dynamic>?) ?? [];
     final participantIds = participants
@@ -254,9 +262,17 @@ class ChatRepositoryImpl implements ChatRepository {
         .where((id) => id != null)
         .cast<String>()
         .toList();
+    
+    // Log the conversation ID to debug - check multiple possible fields
+    final conversationId =
+        data['id']?.toString() ??
+        data['conversationId']?.toString() ??
+        data['_id']?.toString() ??
+        '';
+    _logger.d('🐛 Creating ConversationModel with ID: $conversationId');
 
     return ConversationModel(
-      id: data['id']?.toString() ?? '',
+      id: conversationId,
       type: ConversationType.direct, // Direct conversation for 1-on-1 chat
       participantIds: participantIds,
       name: null, // Direct chats don't have names
@@ -322,10 +338,18 @@ class ChatRepositoryImpl implements ChatRepository {
   }
 
   @override
-  Future<void> markConversationAsRead(String conversationId) async {
+  Future<void> markConversationAsRead(
+    String conversationId, {
+    List<String>? messageIds,
+  }) async {
     try {
-      _logger.d('Marking conversation as read: $conversationId');
-      await _remoteDataSource.markConversationAsRead(conversationId);
+      _logger.d(
+        'Marking conversation as read: $conversationId with ${messageIds?.length ?? 0} message IDs',
+      );
+      await _remoteDataSource.markConversationAsRead(
+        conversationId,
+        messageIds: messageIds,
+      );
       _logger.d('Successfully marked conversation as read');
     } catch (e) {
       _logger.e('Error marking conversation as read: $e');
@@ -451,6 +475,30 @@ class ChatRepositoryImpl implements ChatRepository {
       _logger.d('Successfully updated message status');
     } catch (e) {
       _logger.e('Error updating message status: $e');
+      rethrow;
+    }
+  }
+
+  @override
+  Future<void> joinConversation(String conversationId) async {
+    try {
+      _logger.d('Joining conversation room: $conversationId');
+      _webSocketService.joinRoom(conversationId);
+      _logger.d('Successfully joined conversation room: $conversationId');
+    } catch (e) {
+      _logger.e('Error joining conversation: $e');
+      rethrow;
+    }
+  }
+
+  @override
+  Future<void> leaveConversation(String conversationId) async {
+    try {
+      _logger.d('Leaving conversation room: $conversationId');
+      _webSocketService.leaveRoom(conversationId);
+      _logger.d('Successfully left conversation room: $conversationId');
+    } catch (e) {
+      _logger.e('Error leaving conversation: $e');
       rethrow;
     }
   }

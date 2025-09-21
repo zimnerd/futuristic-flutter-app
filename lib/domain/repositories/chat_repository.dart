@@ -19,6 +19,7 @@ abstract class ChatRepository {
     Map<String, dynamic> updates,
   );
   Future<void> deleteConversation(String conversationId);
+  Future<void> joinConversation(String conversationId);
   Future<void> leaveConversation(String conversationId);
 
   // Messages

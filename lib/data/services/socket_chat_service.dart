@@ -229,14 +229,14 @@ class SocketChatService {
 
   /// Join a conversation for real-time updates
   Future<void> joinConversation(String conversationId) async {
-    _webSocketService.emit('joinConversation', {
+    _webSocketService.emit('join_conversation', {
       'conversationId': conversationId,
     });
   }
 
   /// Leave a conversation
   Future<void> leaveConversation(String conversationId) async {
-    _webSocketService.emit('leaveConversation', {
+    _webSocketService.emit('leave_conversation', {
       'conversationId': conversationId,
     });
   }

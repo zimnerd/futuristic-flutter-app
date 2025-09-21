@@ -42,7 +42,10 @@ abstract class ChatRemoteDataSource {
   Future<MessageModel> editMessage(String messageId, String newContent);
   Future<void> deleteMessage(String messageId);
   Future<void> markMessageAsRead(String messageId);
-  Future<void> markConversationAsRead(String conversationId);
+  Future<void> markConversationAsRead(
+    String conversationId, {
+    List<String>? messageIds,
+  });
 
   // Message reactions
   Future<void> addReaction(String messageId, String emoji);
@@ -347,11 +350,21 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
   }
 
   @override
-  Future<void> markConversationAsRead(String conversationId) async {
+  Future<void> markConversationAsRead(
+    String conversationId, {
+    List<String>? messageIds,
+  }) async {
     try {
-      _logger.i('Marking conversation as read: $conversationId');
+      _logger.i(
+        'Marking conversation as read: $conversationId with ${messageIds?.length ?? 0} message IDs',
+      );
 
-      await _apiService.patch('/chat/conversations/$conversationId/read');
+      // Note: Backend expects POST to /chat/conversations/:conversationId/messages/read
+      // with messageIds array in the body.
+      await _apiService.post(
+        '/chat/conversations/$conversationId/messages/read',
+        data: {'messageIds': messageIds ?? []},
+      );
       _logger.i('Conversation marked as read');
     } catch (e) {
       _logger.e('Mark conversation as read error: $e');
