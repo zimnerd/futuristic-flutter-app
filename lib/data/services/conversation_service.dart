@@ -29,6 +29,33 @@ class ConversationService {
           // Transform backend ConversationResult to frontend Conversation format
           final participants = (json['participants'] as List?) ?? [];
 
+          // Transform lastMessage from backend format if it exists
+          final lastMessageData = json['lastMessage'];
+          final lastMessage = lastMessageData != null
+              ? {
+                  'id': lastMessageData['id'] as String? ?? '',
+                  'conversationId': json['id'] as String? ?? '',
+                  'senderId': '', // We don't have senderId in backend response
+                  'recipientId': '', // We don't have recipientId in backend response
+                  'content': lastMessageData['content'] as String? ?? '',
+                  'type': lastMessageData['type'] as String? ?? 'text',
+                  'attachments': <String>[],
+                  'timestamp': lastMessageData['createdAt'] as String? ??
+                      DateTime.now().toIso8601String(),
+                  'deliveryStatus': 'delivered',
+                  'readStatus': 'read',
+                  'isEdited': false,
+                  'editedAt': null,
+                  'parentMessageId': null,
+                  'reactions': <String, List<String>>{},
+                  'metadata': <String, dynamic>{},
+                  'createdAt': lastMessageData['createdAt'] as String? ??
+                      DateTime.now().toIso8601String(),
+                  'updatedAt': lastMessageData['createdAt'] as String? ??
+                      DateTime.now().toIso8601String(),
+                }
+              : null;
+
           final transformedJson = {
             'id': json['id'] as String? ?? '',
             'title': json['title'] as String?,
@@ -56,9 +83,8 @@ class ConversationService {
                   },
                 )
                 .toList(),
-            'lastMessage':
-                null, // We don't have lastMessage in this format from API
-            'lastActivity': json['updatedAt'] as String?,
+            'lastMessage': lastMessage,
+            'lastActivity': lastMessage?['timestamp'] ?? json['updatedAt'] as String?,
             'unreadCount': json['unreadCount'] as int? ?? 0,
             'isActive': true,
             'isBlocked': false,

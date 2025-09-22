@@ -45,46 +45,51 @@ class ConversationModel extends Conversation {
   factory ConversationModel.fromBackendJson(Map<String, dynamic> json) {
     // Map backend fields to our model fields
     final participants = json['participants'] as List<dynamic>? ?? [];
+    
+    // We need to find the "other" participant (not the current user)
+    // For now, we'll take the first participant, but this should be improved
+    // to find the participant who is NOT the current user
     final otherParticipant = participants.isNotEmpty
-        ? participants.first
+        ? participants.firstWhere(
+            (p) =>
+                p['role'] == 'member', // Try to find the non-admin participant
+            orElse: () => participants.first, // Fallback to first participant
+          )
         : null;
 
-    // Handle lastMessage - try multiple possible structures
+    // Handle lastMessage - use backend response structure
     String lastMessageContent = 'No messages yet';
     DateTime lastMessageTime = DateTime.now();
     
     final lastMessageData = json['lastMessage'];
+    
     if (lastMessageData != null) {
-      // If lastMessage exists in the response
+      // Backend provides lastMessage with this structure:
+      // { id, content, type, senderUsername, createdAt }
       lastMessageContent = lastMessageData['content'] as String? ?? 'No content';
+      
       if (lastMessageData['createdAt'] != null) {
         try {
           lastMessageTime = DateTime.parse(lastMessageData['createdAt'] as String);
         } catch (e) {
-          print('🔍 Error parsing lastMessage createdAt: $e');
+          print('Error parsing lastMessage createdAt: $e');
         }
       }
     } else {
-      // Check if there's an updatedAt or lastMessageAt field we can use for timing
-      if (json['lastMessageAt'] != null) {
-        try {
-          lastMessageTime = DateTime.parse(json['lastMessageAt'] as String);
-        } catch (e) {
-          print('🔍 Error parsing lastMessageAt: $e');
-        }
-      } else if (json['updatedAt'] != null) {
+      // Check if there's an updatedAt field we can use for timing
+      if (json['updatedAt'] != null) {
         try {
           lastMessageTime = DateTime.parse(json['updatedAt'] as String);
         } catch (e) {
-          print('🔍 Error parsing updatedAt: $e');
+          print('Error parsing updatedAt: $e');
         }
       }
     }
 
     return ConversationModel(
       id: json['id'] as String,
-      otherUserId: otherParticipant?['id'] as String? ?? '',
-      otherUserName: otherParticipant?['displayName'] as String? ?? 'Unknown',
+      otherUserId: otherParticipant?['userId'] as String? ?? '',
+      otherUserName: otherParticipant?['username'] as String? ?? 'Unknown',
       otherUserAvatar: otherParticipant?['avatar'] as String? ?? '',
       lastMessage: lastMessageContent,
       lastMessageTime: lastMessageTime,
