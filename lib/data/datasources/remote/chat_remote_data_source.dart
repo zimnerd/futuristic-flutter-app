@@ -3,6 +3,7 @@ import 'package:logger/logger.dart';
 import '../../models/chat_model.dart';
 import '../../models/message.dart';
 import '../../../core/network/api_client.dart';
+import '../../../core/network/response_parser.dart';
 import '../../exceptions/app_exceptions.dart';
 
 /// Remote data source for chat-related API operations
@@ -99,10 +100,27 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
       final response = await _apiService.get('/chat/conversations');
 
       if (response.statusCode == 200) {
-        final List<dynamic> conversationsData = response.data['conversations'];
-        return conversationsData
-            .map((json) => ConversationModel.fromJson(json))
+        // Use centralized response parser
+        final conversationsData = ResponseParser.extractField<List<dynamic>>(
+          response, 
+          'conversations'
+        ) ?? [];
+        
+        _logger.d('Extracted ${conversationsData.length} conversations from response');
+        
+        final conversations = conversationsData
+            .map((json) {
+              try {
+                return ConversationModel.fromBackendJson(json);
+              } catch (e) {
+                _logger.e('Error parsing conversation: $e');
+                _logger.e('Conversation data: $json');
+                rethrow;
+              }
+            })
             .toList();
+            
+        return conversations;
       } else {
         throw ApiException(
           'Failed to get conversations: ${response.statusMessage}',
@@ -123,7 +141,8 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
       final response = await _apiService.get('/chat/conversations/$conversationId');
 
       if (response.statusCode == 200) {
-        return ConversationModel.fromJson(response.data);
+        final responseData = ResponseParser.extractData<Map<String, dynamic>>(response);
+        return ConversationModel.fromBackendJson(responseData);
       } else {
         throw ApiException(
           'Failed to get conversation: ${response.statusMessage}',
@@ -161,7 +180,8 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
       );
 
       if (response.statusCode == 201) {
-        return ConversationModel.fromJson(response.data);
+        final responseData = ResponseParser.extractData<Map<String, dynamic>>(response);
+        return ConversationModel.fromBackendJson(responseData);
       } else {
         throw ApiException(
           'Failed to create conversation: ${response.statusMessage}',
@@ -188,7 +208,8 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
       );
 
       if (response.statusCode == 200) {
-        return ConversationModel.fromJson(response.data);
+        final responseData = ResponseParser.extractData<Map<String, dynamic>>(response);
+        return ConversationModel.fromBackendJson(responseData);
       } else {
         throw ApiException(
           'Failed to update conversation: ${response.statusMessage}',
@@ -247,11 +268,7 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
       );
 
       if (response.statusCode == 200) {
-        final dynamic responseData = response.data['data'];
-        // Handle both null and empty array cases
-        final List<dynamic> messagesData = (responseData is List)
-            ? responseData
-            : <dynamic>[];
+        final messagesData = ResponseParser.extractListData(response);
         return messagesData.map((json) => MessageModel.fromJson(json)).toList();
       } else {
         throw ApiException('Failed to get messages: ${response.statusMessage}');
@@ -288,7 +305,8 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
       );
 
       if (response.statusCode == 201) {
-        return MessageModel.fromJson(response.data);
+        final responseData = ResponseParser.extractData<Map<String, dynamic>>(response);
+        return MessageModel.fromJson(responseData);
       } else {
         throw ApiException('Failed to send message: ${response.statusMessage}');
       }
@@ -310,7 +328,8 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
       );
 
       if (response.statusCode == 200) {
-        return MessageModel.fromJson(response.data);
+        final responseData = ResponseParser.extractData<Map<String, dynamic>>(response);
+        return MessageModel.fromJson(responseData);
       } else {
         throw ApiException('Failed to edit message: ${response.statusMessage}');
       }
@@ -464,11 +483,7 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
       );
 
       if (response.statusCode == 200) {
-        final dynamic responseData = response.data['data'];
-        // Handle both null and empty array cases
-        final List<dynamic> messagesData = (responseData is List)
-            ? responseData
-            : <dynamic>[];
+        final messagesData = ResponseParser.extractListData(response);
         return messagesData.map((json) => MessageModel.fromJson(json)).toList();
       } else {
         throw ApiException('Failed to search messages: ${response.statusMessage}');
@@ -505,7 +520,8 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
       final response = await _apiService.get('/chat/messages/$messageId');
 
       if (response.statusCode == 200) {
-        return MessageModel.fromJson(response.data);
+        final responseData = ResponseParser.extractData<Map<String, dynamic>>(response);
+        return MessageModel.fromJson(responseData);
       } else {
         throw ApiException('Failed to get message: ${response.statusMessage}');
       }
@@ -545,7 +561,8 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
       );
 
       if (response.statusCode == 201) {
-        return MessageModel.fromJson(response.data);
+        final responseData = ResponseParser.extractData<Map<String, dynamic>>(response);
+        return MessageModel.fromJson(responseData);
       } else {
         throw ApiException(
           'Failed to reply to message: ${response.statusMessage}',

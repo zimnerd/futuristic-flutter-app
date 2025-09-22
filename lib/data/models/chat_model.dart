@@ -34,24 +34,55 @@ class ConversationModel extends Equatable {
 
   factory ConversationModel.fromJson(Map<String, dynamic> json) {
     return ConversationModel(
-      id: json['id'],
-      type: ConversationType.values.byName(json['type']),
+      id: json['id'] as String,
+      type: ConversationType.values.byName(json['type'] as String),
       participantIds: List<String>.from(json['participantIds'] ?? []),
-      name: json['name'],
-      description: json['description'],
-      imageUrl: json['imageUrl'],
+      name: json['name'] as String?,
+      description: json['description'] as String?,
+      imageUrl: json['imageUrl'] as String?,
       lastMessage: json['lastMessage'] != null
           ? MessageModel.fromJson(json['lastMessage'])
           : null,
       lastMessageAt: json['lastMessageAt'] != null
           ? DateTime.parse(json['lastMessageAt'])
           : null,
-      unreadCount: json['unreadCount'] ?? 0,
+      unreadCount: json['unreadCount'] as int? ?? 0,
       settings: json['settings'] != null
           ? ConversationSettings.fromJson(json['settings'])
           : null,
-      createdAt: DateTime.parse(json['createdAt']),
-      updatedAt: DateTime.parse(json['updatedAt']),
+      createdAt: DateTime.parse(json['createdAt'] as String),
+      updatedAt: DateTime.parse(json['updatedAt'] as String),
+    );
+  }
+
+  /// Factory method for backend API response format
+  factory ConversationModel.fromBackendJson(Map<String, dynamic> json) {
+    // Backend sends participants as objects, extract user IDs
+    final participants = json['participants'] as List<dynamic>? ?? [];
+    final participantIds = participants
+        .map((p) => p['userId'] as String? ?? p['id'] as String? ?? '')
+        .where((id) => id.isNotEmpty)
+        .toList();
+
+    return ConversationModel(
+      id: json['id'] as String,
+      type: ConversationType.values.byName(json['type'] as String),
+      participantIds: participantIds,
+      name: json['name'] as String?,
+      description: json['description'] as String?,
+      imageUrl: json['imageUrl'] as String?,
+      lastMessage: json['lastMessage'] != null
+          ? MessageModel.fromJson(json['lastMessage'])
+          : null,
+      lastMessageAt: json['lastMessageAt'] != null
+          ? DateTime.parse(json['lastMessageAt'])
+          : null,
+      unreadCount: json['unreadCount'] as int? ?? 0,
+      settings: json['settings'] != null
+          ? ConversationSettings.fromJson(json['settings'])
+          : null,
+      createdAt: DateTime.parse(json['createdAt'] as String),
+      updatedAt: DateTime.parse(json['updatedAt'] as String),
     );
   }
 
@@ -189,6 +220,59 @@ class MessageModel extends Equatable {
       createdAt: DateTime.parse(json['createdAt']),
       updatedAt: DateTime.parse(json['updatedAt']),
     );
+  }
+
+  // Backend-specific factory for API responses
+  factory MessageModel.fromBackendJson(Map<String, dynamic> json) {
+    // Defensive null handling for all fields
+    return MessageModel(
+      id: json['id']?.toString() ?? '',
+      conversationId: json['conversationId']?.toString() ?? '',
+      senderId: json['senderId']?.toString() ?? '',
+      senderUsername: json['senderUsername']?.toString() ?? '',
+      senderAvatar: json['senderAvatar']?.toString(),
+      type: _parseMessageType(json['type']),
+      content: json['content']?.toString() ?? '',
+      mediaUrls: json['mediaUrls'] != null
+          ? List<String>.from(json['mediaUrls'])
+          : null,
+      metadata: json['metadata'],
+      status: _parseMessageStatus(json['status']),
+      replyTo: json['replyTo'] != null
+          ? MessageModel.fromBackendJson(json['replyTo'])
+          : null,
+      reactions: json['reactions'] != null
+          ? (json['reactions'] as List)
+              .map((r) => MessageReaction.fromJson(r))
+              .toList()
+          : null,
+      editedAt: json['editedAt'] != null
+          ? DateTime.parse(json['editedAt'])
+          : null,
+      isForwarded: json['isForwarded'] ?? false,
+      forwardedFromConversationId: json['forwardedFromConversationId']?.toString(),
+      createdAt: DateTime.parse(json['createdAt'] ?? DateTime.now().toIso8601String()),
+      updatedAt: DateTime.parse(json['updatedAt'] ?? DateTime.now().toIso8601String()),
+    );
+  }
+
+  // Helper methods for safe enum parsing
+  static MessageType _parseMessageType(dynamic type) {
+    if (type == null) return MessageType.text;
+    try {
+      return MessageType.values.byName(type.toString());
+    } catch (e) {
+      return MessageType.text;
+    }
+  }
+
+  static MessageStatus _parseMessageStatus(dynamic status) {
+    if (status == null) return MessageStatus.sent;
+    try {
+      return MessageStatus.values.byName(status.toString());
+    } catch (e) {
+      return MessageStatus.sent;
+    }
   }
 
   Map<String, dynamic> toJson() {

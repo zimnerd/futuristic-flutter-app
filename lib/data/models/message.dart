@@ -281,12 +281,14 @@ class MessageDeliveryUpdate extends Equatable {
 
   factory MessageDeliveryUpdate.fromJson(Map<String, dynamic> json) {
     return MessageDeliveryUpdate(
-      messageId: json['messageId'] as String,
+      messageId: (json['messageId'] ?? '').toString(),
       status: MessageStatus.values.firstWhere(
         (status) => status.name == json['status'],
         orElse: () => MessageStatus.sent,
       ),
-      timestamp: DateTime.parse(json['timestamp'] as String),
+      timestamp: json['timestamp'] != null
+          ? DateTime.parse(json['timestamp'] as String)
+          : DateTime.now(),
     );
   }
 

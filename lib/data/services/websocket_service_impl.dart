@@ -78,13 +78,14 @@ class WebSocketServiceImpl implements WebSocketService {
 
       // Build connection options
       final optionsBuilder = socket_io.OptionBuilder()
-          .setTransports(['websocket'])
+          .setTransports(['websocket', 'polling'])
           .enableAutoConnect()
           .enableReconnection()
           .setReconnectionAttempts(_maxReconnectAttempts)
           .setReconnectionDelay(_initialReconnectDelay.inMilliseconds)
           .setReconnectionDelayMax(_maxReconnectDelay.inMilliseconds)
-          .setTimeout(AppConfig.websocketTimeout.inMilliseconds);
+          .setTimeout(AppConfig.websocketTimeout.inMilliseconds)
+          .enableForceNew();
 
       // Add authentication if token is available
       if (_authToken != null) {

@@ -21,7 +21,10 @@ class ConversationService {
       );
 
       if (response.statusCode == 200 && response.data != null) {
-        final List<dynamic> data = response.data['data'] ?? response.data['conversations'] ?? [];
+        // Handle wrapped response structure: { data: { conversations: [...] } }
+        final responseData = response.data['data'] ?? response.data;
+        final List<dynamic> data =
+            responseData['conversations'] ?? responseData ?? [];
         final conversations = data.map((json) {
           // Transform backend ConversationResult to frontend Conversation format
           final participants = (json['participants'] as List?) ?? [];
