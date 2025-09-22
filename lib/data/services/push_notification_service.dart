@@ -55,7 +55,7 @@ class PushNotificationService {
         }),
       );
 
-      if (response.statusCode == 200) {
+      if (response.statusCode == 200 || response.statusCode == 201) {
         AppLogger.info('Device token registered successfully');
       } else {
         AppLogger.warning('Failed to register device token: ${response.statusCode}');

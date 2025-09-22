@@ -354,6 +354,9 @@ class MatchingService {
     int offset = 0,
   }) async {
     try {
+      // Get current user ID once at the beginning
+      final currentUserId = await _apiClient.getCurrentUserId() ?? '';
+      
       final queryParams = <String, dynamic>{
         'offset': offset,
         if (limit != null) 'limit': limit,
@@ -377,7 +380,10 @@ class MatchingService {
       List<MatchModel> matchModels = matches
           .map(
             (match) =>
-                _matchModelFromApiResponse(match as Map<String, dynamic>),
+                _matchModelFromApiResponse(
+              match as Map<String, dynamic>,
+              currentUserId,
+            ),
           )
           .toList();
 
@@ -546,7 +552,10 @@ class MatchingService {
 
   /// Convert API match response to MatchModel 
   /// The API returns match entries with nested user objects, not MatchModel structure
-  MatchModel _matchModelFromApiResponse(Map<String, dynamic> apiMatch) {
+  MatchModel _matchModelFromApiResponse(
+    Map<String, dynamic> apiMatch,
+    String currentUserId,
+  ) {
     final user = apiMatch['user'] as Map<String, dynamic>?;
     final userId = user?['id'] as String? ?? '';
     final firstName = user?['firstName'] as String? ?? '';
@@ -573,7 +582,7 @@ class MatchingService {
     // Since the API doesn't return full MatchModel data, we'll simulate it
     return MatchModel(
       id: apiMatch['id'] as String? ?? '',
-      user1Id: 'current_user', // Assuming current user is user1
+      user1Id: currentUserId, // Use actual current user ID
       user2Id: userId, // The matched user
       isMatched: true, // If it's in matches, it's matched
       compatibilityScore: 0.85, // Default score since API doesn't provide it
