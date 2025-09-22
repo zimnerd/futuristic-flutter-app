@@ -22,6 +22,7 @@ class MatchBloc extends Bloc<MatchEvent, MatchState> {
     on<LoadMatchDetails>(_onLoadMatchDetails);
     on<UpdateMatchStatus>(_onUpdateMatchStatus);
     on<ResetMatchState>(_onResetMatchState);
+    on<RemoveMatchFromList>(_onRemoveMatchFromList);
   }
 
   /// Load user's matches (active, pending, etc.)
@@ -231,5 +232,23 @@ class MatchBloc extends Bloc<MatchEvent, MatchState> {
     Emitter<MatchState> emit,
   ) {
     emit(const MatchInitial());
+  }
+
+  /// Remove a match from the current list when conversation is created
+  void _onRemoveMatchFromList(
+    RemoveMatchFromList event,
+    Emitter<MatchState> emit,
+  ) {
+    final currentState = state;
+    if (currentState is MatchesLoaded) {
+      // Remove the match with the given ID from the current matches list
+      final updatedMatches = currentState.matches
+          .where((match) => match.id != event.matchId)
+          .toList();
+
+      emit(
+        MatchesLoaded(matches: updatedMatches, hasMore: currentState.hasMore),
+      );
+    }
   }
 }

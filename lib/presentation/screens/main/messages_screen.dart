@@ -142,6 +142,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
 
     // Store match data for navigation after conversation is created
     _pendingMatchNavigation = {
+      'matchId': match.id, // Store match ID for removing from list
       'otherUserId': match.userId,
       'otherUserName': match.name,
       'otherUserPhoto': match.avatarUrl,
@@ -164,6 +165,16 @@ class _MessagesScreenState extends State<MessagesScreen> {
           AppLogger.debug(
             'Navigating to chat with conversation ID: ${state.conversation.id}',
           );
+          
+          // Remove the match from the matches list
+          final matchId = _pendingMatchNavigation!['matchId'] as String?;
+          if (matchId != null) {
+            context.read<MatchBloc>().add(
+              RemoveMatchFromList(matchId: matchId),
+            );
+            AppLogger.debug('Removing match from list: $matchId');
+          }
+          
           // Navigate to the newly created conversation
           context.push(
             '/chat/${state.conversation.id}',

@@ -200,3 +200,13 @@ final class UpdateMatchStatus extends MatchEvent {
 final class ResetMatchState extends MatchEvent {
   const ResetMatchState();
 }
+
+/// Event to remove a match from the list when conversation is created
+final class RemoveMatchFromList extends MatchEvent {
+  const RemoveMatchFromList({required this.matchId});
+
+  final String matchId;
+
+  @override
+  List<Object?> get props => [matchId];
+}

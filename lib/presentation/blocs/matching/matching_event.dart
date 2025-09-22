@@ -82,3 +82,13 @@ class UpdateFilters extends MatchingEvent {
 class BoostProfile extends MatchingEvent {
   const BoostProfile();
 }
+
+/// Event to remove a match when conversation is started
+class RemoveMatch extends MatchingEvent {
+  const RemoveMatch({required this.matchId});
+
+  final String matchId;
+
+  @override
+  List<Object?> get props => [matchId];
+}
