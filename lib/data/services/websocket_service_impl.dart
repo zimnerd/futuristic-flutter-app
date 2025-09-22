@@ -375,7 +375,9 @@ class WebSocketServiceImpl implements WebSocketService {
   // Messaging Events
   @override
   void onNewMessage(Function(Map<String, dynamic>) callback) {
+    // Listen to both events for maximum compatibility
     on('new_message', (data) => callback(data as Map<String, dynamic>));
+    on('messageReceived', (data) => callback(data as Map<String, dynamic>));
   }
 
   @override
