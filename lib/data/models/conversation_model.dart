@@ -49,16 +49,45 @@ class ConversationModel extends Conversation {
         ? participants.first
         : null;
 
+    // Handle lastMessage - try multiple possible structures
+    String lastMessageContent = 'No messages yet';
+    DateTime lastMessageTime = DateTime.now();
+    
+    final lastMessageData = json['lastMessage'];
+    if (lastMessageData != null) {
+      // If lastMessage exists in the response
+      lastMessageContent = lastMessageData['content'] as String? ?? 'No content';
+      if (lastMessageData['createdAt'] != null) {
+        try {
+          lastMessageTime = DateTime.parse(lastMessageData['createdAt'] as String);
+        } catch (e) {
+          print('🔍 Error parsing lastMessage createdAt: $e');
+        }
+      }
+    } else {
+      // Check if there's an updatedAt or lastMessageAt field we can use for timing
+      if (json['lastMessageAt'] != null) {
+        try {
+          lastMessageTime = DateTime.parse(json['lastMessageAt'] as String);
+        } catch (e) {
+          print('🔍 Error parsing lastMessageAt: $e');
+        }
+      } else if (json['updatedAt'] != null) {
+        try {
+          lastMessageTime = DateTime.parse(json['updatedAt'] as String);
+        } catch (e) {
+          print('🔍 Error parsing updatedAt: $e');
+        }
+      }
+    }
+
     return ConversationModel(
       id: json['id'] as String,
       otherUserId: otherParticipant?['id'] as String? ?? '',
       otherUserName: otherParticipant?['displayName'] as String? ?? 'Unknown',
       otherUserAvatar: otherParticipant?['avatar'] as String? ?? '',
-      lastMessage:
-          json['lastMessage']?['content'] as String? ?? 'No messages yet',
-      lastMessageTime: json['lastMessage']?['createdAt'] != null
-          ? DateTime.parse(json['lastMessage']['createdAt'] as String)
-          : DateTime.now(),
+      lastMessage: lastMessageContent,
+      lastMessageTime: lastMessageTime,
       unreadCount: json['unreadCount'] as int? ?? 0,
       isOnline: otherParticipant?['isOnline'] as bool? ?? false,
       lastSeen: otherParticipant?['lastSeen'] != null

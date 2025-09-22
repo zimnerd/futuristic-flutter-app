@@ -101,6 +101,8 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
       final response = await _apiService.get('/chat/conversations');
 
       if (response.statusCode == 200) {
+        _logger.d('Raw conversation response: ${response.data}');
+        
         // Use centralized response parser
         final conversationsData = ResponseParser.extractList(
           response,
@@ -112,7 +114,10 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
         final conversations = conversationsData
             .map((json) {
               try {
-                return ConversationModel.fromBackendJson(json);
+                _logger.d('Processing conversation JSON: $json');
+                final conversation = ConversationModel.fromBackendJson(json);
+                _logger.d('Parsed conversation: ${conversation.lastMessage}');
+                return conversation;
               } catch (e) {
                 _logger.e('Error parsing conversation: $e');
                 _logger.e('Conversation data: $json');

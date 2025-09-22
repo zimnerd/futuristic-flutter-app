@@ -450,14 +450,22 @@ class ApiClient {
     int offset = 0,
     bool excludeWithConversations = false,
   }) async {
-    return await _dio.get(
+    final queryParams = {
+      'limit': limit,
+      'offset': offset,
+      'excludeWithConversations': excludeWithConversations.toString(),
+    };
+    
+    _logger.d('🔍 Getting matches with params: $queryParams');
+    
+    final response = await _dio.get(
       '/matching/matches',
-      queryParameters: {
-        'limit': limit,
-        'offset': offset,
-        'excludeWithConversations': excludeWithConversations.toString(),
-      },
+      queryParameters: queryParams,
     );
+    
+    _logger.d('🔍 Matches response: ${response.data}');
+    
+    return response;
   }
 
   /// Like a user

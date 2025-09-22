@@ -249,15 +249,60 @@ class ChatRepositoryImpl implements ChatRepository {
       _logger.d('Fetching conversations');
       final conversations = await _remoteDataSource.getConversations();
       
+      // Enhance conversations with cached message data
+      final enhancedConversations = <ConversationModel>[];
+      
+      for (final conversation in conversations) {
+        try {
+          // Try to get the latest message from cache for this conversation
+          final latestMessages = await _databaseService.getMessages(
+            conversationId: conversation.id,
+            limit: 1,
+          );
+          
+          if (latestMessages.isNotEmpty) {
+            final latestMessage = latestMessages.first;
+            
+            // Create an updated conversation with the latest message data
+            final enhancedConversation = ConversationModel(
+              id: conversation.id,
+              otherUserId: conversation.otherUserId,
+              otherUserName: conversation.otherUserName,
+              otherUserAvatar: conversation.otherUserAvatar,
+              lastMessage: latestMessage.content ?? 'No message content',
+              lastMessageTime: latestMessage.createdAt,
+              unreadCount: conversation.unreadCount,
+              isOnline: conversation.isOnline,
+              lastSeen: conversation.lastSeen,
+              isBlocked: conversation.isBlocked,
+              isMuted: conversation.isMuted,
+              isPinned: conversation.isPinned,
+              matchedAt: conversation.matchedAt,
+            );
+            
+            enhancedConversations.add(enhancedConversation);
+            _logger.d('Enhanced conversation ${conversation.id} with cached message: "${latestMessage.content}"');
+          } else {
+            // No cached messages, use original conversation
+            enhancedConversations.add(conversation);
+            _logger.d('No cached messages for conversation ${conversation.id}, using: "${conversation.lastMessage}"');
+          }
+        } catch (e) {
+          // If there's an error getting cached messages, use original conversation
+          _logger.w('Error enhancing conversation ${conversation.id}: $e');
+          enhancedConversations.add(conversation);
+        }
+      }
+      
       // Sort conversations by last message time (most recent first)
-      conversations.sort(
+      enhancedConversations.sort(
         (a, b) => b.lastMessageTime.compareTo(a.lastMessageTime),
       );
 
       _logger.d(
-        'Successfully fetched and sorted ${conversations.length} conversations',
+        'Successfully fetched and enhanced ${enhancedConversations.length} conversations',
       );
-      return conversations;
+      return enhancedConversations;
     } catch (e) {
       _logger.e('Error fetching conversations: $e');
       rethrow;

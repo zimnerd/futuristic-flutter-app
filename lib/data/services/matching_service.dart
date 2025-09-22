@@ -358,6 +358,8 @@ class MatchingService {
       // Get current user ID once at the beginning
       final currentUserId = await _apiClient.getCurrentUserId() ?? '';
       
+      print('🔍 MatchingService: Getting matches with excludeWithConversations=$excludeWithConversations');
+      
       final response = await _apiClient.getMatches(
         limit: limit ?? 20,
         offset: offset,
@@ -368,8 +370,11 @@ class MatchingService {
       final matches = data['data'] as List<dynamic>?;
 
       if (matches == null) {
+        print('🔍 MatchingService: No matches data returned');
         return [];
       }
+
+      print('🔍 MatchingService: Received ${matches.length} matches from API');
 
       List<MatchModel> matchModels = matches
           .map(
