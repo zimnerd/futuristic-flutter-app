@@ -68,13 +68,22 @@ class ChatRepositoryImpl implements ChatRepository {
           // Check if this message has a tempId for correlation with optimistic messages
           if (message.tempId != null && message.tempId!.isNotEmpty) {
             final tempId = message.tempId!;
+            
+            // Check if we already processed this message via messageConfirmed
+            if (_tempIdToRealIdMap.containsKey(tempId)) {
+              _logger.d(
+                'Repository: Message already processed via messageConfirmed, skipping: $tempId',
+              );
+              return; // Don't process again
+            }
+            
             _logger.d(
               'Repository: Message contains tempId: $tempId, correlating with optimistic message',
             );
 
             // Update the mapping from tempId to real message ID
             _tempIdToRealIdMap[tempId] = message.id;
-
+            
             // Remove from pending optimistic messages
             _pendingOptimisticMessages.remove(tempId);
             
@@ -82,7 +91,6 @@ class ChatRepositoryImpl implements ChatRepository {
               'Repository: Mapped optimistic ID $tempId to real ID ${message.id}',
             );
           }
-          
           _incomingMessagesController.add(message);
           _logger.d(
             'Repository: Added incoming message to stream: ${message.id}',
@@ -280,7 +288,7 @@ class ChatRepositoryImpl implements ChatRepository {
       });
       
       // Create optimistic message for immediate UI update
-      final optimisticId = 'optimistic_${tempId}';
+      final optimisticId = 'optimistic_$tempId';
       final optimisticMessage = MessageModel(
         id: optimisticId,
         conversationId: conversationId,
@@ -656,7 +664,17 @@ class ChatRepositoryImpl implements ChatRepository {
   bool isOptimisticMessage(String? messageId, String realMessageId) {
     if (messageId == null) return false;
 
-    // Check if this messageId is in our optimistic mapping that points to the real ID
-    return _tempIdToRealIdMap[messageId] == realMessageId;
+    // Method 1: Check if this messageId is a tempId that maps to the real ID
+    if (_tempIdToRealIdMap[messageId] == realMessageId) {
+      return true;
+    }
+
+    // Method 2: Check if this is an optimistic ID (pattern: "optimistic_tempId")
+    if (messageId.startsWith('optimistic_')) {
+      final tempId = messageId.substring('optimistic_'.length);
+      return _tempIdToRealIdMap[tempId] == realMessageId;
+    }
+
+    return false;
   }
 }

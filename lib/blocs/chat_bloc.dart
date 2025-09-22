@@ -525,7 +525,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       if (currentState is MessagesLoaded &&
           currentState.conversationId == event.conversationId) {
         final updatedMessages = List<MessageModel>.from(currentState.messages)
-          ..add(message);
+          ..insert(0, message); // Insert at beginning for reverse ListView
         _logger.d(
           'ChatBloc: Adding optimistic message to existing MessagesLoaded state with ${currentState.messages.length} messages',
         );
@@ -807,7 +807,10 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
         } else {
           // This is a new message (either from current user after sending or from another user)
           _logger.d('ChatBloc: Adding new message: ${event.message.id}');
-          messages.add(event.message);
+          messages.insert(
+            0,
+            event.message,
+          ); // Insert at beginning for reverse ListView
         }
         
         emit(
