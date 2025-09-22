@@ -28,6 +28,8 @@ import 'data/services/matching_service.dart';
 import 'data/services/preferences_service.dart';
 import 'data/services/discovery_service.dart';
 import 'data/services/token_service.dart';
+import 'data/services/message_database_service.dart';
+import 'data/services/background_sync_manager.dart';
 import 'domain/repositories/user_repository.dart';
 import 'presentation/blocs/auth/auth_bloc.dart';
 import 'presentation/blocs/user/user_bloc.dart';
@@ -206,14 +208,22 @@ class PulseDatingApp extends StatelessWidget {
             final authBloc = context.read<AuthBloc>();
             AppRouter.initialize(authBloc);
             
-            return AutoLoginWrapper(
-              child: MaterialApp.router(
-                title: AppConstants.appName,
-                theme: PulseTheme.light,
-                darkTheme: PulseTheme.dark,
-                themeMode: ThemeMode.system,
-                debugShowCheckedModeBanner: false,
-                routerConfig: AppRouter.router,
+            // Get repositories for background sync
+            final chatRepository = context.read<ChatRepository>();
+            final databaseService = MessageDatabaseService();
+            
+            return BackgroundSyncManager.provider(
+              chatRepository: chatRepository,
+              databaseService: databaseService,
+              child: AutoLoginWrapper(
+                child: MaterialApp.router(
+                  title: AppConstants.appName,
+                  theme: PulseTheme.light,
+                  darkTheme: PulseTheme.dark,
+                  themeMode: ThemeMode.system,
+                  debugShowCheckedModeBanner: false,
+                  routerConfig: AppRouter.router,
+                ),
               ),
             );
           },

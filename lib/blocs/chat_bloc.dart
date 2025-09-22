@@ -7,6 +7,7 @@ import '../data/models/chat_model.dart';
 import '../data/models/message.dart' show MessageDeliveryUpdate;
 import '../domain/entities/message.dart' show MessageType;
 import '../data/repositories/chat_repository.dart';
+import '../data/services/background_sync_manager.dart';
 
 // Events
 abstract class ChatEvent extends Equatable {
@@ -67,6 +68,10 @@ class RefreshMessages extends ChatEvent {
 
   @override
   List<Object?> get props => [conversationId];
+}
+
+class SyncConversations extends ChatEvent {
+  const SyncConversations();
 }
 
 class SendMessage extends ChatEvent {
@@ -427,6 +432,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     on<LoadLatestMessages>(_onLoadLatestMessages);
     on<LoadMoreMessages>(_onLoadMoreMessages);
     on<RefreshMessages>(_onRefreshMessages);
+    on<SyncConversations>(_onSyncConversations);
     on<SendMessage>(_onSendMessage);
     on<MarkMessageAsRead>(_onMarkMessageAsRead);
     on<DeleteMessage>(_onDeleteMessage);
@@ -688,6 +694,31 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       if (currentState is MessagesLoaded) {
         emit(currentState.copyWith(isRefreshing: false));
       }
+    }
+  }
+
+  Future<void> _onSyncConversations(
+    SyncConversations event,
+    Emitter<ChatState> emit,
+  ) async {
+    try {
+      _logger.d('ChatBloc: Manually triggering sync of all conversations');
+
+      // Use BackgroundSyncManager to trigger manual sync
+      final syncManager = BackgroundSyncManager.instance;
+      await syncManager.forceSync();
+
+      _logger.i('ChatBloc: Manual sync completed successfully');
+
+      // Optionally reload conversations to show updated data
+      add(const LoadConversations());
+    } catch (e, stackTrace) {
+      _logger.e(
+        'ChatBloc: Failed to sync conversations',
+        error: e,
+        stackTrace: stackTrace,
+      );
+      // Could emit an error state or show a toast notification
     }
   }
 

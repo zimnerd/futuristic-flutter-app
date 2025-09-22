@@ -467,4 +467,95 @@ class MessageDatabaseService {
       return {};
     }
   }
+
+  // ================== BACKGROUND SYNC SUPPORT METHODS ==================
+
+  /// Get all conversations (alias for getConversations for background sync)
+  Future<List<ConversationDbModel>> getAllConversations() async {
+    return await getConversations();
+  }
+
+  /// Get the latest message for a specific conversation
+  Future<MessageDbModel?> getLatestMessage(String conversationId) async {
+    try {
+      final db = await _db;
+      final List<Map<String, dynamic>> maps = await db.query(
+        'messages',
+        where: 'conversation_id = ?',
+        whereArgs: [conversationId],
+        orderBy: 'created_at DESC',
+        limit: 1,
+      );
+
+      if (maps.isNotEmpty) {
+        return MessageDbModel.fromMap(maps.first);
+      }
+      return null;
+    } catch (e, stackTrace) {
+      _logger.e(
+        'Error getting latest message for conversation $conversationId',
+        error: e,
+        stackTrace: stackTrace,
+      );
+      return null;
+    }
+  }
+
+  /// Delete a specific message
+  Future<void> deleteMessage(String messageId) async {
+    try {
+      final db = await _db;
+      await db.delete('messages', where: 'id = ?', whereArgs: [messageId]);
+      _logger.d('Deleted message: $messageId');
+    } catch (e, stackTrace) {
+      _logger.e(
+        'Error deleting message $messageId',
+        error: e,
+        stackTrace: stackTrace,
+      );
+      rethrow;
+    }
+  }
+
+  /// Get old optimistic messages that should be cleaned up
+  Future<List<MessageDbModel>> getOldOptimisticMessages(
+    DateTime threshold,
+  ) async {
+    try {
+      final db = await _db;
+      final List<Map<String, dynamic>> maps = await db.query(
+        'messages',
+        where: 'temp_id IS NOT NULL AND created_at < ?',
+        whereArgs: [threshold.millisecondsSinceEpoch],
+        orderBy: 'created_at ASC',
+      );
+
+      return maps.map((map) => MessageDbModel.fromMap(map)).toList();
+    } catch (e, stackTrace) {
+      _logger.e(
+        'Error getting old optimistic messages',
+        error: e,
+        stackTrace: stackTrace,
+      );
+      return [];
+    }
+  }
+
+  /// Optimize database (vacuum, analyze)
+  Future<void> optimizeDatabase() async {
+    try {
+      final db = await _db;
+
+      // Run VACUUM to reclaim space
+      await db.execute('VACUUM');
+
+      // Run ANALYZE to update query planner statistics
+      await db.execute('ANALYZE');
+
+      _logger.d('Database optimization completed');
+    } catch (e, stackTrace) {
+      _logger.e('Error optimizing database', error: e, stackTrace: stackTrace);
+      rethrow;
+    }
+  }
 }
