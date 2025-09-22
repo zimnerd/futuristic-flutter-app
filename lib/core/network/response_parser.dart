@@ -3,12 +3,14 @@ import 'package:dio/dio.dart';
 /// Centralized response parser for consistent API response handling
 /// 
 /// All backend responses follow the format:
+/// ```json
 /// {
 ///   "success": true,
 ///   "statusCode": 200,
 ///   "message": "Success",
-///   "data": <actual_data>
+///   "data": [actual_data]
 /// }
+/// ```
 class ResponseParser {
   /// Extract data from standardized API response wrapper
   /// This handles the backend's consistent { data: ... } structure

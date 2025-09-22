@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/utils/logger.dart';
 import '../../theme/pulse_colors.dart';
 import '../../widgets/common/common_widgets.dart';
 import '../../widgets/messaging/message_filters.dart';
@@ -131,7 +132,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
     }
   }
   void _onMatchStoryTap(MatchStoryData match) {
-    print('🔄 Match tapped: ${match.name} (${match.userId})');
+    AppLogger.debug('Match tapped: ${match.name} (${match.userId})');
     // Create a conversation first, then navigate to chat when it's ready
     context.read<ChatBloc>().add(
       CreateConversation(participantId: match.userId),
@@ -143,7 +144,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
       'otherUserName': match.name,
       'otherUserPhoto': match.avatarUrl,
     };
-    print('🔄 Stored pending navigation: $_pendingMatchNavigation');
+    AppLogger.debug('Stored pending navigation: $_pendingMatchNavigation');
   }
 
   @override
@@ -156,10 +157,10 @@ class _MessagesScreenState extends State<MessagesScreen> {
   Widget build(BuildContext context) {
     return BlocListener<ChatBloc, ChatState>(
       listener: (context, state) {
-        print('🔄 ChatBloc state changed: ${state.runtimeType}');
+        AppLogger.debug('ChatBloc state changed: ${state.runtimeType}');
         if (state is ConversationCreated && _pendingMatchNavigation != null) {
-          print(
-            '🔄 Navigating to chat with conversation ID: ${state.conversation.id}',
+          AppLogger.debug(
+            'Navigating to chat with conversation ID: ${state.conversation.id}',
           );
           // Navigate to the newly created conversation
           context.push(
@@ -169,8 +170,8 @@ class _MessagesScreenState extends State<MessagesScreen> {
           // Clear pending navigation
           _pendingMatchNavigation = null;
         } else if (state is ConversationCreated) {
-          print(
-            '🔄 ConversationCreated state received but _pendingMatchNavigation is null',
+          AppLogger.debug(
+            'ConversationCreated state received but _pendingMatchNavigation is null',
           );
         }
       },

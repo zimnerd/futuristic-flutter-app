@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import '../../../core/network/api_client.dart';
+import '../../../core/utils/logger.dart';
 import '../../../domain/entities/conversation.dart';
 import '../../../domain/entities/message.dart';
 
@@ -44,43 +45,43 @@ class MessagingService {
         limit: limit,
       );
 
-      print('🐛 MessagingService getMessages - Raw response: ${response.data}');
+      AppLogger.debug('MessagingService getMessages - Raw response: ${response.data}');
 
       final responseBody = response.data as Map<String, dynamic>;
-      print('🐛 MessagingService getMessages - Response body: $responseBody');
+      AppLogger.debug('MessagingService getMessages - Response body: $responseBody');
 
       // Messages are directly in the 'data' field as an array
       final messagesData = responseBody['data'];
-      print(
-        '🐛 MessagingService getMessages - Messages data type: ${messagesData.runtimeType}',
+      AppLogger.debug(
+        'MessagingService getMessages - Messages data type: ${messagesData.runtimeType}',
       );
-      print('🐛 MessagingService getMessages - Messages data: $messagesData');
+      AppLogger.debug('MessagingService getMessages - Messages data: $messagesData');
 
       if (messagesData is! List) {
-        print(
-          '🐛 MessagingService getMessages - Error: data is not a List, it is ${messagesData.runtimeType}',
+        AppLogger.error(
+          'MessagingService getMessages - Error: data is not a List, it is ${messagesData.runtimeType}',
         );
         return [];
       }
 
       final messages = messagesData;
-      print(
-        '🐛 MessagingService getMessages - Found ${messages.length} messages',
+      AppLogger.debug(
+        'MessagingService getMessages - Found ${messages.length} messages',
       );
 
       final parsedMessages = messages
           .map((msg) => _messageFromJson(msg as Map<String, dynamic>))
           .toList();
       
-      print(
-        '🐛 MessagingService getMessages - Parsed ${parsedMessages.length} messages',
+      AppLogger.debug(
+        'MessagingService getMessages - Parsed ${parsedMessages.length} messages',
       );
       return parsedMessages;
     } on DioException catch (e) {
-      print('🐛 MessagingService getMessages - Dio error: $e');
+      AppLogger.error('MessagingService getMessages - Dio error: $e');
       throw _handleDioError(e);
     } catch (e) {
-      print('🐛 MessagingService getMessages - General error: $e');
+      AppLogger.error('MessagingService getMessages - General error: $e');
       rethrow;
     }
   }

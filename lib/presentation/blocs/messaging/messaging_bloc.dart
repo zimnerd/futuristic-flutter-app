@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
+import '../../../core/utils/logger.dart';
 import '../../../domain/entities/conversation.dart';
 import '../../../domain/entities/message.dart';
 import '../../../data/services/messaging_service.dart';
@@ -56,19 +57,19 @@ class MessagingBloc extends Bloc<MessagingEvent, MessagingState> {
     Emitter<MessagingState> emit,
   ) async {
     try {
-      print(
-        '🐛 MessagingBloc - LoadMessages event received for conversation: ${event.conversationId}',
+      AppLogger.debug(
+        'MessagingBloc - LoadMessages event received for conversation: ${event.conversationId}',
       );
       emit(state.copyWith(messagesStatus: MessagingStatus.loading));
 
-      print('🐛 MessagingBloc - Calling messagingService.getMessages()');
+      AppLogger.debug('MessagingBloc - Calling messagingService.getMessages()');
       final messages = await _messagingService.getMessages(
         conversationId: event.conversationId,
         limit: 50,
         offset: event.refresh ? 0 : state.currentMessages.length,
       );
-      print(
-        '🐛 MessagingBloc - Received ${messages.length} messages from service',
+      AppLogger.debug(
+        'MessagingBloc - Received ${messages.length} messages from service',
       );
 
       emit(state.copyWith(

@@ -82,26 +82,32 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
     // Listen for conversation creation result
     final subscription = context.read<ChatBloc>().stream.listen((state) {
       if (state is ConversationCreated) {
-        // Navigate to chat screen with the new conversation
-        // Use push instead of go to maintain navigation stack
-        context.push(
-          '/chat/${state.conversation.id}',
-          extra: {
-          'otherUserId': widget.profile.id,
-          'otherUserName': widget.profile.name,
-          'otherUserPhoto': widget.profile.photos.isNotEmpty 
-              ? widget.profile.photos.first.url 
-              : null,
-        });
+        // Check if widget is still mounted before using context
+        if (mounted) {
+          // Navigate to chat screen with the new conversation
+          // Use push instead of go to maintain navigation stack
+          context.push(
+            '/chat/${state.conversation.id}',
+            extra: {
+            'otherUserId': widget.profile.id,
+            'otherUserName': widget.profile.name,
+            'otherUserPhoto': widget.profile.photos.isNotEmpty 
+                ? widget.profile.photos.first.url 
+                : null,
+          });
+        }
       } else if (state is ChatError) {
-        // Show error message
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to start conversation: ${state.message}'),
-            backgroundColor: Colors.red,
-            duration: const Duration(seconds: 3),
-          ),
-        );
+        // Check if widget is still mounted before using context
+        if (mounted) {
+          // Show error message
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Failed to start conversation: ${state.message}'),
+              backgroundColor: Colors.red,
+              duration: const Duration(seconds: 3),
+            ),
+          );
+        }
       }
     });
     
@@ -958,7 +964,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.1),
+                color: Colors.black.withValues(alpha: 0.1),
                 blurRadius: 10,
                 offset: const Offset(0, -2),
               ),

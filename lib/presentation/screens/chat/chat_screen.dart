@@ -1,11 +1,13 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../blocs/chat_bloc.dart';
 import '../../../data/models/message.dart' as msg;
+import '../../../data/models/chat_model.dart';
 import '../../../presentation/blocs/auth/auth_bloc.dart';
 import '../../../presentation/blocs/auth/auth_state.dart';
 import '../../../data/models/user_model.dart';
@@ -156,7 +158,7 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   Widget build(BuildContext context) {
     return PopScope(
-      onPopInvoked: (didPop) {
+      onPopInvokedWithResult: (didPop, result) {
         // Clean up when leaving chat screen
         if (_typingTimer?.isActive == true) {
           _typingTimer?.cancel();
@@ -180,7 +182,7 @@ class _ChatScreenState extends State<ChatScreen> {
                           .where(
                             (message) =>
                                 message.senderId != _currentUserId &&
-                                message.status != msg.MessageStatus.read,
+                                message.status != MessageStatus.read,
                           )
                           .toList();
 
@@ -277,13 +279,13 @@ class _ChatScreenState extends State<ChatScreen> {
       child: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [PulseColors.primary, PulseColors.primary.withOpacity(0.8)],
+            colors: [PulseColors.primary, PulseColors.primary.withValues(alpha: 0.8)],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: Colors.black.withValues(alpha: 0.1),
               blurRadius: 10,
               offset: const Offset(0, 2),
             ),
@@ -318,7 +320,7 @@ class _ChatScreenState extends State<ChatScreen> {
                           border: Border.all(color: Colors.white, width: 2),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.2),
+                              color: Colors.black.withValues(alpha: 0.2),
                               blurRadius: 8,
                               offset: const Offset(0, 2),
                             ),
@@ -346,7 +348,7 @@ class _ChatScreenState extends State<ChatScreen> {
                                       ),
                                 )
                               : Container(
-                                  color: PulseColors.primary.withOpacity(0.3),
+                                  color: PulseColors.primary.withValues(alpha: 0.3),
                                   child: Text(
                                     widget.otherUserName[0].toUpperCase(),
                                     style: const TextStyle(
@@ -400,7 +402,7 @@ class _ChatScreenState extends State<ChatScreen> {
                           Text(
                             '${widget.otherUserProfile!.age ?? 'Unknown'} • ${widget.otherUserProfile!.location ?? 'Location unknown'}',
                             style: TextStyle(
-                              color: Colors.white.withOpacity(0.9),
+                              color: Colors.white.withValues(alpha: 0.9),
                               fontSize: 13,
                             ),
                             overflow: TextOverflow.ellipsis,
@@ -409,7 +411,7 @@ class _ChatScreenState extends State<ChatScreen> {
                             Text(
                               widget.otherUserProfile!.bio!,
                               style: TextStyle(
-                                color: Colors.white.withOpacity(0.8),
+                                color: Colors.white.withValues(alpha: 0.8),
                                 fontSize: 12,
                                 fontStyle: FontStyle.italic,
                               ),
@@ -419,7 +421,7 @@ class _ChatScreenState extends State<ChatScreen> {
                           Text(
                             'Active now',
                             style: TextStyle(
-                              color: Colors.white.withOpacity(0.9),
+                              color: Colors.white.withValues(alpha: 0.9),
                               fontSize: 13,
                             ),
                           ),
@@ -593,7 +595,15 @@ class _ChatScreenState extends State<ChatScreen> {
           final isCurrentUser =
               currentUserId != null && message.senderId == currentUserId;
 
-          return MessageBubble(message: message, isCurrentUser: isCurrentUser);
+          return MessageBubble(
+            message: message, 
+            isCurrentUser: isCurrentUser,
+            currentUserId: currentUserId,
+            onLongPress: () => _onLongPress(message),
+            onReaction: (emoji) => _onReaction(message, emoji),
+            onReply: () => _onReply(message),
+            onMediaTap: () => _onMediaTap(message),
+          );
         },
       );
     }
@@ -976,5 +986,257 @@ class _ChatScreenState extends State<ChatScreen> {
         content: Text('Voice message feature will be implemented'),
       ),
     );
+  }
+
+  void _showMessageOptions(BuildContext context, MessageModel message) {
+    final currentUserId = _currentUserId;
+    final isMyMessage = currentUserId != null && message.senderId == currentUserId;
+    
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: 12),
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: 20),
+            
+            // Quick reactions
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  '❤️', '😂', '😢', '😡', '👍', '👎'
+                ].map((emoji) => GestureDetector(
+                  onTap: () {
+                    Navigator.pop(context);
+                    _addReaction(message.id, emoji);
+                  },
+                  child: Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[100],
+                      shape: BoxShape.circle,
+                    ),
+                    child: Center(
+                      child: Text(emoji, style: const TextStyle(fontSize: 20)),
+                    ),
+                  ),
+                )).toList(),
+              ),
+            ),
+            
+            const SizedBox(height: 20),
+            
+            // Action options
+            _buildOptionTile(
+              icon: Icons.reply,
+              title: 'Reply',
+              onTap: () {
+                Navigator.pop(context);
+                _replyToMessage(message);
+              },
+            ),
+            _buildOptionTile(
+              icon: Icons.copy,
+              title: 'Copy',
+              onTap: () {
+                Navigator.pop(context);
+                _copyMessage(message);
+              },
+            ),
+            if (message.type == msg.MessageType.image || 
+                message.type == msg.MessageType.video ||
+                message.type == msg.MessageType.gif) 
+              _buildOptionTile(
+                icon: Icons.download,
+                title: 'Save to Gallery',
+                onTap: () {
+                  Navigator.pop(context);
+                  _saveMedia(message);
+                },
+              ),
+            _buildOptionTile(
+              icon: Icons.forward,
+              title: 'Forward',
+              onTap: () {
+                Navigator.pop(context);
+                _forwardMessage(message);
+              },
+            ),
+            if (isMyMessage) ...[
+              _buildOptionTile(
+                icon: Icons.edit,
+                title: 'Edit',
+                onTap: () {
+                  Navigator.pop(context);
+                  _editMessage(message);
+                },
+              ),
+              _buildOptionTile(
+                icon: Icons.delete,
+                title: 'Delete',
+                color: Colors.red,
+                onTap: () {
+                  Navigator.pop(context);
+                  _deleteMessage(message);
+                },
+              ),
+            ] else ...[
+              _buildOptionTile(
+                icon: Icons.report,
+                title: 'Report',
+                color: Colors.red,
+                onTap: () {
+                  Navigator.pop(context);
+                  _reportMessage(message);
+                },
+              ),
+            ],
+            
+            SizedBox(height: MediaQuery.of(context).padding.bottom + 20),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildOptionTile({
+    required IconData icon,
+    required String title,
+    required VoidCallback onTap,
+    Color? color,
+  }) {
+    return ListTile(
+      leading: Icon(icon, color: color ?? Colors.grey[700]),
+      title: Text(
+        title,
+        style: TextStyle(
+          color: color ?? Colors.black87,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+      onTap: onTap,
+    );
+  }
+
+  void _addReaction(String messageId, String emoji) {
+    // Add reaction logic
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Added reaction: $emoji')),
+    );
+  }
+
+  void _replyToMessage(MessageModel message) {
+    // Set reply context
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Replying to: ${message.content ?? "message"}')),
+    );
+  }
+
+  void _openMedia(MessageModel message) {
+    if (message.mediaUrls?.isNotEmpty == true) {
+      // Open media viewer
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Opening media viewer...')),
+      );
+    }
+  }
+
+  void _copyMessage(MessageModel message) {
+    if (message.content?.isNotEmpty == true) {
+      Clipboard.setData(ClipboardData(text: message.content!));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Message copied to clipboard')),
+      );
+    }
+  }
+
+  void _saveMedia(MessageModel message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Saving media to gallery...')),
+    );
+  }
+
+  void _forwardMessage(MessageModel message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Forward feature will be implemented')),
+    );
+  }
+
+  void _editMessage(MessageModel message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Edit feature will be implemented')),
+    );
+  }
+
+  void _deleteMessage(MessageModel message) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Message'),
+        content: const Text('Are you sure you want to delete this message?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Message deleted')),
+              );
+            },
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _reportMessage(MessageModel message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Report feature will be implemented')),
+    );
+  }
+
+  // Callback methods for MessageBubble
+  void _onLongPress(MessageModel message) {
+    _showMessageOptions(context, message);
+  }
+
+  void _onReaction(MessageModel message, String emoji) {
+    // Add reaction to message
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Added reaction: $emoji')),
+    );
+  }
+
+  void _onReply(MessageModel message) {
+    // Set reply-to message
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Reply feature coming soon')),
+    );
+  }
+
+  void _onMediaTap(MessageModel message) {
+    _openMedia(message);
   }
 }
