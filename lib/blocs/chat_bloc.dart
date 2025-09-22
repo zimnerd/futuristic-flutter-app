@@ -35,6 +35,40 @@ class LoadMessages extends ChatEvent {
   List<Object?> get props => [conversationId, page, limit];
 }
 
+class LoadLatestMessages extends ChatEvent {
+  final String conversationId;
+  final int limit;
+
+  const LoadLatestMessages({required this.conversationId, this.limit = 20});
+
+  @override
+  List<Object?> get props => [conversationId, limit];
+}
+
+class LoadMoreMessages extends ChatEvent {
+  final String conversationId;
+  final String? oldestMessageId;
+  final int limit;
+
+  const LoadMoreMessages({
+    required this.conversationId,
+    this.oldestMessageId,
+    this.limit = 20,
+  });
+
+  @override
+  List<Object?> get props => [conversationId, oldestMessageId, limit];
+}
+
+class RefreshMessages extends ChatEvent {
+  final String conversationId;
+
+  const RefreshMessages({required this.conversationId});
+
+  @override
+  List<Object?> get props => [conversationId];
+}
+
 class SendMessage extends ChatEvent {
   final String conversationId;
   final MessageType type;
@@ -251,12 +285,16 @@ class MessagesLoaded extends ChatState {
   final List<MessageModel> messages;
   final bool hasMoreMessages;
   final Map<String, bool> typingUsers;
+  final bool isLoadingMore;
+  final bool isRefreshing;
 
   const MessagesLoaded({
     required this.conversationId,
     required this.messages,
     required this.hasMoreMessages,
     this.typingUsers = const {},
+    this.isLoadingMore = false,
+    this.isRefreshing = false,
   });
 
   MessagesLoaded copyWith({
@@ -264,12 +302,16 @@ class MessagesLoaded extends ChatState {
     List<MessageModel>? messages,
     bool? hasMoreMessages,
     Map<String, bool>? typingUsers,
+    bool? isLoadingMore,
+    bool? isRefreshing,
   }) {
     return MessagesLoaded(
       conversationId: conversationId ?? this.conversationId,
       messages: messages ?? this.messages,
       hasMoreMessages: hasMoreMessages ?? this.hasMoreMessages,
       typingUsers: typingUsers ?? this.typingUsers,
+      isLoadingMore: isLoadingMore ?? this.isLoadingMore,
+      isRefreshing: isRefreshing ?? this.isRefreshing,
     );
   }
 
@@ -279,6 +321,8 @@ class MessagesLoaded extends ChatState {
     messages,
     hasMoreMessages,
     typingUsers,
+    isLoadingMore,
+    isRefreshing,
   ];
 }
 
@@ -380,6 +424,9 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
         super(const ChatInitial()) {
     on<LoadConversations>(_onLoadConversations);
     on<LoadMessages>(_onLoadMessages);
+    on<LoadLatestMessages>(_onLoadLatestMessages);
+    on<LoadMoreMessages>(_onLoadMoreMessages);
+    on<RefreshMessages>(_onRefreshMessages);
     on<SendMessage>(_onSendMessage);
     on<MarkMessageAsRead>(_onMarkMessageAsRead);
     on<DeleteMessage>(_onDeleteMessage);
@@ -482,7 +529,9 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       _logger.d('Joined conversation room: ${event.conversationId}');
       
       // Check if there are more messages available
-      final hasMoreMessages = messages.length == event.limit;
+      final hasMoreMessages = await _chatRepository.hasMoreMessages(
+        event.conversationId,
+      );
       
       emit(MessagesLoaded(
         conversationId: event.conversationId,
@@ -494,6 +543,151 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     } catch (e) {
       _logger.e('Error loading messages: $e');
       emit(ChatError(message: 'Failed to load messages: $e'));
+    }
+  }
+
+  Future<void> _onLoadLatestMessages(
+    LoadLatestMessages event,
+    Emitter<ChatState> emit,
+  ) async {
+    try {
+      // Don't show loading screen for latest messages (quick cache response)
+
+      final messages = await _chatRepository.getLatestMessages(
+        conversationId: event.conversationId,
+        limit: event.limit,
+      );
+
+      // Join the conversation room for real-time updates
+      await _chatRepository.joinConversation(event.conversationId);
+      _logger.d('Joined conversation room: ${event.conversationId}');
+
+      // Check if there are more messages available
+      final hasMoreMessages = await _chatRepository.hasMoreMessages(
+        event.conversationId,
+      );
+
+      emit(
+        MessagesLoaded(
+          conversationId: event.conversationId,
+          messages: messages,
+          hasMoreMessages: hasMoreMessages,
+        ),
+      );
+
+      _logger.d(
+        'Loaded ${messages.length} latest messages for conversation ${event.conversationId}',
+      );
+    } catch (e) {
+      _logger.e('Error loading latest messages: $e');
+      emit(ChatError(message: 'Failed to load latest messages: $e'));
+    }
+  }
+
+  Future<void> _onLoadMoreMessages(
+    LoadMoreMessages event,
+    Emitter<ChatState> emit,
+  ) async {
+    try {
+      // Get current state to maintain existing messages
+      final currentState = state;
+      if (currentState is! MessagesLoaded ||
+          currentState.conversationId != event.conversationId) {
+        _logger.w('Cannot load more messages: invalid state');
+        return;
+      }
+
+      // Set loading more flag (non-intrusive loading)
+      emit(currentState.copyWith(isLoadingMore: true));
+
+      final moreMessages = await _chatRepository.loadMoreMessages(
+        conversationId: event.conversationId,
+        oldestMessageId: event.oldestMessageId,
+        limit: event.limit,
+      );
+
+      // Merge new messages with existing ones (older messages go to the end)
+      final allMessages = [...currentState.messages, ...moreMessages];
+
+      // Check if there are even more messages available
+      final hasMoreMessages = await _chatRepository.hasMoreMessages(
+        event.conversationId,
+      );
+
+      emit(
+        MessagesLoaded(
+          conversationId: event.conversationId,
+          messages: allMessages,
+          hasMoreMessages: hasMoreMessages,
+          typingUsers: currentState.typingUsers,
+          isLoadingMore: false,
+        ),
+      );
+
+      _logger.d(
+        'Loaded ${moreMessages.length} more messages. Total: ${allMessages.length}',
+      );
+    } catch (e) {
+      _logger.e('Error loading more messages: $e');
+
+      // Revert loading state on error
+      final currentState = state;
+      if (currentState is MessagesLoaded) {
+        emit(currentState.copyWith(isLoadingMore: false));
+      }
+    }
+  }
+
+  Future<void> _onRefreshMessages(
+    RefreshMessages event,
+    Emitter<ChatState> emit,
+  ) async {
+    try {
+      // Get current state to maintain existing messages during refresh
+      final currentState = state;
+      if (currentState is! MessagesLoaded ||
+          currentState.conversationId != event.conversationId) {
+        _logger.w('Cannot refresh messages: invalid state');
+        return;
+      }
+
+      // Set refreshing flag (pull-to-refresh indicator)
+      emit(currentState.copyWith(isRefreshing: true));
+
+      // Get fresh messages from network (bypasses cache initially)
+      final refreshedMessages = await _chatRepository.getMessagesPaginated(
+        conversationId: event.conversationId,
+        cursorMessageId: null,
+        limit: 50,
+        fromCache: false, // Force network refresh
+      );
+
+      // Check if there are more messages available
+      final hasMoreMessages = await _chatRepository.hasMoreMessages(
+        event.conversationId,
+      );
+
+      emit(
+        MessagesLoaded(
+          conversationId: event.conversationId,
+          messages: refreshedMessages,
+          hasMoreMessages: hasMoreMessages,
+          typingUsers: currentState.typingUsers,
+          isRefreshing: false,
+        ),
+      );
+
+      _logger.d(
+        'Refreshed ${refreshedMessages.length} messages for conversation ${event.conversationId}',
+      );
+    } catch (e) {
+      _logger.e('Error refreshing messages: $e');
+
+      // Revert refreshing state on error
+      final currentState = state;
+      if (currentState is MessagesLoaded) {
+        emit(currentState.copyWith(isRefreshing: false));
+      }
     }
   }
 

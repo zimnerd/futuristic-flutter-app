@@ -66,9 +66,9 @@ class _ChatScreenState extends State<ChatScreen> {
     if (widget.conversationId == 'new') {
       _createNewConversation();
     } else {
-      // Load messages for existing conversation
+      // Load latest messages for existing conversation (fast cache response)
       context.read<ChatBloc>().add(
-        LoadMessages(conversationId: widget.conversationId),
+        LoadLatestMessages(conversationId: widget.conversationId),
       );
 
       // ✅ We'll mark as read later only if there are actually unread messages
@@ -576,7 +576,7 @@ class _ChatScreenState extends State<ChatScreen> {
             ElevatedButton(
               onPressed: () {
                 context.read<ChatBloc>().add(
-                  LoadMessages(conversationId: widget.conversationId),
+                  LoadLatestMessages(conversationId: widget.conversationId),
                 );
               },
               style: ElevatedButton.styleFrom(
@@ -617,31 +617,169 @@ class _ChatScreenState extends State<ChatScreen> {
         );
       }
 
-      return ListView.builder(
-        controller: _scrollController,
-        reverse: true,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        itemCount: state.messages.length,
-        itemBuilder: (context, index) {
-          final message = state.messages[index];
-          final currentUserId = _currentUserId;
-          final isCurrentUser =
-              currentUserId != null && message.senderId == currentUserId;
-
-          AppLogger.debug(
-            '_buildMessagesList - Message ${message.id}: senderId=${message.senderId}, currentUserId=$currentUserId, isCurrentUser=$isCurrentUser, content="${message.content}", status=${message.status}',
+      return RefreshIndicator(
+        onRefresh: () async {
+          context.read<ChatBloc>().add(
+            RefreshMessages(conversationId: widget.conversationId),
           );
 
-          return MessageBubble(
-            message: message, 
-            isCurrentUser: isCurrentUser,
-            currentUserId: currentUserId,
-            onLongPress: () => _onLongPress(message),
-            onReaction: (emoji) => _onReaction(message, emoji),
-            onReply: () => _onReply(message),
-            onMediaTap: () => _onMediaTap(message),
-          );
+          // Wait for refresh to complete
+          await Future.delayed(const Duration(milliseconds: 500));
         },
+        child: NotificationListener<ScrollNotification>(
+          onNotification: (scrollNotification) {
+            // Check if user scrolled to the bottom (where older messages are)
+            if (scrollNotification.metrics.pixels >=
+                    scrollNotification.metrics.maxScrollExtent * 0.9 &&
+                state.hasMoreMessages &&
+                !state.isLoadingMore) {
+              AppLogger.debug(
+                'Loading more messages - user scrolled to bottom',
+              );
+
+              // Get the oldest message ID for pagination
+              final oldestMessageId = state.messages.isNotEmpty
+                  ? state.messages.last.id
+                  : null;
+
+              context.read<ChatBloc>().add(
+                LoadMoreMessages(
+                  conversationId: widget.conversationId,
+                  oldestMessageId: oldestMessageId,
+                ),
+              );
+            }
+            return false;
+          },
+          child: ListView.builder(
+            controller: _scrollController,
+            reverse: true,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            itemCount:
+                state.messages.length +
+                (state.hasMoreMessages
+                    ? 1
+                    : 0) + // Add loading indicator at bottom
+                (state.isRefreshing ? 1 : 0), // Add refresh indicator at top
+            itemBuilder: (context, index) {
+              // Show refresh indicator at top (index 0 in reverse list)
+              if (state.isRefreshing && index == 0) {
+                return const Padding(
+                  padding: EdgeInsets.all(16),
+                  child: Center(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
+                        SizedBox(width: 8),
+                        Text(
+                          'Refreshing...',
+                          style: TextStyle(color: Colors.grey, fontSize: 12),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }
+
+              // Adjust index for refresh indicator
+              final messageIndex = state.isRefreshing ? index - 1 : index;
+
+              // Show load more indicator at bottom (last index in reverse list)
+              if (state.hasMoreMessages &&
+                  messageIndex >= state.messages.length) {
+                return Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Center(
+                    child: state.isLoadingMore
+                        ? const Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              SizedBox(
+                                width: 16,
+                                height: 16,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              ),
+                              SizedBox(width: 8),
+                              Text(
+                                'Loading more messages...',
+                                style: TextStyle(
+                                  color: Colors.grey,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ],
+                          )
+                        : GestureDetector(
+                            onTap: () {
+                              AppLogger.debug(
+                                'Manual load more messages triggered',
+                              );
+                              final oldestMessageId = state.messages.isNotEmpty
+                                  ? state.messages.last.id
+                                  : null;
+
+                              context.read<ChatBloc>().add(
+                                LoadMoreMessages(
+                                  conversationId: widget.conversationId,
+                                  oldestMessageId: oldestMessageId,
+                                ),
+                              );
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 6,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.grey.shade100,
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: const Text(
+                                'Tap to load older messages',
+                                style: TextStyle(
+                                  color: Colors.grey,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ),
+                          ),
+                  ),
+                );
+              }
+
+              // Regular message item
+              if (messageIndex < state.messages.length) {
+                final message = state.messages[messageIndex];
+                final currentUserId = _currentUserId;
+                final isCurrentUser =
+                    currentUserId != null && message.senderId == currentUserId;
+
+                AppLogger.debug(
+                  '_buildMessagesList - Message ${message.id}: senderId=${message.senderId}, currentUserId=$currentUserId, isCurrentUser=$isCurrentUser, content="${message.content}", status=${message.status}',
+                );
+
+                return MessageBubble(
+                  message: message,
+                  isCurrentUser: isCurrentUser,
+                  currentUserId: currentUserId,
+                  onLongPress: () => _onLongPress(message),
+                  onReaction: (emoji) => _onReaction(message, emoji),
+                  onReply: () => _onReply(message),
+                  onMediaTap: () => _onMediaTap(message),
+                );
+              }
+
+              return const SizedBox.shrink();
+            },
+          ),
+        ),
       );
     }
 

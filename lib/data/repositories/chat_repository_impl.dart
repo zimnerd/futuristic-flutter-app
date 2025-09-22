@@ -8,15 +8,19 @@ import '../../domain/entities/message.dart' show MessageType;
 import '../datasources/remote/chat_remote_data_source.dart';
 import '../../domain/services/websocket_service.dart';
 import '../services/websocket_service_impl.dart';
+import '../services/message_database_service.dart';
+import '../utils/model_converters.dart';
+import '../database/models/database_models.dart';
 import '../exceptions/app_exceptions.dart';
 import '../../core/network/api_client.dart';
 import 'chat_repository.dart';
 
-/// Implementation of ChatRepository with real-time Socket.IO support
+/// Implementation of ChatRepository with real-time Socket.IO support and local SQLite caching
 class ChatRepositoryImpl implements ChatRepository {
   final ChatRemoteDataSource _remoteDataSource;
   final WebSocketService _webSocketService;
   final ApiClient _apiClient;
+  final MessageDatabaseService _databaseService;
   final Logger _logger = Logger();
   final Uuid _uuid = Uuid();
 
@@ -34,9 +38,11 @@ class ChatRepositoryImpl implements ChatRepository {
     required ChatRemoteDataSource remoteDataSource,
     WebSocketService? webSocketService,
     ApiClient? apiClient,
+    MessageDatabaseService? databaseService,
   }) : _remoteDataSource = remoteDataSource,
        _webSocketService = webSocketService ?? WebSocketServiceImpl.instance,
-       _apiClient = apiClient ?? ApiClient.instance {
+       _apiClient = apiClient ?? ApiClient.instance,
+       _databaseService = databaseService ?? MessageDatabaseService() {
     _setupWebSocketListeners();
   }
 
@@ -51,7 +57,7 @@ class ChatRepositoryImpl implements ChatRepository {
   /// Setup WebSocket listeners for real-time message events
   void _setupWebSocketListeners() {
     // Listen for incoming messages (backend emits 'messageReceived')
-    _webSocketService.on('messageReceived', (data) {
+    _webSocketService.on('messageReceived', (data) async {
       try {
         _logger.d('Repository: Received messageReceived event: $data');
 
@@ -87,8 +93,22 @@ class ChatRepositoryImpl implements ChatRepository {
             // Remove from pending optimistic messages
             _pendingOptimisticMessages.remove(tempId);
             
+            // Replace optimistic message in database with real message
+            await _databaseService.replaceOptimisticMessage(
+              tempId: tempId,
+              serverMessage: ModelConverters.messageToDbModel(message),
+            );
+            
             _logger.d(
-              'Repository: Mapped optimistic ID $tempId to real ID ${message.id}',
+              'Repository: Mapped optimistic ID $tempId to real ID ${message.id} and updated database',
+            );
+          } else {
+            // Save new incoming message to database
+            await _databaseService.saveMessage(
+              ModelConverters.messageToDbModel(message),
+            );
+            _logger.d(
+              'Repository: Saved incoming message to database: ${message.id}',
             );
           }
           _incomingMessagesController.add(message);
@@ -242,18 +262,20 @@ class ChatRepositoryImpl implements ChatRepository {
     int limit = 50,
   }) async {
     try {
-      _logger.d('Fetching messages for conversation: $conversationId');
+      _logger.d(
+        'Fetching messages for conversation: $conversationId (page: $page, limit: $limit)',
+      );
       
       // Join conversation for real-time updates
       _webSocketService.joinRoom(conversationId);
       
-      final messages = await _remoteDataSource.getMessages(
-        conversationId,
+      // Use the new paginated method for consistency and caching
+      return await getMessagesPaginated(
+        conversationId: conversationId,
+        cursorMessageId: null, // For initial load
         limit: limit,
-        // For pagination, we could use beforeMessageId from previous requests
+        fromCache: true,
       );
-      _logger.d('Successfully fetched ${messages.length} messages');
-      return messages;
     } catch (e) {
       _logger.e('Error fetching messages: $e');
       rethrow;
@@ -308,11 +330,17 @@ class ChatRepositoryImpl implements ChatRepository {
       _pendingOptimisticMessages[tempId] = optimisticMessage;
       _tempIdToRealIdMap[tempId] =
           optimisticId; // Will be updated when real message arrives
+
+      // Save optimistic message to database for local caching
+      await _databaseService.saveMessage(
+        ModelConverters.messageToDbModel(optimisticMessage),
+      );
       
       _logger.d(
         'Successfully sent message via Socket.IO with tempId: $tempId, optimistic ID: $optimisticId',
       );
       _logger.d('Optimistic message senderId: ${optimisticMessage.senderId}');
+      _logger.d('Saved optimistic message to database');
       return optimisticMessage;
     } catch (e) {
       _logger.e('Error sending message: $e');
@@ -676,5 +704,195 @@ class ChatRepositoryImpl implements ChatRepository {
     }
 
     return false;
+  }
+
+  // ================== NEW PAGINATION METHODS ==================
+
+  @override
+  Future<List<MessageModel>> getMessagesPaginated({
+    required String conversationId,
+    String? cursorMessageId,
+    int limit = 20,
+    bool fromCache = true,
+  }) async {
+    try {
+      _logger.d('Getting paginated messages for conversation: $conversationId');
+      _logger.d(
+        'Cursor: $cursorMessageId, limit: $limit, fromCache: $fromCache',
+      );
+
+      List<MessageDbModel> dbMessages = [];
+
+      if (fromCache) {
+        // Try to get from local database first
+        dbMessages = await _databaseService.getMessages(
+          conversationId: conversationId,
+          cursorMessageId: cursorMessageId,
+          limit: limit,
+        );
+
+        _logger.d(
+          'Retrieved ${dbMessages.length} messages from local database',
+        );
+      }
+
+      // If we have cached messages and they satisfy the limit, return them
+      if (dbMessages.length >= limit || !fromCache) {
+        final messages = ModelConverters.dbModelsToMessages(dbMessages);
+        _logger.d('Returning ${messages.length} cached messages');
+        return messages;
+      }
+
+      // Otherwise, fetch from network and cache locally
+      try {
+        final networkMessages = await _remoteDataSource.getMessages(
+          conversationId,
+          beforeMessageId: cursorMessageId,
+          limit: limit,
+        );
+
+        // Save network messages to database
+        if (networkMessages.isNotEmpty) {
+          final dbModelsToSave = ModelConverters.messagesToDbModels(
+            networkMessages,
+          );
+          await _databaseService.saveMessages(dbModelsToSave);
+
+          // Update pagination metadata
+          final currentMetadata =
+              await _databaseService.getPaginationMetadata(conversationId) ??
+              ModelConverters.createInitialPaginationMetadata(conversationId);
+
+          final updatedMetadata = ModelConverters.updatePaginationMetadata(
+            currentMetadata,
+            dbModelsToSave,
+            networkMessages.length >= limit,
+          );
+
+          await _databaseService.savePaginationMetadata(updatedMetadata);
+
+          _logger.d(
+            'Cached ${networkMessages.length} network messages to database',
+          );
+        }
+
+        return networkMessages;
+      } catch (e) {
+        _logger.w('Network fetch failed, returning cached messages: $e');
+        final messages = ModelConverters.dbModelsToMessages(dbMessages);
+        return messages;
+      }
+    } catch (e) {
+      _logger.e('Error getting paginated messages: $e');
+      return [];
+    }
+  }
+
+  @override
+  Future<List<MessageModel>> loadMoreMessages({
+    required String conversationId,
+    String? oldestMessageId,
+    int limit = 20,
+  }) async {
+    try {
+      _logger.d('Loading more messages for conversation: $conversationId');
+      _logger.d('Oldest message ID: $oldestMessageId, limit: $limit');
+
+      // Check pagination metadata to see if we have more messages
+      final paginationData = await _databaseService.getPaginationMetadata(
+        conversationId,
+      );
+      if (paginationData != null && !paginationData.hasMoreMessages) {
+        _logger.d(
+          'No more messages available for conversation: $conversationId',
+        );
+        return [];
+      }
+
+      // Get more messages using pagination
+      return await getMessagesPaginated(
+        conversationId: conversationId,
+        cursorMessageId: oldestMessageId,
+        limit: limit,
+        fromCache: true,
+      );
+    } catch (e) {
+      _logger.e('Error loading more messages: $e');
+      return [];
+    }
+  }
+
+  @override
+  Future<List<MessageModel>> getLatestMessages({
+    required String conversationId,
+    int limit = 20,
+  }) async {
+    try {
+      _logger.d('Getting latest messages for conversation: $conversationId');
+
+      // Get latest messages from database first (for quick response)
+      final dbMessages = await _databaseService.getLatestMessages(
+        conversationId: conversationId,
+        limit: limit,
+      );
+
+      final cachedMessages = ModelConverters.dbModelsToMessages(dbMessages);
+      _logger.d(
+        'Retrieved ${cachedMessages.length} latest messages from cache',
+      );
+
+      // Optionally refresh from network in background (fire and forget)
+      _refreshLatestMessagesInBackground(conversationId, limit);
+
+      return cachedMessages;
+    } catch (e) {
+      _logger.e('Error getting latest messages: $e');
+      return [];
+    }
+  }
+
+  @override
+  Future<bool> hasMoreMessages(String conversationId) async {
+    try {
+      final paginationData = await _databaseService.getPaginationMetadata(
+        conversationId,
+      );
+      final hasMore = paginationData?.hasMoreMessages ?? true;
+
+      _logger.d('Conversation $conversationId has more messages: $hasMore');
+      return hasMore;
+    } catch (e) {
+      _logger.e('Error checking if conversation has more messages: $e');
+      return true; // Default to true if we can't determine
+    }
+  }
+
+  // ================== HELPER METHODS ==================
+
+  /// Refresh latest messages from network in background
+  Future<void> _refreshLatestMessagesInBackground(
+    String conversationId,
+    int limit,
+  ) async {
+    try {
+      final networkMessages = await _remoteDataSource.getMessages(
+        conversationId,
+        limit: limit,
+      );
+
+      if (networkMessages.isNotEmpty) {
+        final dbModelsToSave = ModelConverters.messagesToDbModels(
+          networkMessages,
+        );
+        await _databaseService.saveMessages(dbModelsToSave);
+        _logger.d(
+          'Background refresh: cached ${networkMessages.length} messages',
+        );
+      }
+    } catch (e) {
+      _logger.w(
+        'Background refresh failed for conversation $conversationId: $e',
+      );
+    }
   }
 }

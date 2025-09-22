@@ -20,6 +20,30 @@ abstract class ChatRepository {
     int limit = 50,
   });
 
+  /// Get messages with cursor-based pagination (new SQLite implementation)
+  Future<List<MessageModel>> getMessagesPaginated({
+    required String conversationId,
+    String? cursorMessageId,
+    int limit = 20,
+    bool fromCache = true,
+  });
+
+  /// Load more messages (pagination helper)
+  Future<List<MessageModel>> loadMoreMessages({
+    required String conversationId,
+    String? oldestMessageId,
+    int limit = 20,
+  });
+
+  /// Get latest messages for real-time updates
+  Future<List<MessageModel>> getLatestMessages({
+    required String conversationId,
+    int limit = 20,
+  });
+
+  /// Check if conversation has more messages to load
+  Future<bool> hasMoreMessages(String conversationId);
+
   /// Send a new message
   Future<MessageModel> sendMessage({
     required String conversationId,
