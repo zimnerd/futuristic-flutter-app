@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
 import 'dart:io';
 
 import '../../../domain/entities/user_profile.dart';
 import '../../../blocs/chat_bloc.dart';
+import '../chat/chat_screen.dart';
 import '../../theme/pulse_colors.dart';
 import '../../widgets/common/pulse_button.dart';
 import 'enhanced_profile_edit_screen.dart';
@@ -74,33 +74,41 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
 
   /// Handles starting a conversation with the user
   void _startConversation(BuildContext context) {
+    // Capture context and navigation functions before async operations
+    final navigator = Navigator.of(context);
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
+    final chatBloc = context.read<ChatBloc>();
+    
     // Create conversation using ChatBloc
-    context.read<ChatBloc>().add(CreateConversation(
+    chatBloc.add(CreateConversation(
       participantId: widget.profile.id,
     ));
     
     // Listen for conversation creation result
-    final subscription = context.read<ChatBloc>().stream.listen((state) {
+    final subscription = chatBloc.stream.listen((state) {
       if (state is ConversationCreated) {
-        // Check if widget is still mounted before using context
+        // Check if widget is still mounted before navigation
         if (mounted) {
           // Navigate to chat screen with the new conversation
           // Use push instead of go to maintain navigation stack
-          context.push(
-            '/chat/${state.conversation.id}',
-            extra: {
-            'otherUserId': widget.profile.id,
-            'otherUserName': widget.profile.name,
-            'otherUserPhoto': widget.profile.photos.isNotEmpty 
-                ? widget.profile.photos.first.url 
-                : null,
-          });
+          navigator.push(
+            MaterialPageRoute(
+              builder: (context) => ChatScreen(
+                conversationId: state.conversation.id,
+                otherUserId: widget.profile.id,
+                otherUserName: widget.profile.name,
+                otherUserPhoto: widget.profile.photos.isNotEmpty 
+                    ? widget.profile.photos.first.url 
+                    : null,
+              ),
+            ),
+          );
         }
       } else if (state is ChatError) {
-        // Check if widget is still mounted before using context
+        // Check if widget is still mounted before showing message
         if (mounted) {
           // Show error message
-          ScaffoldMessenger.of(context).showSnackBar(
+          scaffoldMessenger.showSnackBar(
             SnackBar(
               content: Text('Failed to start conversation: ${state.message}'),
               backgroundColor: Colors.red,

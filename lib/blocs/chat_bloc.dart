@@ -4,7 +4,7 @@ import 'package:logger/logger.dart';
 import 'dart:async';
 
 import '../data/models/chat_model.dart';
-import '../data/models/message.dart' as message_types;
+import '../domain/entities/message.dart' show MessageType;
 import '../data/repositories/chat_repository.dart';
 
 // Events
@@ -36,7 +36,7 @@ class LoadMessages extends ChatEvent {
 
 class SendMessage extends ChatEvent {
   final String conversationId;
-  final message_types.MessageType type;
+  final MessageType type;
   final String? content;
   final List<String>? mediaIds;
   final Map<String, dynamic>? metadata;
@@ -127,13 +127,13 @@ class ReplyToMessage extends ChatEvent {
   final String originalMessageId;
   final String conversationId;
   final String content;
-  final message_types.MessageType type;
+  final MessageType type;
 
   const ReplyToMessage({
     required this.originalMessageId,
     required this.conversationId,
     required this.content,
-    this.type = message_types.MessageType.text,
+    this.type = MessageType.text,
   });
 
   @override

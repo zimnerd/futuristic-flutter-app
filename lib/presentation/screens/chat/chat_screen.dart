@@ -6,11 +6,12 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../blocs/chat_bloc.dart';
-import '../../../data/models/message.dart' as msg;
 import '../../../data/models/chat_model.dart';
+import '../../../domain/entities/message.dart' show MessageType;
 import '../../../presentation/blocs/auth/auth_bloc.dart';
 import '../../../presentation/blocs/auth/auth_state.dart';
 import '../../../data/models/user_model.dart';
+import '../../../core/utils/logger.dart';
 import '../../theme/pulse_colors.dart';
 import '../../widgets/chat/message_bubble.dart';
 import '../../widgets/chat/ai_message_input.dart';
@@ -56,10 +57,10 @@ class _ChatScreenState extends State<ChatScreen> {
     super.initState();
     
     // Debug information
-    print('ChatScreen initialized with:');
-    print('  conversationId: ${widget.conversationId}');
-    print('  otherUserId: ${widget.otherUserId}');
-    print('  otherUserName: ${widget.otherUserName}');
+    AppLogger.debug('ChatScreen initialized with:');
+    AppLogger.debug('  conversationId: ${widget.conversationId}');
+    AppLogger.debug('  otherUserId: ${widget.otherUserId}');
+    AppLogger.debug('  otherUserName: ${widget.otherUserName}');
     
     // Check if this is a new conversation that needs to be created
     if (widget.conversationId == 'new') {
@@ -80,11 +81,13 @@ class _ChatScreenState extends State<ChatScreen> {
 
   /// Create a new conversation with the other user
   void _createNewConversation() async {
-    print('Creating new conversation with otherUserId: ${widget.otherUserId}');
+    AppLogger.debug(
+      'Creating new conversation with otherUserId: ${widget.otherUserId}',
+    );
     
     if (widget.otherUserId.isEmpty || widget.otherUserId == 'current_user_id') {
       // Handle error - no valid other user ID provided
-      print('Error: Invalid otherUserId: ${widget.otherUserId}');
+      AppLogger.warning('Error: Invalid otherUserId: ${widget.otherUserId}');
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Error: Cannot create conversation - invalid user ID'),
@@ -146,7 +149,7 @@ class _ChatScreenState extends State<ChatScreen> {
     context.read<ChatBloc>().add(
       SendMessage(
         conversationId: widget.conversationId,
-        type: msg.MessageType.text,
+        type: MessageType.text,
         content: text,
       ),
     );
@@ -193,12 +196,12 @@ class _ChatScreenState extends State<ChatScreen> {
                           ),
                         );
                         _hasMarkedAsRead = true;
-                        print(
-                          '🐛 ChatScreen - Marked conversation as read (${unreadMessages.length} unread messages)',
+                        AppLogger.debug(
+                          'ChatScreen - Marked conversation as read (${unreadMessages.length} unread messages)',
                         );
                       } else {
-                        print(
-                          '🐛 ChatScreen - No unread messages, skipping mark as read',
+                        AppLogger.debug(
+                          'ChatScreen - No unread messages, skipping mark as read',
                         );
                       }
                     }
@@ -219,12 +222,12 @@ class _ChatScreenState extends State<ChatScreen> {
                 }
               },
               builder: (context, state) {
-                  print(
-                    '🐛 UI Builder called with state: ${state.runtimeType}',
+                  AppLogger.debug(
+                    'UI Builder called with state: ${state.runtimeType}',
                   );
                   if (state is MessagesLoaded) {
-                    print(
-                      '🐛 UI Builder - MessagesLoaded with ${state.messages.length} messages',
+                    AppLogger.debug(
+                      'UI Builder - MessagesLoaded with ${state.messages.length} messages',
                     );
                   }
                 return _buildMessagesList(state);
@@ -511,10 +514,12 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   Widget _buildMessagesList(ChatState state) {
-    print('🐛 _buildMessagesList called with state: ${state.runtimeType}');
+    AppLogger.debug(
+      '_buildMessagesList called with state: ${state.runtimeType}',
+    );
     
     if (state is ChatLoading) {
-      print('🐛 _buildMessagesList - Showing loading indicator');
+      AppLogger.debug('_buildMessagesList - Showing loading indicator');
       return const Center(
         child: CircularProgressIndicator(
           valueColor: AlwaysStoppedAnimation<Color>(PulseColors.primary),
@@ -523,7 +528,7 @@ class _ChatScreenState extends State<ChatScreen> {
     }
 
     if (state is ChatError) {
-      print('🐛 _buildMessagesList - Showing error: ${state.message}');
+      AppLogger.error('_buildMessagesList - Showing error: ${state.message}');
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -558,12 +563,12 @@ class _ChatScreenState extends State<ChatScreen> {
     }
 
     if (state is MessagesLoaded) {
-      print(
-        '🐛 _buildMessagesList - MessagesLoaded with ${state.messages.length} messages',
+      AppLogger.debug(
+        '_buildMessagesList - MessagesLoaded with ${state.messages.length} messages',
       );
       
       if (state.messages.isEmpty) {
-        print('🐛 _buildMessagesList - Showing empty state');
+        AppLogger.debug('_buildMessagesList - Showing empty state');
         return const Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -1060,9 +1065,9 @@ class _ChatScreenState extends State<ChatScreen> {
                 _copyMessage(message);
               },
             ),
-            if (message.type == msg.MessageType.image || 
-                message.type == msg.MessageType.video ||
-                message.type == msg.MessageType.gif) 
+            if (message.type == MessageType.image ||
+                message.type == MessageType.video ||
+                message.type == MessageType.gif) 
               _buildOptionTile(
                 icon: Icons.download,
                 title: 'Save to Gallery',

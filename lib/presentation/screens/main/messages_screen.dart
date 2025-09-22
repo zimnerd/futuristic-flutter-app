@@ -14,6 +14,8 @@ import '../../blocs/match/match_bloc.dart';
 import '../../blocs/match/match_event.dart';
 import '../../blocs/match/match_state.dart';
 import '../../../blocs/chat_bloc.dart';
+import '../../blocs/auth/auth_bloc.dart';
+import '../../blocs/auth/auth_state.dart';
 
 /// Enhanced messages screen with conversations list
 class MessagesScreen extends StatefulWidget {
@@ -29,7 +31,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
   MessageFilters _currentFilters = const MessageFilters();
   List<ConversationData> _allConversations = [];
   List<ConversationData> _filteredConversations = [];
-  Map<String, MatchStoryData> _enrichedMatches =
+  final Map<String, MatchStoryData> _enrichedMatches =
       {}; // Cache enriched matches by match ID
   Map<String, dynamic>?
   _pendingMatchNavigation; // Store match data for navigation after conversation creation
@@ -197,9 +199,11 @@ class _MessagesScreenState extends State<MessagesScreen> {
                     }
 
                     // Determine which user is the other user (not current user)
-                    // For now, assume user1Id is current user and user2Id is the other user
-                    const currentUserId =
-                        'current_user'; // TODO: Get from auth state
+                      // Get current user ID from auth state
+                      final authState = context.read<AuthBloc>().state;
+                      final currentUserId = authState is AuthAuthenticated
+                          ? authState.user.id
+                          : '';
                     final otherUserId = match.user1Id == currentUserId
                         ? match.user2Id
                         : match.user1Id;

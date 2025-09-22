@@ -1,13 +1,12 @@
 import 'dart:async';
 import 'package:logger/logger.dart';
-import 'package:pulse_dating_app/data/models/message.dart' as data_message;
 
 import '../models/chat_model.dart';
-import '../models/message.dart' as msg;
+import '../models/message.dart' show MessageDeliveryUpdate;
+import '../../domain/entities/message.dart' show MessageType;
 import '../datasources/remote/chat_remote_data_source.dart';
 import '../../domain/services/websocket_service.dart';
 import '../services/websocket_service_impl.dart';
-import '../../domain/entities/message.dart' as domain;
 import '../exceptions/app_exceptions.dart';
 import '../../core/network/api_client.dart';
 import 'chat_repository.dart';
@@ -22,8 +21,8 @@ class ChatRepositoryImpl implements ChatRepository {
   // Stream controllers for real-time events
   final StreamController<MessageModel> _incomingMessagesController =
       StreamController<MessageModel>.broadcast();
-  final StreamController<msg.MessageDeliveryUpdate> _deliveryUpdatesController =
-      StreamController<msg.MessageDeliveryUpdate>.broadcast();
+  final StreamController<MessageDeliveryUpdate> _deliveryUpdatesController =
+      StreamController<MessageDeliveryUpdate>.broadcast();
   
   // Track optimistic message ID to real message ID mapping
   final Map<String, String> _optimisticToRealIdMap = {};
@@ -43,7 +42,7 @@ class ChatRepositoryImpl implements ChatRepository {
       _incomingMessagesController.stream;
 
   @override
-  Stream<msg.MessageDeliveryUpdate> get messageDeliveryUpdates =>
+  Stream<MessageDeliveryUpdate> get messageDeliveryUpdates =>
       _deliveryUpdatesController.stream;
 
   /// Setup WebSocket listeners for real-time message events
@@ -90,7 +89,7 @@ class ChatRepositoryImpl implements ChatRepository {
         _logger.d('Received messageDelivered event: $data');
 
         if (data is Map<String, dynamic>) {
-          final update = msg.MessageDeliveryUpdate.fromJson(data);
+          final update = MessageDeliveryUpdate.fromJson(data);
           
           // Check if this delivery update is for an optimistic message
           // If so, create a delivery update with the optimistic ID instead
@@ -103,7 +102,7 @@ class ChatRepositoryImpl implements ChatRepository {
 
           if (optimisticId != update.messageId) {
             // Create delivery update with optimistic ID so ChatBloc can find it
-            final optimisticUpdate = msg.MessageDeliveryUpdate(
+            final optimisticUpdate = MessageDeliveryUpdate(
               messageId: optimisticId,
               status: update.status,
               timestamp: update.timestamp,
@@ -171,7 +170,7 @@ class ChatRepositoryImpl implements ChatRepository {
   @override
   Future<MessageModel> sendMessage({
     required String conversationId,
-    required msg.MessageType type,
+    required MessageType type,
     String? content,
     List<String>? mediaIds,
     Map<String, dynamic>? metadata,
@@ -196,7 +195,7 @@ class ChatRepositoryImpl implements ChatRepository {
         senderId:
             'optimistic_user', // Temporary placeholder - will be updated when real message arrives
         senderUsername: 'You',
-        type: _convertToDomainMessageType(type),
+        type: type,
         content: content,
         status: MessageStatus.sending,
         mediaUrls: mediaIds,
@@ -555,34 +554,7 @@ class ChatRepositoryImpl implements ChatRepository {
     }
   }
 
-  /// Convert data model MessageType to domain MessageType
-  domain.MessageType _convertToDomainMessageType(
-    data_message.MessageType type,
-  ) {
-    switch (type) {
-      case data_message.MessageType.text:
-        return domain.MessageType.text;
-      case data_message.MessageType.image:
-        return domain.MessageType.image;
-      case data_message.MessageType.video:
-        return domain.MessageType.video;
-      case data_message.MessageType.audio:
-        return domain.MessageType.audio;
-      case data_message.MessageType.gif:
-        return domain.MessageType.gif;
-      case data_message.MessageType.sticker:
-        return domain.MessageType.sticker;
-      case data_message.MessageType.location:
-        return domain.MessageType.location;
-      case data_message.MessageType.contact:
-        return domain.MessageType.contact;
-      case data_message.MessageType.file:
-        return domain.MessageType.file;
-      case data_message.MessageType.system:
-        // Map system to text as domain doesn't have system type
-        return domain.MessageType.text;
-    }
-  }
+
 
   @override
   bool isOptimisticMessage(String? messageId, String realMessageId) {

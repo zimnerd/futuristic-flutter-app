@@ -1,7 +1,7 @@
 import 'package:logger/logger.dart';
 
 import '../../models/chat_model.dart';
-import '../../models/message.dart';
+import '../../../domain/entities/message.dart' show MessageType;
 import '../../../core/network/api_client.dart';
 import '../../../core/network/response_parser.dart';
 import '../../exceptions/app_exceptions.dart';

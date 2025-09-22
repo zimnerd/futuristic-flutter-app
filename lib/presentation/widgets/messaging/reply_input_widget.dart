@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../data/models/message.dart';
+import '../../../domain/entities/message.dart' show MessageType;
 import '../../../blocs/chat_bloc.dart';
 import '../../theme/pulse_colors.dart';
 

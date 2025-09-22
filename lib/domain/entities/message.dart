@@ -203,6 +203,7 @@ enum MessageType {
   location,
   contact,
   file,
+  system,
 }
 
 /// Message status enumeration

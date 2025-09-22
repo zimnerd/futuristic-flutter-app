@@ -1,5 +1,6 @@
 import '../../data/models/chat_model.dart';
-import '../../data/models/message.dart';
+import '../../data/models/message.dart' show MessageDeliveryUpdate;
+import '../entities/message.dart' show MessageType;
 
 /// Repository interface for chat operations
 abstract class ChatRepository {

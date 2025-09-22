@@ -1,28 +1,6 @@
 import 'package:equatable/equatable.dart';
+import '../../domain/entities/message.dart' show MessageType, MessageStatus;
 import 'user.dart';
-
-/// Message types enum
-enum MessageType {
-  text,
-  image,
-  video,
-  audio,
-  file,
-  location,
-  contact,
-  sticker,
-  gif,
-  system,
-}
-
-/// Message status enum
-enum MessageStatus {
-  sending,
-  sent,
-  delivered,
-  read,
-  failed,
-}
 
 /// Message model for messaging
 class Message extends Equatable {
