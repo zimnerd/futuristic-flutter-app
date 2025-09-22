@@ -730,13 +730,32 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     Emitter<ChatState> emit,
   ) async {
     try {
-      // Add the new message to the current state
       if (state is MessagesLoaded) {
         final currentState = state as MessagesLoaded;
-        final updatedMessages = [...currentState.messages, event.message];
+        final messages = List<MessageModel>.from(currentState.messages);
+
+        // Check if this message already exists (by ID or temporary ID mapping)
+        final existingIndex = messages.indexWhere(
+          (msg) =>
+              msg.id == event.message.id ||
+              _chatRepository.isOptimisticMessage(msg.id, event.message.id),
+        );
+
+        if (existingIndex != -1) {
+          // Replace optimistic message with real message
+          messages[existingIndex] = event.message;
+          _logger.d(
+            'Replaced optimistic message with real message: ${event.message.id}',
+          );
+        } else {
+          // This is a new message from another user
+          messages.add(event.message);
+          _logger.d('Added new message from another user: ${event.message.id}');
+        }
+        
         emit(
           MessagesLoaded(
-            messages: updatedMessages,
+            messages: messages,
             conversationId: currentState.conversationId,
             hasMoreMessages: currentState.hasMoreMessages,
           ),

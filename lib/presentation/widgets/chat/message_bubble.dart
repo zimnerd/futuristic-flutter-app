@@ -2,11 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../../theme/pulse_colors.dart';
-import '../../../domain/entities/message.dart';
-import '../common/robust_network_image.dart';
+import '../../../data/models/chat_model.dart';
 
 class MessageBubble extends StatelessWidget {
-  final Message message;
+  final MessageModel message;
   final bool isCurrentUser;
 
   const MessageBubble({
@@ -25,7 +24,6 @@ class MessageBubble extends StatelessWidget {
             : MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          if (!isCurrentUser) _buildAvatar(),
           if (!isCurrentUser) const SizedBox(width: 8),
           Flexible(
             child: Container(
@@ -50,180 +48,49 @@ class MessageBubble extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildMessageContent(),
-                  const SizedBox(height: 4),
-                  _buildMessageInfo(),
+                  if (message.content != null) ...[
+                    Text(
+                      message.content!,
+                      style: TextStyle(
+                        color: isCurrentUser ? Colors.white : Colors.black87,
+                        fontSize: 16,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                  ],
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        DateFormat('h:mm a').format(message.createdAt),
+                        style: TextStyle(
+                          color: isCurrentUser 
+                              ? Colors.white.withValues(alpha: 0.7) 
+                              : Colors.grey[600],
+                          fontSize: 12,
+                        ),
+                      ),
+                      if (isCurrentUser) ...[
+                        const SizedBox(width: 4),
+                        Icon(
+                          message.status == MessageStatus.read 
+                              ? Icons.done_all 
+                              : Icons.done,
+                          size: 16,
+                          color: message.status == MessageStatus.read 
+                              ? Colors.blue[300] 
+                              : Colors.white.withValues(alpha: 0.7),
+                        ),
+                      ],
+                    ],
+                  ),
                 ],
               ),
             ),
           ),
           if (isCurrentUser) const SizedBox(width: 8),
-          if (isCurrentUser) _buildAvatar(),
         ],
       ),
     );
-  }
-
-  Widget _buildAvatar() {
-    return CircleAvatar(
-      radius: 16,
-      backgroundColor: isCurrentUser ? PulseColors.primary : Colors.grey[300],
-      child: Text(
-        isCurrentUser ? 'M' : 'U',
-        style: TextStyle(
-          color: isCurrentUser ? Colors.white : Colors.grey[600],
-          fontSize: 12,
-          fontWeight: FontWeight.w600,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildMessageContent() {
-    switch (message.type) {
-      case MessageType.text:
-        return Text(
-          message.content,
-          style: TextStyle(
-            color: isCurrentUser ? Colors.white : Colors.black87,
-            fontSize: 16,
-          ),
-        );
-      case MessageType.image:
-        return _buildImageMessage();
-      case MessageType.audio:
-        return _buildAudioMessage();
-      case MessageType.video:
-        return _buildVideoMessage();
-      case MessageType.file:
-        return _buildFileMessage();
-      default:
-        return Text(
-          'Unsupported message type',
-          style: TextStyle(
-            color: isCurrentUser ? Colors.white70 : Colors.grey[600],
-            fontStyle: FontStyle.italic,
-          ),
-        );
-    }
-  }
-
-  Widget _buildImageMessage() {
-    return RobustNetworkImage(
-      imageUrl: message.content,
-      width: 200,
-      height: 200,
-      fit: BoxFit.cover,
-      borderRadius: BorderRadius.circular(12),
-    );
-  }
-
-  Widget _buildAudioMessage() {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: isCurrentUser ? Colors.white24 : Colors.grey[200],
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            Icons.play_arrow,
-            color: isCurrentUser ? Colors.white : PulseColors.primary,
-          ),
-          const SizedBox(width: 8),
-          Text(
-            'Audio message',
-            style: TextStyle(
-              color: isCurrentUser ? Colors.white : Colors.black87,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildVideoMessage() {
-    return Container(
-      width: 200,
-      height: 150,
-      decoration: BoxDecoration(
-        color: Colors.black87,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: const Icon(
-        Icons.play_circle_filled,
-        color: Colors.white,
-        size: 48,
-      ),
-    );
-  }
-
-  Widget _buildFileMessage() {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: isCurrentUser ? Colors.white24 : Colors.grey[200],
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            Icons.attach_file,
-            color: isCurrentUser ? Colors.white : PulseColors.primary,
-          ),
-          const SizedBox(width: 8),
-          Flexible(
-            child: Text(
-              message.content.split('/').last,
-              style: TextStyle(
-                color: isCurrentUser ? Colors.white : Colors.black87,
-              ),
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildMessageInfo() {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(
-          DateFormat('HH:mm').format(message.createdAt ?? message.timestamp),
-          style: TextStyle(
-            color: isCurrentUser ? Colors.white70 : Colors.grey[600],
-            fontSize: 12,
-          ),
-        ),
-        if (isCurrentUser) ...[
-          const SizedBox(width: 4),
-          Icon(
-            _getStatusIcon(),
-            size: 16,
-            color: Colors.white70,
-          ),
-        ],
-      ],
-    );
-  }
-
-  IconData _getStatusIcon() {
-    switch (message.status) {
-      case MessageStatus.sent:
-        return Icons.check;
-      case MessageStatus.delivered:
-        return Icons.done_all;
-      case MessageStatus.read:
-        return Icons.done_all;
-      case MessageStatus.failed:
-        return Icons.error_outline;
-      default:
-        return Icons.schedule;
-    }
   }
 }

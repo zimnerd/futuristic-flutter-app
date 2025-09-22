@@ -583,4 +583,12 @@ class ChatRepositoryImpl implements ChatRepository {
         return domain.MessageType.text;
     }
   }
+
+  @override
+  bool isOptimisticMessage(String? messageId, String realMessageId) {
+    if (messageId == null) return false;
+
+    // Check if this messageId is in our optimistic mapping that points to the real ID
+    return _optimisticToRealIdMap[messageId] == realMessageId;
+  }
 }

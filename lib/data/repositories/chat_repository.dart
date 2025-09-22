@@ -100,4 +100,7 @@ abstract class ChatRepository {
 
   /// Leave a conversation room
   Future<void> leaveConversation(String conversationId);
+
+  /// Check if a message ID is mapped from an optimistic message
+  bool isOptimisticMessage(String? messageId, String realMessageId);
 }

@@ -10,7 +10,7 @@ import '../../../presentation/blocs/auth/auth_bloc.dart';
 import '../../../presentation/blocs/auth/auth_state.dart';
 import '../../../data/models/user_model.dart';
 import '../../theme/pulse_colors.dart';
-import '../../widgets/chat/message_bubble_new.dart';
+import '../../widgets/chat/message_bubble.dart';
 import '../../widgets/chat/ai_message_input.dart';
 
 class ChatScreen extends StatefulWidget {
@@ -217,6 +217,14 @@ class _ChatScreenState extends State<ChatScreen> {
                 }
               },
               builder: (context, state) {
+                  print(
+                    '🐛 UI Builder called with state: ${state.runtimeType}',
+                  );
+                  if (state is MessagesLoaded) {
+                    print(
+                      '🐛 UI Builder - MessagesLoaded with ${state.messages.length} messages',
+                    );
+                  }
                 return _buildMessagesList(state);
               },
             ),
@@ -501,7 +509,10 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   Widget _buildMessagesList(ChatState state) {
+    print('🐛 _buildMessagesList called with state: ${state.runtimeType}');
+    
     if (state is ChatLoading) {
+      print('🐛 _buildMessagesList - Showing loading indicator');
       return const Center(
         child: CircularProgressIndicator(
           valueColor: AlwaysStoppedAnimation<Color>(PulseColors.primary),
@@ -510,6 +521,7 @@ class _ChatScreenState extends State<ChatScreen> {
     }
 
     if (state is ChatError) {
+      print('🐛 _buildMessagesList - Showing error: ${state.message}');
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -544,7 +556,12 @@ class _ChatScreenState extends State<ChatScreen> {
     }
 
     if (state is MessagesLoaded) {
+      print(
+        '🐛 _buildMessagesList - MessagesLoaded with ${state.messages.length} messages',
+      );
+      
       if (state.messages.isEmpty) {
+        print('🐛 _buildMessagesList - Showing empty state');
         return const Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
