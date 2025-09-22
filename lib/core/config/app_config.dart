@@ -7,7 +7,7 @@ class AppConfig {
   // ================================
   // Change this manually to switch between dev/prod
   static const bool _useProductionEnvironment =
-      false; // Set to true for production
+      true; // Set to true for production
 
   // Environment flags based on manual setting
   static const bool isDevelopment = !_useProductionEnvironment;
