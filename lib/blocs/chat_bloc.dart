@@ -3,7 +3,8 @@ import 'package:equatable/equatable.dart';
 import 'package:logger/logger.dart';
 import 'dart:async';
 
-import '../data/models/chat_model.dart';
+import '../data/models/chat_model.dart' hide ConversationModel;
+import '../data/models/conversation_model.dart';
 import '../data/models/message.dart' show MessageDeliveryUpdate;
 import '../domain/entities/message.dart' show MessageType;
 import '../data/repositories/chat_repository.dart';

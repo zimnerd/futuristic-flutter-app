@@ -1,5 +1,6 @@
 import 'dart:async';
-import '../models/chat_model.dart';
+import '../models/chat_model.dart' hide ConversationModel;
+import '../models/conversation_model.dart';
 import '../models/message.dart' show MessageDeliveryUpdate;
 import '../../domain/entities/message.dart' show MessageType;
 

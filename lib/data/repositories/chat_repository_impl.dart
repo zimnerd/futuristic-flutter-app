@@ -2,7 +2,8 @@ import 'dart:async';
 import 'package:logger/logger.dart';
 import 'package:uuid/uuid.dart';
 
-import '../models/chat_model.dart';
+import '../models/chat_model.dart' hide ConversationModel;
+import '../models/conversation_model.dart';
 import '../models/message.dart' show MessageDeliveryUpdate;
 import '../../domain/entities/message.dart' show MessageType;
 import '../datasources/remote/chat_remote_data_source.dart';
@@ -247,7 +248,15 @@ class ChatRepositoryImpl implements ChatRepository {
     try {
       _logger.d('Fetching conversations');
       final conversations = await _remoteDataSource.getConversations();
-      _logger.d('Successfully fetched ${conversations.length} conversations');
+      
+      // Sort conversations by last message time (most recent first)
+      conversations.sort(
+        (a, b) => b.lastMessageTime.compareTo(a.lastMessageTime),
+      );
+
+      _logger.d(
+        'Successfully fetched and sorted ${conversations.length} conversations',
+      );
       return conversations;
     } catch (e) {
       _logger.e('Error fetching conversations: $e');
@@ -438,14 +447,6 @@ class ChatRepositoryImpl implements ChatRepository {
   ) {
     _logger.d('🐛 Transforming API response to ConversationModel: $data');
     
-    // Get participants list
-    final participants = (data['participants'] as List<dynamic>?) ?? [];
-    final participantIds = participants
-        .map((p) => p['userId']?.toString())
-        .where((id) => id != null)
-        .cast<String>()
-        .toList();
-    
     // Log the conversation ID to debug - check multiple possible fields
     final conversationId =
         data['id']?.toString() ??
@@ -456,23 +457,25 @@ class ChatRepositoryImpl implements ChatRepository {
 
     return ConversationModel(
       id: conversationId,
-      type: ConversationType.direct, // Direct conversation for 1-on-1 chat
-      participantIds: participantIds,
-      name: null, // Direct chats don't have names
-      description: null,
-      imageUrl: null,
-      lastMessage: null, // Will be populated when messages are loaded
-      lastMessageAt: data['lastMessageAt'] != null
-          ? DateTime.tryParse(data['lastMessageAt'].toString())
-          : null,
+      otherUserId: data['otherUserId']?.toString() ?? 'unknown',
+      otherUserName: data['otherUserName']?.toString() ?? 'Unknown User',
+      otherUserAvatar: data['otherUserAvatar']?.toString() ?? '',
+      lastMessage: data['lastMessage']?.toString() ?? 'No messages yet',
+      lastMessageTime: data['lastMessageTime'] != null
+          ? DateTime.tryParse(data['lastMessageTime'].toString()) ??
+                DateTime.now()
+          : DateTime.now(),
       unreadCount: (data['unreadCount'] as num?)?.toInt() ?? 0,
-      settings: null, // Default settings
-      createdAt: data['createdAt'] != null
-          ? DateTime.tryParse(data['createdAt'].toString()) ?? DateTime.now()
-          : DateTime.now(),
-      updatedAt: data['updatedAt'] != null
-          ? DateTime.tryParse(data['updatedAt'].toString()) ?? DateTime.now()
-          : DateTime.now(),
+      isOnline: data['isOnline'] as bool? ?? false,
+      lastSeen: data['lastSeen'] != null
+          ? DateTime.tryParse(data['lastSeen'].toString())
+          : null,
+      isBlocked: data['isBlocked'] as bool? ?? false,
+      isMuted: data['isMuted'] as bool? ?? false,
+      isPinned: data['isPinned'] as bool? ?? false,
+      matchedAt: data['matchedAt'] != null
+          ? DateTime.tryParse(data['matchedAt'].toString())
+          : null,
     );
   }
 
