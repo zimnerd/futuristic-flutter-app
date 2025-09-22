@@ -146,11 +146,15 @@ class _ChatScreenState extends State<ChatScreen> {
       return;
     }
 
+    final currentUserId = _currentUserId;
+    AppLogger.debug('Sending message with currentUserId: $currentUserId');
+
     context.read<ChatBloc>().add(
       SendMessage(
         conversationId: widget.conversationId,
         type: MessageType.text,
         content: text,
+        currentUserId: currentUserId,
       ),
     );
 
@@ -175,7 +179,14 @@ class _ChatScreenState extends State<ChatScreen> {
           Expanded(
             child: BlocConsumer<ChatBloc, ChatState>(
               listener: (context, state) {
+                  AppLogger.debug(
+                    'ChatScreen BlocConsumer listener - State: ${state.runtimeType}',
+                  );
+                
                 if (state is MessagesLoaded) {
+                    AppLogger.debug(
+                      'ChatScreen - MessagesLoaded with ${state.messages.length} messages',
+                    );
                   _scrollToBottom();
                   
                     // ✅ Only mark as read if we haven't done so yet and there are unread messages
@@ -206,6 +217,9 @@ class _ChatScreenState extends State<ChatScreen> {
                       }
                     }
                 } else if (state is ConversationCreated) {
+                    AppLogger.debug(
+                      'ChatScreen - ConversationCreated: ${state.conversation.id}',
+                    );
                   // Navigate to the actual conversation ID
                   final realConversationId = state.conversation.id;
 
@@ -219,6 +233,20 @@ class _ChatScreenState extends State<ChatScreen> {
                       'otherUserProfile': widget.otherUserProfile,
                     },
                   );
+                  } else if (state is MessageSent) {
+                    AppLogger.debug(
+                      'ChatScreen - MessageSent: ${state.message.id}',
+                    );
+                    // Note: MessageSent should rarely occur if we're in MessagesLoaded state
+                    _scrollToBottom();
+                  } else if (state is ChatError) {
+                    AppLogger.error('ChatScreen - ChatError: ${state.message}');
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(state.message),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
                 }
               },
               builder: (context, state) {
@@ -599,6 +627,10 @@ class _ChatScreenState extends State<ChatScreen> {
           final currentUserId = _currentUserId;
           final isCurrentUser =
               currentUserId != null && message.senderId == currentUserId;
+
+          AppLogger.debug(
+            '_buildMessagesList - Message ${message.id}: senderId=${message.senderId}, currentUserId=$currentUserId, isCurrentUser=$isCurrentUser, content="${message.content}", status=${message.status}',
+          );
 
           return MessageBubble(
             message: message, 

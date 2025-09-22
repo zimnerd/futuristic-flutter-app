@@ -4,6 +4,7 @@ import 'package:logger/logger.dart';
 import 'dart:async';
 
 import '../data/models/chat_model.dart';
+import '../data/models/message.dart' show MessageDeliveryUpdate;
 import '../domain/entities/message.dart' show MessageType;
 import '../data/repositories/chat_repository.dart';
 
@@ -41,6 +42,7 @@ class SendMessage extends ChatEvent {
   final List<String>? mediaIds;
   final Map<String, dynamic>? metadata;
   final String? replyToMessageId;
+  final String? currentUserId;
 
   const SendMessage({
     required this.conversationId,
@@ -49,10 +51,19 @@ class SendMessage extends ChatEvent {
     this.mediaIds,
     this.metadata,
     this.replyToMessageId,
+    this.currentUserId,
   });
 
   @override
-  List<Object?> get props => [conversationId, type, content, mediaIds, metadata, replyToMessageId];
+  List<Object?> get props => [
+    conversationId,
+    type,
+    content,
+    mediaIds,
+    metadata,
+    replyToMessageId,
+    currentUserId,
+  ];
 }
 
 class MarkMessageAsRead extends ChatEvent {
@@ -359,6 +370,10 @@ class MessageForwarded extends ChatState {
 class ChatBloc extends Bloc<ChatEvent, ChatState> {
   final ChatRepository _chatRepository;
   final Logger _logger = Logger();
+  
+  // Stream subscriptions
+  late StreamSubscription<MessageModel> _messageSubscription;
+  late StreamSubscription<MessageDeliveryUpdate> _deliverySubscription;
 
   ChatBloc({required ChatRepository chatRepository})
       : _chatRepository = chatRepository,
@@ -381,13 +396,26 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     on<MessageReceived>(_onMessageReceived);
     on<MessageDeliveryStatusUpdated>(_onMessageDeliveryStatusUpdated);
 
+    _initializeStreamSubscriptions();
+  }
+
+  void _initializeStreamSubscriptions() {
     // Subscribe to incoming messages stream
-    _chatRepository.incomingMessages.listen((message) {
+    _messageSubscription = _chatRepository.incomingMessages.listen((message) {
+      _logger.d(
+        'ChatBloc: Received message from repository stream - ID: ${message.id}, senderId: ${message.senderId}',
+      );
       add(MessageReceived(message: message));
     });
 
     // Subscribe to delivery status updates
-    _chatRepository.messageDeliveryUpdates.listen((update) {
+    _deliverySubscription = _chatRepository.messageDeliveryUpdates.listen((
+      update,
+    ) {
+      _logger.d(
+        'ChatBloc: Received delivery update from repository stream - messageId: ${update.messageId}, status: ${update.status}',
+      );
+      
       // Convert MessageStatus from message.dart to MessageStatus from chat_model.dart
       MessageStatus chatModelStatus;
       switch (update.status.name) {
@@ -474,6 +502,10 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     Emitter<ChatState> emit,
   ) async {
     try {
+      _logger.d(
+        'ChatBloc: Sending message with currentUserId: ${event.currentUserId}',
+      );
+      
       final message = await _chatRepository.sendMessage(
         conversationId: event.conversationId,
         type: event.type,
@@ -481,6 +513,11 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
         mediaIds: event.mediaIds,
         metadata: event.metadata,
         replyToMessageId: event.replyToMessageId,
+        currentUserId: event.currentUserId,
+      );
+      
+      _logger.d(
+        'ChatBloc: Received optimistic message: ${message.id} from senderId: ${message.senderId}',
       );
       
       // Update the current messages list if we're viewing this conversation
@@ -489,8 +526,14 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
           currentState.conversationId == event.conversationId) {
         final updatedMessages = List<MessageModel>.from(currentState.messages)
           ..add(message);
+        _logger.d(
+          'ChatBloc: Adding optimistic message to existing MessagesLoaded state with ${currentState.messages.length} messages',
+        );
         emit(currentState.copyWith(messages: updatedMessages));
       } else {
+        _logger.d(
+          'ChatBloc: Emitting MessageSent state (not in MessagesLoaded for this conversation)',
+        );
         emit(MessageSent(message: message));
       }
       
@@ -730,9 +773,23 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     Emitter<ChatState> emit,
   ) async {
     try {
+      _logger.d(
+        'ChatBloc: Processing MessageReceived event - messageId: ${event.message.id}, senderId: ${event.message.senderId}',
+      );
+      
       if (state is MessagesLoaded) {
         final currentState = state as MessagesLoaded;
         final messages = List<MessageModel>.from(currentState.messages);
+
+        _logger.d(
+          'ChatBloc: Current conversation: ${currentState.conversationId}, Message conversation: ${event.message.conversationId}',
+        );
+
+        // Only add messages for the current conversation
+        if (currentState.conversationId != event.message.conversationId) {
+          _logger.d('ChatBloc: Ignoring message for different conversation');
+          return;
+        }
 
         // Check if this message already exists (by ID or temporary ID mapping)
         final existingIndex = messages.indexWhere(
@@ -743,14 +800,14 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
 
         if (existingIndex != -1) {
           // Replace optimistic message with real message
-          messages[existingIndex] = event.message;
           _logger.d(
-            'Replaced optimistic message with real message: ${event.message.id}',
+            'ChatBloc: Replacing optimistic message at index $existingIndex with real message: ${event.message.id}',
           );
+          messages[existingIndex] = event.message;
         } else {
-          // This is a new message from another user
+          // This is a new message (either from current user after sending or from another user)
+          _logger.d('ChatBloc: Adding new message: ${event.message.id}');
           messages.add(event.message);
-          _logger.d('Added new message from another user: ${event.message.id}');
         }
         
         emit(
@@ -758,10 +815,17 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
             messages: messages,
             conversationId: currentState.conversationId,
             hasMoreMessages: currentState.hasMoreMessages,
+            typingUsers: currentState.typingUsers,
           ),
         );
+        _logger.d(
+          'ChatBloc: Emitted MessagesLoaded with ${messages.length} messages',
+        );
+      } else {
+        _logger.d(
+          'ChatBloc: Not in MessagesLoaded state (${state.runtimeType}), ignoring received message',
+        );
       }
-      _logger.d('New message received: ${event.message.id}');
     } catch (e) {
       _logger.e('Error handling received message: $e');
       emit(ChatError(message: 'Failed to handle received message: $e'));
@@ -805,5 +869,12 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       _logger.e('Error handling delivery status update: $e');
       emit(ChatError(message: 'Failed to handle delivery status update: $e'));
     }
+  }
+
+  @override
+  Future<void> close() {
+    _messageSubscription.cancel();
+    _deliverySubscription.cancel();
+    return super.close();
   }
 }

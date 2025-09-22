@@ -50,12 +50,17 @@ class ChatRepositoryImpl implements ChatRepository {
     // Listen for incoming messages (backend emits 'messageReceived')
     _webSocketService.on('messageReceived', (data) {
       try {
-        _logger.d('Received messageReceived event: $data');
+        _logger.d('Repository: Received messageReceived event: $data');
 
         // Parse the backend event structure: { type, data, timestamp }
         if (data is Map<String, dynamic> && data.containsKey('data')) {
           final messageData = data['data'] as Map<String, dynamic>;
+          _logger.d('Repository: Parsing message data: $messageData');
           final message = MessageModel.fromJson(messageData);
+          
+          _logger.d(
+            'Repository: Parsed message - ID: ${message.id}, senderId: ${message.senderId}, content: "${message.content}"',
+          );
           
           // Check if this is a real message for an optimistic message we sent
           // Look for optimistic messages with similar content and timestamp
@@ -70,16 +75,22 @@ class ChatRepositoryImpl implements ChatRepository {
             // Update the mapping to point to the real message ID
             _optimisticToRealIdMap[entry.key] = message.id;
             _logger.d(
-              'Mapped optimistic ID ${entry.key} to real ID ${message.id}',
+              'Repository: Mapped optimistic ID ${entry.key} to real ID ${message.id}',
             );
             break; // Assume first match is correct for now
           }
           
           _incomingMessagesController.add(message);
-          _logger.d('Added incoming message to stream: ${message.id}');
+          _logger.d(
+            'Repository: Added incoming message to stream: ${message.id}',
+          );
+        } else {
+          _logger.w(
+            'Repository: messageReceived event missing data field: $data',
+          );
         }
       } catch (e) {
-        _logger.e('Error processing incoming message: $e');
+        _logger.e('Repository: Error processing incoming message: $e');
       }
     });
 
@@ -175,9 +186,11 @@ class ChatRepositoryImpl implements ChatRepository {
     List<String>? mediaIds,
     Map<String, dynamic>? metadata,
     String? replyToMessageId,
+    String? currentUserId,
   }) async {
     try {
       _logger.d('Sending message to conversation: $conversationId via Socket.IO');
+      _logger.d('Current user ID for optimistic message: $currentUserId');
       
       // Send via Socket.IO for real-time delivery
       _webSocketService.emit('send_message', {
@@ -192,8 +205,7 @@ class ChatRepositoryImpl implements ChatRepository {
       final optimisticMessage = MessageModel(
         id: optimisticId,
         conversationId: conversationId,
-        senderId:
-            'optimistic_user', // Temporary placeholder - will be updated when real message arrives
+        senderId: currentUserId ?? 'unknown_user', // Use actual current user ID
         senderUsername: 'You',
         type: type,
         content: content,
@@ -208,7 +220,10 @@ class ChatRepositoryImpl implements ChatRepository {
       _optimisticToRealIdMap[optimisticId] =
           optimisticId; // Will be updated when real message arrives
       
-      _logger.d('Successfully sent message via Socket.IO');
+      _logger.d(
+        'Successfully sent message via Socket.IO with optimistic ID: $optimisticId',
+      );
+      _logger.d('Optimistic message senderId: ${optimisticMessage.senderId}');
       return optimisticMessage;
     } catch (e) {
       _logger.e('Error sending message: $e');

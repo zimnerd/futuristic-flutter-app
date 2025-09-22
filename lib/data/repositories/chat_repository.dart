@@ -28,6 +28,7 @@ abstract class ChatRepository {
     List<String>? mediaIds,
     Map<String, dynamic>? metadata,
     String? replyToMessageId,
+    String? currentUserId,
   });
 
   /// Mark a message as read
