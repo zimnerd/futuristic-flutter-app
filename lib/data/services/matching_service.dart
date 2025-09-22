@@ -352,6 +352,7 @@ class MatchingService {
     String? status,
     int? limit,
     int offset = 0,
+    bool excludeWithConversations = false, // New parameter
   }) async {
     try {
       // Get current user ID once at the beginning
@@ -363,6 +364,7 @@ class MatchingService {
         // Note: status parameter removed - backend doesn't support it
         // Status filtering should be done client-side after fetching
         'sortBy': 'recent', // Use backend-supported parameter
+        if (excludeWithConversations) 'excludeWithConversations': true, // Backend filtering
       };
 
       final response = await _apiClient.get(

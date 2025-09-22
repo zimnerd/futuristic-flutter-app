@@ -41,6 +41,38 @@ class ConversationModel extends Conversation {
     );
   }
 
+  /// Convert from backend API response
+  factory ConversationModel.fromBackendJson(Map<String, dynamic> json) {
+    // Map backend fields to our model fields
+    final participants = json['participants'] as List<dynamic>? ?? [];
+    final otherParticipant = participants.isNotEmpty
+        ? participants.first
+        : null;
+
+    return ConversationModel(
+      id: json['id'] as String,
+      otherUserId: otherParticipant?['id'] as String? ?? '',
+      otherUserName: otherParticipant?['displayName'] as String? ?? 'Unknown',
+      otherUserAvatar: otherParticipant?['avatar'] as String? ?? '',
+      lastMessage:
+          json['lastMessage']?['content'] as String? ?? 'No messages yet',
+      lastMessageTime: json['lastMessage']?['createdAt'] != null
+          ? DateTime.parse(json['lastMessage']['createdAt'] as String)
+          : DateTime.now(),
+      unreadCount: json['unreadCount'] as int? ?? 0,
+      isOnline: otherParticipant?['isOnline'] as bool? ?? false,
+      lastSeen: otherParticipant?['lastSeen'] != null
+          ? DateTime.parse(otherParticipant['lastSeen'] as String)
+          : null,
+      isBlocked: json['isBlocked'] as bool? ?? false,
+      isMuted: json['isMuted'] as bool? ?? false,
+      isPinned: json['isPinned'] as bool? ?? false,
+      matchedAt: json['matchedAt'] != null
+          ? DateTime.parse(json['matchedAt'] as String)
+          : null,
+    );
+  }
+
   /// Convert to JSON
   Map<String, dynamic> toJson() {
     return {

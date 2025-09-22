@@ -415,6 +415,16 @@ class MessageForwarded extends ChatState {
   List<Object?> get props => [];
 }
 
+class FirstMessageSent extends ChatState {
+  final MessageModel message;
+  final String conversationId;
+
+  const FirstMessageSent({required this.message, required this.conversationId});
+
+  @override
+  List<Object?> get props => [message, conversationId];
+}
+
 // BLoC
 class ChatBloc extends Bloc<ChatEvent, ChatState> {
   final ChatRepository _chatRepository;
@@ -731,6 +741,12 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
         'ChatBloc: Sending message with currentUserId: ${event.currentUserId}',
       );
       
+      // Check if this conversation has any messages before sending
+      final currentState = state;
+      final isFirstMessage = currentState is MessagesLoaded && 
+          currentState.conversationId == event.conversationId && 
+          currentState.messages.isEmpty;
+      
       final message = await _chatRepository.sendMessage(
         conversationId: event.conversationId,
         type: event.type,
@@ -746,7 +762,6 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       );
       
       // Update the current messages list if we're viewing this conversation
-      final currentState = state;
       if (currentState is MessagesLoaded &&
           currentState.conversationId == event.conversationId) {
         final updatedMessages = List<MessageModel>.from(currentState.messages)
@@ -755,6 +770,19 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
           'ChatBloc: Adding optimistic message to existing MessagesLoaded state with ${currentState.messages.length} messages',
         );
         emit(currentState.copyWith(messages: updatedMessages));
+        
+        // If this was the first message, also emit FirstMessageSent state
+        if (isFirstMessage) {
+          _logger.d(
+            'First message sent in conversation - emitting FirstMessageSent state',
+          );
+          emit(
+            FirstMessageSent(
+              message: message,
+              conversationId: event.conversationId,
+            ),
+          );
+        }
       } else {
         _logger.d(
           'ChatBloc: Emitting MessageSent state (not in MessagesLoaded for this conversation)',

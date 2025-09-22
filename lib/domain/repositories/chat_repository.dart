@@ -1,4 +1,5 @@
-import '../../data/models/chat_model.dart';
+import '../../data/models/chat_model.dart' hide ConversationModel;
+import '../../data/models/conversation_model.dart';
 import '../../data/models/message.dart' show MessageDeliveryUpdate;
 import '../entities/message.dart' show MessageType;
 
@@ -6,19 +7,12 @@ import '../entities/message.dart' show MessageType;
 abstract class ChatRepository {
   // Conversations
   Future<List<ConversationModel>> getConversations();
-  Future<ConversationModel> getConversation(String conversationId);
-  Future<ConversationModel> createConversation({
-    required ConversationType type,
-    required List<String> participantIds,
-    String? name,
-    String? description,
-    String? imageUrl,
-    ConversationSettings? settings,
+  Future<ConversationModel?> getConversation(String conversationId);
+  Future<ConversationModel> createConversation(String participantId);
+  Future<ConversationModel> updateConversation({
+    required String conversationId,
+    Map<String, dynamic>? settings,
   });
-  Future<ConversationModel> updateConversation(
-    String conversationId,
-    Map<String, dynamic> updates,
-  );
   Future<void> deleteConversation(String conversationId);
   Future<void> joinConversation(String conversationId);
   Future<void> leaveConversation(String conversationId);

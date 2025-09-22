@@ -166,14 +166,11 @@ class _MessagesScreenState extends State<MessagesScreen> {
             'Navigating to chat with conversation ID: ${state.conversation.id}',
           );
           
-          // Remove the match from the matches list
-          final matchId = _pendingMatchNavigation!['matchId'] as String?;
-          if (matchId != null) {
-            context.read<MatchBloc>().add(
-              RemoveMatchFromList(matchId: matchId),
-            );
-            AppLogger.debug('Removing match from list: $matchId');
-          }
+          // Refresh matches list from API (will exclude matches with conversations)
+          context.read<MatchBloc>().add(const LoadMatches());
+          AppLogger.debug(
+            'Refreshing matches list after conversation creation',
+          );
           
           // Navigate to the newly created conversation
           context.push(
@@ -186,6 +183,12 @@ class _MessagesScreenState extends State<MessagesScreen> {
           AppLogger.debug(
             'ConversationCreated state received but _pendingMatchNavigation is null',
           );
+        } else if (state is FirstMessageSent) {
+          AppLogger.debug(
+            'First message sent in conversation: ${state.conversationId} - refreshing matches optimistically',
+          );
+          // Optimistically refresh matches list when first message is sent
+          context.read<MatchBloc>().add(const LoadMatches());
         }
       },
       child: Scaffold(
