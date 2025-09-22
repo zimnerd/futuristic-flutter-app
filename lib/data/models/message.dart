@@ -21,6 +21,8 @@ class Message extends Equatable {
   final DateTime? deletedAt;
   final DateTime createdAt;
   final DateTime updatedAt;
+  // Temporary ID for optimistic message correlation
+  final String? tempId;
 
   const Message({
     required this.id,
@@ -40,6 +42,7 @@ class Message extends Equatable {
     this.deletedAt,
     required this.createdAt,
     required this.updatedAt,
+    this.tempId,
   });
 
   /// Create Message from JSON
@@ -70,6 +73,7 @@ class Message extends Equatable {
           : null,
       createdAt: DateTime.parse(json['createdAt'] as String),
       updatedAt: DateTime.parse(json['updatedAt'] as String),
+      tempId: json['tempId'] as String?,
     );
   }
 
@@ -93,6 +97,7 @@ class Message extends Equatable {
       'deletedAt': deletedAt?.toIso8601String(),
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
+      'tempId': tempId,
     };
   }
 
@@ -201,6 +206,7 @@ class Message extends Equatable {
     DateTime? deletedAt,
     DateTime? createdAt,
     DateTime? updatedAt,
+    String? tempId,
   }) {
     return Message(
       id: id ?? this.id,
@@ -220,6 +226,7 @@ class Message extends Equatable {
       deletedAt: deletedAt ?? this.deletedAt,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      tempId: tempId ?? this.tempId,
     );
   }
 
@@ -242,6 +249,7 @@ class Message extends Equatable {
         deletedAt,
         createdAt,
         updatedAt,
+        tempId,
       ];
 }
 

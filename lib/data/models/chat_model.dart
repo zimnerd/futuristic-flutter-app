@@ -174,6 +174,7 @@ class MessageModel extends Equatable {
     this.forwardedFromConversationId,
     required this.createdAt,
     required this.updatedAt,
+    this.tempId, // Temporary ID for optimistic message correlation
   });
 
   final String id;
@@ -193,6 +194,7 @@ class MessageModel extends Equatable {
   final String? forwardedFromConversationId;
   final DateTime createdAt;
   final DateTime updatedAt;
+  final String? tempId; // Temporary ID for optimistic message correlation
 
   factory MessageModel.fromJson(Map<String, dynamic> json) {
     return MessageModel(
@@ -223,6 +225,7 @@ class MessageModel extends Equatable {
       forwardedFromConversationId: json['forwardedFromConversationId'],
       createdAt: DateTime.parse(json['createdAt']),
       updatedAt: DateTime.parse(json['updatedAt']),
+      tempId: json['tempId'],
     );
   }
 
@@ -250,6 +253,7 @@ class MessageModel extends Equatable {
       updatedAt: json['updatedAt'] != null
           ? DateTime.tryParse(json['updatedAt'].toString()) ?? DateTime.now()
           : DateTime.now(),
+      tempId: json['tempId'],
     );
   }
 
@@ -350,6 +354,7 @@ class MessageModel extends Equatable {
     String? forwardedFromConversationId,
     DateTime? createdAt,
     DateTime? updatedAt,
+    String? tempId,
   }) {
     return MessageModel(
       id: id ?? this.id,
@@ -369,6 +374,7 @@ class MessageModel extends Equatable {
       forwardedFromConversationId: forwardedFromConversationId ?? this.forwardedFromConversationId,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      tempId: tempId ?? this.tempId,
     );
   }
 
@@ -391,6 +397,7 @@ class MessageModel extends Equatable {
         forwardedFromConversationId,
         createdAt,
         updatedAt,
+    tempId,
       ];
 }
 

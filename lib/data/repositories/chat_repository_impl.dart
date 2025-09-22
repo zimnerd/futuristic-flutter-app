@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:logger/logger.dart';
+import 'package:uuid/uuid.dart';
 
 import '../models/chat_model.dart';
 import '../models/message.dart' show MessageDeliveryUpdate;
@@ -17,6 +18,7 @@ class ChatRepositoryImpl implements ChatRepository {
   final WebSocketService _webSocketService;
   final ApiClient _apiClient;
   final Logger _logger = Logger();
+  final Uuid _uuid = Uuid();
 
   // Stream controllers for real-time events
   final StreamController<MessageModel> _incomingMessagesController =
@@ -24,8 +26,9 @@ class ChatRepositoryImpl implements ChatRepository {
   final StreamController<MessageDeliveryUpdate> _deliveryUpdatesController =
       StreamController<MessageDeliveryUpdate>.broadcast();
   
-  // Track optimistic message ID to real message ID mapping
-  final Map<String, String> _optimisticToRealIdMap = {};
+  // Track optimistic message tempId to real message ID mapping
+  final Map<String, String> _tempIdToRealIdMap = {};
+  final Map<String, MessageModel> _pendingOptimisticMessages = {};
 
   ChatRepositoryImpl({
     required ChatRemoteDataSource remoteDataSource,
@@ -62,22 +65,22 @@ class ChatRepositoryImpl implements ChatRepository {
             'Repository: Parsed message - ID: ${message.id}, senderId: ${message.senderId}, content: "${message.content}"',
           );
           
-          // Check if this is a real message for an optimistic message we sent
-          // Look for optimistic messages with similar content and timestamp
-          final optimisticEntries = _optimisticToRealIdMap.entries.where((
-            entry,
-          ) {
-            return entry.value ==
-                entry.key; // Still mapping to itself (not yet replaced)
-          });
-
-          for (final entry in optimisticEntries) {
-            // Update the mapping to point to the real message ID
-            _optimisticToRealIdMap[entry.key] = message.id;
+          // Check if this message has a tempId for correlation with optimistic messages
+          if (message.tempId != null && message.tempId!.isNotEmpty) {
+            final tempId = message.tempId!;
             _logger.d(
-              'Repository: Mapped optimistic ID ${entry.key} to real ID ${message.id}',
+              'Repository: Message contains tempId: $tempId, correlating with optimistic message',
             );
-            break; // Assume first match is correct for now
+
+            // Update the mapping from tempId to real message ID
+            _tempIdToRealIdMap[tempId] = message.id;
+
+            // Remove from pending optimistic messages
+            _pendingOptimisticMessages.remove(tempId);
+            
+            _logger.d(
+              'Repository: Mapped optimistic ID $tempId to real ID ${message.id}',
+            );
           }
           
           _incomingMessagesController.add(message);
@@ -104,7 +107,7 @@ class ChatRepositoryImpl implements ChatRepository {
           
           // Check if this delivery update is for an optimistic message
           // If so, create a delivery update with the optimistic ID instead
-          final optimisticId = _optimisticToRealIdMap.entries
+          final optimisticId = _tempIdToRealIdMap.entries
               .firstWhere(
                 (entry) => entry.value == update.messageId,
                 orElse: () => MapEntry(update.messageId, update.messageId),
@@ -131,13 +134,84 @@ class ChatRepositoryImpl implements ChatRepository {
         _logger.e('Error processing delivery update: $e');
       }
     });
+
+    // Listen for message confirmation (new tempId-based correlation)
+    _webSocketService.on('messageConfirmed', (data) {
+      try {
+        _logger.d('Repository: Received messageConfirmed event: $data');
+
+        if (data is Map<String, dynamic> &&
+            data.containsKey('data') &&
+            data.containsKey('tempId')) {
+          final tempId = data['tempId'] as String;
+          final messageData = data['data'] as Map<String, dynamic>;
+          final realMessage = MessageModel.fromJson(messageData);
+
+          _logger.d(
+            'Repository: Message confirmed - tempId: $tempId, realId: ${realMessage.id}',
+          );
+
+          // Update the mapping from tempId to real message ID
+          _tempIdToRealIdMap[tempId] = realMessage.id;
+
+          // Remove from pending optimistic messages
+          _pendingOptimisticMessages.remove(tempId);
+
+          // Emit the real message to replace the optimistic one
+          _incomingMessagesController.add(realMessage.copyWith(tempId: tempId));
+
+          _logger.d(
+            'Repository: Replaced optimistic message tempId $tempId with real message ${realMessage.id}',
+          );
+        }
+      } catch (e) {
+        _logger.e('Repository: Error processing message confirmation: $e');
+      }
+    });
+
+    // Listen for message failures (new tempId-based error handling)
+    _webSocketService.on('messageFailed', (data) {
+      try {
+        _logger.d('Repository: Received messageFailed event: $data');
+
+        if (data is Map<String, dynamic> && data.containsKey('tempId')) {
+          final tempId = data['tempId'] as String;
+          final error = data['error'] as String? ?? 'Unknown error';
+
+          _logger.e(
+            'Repository: Message failed - tempId: $tempId, error: $error',
+          );
+
+          // Get the optimistic message and mark it as failed
+          final optimisticMessage = _pendingOptimisticMessages[tempId];
+          if (optimisticMessage != null) {
+            final failedMessage = optimisticMessage.copyWith(
+              status: MessageStatus.failed,
+            );
+
+            // Update pending messages map
+            _pendingOptimisticMessages[tempId] = failedMessage;
+
+            // Emit the failed message to update UI
+            _incomingMessagesController.add(failedMessage);
+
+            _logger.d(
+              'Repository: Marked optimistic message tempId $tempId as failed',
+            );
+          }
+        }
+      } catch (e) {
+        _logger.e('Repository: Error processing message failure: $e');
+      }
+    });
   }
 
   /// Dispose of stream controllers
   void dispose() {
     _incomingMessagesController.close();
     _deliveryUpdatesController.close();
-    _optimisticToRealIdMap.clear();
+    _tempIdToRealIdMap.clear();
+    _pendingOptimisticMessages.clear();
   }
 
   @override
@@ -192,16 +266,21 @@ class ChatRepositoryImpl implements ChatRepository {
       _logger.d('Sending message to conversation: $conversationId via Socket.IO');
       _logger.d('Current user ID for optimistic message: $currentUserId');
       
-      // Send via Socket.IO for real-time delivery
+      // Generate unique temporary ID for correlation
+      final tempId = _uuid.v4();
+      _logger.d('Generated tempId for message: $tempId');
+
+      // Send via Socket.IO for real-time delivery with tempId
       _webSocketService.emit('send_message', {
         'conversationId': conversationId,
         'content': content,
         'type': type.name,
         'metadata': metadata,
+        'tempId': tempId, // Include tempId for correlation
       });
       
       // Create optimistic message for immediate UI update
-      final optimisticId = DateTime.now().millisecondsSinceEpoch.toString();
+      final optimisticId = 'optimistic_${tempId}';
       final optimisticMessage = MessageModel(
         id: optimisticId,
         conversationId: conversationId,
@@ -214,14 +293,16 @@ class ChatRepositoryImpl implements ChatRepository {
         metadata: metadata,
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
+        tempId: tempId, // Store tempId for correlation
       );
       
-      // Store the optimistic ID for later mapping to real ID
-      _optimisticToRealIdMap[optimisticId] =
+      // Store the optimistic message and mapping
+      _pendingOptimisticMessages[tempId] = optimisticMessage;
+      _tempIdToRealIdMap[tempId] =
           optimisticId; // Will be updated when real message arrives
       
       _logger.d(
-        'Successfully sent message via Socket.IO with optimistic ID: $optimisticId',
+        'Successfully sent message via Socket.IO with tempId: $tempId, optimistic ID: $optimisticId',
       );
       _logger.d('Optimistic message senderId: ${optimisticMessage.senderId}');
       return optimisticMessage;
@@ -576,6 +657,6 @@ class ChatRepositoryImpl implements ChatRepository {
     if (messageId == null) return false;
 
     // Check if this messageId is in our optimistic mapping that points to the real ID
-    return _optimisticToRealIdMap[messageId] == realMessageId;
+    return _tempIdToRealIdMap[messageId] == realMessageId;
   }
 }
