@@ -108,14 +108,20 @@ final class MatchErrorCleared extends MatchEvent {
 
 /// Event to load user's matches with optional filtering
 final class LoadMatches extends MatchEvent {
-  const LoadMatches({this.status, this.limit = 20, this.offset = 0});
+  const LoadMatches({
+    this.status,
+    this.limit = 20,
+    this.offset = 0,
+    this.excludeWithConversations = false,
+  });
 
   final String? status;
   final int? limit;
   final int offset;
+  final bool excludeWithConversations;
 
   @override
-  List<Object?> get props => [status, limit, offset];
+  List<Object?> get props => [status, limit, offset, excludeWithConversations];
 }
 
 /// Event to load match suggestions

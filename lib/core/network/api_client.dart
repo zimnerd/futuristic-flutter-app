@@ -445,10 +445,18 @@ class ApiClient {
   }
 
   /// Get user's matches
-  Future<Response> getMatches({int limit = 20, int offset = 0}) async {
+  Future<Response> getMatches({
+    int limit = 20,
+    int offset = 0,
+    bool excludeWithConversations = false,
+  }) async {
     return await _dio.get(
       '/matching/matches',
-      queryParameters: {'limit': limit, 'offset': offset},
+      queryParameters: {
+        'limit': limit,
+        'offset': offset,
+        'excludeWithConversations': excludeWithConversations.toString(),
+      },
     );
   }
 

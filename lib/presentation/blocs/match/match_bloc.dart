@@ -37,8 +37,7 @@ class MatchBloc extends Bloc<MatchEvent, MatchState> {
         status: event.status,
         limit: event.limit,
         offset: event.offset,
-        excludeWithConversations:
-            true, // Exclude matches that already have conversations
+        excludeWithConversations: event.excludeWithConversations,
       );
       
       emit(MatchesLoaded(

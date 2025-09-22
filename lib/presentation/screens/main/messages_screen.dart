@@ -109,12 +109,13 @@ class _MessagesScreenState extends State<MessagesScreen> {
 
   /// Load match stories for users that haven't been chatted with yet
   Future<void> _loadMatchStories() async {
-    // Use MatchBloc to load real matches
+    // Use MatchBloc to load real matches without existing conversations
     context.read<MatchBloc>().add(
       const LoadMatches(
         status: 'accepted', // Load accepted matches (mutual matches)
         limit: 20,
         offset: 0,
+        excludeWithConversations: true, // Exclude matches with existing conversations
       ),
     );
   }
@@ -123,12 +124,13 @@ class _MessagesScreenState extends State<MessagesScreen> {
   void _loadMoreMatches() {
     final currentState = context.read<MatchBloc>().state;
     if (currentState is MatchesLoaded && currentState.hasMore) {
-      // Load more matches with offset
+      // Load more matches with offset, excluding those with conversations
       context.read<MatchBloc>().add(
         LoadMatches(
           status: 'accepted',
           limit: 20,
           offset: currentState.matches.length,
+          excludeWithConversations: true, // Exclude matches with existing conversations
         ),
       );
     }
@@ -167,7 +169,10 @@ class _MessagesScreenState extends State<MessagesScreen> {
           );
           
           // Refresh matches list from API (will exclude matches with conversations)
-          context.read<MatchBloc>().add(const LoadMatches());
+          context.read<MatchBloc>().add(const LoadMatches(
+            status: 'accepted',
+            excludeWithConversations: true,
+          ));
           AppLogger.debug(
             'Refreshing matches list after conversation creation',
           );
@@ -188,7 +193,10 @@ class _MessagesScreenState extends State<MessagesScreen> {
             'First message sent in conversation: ${state.conversationId} - refreshing matches optimistically',
           );
           // Optimistically refresh matches list when first message is sent
-          context.read<MatchBloc>().add(const LoadMatches());
+          context.read<MatchBloc>().add(const LoadMatches(
+            status: 'accepted',
+            excludeWithConversations: true,
+          ));
         }
       },
       child: Scaffold(

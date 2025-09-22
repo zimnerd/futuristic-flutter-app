@@ -352,24 +352,16 @@ class MatchingService {
     String? status,
     int? limit,
     int offset = 0,
-    bool excludeWithConversations = false, // New parameter
+    bool excludeWithConversations = false,
   }) async {
     try {
       // Get current user ID once at the beginning
       final currentUserId = await _apiClient.getCurrentUserId() ?? '';
       
-      final queryParams = <String, dynamic>{
-        'offset': offset,
-        if (limit != null) 'limit': limit,
-        // Note: status parameter removed - backend doesn't support it
-        // Status filtering should be done client-side after fetching
-        'sortBy': 'recent', // Use backend-supported parameter
-        if (excludeWithConversations) 'excludeWithConversations': true, // Backend filtering
-      };
-
-      final response = await _apiClient.get(
-        ApiConstants.matchingMatches,
-        queryParameters: queryParams,
+      final response = await _apiClient.getMatches(
+        limit: limit ?? 20,
+        offset: offset,
+        excludeWithConversations: excludeWithConversations,
       );
 
       final data = response.data as Map<String, dynamic>;
