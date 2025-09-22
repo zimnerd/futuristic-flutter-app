@@ -11,60 +11,46 @@ import 'package:dio/dio.dart';
 /// }
 class ResponseParser {
   /// Extract data from standardized API response wrapper
-  static T extractData<T>(Response response) {
+  /// This handles the backend's consistent { data: ... } structure
+  static dynamic extractData(Response response) {
     if (response.data == null) {
       throw Exception('Response data is null');
     }
 
     final responseData = response.data;
     
-    // If response is already unwrapped (has the actual data), return it
-    if (responseData is T) {
-      return responseData;
-    }
-
     // If response is wrapped in standard format, extract data field
     if (responseData is Map<String, dynamic>) {
-      final data = responseData['data'];
-      if (data is T) {
-        return data;
-      }
-      // If data is null but T is nullable, allow it
-      if (data == null) {
-        return data as T;
-      }
+      return responseData['data'] ?? responseData;
     }
 
-    throw Exception('Unable to extract data of type $T from response');
+    throw Exception('Response data is not a valid Map');
   }
 
-  /// Extract list data from response
-  static List<dynamic> extractListData(Response response) {
-    final data = extractData<dynamic>(response);
-    
-    if (data is List) {
-      return data;
-    }
-    
-    if (data is Map<String, dynamic>) {
-      // Handle cases where list is nested in a field
-      for (final value in data.values) {
-        if (value is List) {
-          return value;
-        }
-      }
-    }
-    
-    return [];
-  }
-
-  /// Extract specific field from nested response data
+  /// Extract a specific field from the extracted data
   static T? extractField<T>(Response response, String fieldName) {
     try {
-      final data = extractData<Map<String, dynamic>>(response);
-      return data[fieldName] as T?;
+      final data = extractData(response);
+      if (data is Map<String, dynamic>) {
+        return data[fieldName] as T?;
+      }
+      return null;
     } catch (e) {
       return null;
     }
+  }
+
+  /// Helper for common list extraction pattern
+  static List<dynamic> extractList(Response response, String fieldName) {
+    return extractField<List<dynamic>>(response, fieldName) ?? [];
+  }
+
+  /// Extract list directly from data field (when data itself is a list)
+  static List<dynamic> extractListDirect(Response response) {
+    final data = extractData(response);
+    if (data is List) {
+      return data;
+    }
+    return [];
   }
 }

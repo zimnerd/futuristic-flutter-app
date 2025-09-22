@@ -65,24 +65,28 @@ class ConversationModel extends Equatable {
         .toList();
 
     return ConversationModel(
-      id: json['id'] as String,
-      type: ConversationType.values.byName(json['type'] as String),
+      id: json['id']?.toString() ?? '',
+      type: ConversationType.values.byName(json['type']?.toString() ?? 'direct'),
       participantIds: participantIds,
-      name: json['name'] as String?,
-      description: json['description'] as String?,
-      imageUrl: json['imageUrl'] as String?,
+      name: json['name']?.toString(),
+      description: json['description']?.toString(),
+      imageUrl: json['imageUrl']?.toString(),
       lastMessage: json['lastMessage'] != null
-          ? MessageModel.fromJson(json['lastMessage'])
+          ? MessageModel.fromConversationSummary(json['lastMessage'])
           : null,
       lastMessageAt: json['lastMessageAt'] != null
-          ? DateTime.parse(json['lastMessageAt'])
+          ? DateTime.tryParse(json['lastMessageAt'].toString())
           : null,
-      unreadCount: json['unreadCount'] as int? ?? 0,
+      unreadCount: (json['unreadCount'] as num?)?.toInt() ?? 0,
       settings: json['settings'] != null
           ? ConversationSettings.fromJson(json['settings'])
           : null,
-      createdAt: DateTime.parse(json['createdAt'] as String),
-      updatedAt: DateTime.parse(json['updatedAt'] as String),
+      createdAt: json['createdAt'] != null
+          ? DateTime.tryParse(json['createdAt'].toString()) ?? DateTime.now()
+          : DateTime.now(),
+      updatedAt: json['updatedAt'] != null
+          ? DateTime.tryParse(json['updatedAt'].toString()) ?? DateTime.now()
+          : DateTime.now(),
     );
   }
 
@@ -222,6 +226,33 @@ class MessageModel extends Equatable {
     );
   }
 
+  // Lightweight factory for lastMessage in conversation summaries  
+  factory MessageModel.fromConversationSummary(Map<String, dynamic> json) {
+    return MessageModel(
+      id: json['id']?.toString() ?? '',
+      conversationId: '', // Not provided in summary
+      senderId: '', // Not provided in summary 
+      senderUsername: json['senderUsername']?.toString() ?? '',
+      senderAvatar: null,
+      type: _parseMessageType(json['type']),
+      content: json['content']?.toString() ?? '',
+      mediaUrls: null,
+      metadata: null,
+      status: MessageStatus.sent,
+      replyTo: null,
+      reactions: null,
+      editedAt: null,
+      isForwarded: false,
+      forwardedFromConversationId: null,
+      createdAt: json['createdAt'] != null
+          ? DateTime.tryParse(json['createdAt'].toString()) ?? DateTime.now()
+          : DateTime.now(),
+      updatedAt: json['updatedAt'] != null
+          ? DateTime.tryParse(json['updatedAt'].toString()) ?? DateTime.now()
+          : DateTime.now(),
+    );
+  }
+
   // Backend-specific factory for API responses
   factory MessageModel.fromBackendJson(Map<String, dynamic> json) {
     // Defensive null handling for all fields
@@ -247,12 +278,16 @@ class MessageModel extends Equatable {
               .toList()
           : null,
       editedAt: json['editedAt'] != null
-          ? DateTime.parse(json['editedAt'])
+          ? DateTime.tryParse(json['editedAt'].toString())
           : null,
       isForwarded: json['isForwarded'] ?? false,
       forwardedFromConversationId: json['forwardedFromConversationId']?.toString(),
-      createdAt: DateTime.parse(json['createdAt'] ?? DateTime.now().toIso8601String()),
-      updatedAt: DateTime.parse(json['updatedAt'] ?? DateTime.now().toIso8601String()),
+      createdAt: json['createdAt'] != null
+          ? DateTime.tryParse(json['createdAt'].toString()) ?? DateTime.now()
+          : DateTime.now(),
+      updatedAt: json['updatedAt'] != null
+          ? DateTime.tryParse(json['updatedAt'].toString()) ?? DateTime.now()
+          : DateTime.now(),
     );
   }
 

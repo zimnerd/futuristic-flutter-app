@@ -56,12 +56,19 @@ class MessagingBloc extends Bloc<MessagingEvent, MessagingState> {
     Emitter<MessagingState> emit,
   ) async {
     try {
+      print(
+        '🐛 MessagingBloc - LoadMessages event received for conversation: ${event.conversationId}',
+      );
       emit(state.copyWith(messagesStatus: MessagingStatus.loading));
 
+      print('🐛 MessagingBloc - Calling messagingService.getMessages()');
       final messages = await _messagingService.getMessages(
         conversationId: event.conversationId,
         limit: 50,
         offset: event.refresh ? 0 : state.currentMessages.length,
+      );
+      print(
+        '🐛 MessagingBloc - Received ${messages.length} messages from service',
       );
 
       emit(state.copyWith(

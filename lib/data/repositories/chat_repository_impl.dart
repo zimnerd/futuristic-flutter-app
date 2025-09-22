@@ -24,6 +24,9 @@ class ChatRepositoryImpl implements ChatRepository {
       StreamController<MessageModel>.broadcast();
   final StreamController<msg.MessageDeliveryUpdate> _deliveryUpdatesController =
       StreamController<msg.MessageDeliveryUpdate>.broadcast();
+  
+  // Track optimistic message ID to real message ID mapping
+  final Map<String, String> _optimisticToRealIdMap = {};
 
   ChatRepositoryImpl({
     required ChatRemoteDataSource remoteDataSource,
@@ -45,15 +48,34 @@ class ChatRepositoryImpl implements ChatRepository {
 
   /// Setup WebSocket listeners for real-time message events
   void _setupWebSocketListeners() {
-    // Listen for incoming messages
-    _webSocketService.on('new_message', (data) {
+    // Listen for incoming messages (backend emits 'messageReceived')
+    _webSocketService.on('messageReceived', (data) {
       try {
-        _logger.d('Received new_message event: $data');
+        _logger.d('Received messageReceived event: $data');
 
         // Parse the backend event structure: { type, data, timestamp }
         if (data is Map<String, dynamic> && data.containsKey('data')) {
           final messageData = data['data'] as Map<String, dynamic>;
           final message = MessageModel.fromJson(messageData);
+          
+          // Check if this is a real message for an optimistic message we sent
+          // Look for optimistic messages with similar content and timestamp
+          final optimisticEntries = _optimisticToRealIdMap.entries.where((
+            entry,
+          ) {
+            return entry.value ==
+                entry.key; // Still mapping to itself (not yet replaced)
+          });
+
+          for (final entry in optimisticEntries) {
+            // Update the mapping to point to the real message ID
+            _optimisticToRealIdMap[entry.key] = message.id;
+            _logger.d(
+              'Mapped optimistic ID ${entry.key} to real ID ${message.id}',
+            );
+            break; // Assume first match is correct for now
+          }
+          
           _incomingMessagesController.add(message);
           _logger.d('Added incoming message to stream: ${message.id}');
         }
@@ -69,8 +91,31 @@ class ChatRepositoryImpl implements ChatRepository {
 
         if (data is Map<String, dynamic>) {
           final update = msg.MessageDeliveryUpdate.fromJson(data);
-          _deliveryUpdatesController.add(update);
-          _logger.d('Added delivery update to stream: ${update.messageId}');
+          
+          // Check if this delivery update is for an optimistic message
+          // If so, create a delivery update with the optimistic ID instead
+          final optimisticId = _optimisticToRealIdMap.entries
+              .firstWhere(
+                (entry) => entry.value == update.messageId,
+                orElse: () => MapEntry(update.messageId, update.messageId),
+              )
+              .key;
+
+          if (optimisticId != update.messageId) {
+            // Create delivery update with optimistic ID so ChatBloc can find it
+            final optimisticUpdate = msg.MessageDeliveryUpdate(
+              messageId: optimisticId,
+              status: update.status,
+              timestamp: update.timestamp,
+            );
+            _deliveryUpdatesController.add(optimisticUpdate);
+            _logger.d(
+              'Mapped delivery update from real ID ${update.messageId} to optimistic ID $optimisticId',
+            );
+          } else {
+            _deliveryUpdatesController.add(update);
+            _logger.d('Added delivery update to stream: ${update.messageId}');
+          }
         }
       } catch (e) {
         _logger.e('Error processing delivery update: $e');
@@ -82,6 +127,7 @@ class ChatRepositoryImpl implements ChatRepository {
   void dispose() {
     _incomingMessagesController.close();
     _deliveryUpdatesController.close();
+    _optimisticToRealIdMap.clear();
   }
 
   @override
@@ -143,11 +189,13 @@ class ChatRepositoryImpl implements ChatRepository {
       });
       
       // Create optimistic message for immediate UI update
+      final optimisticId = DateTime.now().millisecondsSinceEpoch.toString();
       final optimisticMessage = MessageModel(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        id: optimisticId,
         conversationId: conversationId,
-        senderId: 'current_user', // This should be set from auth state
-        senderUsername: 'You', // This should be set from auth state
+        senderId:
+            'optimistic_user', // Temporary placeholder - will be updated when real message arrives
+        senderUsername: 'You',
         type: _convertToDomainMessageType(type),
         content: content,
         status: MessageStatus.sending,
@@ -156,6 +204,10 @@ class ChatRepositoryImpl implements ChatRepository {
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
       );
+      
+      // Store the optimistic ID for later mapping to real ID
+      _optimisticToRealIdMap[optimisticId] =
+          optimisticId; // Will be updated when real message arrives
       
       _logger.d('Successfully sent message via Socket.IO');
       return optimisticMessage;

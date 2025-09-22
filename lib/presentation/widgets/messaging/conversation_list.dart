@@ -379,6 +379,9 @@ class _ConversationListState extends State<ConversationList>
   }
 
   void _openChat(Conversation conversation) {
+    print(
+      '🐛 ConversationList - Opening chat for conversation: ${conversation.id}',
+    );
     Navigator.push(
       context,
       MaterialPageRoute(

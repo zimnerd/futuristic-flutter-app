@@ -4,7 +4,7 @@ import 'package:logger/logger.dart';
 import 'dart:async';
 
 import '../data/models/chat_model.dart';
-import '../data/models/message.dart' as msg;
+import '../data/models/message.dart' as message_types;
 import '../data/repositories/chat_repository.dart';
 
 // Events
@@ -36,7 +36,7 @@ class LoadMessages extends ChatEvent {
 
 class SendMessage extends ChatEvent {
   final String conversationId;
-  final msg.MessageType type;
+  final message_types.MessageType type;
   final String? content;
   final List<String>? mediaIds;
   final Map<String, dynamic>? metadata;
@@ -127,13 +127,13 @@ class ReplyToMessage extends ChatEvent {
   final String originalMessageId;
   final String conversationId;
   final String content;
-  final msg.MessageType type;
+  final message_types.MessageType type;
 
   const ReplyToMessage({
     required this.originalMessageId,
     required this.conversationId,
     required this.content,
-    this.type = msg.MessageType.text,
+    this.type = message_types.MessageType.text,
   });
 
   @override
@@ -199,7 +199,7 @@ class MessageReceived extends ChatEvent {
 
 class MessageDeliveryStatusUpdated extends ChatEvent {
   final String messageId;
-  final msg.MessageStatus status;
+  final MessageStatus status;
 
   const MessageDeliveryStatusUpdated({
     required this.messageId,
@@ -388,10 +388,32 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
 
     // Subscribe to delivery status updates
     _chatRepository.messageDeliveryUpdates.listen((update) {
+      // Convert MessageStatus from message.dart to MessageStatus from chat_model.dart
+      MessageStatus chatModelStatus;
+      switch (update.status.name) {
+        case 'sending':
+          chatModelStatus = MessageStatus.sending;
+          break;
+        case 'sent':
+          chatModelStatus = MessageStatus.sent;
+          break;
+        case 'delivered':
+          chatModelStatus = MessageStatus.delivered;
+          break;
+        case 'read':
+          chatModelStatus = MessageStatus.read;
+          break;
+        case 'failed':
+          chatModelStatus = MessageStatus.failed;
+          break;
+        default:
+          chatModelStatus = MessageStatus.sent;
+      }
+      
       add(
         MessageDeliveryStatusUpdated(
           messageId: update.messageId,
-          status: update.status,
+          status: chatModelStatus,
         ),
       );
     });
@@ -547,8 +569,10 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
         'Conversation marked as read: ${event.conversationId} (${messageIds.length} messages)',
       );
 
-      // Reload conversations to update unread count
-      add(const LoadConversations());
+      // ✅ DON'T reload conversations - it destroys the current MessagesLoaded state!
+      // The read status will be updated via WebSocket events or next conversation load
+      // Keeping current state intact preserves chat interface
+      _logger.d('Conversation marked as read - keeping current state intact');
     } catch (e) {
       _logger.e('Error marking conversation as read: $e');
     }
@@ -730,19 +754,34 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     Emitter<ChatState> emit,
   ) async {
     try {
-      // For now, just log the status update
-      // TODO: Update message status when MessageModel supports delivery status
       _logger.d(
         'Message delivery status updated: ${event.messageId} -> ${event.status}',
       );
 
-      // Optionally emit a specific status update state
-      emit(
-        MessageStatusUpdated(
-          messageId: event.messageId,
-          status: event.status.toString(),
-        ),
-      );
+      // Update message status in the current state if it's MessagesLoaded
+      if (state is MessagesLoaded) {
+        final messagesState = state as MessagesLoaded;
+        final updatedMessages = messagesState.messages.map((message) {
+          if (message.id == event.messageId) {
+            _logger.d(
+              'Updating message ${message.id} status from ${message.status} to ${event.status}',
+            );
+            return message.copyWith(status: event.status);
+          }
+          return message;
+        }).toList();
+
+        // Maintain MessagesLoaded state with updated messages
+        emit(messagesState.copyWith(messages: updatedMessages));
+        _logger.d(
+          'Updated message delivery status while preserving MessagesLoaded state',
+        );
+      } else {
+        // If not in MessagesLoaded state, just log the update
+        _logger.d(
+          'Delivery status update received but not in MessagesLoaded state: ${state.runtimeType}',
+        );
+      }
     } catch (e) {
       _logger.e('Error handling delivery status update: $e');
       emit(ChatError(message: 'Failed to handle delivery status update: $e'));

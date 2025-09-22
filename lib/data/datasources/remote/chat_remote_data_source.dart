@@ -101,10 +101,10 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
 
       if (response.statusCode == 200) {
         // Use centralized response parser
-        final conversationsData = ResponseParser.extractField<List<dynamic>>(
-          response, 
-          'conversations'
-        ) ?? [];
+        final conversationsData = ResponseParser.extractList(
+          response,
+          'conversations',
+        );
         
         _logger.d('Extracted ${conversationsData.length} conversations from response');
         
@@ -141,7 +141,7 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
       final response = await _apiService.get('/chat/conversations/$conversationId');
 
       if (response.statusCode == 200) {
-        final responseData = ResponseParser.extractData<Map<String, dynamic>>(response);
+        final responseData = ResponseParser.extractData(response);
         return ConversationModel.fromBackendJson(responseData);
       } else {
         throw ApiException(
@@ -180,7 +180,7 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
       );
 
       if (response.statusCode == 201) {
-        final responseData = ResponseParser.extractData<Map<String, dynamic>>(response);
+        final responseData = ResponseParser.extractData(response);
         return ConversationModel.fromBackendJson(responseData);
       } else {
         throw ApiException(
@@ -208,7 +208,7 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
       );
 
       if (response.statusCode == 200) {
-        final responseData = ResponseParser.extractData<Map<String, dynamic>>(response);
+        final responseData = ResponseParser.extractData(response);
         return ConversationModel.fromBackendJson(responseData);
       } else {
         throw ApiException(
@@ -268,8 +268,15 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
       );
 
       if (response.statusCode == 200) {
-        final messagesData = ResponseParser.extractListData(response);
-        return messagesData.map((json) => MessageModel.fromJson(json)).toList();
+        _logger.i('Message response data: ${response.data}');
+        final messagesData = ResponseParser.extractListDirect(response);
+        _logger.i('Extracted messages data: $messagesData');
+        _logger.i('Messages data length: ${messagesData.length}');
+        final messages = messagesData
+            .map((json) => MessageModel.fromJson(json))
+            .toList();
+        _logger.i('Parsed ${messages.length} messages');
+        return messages;
       } else {
         throw ApiException('Failed to get messages: ${response.statusMessage}');
       }
@@ -305,7 +312,7 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
       );
 
       if (response.statusCode == 201) {
-        final responseData = ResponseParser.extractData<Map<String, dynamic>>(response);
+        final responseData = ResponseParser.extractData(response);
         return MessageModel.fromJson(responseData);
       } else {
         throw ApiException('Failed to send message: ${response.statusMessage}');
@@ -328,7 +335,7 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
       );
 
       if (response.statusCode == 200) {
-        final responseData = ResponseParser.extractData<Map<String, dynamic>>(response);
+        final responseData = ResponseParser.extractData(response);
         return MessageModel.fromJson(responseData);
       } else {
         throw ApiException('Failed to edit message: ${response.statusMessage}');
@@ -483,7 +490,7 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
       );
 
       if (response.statusCode == 200) {
-        final messagesData = ResponseParser.extractListData(response);
+        final messagesData = ResponseParser.extractList(response, 'messages');
         return messagesData.map((json) => MessageModel.fromJson(json)).toList();
       } else {
         throw ApiException('Failed to search messages: ${response.statusMessage}');
@@ -520,7 +527,7 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
       final response = await _apiService.get('/chat/messages/$messageId');
 
       if (response.statusCode == 200) {
-        final responseData = ResponseParser.extractData<Map<String, dynamic>>(response);
+        final responseData = ResponseParser.extractData(response);
         return MessageModel.fromJson(responseData);
       } else {
         throw ApiException('Failed to get message: ${response.statusMessage}');
@@ -561,7 +568,7 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
       );
 
       if (response.statusCode == 201) {
-        final responseData = ResponseParser.extractData<Map<String, dynamic>>(response);
+        final responseData = ResponseParser.extractData(response);
         return MessageModel.fromJson(responseData);
       } else {
         throw ApiException(

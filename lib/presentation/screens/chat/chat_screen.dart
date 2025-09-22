@@ -5,7 +5,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../blocs/chat_bloc.dart';
-import '../../../data/models/message.dart';
+import '../../../data/models/message.dart' as msg;
 import '../../../presentation/blocs/auth/auth_bloc.dart';
 import '../../../presentation/blocs/auth/auth_state.dart';
 import '../../../data/models/user_model.dart';
@@ -38,6 +38,8 @@ class _ChatScreenState extends State<ChatScreen> {
   final TextEditingController _messageController = TextEditingController();
   Timer? _typingTimer;
   bool _isCurrentlyTyping = false;
+  bool _hasMarkedAsRead =
+      false; // Track if we've already marked this conversation as read
   
   String? get _currentUserId {
     final authState = context.read<AuthBloc>().state;
@@ -66,10 +68,8 @@ class _ChatScreenState extends State<ChatScreen> {
         LoadMessages(conversationId: widget.conversationId),
       );
 
-      // Mark conversation as read
-      context.read<ChatBloc>().add(
-        MarkConversationAsRead(conversationId: widget.conversationId),
-      );
+      // ✅ We'll mark as read later only if there are actually unread messages
+      // This will be handled when we receive MessagesLoaded state
     }
     
     // Auto-scroll to bottom when keyboard appears
@@ -144,7 +144,7 @@ class _ChatScreenState extends State<ChatScreen> {
     context.read<ChatBloc>().add(
       SendMessage(
         conversationId: widget.conversationId,
-        type: MessageType.text,
+        type: msg.MessageType.text,
         content: text,
       ),
     );
@@ -172,6 +172,34 @@ class _ChatScreenState extends State<ChatScreen> {
               listener: (context, state) {
                 if (state is MessagesLoaded) {
                   _scrollToBottom();
+                  
+                    // ✅ Only mark as read if we haven't done so yet and there are unread messages
+                    if (!_hasMarkedAsRead && _currentUserId != null) {
+                      // Check if there are any unread messages from the other user
+                      final unreadMessages = state.messages
+                          .where(
+                            (message) =>
+                                message.senderId != _currentUserId &&
+                                message.status != msg.MessageStatus.read,
+                          )
+                          .toList();
+
+                      if (unreadMessages.isNotEmpty) {
+                        context.read<ChatBloc>().add(
+                          MarkConversationAsRead(
+                            conversationId: widget.conversationId,
+                          ),
+                        );
+                        _hasMarkedAsRead = true;
+                        print(
+                          '🐛 ChatScreen - Marked conversation as read (${unreadMessages.length} unread messages)',
+                        );
+                      } else {
+                        print(
+                          '🐛 ChatScreen - No unread messages, skipping mark as read',
+                        );
+                      }
+                    }
                 } else if (state is ConversationCreated) {
                   // Navigate to the actual conversation ID
                   final realConversationId = state.conversation.id;

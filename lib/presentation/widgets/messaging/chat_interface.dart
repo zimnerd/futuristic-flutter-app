@@ -44,6 +44,10 @@ class _ChatInterfaceState extends State<ChatInterface>
   void initState() {
     super.initState();
     
+    print(
+      '🐛 ChatInterface - Initializing for conversation: ${widget.conversation.id}',
+    );
+    
     _typingAnimationController = AnimationController(
       duration: const Duration(milliseconds: 300),
       vsync: this,
@@ -58,15 +62,23 @@ class _ChatInterfaceState extends State<ChatInterface>
     _messageController.addListener(_onMessageChanged);
     _messageFocusNode.addListener(_onFocusChanged);
 
+    print('🐛 ChatInterface - Adding LoadMessages event to MessagingBloc');
     // Load messages for this conversation
     context.read<MessagingBloc>().add(
       LoadMessages(conversationId: widget.conversation.id),
     );
 
-    // Mark conversation as read when opening
-    context.read<MessagingBloc>().add(
-      MarkConversationAsRead(conversationId: widget.conversation.id),
-    );
+    // ✅ Only mark as read if there are actually unread messages
+    if (widget.conversation.unreadCount > 0) {
+      context.read<MessagingBloc>().add(
+        MarkConversationAsRead(conversationId: widget.conversation.id),
+      );
+      print(
+        '🐛 ChatInterface - Marking conversation as read (${widget.conversation.unreadCount} unread)',
+      );
+    } else {
+      print('🐛 ChatInterface - No unread messages, skipping mark as read');
+    }
   }
 
   @override

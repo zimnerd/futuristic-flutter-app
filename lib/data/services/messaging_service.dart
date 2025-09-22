@@ -44,14 +44,44 @@ class MessagingService {
         limit: limit,
       );
 
-      final data = response.data as Map<String, dynamic>;
-      final messages = data['messages'] as List<dynamic>;
+      print('🐛 MessagingService getMessages - Raw response: ${response.data}');
 
-      return messages
+      final responseBody = response.data as Map<String, dynamic>;
+      print('🐛 MessagingService getMessages - Response body: $responseBody');
+
+      // Messages are directly in the 'data' field as an array
+      final messagesData = responseBody['data'];
+      print(
+        '🐛 MessagingService getMessages - Messages data type: ${messagesData.runtimeType}',
+      );
+      print('🐛 MessagingService getMessages - Messages data: $messagesData');
+
+      if (messagesData is! List) {
+        print(
+          '🐛 MessagingService getMessages - Error: data is not a List, it is ${messagesData.runtimeType}',
+        );
+        return [];
+      }
+
+      final messages = messagesData;
+      print(
+        '🐛 MessagingService getMessages - Found ${messages.length} messages',
+      );
+
+      final parsedMessages = messages
           .map((msg) => _messageFromJson(msg as Map<String, dynamic>))
           .toList();
+      
+      print(
+        '🐛 MessagingService getMessages - Parsed ${parsedMessages.length} messages',
+      );
+      return parsedMessages;
     } on DioException catch (e) {
+      print('🐛 MessagingService getMessages - Dio error: $e');
       throw _handleDioError(e);
+    } catch (e) {
+      print('🐛 MessagingService getMessages - General error: $e');
+      rethrow;
     }
   }
 
