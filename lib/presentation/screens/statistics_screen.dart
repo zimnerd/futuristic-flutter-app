@@ -289,7 +289,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> with SingleTickerPr
               Expanded(
                 child: _buildSummaryItem(
                   'Matches',
-                  stats.matchesCount.toString(),
+                  stats.totalMatches.toString(),
                   '💕',
                 ),
               ),
@@ -680,21 +680,21 @@ class _StatisticsScreenState extends State<StatisticsScreen> with SingleTickerPr
 
   // Helper methods for calculations
   double _calculateMatchRate(UserStatistics stats) {
-    if (stats.likesSent == 0) return 0.0;
-    return (stats.matchesCount / stats.likesSent) * 100;
+    if (stats.totalLikes == 0) return 0.0;
+    return (stats.totalMatches / stats.totalLikes) * 100;
   }
 
   double _calculateLikeBackRate(UserStatistics stats) {
     if (stats.likesReceived == 0) return 0.0;
-    return (stats.matchesCount / stats.likesReceived) * 100;
+    return (stats.totalMatches / stats.likesReceived) * 100;
   }
 
   double _calculateEngagementScore(UserStatistics stats) {
     final profileScore = stats.profileViews * 0.1;
     final likesScore = stats.likesReceived * 2;
-    final matchesScore = stats.matchesCount * 5;
+    final matchesScore = stats.totalMatches * 5;
     final messagesScore = stats.messagesCount * 3;
-    final superLikesScore = stats.superLikesReceived * 10;
+    final superLikesScore = stats.likesReceived * 10;
     
     return profileScore + likesScore + matchesScore + messagesScore + superLikesScore;
   }
@@ -713,11 +713,13 @@ class _StatisticsScreenState extends State<StatisticsScreen> with SingleTickerPr
       insights.add('Great match rate! You\'re doing something right');
     }
     
-    if (stats.superLikesReceived > 0) {
-      insights.add('People are really interested in you! ${stats.superLikesReceived} super likes received');
+    if (stats.likesReceived > 0) {
+      insights.add(
+        'People are really interested in you! ${stats.likesReceived} likes received',
+      );
     }
     
-    if (stats.messagesCount > stats.matchesCount * 2) {
+    if (stats.messagesCount > stats.totalMatches * 2) {
       insights.add('You\'re great at starting conversations! Keep it up');
     }
     
