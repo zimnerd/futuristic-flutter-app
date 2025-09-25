@@ -1,37 +1,71 @@
+import 'dart:developer' as dev;
+import '../../core/constants/api_constants.dart';
 import '../../domain/services/api_service.dart';
-import '../models/statistics_model.dart';
-import 'api_service_impl.dart';
+import '../../core/di/service_locator.dart';
 
+/// User statistics model
 class UserStatistics {
+  final int totalLikes;
+  final int totalMatches;
+  final int totalPasses;
   final int profileViews;
-  final int likesReceived;
-  final int likesSent;
-  final int matchesCount;
   final int messagesCount;
-  final int superLikesReceived;
-  final int superLikesSent;
+  final int likesReceived;
+  final double matchRate;
+  final double responseRate;
+  final Map<String, int> dailyActivity;
+  final Map<String, int> ageDistribution;
+  final Map<String, int> locationDistribution;
 
   const UserStatistics({
+    required this.totalLikes,
+    required this.totalMatches,
+    required this.totalPasses,
     required this.profileViews,
-    required this.likesReceived,
-    required this.likesSent,
-    required this.matchesCount,
     required this.messagesCount,
-    required this.superLikesReceived,
-    required this.superLikesSent,
+    required this.likesReceived,
+    required this.matchRate,
+    required this.responseRate,
+    required this.dailyActivity,
+    required this.ageDistribution,
+    required this.locationDistribution,
   });
 
   factory UserStatistics.fromJson(Map<String, dynamic> json) {
     return UserStatistics(
-      profileViews: json['profileViews'] ?? 0,
-      likesReceived: json['likesReceived'] ?? 0,
-      likesSent: json['likesSent'] ?? 0,
-      matchesCount: json['matchesCount'] ?? 0,
-      messagesCount: json['messagesCount'] ?? 0,
-      superLikesReceived: json['superLikesReceived'] ?? 0,
-      superLikesSent: json['superLikesSent'] ?? 0,
+      totalLikes: json['totalLikes'] as int? ?? 0,
+      totalMatches: json['totalMatches'] as int? ?? 0,
+      totalPasses: json['totalPasses'] as int? ?? 0,
+      profileViews: json['profileViews'] as int? ?? 0,
+      messagesCount: json['messagesCount'] as int? ?? 0,
+      likesReceived: json['likesReceived'] as int? ?? 0,
+      matchRate: (json['matchRate'] as num?)?.toDouble() ?? 0.0,
+      responseRate: (json['responseRate'] as num?)?.toDouble() ?? 0.0,
+      dailyActivity: Map<String, int>.from(json['dailyActivity'] as Map? ?? {}),
+      ageDistribution: Map<String, int>.from(json['ageDistribution'] as Map? ?? {}),
+      locationDistribution: Map<String, int>.from(json['locationDistribution'] as Map? ?? {}),
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'totalLikes': totalLikes,
+      'totalMatches': totalMatches,
+      'totalPasses': totalPasses,
+      'profileViews': profileViews,
+      'messagesCount': messagesCount,
+      'likesReceived': likesReceived,
+      'matchRate': matchRate,
+      'responseRate': responseRate,
+      'dailyActivity': dailyActivity,
+      'ageDistribution': ageDistribution,
+      'locationDistribution': locationDistribution,
+    };
+  }
+
+  @override
+  String toString() => 
+      'UserStatistics(likes: $totalLikes, matches: $totalMatches, views: $profileViews)';
 }
 
 class HeatmapData {
@@ -119,140 +153,141 @@ class UserCounts {
   int get total => matched + likedMe + unmatched + passed;
 }
 
+/// Service for handling user statistics
 class StatisticsService {
-  final ApiService _apiService;
+  final ApiService _apiService = sl<ApiService>();
 
-  StatisticsService([ApiService? apiService]) : _apiService = apiService ?? ApiServiceImpl();
-
-  /// Get current user's statistics
+  /// Get comprehensive user statistics
   Future<UserStatistics> getUserStatistics() async {
     try {
-      final response = await _apiService.get('/statistics/me');
-      return UserStatistics.fromJson(response.data);
-    } catch (e) {
-      throw Exception('Failed to load user statistics: $e');
-    }
-  }
-
-  /// Get statistics with period filter (for compatibility with StatisticsScreen)
-  Future<StatisticsModel> getStatistics(String period) async {
-    try {
-      final response = await _apiService.get('/statistics/me', queryParameters: {'period': period});
-      return StatisticsModel.fromJson(response.data);
-    } catch (e) {
-      throw Exception('Failed to load statistics: $e');
-    }
-  }
-
-  /// Get heatmap data for location visualization
-  Future<List<HeatmapData>> getHeatmapData({int? radiusKm}) async {
-    try {
-      final queryParams = radiusKm != null ? {'radius': radiusKm.toString()} : null;
       final response = await _apiService.get(
-        '/statistics/heatmap',
-        queryParameters: queryParams,
+        ApiConstants.statisticsUser,
       );
-      
-      final List<dynamic> data = response.data ?? [];
-      return data.map((item) => HeatmapData.fromJson(item)).toList();
+
+      if (response.data != null) {
+        return UserStatistics.fromJson(response.data as Map<String, dynamic>);
+      }
+
+      // Return empty statistics if no data
+      return const UserStatistics(
+        totalLikes: 0,
+        totalMatches: 0,
+        totalPasses: 0,
+        profileViews: 0,
+        messagesCount: 0,
+        likesReceived: 0,
+        matchRate: 0.0,
+        responseRate: 0.0,
+        dailyActivity: {},
+        ageDistribution: {},
+        locationDistribution: {},
+      );
     } catch (e) {
-      throw Exception('Failed to load heatmap data: $e');
+      dev.log('Error fetching user statistics: $e', name: 'StatisticsService');
+      rethrow;
     }
   }
 
-  /// Get location coverage data for map display
-  Future<LocationCoverageData> getLocationCoverage({int? radiusKm}) async {
-    try {
-      final queryParams = radiusKm != null ? {'radius': radiusKm.toString()} : null;
-      final response = await _apiService.get(
-        '/statistics/location-coverage',
-        queryParameters: queryParams,
-      );
-      
-      return LocationCoverageData.fromJson(response.data);
-    } catch (e) {
-      throw Exception('Failed to load location coverage: $e');
+  /// Calculate match success rate
+  double calculateMatchRate(int matches, int totalLikes) {
+    if (totalLikes == 0) return 0.0;
+    return (matches / totalLikes) * 100;
+  }
+
+  /// Calculate profile completion score
+  double calculateProfileCompletion({
+    required bool hasPhoto,
+    required bool hasBio,
+    required bool hasInterests,
+    required bool hasLocation,
+    required bool hasAge,
+  }) {
+    int completedFields = 0;
+    const totalFields = 5;
+
+    if (hasPhoto) completedFields++;
+    if (hasBio) completedFields++;
+    if (hasInterests) completedFields++;
+    if (hasLocation) completedFields++;
+    if (hasAge) completedFields++;
+
+    return (completedFields / totalFields) * 100;
+  }
+
+  /// Get activity trend for the last 7 days
+  List<MapEntry<String, int>> getWeeklyActivityTrend(Map<String, int> dailyActivity) {
+    final now = DateTime.now();
+    final weeklyData = <String, int>{};
+
+    for (int i = 6; i >= 0; i--) {
+      final date = now.subtract(Duration(days: i));
+      final dateKey = '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+      weeklyData[dateKey] = dailyActivity[dateKey] ?? 0;
     }
+
+    return weeklyData.entries.toList();
   }
 
-  /// Calculate match rate percentage
-  double calculateMatchRate(UserStatistics stats) {
-    if (stats.likesSent == 0) return 0.0;
-    return (stats.matchesCount / stats.likesSent) * 100;
+  /// Calculate engagement level based on statistics
+  String calculateEngagementLevel(UserStatistics stats) {
+    double score = 0.0;
+
+    // Profile views contribute 30%
+    score += (stats.profileViews / 100) * 0.3;
+
+    // Match rate contributes 40%
+    score += (stats.matchRate / 100) * 0.4;
+
+    // Response rate contributes 30%
+    score += (stats.responseRate / 100) * 0.3;
+
+    if (score >= 0.8) return 'Very High';
+    if (score >= 0.6) return 'High';
+    if (score >= 0.4) return 'Medium';
+    if (score >= 0.2) return 'Low';
+    return 'Very Low';
   }
 
-  /// Calculate like back rate percentage
-  double calculateLikeBackRate(UserStatistics stats) {
-    if (stats.likesReceived == 0) return 0.0;
-    return (stats.matchesCount / stats.likesReceived) * 100;
-  }
-
-  /// Get engagement score based on various metrics
-  double calculateEngagementScore(UserStatistics stats) {
-    // Simple engagement score calculation
-    final profileScore = stats.profileViews * 0.1;
-    final likesScore = stats.likesReceived * 2;
-    final matchesScore = stats.matchesCount * 5;
-    final messagesScore = stats.messagesCount * 3;
-    final superLikesScore = stats.superLikesReceived * 10;
-    
-    return profileScore + likesScore + matchesScore + messagesScore + superLikesScore;
-  }
-
-  /// Get user activity level based on statistics
-  String getActivityLevel(UserStatistics stats) {
-    final engagementScore = calculateEngagementScore(stats);
-    
-    if (engagementScore >= 1000) return 'Very Active';
-    if (engagementScore >= 500) return 'Active';
-    if (engagementScore >= 200) return 'Moderate';
-    if (engagementScore >= 50) return 'Low';
-    return 'New User';
-  }
-
-  /// Format statistics for display
-  Map<String, dynamic> formatStatisticsForDisplay(UserStatistics stats) {
-    return {
-      'profileViews': {
-        'value': stats.profileViews,
-        'label': 'Profile Views',
-        'icon': '👀',
-      },
-      'likesReceived': {
-        'value': stats.likesReceived,
-        'label': 'People Who Liked Me',
-        'icon': '❤️',
-      },
-      'likesSent': {
-        'value': stats.likesSent,
-        'label': 'People I Liked',
-        'icon': '👍',
-      },
-      'matchesCount': {
-        'value': stats.matchesCount,
-        'label': 'Mutual Matches',
-        'icon': '✨',
-      },
-      'messagesCount': {
-        'value': stats.messagesCount,
-        'label': 'Messages Sent',
-        'icon': '💬',
-      },
-      'superLikesReceived': {
-        'value': stats.superLikesReceived,
-        'label': 'Super Likes Received',
-        'icon': '⭐',
-      },
-      'matchRate': {
-        'value': '${calculateMatchRate(stats).toStringAsFixed(1)}%',
-        'label': 'Match Rate',
-        'icon': '📊',
-      },
-      'activityLevel': {
-        'value': getActivityLevel(stats),
-        'label': 'Activity Level',
-        'icon': '🔥',
-      },
+  /// Get top performing days of the week
+  List<String> getTopPerformingDays(Map<String, int> dailyActivity) {
+    final dayTotals = <String, int>{
+      'Monday': 0,
+      'Tuesday': 0,
+      'Wednesday': 0,
+      'Thursday': 0,
+      'Friday': 0,
+      'Saturday': 0,
+      'Sunday': 0,
     };
+
+    // Aggregate by day of week
+    dailyActivity.forEach((date, activity) {
+      try {
+        final DateTime dateTime = DateTime.parse(date);
+        final String dayName = _getDayName(dateTime.weekday);
+        dayTotals[dayName] = (dayTotals[dayName] ?? 0) + activity;
+      } catch (e) {
+        dev.log('Error parsing date: $date', name: 'StatisticsService');
+      }
+    });
+
+    // Sort by activity level
+    final sortedDays = dayTotals.entries.toList()
+      ..sort((a, b) => b.value.compareTo(a.value));
+
+    return sortedDays.take(3).map((entry) => entry.key).toList();
+  }
+
+  String _getDayName(int weekday) {
+    switch (weekday) {
+      case 1: return 'Monday';
+      case 2: return 'Tuesday';
+      case 3: return 'Wednesday';
+      case 4: return 'Thursday';
+      case 5: return 'Friday';
+      case 6: return 'Saturday';
+      case 7: return 'Sunday';
+      default: return 'Unknown';
+    }
   }
 }

@@ -1,32 +1,32 @@
-import 'dart:async';
 import 'dart:developer' as dev;
 import 'dart:math' as math;
-
-import '../../core/models/location_models.dart';
-import '../models/heat_map_models.dart';
 import '../../core/constants/api_constants.dart';
 import '../../domain/services/api_service.dart';
 import '../../core/di/service_locator.dart';
+import '../models/heat_map_models.dart';
+import '../../core/models/location_models.dart';
 
-/// Service for handling heat map and location coverage data
+/// Service for handling heat map and location-based statistics
 class HeatMapService {
-  final ApiService _apiService;
+  final ApiService _apiService = sl<ApiService>();
 
-  HeatMapService() : _apiService = sl<ApiService>();
-
-  /// Fetch heat map data for the given bounds and filters
+  /// Get heat map data for user locations
   Future<List<HeatMapDataPoint>> getHeatMapData({
-    required LocationBounds bounds,
+    LocationBounds? bounds,
     HeatMapFilters? filters,
   }) async {
     try {
-      final Map<String, dynamic> queryParams = {
-        'northLatitude': bounds.northLatitude,
-        'southLatitude': bounds.southLatitude,
-        'eastLongitude': bounds.eastLongitude,
-        'westLongitude': bounds.westLongitude,
-      };
-
+      final queryParams = <String, dynamic>{};
+      
+      if (bounds != null) {
+        queryParams.addAll({
+          'northLatitude': bounds.northLatitude,
+          'southLatitude': bounds.southLatitude,
+          'eastLongitude': bounds.eastLongitude,
+          'westLongitude': bounds.westLongitude,
+        });
+      }
+      
       if (filters != null) {
         queryParams.addAll(filters.toJson());
       }
@@ -36,30 +36,30 @@ class HeatMapService {
         queryParameters: queryParams,
       );
 
-      if (response.statusCode == 200) {
-        final data = response.data as Map<String, dynamic>;
-        final dataPoints = data['dataPoints'] as List<dynamic>;
-        
-        return dataPoints
-            .map((point) => HeatMapDataPoint.fromJson(point as Map<String, dynamic>))
+      if (response.data != null && response.data['dataPoints'] is List) {
+        final points = (response.data['dataPoints'] as List)
+            .map((json) => HeatMapDataPoint.fromJson(json))
             .toList();
-      } else {
-        throw Exception('Failed to fetch heat map data: ${response.statusMessage}');
+        
+        dev.log('Fetched ${points.length} heat map points', name: 'HeatMapService');
+        return points;
       }
+
+      return [];
     } catch (e) {
-      dev.log('Error fetching heat map data: $e');
+      dev.log('Error fetching heat map data: $e', name: 'HeatMapService');
       rethrow;
     }
   }
 
-  /// Fetch location coverage data for the given area
+  /// Get location coverage data for the given area
   Future<LocationCoverageData> getLocationCoverageData({
     required LocationCoordinates center,
     required double radiusKm,
     LocationCoverageFilters? filters,
   }) async {
     try {
-      final Map<String, dynamic> queryParams = {
+      final queryParams = <String, dynamic>{
         'centerLatitude': center.latitude,
         'centerLongitude': center.longitude,
         'radiusKm': radiusKm,
@@ -74,14 +74,13 @@ class HeatMapService {
         queryParameters: queryParams,
       );
 
-      if (response.statusCode == 200) {
-        final data = response.data as Map<String, dynamic>;
-        return LocationCoverageData.fromJson(data);
+      if (response.data != null) {
+        return LocationCoverageData.fromJson(response.data as Map<String, dynamic>);
       } else {
-        throw Exception('Failed to fetch location coverage data: ${response.statusMessage}');
+        throw Exception('Failed to fetch location coverage data');
       }
     } catch (e) {
-      dev.log('Error fetching location coverage data: $e');
+      dev.log('Error fetching location coverage data: $e', name: 'HeatMapService');
       rethrow;
     }
   }
