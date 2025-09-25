@@ -1,4 +1,6 @@
 /// Environment configuration for the app
+import 'dart:io';
+
 class AppConfig {
   AppConfig._();
 
@@ -21,17 +23,29 @@ class AppConfig {
   );
 
   // API Configuration - Environment-based for development
-  static const String apiBaseUrl = isDevelopment
-      ? 'http://localhost:3000/api/v1'
-      : 'https://apilink.pulsetek.co.za/api/v1';
+  static String get apiBaseUrl {
+    if (isDevelopment) {
+      final host = Platform.isAndroid ? '10.0.2.2' : 'localhost';
+      return 'http://$host:3000/api/v1';
+    }
+    return 'https://apilink.pulsetek.co.za/api/v1';
+  }
 
-  static const String websocketUrl = isDevelopment
-      ? 'ws://localhost:3000'
-      : 'wss://apilink.pulsetek.co.za';
+  static String get websocketUrl {
+    if (isDevelopment) {
+      final host = Platform.isAndroid ? '10.0.2.2' : 'localhost';
+      return 'ws://$host:3000';
+    }
+    return 'wss://apilink.pulsetek.co.za';
+  }
 
-  static const String aiCompanionWebSocketUrl = isDevelopment
-      ? 'http://localhost:3000'
-      : 'https://apilink.pulsetek.co.za';
+  static String get aiCompanionWebSocketUrl {
+    if (isDevelopment) {
+      final host = Platform.isAndroid ? '10.0.2.2' : 'localhost';
+      return 'http://$host:3000';
+    }
+    return 'https://apilink.pulsetek.co.za';
+  }
 
   // PeachPayments Configuration - Environment-based
   static const String peachPaymentsBaseUrl = isDevelopment || isStaging

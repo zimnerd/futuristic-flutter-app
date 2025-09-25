@@ -31,11 +31,8 @@ dependencies:
   go_router: ^16.2.1
 
   # Location
-  geolocator: ^14.0.2
-  google_maps_flutter: ^2.10.0
+  geolocator: ^14.0.1
 
-  # Permissions
-  permission_handler: ^12.0.1
 
   # Utils
   path_provider: ^2.1.4
@@ -46,45 +43,55 @@ dependencies:
   intl: ^0.20.2
   uuid: ^4.5.1
   logger: ^2.6.1
-  connectivity_plus: ^6.1.5
+  connectivity_plus: ^7.0.0
   path: ^1.9.1
   sqlite3: ^2.9.0
   dartz: ^0.10.1
-  image_picker: ^1.2.0
-  image_cropper: ^8.0.2
-  flutter_image_compress: ^2.3.0
-  geocoding: ^3.0.0
+  image_cropper: ^11.0.0
+  geocoding: ^2.1.0
+  geocoding_ios: ^2.3.0
 
   # Voice Messages
-  audio_waveforms: ^1.0.5
-  record: ^6.1.1
   just_audio: ^0.10.5
-
+  audio_session: ^0.1.25
+  camera_avfoundation: ^0.9.21+3
   # Virtual Gifts & Animations
   lottie: ^3.1.4
   flutter_animate: ^4.5.2
 
   # Safety Features
-  # contacts_service: ^0.6.3  # Temporarily disabled due to namespace issues
-  device_info_plus: ^11.2.1
-  url_launcher: ^6.3.2
+  device_info_plus: ^12.1.0
 
   # Authentication
   local_auth: ^2.1.8
-  flutter_secure_storage: ^9.2.2
+  flutter_secure_storage: ^8.1.0
 
   # Live Streaming
   camera: ^0.11.0+2
-  agora_rtc_engine: ^6.3.3
+  iris_method_channel: ^2.2.4
 
   # Premium Features
   in_app_purchase: ^3.2.1
-  purchases_flutter: ^8.1.3
+  purchases_flutter: ^9.6.2
+
+  package_info_plus: ^9.0.0
 
   # Enhanced UI
   flutter_svg: ^2.1.1
   shimmer: ^3.0.0
-  fluttertoast: ^8.2.8
+  fluttertoast: ^9.0.0
+  google_maps_flutter_ios: ^2.15.5
+  record: ^6.1.1
+  permission_handler: ^12.0.1
+  audio_waveforms: ^1.0.1
+  record_ios: ^1.1.2
+  google_maps_flutter: ^2.13.1
+  permission_handler_apple: ^9.4.7
+  url_launcher: ^6.3.2
+  agora_rtc_engine: ^6.1.1
+  image_picker: ^1.2.0
+  image_picker_ios: ^0.8.13
+  flutter_image_compress: ^2.4.0
 
 dev_dependencies:
   flutter_test:

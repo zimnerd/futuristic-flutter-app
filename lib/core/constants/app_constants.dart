@@ -1,5 +1,6 @@
 // Core constants for the Pulse Dating App
 // Contains API endpoints, app configuration, and global settings
+import 'dart:io';
 
 class AppConstants {
   // App Information
@@ -9,12 +10,18 @@ class AppConstants {
       'Modern dating app with offline-first architecture';
 
   // API Configuration
-  static const String baseUrl = 'http://localhost:3000';
+  static String get baseUrl {
+    final host = Platform.isAndroid ? '10.0.2.2' : 'localhost';
+    return 'http://$host:3000';
+  }
   static const String apiVersion = 'v1';
-  static const String apiBaseUrl = '$baseUrl/api/$apiVersion';
+  static String get apiBaseUrl => '$baseUrl/api/$apiVersion';
 
   // WebSocket Configuration
-  static const String websocketUrl = 'ws://localhost:3000';
+  static String get websocketUrl {
+    final host = Platform.isAndroid ? '10.0.2.2' : 'localhost';
+    return 'ws://$host:3000';
+  }
 
   // Storage Keys
   static const String userTokenKey = 'user_token';
