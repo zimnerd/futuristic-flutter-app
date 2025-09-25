@@ -107,12 +107,29 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
       } else if (state is ChatError) {
         // Check if widget is still mounted before showing message
         if (mounted) {
-          // Show error message
+          // Show more helpful error message for matching requirement
+          String errorMessage =
+              'Failed to start conversation: ${state.message}';
+          if (state.message.toLowerCase().contains('matched') ||
+              state.message.toLowerCase().contains('403')) {
+            errorMessage =
+                "You can only message people you've matched with. Try liking this profile first!";
+          }
+          
           scaffoldMessenger.showSnackBar(
             SnackBar(
-              content: Text('Failed to start conversation: ${state.message}'),
+              content: Text(errorMessage),
               backgroundColor: Colors.red,
-              duration: const Duration(seconds: 3),
+              duration: const Duration(seconds: 4),
+              action:
+                  state.message.toLowerCase().contains('matched') ||
+                      state.message.toLowerCase().contains('403')
+                  ? SnackBarAction(
+                      label: 'Like Profile',
+                      textColor: Colors.white,
+                      onPressed: () => _onLikeTap(),
+                    )
+                  : null,
             ),
           );
         }

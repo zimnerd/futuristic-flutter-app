@@ -1,14 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:go_router/go_router.dart';
 
-import '../../theme/pulse_colors.dart';
-import '../../blocs/matching/matching_bloc.dart';
-import '../../navigation/app_router.dart';
-import '../../../domain/entities/user_profile.dart';
+import '../../blocs/match/match_bloc.dart';
+import '../../blocs/match/match_event.dart';
+import '../../blocs/match/match_state.dart';
+import '../../../data/services/matching_service.dart';
+import '../../../core/network/api_client.dart';
+import '../../../data/models/match_model.dart';
+import '../../../core/theme/pulse_design_system.dart';
 
-/// Enhanced matches screen with filters, search, view options and pagination
+/// Actual Matches Screen - Shows mutual matches and people who liked you
+///
+/// This screen displays:
+/// - Your mutual matches (people you can message)
+/// - People who liked you (if you have premium)
+/// - Match history and statistics
 class MatchesScreen extends StatefulWidget {
   const MatchesScreen({super.key});
 
@@ -16,41 +22,35 @@ class MatchesScreen extends StatefulWidget {
   State<MatchesScreen> createState() => _MatchesScreenState();
 }
 
-enum ViewMode { grid, list, slider }
-
 class _MatchesScreenState extends State<MatchesScreen>
     with TickerProviderStateMixin {
-  late AnimationController _buttonAnimationController;
-  late AnimationController _matchAnimationController;
-  late PageController _pageController;
+  late AnimationController _animationController;
   late TextEditingController _searchController;
   late ScrollController _scrollController;
   
-  int _currentIndex = 0;
-  ViewMode _viewMode = ViewMode.grid;
   String _searchQuery = '';
   bool _isLoadingMore = false;
   
   @override
   void initState() {
     super.initState();
-    _buttonAnimationController = AnimationController(
-      duration: const Duration(milliseconds: 200),
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 300),
       vsync: this,
     );
-    _matchAnimationController = AnimationController(
-      duration: const Duration(milliseconds: 1000),
-      vsync: this,
-    );
-    _pageController = PageController();
     _searchController = TextEditingController();
     _scrollController = ScrollController();
 
     // Add scroll listener for pagination
     _scrollController.addListener(_onScroll);
+  }
 
-    // Load matched profiles
-    context.read<MatchingBloc>().add(const LoadPotentialMatches());
+  @override
+  void dispose() {
+    _animationController.dispose();
+    _searchController.dispose();
+    _scrollController.dispose();
+    super.dispose();
   }
 
   void _onScroll() {
@@ -67,10 +67,6 @@ class _MatchesScreenState extends State<MatchesScreen>
       _isLoadingMore = true;
     });
 
-    // Load more matches
-    context.read<MatchingBloc>().add(const LoadPotentialMatches());
-
-    // Simulate loading delay
     Future.delayed(const Duration(seconds: 1), () {
       if (mounted) {
         setState(() {
@@ -81,69 +77,61 @@ class _MatchesScreenState extends State<MatchesScreen>
   }
 
   @override
-  void dispose() {
-    _buttonAnimationController.dispose();
-    _matchAnimationController.dispose();
-    _pageController.dispose();
-    _searchController.dispose();
-    _scrollController.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: SafeArea(
-        child: BlocConsumer<MatchingBloc, MatchingState>(
-          listener: (context, state) {
-            if (state.error != null) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(state.error!),
-                  backgroundColor: PulseColors.error,
-                ),
+    return BlocProvider(
+      create: (context) => MatchBloc(
+        matchingService: MatchingService(apiClient: ApiClient.instance),
+      )..add(const LoadMatches()),
+      child: Scaffold(
+        body: SafeArea(
+          child: BlocConsumer<MatchBloc, MatchState>(
+            listener: (context, state) {
+              if (state is MatchError) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(state.message),
+                    backgroundColor: PulseColors.primary,
+                  ),
+                );
+              }
+            },
+            builder: (context, state) {
+              return Column(
+                children: [
+                  _buildHeader(state),
+                  Expanded(
+                    child: _buildContent(state)),
+                  if (_isLoadingMore) _buildLoadMoreIndicator(),
+                ],
               );
-            }
-          },
-          builder: (context, state) {
-            return Column(
-              children: [
-                // Header with search and filters
-                _buildEnhancedHeader(state),
-
-                // View mode toggle
-                _buildViewModeToggle(),
-
-                // Matches content based on view mode
-                Expanded(
-                  child: _buildMatchesContentByViewMode(state)),
-
-                // Load more indicator
-                if (_isLoadingMore) _buildLoadMoreIndicator(),
-              ],
-            );
-          },
+            },
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildEnhancedHeader(MatchingState state) {
+  Widget _buildHeader(MatchState state) {
+    int matchCount = 0;
+    if (state is MatchesLoaded) {
+      matchCount = state.matches.length;
+    }
+
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
             PulseColors.primary.withValues(alpha: 0.05),
-            PulseColors.secondary.withValues(alpha: 0.05),
+            PulseColors.accent.withValues(alpha: 0.05),
           ],
         ),
       ),
       child: Column(
         children: [
-          // Title and stats row
+          // Title and stats
           Row(
             children: [
               Container(
@@ -152,8 +140,8 @@ class _MatchesScreenState extends State<MatchesScreen>
                   color: PulseColors.primary.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(16),
                 ),
-                child: const Icon(
-                  Icons.favorite,
+                child: Icon(
+                  Icons.local_fire_department,
                   color: PulseColors.primary,
                   size: 24,
                 ),
@@ -172,23 +160,22 @@ class _MatchesScreenState extends State<MatchesScreen>
                       ),
                     ),
                     Text(
-                      '${state.profiles.length} mutual likes',
+                      '$matchCount mutual matches',
                       style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                     ),
                   ],
                 ),
               ),
-              // Connection insights
               Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 12,
                   vertical: 8,
                 ),
                 decoration: BoxDecoration(
-                  color: PulseColors.success.withValues(alpha: 0.1),
+                  color: PulseColors.accent.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
-                    color: PulseColors.success.withValues(alpha: 0.3),
+                    color: PulseColors.accent.withValues(alpha: 0.3),
                   ),
                 ),
                 child: Row(
@@ -197,15 +184,15 @@ class _MatchesScreenState extends State<MatchesScreen>
                     Icon(
                       Icons.trending_up,
                       size: 16,
-                      color: PulseColors.success,
+                      color: PulseColors.accent,
                     ),
                     const SizedBox(width: 4),
                     Text(
-                      '92%',
+                      '${matchCount}',
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
-                        color: PulseColors.success,
+                        color: PulseColors.accent,
                       ),
                     ),
                   ],
@@ -213,9 +200,7 @@ class _MatchesScreenState extends State<MatchesScreen>
               ),
             ],
           ),
-          
           const SizedBox(height: 16),
-          
           // Search bar
           Container(
             decoration: BoxDecoration(
@@ -232,7 +217,7 @@ class _MatchesScreenState extends State<MatchesScreen>
             child: TextField(
               controller: _searchController,
               decoration: InputDecoration(
-                hintText: 'Search your sparks...',
+                hintText: 'Search your matches...',
                 prefixIcon: const Icon(Icons.search, color: Colors.grey),
                 suffixIcon: _searchQuery.isNotEmpty
                     ? IconButton(
@@ -244,18 +229,9 @@ class _MatchesScreenState extends State<MatchesScreen>
                           });
                         },
                       )
-                    : IconButton(
-                        icon: const Icon(
-                          Icons.tune,
-                          color: PulseColors.primary,
-                        ),
-                        onPressed: () => _showFiltersModal(),
-                      ),
+                    : null,
                 border: InputBorder.none,
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 12,
-                ),
+                contentPadding: const EdgeInsets.all(16),
               ),
               onChanged: (value) {
                 setState(() {
@@ -269,614 +245,182 @@ class _MatchesScreenState extends State<MatchesScreen>
     );
   }
 
-  Widget _buildViewModeToggle() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Row(
-        children: [
-          const Text(
-            'View:',
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-              color: Colors.grey,
-            ),
-          ),
-          const SizedBox(width: 12),
-          _buildViewModeButton(ViewMode.grid, Icons.grid_view),
-          const SizedBox(width: 8),
-          _buildViewModeButton(ViewMode.list, Icons.view_list),
-          const SizedBox(width: 8),
-          _buildViewModeButton(ViewMode.slider, Icons.view_carousel),
-          const Spacer(),
-          Text(
-            'Showing ${_getFilteredProfiles().length} matches',
-            style: TextStyle(
-              fontSize: 12,
-              color: Colors.grey[600],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildViewModeButton(ViewMode mode, IconData icon) {
-    final isSelected = _viewMode == mode;
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          _viewMode = mode;
-        });
-      },
-      child: Container(
-        padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(
-          color: isSelected ? PulseColors.primary : Colors.transparent,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(
-            color: isSelected
-                ? PulseColors.primary
-                : Colors.grey.withValues(alpha: 0.3),
-          ),
-        ),
-        child: Icon(
-          icon,
-          size: 18,
-          color: isSelected ? Colors.white : Colors.grey,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildMatchesContentByViewMode(MatchingState state) {
-    final filteredProfiles = _getFilteredProfiles();
-
-    if (state.status == MatchingStatus.loading && filteredProfiles.isEmpty) {
+  Widget _buildContent(MatchState state) {
+    if (state is MatchLoading) {
       return const Center(child: CircularProgressIndicator());
     }
 
-    if (filteredProfiles.isEmpty) {
-      return _buildEmptyState();
-    }
-
-    switch (_viewMode) {
-      case ViewMode.grid:
-        return _buildGridView(filteredProfiles);
-      case ViewMode.list:
-        return _buildListView(filteredProfiles);
-      case ViewMode.slider:
-        return _buildSliderView(filteredProfiles);
-    }
-  }
-
-  List<UserProfile> _getFilteredProfiles() {
-    final profiles = context.read<MatchingBloc>().state.profiles;
-    if (_searchQuery.isEmpty) return profiles;
-
-    return profiles.where((profile) {
-      final query = _searchQuery.toLowerCase();
-      return profile.name.toLowerCase().contains(query) ||
-          profile.bio.toLowerCase().contains(query);
-    }).toList();
-  }
-
-  Widget _buildGridView(List<UserProfile> profiles) {
-    return GridView.builder(
-      controller: _scrollController,
-      padding: const EdgeInsets.all(16),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        childAspectRatio: 0.8, // Increased from 0.75 to prevent overflow
-        crossAxisSpacing: 16,
-        mainAxisSpacing: 16,
-      ),
-      itemCount: profiles.length,
-      itemBuilder: (context, index) => _buildGridProfileCard(profiles[index]),
-    );
-  }
-
-  Widget _buildListView(List<UserProfile> profiles) {
-    return ListView.builder(
-      controller: _scrollController,
-      padding: const EdgeInsets.all(16),
-      itemCount: profiles.length,
-      itemBuilder: (context, index) => _buildListProfileCard(profiles[index]),
-    );
-  }
-
-  Widget _buildSliderView(List<UserProfile> profiles) {
-    return Column(
-      children: [
-        // Slider indicators
-        if (profiles.isNotEmpty) _buildPageIndicator(profiles.length),
-        const SizedBox(height: 8),
-        // Slider content
-        Expanded(
-          child: PageView.builder(
-            controller: _pageController,
-            onPageChanged: (index) {
-              setState(() {
-                _currentIndex = index;
-              });
-            },
-            itemCount: profiles.length,
-            itemBuilder: (context, index) =>
-                _buildSliderProfileCard(profiles[index]),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildGridProfileCard(UserProfile profile) {
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: InkWell(
-        onTap: () => _navigateToProfile(profile),
-        borderRadius: BorderRadius.circular(16),
+    if (state is MatchError) {
+      return Center(
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Flexible(
-              flex: 3,
-              child: Container(
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  borderRadius: const BorderRadius.vertical(
-                    top: Radius.circular(16),
-                  ),
-                  image: profile.photos.isNotEmpty
-                      ? DecorationImage(
-                          image: CachedNetworkImageProvider(
-                            profile.photos.first.url,
-                          ),
-                          fit: BoxFit.cover,
-                        )
-                      : null,
-                ),
-                child: profile.photos.isEmpty
-                    ? const Center(
-                        child: Icon(Icons.person, size: 48, color: Colors.grey),
-                      )
-                    : Stack(
-                        children: [
-                          Positioned(
-                            top: 8,
-                            right: 8,
-                            child: Container(
-                              padding: const EdgeInsets.all(4),
-                              decoration: BoxDecoration(
-                                color: Colors.green,
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: const Icon(
-                                Icons.favorite,
-                                size: 16,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
+            Icon(Icons.error_outline, size: 64, color: PulseColors.primary,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Failed to load matches',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: Colors.grey[800],
               ),
             ),
-            Flexible(
-              flex: 1,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      '${profile.name}, ${profile.age}',
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 13,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 1),
-                    Flexible(
-                      child: Text(
-                        profile.bio,
-                        style: TextStyle(fontSize: 11, color: Colors.grey[600]),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+            const SizedBox(height: 8),
+            Text(
+              state.message,
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton(
+              onPressed: () =>
+                  context.read<MatchBloc>().add(const LoadMatches()),
+              child: const Text('Try Again'),
             ),
           ],
         ),
-      ),
-    );
-  }
+      );
+    }
 
-  Widget _buildListProfileCard(UserProfile profile) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: InkWell(
-        onTap: () => _navigateToProfile(profile),
-        borderRadius: BorderRadius.circular(16),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
+    if (state is MatchesLoaded) {
+      final matches = _getFilteredMatches(state.matches);
+      
+      if (matches.isEmpty) {
+        return Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              CircleAvatar(
-                radius: 32,
-                backgroundImage: profile.photos.isNotEmpty
-                    ? CachedNetworkImageProvider(profile.photos.first.url)
-                    : null,
-                child: profile.photos.isEmpty
-                    ? const Icon(Icons.person, size: 32)
-                    : null,
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Text(
-                          profile.name,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 2,
-                          ),
-                          decoration: BoxDecoration(
-                            color: PulseColors.primary.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Text(
-                            '${profile.age}',
-                            style: const TextStyle(
-                              fontSize: 12,
-                              color: PulseColors.primary,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      profile.bio,
-                      style: TextStyle(
-                        fontSize: 14, color: Colors.grey[600]),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
+              Icon(Icons.favorite_border, size: 64, color: Colors.grey[400]),
+              const SizedBox(height: 16),
+              Text(
+                _searchQuery.isNotEmpty ? 'No matches found' : 'No matches yet',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.grey[600],
                 ),
               ),
-              Column(
-                children: [
-                  IconButton(
-                    onPressed: () => _startChat(profile),
-                    icon: const Icon(Icons.chat, color: PulseColors.primary),
-                  ),
-                  IconButton(
-                    onPressed: () => _startCall(profile),
-                    icon: const Icon(
-                      Icons.videocam,
-                      color: PulseColors.secondary,
-                    ),
-                  ),
-                ],
+              const SizedBox(height: 8),
+              Text(
+                _searchQuery.isNotEmpty
+                    ? 'Try a different search term'
+                    : 'Start swiping in Discover to find matches!',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 14, color: Colors.grey[500]),
               ),
             ],
           ),
-        ),
-      ),
-    );
+        );
+      }
+
+      return ListView.builder(
+        controller: _scrollController,
+        padding: const EdgeInsets.all(16),
+        itemCount: matches.length,
+        itemBuilder: (context, index) {
+          final match = matches[index];
+          return _buildMatchCard(match);
+        },
+      );
+    }
+
+    return const SizedBox();
   }
 
-  Widget _buildSliderProfileCard(UserProfile profile) {
+  List<MatchModel> _getFilteredMatches(List<MatchModel> matches) {
+    if (_searchQuery.isEmpty) return matches;
+
+    return matches.where((match) {
+      // Note: This is a simplified filter. In a real app, you'd filter by user names
+      // For now, we'll just return all matches since we don't have user data in MatchModel
+      return true;
+    }).toList();
+  }
+
+  Widget _buildMatchCard(MatchModel match) {
     return Container(
-      margin: const EdgeInsets.all(16),
+      margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(24),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.1),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
           ),
         ],
       ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(24),
-        child: Stack(
-          children: [
-            // Background image
-            if (profile.photos.isNotEmpty)
-              CachedNetworkImage(
-                imageUrl: profile.photos.first.url,
-                fit: BoxFit.cover,
-                width: double.infinity,
-                height: double.infinity,
-              ),
-            
-            // Gradient overlay
-            Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Colors.transparent,
-                    Colors.black.withValues(alpha: 0.7),
-                  ],
-                ),
-              ),
-            ),
-            
-            // Content
-            Positioned(
-              bottom: 32,
-              left: 24,
-              right: 24,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    profile.name,
-                    style: const TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                  Text(
-                    'Age: ${profile.age}',
-                    style: const TextStyle(fontSize: 18, color: Colors.white70),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    profile.bio,
-                    style: const TextStyle(fontSize: 16, color: Colors.white70),
-                    maxLines: 3,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 16),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: ElevatedButton.icon(
-                          onPressed: () => _startChat(profile),
-                          icon: const Icon(Icons.chat),
-                          label: const Text('Chat'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: PulseColors.primary,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: ElevatedButton.icon(
-                          onPressed: () => _startCall(profile),
-                          icon: const Icon(Icons.videocam),
-                          label: const Text('Video'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: PulseColors.secondary,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ],
+      child: ListTile(
+        contentPadding: const EdgeInsets.all(16),
+        leading: CircleAvatar(
+          radius: 28,
+          backgroundColor: PulseColors.primary.withValues(alpha: 0.1),
+          child: Icon(Icons.person, color: PulseColors.primary, size: 28),
         ),
-      ),
-    );
-  }
-
-  Widget _buildPageIndicator(int totalPages) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: List.generate(
-        totalPages.clamp(0, 5), // Limit to 5 indicators
-        (index) => Container(
-          margin: const EdgeInsets.symmetric(horizontal: 2),
-          width: 8,
-          height: 8,
+        title: Text(
+          'Match ${match.id.substring(0, 8)}',
+          style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+        ),
+        subtitle: Text(
+          'Matched ${_formatMatchDate(match.createdAt)}',
+          style: TextStyle(color: Colors.grey[600], fontSize: 14),
+        ),
+        trailing: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: index == _currentIndex
-                ? PulseColors.primary
-                : Colors.grey.withValues(alpha: 0.5),
+            color: PulseColors.primary,
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: const Text(
+            'Chat',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ),
+        onTap: () {
+          // Navigate to chat or profile
+          // context.push('/profile-details/${match.userBId}');
+        },
       ),
     );
   }
 
-  Widget _buildEmptyState() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.favorite_border, size: 64, color: Colors.grey[400]),
-          const SizedBox(height: 16),
-          Text(
-            'No matches found',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-              color: Colors.grey[600],
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Try adjusting your search or filters',
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.grey[500],
-            ),
-          ),
-        ],
-      ),
-    );
+  String _formatMatchDate(DateTime date) {
+    final now = DateTime.now();
+    final difference = now.difference(date);
+
+    if (difference.inDays > 0) {
+      return '${difference.inDays} day${difference.inDays == 1 ? '' : 's'} ago';
+    } else if (difference.inHours > 0) {
+      return '${difference.inHours} hour${difference.inHours == 1 ? '' : 's'} ago';
+    } else {
+      return 'Just now';
+    }
   }
 
   Widget _buildLoadMoreIndicator() {
     return Container(
       padding: const EdgeInsets.all(16),
-      child: const Row(
+      child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           SizedBox(
-            width: 20,
-            height: 20,
-            child: CircularProgressIndicator(strokeWidth: 2),
+            width: 16,
+            height: 16,
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              valueColor: AlwaysStoppedAnimation<Color>(PulseColors.primary),
+            ),
           ),
-          SizedBox(width: 12),
-          Text('Loading more matches...'),
+          const SizedBox(width: 12),
+          const Text('Loading more matches...'),
         ],
       ),
-    );
-  }
-
-  void _showFiltersModal() {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) => Container(
-        padding: const EdgeInsets.all(24),
-        height: MediaQuery.of(context).size.height * 0.6,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                const Text(
-                  'Filters',
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                ),
-                const Spacer(),
-                IconButton(
-                  onPressed: () => Navigator.pop(context),
-                  icon: const Icon(Icons.close),
-                ),
-              ],
-            ),
-            const SizedBox(height: 24),
-            const Text('Age Range'),
-            const SizedBox(height: 8),
-            RangeSlider(
-              values: const RangeValues(18, 35),
-              min: 18,
-              max: 65,
-              divisions: 47,
-              labels: const RangeLabels('18', '35'),
-              onChanged: (values) {
-                // Handle age range change
-              },
-            ),
-            const SizedBox(height: 24),
-            const Text('Distance'),
-            const SizedBox(height: 8),
-            Slider(
-              value: 50,
-              min: 1,
-              max: 100,
-              divisions: 99,
-              label: '50 km',
-              onChanged: (value) {
-                // Handle distance change
-              },
-            ),
-            const SizedBox(height: 24),
-            const Text('Interests'),
-            const SizedBox(height: 8),
-            Wrap(
-              spacing: 8,
-              children: ['Music', 'Sports', 'Travel', 'Food', 'Movies']
-                  .map(
-                    (interest) => FilterChip(
-                      label: Text(interest),
-                      selected: false,
-                      onSelected: (selected) {
-                        // Handle interest selection
-                      },
-                    ),
-                  )
-                  .toList(),
-            ),
-            const Spacer(),
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: () {
-                      // Clear filters
-                      Navigator.pop(context);
-                    },
-                    child: const Text('Clear All'),
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () {
-                      // Apply filters
-                      Navigator.pop(context);
-                    },
-                    child: const Text('Apply Filters'),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _navigateToProfile(UserProfile profile) {
-    // Navigate to profile details
-    context.push(
-      AppRoutes.profileDetails.replaceAll(':profileId', profile.id),
-      extra: profile,
-    );
-  }
-
-  void _startChat(UserProfile profile) {
-    // Start chat with profile
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Starting chat with ${profile.name}')),
-    );
-  }
-
-  void _startCall(UserProfile profile) {
-    // Start video call with profile
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Starting call with ${profile.name}')),
     );
   }
 }

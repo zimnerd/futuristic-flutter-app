@@ -32,7 +32,7 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper>
     NavigationItem(
       icon: Icons.explore_outlined,
       activeIcon: Icons.explore,
-      label: 'Explore',
+      label: 'Discover',
       route: '/home',
     ),
     NavigationItem(
