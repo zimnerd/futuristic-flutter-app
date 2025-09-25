@@ -290,4 +290,17 @@ class StatisticsService {
       default: return 'Unknown';
     }
   }
+
+  /// Format statistics for display
+  Map<String, String> formatStatisticsForDisplay(UserStatistics stats) {
+    return {
+      'totalMatches': stats.totalMatches.toString(),
+      'totalLikes': stats.totalLikes.toString(),
+      'likesReceived': stats.likesReceived.toString(),
+      'profileViews': stats.profileViews.toString(),
+      'matchRate': '${stats.matchRate.toStringAsFixed(1)}%',
+      'responseRate': '${stats.responseRate.toStringAsFixed(1)}%',
+      'engagementLevel': calculateEngagementLevel(stats),
+    };
+  }
 }
