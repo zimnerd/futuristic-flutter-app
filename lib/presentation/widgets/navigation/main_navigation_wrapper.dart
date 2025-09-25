@@ -360,6 +360,15 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper>
                       },
                     ),
                     _buildMenuTile(
+                        icon: Icons.analytics_outlined,
+                        title: 'Statistics',
+                        subtitle: 'Your dating insights',
+                        onTap: () {
+                          Navigator.of(context).pop();
+                          context.push('/statistics');
+                        },
+                      ),
+                      _buildMenuTile(
                       icon: Icons.psychology_outlined,
                       title: 'AI Companion',
                       subtitle: 'Your virtual dating coach',

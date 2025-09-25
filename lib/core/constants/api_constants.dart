@@ -63,6 +63,13 @@ class ApiConstants {
   static const String mediaFiles = '$media/files';
   static const String mediaDelete = '$media/delete';
 
+  // Statistics endpoints (statistics.controller.ts)
+  static const String statistics = '/statistics';
+  static const String statisticsUser = '$statistics/user';
+  static const String statisticsHeatMap = '$statistics/heatmap';
+  static const String statisticsLocationCoverage =
+      '$statistics/location-coverage';
+
   // ================================
   // PREMIUM & MONETIZATION
   // ================================
