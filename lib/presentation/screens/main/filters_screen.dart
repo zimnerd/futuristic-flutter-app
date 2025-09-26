@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../blocs/filters/filter_bloc.dart';
 import '../../blocs/filters/filter_event.dart';
@@ -334,14 +335,32 @@ class _FiltersScreenState extends State<FiltersScreen> {
         ],
       ),
       child: SafeArea(
-        child: SizedBox(
-          width: double.infinity,
-          child: PulseButton(
-            text: 'Save Preferences',
-            onPressed: () {
-              context.read<FilterBLoC>().add(SaveFilterPreferences());
-            },
-          ),
+        child: Column(
+          children: [
+            // View Map Button
+            SizedBox(
+              width: double.infinity,
+              child: PulseButton(
+                text: 'View Map',
+                onPressed: () {
+                  context.pushNamed('heat-map');
+                },
+                variant: PulseButtonVariant.secondary,
+                icon: const Icon(Icons.map, size: 20),
+              ),
+            ),
+            const SizedBox(height: 12),
+            // Save Preferences Button
+            SizedBox(
+              width: double.infinity,
+              child: PulseButton(
+                text: 'Save Preferences',
+                onPressed: () {
+                  context.read<FilterBLoC>().add(SaveFilterPreferences());
+                },
+              ),
+            ),
+          ],
         ),
       ),
     );

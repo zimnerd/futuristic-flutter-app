@@ -10,6 +10,8 @@ class UserStatistics {
   final int profileViews;
   final int messagesCount;
   final int likesReceived;
+  final int superLikesReceived;
+  final int superLikesSent;
   final double matchRate;
   final double responseRate;
   final Map<String, int> dailyActivity;
@@ -23,6 +25,8 @@ class UserStatistics {
     required this.profileViews,
     required this.messagesCount,
     required this.likesReceived,
+    required this.superLikesReceived,
+    required this.superLikesSent,
     required this.matchRate,
     required this.responseRate,
     required this.dailyActivity,
@@ -32,12 +36,15 @@ class UserStatistics {
 
   factory UserStatistics.fromJson(Map<String, dynamic> json) {
     return UserStatistics(
-      totalLikes: json['totalLikes'] as int? ?? 0,
-      totalMatches: json['totalMatches'] as int? ?? 0,
+      totalLikes: json['likesSent'] as int? ?? json['totalLikes'] as int? ?? 0,
+      totalMatches:
+          json['matchesCount'] as int? ?? json['totalMatches'] as int? ?? 0,
       totalPasses: json['totalPasses'] as int? ?? 0,
       profileViews: json['profileViews'] as int? ?? 0,
       messagesCount: json['messagesCount'] as int? ?? 0,
       likesReceived: json['likesReceived'] as int? ?? 0,
+      superLikesReceived: json['superLikesReceived'] as int? ?? 0,
+      superLikesSent: json['superLikesSent'] as int? ?? 0,
       matchRate: (json['matchRate'] as num?)?.toDouble() ?? 0.0,
       responseRate: (json['responseRate'] as num?)?.toDouble() ?? 0.0,
       dailyActivity: Map<String, int>.from(json['dailyActivity'] as Map? ?? {}),
@@ -54,6 +61,8 @@ class UserStatistics {
       'profileViews': profileViews,
       'messagesCount': messagesCount,
       'likesReceived': likesReceived,
+      'superLikesReceived': superLikesReceived,
+      'superLikesSent': superLikesSent,
       'matchRate': matchRate,
       'responseRate': responseRate,
       'dailyActivity': dailyActivity,
@@ -166,7 +175,11 @@ class StatisticsService {
       );
 
       if (response.data != null) {
-        return UserStatistics.fromJson(response.data as Map<String, dynamic>);
+        final responseData = response.data as Map<String, dynamic>;
+        // Extract the nested 'data' object from the API response
+        final statsData =
+            responseData['data'] as Map<String, dynamic>? ?? responseData;
+        return UserStatistics.fromJson(statsData);
       }
 
       // Return empty statistics if no data
@@ -177,6 +190,8 @@ class StatisticsService {
         profileViews: 0,
         messagesCount: 0,
         likesReceived: 0,
+        superLikesReceived: 0,
+        superLikesSent: 0,
         matchRate: 0.0,
         responseRate: 0.0,
         dailyActivity: {},
@@ -295,10 +310,20 @@ class StatisticsService {
   /// Format statistics for display
   Map<String, String> formatStatisticsForDisplay(UserStatistics stats) {
     return {
+      // Main stats
       'totalMatches': stats.totalMatches.toString(),
       'totalLikes': stats.totalLikes.toString(),
       'likesReceived': stats.likesReceived.toString(),
+      'likesSent': stats.totalLikes
+          .toString(), // likesSent is the same as totalLikes
       'profileViews': stats.profileViews.toString(),
+      'messagesCount': stats.messagesCount.toString(),
+
+      // Super likes
+      'superLikesReceived': stats.superLikesReceived.toString(),
+      'superLikesSent': stats.superLikesSent.toString(),
+
+      // Calculated stats
       'matchRate': '${stats.matchRate.toStringAsFixed(1)}%',
       'responseRate': '${stats.responseRate.toStringAsFixed(1)}%',
       'engagementLevel': calculateEngagementLevel(stats),

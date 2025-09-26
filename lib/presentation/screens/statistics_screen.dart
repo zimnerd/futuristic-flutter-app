@@ -374,7 +374,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> with SingleTickerPr
           itemCount: statsToShow.length,
           itemBuilder: (context, index) {
             final statKey = statsToShow[index];
-            final statValue = formattedStats[statKey] as String;
+            final statValue = formattedStats[statKey] ?? '0';
             final stat = _createStatObject(statKey, statValue);
             return _buildStatCard(stat);
           },
@@ -427,12 +427,15 @@ class _StatisticsScreenState extends State<StatisticsScreen> with SingleTickerPr
   Map<String, dynamic> _createStatObject(String statKey, String statValue) {
     final statConfig = {
       'likesReceived': {'icon': '❤️', 'label': 'Likes Received'},
+      'likesSent': {'icon': '👍', 'label': 'Likes Sent'},
       'totalLikes': {'icon': '👍', 'label': 'Likes Sent'},
       'messagesCount': {'icon': '💬', 'label': 'Messages'},
       'profileViews': {'icon': '👀', 'label': 'Profile Views'},
       'totalMatches': {'icon': '💕', 'label': 'Total Matches'},
       'matchRate': {'icon': '📊', 'label': 'Match Rate'},
       'responseRate': {'icon': '⚡', 'label': 'Response Rate'},
+      'superLikesReceived': {'icon': '⭐', 'label': 'Super Likes Received'},
+      'superLikesSent': {'icon': '🌟', 'label': 'Super Likes Sent'},
     };
 
     final config = statConfig[statKey] ?? {'icon': '📈', 'label': statKey};
