@@ -98,6 +98,67 @@ flutter build ios --debug
 - **Plugin Evaluation**: Before adding new plugins, check their iOS maintenance status and release frequency
 - **Version Pinning**: Pin critical plugins to known-stable versions in production
 - **Backup Implementations**: Have fallback implementations for critical features using native platform channels if needed
+
+---
+
+## 🔧 **LATEST UPDATE: Statistics Screen Type Error Resolution (September 2025)**
+
+### ✅ **Critical Statistics UI Type Casting Issue Resolved**
+**Date**: September 26, 2025  
+**Context**: Statistics screen throwing runtime type errors due to data structure mismatch between service layer and UI
+
+#### **🔥 CRITICAL PROBLEM SOLVED: Statistics Screen Type Error**
+- **Issue**: `type 'String' is not a subtype of type 'int' of 'index'` error in statistics screen
+- **Root Cause**: UI code accessing formattedStats as indexed array when service returns flat Map<String, String>
+- **Impact**: Statistics screen crashes on load, preventing users from viewing their app usage data
+- **Resolution**: Aligned UI access patterns with service layer's flat map structure
+
+#### **Key Statistics UI Lessons**
+
+##### **✅ Data Structure Alignment**
+1. **Service Layer**: `formatStatisticsForDisplay()` returns `Map<String, String>` with keys like:
+   - `'matchRate'`, `'activityLevel'`, `'profileViews'`, `'totalLikes'`, `'avgResponseTime'`, `'conversationRate'`
+
+2. **UI Layer**: Must access using string keys, NOT array indices:
+   ```dart
+   // ❌ WRONG - Causes type error
+   formattedStats[0] // Trying to use int index on Map
+   
+   // ✅ CORRECT - Use string keys
+   formattedStats['matchRate'] // Access by key
+   ```
+
+##### **✅ Provider & Service Integration Pattern**
+1. **StatisticsService Registration**: Must be registered as provider in `main.dart`:
+   ```dart
+   Provider<StatisticsService>(
+     create: (context) => StatisticsService(
+       Provider.of<ApiClient>(context, listen: false),
+     ),
+   ),
+   ```
+
+2. **ApiClient Dependency**: StatisticsService now depends on ApiClient from provider tree instead of GetIt registration
+3. **Clean Provider Architecture**: All services use Provider pattern for dependency injection
+
+##### **✅ UI Helper Pattern for Statistics Cards**
+- **Helper Method**: `_createStatObject()` creates consistent stat objects for UI cards
+- **Type Safety**: Ensures all stat cards have consistent icon, label, and value types
+- **Maintainability**: Centralized stat card creation logic
+
+#### **Critical Statistics Development Workflow**
+
+##### **🔑 Data Structure Validation Process**
+1. **Service Layer Testing**: Always verify service method return types match expected UI patterns
+2. **Provider Testing**: Ensure all dependencies are properly registered in provider tree
+3. **UI Validation**: Test UI with actual service data, not mock data with different structure
+4. **Type Safety**: Use explicit typing and avoid dynamic type casting in UI code
+
+##### **Architecture Lessons for Statistics Features**
+- **Consistent Data Structures**: Service layer and UI must agree on data structure format
+- **Provider Pattern**: Use Provider for dependency injection, not GetIt for UI-related services  
+- **Error Prevention**: Use `flutter analyze` to catch type mismatches before runtime
+- **UI Helpers**: Create helper methods for repetitive UI object creation patterns
 - **Testing Cadence**: Test iOS builds weekly, especially during iOS beta seasons
 
 ---
@@ -1728,3 +1789,108 @@ BLoC → Service → API Client
 - **Consistent code patterns across features**
 - **Easy-to-understand architecture**
 - **Fast build times and quick feedback loops**
+
+---
+
+## 🔧 **PROVIDER DEPENDENCY INJECTION FIX (September 2025)**
+
+### ✅ **StatisticsService Provider Registration Issue Resolved**
+**Date**: September 26, 2025  
+**Context**: `ProviderNotFoundException` for StatisticsService when navigating to statistics screens
+
+#### **🔥 CRITICAL PROBLEM: Missing Provider Registration**
+- **Error**: `Could not find the correct Provider<StatisticsService> above this _InheritedProviderScope<StatisticsBloc?> Widget`
+- **Root Cause**: StatisticsService was implemented but never registered in the widget tree provider hierarchy
+- **Impact**: Statistics screen and heat map visualization crashes on initialization
+
+#### **✅ Resolution: Added StatisticsService to Provider Tree**
+```dart
+// In mobile/lib/main.dart - Added after WebRTCService registration
+RepositoryProvider<StatisticsService>(
+  create: (context) => StatisticsService(),
+),
+```
+
+#### **Key Provider Pattern Lessons**
+1. **All services used in BLoCs must be registered as RepositoryProviders**
+2. **Provider registration order matters - dependencies should come first**
+3. **Use context.read<ServiceName>() in BLoC constructors, not direct instantiation**
+4. **Import statements are required even if service is only used in provider tree**
+
+#### **Provider Debugging Workflow**
+1. **Check if service is registered in main.dart MultiBlocProvider providers list**
+2. **Verify import statement exists for the service**
+3. **Ensure service has proper constructor (parameterless for simple cases)**
+4. **Test with flutter analyze to catch compile-time provider issues**
+
+#### **Architecture Reminder: Service Registration Pattern**
+```dart
+// ✅ Correct: Register service as RepositoryProvider
+RepositoryProvider<MyService>(
+  create: (context) => MyService(),
+),
+
+// ❌ Incorrect: Using service without registration leads to ProviderNotFoundException
+BlocProvider<MyBloc>(
+  create: (context) => MyBloc(context.read<MyService>()), // Will crash!
+)
+```
+
+---
+
+## 🔧 **API ENDPOINT INTEGRATION FIX (September 2025)**
+
+### ✅ **Statistics Service API Integration Resolved**
+**Date**: September 26, 2025  
+**Context**: Multiple API integration issues resolved for StatisticsService functionality
+
+#### **🔥 PROBLEM 1: GetIt Dependency Injection Mismatch**
+- **Error**: `Bad state: GetIt: Object/factory with type ApiService is not registered inside GetIt`
+- **Root Cause**: StatisticsService was using `sl<ApiService>()` but should use `ApiClient` from provider tree
+- **Impact**: Statistics screen crashed on initialization due to missing dependency
+
+#### **✅ Resolution 1: Updated StatisticsService Dependencies**
+```dart
+// OLD: Using GetIt service locator (not available)
+class StatisticsService {
+  final ApiService _apiService = sl<ApiService>(); // ❌ Not registered in GetIt
+}
+
+// NEW: Using dependency injection from provider tree
+class StatisticsService {
+  final ApiClient _apiClient; // ✅ Available in provider tree
+  
+  StatisticsService(this._apiClient);
+}
+```
+
+#### **🔥 PROBLEM 2: Backend Endpoint Path Mismatch**
+- **Error**: `404 http://localhost:3000/api/v1/statistics/user - Cannot GET /api/v1/statistics/user`
+- **Root Cause**: Mobile app was calling `/statistics/user` but backend endpoint is `/statistics/me`
+- **Impact**: All statistics API calls failing with 404 errors
+
+#### **✅ Resolution 2: Updated API Constants**
+```dart
+// OLD: Incorrect endpoint path
+static const String statisticsUser = '$statistics/user'; // ❌ 404 error
+
+// NEW: Correct endpoint path matching backend
+static const String statisticsUser = '$statistics/me'; // ✅ Matches backend route
+```
+
+#### **Backend Endpoints Available**
+- `GET /api/v1/statistics/me` - Current user statistics
+- `GET /api/v1/statistics/heatmap?radius=50` - Heatmap data for visualization
+- `GET /api/v1/statistics/location-coverage?radius=50` - Location coverage data
+
+#### **Key Integration Lessons**
+1. **Always verify backend endpoints match mobile constants** - Use backend route logs to confirm paths
+2. **Use provider tree dependencies, not GetIt directly** - Consistent with app architecture
+3. **Update provider registration when changing service constructors** - Pass required dependencies
+4. **Test endpoint connectivity separately from UI logic** - Use curl or Postman for validation
+
+#### **Debug Pattern for API Integration Issues**
+1. **Check backend routes** - Verify endpoint exists and is properly mapped
+2. **Verify mobile constants** - Ensure API paths match exactly
+3. **Test dependency injection** - Confirm services are registered in provider tree
+4. **Validate service constructors** - Ensure dependencies are properly injected

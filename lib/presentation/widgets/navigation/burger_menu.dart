@@ -301,6 +301,12 @@ class _BurgerMenuState extends State<BurgerMenu>
         route: '/filters',
       ),
       _MenuItem(
+        icon: Icons.map,
+        title: 'Heat Map',
+        subtitle: 'Activity visualization',
+        route: '/heat-map',
+      ),
+      _MenuItem(
         icon: Icons.smart_toy,
         title: 'AI Companion',
         subtitle: 'Your virtual assistant',

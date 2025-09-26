@@ -1,7 +1,6 @@
 import 'dart:developer' as dev;
 import '../../core/constants/api_constants.dart';
-import '../../domain/services/api_service.dart';
-import '../../core/di/service_locator.dart';
+import '../../core/network/api_client.dart';
 
 /// User statistics model
 class UserStatistics {
@@ -155,12 +154,14 @@ class UserCounts {
 
 /// Service for handling user statistics
 class StatisticsService {
-  final ApiService _apiService = sl<ApiService>();
+  final ApiClient _apiClient;
+
+  StatisticsService(this._apiClient);
 
   /// Get comprehensive user statistics
   Future<UserStatistics> getUserStatistics() async {
     try {
-      final response = await _apiService.get(
+      final response = await _apiClient.get(
         ApiConstants.statisticsUser,
       );
 

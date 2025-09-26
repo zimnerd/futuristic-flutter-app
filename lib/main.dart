@@ -30,6 +30,7 @@ import 'data/services/discovery_service.dart';
 import 'data/services/token_service.dart';
 import 'data/services/message_database_service.dart';
 import 'data/services/background_sync_manager.dart';
+import 'data/services/statistics_service.dart';
 import 'domain/repositories/user_repository.dart';
 import 'presentation/blocs/auth/auth_bloc.dart';
 import 'presentation/blocs/user/user_bloc.dart';
@@ -109,6 +110,9 @@ class PulseDatingApp extends StatelessWidget {
           ),
           RepositoryProvider<WebRTCService>(
             create: (context) => WebRTCService(),
+          ),
+          RepositoryProvider<StatisticsService>(
+            create: (context) => StatisticsService(context.read<ApiClient>()),
           ),
 
           // Initialize data sources

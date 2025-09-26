@@ -65,7 +65,7 @@ class ApiConstants {
 
   // Statistics endpoints (statistics.controller.ts)
   static const String statistics = '/statistics';
-  static const String statisticsUser = '$statistics/user';
+  static const String statisticsUser = '$statistics/me';
   static const String statisticsHeatMap = '$statistics/heatmap';
   static const String statisticsLocationCoverage =
       '$statistics/location-coverage';

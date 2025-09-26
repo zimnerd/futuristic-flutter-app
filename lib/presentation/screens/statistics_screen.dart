@@ -230,8 +230,8 @@ class _StatisticsScreenState extends State<StatisticsScreen> with SingleTickerPr
 
   Widget _buildSummaryCard(BuildContext context, StatisticsLoaded state) {
     final stats = state.statistics;
-    final matchRate = state.formattedStats['matchRate']['value'];
-    final activityLevel = state.formattedStats['activityLevel']['value'];
+    final matchRate = state.formattedStats['matchRate'] as String;
+    final activityLevel = state.formattedStats['engagementLevel'] as String;
     
     return Container(
       padding: const EdgeInsets.all(24),
@@ -374,7 +374,8 @@ class _StatisticsScreenState extends State<StatisticsScreen> with SingleTickerPr
           itemCount: statsToShow.length,
           itemBuilder: (context, index) {
             final statKey = statsToShow[index];
-            final stat = formattedStats[statKey];
+            final statValue = formattedStats[statKey] as String;
+            final stat = _createStatObject(statKey, statValue);
             return _buildStatCard(stat);
           },
         ),
@@ -421,6 +422,26 @@ class _StatisticsScreenState extends State<StatisticsScreen> with SingleTickerPr
         ],
       ),
     );
+  }
+
+  Map<String, dynamic> _createStatObject(String statKey, String statValue) {
+    final statConfig = {
+      'likesReceived': {'icon': '❤️', 'label': 'Likes Received'},
+      'totalLikes': {'icon': '👍', 'label': 'Likes Sent'},
+      'messagesCount': {'icon': '💬', 'label': 'Messages'},
+      'profileViews': {'icon': '👀', 'label': 'Profile Views'},
+      'totalMatches': {'icon': '💕', 'label': 'Total Matches'},
+      'matchRate': {'icon': '📊', 'label': 'Match Rate'},
+      'responseRate': {'icon': '⚡', 'label': 'Response Rate'},
+    };
+
+    final config = statConfig[statKey] ?? {'icon': '📈', 'label': statKey};
+
+    return {
+      'icon': config['icon'],
+      'value': statValue,
+      'label': config['label'],
+    };
   }
 
   Widget _buildInsightsCard(BuildContext context, StatisticsLoaded state) {

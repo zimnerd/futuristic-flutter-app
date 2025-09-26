@@ -34,6 +34,7 @@ import '../screens/chat/chat_screen.dart';
 import '../screens/call/video_call_screen.dart';
 import '../screens/discovery/discovery_screen.dart';
 import '../screens/features/advanced_features_screen.dart';
+import '../screens/heat_map_screen.dart';
 import '../../../domain/entities/user_profile.dart';
 import '../../../domain/entities/event.dart';
 // Events screens
@@ -136,6 +137,11 @@ class AppRouter {
               path: AppRoutes.statistics,
               name: 'statistics',
               builder: (context, state) => const StatisticsScreen(),
+            ),
+            GoRoute(
+              path: AppRoutes.heatMap,
+              name: 'heat-map',
+              builder: (context, state) => const HeatMapScreen(),
             ),
             GoRoute(
             path: AppRoutes.subscription,
@@ -429,6 +435,7 @@ class AppRoutes {
   static const String settings = '/settings';
   static const String filters = '/filters';
   static const String statistics = '/statistics';
+  static const String heatMap = '/heat-map';
   static const String subscription = '/subscription';
   static const String events = '/events';
   
