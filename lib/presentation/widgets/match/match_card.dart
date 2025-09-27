@@ -203,12 +203,19 @@ class MatchCard extends StatelessWidget {
 
   /// Get user display name from userProfile or fallback
   String _getUserDisplayName() {
-    if (userProfile != null) {
-      return userProfile!.name.isNotEmpty ? userProfile!.name : 'Unknown User';
+    print('🏷️ Getting display name - userProfile: ${userProfile?.name}, match.otherUserId: ${match.otherUserId}');
+    
+    if (userProfile != null && userProfile!.name.isNotEmpty) {
+      return userProfile!.name;
     }
-
-    // Fallback to match ID
-    return 'Match ${match.id.substring(0, 8)}...';
+    
+    // Try to extract name from match.otherUserId or user IDs
+    if (match.otherUserId != null) {
+      return 'User ${match.otherUserId!.substring(0, 8)}...';
+    }
+    
+    // Final fallback
+    return 'New Match';
   }
 
   /// Get user details (age, bio snippet, etc.)
@@ -233,11 +240,26 @@ class MatchCard extends StatelessWidget {
         details.add(userProfile!.occupation!);
       }
 
-      return details.isNotEmpty ? details.join(' • ') : 'No details available';
+      return details.isNotEmpty ? details.join(' • ') : 'Tap to view profile';
     }
 
-    // Fallback
-    return 'Status: ${_getStatusText(match.status)}';
+    // Better fallback with match timing
+    final matchTime = match.matchedAt ?? match.createdAt;
+    final now = DateTime.now();
+    final diff = now.difference(matchTime);
+    
+    String timeAgo;
+    if (diff.inMinutes < 1) {
+      timeAgo = 'Just now';
+    } else if (diff.inHours < 1) {
+      timeAgo = '${diff.inMinutes}m ago';
+    } else if (diff.inDays < 1) {
+      timeAgo = '${diff.inHours}h ago';
+    } else {
+      timeAgo = '${diff.inDays}d ago';
+    }
+    
+    return 'Matched $timeAgo • ${_getStatusText(match.status)}';
   }
 
   /// Get user location

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../blocs/match/match_bloc.dart';
 import '../../blocs/match/match_event.dart';
@@ -863,27 +864,22 @@ class _MatchesScreenState extends State<MatchesScreen>
   }
 
   void _onMatchTapped(MatchModel match) {
+    print('🎯 Match tapped: ${match.id}, userProfile: ${match.userProfile?.name}, status: ${match.status}');
+    
     if (match.userProfile != null && mounted) {
-      // Navigate to profile details screen
-      Navigator.of(context).pushNamed(
-        '/profile-details',
-        arguments: {
-          'userProfile': match.userProfile,
-          'matchId': match.id,
-          'isMatched': match.status == 'matched',
-          'otherUserId': match.userProfile!.id,
-        },
+      print('📱 Navigating to profile details for: ${match.userProfile!.name}');
+      // Navigate to profile details screen using GoRouter
+      context.push(
+        '/profile-details/${match.userProfile!.id}',
+        extra: match.userProfile,
       );
     } else if (match.status == 'matched' && mounted) {
+      print('💬 Navigating to chat for match: ${match.id}');
       // Fallback: navigate directly to chat if no profile data
-      Navigator.of(context).pushNamed(
-        '/chat',
-        arguments: {
-          'matchId': match.id,
-          'otherUserId': _getOtherUserId(match),
-        },
-      );
+      final otherUserId = _getOtherUserId(match);
+      context.push('/chat/$otherUserId');
     } else {
+      print('ℹ️ Showing match details for: ${match.id}');
       // Show match details
       _showMatchDetails(match);
     }

@@ -82,9 +82,21 @@ class _MessagesScreenState extends State<MessagesScreen> {
           type: MessageFilterType.all, // Default type, could be enhanced
         );
       }).toList();
+      
+      // Deduplicate conversations by otherUserId to prevent duplicate entries
+      final Map<String, ConversationData> uniqueConversations = {};
+      for (final conv in conversationDataList) {
+        if (!uniqueConversations.containsKey(conv.otherUserId) || 
+            uniqueConversations[conv.otherUserId]!.timestamp.compareTo(conv.timestamp) < 0) {
+          uniqueConversations[conv.otherUserId] = conv;
+        }
+      }
+      final deduplicatedList = uniqueConversations.values.toList();
+      
+      print('🗋️ Loaded ${conversations.length} conversations, deduplicated to ${deduplicatedList.length}');
 
       setState(() {
-        _allConversations = conversationDataList;
+        _allConversations = deduplicatedList;
         _isLoading = false;
       });
       

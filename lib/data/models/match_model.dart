@@ -39,16 +39,21 @@ class MatchModel {
 
   // Simple JSON methods without code generation
   factory MatchModel.fromJson(Map<String, dynamic> json) {
+    print('🔍 Parsing MatchModel from JSON: ${json.keys.toList()}');
     UserProfile? userProfile;
 
     // Extract user data from API response (the API returns the 'user' object)
     if (json['user'] != null) {
       try {
+        print('👤 Parsing user profile from: ${json['user']}');
         userProfile = _parseUserProfile(json['user']);
+        print('✅ Successfully parsed userProfile: ${userProfile?.name}');
       } catch (e) {
         // If parsing fails, userProfile will remain null
-        print('Failed to parse user profile from match: $e');
+        print('❌ Failed to parse user profile from match: $e');
       }
+    } else {
+      print('⚠️ No user data found in match JSON response');
     }
     
     return MatchModel(
