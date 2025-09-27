@@ -7,7 +7,7 @@ import '../../domain/entities/event.dart';
 /// Provides offline caching and faster loading
 class EventsDatabase {
   static const String _databaseName = 'pulse_events.db';
-  static const int _databaseVersion = 1;
+  static const int _databaseVersion = 2; // Incremented for event_count column
   
   static Database? _database;
   static final Logger _logger = Logger();
@@ -50,6 +50,7 @@ class EventsDatabase {
         description TEXT,
         icon TEXT,
         color TEXT,
+        event_count INTEGER DEFAULT 0,
         is_active INTEGER NOT NULL DEFAULT 1,
         order_index INTEGER DEFAULT 0,
         created_at TEXT NOT NULL,
@@ -88,7 +89,14 @@ class EventsDatabase {
   /// Handle database upgrades
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
     _logger.d('Upgrading events database from v$oldVersion to v$newVersion');
-    // Handle future schema updates here
+    
+    // Upgrade from v1 to v2: Add event_count column
+    if (oldVersion == 1 && newVersion >= 2) {
+      await db.execute(
+        'ALTER TABLE event_categories ADD COLUMN event_count INTEGER DEFAULT 0',
+      );
+      _logger.d('Added event_count column to event_categories table');
+    }
   }
 
   /// Cache event categories locally
@@ -109,6 +117,8 @@ class EventsDatabase {
         'description': category.description,
         'icon': category.icon,
         'color': category.color,
+        'event_count':
+            category.eventCount, // Store event count for offline access
         'is_active': 1, // All API categories are active
         'order_index': 0, // Default order, can be customized later
         'created_at': category.createdAt.toIso8601String(),
@@ -149,6 +159,8 @@ class EventsDatabase {
       description: map['description'] as String?,
       icon: map['icon'] as String?,
       color: map['color'] as String?,
+            eventCount:
+                (map['event_count'] as int?) ?? 0, // Read cached event count
       createdAt: DateTime.parse(map['created_at'] as String),
       updatedAt: DateTime.parse(map['updated_at'] as String),
     )).toList();

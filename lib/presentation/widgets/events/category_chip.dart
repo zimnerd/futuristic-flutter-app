@@ -46,7 +46,7 @@ class CategoryChip extends StatelessWidget {
             ),
             const SizedBox(width: 8),
             Text(
-              category?.name ?? 'All',
+              _getCategoryDisplayText(),
               style: TextStyle(
                 color: isSelected ? Colors.white : PulseColors.primary,
                 fontSize: 14,
@@ -57,6 +57,19 @@ class CategoryChip extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  String _getCategoryDisplayText() {
+    if (category == null)
+      return 'All'; // Don't show count for "All" to keep it simple
+
+    // Show event count if available (only show count if > 0)
+    final count = category!.eventCount;
+    if (count > 0) {
+      return '${category!.name} ($count)';
+    }
+
+    return category!.name;
   }
 
   IconData _getCategoryIcon() {
@@ -139,8 +152,11 @@ class _CategoryFilterChipsState extends State<CategoryFilterChips> {
   @override
   void initState() {
     super.initState();
-    // Load categories when widget initializes
-    context.read<EventBloc>().add(const LoadEventCategories());
+    // Only load categories if not already loaded to prevent endless reloading
+    final currentState = context.read<EventBloc>().state;
+    if (currentState is! EventCategoriesLoaded) {
+      context.read<EventBloc>().add(const LoadEventCategories());
+    }
   }
 
   @override
@@ -181,6 +197,11 @@ class _CategoryFilterChipsState extends State<CategoryFilterChips> {
   }
 
   Widget _buildApiCategoryChips(List<EventCategory> categories) {
+    // Filter out categories with 0 events for better UX
+    final categoriesWithEvents = categories
+        .where((cat) => cat.eventCount > 0)
+        .toList();
+    
     return Container(
       height: 50,
       padding: const EdgeInsets.symmetric(vertical: 8),
@@ -188,6 +209,46 @@ class _CategoryFilterChipsState extends State<CategoryFilterChips> {
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 16),
         children: [
+          // Reload button
+          Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: GestureDetector(
+              onTap: () {
+                context.read<EventBloc>().add(
+                  const LoadEventCategories(forceRefresh: true),
+                );
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.grey.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: Colors.grey.withValues(alpha: 0.3),
+                    width: 1,
+                  ),
+                ),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.refresh, size: 16, color: Colors.grey),
+                    SizedBox(width: 4),
+                    Text(
+                      'Reload',
+                      style: TextStyle(
+                        color: Colors.grey,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
           // All categories chip
           Padding(
             padding: const EdgeInsets.only(right: 8),
@@ -197,8 +258,8 @@ class _CategoryFilterChipsState extends State<CategoryFilterChips> {
               onTap: () => widget.onCategorySelected(null),
             ),
           ),
-          // API Category chips
-          ...categories.map(
+          // API Category chips (only show categories with events > 0)
+          ...categoriesWithEvents.map(
             (category) => Padding(
               padding: const EdgeInsets.only(right: 8),
               child: CategoryChip(

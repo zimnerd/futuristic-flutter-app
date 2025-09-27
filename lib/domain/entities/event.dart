@@ -304,6 +304,7 @@ class EventCategory {
   final String? icon;
   final DateTime createdAt;
   final DateTime updatedAt;
+  final int eventCount; // Number of events in this category
 
   const EventCategory({
     required this.id,
@@ -314,9 +315,16 @@ class EventCategory {
     this.icon,
     required this.createdAt,
     required this.updatedAt,
+    this.eventCount = 0, // Default to 0 events
   });
 
   factory EventCategory.fromJson(Map<String, dynamic> json) {
+    // Extract event count from _count.events if available
+    int eventCount = 0;
+    if (json['_count'] != null && json['_count']['events'] != null) {
+      eventCount = json['_count']['events'] as int;
+    }
+
     return EventCategory(
       id: json['id'] as String,
       name: json['name'] as String,
@@ -326,6 +334,7 @@ class EventCategory {
       icon: json['icon'] as String?,
       createdAt: DateTime.parse(json['createdAt'] as String),
       updatedAt: DateTime.parse(json['updatedAt'] as String),
+      eventCount: eventCount,
     );
   }
 
@@ -339,6 +348,7 @@ class EventCategory {
       'icon': icon,
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
+      'eventCount': eventCount,
     };
   }
 
