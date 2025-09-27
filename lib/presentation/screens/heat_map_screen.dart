@@ -7,6 +7,18 @@ import '../../data/models/heat_map_models.dart';
 import '../../core/models/location_models.dart';
 import '../../data/models/location_models.dart' as data_models;
 
+// Function to show the heat map as a full-screen modal
+void showHeatMapModal(BuildContext context) {
+  showDialog(
+    context: context,
+    barrierDismissible: true,
+    builder: (modalContext) => Dialog.fullscreen(
+      backgroundColor: Colors.transparent,
+      child: const HeatMapScreen(),
+    ),
+  );
+}
+
 // BLoC Events
 abstract class HeatMapEvent {}
 
@@ -163,6 +175,7 @@ class HeatMapScreen extends StatefulWidget {
 class _HeatMapScreenState extends State<HeatMapScreen> {
   GoogleMapController? _mapController;
   int _currentRadius = 50;
+  MapType _mapType = MapType.normal;
 
   @override
   Widget build(BuildContext context) {
@@ -174,69 +187,76 @@ class _HeatMapScreenState extends State<HeatMapScreen> {
       create: (context) => HeatMapBloc(
         heatMapService, locationService,
       )..add(LoadHeatMapData(_currentRadius)),
-      child: Scaffold(
-        backgroundColor: const Color(0xFF0A0A0A),
-        appBar: _buildAppBar(context),
-        body: BlocBuilder<HeatMapBloc, HeatMapState>(
-          builder: (context, state) {
-            if (state is HeatMapLoading) {
-              return _buildLoadingState();
-            } else if (state is HeatMapLoaded) {
-              return _buildMapWithData(context, state);
-            } else if (state is HeatMapError) {
-              return _buildErrorState(context, state);
-            }
-            return _buildInitialState(context);
-          },
+      child: Container(
+        width: double.infinity,
+        height: double.infinity,
+        decoration: const BoxDecoration(color: Color(0xFF0A0A0A)),
+        child: SafeArea(
+          child: Column(
+            children: [
+              _buildModalHeader(context),
+              Expanded(
+                child: BlocBuilder<HeatMapBloc, HeatMapState>(
+                  builder: (context, state) {
+                    if (state is HeatMapLoading) {
+                      return _buildLoadingState();
+                    } else if (state is HeatMapLoaded) {
+                      return _buildMapWithData(context, state);
+                    } else if (state is HeatMapError) {
+                      return _buildErrorState(context, state);
+                    }
+                    return _buildInitialState(context);
+                  },
+                ),
+              ),
+            ],
+          ),
         ),
-        floatingActionButton: _buildFloatingActionButton(context),
       ),
     );
   }
 
-  AppBar _buildAppBar(BuildContext context) {
-    return AppBar(
-      backgroundColor: const Color(0xFF0A0A0A),
-      elevation: 0,
-      leading: IconButton(
-        onPressed: () => Navigator.pop(context),
-        icon: Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(12),
+  Widget _buildModalHeader(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      decoration: const BoxDecoration(color: Color(0xFF0A0A0A)),
+      child: Row(
+        children: [
+          IconButton(
+            icon: const Icon(Icons.close, color: Colors.white),
+            onPressed: () => Navigator.pop(context),
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
           ),
-          child: const Icon(Icons.arrow_back, color: Colors.white),
-        ),
-      ),
-      title: const Text(
-        'Map Coverage',
-        style: TextStyle(
-          color: Colors.white,
-          fontSize: 20,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-      actions: [
-        BlocBuilder<HeatMapBloc, HeatMapState>(
-          builder: (context, state) {
-            return IconButton(
-              onPressed: () => _showRadiusSelector(context),
-              icon: Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF6E3BFF).withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Icon(Icons.tune, color: Color(0xFF6E3BFF)),
+          const SizedBox(width: 16),
+          const Expanded(
+            child: Text(
+              'Map Coverage',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
               ),
-            );
-          },
-        ),
-        const SizedBox(width: 16),
-      ],
+            ),
+          ),
+          IconButton(
+            icon: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: const Color(0xFF6E3BFF),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Icon(Icons.tune, color: Colors.white, size: 20),
+            ),
+            onPressed: () => _showRadiusSelector(context),
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
+          ),
+        ],
+      ),
     );
   }
+
 
   Widget _buildLoadingState() {
     return Container(
@@ -271,8 +291,13 @@ class _HeatMapScreenState extends State<HeatMapScreen> {
   Widget _buildMapWithData(BuildContext context, HeatMapLoaded state) {
     return Stack(
       children: [
-        _buildGoogleMap(state),
+        // Full screen Google Map
+        Positioned.fill(child: _buildGoogleMap(state)),
+        // Map controls overlay
+        _buildMapControls(context),
+        // Map overlay info
         _buildMapOverlay(context, state),
+        // Stats panel
         _buildStatsPanel(context, state),
       ],
     );
@@ -286,18 +311,39 @@ class _HeatMapScreenState extends State<HeatMapScreen> {
     return GoogleMap(
       onMapCreated: (GoogleMapController controller) {
         _mapController = controller;
-        _setMapStyle();
+        print('🗺️ Google Maps created successfully');
+
+        // Small delay to ensure map is ready
+        Future.delayed(const Duration(milliseconds: 500), () {
+          if (mounted && _mapController != null) {
+            _mapController!.animateCamera(
+              CameraUpdate.newCameraPosition(
+                CameraPosition(
+                  target: initialPosition,
+                  zoom: _getZoomLevel(state.currentRadius),
+                ),
+              ),
+            );
+            print('🗺️ Camera position set to: $initialPosition');
+          }
+        });
       },
       initialCameraPosition: CameraPosition(
         target: initialPosition,
-        zoom: _getZoomLevel(state.currentRadius),
+        zoom: 14.0, // Start with reasonable zoom
       ),
       markers: _buildMarkers(state),
       circles: _buildCircles(state),
-      mapType: MapType.normal,
+      mapType: _mapType,
       zoomControlsEnabled: false,
-      myLocationEnabled: true,
+      compassEnabled: true,
+      myLocationEnabled: false,
       myLocationButtonEnabled: false,
+      rotateGesturesEnabled: true,
+      scrollGesturesEnabled: true,
+      tiltGesturesEnabled: true,
+      zoomGesturesEnabled: true,
+      mapToolbarEnabled: false,
     );
   }
 
@@ -439,33 +485,61 @@ class _HeatMapScreenState extends State<HeatMapScreen> {
           border: Border.all(color: Colors.white.withOpacity(0.2)),
         ),
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'People in your area',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 16),
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                _buildStatItem('Total Users', state.coverageData.totalUsers, '👥'),
-                _buildStatItem('Avg Density', state.coverageData.averageDensity.toInt(), '📊'),
-                _buildStatItem(
-                  'Coverage',
-                  '${(state.coverageData.totalCoverage * 100).toStringAsFixed(1)}%',
-                  '�️',
+                const Text(
+                  'People in your area',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-                _buildStatItem(
-                  'Areas Found',
-                  state.coverageData.coverageAreas.length,
-                  '�',
+                IconButton(
+                  icon: const Icon(Icons.tune, color: Colors.white, size: 18),
+                  onPressed: () => _showRadiusSelector(context),
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(
+                    minWidth: 32,
+                    minHeight: 32,
+                  ),
                 ),
               ],
+            ),
+            const SizedBox(height: 8),
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: [
+                  _buildStatItem(
+                    'Total Users',
+                    state.coverageData.totalUsers,
+                    '👥',
+                  ),
+                  const SizedBox(width: 12),
+                  _buildStatItem(
+                    'Avg Density',
+                    state.coverageData.averageDensity.toInt(),
+                    '📊',
+                  ),
+                  const SizedBox(width: 12),
+                  _buildStatItem(
+                    'Coverage',
+                    '${(state.coverageData.totalCoverage * 100).toStringAsFixed(1)}%',
+                    '🗺️',
+                  ),
+                  const SizedBox(width: 12),
+                  _buildStatItem(
+                    'Areas Found',
+                    state.coverageData.coverageAreas.length,
+                    '📍',
+                  ),
+                ],
+              ),
             ),
           ],
         ),
@@ -475,25 +549,26 @@ class _HeatMapScreenState extends State<HeatMapScreen> {
 
   Widget _buildStatItem(String label, dynamic value, String emoji) {
     return Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
         Text(
           emoji,
-          style: const TextStyle(fontSize: 20),
+          style: const TextStyle(fontSize: 16),
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: 2),
         Text(
           value.toString(),
           style: const TextStyle(
             color: Colors.white,
-            fontSize: 18,
+            fontSize: 14,
             fontWeight: FontWeight.bold,
           ),
         ),
         Text(
           label,
-          style: TextStyle(
+          style: const TextStyle(
             color: Colors.white70,
-            fontSize: 12,
+            fontSize: 10,
           ),
         ),
       ],
@@ -592,59 +667,91 @@ class _HeatMapScreenState extends State<HeatMapScreen> {
     );
   }
 
-  Widget _buildFloatingActionButton(BuildContext context) {
-    return FloatingActionButton(
-      onPressed: () {
-        context.read<HeatMapBloc>().add(RefreshLocation());
-      },
-      backgroundColor: const Color(0xFF6E3BFF),
-      child: const Icon(Icons.my_location, color: Colors.white),
-    );
-  }
+
 
   void _showRadiusSelector(BuildContext context) {
+    final heatMapBloc = context.read<HeatMapBloc>();
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        decoration: const BoxDecoration(
-          color: Color(0xFF1A1A1A),
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Search Radius',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 24),
-              ...data_models.DistancePreference.predefinedOptions.map((option) =>
-                ListTile(
-                  title: Text(
-                    option.displayText,
-                    style: const TextStyle(color: Colors.white),
+      isScrollControlled: true,
+      builder: (modalContext) => BlocProvider.value(
+        value: heatMapBloc,
+        child: DraggableScrollableSheet(
+          initialChildSize: 0.6,
+          maxChildSize: 0.8,
+          minChildSize: 0.3,
+          builder: (sheetContext, scrollController) => Container(
+            decoration: const BoxDecoration(
+              color: Color(0xFF1A1A1A),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+            ),
+            child: Column(
+              children: [
+                // Handle bar
+                Container(
+                  margin: const EdgeInsets.symmetric(vertical: 12),
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.3),
+                    borderRadius: BorderRadius.circular(2),
                   ),
-                  trailing: _currentRadius == option.distanceKm
-                      ? const Icon(Icons.check, color: Color(0xFF6E3BFF))
-                      : null,
-                  onTap: () {
-                    setState(() {
-                      _currentRadius = option.distanceKm;
-                    });
-                    context.read<HeatMapBloc>().add(UpdateRadius(option.distanceKm));
-                    Navigator.pop(context);
-                  },
                 ),
-              ),
-            ],
+                // Content
+                Expanded(
+                  child: SingleChildScrollView(
+                    controller: scrollController,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 8,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Search Radius',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 24),
+                          ...data_models.DistancePreference.predefinedOptions
+                              .map(
+                                (option) => ListTile(
+                                  contentPadding: EdgeInsets.zero,
+                                  title: Text(
+                                    option.displayText,
+                                    style: const TextStyle(color: Colors.white),
+                                  ),
+                                  trailing: _currentRadius == option.distanceKm
+                                      ? const Icon(
+                                          Icons.check,
+                                          color: Color(0xFF6E3BFF),
+                                        )
+                                      : null,
+                                  onTap: () {
+                                    setState(() {
+                                      _currentRadius = option.distanceKm;
+                                    });
+                                    heatMapBloc.add(
+                                      UpdateRadius(option.distanceKm),
+                                    );
+                                    Navigator.pop(modalContext);
+                                  },
+                                ),
+                              ),
+                          const SizedBox(height: 24), // Bottom padding
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -689,28 +796,119 @@ class _HeatMapScreenState extends State<HeatMapScreen> {
     return 6.0;
   }
 
-  void _setMapStyle() {
-    const String mapStyle = '''
-    [
-      {
-        "elementType": "geometry",
-        "stylers": [{"color": "#212121"}]
-      },
-      {
-        "elementType": "labels.icon",
-        "stylers": [{"visibility": "off"}]
-      },
-      {
-        "elementType": "labels.text.fill",
-        "stylers": [{"color": "#757575"}]
-      },
-      {
-        "elementType": "labels.text.stroke",
-        "stylers": [{"color": "#212121"}]
-      }
-    ]
-    ''';
-    
-    _mapController?.setMapStyle(mapStyle);
+
+
+  Widget _buildMapControls(BuildContext context) {
+    return Positioned(
+      top: 120,
+      right: 16,
+      child: Column(
+        children: [
+          // Map Type Selector
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(8),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.2),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: PopupMenuButton<MapType>(
+              icon: const Icon(Icons.layers),
+              onSelected: (MapType type) {
+                setState(() {
+                  _mapType = type;
+                });
+              },
+              itemBuilder: (BuildContext context) => [
+                const PopupMenuItem(
+                  value: MapType.normal,
+                  child: Text('Normal'),
+                ),
+                const PopupMenuItem(
+                  value: MapType.satellite,
+                  child: Text('Satellite'),
+                ),
+                const PopupMenuItem(
+                  value: MapType.hybrid,
+                  child: Text('Hybrid'),
+                ),
+                const PopupMenuItem(
+                  value: MapType.terrain,
+                  child: Text('Terrain'),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 8),
+          // Zoom Controls
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(8),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.2),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Column(
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.add),
+                  onPressed: () {
+                    _mapController?.animateCamera(CameraUpdate.zoomIn());
+                  },
+                ),
+                const Divider(height: 1),
+                IconButton(
+                  icon: const Icon(Icons.remove),
+                  onPressed: () {
+                    _mapController?.animateCamera(CameraUpdate.zoomOut());
+                  },
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 8),
+          // My Location Button
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(8),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.2),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: IconButton(
+              icon: const Icon(Icons.my_location),
+              onPressed: () async {
+                final state = context.read<HeatMapBloc>().state;
+                if (state is HeatMapLoaded && state.userLocation != null) {
+                  await _mapController?.animateCamera(
+                    CameraUpdate.newLatLng(
+                      LatLng(
+                        state.userLocation!.latitude,
+                        state.userLocation!.longitude,
+                      ),
+                    ),
+                  );
+                }
+              },
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

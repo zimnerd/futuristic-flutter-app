@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../blocs/filters/filter_bloc.dart';
+import '../heat_map_screen.dart';
 import '../../blocs/filters/filter_event.dart';
 import '../../blocs/filters/filter_state.dart';
 import '../../theme/pulse_colors.dart';
@@ -343,7 +343,7 @@ class _FiltersScreenState extends State<FiltersScreen> {
               child: PulseButton(
                 text: 'View Map',
                 onPressed: () {
-                  context.pushNamed('heat-map');
+                  showHeatMapModal(context);
                 },
                 variant: PulseButtonVariant.secondary,
                 icon: const Icon(Icons.map, size: 20),
