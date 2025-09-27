@@ -6,6 +6,8 @@ import '../../core/services/location_service.dart';
 import '../../data/models/heat_map_models.dart';
 import '../../core/models/location_models.dart';
 import '../../data/models/location_models.dart' as data_models;
+import '../../features/statistics/data/services/map_clustering_service.dart';
+import '../../features/statistics/domain/models/map_cluster.dart';
 
 // Function to show the heat map as a full-screen modal
 void showHeatMapModal(BuildContext context) {
@@ -176,6 +178,7 @@ class _HeatMapScreenState extends State<HeatMapScreen> {
   GoogleMapController? _mapController;
   int _currentRadius = 50;
   MapType _mapType = MapType.normal;
+  double _currentZoom = 6.0;
 
   @override
   Widget build(BuildContext context) {
@@ -289,6 +292,9 @@ class _HeatMapScreenState extends State<HeatMapScreen> {
   }
 
   Widget _buildMapWithData(BuildContext context, HeatMapLoaded state) {
+    print(
+      'HeatMapScreen: Building map with data - userLocation: ${state.userLocation}, dataPoints: ${state.heatmapData.dataPoints.length}, radius: ${state.currentRadius}',
+    );
     return Stack(
       children: [
         // Full screen Google Map
@@ -304,65 +310,211 @@ class _HeatMapScreenState extends State<HeatMapScreen> {
   }
 
   Widget _buildGoogleMap(HeatMapLoaded state) {
-    final initialPosition = state.userLocation != null
-        ? LatLng(state.userLocation!.latitude, state.userLocation!.longitude)
-        : const LatLng(-26.2041028, 28.0473051); // Default to Johannesburg
+    print('HeatMapScreen: Building GoogleMap widget');
+    print('HeatMapScreen: User location: ${state.userLocation}');
+    print(
+      'HeatMapScreen: Heatmap data points: ${state.heatmapData.dataPoints.length}',
+    );
+
+    // Determine best position for map camera
+    LatLng initialPosition;
+    bool hasGeographicMismatch = false;
+
+    print('HeatMapScreen: 🔍 Checking data points for geographic mismatch...');
+    print(
+      'HeatMapScreen: Data points count: ${state.heatmapData.dataPoints.length}',
+    );
+
+    if (state.heatmapData.dataPoints.isNotEmpty) {
+      final firstPoint = state.heatmapData.dataPoints.first;
+      final lastPoint = state.heatmapData.dataPoints.last;
+      print(
+        'HeatMapScreen: First data point: ${firstPoint.coordinates.latitude}, ${firstPoint.coordinates.longitude}',
+      );
+      print(
+        'HeatMapScreen: Last data point: ${lastPoint.coordinates.latitude}, ${lastPoint.coordinates.longitude}',
+      );
+
+      // Check if user location and data are on different continents
+      final userLat = state.userLocation?.latitude ?? 0;
+      final dataLat = firstPoint.coordinates.latitude;
+      print('HeatMapScreen: 🔍 User latitude: $userLat');
+      print('HeatMapScreen: 🔍 Data latitude: $dataLat');
+      print('HeatMapScreen: 🔍 User > 0: ${userLat > 0}');
+      print('HeatMapScreen: 🔍 Data < 0: ${dataLat < 0}');
+      print('HeatMapScreen: 🔍 User < 0: ${userLat < 0}');
+      print('HeatMapScreen: 🔍 Data > 0: ${dataLat > 0}');
+
+      hasGeographicMismatch =
+          (userLat > 0 && dataLat < 0) || (userLat < 0 && dataLat > 0);
+      print(
+        'HeatMapScreen: 🔍 Geographic mismatch detected: $hasGeographicMismatch',
+      );
+
+      if (hasGeographicMismatch) {
+        print(
+          'HeatMapScreen: ⚠️ WARNING: User location and data points are on different continents!',
+        );
+        print('HeatMapScreen: User: $userLat, Data: $dataLat');
+        print(
+          'HeatMapScreen: Centering map on data cluster instead of user location',
+        );
+
+        // Calculate center of data points
+        final avgLat =
+            state.heatmapData.dataPoints
+                .map((p) => p.coordinates.latitude)
+                .reduce((a, b) => a + b) /
+            state.heatmapData.dataPoints.length;
+        final avgLng =
+            state.heatmapData.dataPoints
+                .map((p) => p.coordinates.longitude)
+                .reduce((a, b) => a + b) /
+            state.heatmapData.dataPoints.length;
+
+        initialPosition = LatLng(avgLat, avgLng);
+        print('HeatMapScreen: Data center position: $initialPosition');
+      } else {
+        // Use user location if data is in same region
+        initialPosition = state.userLocation != null
+            ? LatLng(
+                state.userLocation!.latitude,
+                state.userLocation!.longitude,
+              )
+            : LatLng(
+                firstPoint.coordinates.latitude,
+                firstPoint.coordinates.longitude,
+              );
+      }
+    } else {
+      // No data points, use user location or default
+      initialPosition = state.userLocation != null
+          ? LatLng(state.userLocation!.latitude, state.userLocation!.longitude)
+          : const LatLng(-26.2041028, 28.0473051); // Default to Johannesburg
+    }
+
+    print('HeatMapScreen: Initial position: $initialPosition');
+
+    final markers = _buildMarkers(state);
+    final circles = _buildCircles(state);
+
+    print(
+      'HeatMapScreen: Built ${markers.length} markers and ${circles.length} circles',
+    );
 
     return GoogleMap(
       onMapCreated: (GoogleMapController controller) {
         _mapController = controller;
-        print('🗺️ Google Maps created successfully');
+        print('🗺️ Google Maps created successfully with controller');
+        print('🗺️ Map type: $_mapType');
+        print('🗺️ Buildings enabled: true');
+        print('🗺️ Indoor view enabled: true');
+        print('🗺️ Lite mode enabled: false');
+        print('🗺️ Traffic enabled: false');
+        print('🗺️ Initial zoom level: $_currentZoom');
 
         // Small delay to ensure map is ready
         Future.delayed(const Duration(milliseconds: 500), () {
           if (mounted && _mapController != null) {
+            final zoomLevel = hasGeographicMismatch
+                ? 6.0
+                : _getZoomLevel(state.currentRadius);
+            print(
+              '🗺️ Animating camera to position: $initialPosition with zoom: $zoomLevel',
+            );
             _mapController!.animateCamera(
               CameraUpdate.newCameraPosition(
-                CameraPosition(
-                  target: initialPosition,
-                  zoom: _getZoomLevel(state.currentRadius),
-                ),
+                CameraPosition(target: initialPosition, zoom: zoomLevel),
               ),
             );
-            print('🗺️ Camera position set to: $initialPosition');
+            print('🗺️ Camera animation complete');
+          } else {
+            print(
+              '🗺️ Cannot animate camera - mounted: $mounted, controller: ${_mapController != null}',
+            );
           }
         });
       },
+      onCameraMove: (CameraPosition position) {
+        setState(() {
+          _currentZoom = position.zoom;
+        });
+        print('🗺️ Zoom changed to: $_currentZoom');
+      },
+      onCameraIdle: () {
+        print('🗺️ Camera idle at zoom: $_currentZoom');
+      },
       initialCameraPosition: CameraPosition(
         target: initialPosition,
-        zoom: 14.0, // Start with reasonable zoom
+        zoom: hasGeographicMismatch
+            ? 6.0
+            : 12.0, // Lower zoom for data clusters
       ),
-      markers: _buildMarkers(state),
-      circles: _buildCircles(state),
+      markers: markers,
+      circles: circles,
       mapType: _mapType,
       zoomControlsEnabled: false,
       compassEnabled: true,
-      myLocationEnabled: false,
+      myLocationEnabled: true,
       myLocationButtonEnabled: false,
       rotateGesturesEnabled: true,
       scrollGesturesEnabled: true,
       tiltGesturesEnabled: true,
       zoomGesturesEnabled: true,
       mapToolbarEnabled: false,
+      liteModeEnabled: false,
+      trafficEnabled: false,
+      buildingsEnabled: true,
+      indoorViewEnabled: true,
     );
   }
 
   Set<Marker> _buildMarkers(HeatMapLoaded state) {
     final markers = <Marker>{};
 
-    // Add heatmap markers
-    for (int i = 0; i < state.heatmapData.dataPoints.length; i++) {
-      final point = state.heatmapData.dataPoints[i];
+    // Note: User location now shown via myLocationEnabled: true (Google blue dot)
+    print('HeatMapScreen: User location will be shown via Google blue dot');
+    if (state.userLocation != null) {
+      print(
+        'HeatMapScreen: User location coordinates: ${state.userLocation!.latitude}, ${state.userLocation!.longitude}',
+      );
+    } else {
+      print('HeatMapScreen: User location is null');
+    }
+
+    // Cluster the data points based on zoom level
+    print('HeatMapScreen: 🔍 Starting clustering for ${state.heatmapData.dataPoints.length} data points at zoom $_currentZoom');
+    final clusters = MapClusteringService.clusterDataPoints(
+      state.heatmapData.dataPoints,
+      _currentZoom,
+    );
+    print('HeatMapScreen: 🎯 Clustering completed: ${clusters.length} clusters from ${state.heatmapData.dataPoints.length} points');
+    
+    // Debug cluster details
+    for (int i = 0; i < clusters.length && i < 5; i++) {
+      final cluster = clusters[i];
+      print('HeatMapScreen: 🔍 Cluster $i: ${cluster.count} points, ${cluster.totalUserCount} users at ${cluster.position}');
+    }
+
+    // Add cluster markers - ALWAYS use cluster markers for privacy
+    for (int i = 0; i < clusters.length; i++) {
+      final cluster = clusters[i];
+      print(
+        'HeatMapScreen: 🔐 Adding CLUSTER marker $i at ${cluster.position.latitude}, ${cluster.position.longitude} with ${cluster.count} points (${cluster.totalUserCount} users)',
+      );
+      
+      // Always create cluster markers for privacy - never show individual locations
       markers.add(
         Marker(
-          markerId: MarkerId('heatmap_$i'),
-          position: LatLng(point.coordinates.latitude, point.coordinates.longitude),
-          icon: _getMarkerIcon(point.density > 10 ? 'high' : point.density > 5 ? 'medium' : 'low'),
-          onTap: () => _showMarkerDetails(point),
+          markerId: MarkerId(cluster.id),
+          position: cluster.position,
+          icon: _getClusterMarkerIcon(cluster.totalUserCount, cluster.dominantStatus),
+          onTap: () => _showClusterDetails(cluster),
         ),
       );
     }
 
+    print('HeatMapScreen: Total markers built: ${markers.length}');
     return markers;
   }
 
@@ -396,6 +548,55 @@ class _HeatMapScreenState extends State<HeatMapScreen> {
     }
   }
 
+  BitmapDescriptor _getClusterMarkerIcon(int userCount, String dominantStatus) {
+    // For now, use the dominant status color with default marker
+    // In a full implementation, you'd create custom cluster icons with numbers
+    switch (dominantStatus.toLowerCase()) {
+      case 'matched':
+        return BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen);
+      case 'liked_me':
+      case 'likedme':
+        return BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueOrange);
+      case 'unmatched':
+      case 'available':
+        return BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue);
+      case 'passed':
+        return BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed);
+      default:
+        return BitmapDescriptor.defaultMarker;
+    }
+  }
+
+  void _showClusterDetails(MapCluster cluster) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Cluster Details'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Total Users: ${cluster.totalUserCount}'),
+            Text('Data Points: ${cluster.count}'),
+            Text('Dominant Status: ${cluster.dominantStatus}'),
+            Text('Location: ${cluster.position.latitude.toStringAsFixed(4)}, ${cluster.position.longitude.toStringAsFixed(4)}'),
+            const SizedBox(height: 16),
+            const Text('Breakdown:', style: TextStyle(fontWeight: FontWeight.bold)),
+            ...cluster.dataPoints.map((point) => 
+              Text('• ${point.label ?? 'Unknown'}: ${point.density} users')
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildMapOverlay(BuildContext context, HeatMapLoaded state) {
     return Positioned(
       top: 16,
@@ -417,6 +618,14 @@ class _HeatMapScreenState extends State<HeatMapScreen> {
                 color: Colors.white,
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'Zoom Level: ${_currentZoom.toStringAsFixed(1)}x',
+              style: const TextStyle(
+                color: Colors.white70,
+                fontSize: 14,
               ),
             ),
             const SizedBox(height: 8),
@@ -820,9 +1029,11 @@ class _HeatMapScreenState extends State<HeatMapScreen> {
             child: PopupMenuButton<MapType>(
               icon: const Icon(Icons.layers),
               onSelected: (MapType type) {
+                print('🗺️ Switching map type from $_mapType to $type');
                 setState(() {
                   _mapType = type;
                 });
+                print('🗺️ Map type changed to: $_mapType');
               },
               itemBuilder: (BuildContext context) => [
                 const PopupMenuItem(

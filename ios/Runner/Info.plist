@@ -59,5 +59,12 @@
 	<string>PulseLink needs access to your location to show people nearby and display coverage maps</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
 	<string>PulseLink needs access to your location to show people nearby and display coverage maps</string>
+	
+	<!-- Network/Internet Access -->
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+	</dict>
 </dict>
 </plist>
