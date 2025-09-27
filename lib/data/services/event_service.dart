@@ -2,6 +2,7 @@ import '../../core/utils/logger.dart';
 import '../../core/network/api_client.dart';
 import '../../domain/entities/event.dart';
 import '../../domain/entities/event_message.dart';
+import '../database/events_database.dart';
 
 /// Service for event API integration with NestJS backend
 /// 
@@ -13,6 +14,7 @@ class EventService {
   EventService._();
 
   final ApiClient _apiClient = ApiClient.instance;
+  final EventsDatabase _eventsDb = EventsDatabase.instance;
 
   /// Get events with optional location and category filtering
   Future<List<Event>> getEvents({
@@ -465,12 +467,47 @@ class EventService {
   }
 
   /// Get event categories
-  Future<List<String>> getEventCategories() async {
+  /// Get all event categories from API
+  /// Get event categories with intelligent caching
+  /// 
+  /// 1. Check local cache first (1 hour freshness)
+  /// 2. If cache is fresh, return cached data
+  /// 3. If cache is stale or missing, fetch from API
+  /// 4. Update cache with new data
+  /// 5. Fallback to cached data if API fails
+  Future<List<EventCategory>> getEventCategories({bool forceRefresh = false}) async {
     try {
+      // Check cache first (unless forcing refresh)
+      if (!forceRefresh) {
+        final isCacheFresh = await _eventsDb.isCategoriesCacheFresh();
+        if (isCacheFresh) {
+          final cachedCategories = await _eventsDb.getCachedCategories();
+          if (cachedCategories.isNotEmpty) {
+            AppLogger.info('Using cached event categories (${cachedCategories.length} items)');
+            return cachedCategories;
+          }
+        }
+      }
+
+      // Fetch from API
+      AppLogger.info('Fetching event categories from API...');
       final response = await _apiClient.getEventCategories();
 
       if (response.statusCode == 200) {
-        return List<String>.from(response.data);
+        final data = response.data;
+        if (data['data'] is List) {
+          final categories = (data['data'] as List)
+              .map((categoryJson) => EventCategory.fromJson(categoryJson as Map<String, dynamic>))
+              .toList();
+
+          // Cache the fresh data
+          await _eventsDb.cacheCategories(categories);
+          AppLogger.info('Cached ${categories.length} event categories');
+          
+          return categories;
+        } else {
+          throw EventServiceException('Invalid response format for event categories');
+        }
       } else {
         final error = response.data;
         throw EventServiceException(
@@ -479,10 +516,77 @@ class EventService {
         );
       }
     } catch (e) {
-      AppLogger.error('Failed to get event categories: $e');
+      AppLogger.error('Failed to get event categories from API: $e');
+
+      // Fallback to cached data (even if stale)
+      try {
+        final cachedCategories = await _eventsDb.getCachedCategories();
+        if (cachedCategories.isNotEmpty) {
+          AppLogger.info('Using stale cached categories as fallback (${cachedCategories.length} items)');
+          return cachedCategories;
+        }
+      } catch (cacheError) {
+        AppLogger.error('Failed to get cached categories: $cacheError');
+      }
+
+      // No cache available, rethrow original error
       if (e is EventServiceException) rethrow;
       throw EventServiceException('Network error: $e');
     }
+  }
+
+  /// Get events filtered by category slug (API-driven)
+  Future<List<Event>> getEventsByCategory(String categorySlug) async {
+    try {
+      final response = await _apiClient.getEvents(category: categorySlug);
+
+      if (response.statusCode == 200) {
+        final data = response.data;
+        if (data['data'] is List) {
+          return (data['data'] as List)
+              .map(
+                (eventJson) =>
+                    Event.fromJson(eventJson as Map<String, dynamic>),
+              )
+              .toList();
+        } else {
+          return [];
+        }
+      } else {
+        final error = response.data;
+        throw EventServiceException(
+          error['message'] ?? 'Failed to load events for category',
+          statusCode: response.statusCode,
+        );
+      }
+    } catch (e) {
+      AppLogger.error('Failed to get events by category: $e');
+      if (e is EventServiceException) rethrow;
+      throw EventServiceException('Network error: $e');
+    }
+  }
+
+  /// Clear event categories cache
+  /// Useful for manual refresh or troubleshooting
+  Future<void> clearCategoriesCache() async {
+    try {
+      await _eventsDb.clearCache();
+      AppLogger.info('Event categories cache cleared');
+    } catch (e) {
+      AppLogger.error('Failed to clear categories cache: $e');
+    }
+  }
+
+  /// Get cache statistics for debugging
+  Future<Map<String, int>> getCacheStats() async {
+    return await _eventsDb.getCacheStats();
+  }
+
+  /// Legacy method for backward compatibility
+  /// TODO: Remove once all references are updated
+  Future<List<String>> getEventCategorySlugs() async {
+    final categories = await getEventCategories();
+    return categories.map((category) => category.slug).toList();
   }
 
   /// Get popular events

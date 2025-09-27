@@ -166,3 +166,12 @@ class EventRefreshing extends EventState {
   @override
   List<Object?> get props => [currentEvents];
 }
+
+class EventCategoriesLoaded extends EventState {
+  final List<EventCategory> categories;
+
+  const EventCategoriesLoaded(this.categories);
+
+  @override
+  List<Object?> get props => [categories];
+}

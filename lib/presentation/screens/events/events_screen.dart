@@ -66,6 +66,24 @@ class _EventsScreenState extends State<EventsScreen> {
     context.push('/events/create');
   }
 
+  void _onRefreshCategories() {
+    context.read<EventBloc>().add(RefreshEventCategories());
+  }
+
+  void _onShowFilters() {
+    // TODO: Implement advanced filters modal
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: const Text(
+          'Advanced filters coming soon!',
+          style: TextStyle(color: Colors.white),
+        ),
+        backgroundColor: PulseColors.primary,
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -97,7 +115,7 @@ class _EventsScreenState extends State<EventsScreen> {
           
           // Category Filter
           CategoryFilterChips(
-            selectedCategory: _selectedCategory,
+            selectedCategorySlug: _selectedCategory,
             onCategorySelected: _onCategorySelected,
           ),
           
@@ -148,37 +166,86 @@ class _EventsScreenState extends State<EventsScreen> {
   }
 
   Widget _buildSearchBar() {
-    return Container(
-      margin: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: PulseColors.surfaceVariant,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: TextField(
-        controller: _searchController,
-        onChanged: _onSearchChanged,
-        decoration: InputDecoration(
-          hintText: 'Search events...',
-          hintStyle: TextStyle(color: PulseColors.onSurfaceVariant),
-          prefixIcon: Icon(
-            Icons.search,
-            color: PulseColors.onSurfaceVariant,
-          ),
-          suffixIcon: _searchController.text.isNotEmpty
-              ? IconButton(
-                  onPressed: () {
-                    _searchController.clear();
-                    _onSearchChanged('');
-                  },
-                  icon: Icon(
-                    Icons.clear,
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Row(
+        children: [
+          // Search Input
+          Expanded(
+            child: Container(
+              decoration: BoxDecoration(
+                color: PulseColors.surfaceVariant,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: TextField(
+                controller: _searchController,
+                onChanged: _onSearchChanged,
+                decoration: InputDecoration(
+                  hintText: 'Search events...',
+                  hintStyle: TextStyle(color: PulseColors.onSurfaceVariant),
+                  prefixIcon: Icon(
+                    Icons.search,
                     color: PulseColors.onSurfaceVariant,
                   ),
-                )
-              : null,
-          border: InputBorder.none,
-          contentPadding: const EdgeInsets.all(16),
-        ),
+                  suffixIcon: _searchController.text.isNotEmpty
+                      ? IconButton(
+                          onPressed: () {
+                            _searchController.clear();
+                            _onSearchChanged('');
+                          },
+                          icon: Icon(
+                            Icons.clear,
+                            color: PulseColors.onSurfaceVariant,
+                          ),
+                        )
+                      : null,
+                  border: InputBorder.none,
+                  contentPadding: const EdgeInsets.all(16),
+                ),
+              ),
+            ),
+          ),
+          
+          const SizedBox(width: 12),
+          
+          // Reload Button
+          Container(
+            decoration: BoxDecoration(
+              color: PulseColors.primary.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: PulseColors.primary.withOpacity(0.3),
+                width: 1,
+              ),
+            ),
+            child: IconButton(
+              onPressed: _onRefreshCategories,
+              icon: Icon(
+                Icons.refresh,
+                color: PulseColors.primary,
+              ),
+              tooltip: 'Refresh categories',
+            ),
+          ),
+          
+          const SizedBox(width: 8),
+          
+          // Filter Button (for future advanced filters)
+          Container(
+            decoration: BoxDecoration(
+              color: PulseColors.surfaceVariant,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: IconButton(
+              onPressed: _onShowFilters,
+              icon: Icon(
+                Icons.tune,
+                color: PulseColors.onSurfaceVariant,
+              ),
+              tooltip: 'Advanced filters',
+            ),
+          ),
+        ],
       ),
     );
   }

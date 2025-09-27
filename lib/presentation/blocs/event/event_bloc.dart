@@ -26,6 +26,8 @@ class EventBloc extends Bloc<EventEvent, EventState> {
     on<AttendEvent>(_onAttendEvent);
     on<LeaveEvent>(_onLeaveEvent);
     on<LoadEventAttendees>(_onLoadEventAttendees);
+    on<LoadEventCategories>(_onLoadEventCategories);
+    on<RefreshEventCategories>(_onRefreshEventCategories);
     on<FilterEventsByCategory>(_onFilterEventsByCategory);
     on<SearchEvents>(_onSearchEvents);
     on<RefreshEvents>(_onRefreshEvents);
@@ -301,25 +303,94 @@ class EventBloc extends Bloc<EventEvent, EventState> {
     }
   }
 
+  Future<void> _onLoadEventCategories(
+    LoadEventCategories event,
+    Emitter<EventState> emit,
+  ) async {
+    try {
+      emit(const EventLoading());
+
+      final categories = await _eventService.getEventCategories(
+        forceRefresh: event.forceRefresh,
+      );
+
+      emit(EventCategoriesLoaded(categories));
+    } catch (e) {
+      AppLogger.error('Error loading event categories: $e');
+
+      String errorMessage;
+      if (e is EventServiceException) {
+        errorMessage = e.message;
+      } else {
+        errorMessage = 'Failed to load event categories. Please try again.';
+      }
+
+      emit(EventError(message: errorMessage));
+    }
+  }
+
+  Future<void> _onRefreshEventCategories(
+    RefreshEventCategories event,
+    Emitter<EventState> emit,
+  ) async {
+    // Refresh is just LoadEventCategories with forceRefresh = true
+    await _onLoadEventCategories(
+      const LoadEventCategories(forceRefresh: true),
+      emit,
+    );
+  }
+
   void _onFilterEventsByCategory(
-      FilterEventsByCategory event, Emitter<EventState> emit) {
-    _currentCategory = event.category;
+    FilterEventsByCategory event,
+    Emitter<EventState> emit,
+  ) async {
+    try {
+      _currentCategory = event.category;
+      
+      // Show loading state while fetching new category data
+      emit(const EventLoading());
 
-    final filteredEvents = _applyFilters(_allEvents);
+      // Fetch events from API with category filter
+      List<Event> events;
+      if (event.category == null || event.category!.isEmpty) {
+        // Load all events when no category is selected
+        events = await _eventService.getEvents();
+      } else {
+        // Load events filtered by category slug
+        events = await _eventService.getEventsByCategory(event.category!);
+      }
 
-    if (state is EventsLoaded) {
-      final currentState = state as EventsLoaded;
-      emit(currentState.copyWith(
+      _allEvents = events;
+
+      // Apply only search filter if any (category filtering is handled by API)
+      final filteredEvents = _applySearchFilter(events);
+
+      emit(
+        EventsLoaded(
+          events: events,
         filteredEvents: filteredEvents,
         currentCategory: _currentCategory,
+          searchQuery: _searchQuery,
       ));
+    } catch (e) {
+      AppLogger.error('Error filtering events by category: $e');
+
+      String errorMessage;
+      if (e is EventServiceException) {
+        errorMessage = e.message;
+      } else {
+        errorMessage = 'Failed to filter events. Please try again.';
+      }
+
+      emit(EventError(message: errorMessage));
     }
   }
 
   void _onSearchEvents(SearchEvents event, Emitter<EventState> emit) {
     _searchQuery = event.query.trim().isEmpty ? null : event.query.trim();
 
-    final filteredEvents = _applyFilters(_allEvents);
+    // Apply search filter to current events (search is local for real-time performance)
+    final filteredEvents = _applySearchFilter(_allEvents);
 
     if (state is EventsLoaded) {
       final currentState = state as EventsLoaded;
@@ -370,10 +441,26 @@ class EventBloc extends Bloc<EventEvent, EventState> {
   }
 
   /// Apply current filters to events list
+  /// Apply search filter to events (category filtering is now API-driven)
+  List<Event> _applySearchFilter(List<Event> events) {
+    if (_searchQuery == null || _searchQuery!.isEmpty) {
+      return events;
+    }
+
+    final query = _searchQuery!.toLowerCase();
+    return events.where((event) {
+      return event.title.toLowerCase().contains(query) ||
+          event.description.toLowerCase().contains(query) ||
+          event.location.toLowerCase().contains(query);
+    }).toList();
+  }
+
+  /// Legacy method for backward compatibility
+  /// TODO: Remove once all local filtering is replaced with API calls
   List<Event> _applyFilters(List<Event> events) {
     List<Event> filtered = List.from(events);
 
-    // Apply category filter
+    // Apply category filter (DEPRECATED - should use API filtering instead)
     if (_currentCategory != null && _currentCategory!.isNotEmpty) {
       filtered = filtered
           .where((event) => event.category == _currentCategory)
@@ -381,16 +468,7 @@ class EventBloc extends Bloc<EventEvent, EventState> {
     }
 
     // Apply search filter
-    if (_searchQuery != null && _searchQuery!.isNotEmpty) {
-      final query = _searchQuery!.toLowerCase();
-      filtered = filtered.where((event) {
-        return event.title.toLowerCase().contains(query) ||
-            event.description.toLowerCase().contains(query) ||
-            event.location.toLowerCase().contains(query);
-      }).toList();
-    }
-
-    return filtered;
+    return _applySearchFilter(filtered);
   }
 
   /// Update event attendance status in local list

@@ -294,6 +294,67 @@ class CreateEventRequest {
 }
 
 // Event categories - matching backend schema
+/// Event Category entity to match backend structure
+class EventCategory {
+  final String id;
+  final String name;
+  final String slug;
+  final String? description;
+  final String? color;
+  final String? icon;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+
+  const EventCategory({
+    required this.id,
+    required this.name,
+    required this.slug,
+    this.description,
+    this.color,
+    this.icon,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+
+  factory EventCategory.fromJson(Map<String, dynamic> json) {
+    return EventCategory(
+      id: json['id'] as String,
+      name: json['name'] as String,
+      slug: json['slug'] as String,
+      description: json['description'] as String?,
+      color: json['color'] as String?,
+      icon: json['icon'] as String?,
+      createdAt: DateTime.parse(json['createdAt'] as String),
+      updatedAt: DateTime.parse(json['updatedAt'] as String),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'slug': slug,
+      'description': description,
+      'color': color,
+      'icon': icon,
+      'createdAt': createdAt.toIso8601String(),
+      'updatedAt': updatedAt.toIso8601String(),
+    };
+  }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is EventCategory &&
+          runtimeType == other.runtimeType &&
+          id == other.id;
+
+  @override
+  int get hashCode => id.hashCode;
+}
+
+/// Legacy EventCategories class for backward compatibility
+/// TODO: Remove once all references are updated to use EventCategory model
 class EventCategories {
   static const String music = 'music';
   static const String sports = 'sports';

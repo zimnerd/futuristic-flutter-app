@@ -132,6 +132,16 @@ class ClearEventError extends EventEvent {
   const ClearEventError();
 }
 
+class LoadEventCategories extends EventEvent {
+  final bool forceRefresh;
+  
+  const LoadEventCategories({this.forceRefresh = false});
+}
+
+class RefreshEventCategories extends EventEvent {
+  const RefreshEventCategories();
+}
+
 class ResetEventState extends EventEvent {
   const ResetEventState();
 }
