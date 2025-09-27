@@ -9,7 +9,7 @@ import '../../../data/models/match_model.dart';
 import '../../widgets/common/loading_indicator.dart';
 import '../../widgets/common/error_message.dart';
 import '../../widgets/match/match_card.dart';
-import '../../widgets/match/user_profile_modal.dart';
+import '../profile/profile_details_screen.dart';
 
 /// Enhanced match view modes
 enum MatchViewMode { list, grid, slider }
@@ -968,23 +968,40 @@ class _MatchesScreenState extends State<MatchesScreen>
   }
 
   void _showProfileModal(MatchModel match) {
-    if (mounted) {
-      showDialog(
-        context: context,
-        builder: (context) => UserProfileModal(
-          match: match,
-          onStartConversation: () {
-            Navigator.of(context).pop();
-            _startConversation(match);
+    if (mounted && match.userProfile != null) {
+      Navigator.of(context).push(
+        PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              ProfileDetailsScreen(
+                profile: match.userProfile!,
+                isOwnProfile: false,
+                onLike: () {
+                  // Optionally implement like action for matches
+                },
+                onMessage: () {
+                  Navigator.of(context).pop();
+                  _startConversation(match);
+                },
+                onSuperLike: null,
+                showStartConversation: true,
+              ),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            const begin = Offset(0.0, 1.0);
+            const end = Offset.zero;
+            const curve = Curves.easeInOutCubic;
+
+            var tween = Tween(
+              begin: begin,
+              end: end,
+            ).chain(CurveTween(curve: curve));
+
+            return SlideTransition(
+              position: animation.drive(tween),
+              child: child,
+            );
           },
-          onUnmatch: () {
-            Navigator.of(context).pop();
-            _unmatchUser(match.id);
-          },
-          onReport: () {
-            Navigator.of(context).pop();
-            _reportUser(match);
-          },
+          transitionDuration: Duration(milliseconds: 300),
+          reverseTransitionDuration: Duration(milliseconds: 250),
         ),
       );
     }
@@ -1002,48 +1019,6 @@ class _MatchesScreenState extends State<MatchesScreen>
     }
   }
 
-  void _reportUser(MatchModel match) {
-    if (match.userProfile == null) return;
-
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Report User'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Report ${match.userProfile!.name}?'),
-            const SizedBox(height: 8),
-            const Text(
-              'Please select a reason for reporting this user:',
-              style: TextStyle(fontSize: 12, color: Colors.grey),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              // Here you would typically trigger a report user event
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('User reported successfully'),
-                  backgroundColor: Colors.orange,
-                ),
-              );
-            },
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Report'),
-          ),
-        ],
-      ),
-    );
-  }
 
   void _showMatchDetails(MatchModel match) {
     if (mounted) {

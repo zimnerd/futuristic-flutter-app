@@ -17,6 +17,7 @@ class ProfileDetailsScreen extends StatefulWidget {
   final VoidCallback? onLike;
   final VoidCallback? onMessage;
   final VoidCallback? onSuperLike;
+  final bool showStartConversation;
 
   const ProfileDetailsScreen({
     super.key,
@@ -25,6 +26,7 @@ class ProfileDetailsScreen extends StatefulWidget {
     this.onLike,
     this.onMessage,
     this.onSuperLike,
+    this.showStartConversation = false,
   });
 
   @override
@@ -965,71 +967,124 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
   }
 
   Widget _buildBottomActions() {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(24),
-          topRight: Radius.circular(24),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.1),
-            blurRadius: 20,
-            offset: const Offset(0, -4),
-          ),
-        ],
-      ),
-      padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
-      child: SafeArea(
-        top: false,
-        child: Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.1),
-                blurRadius: 10,
-                offset: const Offset(0, -2),
+    return widget.showStartConversation
+        ? Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(24),
+                topRight: Radius.circular(24),
               ),
-            ],
-          ),
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            children: [
-              Expanded(
-                child: PulseButton(
-                  text: '⭐ Super Like',
-                  onPressed: widget.onSuperLike,
-                  variant: PulseButtonVariant.secondary,
-                  icon: Container(
-                    padding: const EdgeInsets.all(2),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [PulseColors.warning, Colors.orange],
-                      ),
-                      shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.1),
+                  blurRadius: 20,
+                  offset: const Offset(0, -4),
+                ),
+              ],
+            ),
+            padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
+            child: SafeArea(
+              top: false,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.1),
+                      blurRadius: 10,
+                      offset: const Offset(0, -2),
                     ),
-                    child: const Icon(Icons.star, size: 16, color: Colors.white),
-                  ),
+                  ],
+                ),
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: PulseButton(
+                        text: '💬 Start Conversation',
+                        onPressed:
+                            widget.onMessage ??
+                            () => _startConversation(context),
+                        icon: const Icon(Icons.chat_bubble_outline, size: 18),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(width: 16),
-              Expanded(
-                flex: 2,
-                child: PulseButton(
-                  text: '💬 Start Chat',
-                  onPressed: widget.onMessage ?? () => _startConversation(context),
-                  icon: const Icon(Icons.chat_bubble_outline, size: 18),
+            ),
+          )
+        : Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(24),
+                topRight: Radius.circular(24),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.1),
+                  blurRadius: 20,
+                  offset: const Offset(0, -4),
+                ),
+              ],
+            ),
+            padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
+            child: SafeArea(
+              top: false,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.1),
+                      blurRadius: 10,
+                      offset: const Offset(0, -2),
+                    ),
+                  ],
+                ),
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: PulseButton(
+                        text: '⭐ Super Like',
+                        onPressed: widget.onSuperLike,
+                        variant: PulseButtonVariant.secondary,
+                        icon: Container(
+                          padding: const EdgeInsets.all(2),
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [PulseColors.warning, Colors.orange],
+                            ),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.star,
+                            size: 16,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      flex: 2,
+                      child: PulseButton(
+                        text: '💬 Start Chat',
+                        onPressed:
+                            widget.onMessage ??
+                            () => _startConversation(context),
+                        icon: const Icon(Icons.chat_bubble_outline, size: 18),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            ],
-            
-          ),
-        ),
-      ),
-    );
+            ),
+          );
   }
 
   Widget _buildPhotoModal() {
