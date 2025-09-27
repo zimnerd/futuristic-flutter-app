@@ -570,7 +570,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     try {
       // Don't show loading screen for latest messages (quick cache response)
 
-      final messages = await _chatRepository.getLatestMessages(
+      final cachedMessages = await _chatRepository.getLatestMessages(
         conversationId: event.conversationId,
         limit: event.limit,
       );
@@ -584,17 +584,51 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
         event.conversationId,
       );
 
+      // Emit cached messages first (fast response)
       emit(
         MessagesLoaded(
           conversationId: event.conversationId,
-          messages: messages,
+          messages: cachedMessages,
           hasMoreMessages: hasMoreMessages,
         ),
       );
 
       _logger.d(
-        'Loaded ${messages.length} latest messages for conversation ${event.conversationId}',
+        'Loaded ${cachedMessages.length} cached messages for conversation ${event.conversationId}',
       );
+
+      // Now fetch fresh messages from the network (this ensures we get the latest)
+      try {
+        final freshMessages = await _chatRepository.getMessages(
+          conversationId: event.conversationId,
+          limit: event.limit,
+        );
+
+        // Only emit if the fresh messages are different from cached ones
+        if (freshMessages.length != cachedMessages.length ||
+            (freshMessages.isNotEmpty &&
+                cachedMessages.isNotEmpty &&
+                freshMessages.first.id != cachedMessages.first.id)) {
+          _logger.d(
+            'Fresh messages differ from cache, updating UI: ${freshMessages.length} vs ${cachedMessages.length}',
+          );
+
+          emit(
+            MessagesLoaded(
+              conversationId: event.conversationId,
+              messages: freshMessages,
+              hasMoreMessages: hasMoreMessages,
+            ),
+          );
+        } else {
+          _logger.d('Fresh messages same as cache, no UI update needed');
+        }
+      } catch (networkError) {
+        _logger.w(
+          'Network refresh failed, using cached messages: $networkError',
+        );
+        // Keep the cached messages that were already emitted
+      }
     } catch (e) {
       _logger.e('Error loading latest messages: $e');
       emit(ChatError(message: 'Failed to load latest messages: $e'));

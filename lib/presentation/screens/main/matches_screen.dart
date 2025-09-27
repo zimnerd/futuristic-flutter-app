@@ -8,6 +8,8 @@ import '../../../data/services/matching_service.dart';
 import '../../../core/network/api_client.dart';
 import '../../../data/models/match_model.dart';
 import '../../../core/theme/pulse_design_system.dart';
+import '../../widgets/match/match_card.dart';
+import '../../widgets/profile/profile_modal.dart';
 
 /// Actual Matches Screen - Shows mutual matches and people who liked you
 ///
@@ -81,7 +83,7 @@ class _MatchesScreenState extends State<MatchesScreen>
     return BlocProvider(
       create: (context) => MatchBloc(
         matchingService: MatchingService(apiClient: ApiClient.instance),
-      )..add(const LoadMatches()),
+      )..add(const LoadMatches(excludeWithConversations: true)),
       child: Scaffold(
         body: SafeArea(
           child: BlocConsumer<MatchBloc, MatchState>(
@@ -275,7 +277,9 @@ class _MatchesScreenState extends State<MatchesScreen>
             const SizedBox(height: 24),
             ElevatedButton(
               onPressed: () =>
-                  context.read<MatchBloc>().add(const LoadMatches()),
+                  context.read<MatchBloc>().add(
+                const LoadMatches(excludeWithConversations: true),
+              ),
               child: const Text('Try Again'),
             ),
           ],
@@ -320,7 +324,30 @@ class _MatchesScreenState extends State<MatchesScreen>
         itemCount: matches.length,
         itemBuilder: (context, index) {
           final match = matches[index];
-          return _buildMatchCard(match);
+          return MatchCard(
+            match: match,
+            userProfile: match.userProfile,
+            showStatus: false, // Hide redundant status on matches screen
+            onTap: () {
+              if (match.userProfile != null) {
+                ProfileModal.show(
+                  context,
+                  userProfile: match.userProfile!,
+                  onMessage: () {
+                    Navigator.pop(context); // Close modal
+                    Navigator.pushNamed(
+                      context,
+                      '/conversation',
+                      arguments: {
+                        'user': match.userProfile,
+                        'conversationId': match.id,
+                      },
+                    );
+                  },
+                );
+              }
+            },
+          );
         },
       );
     }
@@ -338,70 +365,8 @@ class _MatchesScreenState extends State<MatchesScreen>
     }).toList();
   }
 
-  Widget _buildMatchCard(MatchModel match) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: ListTile(
-        contentPadding: const EdgeInsets.all(16),
-        leading: CircleAvatar(
-          radius: 28,
-          backgroundColor: PulseColors.primary.withValues(alpha: 0.1),
-          child: Icon(Icons.person, color: PulseColors.primary, size: 28),
-        ),
-        title: Text(
-          'Match ${match.id.substring(0, 8)}',
-          style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
-        ),
-        subtitle: Text(
-          'Matched ${_formatMatchDate(match.createdAt)}',
-          style: TextStyle(color: Colors.grey[600], fontSize: 14),
-        ),
-        trailing: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-          decoration: BoxDecoration(
-            color: PulseColors.primary,
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: const Text(
-            'Chat',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ),
-        onTap: () {
-          // Navigate to chat or profile
-          // context.push('/profile-details/${match.userBId}');
-        },
-      ),
-    );
-  }
 
-  String _formatMatchDate(DateTime date) {
-    final now = DateTime.now();
-    final difference = now.difference(date);
 
-    if (difference.inDays > 0) {
-      return '${difference.inDays} day${difference.inDays == 1 ? '' : 's'} ago';
-    } else if (difference.inHours > 0) {
-      return '${difference.inHours} hour${difference.inHours == 1 ? '' : 's'} ago';
-    } else {
-      return 'Just now';
-    }
-  }
 
   Widget _buildLoadMoreIndicator() {
     return Container(

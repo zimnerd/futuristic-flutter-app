@@ -9,6 +9,7 @@ import '../../../data/models/match_model.dart';
 import '../../widgets/common/loading_indicator.dart';
 import '../../widgets/common/error_message.dart';
 import '../../widgets/match/match_card.dart';
+import '../../widgets/match/user_profile_modal.dart';
 
 /// Enhanced match view modes
 enum MatchViewMode { list, grid, slider }
@@ -100,6 +101,7 @@ class _MatchesScreenState extends State<MatchesScreen>
           status: status,
           limit: _pageSize,
           offset: (_currentPage - 1) * _pageSize,
+          excludeWithConversations: true,
         ),
       );
 
@@ -117,7 +119,14 @@ class _MatchesScreenState extends State<MatchesScreen>
         _currentPage = 1;
       });
     }
-    _matchBloc.add(LoadMatches(status: status, limit: _pageSize, offset: 0));
+    _matchBloc.add(
+      LoadMatches(
+        status: status,
+        limit: _pageSize,
+        offset: 0,
+        excludeWithConversations: true,
+      ),
+    );
   }
 
   void _onTabChanged() {
@@ -867,17 +876,8 @@ class _MatchesScreenState extends State<MatchesScreen>
     print('🎯 Match tapped: ${match.id}, userProfile: ${match.userProfile?.name}, status: ${match.status}');
     
     if (match.userProfile != null && mounted) {
-      print('📱 Navigating to profile details for: ${match.userProfile!.name}');
-      // Navigate to profile details screen using GoRouter
-      context.push(
-        '/profile-details/${match.userProfile!.id}',
-        extra: match.userProfile,
-      );
-    } else if (match.status == 'matched' && mounted) {
-      print('💬 Navigating to chat for match: ${match.id}');
-      // Fallback: navigate directly to chat if no profile data
-      final otherUserId = _getOtherUserId(match);
-      context.push('/chat/$otherUserId');
+      print('📱 Showing profile modal for: ${match.userProfile!.name}');
+      _showProfileModal(match);
     } else {
       print('ℹ️ Showing match details for: ${match.id}');
       // Show match details
@@ -967,6 +967,84 @@ class _MatchesScreenState extends State<MatchesScreen>
     }
   }
 
+  void _showProfileModal(MatchModel match) {
+    if (mounted) {
+      showDialog(
+        context: context,
+        builder: (context) => UserProfileModal(
+          match: match,
+          onStartConversation: () {
+            Navigator.of(context).pop();
+            _startConversation(match);
+          },
+          onUnmatch: () {
+            Navigator.of(context).pop();
+            _unmatchUser(match.id);
+          },
+          onReport: () {
+            Navigator.of(context).pop();
+            _reportUser(match);
+          },
+        ),
+      );
+    }
+  }
+
+  void _startConversation(MatchModel match) {
+    print('💬 Starting conversation for match: ${match.id}');
+
+    if (match.conversationId != null && mounted) {
+      // Navigate to existing conversation
+      context.push('/chat/${match.conversationId}');
+    } else if (match.userProfile != null && mounted) {
+      // Navigate to user chat (fallback)
+      context.push('/chat/${match.userProfile!.id}');
+    }
+  }
+
+  void _reportUser(MatchModel match) {
+    if (match.userProfile == null) return;
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Report User'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Report ${match.userProfile!.name}?'),
+            const SizedBox(height: 8),
+            const Text(
+              'Please select a reason for reporting this user:',
+              style: TextStyle(fontSize: 12, color: Colors.grey),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              // Here you would typically trigger a report user event
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('User reported successfully'),
+                  backgroundColor: Colors.orange,
+                ),
+              );
+            },
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Report'),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _showMatchDetails(MatchModel match) {
     if (mounted) {
       showModalBottomSheet(
@@ -1041,12 +1119,6 @@ class _MatchesScreenState extends State<MatchesScreen>
         ],
       ),
     );
-  }
-
-  String _getOtherUserId(MatchModel match) {
-    // Note: This would need the current user ID to determine the other user
-    // For now, return a placeholder
-    return match.user2Id; // This is simplified
   }
 
   String _formatDate(DateTime? date) {

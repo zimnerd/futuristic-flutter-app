@@ -513,6 +513,23 @@ class _ChatScreenState extends State<ChatScreen> {
                           ),
                         ),
                         const PopupMenuItem(
+                          value: 'unmatch',
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.heart_broken,
+                                size: 20,
+                                color: Colors.red,
+                              ),
+                              SizedBox(width: 12),
+                              Text(
+                                'Unmatch',
+                                style: TextStyle(color: Colors.red),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const PopupMenuItem(
                           value: 'report',
                           child: Row(
                             children: [
@@ -911,6 +928,9 @@ class _ChatScreenState extends State<ChatScreen> {
       case 'block':
         _showBlockDialog(context);
         break;
+      case 'unmatch':
+        _showUnmatchDialog(context);
+        break;
       case 'report':
         _showReportDialog(context);
         break;
@@ -942,6 +962,40 @@ class _ChatScreenState extends State<ChatScreen> {
             },
             style: TextButton.styleFrom(foregroundColor: Colors.red),
             child: const Text('Block'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showUnmatchDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Unmatch User'),
+        content: Text(
+          'Are you sure you want to unmatch with ${widget.otherUserName}? This will remove them from your matches and delete this conversation.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              // Implement unmatch functionality
+              Navigator.pop(context);
+              // Close the chat screen and go back
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Unmatched with ${widget.otherUserName}'),
+                  backgroundColor: Colors.red,
+                ),
+              );
+            },
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Unmatch'),
           ),
         ],
       ),

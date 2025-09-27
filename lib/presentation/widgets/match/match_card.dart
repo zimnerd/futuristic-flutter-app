@@ -13,6 +13,7 @@ class MatchCard extends StatelessWidget {
     this.onAccept,
     this.onReject,
     this.onUnmatch,
+    this.showStatus = true,
   });
 
   final MatchModel match;
@@ -21,6 +22,7 @@ class MatchCard extends StatelessWidget {
   final VoidCallback? onAccept;
   final VoidCallback? onReject;
   final VoidCallback? onUnmatch;
+  final bool showStatus;
 
 
 
@@ -109,22 +111,28 @@ class MatchCard extends StatelessWidget {
                     ),
                   ),
                   
-                  // Status indicator
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: _getStatusColor(match.status).withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      match.status.toUpperCase(),
-                      style: TextStyle(
-                        color: _getStatusColor(match.status),
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
+                  // Status indicator (conditionally shown)
+                  if (showStatus)
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: _getStatusColor(
+                          match.status,
+                        ).withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        match.status.toUpperCase(),
+                        style: TextStyle(
+                          color: _getStatusColor(match.status),
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
-                  ),
                 ],
               ),
               

@@ -19,6 +19,7 @@ class MatchModel {
   // Added user profile data from API
   final UserProfile? userProfile;
   final String? otherUserId;
+  final String? conversationId;
 
   const MatchModel({
     required this.id,
@@ -35,6 +36,7 @@ class MatchModel {
     required this.updatedAt,
     this.userProfile,
     this.otherUserId,
+    this.conversationId,
   });
 
   // Simple JSON methods without code generation
@@ -61,7 +63,9 @@ class MatchModel {
       user1Id: json['user1Id'] ?? '',
       user2Id: json['user2Id'] ?? '',
       isMatched: json['isMatched'] ?? false,
-      compatibilityScore: (json['compatibilityScore'] ?? 0.0).toDouble(),
+      compatibilityScore:
+          (json['compatibilityScore'] ?? json['compatibility'] ?? 0.0)
+              .toDouble(),
       matchReasons: json['matchReasons'] != null
           ? Map<String, dynamic>.from(json['matchReasons'])
           : null,
@@ -75,10 +79,11 @@ class MatchModel {
       expiredAt: json['expiredAt'] != null
           ? DateTime.parse(json['expiredAt'])
           : null,
-      createdAt: DateTime.parse(json['createdAt']),
-      updatedAt: DateTime.parse(json['updatedAt']),
+      createdAt: DateTime.parse(json['createdAt'] ?? json['matchedAt']),
+      updatedAt: DateTime.parse(json['updatedAt'] ?? json['matchedAt']),
       userProfile: userProfile,
       otherUserId: userProfile?.id,
+      conversationId: json['conversationId'],
     );
   }
 
@@ -93,26 +98,59 @@ class MatchModel {
         bio: userJson['bio'] ?? '',
         photos:
             (userJson['photos'] as List<dynamic>?)
-                ?.map(
-                  (photo) => ProfilePhoto(
-                    id: photo['id'] ?? '',
-                    url: photo['url'] ?? '',
-                    order: photo['order'] ?? 0,
-                    isVerified: photo['isVerified'] ?? false,
-                  ),
+                ?.asMap()
+                .entries
+                .map((entry) {
+                  final index = entry.key;
+                  final photo = entry.value;
+
+                  // Handle both string URLs and photo objects
+                  if (photo is String) {
+                    return ProfilePhoto(
+                      id: 'photo_$index',
+                      url: photo,
+                      order: index,
+                      isVerified: false,
+                    );
+                  } else if (photo is Map<String, dynamic>) {
+                    return ProfilePhoto(
+                      id: photo['id'] ?? 'photo_$index',
+                      url: photo['url'] ?? '',
+                      order: photo['order'] ?? index,
+                      isVerified: photo['isVerified'] ?? false,
+                    );
+                  }
+                  return null;
+                },
                 )
+                .where((photo) => photo != null)
+                .cast<ProfilePhoto>()
                 .toList() ??
             [],
         location: UserLocation(
-          latitude: userJson['location']?['latitude']?.toDouble() ?? 0.0,
-          longitude: userJson['location']?['longitude']?.toDouble() ?? 0.0,
-          city: userJson['location']?['city'],
-          country: userJson['location']?['country'],
-          address: userJson['location']?['address'],
+          latitude: userJson['coordinates']?['latitude']?.toDouble() ?? 0.0,
+          longitude: userJson['coordinates']?['longitude']?.toDouble() ?? 0.0,
+          city: userJson['location'] is String
+              ? userJson['location']
+              : userJson['location']?['city'],
+          country: userJson['location'] is String
+              ? null
+              : userJson['location']?['country'],
+          address: userJson['location'] is String
+              ? userJson['location']
+              : userJson['location']?['address'],
         ),
         interests:
             (userJson['interests'] as List<dynamic>?)
-                ?.map((interest) => interest['name']?.toString() ?? '')
+                ?.map((interest) {
+                  // Handle both string interests and interest objects
+                  if (interest is String) {
+                    return interest;
+                  } else if (interest is Map<String, dynamic>) {
+                    return interest['name']?.toString() ?? '';
+                  }
+                  return interest.toString();
+                })
                 .where((name) => name.isNotEmpty)
                 .toList() ??
             [],
@@ -141,6 +179,7 @@ class MatchModel {
       'expiredAt': expiredAt?.toIso8601String(),
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
+      'conversationId': conversationId,
     };
   }
 
@@ -159,6 +198,7 @@ class MatchModel {
     DateTime? updatedAt,
     UserProfile? userProfile,
     String? otherUserId,
+    String? conversationId,
   }) {
     return MatchModel(
       id: id ?? this.id,
@@ -175,6 +215,7 @@ class MatchModel {
       updatedAt: updatedAt ?? this.updatedAt,
       userProfile: userProfile ?? this.userProfile,
       otherUserId: otherUserId ?? this.otherUserId,
+      conversationId: conversationId ?? this.conversationId,
     );
   }
 
