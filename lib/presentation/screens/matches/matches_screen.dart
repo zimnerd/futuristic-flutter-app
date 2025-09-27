@@ -561,6 +561,7 @@ class _MatchesScreenState extends State<MatchesScreen>
         final match = matches[index];
         return MatchCard(
           match: match,
+          userProfile: match.userProfile,
           onTap: () => _onMatchTapped(match),
           onAccept: status == 'pending' ? () => _acceptMatch(match.id) : null,
           onReject: status == 'pending' ? () => _rejectMatch(match.id) : null,
@@ -862,8 +863,19 @@ class _MatchesScreenState extends State<MatchesScreen>
   }
 
   void _onMatchTapped(MatchModel match) {
-    if (match.status == 'matched' && mounted) {
-      // Navigate to chat screen
+    if (match.userProfile != null && mounted) {
+      // Navigate to profile details screen
+      Navigator.of(context).pushNamed(
+        '/profile-details',
+        arguments: {
+          'userProfile': match.userProfile,
+          'matchId': match.id,
+          'isMatched': match.status == 'matched',
+          'otherUserId': match.userProfile!.id,
+        },
+      );
+    } else if (match.status == 'matched' && mounted) {
+      // Fallback: navigate directly to chat if no profile data
       Navigator.of(context).pushNamed(
         '/chat',
         arguments: {

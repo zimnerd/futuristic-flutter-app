@@ -1,3 +1,5 @@
+import '../../../domain/entities/user_profile.dart';
+
 /// Simple match model without complex JSON generation
 /// Part of the clean architecture - easy to read and maintain
 class MatchModel {
@@ -13,6 +15,10 @@ class MatchModel {
   final DateTime? expiredAt;
   final DateTime createdAt;
   final DateTime updatedAt;
+  
+  // Added user profile data from API
+  final UserProfile? userProfile;
+  final String? otherUserId;
 
   const MatchModel({
     required this.id,
@@ -27,10 +33,24 @@ class MatchModel {
     this.expiredAt,
     required this.createdAt,
     required this.updatedAt,
+    this.userProfile,
+    this.otherUserId,
   });
 
   // Simple JSON methods without code generation
   factory MatchModel.fromJson(Map<String, dynamic> json) {
+    UserProfile? userProfile;
+
+    // Extract user data from API response (the API returns the 'user' object)
+    if (json['user'] != null) {
+      try {
+        userProfile = _parseUserProfile(json['user']);
+      } catch (e) {
+        // If parsing fails, userProfile will remain null
+        print('Failed to parse user profile from match: $e');
+      }
+    }
+    
     return MatchModel(
       id: json['id'] ?? '',
       user1Id: json['user1Id'] ?? '',
@@ -52,7 +72,54 @@ class MatchModel {
           : null,
       createdAt: DateTime.parse(json['createdAt']),
       updatedAt: DateTime.parse(json['updatedAt']),
+      userProfile: userProfile,
+      otherUserId: userProfile?.id,
     );
+  }
+
+  /// Helper method to parse user profile from API response
+  static UserProfile? _parseUserProfile(Map<String, dynamic> userJson) {
+    try {
+      return UserProfile(
+        id: userJson['id'] ?? '',
+        name: '${userJson['firstName'] ?? ''} ${userJson['lastName'] ?? ''}'
+            .trim(),
+        age: userJson['age'] ?? 0,
+        bio: userJson['bio'] ?? '',
+        photos:
+            (userJson['photos'] as List<dynamic>?)
+                ?.map(
+                  (photo) => ProfilePhoto(
+                    id: photo['id'] ?? '',
+                    url: photo['url'] ?? '',
+                    order: photo['order'] ?? 0,
+                    isVerified: photo['isVerified'] ?? false,
+                  ),
+                )
+                .toList() ??
+            [],
+        location: UserLocation(
+          latitude: userJson['location']?['latitude']?.toDouble() ?? 0.0,
+          longitude: userJson['location']?['longitude']?.toDouble() ?? 0.0,
+          city: userJson['location']?['city'],
+          country: userJson['location']?['country'],
+          address: userJson['location']?['address'],
+        ),
+        interests:
+            (userJson['interests'] as List<dynamic>?)
+                ?.map((interest) => interest['name']?.toString() ?? '')
+                .where((name) => name.isNotEmpty)
+                .toList() ??
+            [],
+        occupation: userJson['occupation'],
+        education: userJson['education'],
+        gender: userJson['gender'],
+        isVerified: userJson['isVerified'] ?? false,
+      );
+    } catch (e) {
+      print('Error parsing user profile: $e');
+      return null;
+    }
   }
 
   Map<String, dynamic> toJson() {
@@ -85,6 +152,8 @@ class MatchModel {
     DateTime? expiredAt,
     DateTime? createdAt,
     DateTime? updatedAt,
+    UserProfile? userProfile,
+    String? otherUserId,
   }) {
     return MatchModel(
       id: id ?? this.id,
@@ -99,6 +168,8 @@ class MatchModel {
       expiredAt: expiredAt ?? this.expiredAt,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      userProfile: userProfile ?? this.userProfile,
+      otherUserId: otherUserId ?? this.otherUserId,
     );
   }
 

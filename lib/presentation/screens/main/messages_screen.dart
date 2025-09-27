@@ -55,11 +55,18 @@ class _MessagesScreenState extends State<MessagesScreen> {
     try {
       final conversations = await _conversationService.getUserConversations();
       
+      // Get current user ID
+      final authState = context.read<AuthBloc>().state;
+      String? currentUserId;
+      if (authState is AuthAuthenticated) {
+        currentUserId = authState.user.id;
+      }
+      
       // Convert backend Conversation models to UI ConversationData
       final conversationDataList = conversations.map((conversation) {
         // Get the other participant (assuming 1-on-1 conversations)
         final otherParticipant = conversation.participants.firstWhere(
-          (participant) => participant.id != conversation.id, // This needs proper user ID comparison
+          (participant) => participant.id != currentUserId, // Compare with current user ID
           orElse: () => conversation.participants.first,
         );
 
@@ -71,6 +78,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
           timestamp: _formatTimestamp(conversation.lastActivity ?? conversation.updatedAt),
           unreadCount: conversation.unreadCount,
           isOnline: false, // We'd need real-time status for this
+          otherUserId: otherParticipant.id,
           type: MessageFilterType.all, // Default type, could be enhanced
         );
       }).toList();
@@ -681,8 +689,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
     context.push(
       '/chat/${conversation.id}',
       extra: {
-        'otherUserId':
-            conversation.id, // Using conversation.id as user ID for now
+        'otherUserId': conversation.otherUserId, // Now using the correct other user ID
         'otherUserName': conversation.name,
         'otherUserPhoto': conversation.avatar,
       },
@@ -878,6 +885,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
           timestamp: conversation.timestamp,
           unreadCount: 0, // Mark as read
           isOnline: conversation.isOnline,
+          otherUserId: conversation.otherUserId,
           type: conversation.type,
         );
       }).toList();
@@ -903,6 +911,7 @@ class ConversationData {
     required this.timestamp,
     required this.unreadCount,
     required this.isOnline,
+    required this.otherUserId,
     this.type = MessageFilterType.all,
   });
 
@@ -913,5 +922,6 @@ class ConversationData {
   final String timestamp;
   final int unreadCount;
   final bool isOnline;
+  final String otherUserId;
   final MessageFilterType type;
 }
