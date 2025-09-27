@@ -295,15 +295,23 @@ class WebSocketServiceImpl implements WebSocketService {
   @override
   void on(String event, Function(dynamic) callback) {
     if (_socket != null) {
+      _logger.w('🔗 [LISTENER] Setting up listener for event: $event');
       _socket!.on(event, (data) {
         _addToEventHistory(event, data, 'received');
-        _logger.d('📥 Received: $event with data: $data');
+        _logger.w('📥 [RECEIVED] Event: $event | Data: $data');
+        // Special logging for messageReceived events
+        if (event == 'messageReceived') {
+          _logger.e('🚨 [MESSAGE_RECEIVED] CHAT MESSAGE RECEIVED! Data: $data');
+        }
         // Debug: Log all incoming events for diagnosis
         _logger.i(
           '🪵 [DEBUG] Incoming event: $event | Payload: ${data.toString()}',
         );
         callback(data);
       });
+      _logger.w('✅ [LISTENER] Successfully registered listener for: $event');
+    } else {
+      _logger.e('❌ [LISTENER] Cannot register listener for $event - socket is null!');
     }
   }
 
