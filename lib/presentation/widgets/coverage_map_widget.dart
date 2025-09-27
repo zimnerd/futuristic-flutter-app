@@ -1,13 +1,13 @@
 import 'dart:async';
 import 'dart:developer' as dev;
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 import '../../core/models/location_models.dart';
 import '../../data/models/heat_map_models.dart';
 import '../../data/services/heat_map_service.dart';
 import '../../core/services/location_service.dart';
-import '../../core/di/service_locator.dart';
 
 /// Coverage map widget showing user distribution and coverage areas
 class CoverageMapWidget extends StatefulWidget {
@@ -42,8 +42,8 @@ class _CoverageMapWidgetState extends State<CoverageMapWidget> {
   bool _isLoading = true;
   String? _error;
 
-  final HeatMapService _heatMapService = sl<HeatMapService>();
-  final LocationService _locationService = sl<LocationService>();
+  late final HeatMapService _heatMapService;
+  late final LocationService _locationService;
 
   // Map styling
   late String _mapStyle;
@@ -51,6 +51,8 @@ class _CoverageMapWidgetState extends State<CoverageMapWidget> {
   @override
   void initState() {
     super.initState();
+    _heatMapService = context.read<HeatMapService>();
+    _locationService = context.read<LocationService>();
     _initializeMap();
   }
 

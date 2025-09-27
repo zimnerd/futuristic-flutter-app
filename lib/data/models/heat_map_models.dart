@@ -26,12 +26,27 @@ class HeatMapDataPoint extends Equatable {
   };
 
   factory HeatMapDataPoint.fromJson(Map<String, dynamic> json) {
-    return HeatMapDataPoint(
-      coordinates: LocationCoordinates.fromJson(json['coordinates'] as Map<String, dynamic>),
-      density: json['density'] as int,
-      radius: (json['radius'] as num).toDouble(),
-      label: json['label'] as String?,
-    );
+    // Handle both formats: API response format and stored format
+    if (json.containsKey('coordinates')) {
+      // Stored format
+      return HeatMapDataPoint(
+        coordinates: LocationCoordinates.fromJson(json['coordinates'] as Map<String, dynamic>),
+        density: json['density'] as int,
+        radius: (json['radius'] as num).toDouble(),
+        label: json['label'] as String?,
+      );
+    } else {
+      // API response format: {latitude, longitude, count, status}
+      return HeatMapDataPoint(
+        coordinates: LocationCoordinates(
+          latitude: (json['latitude'] as num).toDouble(),
+          longitude: (json['longitude'] as num).toDouble(),
+        ),
+        density: json['count'] as int,
+        radius: 1.0, // Default radius
+        label: json['status'] as String?,
+      );
+    }
   }
 
   @override
@@ -198,16 +213,36 @@ class LocationCoverageData extends Equatable {
   };
 
   factory LocationCoverageData.fromJson(Map<String, dynamic> json) {
-    return LocationCoverageData(
-      coverageAreas: (json['coverageAreas'] as List<dynamic>)
-          .map((item) => CoverageArea.fromJson(item as Map<String, dynamic>))
-          .toList(),
-      totalUsers: json['totalUsers'] as int,
-      averageDensity: (json['averageDensity'] as num).toDouble(),
-      totalCoverage: (json['totalCoverage'] as num).toDouble(),
-      center: LocationCoordinates.fromJson(json['center'] as Map<String, dynamic>),
-      radiusKm: (json['radiusKm'] as num).toDouble(),
-    );
+    // Handle both formats: API response format and stored format
+    if (json.containsKey('coverageAreas')) {
+      // Stored format
+      return LocationCoverageData(
+        coverageAreas: (json['coverageAreas'] as List<dynamic>)
+            .map((item) => CoverageArea.fromJson(item as Map<String, dynamic>))
+            .toList(),
+        totalUsers: json['totalUsers'] as int,
+        averageDensity: (json['averageDensity'] as num).toDouble(),
+        totalCoverage: (json['totalCoverage'] as num).toDouble(),
+        center: LocationCoordinates.fromJson(json['center'] as Map<String, dynamic>),
+        radiusKm: (json['radiusKm'] as num).toDouble(),
+      );
+    } else {
+      // API response format: {center, radius, userCounts}
+      final userCounts = json['userCounts'] as Map<String, dynamic>;
+      final totalUsers = (userCounts['matched'] as int? ?? 0) +
+                        (userCounts['likedMe'] as int? ?? 0) +
+                        (userCounts['unmatched'] as int? ?? 0) +
+                        (userCounts['passed'] as int? ?? 0);
+      
+      return LocationCoverageData(
+        coverageAreas: [], // Empty for API response - would need additional processing
+        totalUsers: totalUsers,
+        averageDensity: totalUsers > 0 ? totalUsers / ((json['radius'] as num).toDouble()) : 0.0,
+        totalCoverage: (json['radius'] as num).toDouble(),
+        center: LocationCoordinates.fromJson(json['center'] as Map<String, dynamic>),
+        radiusKm: (json['radius'] as num).toDouble(),
+      );
+    }
   }
 
   @override

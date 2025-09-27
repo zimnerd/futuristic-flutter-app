@@ -67,32 +67,49 @@ class LocationService {
     try {
       // Check permissions
       LocationPermission permission = await Geolocator.checkPermission();
+      print('LocationService: Current permission status: $permission');
+      
       if (permission == LocationPermission.denied) {
+        print('LocationService: Requesting permission...');
         permission = await Geolocator.requestPermission();
+        print('LocationService: Permission after request: $permission');
+        
         if (permission == LocationPermission.denied) {
+          print('LocationService: Permission denied by user');
           return null;
         }
       }
       
       if (permission == LocationPermission.deniedForever) {
+        print('LocationService: Permission permanently denied');
         return null;
       }
 
       // Check if location services are enabled
       bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      print('LocationService: Location services enabled: $serviceEnabled');
+      
       if (!serviceEnabled) {
+        print('LocationService: Location services are disabled');
         return null;
       }
 
-      // Get current position
+      print('LocationService: Attempting to get current position...');
+
+      // Get current position with timeout
       Position position = await Geolocator.getCurrentPosition(
         locationSettings: const LocationSettings(
           accuracy: LocationAccuracy.high,
+          timeLimit: Duration(seconds: 30),
         ),
       );
       
+      print(
+        'LocationService: Successfully got position: ${position.latitude}, ${position.longitude}',
+      );
       return position;
     } catch (e) {
+      print('LocationService: Error getting location: $e');
       return null;
     }
   }

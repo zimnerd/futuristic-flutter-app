@@ -53,5 +53,11 @@
 	<string>This app needs access to photo library to select profile photos</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>This app needs access to photo library to save photos</string>
+	
+	<!-- Location Permissions -->
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>PulseLink needs access to your location to show people nearby and display coverage maps</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>PulseLink needs access to your location to show people nearby and display coverage maps</string>
 </dict>
 </plist>

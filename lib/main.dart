@@ -31,6 +31,8 @@ import 'data/services/token_service.dart';
 import 'data/services/message_database_service.dart';
 import 'data/services/background_sync_manager.dart';
 import 'data/services/statistics_service.dart';
+import 'data/services/heat_map_service.dart';
+import 'core/services/location_service.dart';
 import 'domain/repositories/user_repository.dart';
 import 'presentation/blocs/auth/auth_bloc.dart';
 import 'presentation/blocs/user/user_bloc.dart';
@@ -113,6 +115,12 @@ class PulseDatingApp extends StatelessWidget {
           ),
           RepositoryProvider<StatisticsService>(
             create: (context) => StatisticsService(context.read<ApiClient>()),
+          ),
+          RepositoryProvider<HeatMapService>(
+            create: (context) => HeatMapService(context.read<ApiClient>()),
+          ),
+          RepositoryProvider<LocationService>(
+            create: (context) => LocationService(),
           ),
 
           // Initialize data sources

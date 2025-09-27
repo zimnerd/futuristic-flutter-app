@@ -54,6 +54,10 @@ class AppConstants {
   static const double defaultLocationRadius = 50.0; // km
   static const double maxLocationRadius = 500.0; // km
 
+  // External API Keys
+  static const String googleMapsApiKey =
+      'AIzaSyD2iddVKdqoPrCPs5O8LdWR1ltaTKy2ZJo';
+
   // Dating App Specific
   static const int minAge = 18;
   static const int maxAge = 100;

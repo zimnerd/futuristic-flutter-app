@@ -1,14 +1,15 @@
 import 'dart:developer' as dev;
 import 'dart:math' as math;
 import '../../core/constants/api_constants.dart';
-import '../../domain/services/api_service.dart';
-import '../../core/di/service_locator.dart';
+import '../../core/network/api_client.dart';
 import '../models/heat_map_models.dart';
 import '../../core/models/location_models.dart';
 
 /// Service for handling heat map and location-based statistics
 class HeatMapService {
-  final ApiService _apiService = sl<ApiService>();
+  final ApiClient _apiClient;
+
+  HeatMapService(this._apiClient);
 
   /// Get heat map data for user locations
   Future<List<HeatMapDataPoint>> getHeatMapData({
@@ -31,13 +32,13 @@ class HeatMapService {
         queryParams.addAll(filters.toJson());
       }
 
-      final response = await _apiService.get(
+      final response = await _apiClient.get(
         ApiConstants.statisticsHeatMap,
         queryParameters: queryParams,
       );
 
-      if (response.data != null && response.data['dataPoints'] is List) {
-        final points = (response.data['dataPoints'] as List)
+      if (response.data != null && response.data['data'] is List) {
+        final points = (response.data['data'] as List)
             .map((json) => HeatMapDataPoint.fromJson(json))
             .toList();
         
@@ -69,13 +70,13 @@ class HeatMapService {
         queryParams.addAll(filters.toJson());
       }
 
-      final response = await _apiService.get(
+      final response = await _apiClient.get(
         ApiConstants.statisticsLocationCoverage,
         queryParameters: queryParams,
       );
 
-      if (response.data != null) {
-        return LocationCoverageData.fromJson(response.data as Map<String, dynamic>);
+      if (response.data != null && response.data['data'] != null) {
+        return LocationCoverageData.fromJson(response.data['data'] as Map<String, dynamic>);
       } else {
         throw Exception('Failed to fetch location coverage data');
       }
@@ -250,5 +251,25 @@ class HeatMapService {
       'minDensity': densities.reduce(math.min),
       'totalCoverage': coverages.reduce((a, b) => a + b),
     };
+  }
+
+  /// Update user location in the backend
+  Future<void> updateUserLocation(LocationCoordinates coordinates) async {
+    try {
+      final requestData = {
+        'latitude': coordinates.latitude,
+        'longitude': coordinates.longitude,
+      };
+
+      await _apiClient.put(ApiConstants.usersMe + '/location', data: requestData);
+
+      dev.log(
+        'User location updated successfully: ${coordinates.latitude}, ${coordinates.longitude}',
+        name: 'HeatMapService',
+      );
+    } catch (e) {
+      dev.log('Error updating user location: $e', name: 'HeatMapService');
+      rethrow;
+    }
   }
 }

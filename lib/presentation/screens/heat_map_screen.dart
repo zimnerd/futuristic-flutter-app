@@ -63,15 +63,34 @@ class HeatMapBloc extends Bloc<HeatMapEvent, HeatMapState> {
     emit(HeatMapLoading());
     
     try {
+      print('HeatMapBloc: Starting location request...');
       final position = await _locationService.getCurrentLocation();
+      print('HeatMapBloc: Location result: $position');
+      
       final userCoords = position != null 
         ? LocationCoordinates(latitude: position.latitude, longitude: position.longitude) 
         : null;
       
       if (userCoords == null) {
-        emit(HeatMapError('Unable to get current location'));
+        print('HeatMapBloc: No location available, emitting error');
+        emit(
+          HeatMapError(
+            'Unable to get current location. Please enable location services and grant permission.',
+          ),
+        );
         return;
       }
+      
+      // First, update user location in backend
+      print('HeatMapBloc: Updating user location in backend...');
+      try {
+        await _heatMapService.updateUserLocation(userCoords);
+        print('HeatMapBloc: User location updated successfully');
+      } catch (e) {
+        print('HeatMapBloc: Failed to update user location: $e');
+        // Continue anyway - try to fetch data without updating location
+      }
+      print('HeatMapBloc: Now fetching heat map data...');
       
       final [heatmapDataPoints, coverageData] = await Future.wait([
         _heatMapService.getHeatMapData(),
@@ -147,10 +166,13 @@ class _HeatMapScreenState extends State<HeatMapScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Access services from the parent context before creating BlocProvider
+    final heatMapService = context.read<HeatMapService>();
+    final locationService = context.read<LocationService>();
+    
     return BlocProvider(
       create: (context) => HeatMapBloc(
-        HeatMapService(),
-        context.read<LocationService>(),
+        heatMapService, locationService,
       )..add(LoadHeatMapData(_currentRadius)),
       child: Scaffold(
         backgroundColor: const Color(0xFF0A0A0A),
