@@ -22,6 +22,7 @@ class _EventsScreenState extends State<EventsScreen> {
   final ScrollController _scrollController = ScrollController();
   String? _selectedCategory;
   bool _showJoinedOnly = false;
+  String? _joiningEventId;
 
   @override
   void initState() {
@@ -62,10 +63,16 @@ class _EventsScreenState extends State<EventsScreen> {
   }
 
   void _onAttendEvent(Event event) {
+    setState(() {
+      _joiningEventId = event.id;
+    });
     context.read<EventBloc>().add(AttendEvent(event.id));
   }
 
   void _onLeaveEvent(Event event) {
+    setState(() {
+      _joiningEventId = event.id;
+    });
     context.read<EventBloc>().add(LeaveEvent(event.id));
   }
 
@@ -93,124 +100,128 @@ class _EventsScreenState extends State<EventsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: PulseColors.surface,
-      appBar: AppBar(
+    return BlocListener<EventBloc, EventState>(
+      listener: (context, state) {
+        if (state is EventAttendanceUpdated ||
+            state is EventsLoaded ||
+            state is EventError) {
+          if (_joiningEventId != null) {
+            setState(() {
+              _joiningEventId = null;
+            });
+          }
+        }
+        if (state is EventError) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(state.message),
+              backgroundColor: PulseColors.error,
+            ),
+          );
+        } else if (state is EventAttendanceUpdated) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                state.isAttending
+                    ? 'Successfully joined the event!'
+                    : 'Left the event',
+              ),
+              backgroundColor: state.isAttending
+                  ? PulseColors.success
+                  : PulseColors.onSurfaceVariant,
+            ),
+          );
+        } else if (state is EventError) {
+          String errorMessage = state.message;
+          if (errorMessage.contains('Already attending') ||
+              errorMessage.contains('already attending')) {
+            errorMessage = 'You have already joined this event!';
+          }
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(errorMessage),
+              backgroundColor: PulseColors.warning,
+            ),
+          );
+        }
+      },
+      child: Scaffold(
         backgroundColor: PulseColors.surface,
-        elevation: 0,
-        title: Text(
-          'Events',
-          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-            fontWeight: FontWeight.bold,
-            color: PulseColors.onSurface,
+        appBar: AppBar(
+          backgroundColor: PulseColors.surface,
+          elevation: 0,
+          title: Text(
+            'Events',
+            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+              fontWeight: FontWeight.bold,
+              color: PulseColors.onSurface,
+            ),
           ),
+          actions: [
+            IconButton(
+              onPressed: _onCreateEvent,
+              icon: Icon(Icons.add, color: PulseColors.primary),
+            ),
+          ],
         ),
-        actions: [
-          IconButton(
-            onPressed: _onCreateEvent,
-            icon: Icon(
-              Icons.add,
-              color: PulseColors.primary,
-            ),
-          ),
-        ],
-      ),
-      body: Column(
-        children: [
-          // Search Bar
-          _buildSearchBar(),
-
-          // Filter Row: Category chips + Joined Only chip
-          Row(
-            children: [
-              Expanded(
-                child: CategoryFilterChips(
-                  selectedCategorySlug: _selectedCategory,
-                  onCategorySelected: _onCategorySelected,
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(right: 16),
-                child: FilterChip(
-                  label: const Text('Joined Only'),
-                  selected: _showJoinedOnly,
-                  onSelected: (_) => _onToggleJoinedOnly(),
-                  selectedColor: PulseColors.primary,
-                  checkmarkColor: Colors.white,
-                  labelStyle: TextStyle(
-                    color: _showJoinedOnly ? Colors.white : PulseColors.primary,
-                    fontWeight: FontWeight.w600,
+        body: Column(
+          children: [
+            _buildSearchBar(),
+            Row(
+              children: [
+                Expanded(
+                  child: CategoryFilterChips(
+                    selectedCategorySlug: _selectedCategory,
+                    onCategorySelected: _onCategorySelected,
                   ),
-                  backgroundColor: PulseColors.primary.withOpacity(0.1),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                    side: BorderSide(
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(right: 16),
+                  child: FilterChip(
+                    label: const Text('Joined Only'),
+                    selected: _showJoinedOnly,
+                    onSelected: (_) => _onToggleJoinedOnly(),
+                    selectedColor: PulseColors.primary,
+                    checkmarkColor: Colors.white,
+                    labelStyle: TextStyle(
                       color: _showJoinedOnly
-                          ? PulseColors.primary
-                          : PulseColors.primary.withOpacity(0.3),
-                      width: 1,
+                          ? Colors.white
+                          : PulseColors.primary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    backgroundColor: PulseColors.primary.withOpacity(0.1),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                      side: BorderSide(
+                        color: _showJoinedOnly
+                            ? PulseColors.primary
+                            : PulseColors.primary.withOpacity(0.3),
+                        width: 1,
+                      ),
                     ),
                   ),
                 ),
-              ),
-            ],
-          ),
-
-          // Events List
-          Expanded(
-            child: BlocConsumer<EventBloc, EventState>(
-              listener: (context, state) {
-                if (state is EventError) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(state.message),
-                      backgroundColor: PulseColors.error,
-                    ),
-                  );
-                } else if (state is EventAttendanceUpdated) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        state.isAttending 
-                            ? 'Successfully joined the event!' 
-                            : 'Left the event',
-                      ),
-                      backgroundColor: state.isAttending 
-                          ? PulseColors.success 
-                          : PulseColors.onSurfaceVariant,
-                    ),
-                  );
-                } else if (state is EventError) {
-                  String errorMessage = state.message;
-                  if (errorMessage.contains('Already attending') ||
-                      errorMessage.contains('already attending')) {
-                    errorMessage = 'You have already joined this event!';
-                  }
-
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(errorMessage),
-                      backgroundColor: PulseColors.warning,
-                    ),
-                  );
-                }
-              },
-              builder: (context, state) {
-                if (state is EventLoading) {
-                  return _buildLoadingState();
-                } else if (state is EventsLoaded) {
-                  return _buildEventsLoaded(state);
-                } else if (state is EventRefreshing) {
-                  return _buildRefreshingState(state);
-                } else if (state is EventError) {
-                  return _buildErrorState(state);
-                } else {
-                  return _buildEmptyState();
-                }
-              },
+              ],
             ),
-          ),
-        ],
+            Expanded(
+              child: BlocBuilder<EventBloc, EventState>(
+                builder: (context, state) {
+                  if (state is EventLoading) {
+                    return _buildLoadingState();
+                  } else if (state is EventsLoaded) {
+                    return _buildEventsLoaded(state);
+                  } else if (state is EventRefreshing) {
+                    return _buildRefreshingState(state);
+                  } else if (state is EventError) {
+                    return _buildErrorState(state);
+                  } else {
+                    return _buildEmptyState();
+                  }
+                },
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -346,6 +357,7 @@ class _EventsScreenState extends State<EventsScreen> {
             onTap: () => _onEventTap(event),
             onAttend: () => _onAttendEvent(event),
             onLeave: () => _onLeaveEvent(event),
+            isLoading: _joiningEventId == event.id,
           );
         },
       ),
@@ -397,6 +409,7 @@ class _EventsScreenState extends State<EventsScreen> {
                 onTap: () => _onEventTap(event),
                 onAttend: () => _onAttendEvent(event),
                 onLeave: () => _onLeaveEvent(event),
+                isLoading: _joiningEventId == event.id,
               );
             },
           ),
