@@ -149,51 +149,70 @@ class CategoryFilterChips extends StatefulWidget {
 }
 
 class _CategoryFilterChipsState extends State<CategoryFilterChips> {
+  List<EventCategory>? _categories;
+  bool _isLoading = false;
+
   @override
   void initState() {
     super.initState();
-    // Only load categories if not already loaded to prevent endless reloading
-    final currentState = context.read<EventBloc>().state;
-    if (currentState is! EventCategoriesLoaded) {
-      context.read<EventBloc>().add(const LoadEventCategories());
-    }
+    _loadCategories();
+  }
+
+  Future<void> _loadCategories({bool forceRefresh = false}) async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    // Load categories using EventBloc but maintain our own state
+    context.read<EventBloc>().add(
+      LoadEventCategories(forceRefresh: forceRefresh),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<EventBloc, EventState>(
-      buildWhen: (previous, current) =>
+    return BlocListener<EventBloc, EventState>(
+      listenWhen: (previous, current) =>
           current is EventCategoriesLoaded ||
-          current is EventLoading ||
           current is EventError,
-      builder: (context, state) {
-        if (state is EventLoading) {
-          return Container(
-            height: 50,
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            child: const Center(
-              child: SizedBox(
-                height: 20,
-                width: 20,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              ),
-            ),
-          );
-        }
-
-        if (state is EventError) {
-          // Fall back to legacy categories on error
-          return _buildLegacyCategoryChips();
-        }
-
+      listener: (context, state) {
         if (state is EventCategoriesLoaded) {
-          return _buildApiCategoryChips(state.categories);
+          setState(() {
+            _categories = state.categories;
+            _isLoading = false;
+          });
+        } else if (state is EventError && _categories == null) {
+          // Only show error if we don't have cached categories
+          setState(() {
+            _isLoading = false;
+          });
         }
-
-        // Default to legacy categories
-        return _buildLegacyCategoryChips();
       },
+      child: _buildCategoryChips(),
     );
+  }
+
+  Widget _buildCategoryChips() {
+    if (_isLoading && _categories == null) {
+      return Container(
+        height: 50,
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: const Center(
+          child: SizedBox(
+            height: 20,
+            width: 20,
+            child: CircularProgressIndicator(strokeWidth: 2),
+          ),
+        ),
+      );
+    }
+
+    if (_categories != null) {
+      return _buildApiCategoryChips(_categories!);
+    }
+
+    // Fall back to legacy categories if no API categories loaded
+    return _buildLegacyCategoryChips();
   }
 
   Widget _buildApiCategoryChips(List<EventCategory> categories) {
@@ -214,9 +233,7 @@ class _CategoryFilterChipsState extends State<CategoryFilterChips> {
             padding: const EdgeInsets.only(right: 8),
             child: GestureDetector(
               onTap: () {
-                context.read<EventBloc>().add(
-                  const LoadEventCategories(forceRefresh: true),
-                );
+                _loadCategories(forceRefresh: true);
               },
               child: Container(
                 padding: const EdgeInsets.symmetric(
@@ -231,12 +248,27 @@ class _CategoryFilterChipsState extends State<CategoryFilterChips> {
                     width: 1,
                   ),
                 ),
-                child: const Row(
+                child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.refresh, size: 16, color: Colors.grey),
-                    SizedBox(width: 4),
-                    Text(
+                    _isLoading
+                        ? const SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                Colors.grey,
+                              ),
+                            ),
+                          )
+                        : const Icon(
+                            Icons.refresh,
+                            size: 16,
+                            color: Colors.grey,
+                          ),
+                    const SizedBox(width: 4),
+                    const Text(
                       'Reload',
                       style: TextStyle(
                         color: Colors.grey,

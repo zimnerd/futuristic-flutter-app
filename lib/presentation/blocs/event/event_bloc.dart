@@ -258,10 +258,50 @@ class EventBloc extends Bloc<EventEvent, EventState> {
         attendeeCount: updatedEvent.attendeeCount,
       ));
 
-      // Refresh events list to get updated data
-      add(const RefreshEvents());
+      // Return to properly filtered events list
+      final filteredEvents = _applyFilters(_allEvents);
+
+      emit(
+        EventsLoaded(
+          events: _allEvents,
+          filteredEvents: filteredEvents,
+          currentCategory: _currentCategory,
+          searchQuery: _searchQuery,
+        ),
+      );
     } catch (e) {
-      emit(EventError(message: e.toString()));
+      // Check if it's an "already attending" error
+      final errorMessage = e.toString();
+      if (errorMessage.contains('Already attending') ||
+          errorMessage.contains('already attending')) {
+        // Update the local event to show as attended
+        _updateEventAttendance(event.eventId, true);
+        final updatedEvent = _allEvents.firstWhere(
+          (e) => e.id == event.eventId,
+        );
+
+        emit(
+          EventAttendanceUpdated(
+            eventId: event.eventId,
+            isAttending: true,
+            attendeeCount: updatedEvent.attendeeCount,
+          ),
+        );
+
+        // Return to properly filtered events list
+        final filteredEvents = _applyFilters(_allEvents);
+
+        emit(
+          EventsLoaded(
+            events: _allEvents,
+            filteredEvents: filteredEvents,
+            currentCategory: _currentCategory,
+            searchQuery: _searchQuery,
+          ),
+        );
+      } else {
+        emit(EventError(message: e.toString()));
+      }
     }
   }
 
@@ -282,8 +322,17 @@ class EventBloc extends Bloc<EventEvent, EventState> {
         attendeeCount: updatedEvent.attendeeCount,
       ));
 
-      // Refresh events list to get updated data
-      add(const RefreshEvents());
+      // Return to properly filtered events list
+      final filteredEvents = _applyFilters(_allEvents);
+
+      emit(
+        EventsLoaded(
+          events: _allEvents,
+          filteredEvents: filteredEvents,
+          currentCategory: _currentCategory,
+          searchQuery: _searchQuery,
+        ),
+      );
     } catch (e) {
       emit(EventError(message: e.toString()));
     }

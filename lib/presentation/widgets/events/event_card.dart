@@ -126,32 +126,72 @@ class EventCard extends StatelessWidget {
   }
 
   Widget _buildEventImage() {
-    return Container(
-      height: 200,
-      width: double.infinity,
-      decoration: BoxDecoration(
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-        gradient: LinearGradient(
-          colors: [
-            PulseColors.primary.withValues(alpha: 0.1),
-            PulseColors.secondary.withValues(alpha: 0.1),
-          ],
-        ),
-      ),
-      child: ClipRRect(
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-        child: EventNetworkImage(
-          imageUrl: event.image != null
-              ? (event.image!.startsWith('http')
-                    ? event.image! 
-                    : '${AppConstants.baseUrl}/${event.image}')
-              : null,
-          width: double.infinity,
+    return Stack(
+      children: [
+        Container(
           height: 200,
-          eventCategory: event.category,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+          width: double.infinity,
+          decoration: BoxDecoration(
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+            gradient: LinearGradient(
+              colors: [
+                PulseColors.primary.withValues(alpha: 0.1),
+                PulseColors.secondary.withValues(alpha: 0.1),
+              ],
+            ),
+          ),
+          child: ClipRRect(
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+            child: EventNetworkImage(
+              imageUrl: event.image != null
+                  ? (event.image!.startsWith('http')
+                        ? event.image!
+                        : '${AppConstants.baseUrl}/${event.image}')
+                  : null,
+              width: double.infinity,
+              height: 200,
+              eventCategory: event.category,
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(16),
+              ),
+            ),
+          ),
         ),
-      ),
+        if (event.isAttending)
+          Positioned(
+            top: 12,
+            right: 12,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                color: PulseColors.success,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: PulseColors.success.withOpacity(0.15),
+                    blurRadius: 6,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.check, color: Colors.white, size: 16),
+                  const SizedBox(width: 4),
+                  Text(
+                    'JOINED',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12,
+                      letterSpacing: 1.2,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+      ],
     );
   }
 

@@ -21,6 +21,7 @@ class _EventsScreenState extends State<EventsScreen> {
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   String? _selectedCategory;
+  bool _showJoinedOnly = false;
 
   @override
   void initState() {
@@ -44,6 +45,12 @@ class _EventsScreenState extends State<EventsScreen> {
       _selectedCategory = category;
     });
     context.read<EventBloc>().add(FilterEventsByCategory(category));
+  }
+
+  void _onToggleJoinedOnly() {
+    setState(() {
+      _showJoinedOnly = !_showJoinedOnly;
+    });
   }
 
   void _onSearchChanged(String query) {
@@ -112,13 +119,43 @@ class _EventsScreenState extends State<EventsScreen> {
         children: [
           // Search Bar
           _buildSearchBar(),
-          
-          // Category Filter
-          CategoryFilterChips(
-            selectedCategorySlug: _selectedCategory,
-            onCategorySelected: _onCategorySelected,
+
+          // Filter Row: Category chips + Joined Only chip
+          Row(
+            children: [
+              Expanded(
+                child: CategoryFilterChips(
+                  selectedCategorySlug: _selectedCategory,
+                  onCategorySelected: _onCategorySelected,
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(right: 16),
+                child: FilterChip(
+                  label: const Text('Joined Only'),
+                  selected: _showJoinedOnly,
+                  onSelected: (_) => _onToggleJoinedOnly(),
+                  selectedColor: PulseColors.primary,
+                  checkmarkColor: Colors.white,
+                  labelStyle: TextStyle(
+                    color: _showJoinedOnly ? Colors.white : PulseColors.primary,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  backgroundColor: PulseColors.primary.withOpacity(0.1),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                    side: BorderSide(
+                      color: _showJoinedOnly
+                          ? PulseColors.primary
+                          : PulseColors.primary.withOpacity(0.3),
+                      width: 1,
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
-          
+
           // Events List
           Expanded(
             child: BlocConsumer<EventBloc, EventState>(
@@ -141,6 +178,19 @@ class _EventsScreenState extends State<EventsScreen> {
                       backgroundColor: state.isAttending 
                           ? PulseColors.success 
                           : PulseColors.onSurfaceVariant,
+                    ),
+                  );
+                } else if (state is EventError) {
+                  String errorMessage = state.message;
+                  if (errorMessage.contains('Already attending') ||
+                      errorMessage.contains('already attending')) {
+                    errorMessage = 'You have already joined this event!';
+                  }
+
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(errorMessage),
+                      backgroundColor: PulseColors.warning,
                     ),
                   );
                 }
@@ -271,7 +321,12 @@ class _EventsScreenState extends State<EventsScreen> {
   }
 
   Widget _buildEventsLoaded(EventsLoaded state) {
-    if (state.filteredEvents.isEmpty) {
+    // Apply joined filter if enabled
+    final eventsToShow = _showJoinedOnly
+        ? state.filteredEvents.where((e) => e.isAttending).toList()
+        : state.filteredEvents;
+
+    if (eventsToShow.isEmpty) {
       return _buildEmptyFilteredState();
     }
 
@@ -283,9 +338,9 @@ class _EventsScreenState extends State<EventsScreen> {
       child: ListView.builder(
         controller: _scrollController,
         padding: const EdgeInsets.only(bottom: 56),
-        itemCount: state.filteredEvents.length,
+        itemCount: eventsToShow.length,
         itemBuilder: (context, index) {
-          final event = state.filteredEvents[index];
+          final event = eventsToShow[index];
           return EventCard(
             event: event,
             onTap: () => _onEventTap(event),
@@ -298,6 +353,11 @@ class _EventsScreenState extends State<EventsScreen> {
   }
 
   Widget _buildRefreshingState(EventRefreshing state) {
+    // Apply joined filter if enabled
+    final eventsToShow = _showJoinedOnly
+        ? state.currentEvents.where((e) => e.isAttending).toList()
+        : state.currentEvents;
+
     return Column(
       children: [
         Container(
@@ -329,9 +389,9 @@ class _EventsScreenState extends State<EventsScreen> {
           child: ListView.builder(
             controller: _scrollController,
             padding: const EdgeInsets.only(bottom: 56),
-            itemCount: state.currentEvents.length,
+            itemCount: eventsToShow.length,
             itemBuilder: (context, index) {
-              final event = state.currentEvents[index];
+              final event = eventsToShow[index];
               return EventCard(
                 event: event,
                 onTap: () => _onEventTap(event),
