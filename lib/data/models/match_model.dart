@@ -48,7 +48,7 @@ class MatchModel {
     if (json['user'] != null) {
       try {
         print('👤 Parsing user profile from: ${json['user']}');
-        userProfile = _parseUserProfile(json['user']);
+        userProfile = MatchModel.parseUserProfile(json['user']);
         print('✅ Successfully parsed userProfile: ${userProfile?.name}');
       } catch (e) {
         // If parsing fails, userProfile will remain null
@@ -88,7 +88,7 @@ class MatchModel {
   }
 
   /// Helper method to parse user profile from API response
-  static UserProfile? _parseUserProfile(Map<String, dynamic> userJson) {
+  static UserProfile? parseUserProfile(Map<String, dynamic> userJson) {
     try {
       return UserProfile(
         id: userJson['id'] ?? '',

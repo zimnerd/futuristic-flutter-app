@@ -556,40 +556,22 @@ class MatchingService {
     String currentUserId,
   ) {
     final user = apiMatch['user'] as Map<String, dynamic>?;
-    final userId = user?['id'] as String? ?? '';
-    final firstName = user?['firstName'] as String? ?? '';
-    final lastName = user?['lastName'] as String? ?? '';
-    final photos = user?['photos'] as List<dynamic>? ?? [];
-    final primaryPhoto = photos.isNotEmpty ? photos.first as String : '';
+    final userProfile = user != null ? MatchModel.parseUserProfile(user) : null;
+    final userId = userProfile?.id ?? '';
 
-    // Store user data in matchReasons for UI access (temporary solution)
-    final enrichedMatchReasons = <String, dynamic>{
-      'user': {
-        'id': userId,
-        'name': '$firstName $lastName'.trim(),
-        'firstName': firstName,
-        'lastName': lastName,
-        'avatarUrl': primaryPhoto,
-        'photos': photos,
-        'age': user?['age'],
-        'bio': user?['bio'],
-        'interests': user?['interests'],
-      },
-    };
-
-    // Create a simplified MatchModel from the API response
-    // Since the API doesn't return full MatchModel data, we'll simulate it
     return MatchModel(
       id: apiMatch['id'] as String? ?? '',
       user1Id: currentUserId, // Use actual current user ID
       user2Id: userId, // The matched user
       isMatched: true, // If it's in matches, it's matched
       compatibilityScore: 0.85, // Default score since API doesn't provide it
-      matchReasons: enrichedMatchReasons, // Store user data here
+      matchReasons: null, // No need to store user data here
       status: 'matched', // Default to matched status
       matchedAt: DateTime.now(), // Use current time as fallback
       createdAt: DateTime.now(), // Use current time as fallback
       updatedAt: DateTime.now(), // Use current time as fallback
+      userProfile: userProfile,
+      otherUserId: userId,
     );
   }
 }
