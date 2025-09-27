@@ -1025,6 +1025,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
                 ),
               ),
             ],
+            
           ),
         ),
       ),
