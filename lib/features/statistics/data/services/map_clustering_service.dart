@@ -52,29 +52,37 @@ class MapClusteringService {
     List<HeatMapDataPoint> dataPoints,
     double zoomLevel,
   ) {
-    // Determine clustering level based on zoom
+    // Determine clustering level based on zoom - more granular levels
     int clusterLevel;
     double baseRadius;
     
-    if (zoomLevel <= 6) {
-      // Country/continent level - single cluster
+    if (zoomLevel <= 5) {
+      // Global level - single cluster
       clusterLevel = 0;
+      baseRadius = 100000; // 100km for very wide view
+    } else if (zoomLevel <= 7) {
+      // Country/continent level - few clusters
+      clusterLevel = 1;
       baseRadius = 50000; // 50km
     } else if (zoomLevel <= 9) {
-      // Regional level - few large clusters
-      clusterLevel = 1;
-      baseRadius = 20000; // 20km
-    } else if (zoomLevel <= 12) {
-      // City level - moderate clusters
+      // Regional level - moderate clusters
       clusterLevel = 2;
+      baseRadius = 25000; // 25km
+    } else if (zoomLevel <= 11) {
+      // City level - smaller clusters
+      clusterLevel = 3;
+      baseRadius = 10000; // 10km
+    } else if (zoomLevel <= 13) {
+      // District level - fine clusters
+      clusterLevel = 4;
       baseRadius = 5000; // 5km
     } else if (zoomLevel <= 15) {
-      // District level - smaller clusters
-      clusterLevel = 3;
+      // Neighborhood level - very fine clusters
+      clusterLevel = 5;
       baseRadius = 2000; // 2km
     } else {
       // Street level - minimum privacy clusters
-      clusterLevel = 4;
+      clusterLevel = 6;
       baseRadius = 800; // 800m for privacy
     }
     
@@ -155,9 +163,11 @@ class MapClusteringService {
     double cellSizeKm,
     int level,
   ) {
-    // Create stable grid coordinates
-    final gridLat = (coordinates.latitude / cellSizeKm).floor();
-    final gridLng = (coordinates.longitude / cellSizeKm).floor();
+    // Create stable grid coordinates with better resolution
+    // Use smaller divisor for more stable grid alignment
+    final cellSize = cellSizeKm * 0.01; // Convert to degrees approximately
+    final gridLat = (coordinates.latitude / cellSize).floor();
+    final gridLng = (coordinates.longitude / cellSize).floor();
     return 'L${level}_${gridLat}_${gridLng}';
   }
 

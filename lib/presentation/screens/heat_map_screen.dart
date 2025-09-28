@@ -536,14 +536,16 @@ class _HeatMapScreenState extends State<HeatMapScreen> {
       final circleRadius = _getClusterRadius(cluster.totalUserCount);
       final circleColor = _getClusterColor(cluster.dominantStatus);
 
+      print('🔵 Creating circle: id=${cluster.id}, center=${cluster.position}, radius=${circleRadius}m, color=$circleColor');
+      
       clusterCircles.add(
         Circle(
           circleId: CircleId(cluster.id),
           center: cluster.position,
           radius: circleRadius,
-          fillColor: circleColor.withValues(alpha: 0.3),
+          fillColor: circleColor.withValues(alpha: 0.4), // Slightly more opaque
           strokeColor: circleColor,
-          strokeWidth: 2,
+          strokeWidth: 3, // Thicker stroke for visibility
           onTap: () => _showClusterDetails(cluster),
         ),
       );
@@ -710,14 +712,41 @@ class _HeatMapScreenState extends State<HeatMapScreen> {
     );
   }
 
-  /// Get cluster circle radius based on user count (for privacy visualization)
+  /// Get cluster circle radius based on user count AND zoom level (for privacy visualization)
   double _getClusterRadius(int userCount) {
-    // Base radius scales with user count for visual feedback
-    if (userCount <= 5) return 80.0;
-    if (userCount <= 10) return 120.0;
-    if (userCount <= 25) return 180.0;
-    if (userCount <= 50) return 250.0;
-    return 350.0; // Max radius for very large clusters
+    // Base radius scales with user count AND zoom level for visibility
+    double baseRadius;
+    if (userCount <= 5) {
+      baseRadius = 100.0;
+    } else if (userCount <= 10) {
+      baseRadius = 150.0;
+    } else if (userCount <= 25) {
+      baseRadius = 200.0;
+    } else if (userCount <= 50) {
+      baseRadius = 300.0;
+    } else {
+      baseRadius = 400.0; // Max radius for very large clusters
+    }
+    
+    // Scale radius based on zoom level for visibility
+    double zoomMultiplier;
+    if (_currentZoom <= 6) {
+      zoomMultiplier = 50.0; // Very large at continent level
+    } else if (_currentZoom <= 8) {
+      zoomMultiplier = 25.0; // Large at country level
+    } else if (_currentZoom <= 10) {
+      zoomMultiplier = 12.0; // Medium at region level
+    } else if (_currentZoom <= 12) {
+      zoomMultiplier = 6.0; // Smaller at city level
+    } else if (_currentZoom <= 15) {
+      zoomMultiplier = 3.0; // Small at district level
+    } else {
+      zoomMultiplier = 1.5; // Minimum at street level
+    }
+    
+    final finalRadius = baseRadius * zoomMultiplier;
+    print('🎯 Cluster radius calculation: userCount=$userCount, zoom=$_currentZoom, base=$baseRadius, multiplier=$zoomMultiplier, final=${finalRadius}m');
+    return finalRadius;
   }
 
   /// Get cluster circle color based on dominant status
