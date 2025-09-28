@@ -800,6 +800,38 @@ class _ChatScreenState extends State<ChatScreen> {
       );
     }
 
+    // Handle MessageSent state for fresh conversations
+    if (state is MessageSent) {
+      AppLogger.debug(
+        '_buildMessagesList - MessageSent for fresh conversation, showing single message: ${state.message.id}',
+      );
+
+      return Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            Expanded(
+              child: ListView(
+                reverse: true,
+                children: [
+                  MessageBubble(
+                    message: state.message,
+                    isCurrentUser:
+                        true, // MessageSent is always from current user
+                    currentUserId: _currentUserId ?? '',
+                    onLongPress: () => _onLongPress(state.message),
+                    onReaction: (emoji) => _onReaction(state.message, emoji),
+                    onReply: () => _onReply(state.message),
+                    onMediaTap: () => _onMediaTap(state.message),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
     return const SizedBox.shrink();
   }
 

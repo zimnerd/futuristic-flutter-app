@@ -1140,9 +1140,96 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
         _logger.d(
           'ChatBloc: Emitted MessagesLoaded with ${messages.length} messages',
         );
+      } else if (state is MessageSent) {
+        final currentState = state as MessageSent;
+
+        // Check if this message is for the same conversation
+        if (currentState.message.conversationId ==
+            event.message.conversationId) {
+          _logger.d(
+            'ChatBloc: In MessageSent state, transitioning to MessagesLoaded with received message: ${event.message.id}',
+          );
+
+          // Check if this is confirming our optimistic message
+          final isOptimisticConfirmation = _chatRepository.isOptimisticMessage(
+            currentState.message.id,
+            event.message.id,
+          );
+
+          List<MessageModel> messages;
+          if (isOptimisticConfirmation) {
+            // Replace optimistic message with confirmed message
+            messages = [event.message];
+            _logger.d(
+              'ChatBloc: Replaced optimistic message ${currentState.message.id} with confirmed message ${event.message.id}',
+            );
+          } else {
+            // This is a different message, keep both (optimistic + new)
+            messages = [event.message, currentState.message];
+            _logger.d(
+              'ChatBloc: Added new message ${event.message.id} alongside existing optimistic message ${currentState.message.id}',
+            );
+          }
+
+          emit(
+            MessagesLoaded(
+              messages: messages,
+              conversationId: currentState.message.conversationId,
+              hasMoreMessages: false, // Fresh conversation
+              typingUsers: const {},
+            ),
+          );
+        } else {
+          _logger.d(
+            'ChatBloc: In MessageSent state, but message is for different conversation. Current: ${currentState.message.conversationId}, Message: ${event.message.conversationId}',
+          );
+        }
+      } else if (state is FirstMessageSent) {
+        final currentState = state as FirstMessageSent;
+
+        // Check if this message is for the same conversation
+        if (currentState.conversationId == event.message.conversationId) {
+          _logger.d(
+            'ChatBloc: In FirstMessageSent state, transitioning to MessagesLoaded with received message: ${event.message.id}',
+          );
+
+          // Check if this is confirming our optimistic message
+          final isOptimisticConfirmation = _chatRepository.isOptimisticMessage(
+            currentState.message.id,
+            event.message.id,
+          );
+
+          List<MessageModel> messages;
+          if (isOptimisticConfirmation) {
+            // Replace optimistic message with confirmed message
+            messages = [event.message];
+            _logger.d(
+              'ChatBloc: Replaced optimistic first message ${currentState.message.id} with confirmed message ${event.message.id}',
+            );
+          } else {
+            // This is a different message, keep both (optimistic + new)
+            messages = [event.message, currentState.message];
+            _logger.d(
+              'ChatBloc: Added new message ${event.message.id} alongside existing optimistic first message ${currentState.message.id}',
+            );
+          }
+
+          emit(
+            MessagesLoaded(
+              messages: messages,
+              conversationId: currentState.conversationId,
+              hasMoreMessages: false, // Fresh conversation
+              typingUsers: const {},
+            ),
+          );
+        } else {
+          _logger.d(
+            'ChatBloc: In FirstMessageSent state, but message is for different conversation. Current: ${currentState.conversationId}, Message: ${event.message.conversationId}',
+          );
+        }
       } else {
         _logger.d(
-          'ChatBloc: Not in MessagesLoaded state (${state.runtimeType}), ignoring received message',
+          'ChatBloc: Not in MessagesLoaded, MessageSent, or FirstMessageSent state (${state.runtimeType}), ignoring received message',
         );
       }
     } catch (e) {
