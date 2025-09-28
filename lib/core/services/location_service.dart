@@ -82,20 +82,20 @@ class LocationService {
       }
       
       if (permission == LocationPermission.deniedForever) {
-        print('LocationService: Permission permanently denied');
+        debugPrint('LocationService: Permission permanently denied');
         return null;
       }
 
       // Check if location services are enabled
       bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-      print('LocationService: Location services enabled: $serviceEnabled');
+      debugPrint('LocationService: Location services enabled: $serviceEnabled');
       
       if (!serviceEnabled) {
-        print('LocationService: Location services are disabled');
+        debugPrint('LocationService: Location services are disabled');
         return null;
       }
 
-      print('LocationService: Attempting to get current position...');
+      debugPrint('LocationService: Attempting to get current position...');
 
       // Get current position with timeout
       Position position = await Geolocator.getCurrentPosition(
@@ -105,12 +105,12 @@ class LocationService {
         ),
       );
       
-      print(
+      debugPrint(
         'LocationService: Successfully got position: ${position.latitude}, ${position.longitude}',
       );
       return position;
     } catch (e) {
-      print('LocationService: Error getting location: $e');
+      debugPrint('LocationService: Error getting location: $e');
       return null;
     }
   }
