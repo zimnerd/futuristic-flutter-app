@@ -85,6 +85,7 @@ dependencies:
   agora_rtc_engine: ^6.1.1
   image_picker: ^1.0.8
   flutter_image_compress: ^2.4.0
+  video_player: ^2.8.8
 
 dev_dependencies:
   flutter_test:

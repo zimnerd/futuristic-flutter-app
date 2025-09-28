@@ -60,11 +60,20 @@ class MediaGrid extends StatelessWidget {
         tag: _getHeroTag(index),
         child: AspectRatio(
           aspectRatio: 4 / 3,
-          child: CachedNetworkImage(
-            imageUrl: mediaUrls[index],
-            fit: BoxFit.cover,
-            placeholder: (context, url) => _buildPlaceholder(),
-            errorWidget: (context, url, error) => _buildErrorWidget(),
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              CachedNetworkImage(
+                imageUrl: messageType == MessageType.video
+                    ? _getVideoThumbnailUrl(mediaUrls[index])
+                    : mediaUrls[index],
+                fit: BoxFit.cover,
+                placeholder: (context, url) => _buildPlaceholder(),
+                errorWidget: (context, url, error) => _buildErrorWidget(),
+              ),
+              // Video play button overlay
+              if (messageType == MessageType.video) _buildVideoOverlay(),
+            ],
           ),
         ),
       ),
@@ -216,11 +225,20 @@ class MediaGrid extends StatelessWidget {
       onTap: () => _openMediaViewer(context, index),
       child: Hero(
         tag: _getHeroTag(index),
-        child: CachedNetworkImage(
-          imageUrl: mediaUrls[index],
-          fit: BoxFit.cover,
-          placeholder: (context, url) => _buildPlaceholder(),
-          errorWidget: (context, url, error) => _buildErrorWidget(),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            CachedNetworkImage(
+              imageUrl: messageType == MessageType.video
+                  ? _getVideoThumbnailUrl(mediaUrls[index])
+                  : mediaUrls[index],
+              fit: BoxFit.cover,
+              placeholder: (context, url) => _buildPlaceholder(),
+              errorWidget: (context, url, error) => _buildErrorWidget(),
+            ),
+            // Video play button overlay
+            if (messageType == MessageType.video) _buildVideoOverlay(),
+          ],
         ),
       ),
     );
@@ -249,6 +267,50 @@ class MediaGrid extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Widget _buildVideoOverlay() {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            Colors.black.withValues(alpha: 0.1),
+            Colors.black.withValues(alpha: 0.3),
+          ],
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+        ),
+      ),
+      child: Center(
+        child: Container(
+          width: 48,
+          height: 48,
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black26,
+                blurRadius: 8,
+                offset: Offset(0, 2),
+              ),
+            ],
+          ),
+          child: const Icon(
+            Icons.play_arrow_rounded,
+            color: Colors.black87,
+            size: 24,
+          ),
+        ),
+      ),
+    );
+  }
+
+  String _getVideoThumbnailUrl(String videoUrl) {
+    // For now, return the video URL as-is
+    // In a production app, you'd want to generate/fetch actual thumbnails
+    // This could be done on the backend or using a service like Cloudinary
+    return videoUrl;
   }
 
   String _getHeroTag(int index) {

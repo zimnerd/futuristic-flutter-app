@@ -11,6 +11,8 @@ class AiMessageInput extends StatefulWidget {
   final VoidCallback? onTyping;
   final VoidCallback? onCamera;
   final VoidCallback? onGallery;
+  final VoidCallback? onVideoCamera;
+  final VoidCallback? onVideoGallery;
   final VoidCallback? onVoice;
   final String? lastReceivedMessage;
   final String chatId;
@@ -23,6 +25,8 @@ class AiMessageInput extends StatefulWidget {
     this.onTyping,
     this.onCamera,
     this.onGallery,
+    this.onVideoCamera,
+    this.onVideoGallery,
     this.onVoice,
     this.lastReceivedMessage,
   });
@@ -823,39 +827,58 @@ class _AiMessageInputState extends State<AiMessageInput>
       height: _showAttachments ? 72 : 0,
       margin: const EdgeInsets.only(bottom: 8),
       child: _showAttachments
-          ? Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                _buildAttachmentOption(
-                  icon: Icons.camera_alt_rounded,
-                  label: 'Camera',
-                  color: Colors.blue,
-                  onTap: widget.onCamera,
-                ),
-                _buildAttachmentOption(
-                  icon: Icons.photo_library_rounded,
-                  label: 'Gallery',
-                  color: Colors.green,
-                  onTap: widget.onGallery,
-                ),
-                _buildAttachmentOption(
-                  icon: Icons.location_on_rounded,
-                  label: 'Location',
-                  color: Colors.orange,
-                  onTap: () {
-                    setState(() {
-                      _showAttachments = false;
-                    });
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Sharing current location...'),
-                        duration: Duration(seconds: 2),
-                        backgroundColor: PulseColors.primary,
-                      ),
-                    );
-                  },
-                ),
-              ],
+          ? SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  _buildAttachmentOption(
+                    icon: Icons.camera_alt_rounded,
+                    label: 'Photo',
+                    color: Colors.blue,
+                    onTap: widget.onCamera,
+                  ),
+                  const SizedBox(width: 16),
+                  _buildAttachmentOption(
+                    icon: Icons.photo_library_rounded,
+                    label: 'Gallery',
+                    color: Colors.green,
+                    onTap: widget.onGallery,
+                  ),
+                  const SizedBox(width: 16),
+                  _buildAttachmentOption(
+                    icon: Icons.videocam_rounded,
+                    label: 'Video',
+                    color: Colors.red,
+                    onTap: widget.onVideoCamera,
+                  ),
+                  const SizedBox(width: 16),
+                  _buildAttachmentOption(
+                    icon: Icons.video_library_rounded,
+                    label: 'Videos',
+                    color: Colors.purple,
+                    onTap: widget.onVideoGallery,
+                  ),
+                  const SizedBox(width: 16),
+                  _buildAttachmentOption(
+                    icon: Icons.location_on_rounded,
+                    label: 'Location',
+                    color: Colors.orange,
+                    onTap: () {
+                      setState(() {
+                        _showAttachments = false;
+                      });
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Sharing current location...'),
+                          duration: Duration(seconds: 2),
+                          backgroundColor: PulseColors.primary,
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              ),
             )
           : const SizedBox.shrink(),
     );

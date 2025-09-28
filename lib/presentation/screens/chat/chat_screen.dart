@@ -273,6 +273,8 @@ class _ChatScreenState extends State<ChatScreen> {
             onSend: _sendMessage,
             onCamera: _handleCameraAction,
             onGallery: _handleGalleryAction,
+              onVideoCamera: _handleVideoCameraAction,
+              onVideoGallery: _handleVideoGalleryAction,
             onVoice: _handleVoiceAction,
             onTyping: () {
               // Debounce typing status to avoid spam
@@ -1292,6 +1294,64 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
+  void _handleVideoCameraAction() async {
+    try {
+      AppLogger.debug('Opening camera for video capture');
+
+      final picker = ImagePicker();
+      final videoFile = await picker.pickVideo(
+        source: ImageSource.camera,
+        maxDuration: const Duration(minutes: 5),
+      );
+
+      if (videoFile != null) {
+        AppLogger.debug('Video captured from camera: ${videoFile.path}');
+        await _sendVideoMessage(File(videoFile.path));
+      } else {
+        AppLogger.debug('Video capture cancelled by user');
+      }
+    } catch (e) {
+      AppLogger.error('Error capturing video from camera: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Failed to capture video. Please try again.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  void _handleVideoGalleryAction() async {
+    try {
+      AppLogger.debug('Opening gallery for video selection');
+
+      final picker = ImagePicker();
+      final videoFile = await picker.pickVideo(
+        source: ImageSource.gallery,
+        maxDuration: const Duration(minutes: 5),
+      );
+
+      if (videoFile != null) {
+        AppLogger.debug('Video selected from gallery: ${videoFile.path}');
+        await _sendVideoMessage(File(videoFile.path));
+      } else {
+        AppLogger.debug('Gallery video selection cancelled by user');
+      }
+    } catch (e) {
+      AppLogger.error('Error selecting video from gallery: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Failed to select video. Please try again.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
   void _handleVoiceAction() {
     // Handle voice message recording
     ScaffoldMessenger.of(context).showSnackBar(
@@ -1392,6 +1452,106 @@ class _ChatScreenState extends State<ChatScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Failed to send image: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _sendVideoMessage(File videoFile) async {
+    try {
+      AppLogger.debug('Preparing to send video message: ${videoFile.path}');
+
+      // Don't allow sending messages to "new" conversation
+      if (widget.conversationId == 'new') {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Please wait for conversation to be created'),
+          ),
+        );
+        return;
+      }
+
+      final currentUserId = _currentUserId;
+      if (currentUserId == null) {
+        AppLogger.warning('Cannot send video - no current user ID');
+        return;
+      }
+
+      AppLogger.debug(
+        'Sending video message with currentUserId: $currentUserId',
+      );
+
+      // Show uploading indicator
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Row(
+              children: [
+                SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+                SizedBox(width: 16),
+                Text('Uploading video...'),
+              ],
+            ),
+            duration: Duration(seconds: 60), // Longer for videos
+          ),
+        );
+      }
+
+      // Upload video using MediaUploadService
+      final mediaUploadService = ServiceLocator().mediaUploadService;
+      final uploadResult = await mediaUploadService.uploadMedia(
+        filePath: videoFile.path,
+        category: media_service.MediaCategory.chatMessage,
+        type: media_service.MediaType.video,
+        isPublic: false,
+        requiresModeration: false,
+      );
+
+      if (uploadResult.success && uploadResult.mediaId != null) {
+        AppLogger.debug('Video uploaded successfully: ${uploadResult.mediaId}');
+
+        // Send message with uploaded media
+        context.read<ChatBloc>().add(
+          SendMessage(
+            conversationId: widget.conversationId,
+            type: MessageType.video,
+            content: '', // No text content for video messages
+            currentUserId: currentUserId,
+            mediaIds: [uploadResult.mediaId!],
+          ),
+        );
+
+        _scrollToBottom();
+
+        // Show success feedback
+        if (mounted) {
+          ScaffoldMessenger.of(context).clearSnackBars();
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Video sent successfully!'),
+              backgroundColor: Colors.green,
+              duration: Duration(seconds: 2),
+            ),
+          );
+        }
+      } else {
+        throw Exception(
+          'Upload failed: ${uploadResult.error ?? "Unknown error"}',
+        );
+      }
+    } catch (e) {
+      AppLogger.error('Error sending video message: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).clearSnackBars();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to send video: ${e.toString()}'),
             backgroundColor: Colors.red,
           ),
         );
