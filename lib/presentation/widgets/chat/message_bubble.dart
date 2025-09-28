@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:shimmer/shimmer.dart';
 
 import '../../theme/pulse_colors.dart';
 import '../../../data/models/chat_model.dart';
 import '../../../domain/entities/message.dart' as entities;
+import '../media/media_grid.dart';
+import '../media/media_viewer.dart';
 
 class MessageBubble extends StatelessWidget {
   final MessageModel message;
@@ -53,25 +56,136 @@ class MessageBubble extends StatelessWidget {
                     constraints: BoxConstraints(
                       maxWidth: MediaQuery.of(context).size.width * 0.75,
                     ),
-                    padding: const EdgeInsets.symmetric(
+                    padding: _hasMedia()
+                        ? EdgeInsets.zero
+                        : const EdgeInsets.symmetric(
                       horizontal: 16,
                       vertical: 12,
                     ),
                     decoration: BoxDecoration(
-                      color: isCurrentUser
+                      color: _hasMedia()
+                          ? Colors.transparent
+                          : (isCurrentUser
                           ? PulseColors.primary
-                          : Colors.grey[100],
+                                : Colors.grey[50]),
                       borderRadius: BorderRadius.only(
                         topLeft: const Radius.circular(20),
                         topRight: const Radius.circular(20),
-                        bottomLeft: Radius.circular(isCurrentUser ? 20 : 4),
-                        bottomRight: Radius.circular(isCurrentUser ? 4 : 20),
+                        bottomLeft: Radius.circular(isCurrentUser ? 20 : 6),
+                        bottomRight: Radius.circular(isCurrentUser ? 6 : 20),
                       ),
+                      boxShadow: _hasMedia()
+                          ? []
+                          : [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.05),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        if (message.content != null) ...[
+                        // Media content (images, videos, etc.)
+                        if (_hasMedia()) ...[
+                          ClipRRect(
+                            borderRadius: BorderRadius.only(
+                              topLeft: const Radius.circular(20),
+                              topRight: const Radius.circular(20),
+                              bottomLeft: Radius.circular(
+                                message.content?.isNotEmpty == true
+                                    ? 4
+                                    : (isCurrentUser ? 20 : 6),
+                              ),
+                              bottomRight: Radius.circular(
+                                message.content?.isNotEmpty == true
+                                    ? 4
+                                    : (isCurrentUser ? 6 : 20),
+                              ),
+                            ),
+                            child: _buildMediaContent(context),
+                          ),
+                        ],
+
+                        // Text content with media
+                        if (_hasMedia() &&
+                            message.content != null &&
+                            message.content!.isNotEmpty) ...[
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 12,
+                            ),
+                            decoration: BoxDecoration(
+                              color: isCurrentUser
+                                  ? PulseColors.primary
+                                  : Colors.grey[50],
+                              borderRadius: BorderRadius.only(
+                                bottomLeft: Radius.circular(
+                                  isCurrentUser ? 20 : 6,
+                                ),
+                                bottomRight: Radius.circular(
+                                  isCurrentUser ? 6 : 20,
+                                ),
+                              ),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  message.content!,
+                                  style: TextStyle(
+                                    color: isCurrentUser
+                                        ? Colors.white
+                                        : Colors.black87,
+                                    fontSize: 16,
+                                    height: 1.3,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      DateFormat(
+                                        'h:mm a',
+                                      ).format(message.createdAt),
+                                      style: TextStyle(
+                                        color: isCurrentUser
+                                            ? Colors.white.withValues(
+                                                alpha: 0.7,
+                                              )
+                                            : Colors.grey[600],
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                    if (isCurrentUser) ...[
+                                      const SizedBox(width: 4),
+                                      Icon(
+                                        message.status == MessageStatus.read
+                                            ? Icons.done_all
+                                            : Icons.done,
+                                        size: 16,
+                                        color:
+                                            message.status == MessageStatus.read
+                                            ? Colors.blue[300]
+                                            : Colors.white.withValues(
+                                                alpha: 0.7,
+                                              ),
+                                      ),
+                                    ],
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ]
+                        // Text-only content
+                        else if (!_hasMedia() &&
+                            message.content != null &&
+                            message.content!.isNotEmpty) ...[
                           Text(
                             message.content!,
                             style: TextStyle(
@@ -79,36 +193,90 @@ class MessageBubble extends StatelessWidget {
                                   ? Colors.white
                                   : Colors.black87,
                               fontSize: 16,
+                              height: 1.3,
                             ),
                           ),
                           const SizedBox(height: 4),
-                        ],
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              DateFormat('h:mm a').format(message.createdAt),
-                              style: TextStyle(
-                                color: isCurrentUser
-                                    ? Colors.white.withValues(alpha: 0.7)
-                                    : Colors.grey[600],
-                                fontSize: 12,
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                DateFormat('h:mm a').format(message.createdAt),
+                                style: TextStyle(
+                                  color: isCurrentUser
+                                      ? Colors.white.withValues(alpha: 0.7)
+                                      : Colors.grey[600],
+                                  fontSize: 12,
+                                ),
                               ),
-                            ),
-                            if (isCurrentUser) ...[
-                              const SizedBox(width: 4),
-                              Icon(
-                                message.status == MessageStatus.read
-                                    ? Icons.done_all
-                                    : Icons.done,
-                                size: 16,
-                                color: message.status == MessageStatus.read
-                                    ? Colors.blue[300]
-                                    : Colors.white.withValues(alpha: 0.7),
-                              ),
+                              if (isCurrentUser) ...[
+                                const SizedBox(width: 4),
+                                Icon(
+                                  message.status == MessageStatus.read
+                                      ? Icons.done_all
+                                      : Icons.done,
+                                  size: 16,
+                                  color: message.status == MessageStatus.read
+                                      ? Colors.blue[300]
+                                      : Colors.white.withValues(alpha: 0.7),
+                                ),
+                              ],
                             ],
-                          ],
-                        ),
+                          ),
+                        ],
+                        
+                        // Media-only content timestamp
+                        if (_hasMedia() &&
+                            (message.content == null ||
+                                message.content!.isEmpty)) ...[
+                          Padding(
+                            padding: const EdgeInsets.all(8),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 4,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: Colors.black.withValues(alpha: 0.6),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text(
+                                        DateFormat(
+                                          'h:mm a',
+                                        ).format(message.createdAt),
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                      if (isCurrentUser) ...[
+                                        const SizedBox(width: 4),
+                                        Icon(
+                                          message.status == MessageStatus.read
+                                              ? Icons.done_all
+                                              : Icons.done,
+                                          size: 14,
+                                          color:
+                                              message.status ==
+                                                  MessageStatus.read
+                                              ? Colors.blue[300]
+                                              : Colors.white,
+                                        ),
+                                      ],
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                       ],
                     ),
                   ),
@@ -270,6 +438,125 @@ class MessageBubble extends StatelessWidget {
             ),
           );
         }).toList(),
+      ),
+    );
+  }
+
+  /// Check if message has media content
+  bool _hasMedia() {
+    return message.mediaUrls != null &&
+        message.mediaUrls!.isNotEmpty &&
+        (message.type == entities.MessageType.image ||
+            message.type == entities.MessageType.video ||
+            message.type == entities.MessageType.gif);
+  }
+
+  /// Build media content widget
+  Widget _buildMediaContent(BuildContext context) {
+    if (!_hasMedia()) return const SizedBox.shrink();
+
+    final mediaUrls = message.mediaUrls!;
+    final heroTag = 'message_${message.id}';
+
+    // Single image with optimized display
+    if (mediaUrls.length == 1) {
+      return _buildSingleImage(context, mediaUrls.first, heroTag);
+    }
+
+    // Multiple images with grid layout
+    return MediaGrid(
+      mediaUrls: mediaUrls,
+      messageType: message.type,
+      isCurrentUser: isCurrentUser,
+      heroTagPrefix: heroTag,
+    );
+  }
+
+  /// Build single image with modern styling
+  Widget _buildSingleImage(
+    BuildContext context,
+    String imageUrl,
+    String heroTag,
+  ) {
+    return GestureDetector(
+      onTap: () => _openMediaViewer(context, [imageUrl], 0, heroTag),
+      child: Hero(
+        tag: '${heroTag}_0',
+        child: Container(
+          constraints: const BoxConstraints(maxWidth: 280, maxHeight: 300),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: CachedNetworkImage(
+              imageUrl: imageUrl,
+              fit: BoxFit.cover,
+              placeholder: (context, url) => _buildImagePlaceholder(),
+              errorWidget: (context, url, error) => _buildImageError(),
+              fadeInDuration: const Duration(milliseconds: 200),
+              fadeOutDuration: const Duration(milliseconds: 100),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Build shimmer placeholder for loading images
+  Widget _buildImagePlaceholder() {
+    return AspectRatio(
+      aspectRatio: 4 / 3,
+      child: Shimmer.fromColors(
+        baseColor: Colors.grey[300]!,
+        highlightColor: Colors.grey[100]!,
+        child: Container(
+          color: Colors.grey[300],
+          child: const Center(
+            child: Icon(Icons.image_outlined, color: Colors.grey, size: 32),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Build error widget for failed image loading
+  Widget _buildImageError() {
+    return AspectRatio(
+      aspectRatio: 4 / 3,
+      child: Container(
+        color: Colors.grey[100],
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.broken_image_rounded, color: Colors.grey[400], size: 32),
+            const SizedBox(height: 8),
+            Text(
+              'Image unavailable',
+              style: TextStyle(color: Colors.grey[600], fontSize: 12),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Open media viewer for full-screen viewing
+  void _openMediaViewer(
+    BuildContext context,
+    List<String> mediaUrls,
+    int initialIndex,
+    String heroTag,
+  ) {
+    Navigator.of(context).push(
+      PageRouteBuilder<void>(
+        pageBuilder: (context, animation, secondaryAnimation) => MediaViewer(
+          mediaUrls: mediaUrls,
+          initialIndex: initialIndex,
+          messageType: message.type,
+          heroTag: heroTag,
+        ),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          return FadeTransition(opacity: animation, child: child);
+        },
+        transitionDuration: const Duration(milliseconds: 300),
       ),
     );
   }

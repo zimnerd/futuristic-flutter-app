@@ -204,11 +204,18 @@ class _AiMessageInputState extends State<AiMessageInput>
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
       decoration: BoxDecoration(
         color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 20,
+            offset: const Offset(0, -2),
+          ),
+        ],
         border: Border(
-          top: BorderSide(color: Colors.grey[200]!),
+          top: BorderSide(color: Colors.grey[100]!, width: 0.5),
         ),
       ),
       child: Column(
@@ -219,11 +226,13 @@ class _AiMessageInputState extends State<AiMessageInput>
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               _buildAttachmentButton(),
-              const SizedBox(width: 8),
+              const SizedBox(width: 12),
               Expanded(child: _buildTextInput()),
-              const SizedBox(width: 8),
-              _buildAiButton(),
-              const SizedBox(width: 8),
+              const SizedBox(width: 12),
+              if (!_isComposing) ...[
+                _buildAiButton(),
+                const SizedBox(width: 8),
+              ],
               _buildSendButton(),
             ],
           ),
@@ -664,16 +673,37 @@ class _AiMessageInputState extends State<AiMessageInput>
   }
 
   Widget _buildAttachmentButton() {
-    return IconButton(
-      icon: Icon(
-        _showAttachments ? Icons.close : Icons.add,
-        color: Colors.grey[600],
+    return Container(
+      width: 44,
+      height: 44,
+      decoration: BoxDecoration(
+        color: _showAttachments
+            ? PulseColors.primary.withValues(alpha: 0.1)
+            : Colors.grey[100],
+        shape: BoxShape.circle,
+        border: _showAttachments
+            ? Border.all(
+                color: PulseColors.primary.withValues(alpha: 0.3),
+                width: 1.5,
+              )
+            : null,
       ),
-      onPressed: () {
-        setState(() {
-          _showAttachments = !_showAttachments;
-        });
-      },
+      child: IconButton(
+        icon: AnimatedRotation(
+          turns: _showAttachments ? 0.125 : 0, // 45 degree rotation
+          duration: const Duration(milliseconds: 200),
+          child: Icon(
+            _showAttachments ? Icons.close_rounded : Icons.add_rounded,
+            color: _showAttachments ? PulseColors.primary : Colors.grey[600],
+            size: 20,
+          ),
+        ),
+        onPressed: () {
+          setState(() {
+            _showAttachments = !_showAttachments;
+          });
+        },
+      ),
     );
   }
 
@@ -681,20 +711,61 @@ class _AiMessageInputState extends State<AiMessageInput>
     return Container(
       constraints: const BoxConstraints(maxHeight: 120),
       decoration: BoxDecoration(
-        color: Colors.grey[100],
+        color: Colors.grey[50],
         borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: _isComposing
+              ? PulseColors.primary.withValues(alpha: 0.3)
+              : Colors.grey[200]!,
+          width: 1.5,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: TextField(
         controller: widget.controller,
         maxLines: null,
         textCapitalization: TextCapitalization.sentences,
-        decoration: const InputDecoration(
+        style: const TextStyle(
+          fontSize: 16,
+          height: 1.4,
+          color: Colors.black87,
+        ),
+        decoration: InputDecoration(
           hintText: 'Type a message...',
+          hintStyle: TextStyle(color: Colors.grey[600], fontSize: 16),
           border: InputBorder.none,
-          contentPadding: EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 12,
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 20,
+            vertical: 14,
           ),
+          suffixIcon: _isComposing
+              ? GestureDetector(
+                  onTap: () {
+                    widget.controller.clear();
+                    setState(() {
+                      _isComposing = false;
+                    });
+                  },
+                  child: Container(
+                    margin: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.grey[300],
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.close,
+                      size: 18,
+                      color: Colors.grey,
+                    ),
+                  ),
+                )
+              : null,
         ),
         onSubmitted: (_) => _onSendPressed(),
       ),
@@ -702,18 +773,43 @@ class _AiMessageInputState extends State<AiMessageInput>
   }
 
   Widget _buildSendButton() {
-    return Container(
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 200),
+      curve: Curves.easeInOut,
       width: 48,
       height: 48,
       decoration: BoxDecoration(
-        color: _isComposing ? PulseColors.primary : Colors.grey[400],
+        gradient: _isComposing
+            ? LinearGradient(
+                colors: [
+                  PulseColors.primary,
+                  PulseColors.primary.withValues(alpha: 0.8),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              )
+            : null,
+        color: _isComposing ? null : Colors.grey[300],
         shape: BoxShape.circle,
+        boxShadow: _isComposing
+            ? [
+                BoxShadow(
+                  color: PulseColors.primary.withValues(alpha: 0.3),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ]
+            : [],
       ),
       child: IconButton(
-        icon: Icon(
-          _isComposing ? Icons.send : Icons.mic,
-          color: Colors.white,
-          size: 20,
+        icon: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 200),
+          child: Icon(
+            _isComposing ? Icons.send_rounded : Icons.mic_rounded,
+            key: ValueKey(_isComposing),
+            color: _isComposing ? Colors.white : Colors.grey[600],
+            size: 22,
+          ),
         ),
         onPressed: _isComposing ? _onSendPressed : widget.onVoice,
       ),
@@ -721,41 +817,47 @@ class _AiMessageInputState extends State<AiMessageInput>
   }
 
   Widget _buildAttachmentOptions() {
-    return Container(
-      height: 56,
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+      height: _showAttachments ? 72 : 0,
       margin: const EdgeInsets.only(bottom: 8),
-      child: Row(
-        children: [
-          _buildAttachmentOption(
-            icon: Icons.camera_alt,
-            label: 'Camera',
-            color: Colors.blue,
-            onTap: widget.onCamera,
-          ),
-          const SizedBox(width: 20),
-          _buildAttachmentOption(
-            icon: Icons.photo_library,
-            label: 'Gallery',
-            color: Colors.green,
-            onTap: widget.onGallery,
-          ),
-          const SizedBox(width: 20),
-          _buildAttachmentOption(
-            icon: Icons.location_on,
-            label: 'Location',
-            color: Colors.orange,
-            onTap: () {
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Sharing current location...'),
-                  duration: Duration(seconds: 2),
+      child: _showAttachments
+          ? Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                _buildAttachmentOption(
+                  icon: Icons.camera_alt_rounded,
+                  label: 'Camera',
+                  color: Colors.blue,
+                  onTap: widget.onCamera,
                 ),
-              );
-            },
-          ),
-        ],
-      ),
+                _buildAttachmentOption(
+                  icon: Icons.photo_library_rounded,
+                  label: 'Gallery',
+                  color: Colors.green,
+                  onTap: widget.onGallery,
+                ),
+                _buildAttachmentOption(
+                  icon: Icons.location_on_rounded,
+                  label: 'Location',
+                  color: Colors.orange,
+                  onTap: () {
+                    setState(() {
+                      _showAttachments = false;
+                    });
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Sharing current location...'),
+                        duration: Duration(seconds: 2),
+                        backgroundColor: PulseColors.primary,
+                      ),
+                    );
+                  },
+                ),
+              ],
+            )
+          : const SizedBox.shrink(),
     );
   }
 
