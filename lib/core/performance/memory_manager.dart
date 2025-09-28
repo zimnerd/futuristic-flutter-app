@@ -77,10 +77,10 @@ class MemoryManager {
     if (!kDebugMode) return;
     
     final stats = getMemoryStats();
-    print('=== MEMORY STATISTICS ===');
-    print('Messages: ${stats['messageCache']}');
-    print('Media: ${stats['mediaCache']}');
-    print('========================');
+    debugPrint('=== MEMORY STATISTICS ===');
+    debugPrint('Messages: ${stats['messageCache']}');
+    debugPrint('Media: ${stats['mediaCache']}');
+    debugPrint('========================');
   }
   
   /// Clear specific conversation from memory

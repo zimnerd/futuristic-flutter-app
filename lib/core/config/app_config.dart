@@ -1,5 +1,6 @@
-/// Environment configuration for the app
 import 'dart:io';
+
+/// Environment configuration for the app
 
 class AppConfig {
   AppConfig._();

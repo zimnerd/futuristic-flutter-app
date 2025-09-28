@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:flutter/foundation.dart';
 import 'user.dart';
 import 'message.dart';
 
@@ -98,7 +99,7 @@ class Conversation extends Equatable {
                 });
               } catch (e) {
                 // Fallback to a basic user if participant parsing fails
-                print('Warning: Error parsing participant: $e');
+                debugPrint('Warning: Error parsing participant: $e');
                 final participantMap = p as Map<String, dynamic>;
                 return User.fromJson({
                   'id': participantMap['userId'] ?? '',

@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:developer' as dev;
+import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -67,15 +68,15 @@ class LocationService {
     try {
       // Check permissions
       LocationPermission permission = await Geolocator.checkPermission();
-      print('LocationService: Current permission status: $permission');
+      debugPrint('LocationService: Current permission status: $permission');
       
       if (permission == LocationPermission.denied) {
-        print('LocationService: Requesting permission...');
+        debugPrint('LocationService: Requesting permission...');
         permission = await Geolocator.requestPermission();
-        print('LocationService: Permission after request: $permission');
+        debugPrint('LocationService: Permission after request: $permission');
         
         if (permission == LocationPermission.denied) {
-          print('LocationService: Permission denied by user');
+          debugPrint('LocationService: Permission denied by user');
           return null;
         }
       }
