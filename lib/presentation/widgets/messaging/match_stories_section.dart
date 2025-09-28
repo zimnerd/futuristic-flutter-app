@@ -229,12 +229,6 @@ class _MatchStoryAvatar extends StatelessWidget {
     final now = DateTime.now();
     final difference = now.difference(matchTime);
 
-    // Debug logging to identify the issue
-    print('🕐 Match time: $matchTime');
-    print('🕐 Current time: $now');
-    print(
-      '🕐 Difference: ${difference.inMinutes}m, ${difference.inHours}h, ${difference.inDays}d',
-    );
 
     // Handle edge cases
     if (difference.isNegative) {
@@ -270,6 +264,7 @@ class MatchStoryData {
   final bool isSuperLike;
   final DateTime? matchedTime;
   final UserProfile? userProfile;
+  final String? conversationId;
 
   const MatchStoryData({
     required this.id,
@@ -279,6 +274,7 @@ class MatchStoryData {
     this.isSuperLike = false,
     this.matchedTime,
     this.userProfile,
+    this.conversationId,
   });
 
   /// Create from MatchModel and UserProfile

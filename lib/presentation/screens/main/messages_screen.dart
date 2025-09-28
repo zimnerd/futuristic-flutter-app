@@ -94,13 +94,11 @@ class _MessagesScreenState extends State<MessagesScreen> {
         String lastMessagePreview = 'No messages yet';
         if (conversation.lastMessage != null) {
           final content = conversation.lastMessage!.content;
-          print('🐛 Processing message content: "$content"');
           if (content.isNotEmpty) {
             // Truncate long messages for preview
             lastMessagePreview = content.length > 50
                 ? '${content.substring(0, 50)}...'
                 : content;
-            print('🐛 Final preview: "$lastMessagePreview"');
           }
         }
         
@@ -193,15 +191,37 @@ class _MessagesScreenState extends State<MessagesScreen> {
     }
   }
   void _onMatchStoryTap(MatchStoryData match) {
-    AppLogger.debug('Match tapped: ${match.name} (${match.userId})');
-    // Create a conversation first, then navigate to chat when it's ready
+    AppLogger.debug(
+      'Match tapped: ${match.name} (${match.userId}) - ConversationId: ${match.conversationId}',
+    );
+
+    // If conversation already exists, navigate directly to chat
+    if (match.conversationId != null && match.conversationId!.isNotEmpty) {
+      AppLogger.debug(
+        '🚀 Using existing conversation: ${match.conversationId}',
+      );
+      Navigator.pushNamed(
+        context,
+        '/chat',
+        arguments: {
+          'conversationId': match.conversationId,
+          'otherUserId': match.userId,
+          'otherUserName': match.name,
+          'otherUserPhoto': match.avatarUrl,
+        },
+      );
+      return;
+    }
+
+    // Fallback: Create conversation if ID is missing (shouldn't happen normally)
+    AppLogger.debug('⚠️ No conversation ID found, creating new conversation');
     context.read<ChatBloc>().add(
       CreateConversation(participantId: match.userId),
     );
 
     // Store match data for navigation after conversation is created
     _pendingMatchNavigation = {
-      'matchId': match.id, // Store match ID for removing from list
+      'matchId': match.id,
       'otherUserId': match.userId,
       'otherUserName': match.name,
       'otherUserPhoto': match.avatarUrl,
@@ -270,10 +290,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
               BlocBuilder<MatchBloc, MatchState>(
                 builder: (context, matchState) {
                   print('🐛 MatchBloc state: ${matchState.runtimeType}');
-                if (matchState is MatchesLoaded) {
-                    print(
-                      '🐛 MatchesLoaded: ${matchState.matches.length} matches',
-                    );
+                  if (matchState is MatchesLoaded) {
                   // Convert MatchModel to MatchStoryData synchronously for now
                   final matchStories = matchState.matches.map((match) {
                     // Use cached enriched match if available, otherwise create basic one
@@ -300,10 +317,6 @@ class _MessagesScreenState extends State<MessagesScreen> {
                           ? match.userProfile!.photos.first.url
                           : '';
 
-                      print(
-                        '🐛 Match ${userName}: avatarUrl="$avatarUrl", photos=${match.userProfile?.photos.length ?? 0}',
-                      );
-
                     final matchStory = MatchStoryData(
                       id: match.id,
                       userId: otherUserId,
@@ -313,6 +326,8 @@ class _MessagesScreenState extends State<MessagesScreen> {
                             avatarUrl, // Use real photo from parsed userProfile
                       isSuperLike: false, // MatchModel doesn't have this info
                       matchedTime: match.matchedAt,
+                        conversationId: match
+                            .conversationId, // Include existing conversation ID
                     );
 
                     // Cache for future use

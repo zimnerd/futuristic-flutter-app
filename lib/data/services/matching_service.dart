@@ -388,15 +388,6 @@ class MatchingService {
 
       // Apply client-side status filtering if needed
       if (status != null) {
-        print(
-          '🔍 MatchingService: Filtering ${matchModels.length} matches by status: $status',
-        );
-        for (final match in matchModels) {
-          print(
-            '🔍 MatchingService: Match ${match.id}: status="${match.status}"',
-          );
-        }
-        
         matchModels = matchModels.where((match) {
           // Map various status values to backend statuses
           bool include = false;
@@ -421,15 +412,8 @@ class MatchingService {
               include = true; // Return all if unknown status
           }
           
-          print(
-            '🔍 MatchingService: Match ${match.id} with status "${match.status}" ${include ? 'INCLUDED' : 'EXCLUDED'} for filter "$status"',
-          );
           return include;
         }).toList();
-        
-        print(
-          '🔍 MatchingService: After filtering: ${matchModels.length} matches remain',
-        );
       }
 
       return matchModels;

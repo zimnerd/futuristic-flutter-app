@@ -506,7 +506,6 @@ class ChatRepositoryImpl implements ChatRepository {
     Map<String, dynamic> data,
     String otherUserId,
   ) {
-    _logger.d('🐛 Transforming API response to ConversationModel: $data');
     
     // Log the conversation ID to debug - check multiple possible fields
     final conversationId =
