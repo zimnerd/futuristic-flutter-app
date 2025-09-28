@@ -32,25 +32,101 @@ class Conversation extends Equatable {
 
   /// Create Conversation from JSON
   factory Conversation.fromJson(Map<String, dynamic> json) {
-    return Conversation(
-      id: json['id'] as String,
-      title: json['title'] as String?,
-      participants: (json['participants'] as List?)
-          ?.map((p) => User.fromJson(p as Map<String, dynamic>))
-          .toList() ?? [],
-      lastMessage: json['lastMessage'] != null
-          ? Message.fromJson(json['lastMessage'] as Map<String, dynamic>)
-          : null,
-      lastActivity: json['lastActivity'] != null
-          ? DateTime.parse(json['lastActivity'] as String)
-          : null,
-      unreadCount: json['unreadCount'] as int? ?? 0,
-      isActive: json['isActive'] as bool? ?? true,
-      isBlocked: json['isBlocked'] as bool? ?? false,
-      metadata: json['metadata'] as Map<String, dynamic>?,
-      createdAt: DateTime.parse(json['createdAt'] as String),
-      updatedAt: DateTime.parse(json['updatedAt'] as String),
-    );
+    try {
+      final String conversationId = json['id'] as String;
+      final String? conversationTitle =
+          json['title'] as String? ?? json['name'] as String?;
+      
+      return Conversation(
+        id: conversationId,
+        title: conversationTitle,
+        participants:
+            (json['participants'] as List?)?.map<User>((p) {
+              try {
+                // Transform participant data to match User format
+                final participant = p as Map<String, dynamic>;
+
+                // Extract participant fields with fallbacks
+                final userId = participant['userId'] ?? participant['id'] ?? '';
+                final email = participant['email'] ?? '';
+                final username = participant['username'];
+                final firstName = participant['firstName'];
+                final lastName = participant['lastName'];
+                final bio = participant['bio'];
+                final age = participant['age'];
+                final gender = participant['gender'];
+                final avatar = participant['avatar'];
+                final location = participant['location'];
+                final interests = participant['interests'] ?? [];
+                final photos = participant['photos'] ?? [];
+                final isOnline = participant['isOnline'] ?? false;
+                final lastSeen = participant['lastSeen'];
+                final isVerified = participant['isVerified'] ?? false;
+                final isPremium = participant['isPremium'] ?? false;
+                final preferences = participant['preferences'];
+                final metadata = participant['metadata'];
+                final createdAt =
+                    participant['createdAt'] ??
+                    participant['joinedAt'] ??
+                    DateTime.now().toIso8601String();
+                final updatedAt =
+                    participant['updatedAt'] ??
+                    participant['lastReadAt'] ??
+                    DateTime.now().toIso8601String();
+
+                return User.fromJson({
+                  'id': userId,
+                  'email': email,
+                  'username': username,
+                  'firstName': firstName,
+                  'lastName': lastName,
+                  'bio': bio,
+                  'age': age,
+                  'gender': gender,
+                  'profileImageUrl': avatar, // Map avatar to profileImageUrl
+                  'location': location,
+                  'interests': interests,
+                  'photos': photos,
+                  'isOnline': isOnline,
+                  'lastSeen': lastSeen,
+                  'isVerified': isVerified,
+                  'isPremium': isPremium,
+                  'preferences': preferences,
+                  'metadata': metadata,
+                  'createdAt': createdAt,
+                  'updatedAt': updatedAt,
+                });
+              } catch (e) {
+                // Fallback to a basic user if participant parsing fails
+                print('Warning: Error parsing participant: $e');
+                final participantMap = p as Map<String, dynamic>;
+                return User.fromJson({
+                  'id': participantMap['userId'] ?? '',
+                  'username': participantMap['username'] ?? 'Unknown',
+                  'email': '',
+                  'createdAt': DateTime.now().toIso8601String(),
+                  'updatedAt': DateTime.now().toIso8601String(),
+                });
+              }
+            }).toList() ??
+            [],
+        lastMessage: json['lastMessage'] != null
+            ? Message.fromJson(json['lastMessage'] as Map<String, dynamic>)
+            : null,
+        lastActivity: json['lastActivity'] != null
+            ? DateTime.parse(json['lastActivity'] as String)
+            : null,
+        unreadCount: json['unreadCount'] as int? ?? 0,
+        isActive: json['isActive'] as bool? ?? true,
+        isBlocked: json['isBlocked'] as bool? ?? false,
+        metadata: json['metadata'] as Map<String, dynamic>?,
+        createdAt: DateTime.parse(json['createdAt'] as String),
+        updatedAt: DateTime.parse(json['updatedAt'] as String),
+      );
+    } catch (e) {
+      print('Warning: Error in Conversation.fromJson: $e');
+      rethrow;
+    }
   }
 
   /// Convert Conversation to JSON
@@ -78,6 +154,31 @@ class Conversation extends Equatable {
       return participants.first;
     }
     return null;
+  }
+
+  /// Get avatar URL for conversation
+  String get avatar {
+    if (participants.isNotEmpty) {
+      // For 1-on-1 conversations, use the other participant's avatar
+      // For group conversations, use the first participant's avatar
+      final targetUser = otherParticipant ?? participants.first;
+
+      // First try profileImageUrl
+      if (targetUser.profileImageUrl != null &&
+          targetUser.profileImageUrl!.isNotEmpty) {
+        print('🐛 Using profileImageUrl: ${targetUser.profileImageUrl}');
+        return targetUser.profileImageUrl!;
+      }
+
+      // Fallback to first photo if available
+      if (targetUser.photos.isNotEmpty) {
+        print('🐛 Using first photo: ${targetUser.photos.first}');
+        return targetUser.photos.first;
+      }
+
+      print('🐛 No avatar found for user: ${targetUser.name}');
+    }
+    return '';
   }
 
   /// Get display name for conversation

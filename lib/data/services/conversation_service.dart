@@ -25,78 +25,8 @@ class ConversationService {
         final responseData = response.data['data'] ?? response.data;
         final List<dynamic> data =
             responseData['conversations'] ?? responseData ?? [];
-        final conversations = data.map((json) {
-          // Transform backend ConversationResult to frontend Conversation format
-          final participants = (json['participants'] as List?) ?? [];
-
-          // Transform lastMessage from backend format if it exists
-          final lastMessageData = json['lastMessage'];
-          final lastMessage = lastMessageData != null
-              ? {
-                  'id': lastMessageData['id'] as String? ?? '',
-                  'conversationId': json['id'] as String? ?? '',
-                  'senderId': '', // We don't have senderId in backend response
-                  'recipientId': '', // We don't have recipientId in backend response
-                  'content': lastMessageData['content'] as String? ?? '',
-                  'type': lastMessageData['type'] as String? ?? 'text',
-                  'attachments': <String>[],
-                  'timestamp': lastMessageData['createdAt'] as String? ??
-                      DateTime.now().toIso8601String(),
-                  'deliveryStatus': 'delivered',
-                  'readStatus': 'read',
-                  'isEdited': false,
-                  'editedAt': null,
-                  'parentMessageId': null,
-                  'reactions': <String, List<String>>{},
-                  'metadata': <String, dynamic>{},
-                  'createdAt': lastMessageData['createdAt'] as String? ??
-                      DateTime.now().toIso8601String(),
-                  'updatedAt': lastMessageData['createdAt'] as String? ??
-                      DateTime.now().toIso8601String(),
-                }
-              : null;
-
-          final transformedJson = {
-            'id': json['id'] as String? ?? '',
-            'title': json['title'] as String?,
-            'participants': participants
-                .map(
-                  (p) => {
-                    'id': p['userId'] as String? ?? '',
-                    'email':
-                        '${p['username']}@temp.com', // Required field - use temp email
-                    'username': p['username'] as String? ?? 'Unknown',
-                    'displayName': p['username'] as String? ?? 'Unknown',
-                    'profileImageUrl': p['avatar'] as String?,
-                    'isOnline': p['isOnline'] as bool? ?? false,
-                    'lastSeen': p['lastReadAt'] as String?,
-                    'interests': <String>[],
-                    'photos': <String>[],
-                    'isVerified': false,
-                    'isPremium': false,
-                    'createdAt':
-                        p['joinedAt'] as String? ??
-                        DateTime.now().toIso8601String(),
-                    'updatedAt':
-                        p['joinedAt'] as String? ??
-                        DateTime.now().toIso8601String(),
-                  },
-                )
-                .toList(),
-            'lastMessage': lastMessage,
-            'lastActivity': lastMessage?['timestamp'] ?? json['updatedAt'] as String?,
-            'unreadCount': json['unreadCount'] as int? ?? 0,
-            'isActive': true,
-            'isBlocked': false,
-            'metadata': null,
-            'createdAt':
-                json['createdAt'] as String? ??
-                DateTime.now().toIso8601String(),
-            'updatedAt':
-                json['updatedAt'] as String? ??
-                DateTime.now().toIso8601String(),
-          };
-          return Conversation.fromJson(transformedJson);
+        final conversations = data.map<Conversation>((json) {
+          return Conversation.fromJson(json as Map<String, dynamic>);
         }).toList();
         
         _logger.d('Retrieved ${conversations.length} conversations');

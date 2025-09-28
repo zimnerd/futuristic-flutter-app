@@ -47,14 +47,23 @@ class Message extends Equatable {
 
   /// Create Message from JSON
   factory Message.fromJson(Map<String, dynamic> json) {
+    // Handle both full message and lastMessage formats
+    final String messageId = json['id'] as String;
+    final String conversationId = json['conversationId'] as String? ?? '';
+    final String senderId =
+        json['senderId'] as String? ?? json['senderUsername'] as String? ?? '';
+    final String content = json['content'] as String;
+    final String createdAtStr = json['createdAt'] as String;
+    final String updatedAtStr = json['updatedAt'] as String? ?? createdAtStr;
+
     return Message(
-      id: json['id'] as String,
-      conversationId: json['conversationId'] as String,
-      senderId: json['senderId'] as String,
+      id: messageId,
+      conversationId: conversationId,
+      senderId: senderId,
       sender: json['sender'] != null
           ? User.fromJson(json['sender'] as Map<String, dynamic>)
           : null,
-      content: json['content'] as String,
+      content: content,
       type: _parseMessageType(json['type'] as String?),
       status: _parseMessageStatus(json['status'] as String?),
       metadata: json['metadata'] as Map<String, dynamic>?,
@@ -71,8 +80,8 @@ class Message extends Equatable {
       deletedAt: json['deletedAt'] != null
           ? DateTime.parse(json['deletedAt'] as String)
           : null,
-      createdAt: DateTime.parse(json['createdAt'] as String),
-      updatedAt: DateTime.parse(json['updatedAt'] as String),
+      createdAt: DateTime.parse(createdAtStr),
+      updatedAt: DateTime.parse(updatedAtStr),
       tempId: json['tempId'] as String?,
     );
   }

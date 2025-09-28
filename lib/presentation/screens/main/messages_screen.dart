@@ -10,6 +10,7 @@ import '../../widgets/messaging/message_filters.dart';
 import '../../widgets/messaging/message_search.dart';
 import '../../widgets/messaging/match_stories_section.dart';
 import '../../../data/services/conversation_service.dart';
+import '../../../data/models/user.dart';
 import '../../blocs/match/match_bloc.dart';
 import '../../blocs/match/match_event.dart';
 import '../../blocs/match/match_state.dart';
@@ -67,13 +68,25 @@ class _MessagesScreenState extends State<MessagesScreen> {
         // Get the other participant (assuming 1-on-1 conversations)
         final otherParticipant = conversation.participants.firstWhere(
           (participant) => participant.id != currentUserId, // Compare with current user ID
-          orElse: () => conversation.participants.first,
+          orElse: () => conversation.participants.isNotEmpty
+              ? conversation.participants.first
+              : User(
+                  id: 'unknown',
+                  email: 'unknown@example.com',
+                  username: 'Unknown User',
+                  createdAt: DateTime.now(),
+                  updatedAt: DateTime.now(),
+                ),
         );
 
+        final avatarUrl = otherParticipant.profileImageUrl ?? '';
+        print('🐛 Avatar URL for ${otherParticipant.name}: "$avatarUrl"');
+        
         return ConversationData(
           id: conversation.id,
-          name: otherParticipant.displayName ?? otherParticipant.username ?? 'Unknown',
-          avatar: otherParticipant.profileImageUrl ?? '',
+          name: otherParticipant
+              .name, // Use computed name getter (displayName || fullName || fallback)
+          avatar: avatarUrl,
           lastMessage: conversation.lastMessage?.content ?? 'No messages yet',
           timestamp: _formatTimestamp(conversation.lastActivity ?? conversation.updatedAt),
           unreadCount: conversation.unreadCount,
@@ -232,7 +245,11 @@ class _MessagesScreenState extends State<MessagesScreen> {
               // Match stories section - using BlocBuilder to get real match data
               BlocBuilder<MatchBloc, MatchState>(
                 builder: (context, matchState) {
+                  print('🐛 MatchBloc state: ${matchState.runtimeType}');
                 if (matchState is MatchesLoaded) {
+                    print(
+                      '🐛 MatchesLoaded: ${matchState.matches.length} matches',
+                    );
                   // Convert MatchModel to MatchStoryData synchronously for now
                   final matchStories = matchState.matches.map((match) {
                     // Use cached enriched match if available, otherwise create basic one
@@ -250,19 +267,26 @@ class _MessagesScreenState extends State<MessagesScreen> {
                         ? match.user2Id
                         : match.user1Id;
 
-                      // Extract user data from matchReasons if available
-                      final userData =
-                          match.matchReasons?['user'] as Map<String, dynamic>?;
+                      // Use parsed userProfile from MatchModel which contains firstName + lastName
                       final userName =
-                          userData?['name'] as String? ??
+                          match.userProfile?.name ??
                           'Match ${match.id.substring(0, 8)}';
-                      final avatarUrl = userData?['avatarUrl'] as String? ?? '';
+                      final avatarUrl =
+                          match.userProfile?.photos.isNotEmpty == true
+                          ? match.userProfile!.photos.first.url
+                          : '';
+
+                      print(
+                        '🐛 Match ${userName}: avatarUrl="$avatarUrl", photos=${match.userProfile?.photos.length ?? 0}',
+                      );
 
                     final matchStory = MatchStoryData(
                       id: match.id,
                       userId: otherUserId,
-                        name: userName, // Use real user name from API
-                        avatarUrl: avatarUrl, // Use real photo from API
+                        name:
+                            userName, // Use real user name from parsed userProfile (firstName + lastName)
+                        avatarUrl:
+                            avatarUrl, // Use real photo from parsed userProfile
                       isSuperLike: false, // MatchModel doesn't have this info
                       matchedTime: match.matchedAt,
                     );
@@ -283,6 +307,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
                 }
 
                 if (matchState is MatchLoading) {
+                    print('🐛 MatchLoading state');
                   return Container(
                     height: 120,
                     padding: const EdgeInsets.symmetric(vertical: 8),
@@ -291,6 +316,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
                 }
 
                 if (matchState is MatchError) {
+                    print('🐛 MatchError: ${matchState.message}');
                   return Container(
                     height: 60,
                     padding: const EdgeInsets.symmetric(
@@ -325,6 +351,8 @@ class _MessagesScreenState extends State<MessagesScreen> {
                   );
                 }
 
+                  // If no specific state, show empty but log it
+                  print('🐛 Unknown match state: ${matchState.runtimeType}');
                 return const SizedBox.shrink();
               },
             ),
@@ -506,18 +534,49 @@ class _MessagesScreenState extends State<MessagesScreen> {
                         ),
                       ),
                       child: ClipOval(
-                        child: CachedNetworkImage(
-                          imageUrl: conversation.avatar,
-                          fit: BoxFit.cover,
-                          placeholder: (context, url) => Container(
-                            color: PulseColors.surfaceVariant,
-                            child: const Icon(Icons.person),
-                          ),
-                          errorWidget: (context, url, error) => Container(
-                            color: PulseColors.surfaceVariant,
-                            child: const Icon(Icons.person),
-                          ),
-                        ),
+                        child: conversation.avatar.isNotEmpty
+                            ? CachedNetworkImage(
+                                imageUrl: conversation.avatar,
+                                fit: BoxFit.cover,
+                                placeholder: (context, url) => Container(
+                                  color: PulseColors.surfaceVariant,
+                                  child: const Icon(
+                                    Icons.person,
+                                    color: PulseColors.onSurfaceVariant,
+                                  ),
+                                ),
+                                errorWidget: (context, url, error) {
+                                  print(
+                                    '🐛 Avatar loading error for ${conversation.name}: $error',
+                                  );
+                                  return Container(
+                                    color: PulseColors.surfaceVariant,
+                                    child: Text(
+                                      conversation.name.isNotEmpty
+                                          ? conversation.name[0].toUpperCase()
+                                          : '?',
+                                      style: const TextStyle(
+                                        color: PulseColors.onSurfaceVariant,
+                                        fontSize: 24,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  );
+                                },
+                              )
+                            : Container(
+                                color: PulseColors.primary.withOpacity(0.1),
+                                child: Text(
+                                  conversation.name.isNotEmpty
+                                      ? conversation.name[0].toUpperCase()
+                                      : '?',
+                                  style: const TextStyle(
+                                    color: PulseColors.primary,
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
                       ),
                     ),
                     if (conversation.isOnline)
@@ -548,14 +607,18 @@ class _MessagesScreenState extends State<MessagesScreen> {
                     children: [
                       Row(
                         children: [
-                          Text(
-                            conversation.name,
-                            style: PulseTextStyles.bodyLarge.copyWith(
-                              fontWeight: FontWeight.w600,
-                              color: PulseColors.onSurface,
+                          Expanded(
+                            child: Text(
+                              conversation.name,
+                              style: PulseTextStyles.bodyLarge.copyWith(
+                                fontWeight: FontWeight.w600,
+                                color: PulseColors.onSurface,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
                             ),
                           ),
-                          const Spacer(),
+                          const SizedBox(width: PulseSpacing.xs),
                           Text(
                             conversation.timestamp,
                             style: PulseTextStyles.labelSmall.copyWith(

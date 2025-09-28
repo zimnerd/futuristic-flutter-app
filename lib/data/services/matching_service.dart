@@ -388,23 +388,48 @@ class MatchingService {
 
       // Apply client-side status filtering if needed
       if (status != null) {
+        print(
+          '🔍 MatchingService: Filtering ${matchModels.length} matches by status: $status',
+        );
+        for (final match in matchModels) {
+          print(
+            '🔍 MatchingService: Match ${match.id}: status="${match.status}"',
+          );
+        }
+        
         matchModels = matchModels.where((match) {
           // Map various status values to backend statuses
+          bool include = false;
           switch (status.toLowerCase()) {
             case 'accepted':
             case 'mutual':
             case 'matched':
-              return match.status == 'matched' || match.status == 'mutual';
+              include = match.status == 'matched' || 
+                       match.status == 'mutual' || 
+                       match.status == 'ACTIVE';
+              break;
             case 'pending':
-              return match.status == 'pending';
+              include = match.status == 'pending';
+              break;
             case 'expired':
-              return match.status == 'expired';
+              include = match.status == 'expired';
+              break;
             case 'rejected':
-              return match.status == 'rejected';
+              include = match.status == 'rejected';
+              break;
             default:
-              return true; // Return all if unknown status
+              include = true; // Return all if unknown status
           }
+          
+          print(
+            '🔍 MatchingService: Match ${match.id} with status "${match.status}" ${include ? 'INCLUDED' : 'EXCLUDED'} for filter "$status"',
+          );
+          return include;
         }).toList();
+        
+        print(
+          '🔍 MatchingService: After filtering: ${matchModels.length} matches remain',
+        );
       }
 
       return matchModels;
