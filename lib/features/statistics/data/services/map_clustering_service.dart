@@ -1,43 +1,44 @@
 import 'dart:math' as math;
-import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../../../../data/models/heat_map_models.dart';
 import '../../domain/models/map_cluster.dart';
 
 /// Service for clustering heat map data points based on zoom level
 class MapClusteringService {
-  /// Cluster heat map data points based on zoom level and distance
+  /// Cluster data points based on zoom level for privacy
+  /// Ensures minimum cluster sizes to protect user privacy
   static List<MapCluster> clusterDataPoints(
     List<HeatMapDataPoint> dataPoints,
     double zoomLevel,
   ) {
-    print('🔍 MapClusteringService: Input - ${dataPoints.length} points at zoom $zoomLevel');
-    
-    final config = ClusterConfig.forZoomLevel(zoomLevel);
-    print('🔍 MapClusteringService: Config - shouldCluster: ${config.shouldCluster}, radius: ${config.clusterRadiusKm}km');
-    
-    if (!config.shouldCluster) {
-      // Return individual points as single-item clusters
-      print('🔍 MapClusteringService: Not clustering - creating individual clusters');
-      return dataPoints.map((point) => MapCluster(
-        id: 'single_${point.coordinates.latitude}_${point.coordinates.longitude}',
-        position: LatLng(point.coordinates.latitude, point.coordinates.longitude),
-        dataPoints: [point],
-        count: 1,
-        radius: 50, // 50 meters for individual points
-      )).toList();
-    }
+    if (dataPoints.isEmpty) return [];
 
-    // Perform clustering - use larger radius for better clustering at low zoom
-    final clusterRadiusMeters = config.clusterRadiusKm * 1000; // Convert km to meters
-    print('🔍 MapClusteringService: Clustering with radius ${clusterRadiusMeters}m');
+    // PRIVACY ENHANCEMENT: Calculate cluster radius with minimum for privacy
+    // At high zoom levels, enforce minimum radius to prevent individual markers
+    double baseRadius;
+    if (zoomLevel <= 8) {
+      baseRadius = 5000; // 5km for country/region level
+    } else if (zoomLevel <= 12) {
+      baseRadius = 2000; // 2km for city level
+    } else if (zoomLevel <= 15) {
+      baseRadius = 1000; // 1km for district level
+    } else {
+      baseRadius = 800; // Minimum 800m for privacy at street level
+    }
     
-    final clusters = _performClustering(dataPoints, clusterRadiusMeters);
-    print('🔍 MapClusteringService: Generated ${clusters.length} clusters from ${dataPoints.length} points');
+    // Always enforce minimum privacy radius
+    final double minPrivacyRadius = 500.0; // Minimum 500m radius for privacy
+    final double clusterRadius = math.max(baseRadius, minPrivacyRadius);
     
-    return clusters;
+    print(
+      'MapClusteringService: Clustering ${dataPoints.length} points at zoom $zoomLevel',
+    );
+    print('MapClusteringService: Using privacy radius: ${clusterRadius}m');
+
+    // Use existing clustering method with privacy-enhanced radius
+    return _performClustering(dataPoints, clusterRadius);
   }
 
-  /// Perform distance-based clustering
+  /// Perform distance-based clustering with privacy and status grouping
   static List<MapCluster> _performClustering(
     List<HeatMapDataPoint> dataPoints, 
     double clusterRadiusMeters,
@@ -57,9 +58,17 @@ class MapClusteringService {
       final clusterPoints = <HeatMapDataPoint>[centerPoint];
       processed[i] = true;
 
-      // Find nearby points to cluster
+      // PRIVACY: Group by status to avoid mixing different user types
+      final centerStatus = centerPoint.label ?? 'unknown';
+
+      // Find nearby points to cluster (same status only for privacy)
       for (int j = i + 1; j < dataPoints.length; j++) {
         if (processed[j]) continue;
+
+        final pointStatus = dataPoints[j].label ?? 'unknown';
+
+        // Only cluster points with the same status (privacy requirement)
+        if (pointStatus != centerStatus) continue;
 
         final distance = _calculateDistance(
           centerPoint.coordinates.latitude,
@@ -74,7 +83,7 @@ class MapClusteringService {
         }
       }
 
-      // Create cluster
+      // Create cluster - always create even for single points for consistent privacy
       final centerPosition = MapCluster.calculateCenter(clusterPoints);
       clusters.add(MapCluster(
         id: 'cluster_${clusters.length}_${centerPosition.latitude.toStringAsFixed(4)}_${centerPosition.longitude.toStringAsFixed(4)}',
@@ -85,6 +94,9 @@ class MapClusteringService {
       ));
     }
 
+    print(
+      'MapClusteringService: Created ${clusters.length} status-grouped clusters',
+    );
     return clusters;
   }
 

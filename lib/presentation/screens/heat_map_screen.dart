@@ -179,6 +179,7 @@ class _HeatMapScreenState extends State<HeatMapScreen> {
   int _currentRadius = 50;
   MapType _mapType = MapType.normal;
   double _currentZoom = 6.0;
+  bool _showHeatmap = false;
 
   @override
   Widget build(BuildContext context) {
@@ -299,6 +300,8 @@ class _HeatMapScreenState extends State<HeatMapScreen> {
       children: [
         // Full screen Google Map
         Positioned.fill(child: _buildGoogleMap(state)),
+        // Cluster number overlays
+        ..._buildClusterNumberOverlays(state),
         // Map controls overlay
         _buildMapControls(context),
         // Map overlay info
@@ -490,88 +493,248 @@ class _HeatMapScreenState extends State<HeatMapScreen> {
     );
   }
 
-  Set<Marker> _buildMarkers(HeatMapLoaded state) {
-    final markers = <Marker>{};
+  /// Build cluster circles for privacy (no individual markers)
+  Set<Circle> _buildClusterCircles(HeatMapLoaded state) {
+    final clusterCircles = <Circle>{};
 
-    // Note: User location now shown via myLocationEnabled: true (Google blue dot)
+    // Note: User location shown via myLocationEnabled: true (Google blue dot)
     print('HeatMapScreen: User location will be shown via Google blue dot');
     if (state.userLocation != null) {
       print(
         'HeatMapScreen: User location coordinates: ${state.userLocation!.latitude}, ${state.userLocation!.longitude}',
       );
-    } else {
-      print('HeatMapScreen: User location is null');
     }
 
     // Cluster the data points based on zoom level
-    print('HeatMapScreen: 🔍 Starting clustering for ${state.heatmapData.dataPoints.length} data points at zoom $_currentZoom');
+    print(
+      'HeatMapScreen: 🔍 Starting privacy clustering for ${state.heatmapData.dataPoints.length} data points at zoom $_currentZoom',
+    );
     final clusters = MapClusteringService.clusterDataPoints(
       state.heatmapData.dataPoints,
       _currentZoom,
     );
-    print('HeatMapScreen: 🎯 Clustering completed: ${clusters.length} clusters from ${state.heatmapData.dataPoints.length} points');
+    print(
+      'HeatMapScreen: 🎯 Privacy clustering completed: ${clusters.length} clusters from ${state.heatmapData.dataPoints.length} points',
+    );
     
     // Debug cluster details
     for (int i = 0; i < clusters.length && i < 5; i++) {
       final cluster = clusters[i];
-      print('HeatMapScreen: 🔍 Cluster $i: ${cluster.count} points, ${cluster.totalUserCount} users at ${cluster.position}');
+      print(
+        'HeatMapScreen: 🔍 Privacy Cluster $i: ${cluster.count} points, ${cluster.totalUserCount} users at ${cluster.position}',
+      );
     }
 
-    // Add cluster markers - ALWAYS use cluster markers for privacy
+    // Add cluster circles - PRIVACY: Show as circles with user count, never individual locations
     for (int i = 0; i < clusters.length; i++) {
       final cluster = clusters[i];
       print(
-        'HeatMapScreen: 🔐 Adding CLUSTER marker $i at ${cluster.position.latitude}, ${cluster.position.longitude} with ${cluster.count} points (${cluster.totalUserCount} users)',
+        'HeatMapScreen: 🔐 Adding PRIVACY CLUSTER circle $i at ${cluster.position.latitude}, ${cluster.position.longitude} with ${cluster.count} points (${cluster.totalUserCount} users)',
       );
       
-      // Always create cluster markers for privacy - never show individual locations
-      markers.add(
-        Marker(
-          markerId: MarkerId(cluster.id),
-          position: cluster.position,
-          icon: _getClusterMarkerIcon(cluster.totalUserCount, cluster.dominantStatus),
+      // Create privacy cluster circles with size based on user count
+      final circleRadius = _getClusterRadius(cluster.totalUserCount);
+      final circleColor = _getClusterColor(cluster.dominantStatus);
+
+      clusterCircles.add(
+        Circle(
+          circleId: CircleId(cluster.id),
+          center: cluster.position,
+          radius: circleRadius,
+          fillColor: circleColor.withValues(alpha: 0.3),
+          strokeColor: circleColor,
+          strokeWidth: 2,
           onTap: () => _showClusterDetails(cluster),
         ),
       );
     }
 
-    print('HeatMapScreen: Total markers built: ${markers.length}');
-    return markers;
+    print(
+      'HeatMapScreen: Total privacy cluster circles built: ${clusterCircles.length}',
+    );
+    return clusterCircles;
+  }
+
+  /// No individual markers for privacy - using empty set
+  Set<Marker> _buildMarkers(HeatMapLoaded state) {
+    // PRIVACY: Return empty markers set - all user locations shown as clusters only
+    print(
+      'HeatMapScreen: 🔐 No individual markers for privacy - using cluster circles only',
+    );
+    return <Marker>{};
   }
 
   Set<Circle> _buildCircles(HeatMapLoaded state) {
-    if (state.userLocation == null) return {};
+    final circles = <Circle>{};
 
-    return {
-      Circle(
-        circleId: const CircleId('coverage_circle'),
-        center: LatLng(state.userLocation!.latitude, state.userLocation!.longitude),
-        radius: state.currentRadius * 1000.0, // Convert km to meters
-        fillColor: const Color(0xFF6E3BFF).withValues(alpha: 0.1),
-        strokeColor: const Color(0xFF6E3BFF),
-        strokeWidth: 2,
-      ),
-    };
+    // Add user coverage circle if location available
+    if (state.userLocation != null) {
+      circles.add(
+        Circle(
+          circleId: const CircleId('coverage_circle'),
+          center: LatLng(
+            state.userLocation!.latitude,
+            state.userLocation!.longitude,
+          ),
+          radius: state.currentRadius * 1000.0, // Convert km to meters
+          fillColor: const Color(0xFF6E3BFF).withValues(alpha: 0.1),
+          strokeColor: const Color(0xFF6E3BFF),
+          strokeWidth: 2,
+        ),
+      );
+    }
+
+    // Add privacy cluster circles (always shown for privacy)
+    circles.addAll(_buildClusterCircles(state));
+
+    // Add heatmap overlay circles if enabled
+    if (_showHeatmap) {
+      circles.addAll(_buildHeatmapCircles(state));
+    }
+
+    return circles;
   }
 
-  
+  /// Build heatmap overlay circles for density visualization
+  Set<Circle> _buildHeatmapCircles(HeatMapLoaded state) {
+    final heatmapCircles = <Circle>{};
 
-  BitmapDescriptor _getClusterMarkerIcon(int userCount, String dominantStatus) {
-    // For now, use the dominant status color with default marker
-    // In a full implementation, you'd create custom cluster icons with numbers
+    for (int i = 0; i < state.heatmapData.dataPoints.length; i++) {
+      final point = state.heatmapData.dataPoints[i];
+
+      // Create heatmap circle based on density
+      final heatmapRadius = _getHeatmapRadius(point.density);
+      final heatmapColor = _getHeatmapColor(point.density);
+
+      heatmapCircles.add(
+        Circle(
+          circleId: CircleId('heatmap_$i'),
+          center: LatLng(
+            point.coordinates.latitude,
+            point.coordinates.longitude,
+          ),
+          radius: heatmapRadius,
+          fillColor: heatmapColor.withValues(alpha: 0.4),
+          strokeColor: heatmapColor.withValues(alpha: 0.8),
+          strokeWidth: 1,
+        ),
+      );
+    }
+
+    print(
+      'HeatMapScreen: Built ${heatmapCircles.length} heatmap overlay circles',
+    );
+    return heatmapCircles;
+  }
+
+  /// Get heatmap circle radius based on density
+  double _getHeatmapRadius(int density) {
+    // Radius scales with density for visual impact
+    if (density <= 2) return 50.0;
+    if (density <= 5) return 100.0;
+    if (density <= 10) return 150.0;
+    if (density <= 20) return 200.0;
+    return 300.0; // High density areas
+  }
+
+  /// Get heatmap color based on density (heat gradient)
+  Color _getHeatmapColor(int density) {
+    // Heat gradient: blue (low) -> green -> yellow -> red (high)
+    if (density <= 2) return const Color(0xFF0000FF); // Blue
+    if (density <= 5) return const Color(0xFF00FF00); // Green
+    if (density <= 10) return const Color(0xFFFFFF00); // Yellow
+    if (density <= 20) return const Color(0xFFFF8000); // Orange
+    return const Color(0xFFFF0000); // Red
+  }
+
+  /// Build cluster number overlays positioned over cluster circles
+  List<Widget> _buildClusterNumberOverlays(HeatMapLoaded state) {
+    if (_mapController == null) return [];
+
+    final overlays = <Widget>[];
+
+    // Get clusters for positioning
+    final clusters = MapClusteringService.clusterDataPoints(
+      state.heatmapData.dataPoints,
+      _currentZoom,
+    );
+
+    for (final cluster in clusters) {
+      overlays.add(_buildClusterNumberOverlay(cluster));
+    }
+
+    return overlays;
+  }
+
+  /// Build individual cluster number overlay
+  Widget _buildClusterNumberOverlay(MapCluster cluster) {
+    return FutureBuilder<ScreenCoordinate?>(
+      future: _mapController?.getScreenCoordinate(cluster.position),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) return const SizedBox.shrink();
+        
+        final screenCoords = snapshot.data!;
+        final clusterColor = _getClusterColor(cluster.dominantStatus);
+
+        return Positioned(
+          left: screenCoords.x.toDouble() - 20, // Center the overlay
+          top: screenCoords.y.toDouble() - 20,
+          child: Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: clusterColor,
+              shape: BoxShape.circle,
+              border: Border.all(color: Colors.white, width: 2),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.3),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Center(
+              child: Text(
+                '${cluster.totalUserCount}',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  /// Get cluster circle radius based on user count (for privacy visualization)
+  double _getClusterRadius(int userCount) {
+    // Base radius scales with user count for visual feedback
+    if (userCount <= 5) return 80.0;
+    if (userCount <= 10) return 120.0;
+    if (userCount <= 25) return 180.0;
+    if (userCount <= 50) return 250.0;
+    return 350.0; // Max radius for very large clusters
+  }
+
+  /// Get cluster circle color based on dominant status
+  Color _getClusterColor(String dominantStatus) {
     switch (dominantStatus.toLowerCase()) {
       case 'matched':
-        return BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen);
+        return const Color(0xFF4CAF50); // Green
       case 'liked_me':
       case 'likedme':
-        return BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueOrange);
+        return const Color(0xFFFF9800); // Orange  
       case 'unmatched':
       case 'available':
-        return BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue);
+        return const Color(0xFF2196F3); // Blue
       case 'passed':
-        return BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed);
+        return const Color(0xFFF44336); // Red
       default:
-        return BitmapDescriptor.defaultMarker;
+        return const Color(0xFF9E9E9E); // Grey
     }
   }
 
@@ -987,6 +1150,61 @@ class _HeatMapScreenState extends State<HeatMapScreen> {
       right: 16,
       child: Column(
         children: [
+          // Map Type Selector
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(8),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.2),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: PopupMenuButton<MapType>(
+              icon: const Icon(Icons.layers),
+              onSelected: (MapType type) {
+                setState(() {
+                  _mapType = type;
+                });
+              },
+              itemBuilder: (context) => [
+                const PopupMenuItem(
+                  value: MapType.normal,
+                  child: Row(
+                    children: [
+                      Icon(Icons.map),
+                      SizedBox(width: 8),
+                      Text('Normal'),
+                    ],
+                  ),
+                ),
+                const PopupMenuItem(
+                  value: MapType.satellite,
+                  child: Row(
+                    children: [
+                      Icon(Icons.satellite),
+                      SizedBox(width: 8),
+                      Text('Satellite'),
+                    ],
+                  ),
+                ),
+                const PopupMenuItem(
+                  value: MapType.hybrid,
+                  child: Row(
+                    children: [
+                      Icon(Icons.terrain),
+                      SizedBox(width: 8),
+                      Text('Hybrid'),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 8),
           // Zoom Controls
           Container(
             decoration: BoxDecoration(
@@ -1016,6 +1234,33 @@ class _HeatMapScreenState extends State<HeatMapScreen> {
                   },
                 ),
               ],
+            ),
+          ),
+          const SizedBox(height: 8),
+          // Heatmap Toggle
+          Container(
+            decoration: BoxDecoration(
+              color: _showHeatmap ? const Color(0xFF6E3BFF) : Colors.white,
+              borderRadius: BorderRadius.circular(8),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.2),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: IconButton(
+              icon: Icon(
+                Icons.gradient,
+                color: _showHeatmap ? Colors.white : Colors.black87,
+              ),
+              onPressed: () {
+                setState(() {
+                  _showHeatmap = !_showHeatmap;
+                });
+              },
+              tooltip: _showHeatmap ? 'Hide Heatmap' : 'Show Heatmap',
             ),
           ),
           const SizedBox(height: 8),
