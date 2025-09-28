@@ -49,13 +49,6 @@ class _EventsScreenState extends State<EventsScreen> {
     context.read<EventBloc>().add(FilterEventsByCategory(category));
   }
 
-  void _onToggleJoinedOnly() {
-    setState(() {
-      _showJoinedOnly = !_showJoinedOnly;
-    });
-    context.read<EventBloc>().add(ToggleJoinedOnlyFilter(_showJoinedOnly));
-  }
-
   void _onSearchChanged(String query) {
     context.read<EventBloc>().add(SearchEvents(query));
   }

@@ -4,6 +4,7 @@ import '../../../data/services/service_locator.dart';
 import '../../../data/services/auto_reply_service.dart';
 import '../../../core/services/service_locator.dart' as core;
 import '../../theme/pulse_colors.dart';
+import '../../screens/chat/widgets/ai_chat_assistant_modal.dart';
 
 class AiMessageInput extends StatefulWidget {
   final TextEditingController controller;
@@ -43,8 +44,6 @@ class _AiMessageInputState extends State<AiMessageInput>
   bool _isLoadingSuggestions = false;
   
   List<String> _suggestions = [];
-  String _selectedSuggestion = '';
-  String _aiPrompt = '';
   
   late AnimationController _aiGlowController;
   late AnimationController _suggestionController;
@@ -52,7 +51,6 @@ class _AiMessageInputState extends State<AiMessageInput>
   late Animation<double> _suggestionAnimation;
   
   final AutoReplyService _autoReplyService = ServiceLocator().autoReplyService;
-  final TextEditingController _aiPromptController = TextEditingController();
 
   @override
   void initState() {
@@ -84,7 +82,6 @@ class _AiMessageInputState extends State<AiMessageInput>
     widget.controller.removeListener(_onTextChanged);
     _aiGlowController.dispose();
     _suggestionController.dispose();
-    _aiPromptController.dispose();
     super.dispose();
   }
 
@@ -154,45 +151,12 @@ class _AiMessageInputState extends State<AiMessageInput>
     }
   }
 
-  Future<void> _generateCustomAiReply() async {
-    if (_aiPrompt.isEmpty) return;
-    
-    setState(() {
-      _isLoadingSuggestions = true;
-    });
-    
-    try {
-      final customReply = await _autoReplyService.generateCustomReply(
-        conversationId: widget.chatId,
-        lastMessage: widget.lastReceivedMessage ?? '',
-        userInstructions: _aiPrompt,
-      );
-      
-      setState(() {
-        _selectedSuggestion = customReply ?? '';
-        _isLoadingSuggestions = false;
-      });
-    } catch (e) {
-      setState(() {
-        _isLoadingSuggestions = false;
-      });
-      
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to generate custom reply: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    }
-  }
+
 
   void _useSuggestion(String suggestion) {
     widget.controller.text = suggestion;
     setState(() {
       _isComposing = true;
-      _selectedSuggestion = suggestion;
     });
   }
 
@@ -201,7 +165,24 @@ class _AiMessageInputState extends State<AiMessageInput>
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => _buildAiCustomModal(),
+      builder: (context) => AiChatAssistantModal(
+        currentUser: null, // TODO: Get current user from context
+        matchProfile: null, // TODO: Get match profile from context  
+        recentMessages: const [], // TODO: Get recent messages
+        currentMessage: widget.controller.text,
+        onMessageGenerated: (message) {
+          widget.controller.text = message;
+          setState(() {
+            _isComposing = message.isNotEmpty;
+          });
+        },
+        onMessageRefined: (message) {
+          widget.controller.text = message;
+          setState(() {
+            _isComposing = message.isNotEmpty;
+          });
+        },
+      ),
     );
   }
 
@@ -438,243 +419,7 @@ class _AiMessageInputState extends State<AiMessageInput>
     );
   }
 
-  Widget _buildAiCustomModal() {
-    return Container(
-      height: MediaQuery.of(context).size.height * 0.7,
-      padding: EdgeInsets.only(
-        bottom: MediaQuery.of(context).viewInsets.bottom,
-      ),
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            Color(0xFF0A0A0A),
-            Color(0xFF1A1A2E),
-            Color(0xFF16213E),
-          ],
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-        ),
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      child: Column(
-        children: [
-          // Handle bar
-          Container(
-            width: 40,
-            height: 4,
-            margin: const EdgeInsets.symmetric(vertical: 12),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.3),
-              borderRadius: BorderRadius.circular(2),
-            ),
-          ),
-          // Header
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [PulseColors.primary, PulseColors.secondary],
-                    ),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Icon(
-                    Icons.psychology,
-                    color: Colors.white,
-                    size: 20,
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'AI Reply Assistant',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      Text(
-                        'Describe how AI should reply',
-                        style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.7),
-                          fontSize: 14,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.close, color: Colors.white),
-                  onPressed: () => Navigator.pop(context),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 24),
-          // Content
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: Column(
-                children: [
-                  // AI Prompt Input
-                  Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: PulseColors.primary.withValues(alpha: 0.3),
-                      ),
-                    ),
-                    child: TextField(
-                      controller: _aiPromptController,
-                      style: const TextStyle(color: Colors.white),
-                      maxLines: 4,
-                      decoration: InputDecoration(
-                        hintText: 'e.g., "Reply with a funny response" or "Be supportive and caring"',
-                        hintStyle: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.5),
-                          fontSize: 14,
-                        ),
-                        border: InputBorder.none,
-                        contentPadding: const EdgeInsets.all(16),
-                      ),
-                      onChanged: (value) {
-                        setState(() {
-                          _aiPrompt = value;
-                        });
-                      },
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  // Generate Button
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: _aiPrompt.isEmpty || _isLoadingSuggestions
-                          ? null
-                          : () async {
-                              await _generateCustomAiReply();
-                              if (mounted) {
-                                Navigator.pop(context);
-                              }
-                            },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: PulseColors.primary,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: _isLoadingSuggestions
-                          ? const SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                              ),
-                            )
-                          : const Text(
-                              'Generate AI Reply',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  // Generated Reply Preview
-                  if (_selectedSuggestion.isNotEmpty)
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: PulseColors.secondary.withValues(alpha: 0.3),
-                        ),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Icon(
-                                Icons.auto_awesome,
-                                color: PulseColors.secondary,
-                                size: 16,
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                'Generated Reply',
-                                style: TextStyle(
-                                  color: PulseColors.secondary,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 12),
-                          Text(
-                            _selectedSuggestion,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 14,
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: OutlinedButton(
-                                  onPressed: () async {
-                                    await _generateCustomAiReply();
-                                  },
-                                  style: OutlinedButton.styleFrom(
-                                    side: BorderSide(color: PulseColors.primary),
-                                    foregroundColor: PulseColors.primary,
-                                  ),
-                                  child: const Text('Regenerate'),
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: ElevatedButton(
-                                  onPressed: () {
-                                    _useSuggestion(_selectedSuggestion);
-                                    Navigator.pop(context);
-                                  },
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: PulseColors.secondary,
-                                    foregroundColor: Colors.white,
-                                  ),
-                                  child: const Text('Use Reply'),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+
 
   Widget _buildAttachmentButton() {
     return Container(

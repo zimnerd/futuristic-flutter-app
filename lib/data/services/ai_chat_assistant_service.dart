@@ -1,11 +1,21 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
-import '../models/chat_model.dart';
+
 import '../models/user_model.dart';
+import '../models/message_model.dart';
 import '../../core/config/app_config.dart';
 import '../../core/utils/logger.dart';
 import 'service_locator.dart';
+
+enum AiAssistanceType {
+  conversationStarter,
+  responseAssistance,
+  messageRefinement,
+  icebreaker,
+}
+
+enum MessageRefinementType { casual, formal, flirty, friendly, witty }
 
 /// Service for AI-powered chat assistance
 class AiChatAssistantService {
@@ -15,18 +25,17 @@ class AiChatAssistantService {
 
   final String _baseUrl = AppConfig.apiBaseUrl;
 
-  /// Generate AI assistance for chat messages
-  Future<AiAssistanceResponse> generateAssistance({
-    required String userRequest,
-    required String conversationId,
-    required String userId,
-    bool includeMyProfile = false,
-    bool includeMatchProfile = true,
-    bool includeConversation = true,
-    bool includeMatchGallery = false,
-    bool includePreferences = false,
-    MessageModel? specificMessage,
-    List<MessageModel> recentMessages = const [],
+  /// Generate AI assistance based on context and type
+  Future<AiAssistanceResponse> generateAssistance(
+    AiAssistanceType assistanceType,
+    List<MessageModel> messages, {
+    required bool includeMyProfile,
+    required bool includeMatchProfile,
+    required bool includeConversation,
+    required bool includeMatchGallery,
+    required bool includePreferences,
+    String? specificMessage,
+    List<String>? recentMessages,
     UserModel? currentUser,
     UserModel? matchProfile,
   }) async {
@@ -38,30 +47,24 @@ class AiChatAssistantService {
         throw Exception('User not authenticated');
       }
 
-      final contextData = _buildContextData(
-        includeMyProfile: includeMyProfile,
-        includeMatchProfile: includeMatchProfile,
-        includeConversation: includeConversation,
-        includeMatchGallery: includeMatchGallery,
-        includePreferences: includePreferences,
-        specificMessage: specificMessage,
-        recentMessages: recentMessages,
-        currentUser: currentUser,
-        matchProfile: matchProfile,
-      );
+      final lastMessage = messages.isNotEmpty
+          ? messages.last.content
+          : specificMessage ?? '';
+      final conversationId = messages.isNotEmpty
+          ? messages.last.conversationId
+          : '';
 
       final response = await http.post(
-        Uri.parse('$_baseUrl/ai/chat-assistance'),
+        Uri.parse('$_baseUrl/ai/response-suggestions'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
         },
         body: json.encode({
-          'userRequest': userRequest,
           'conversationId': conversationId,
-          'userId': userId,
-          'context': contextData,
-          'assistanceType': specificMessage != null ? 'reply_assistance' : 'general_assistance',
+          'lastMessage': lastMessage,
+          'tone': 'friendly',
+          'count': 3,
         }),
       );
 
@@ -166,81 +169,7 @@ class AiChatAssistantService {
     }
   }
 
-  /// Build context data for AI request
-  Map<String, dynamic> _buildContextData({
-    required bool includeMyProfile,
-    required bool includeMatchProfile,
-    required bool includeConversation,
-    required bool includeMatchGallery,
-    required bool includePreferences,
-    MessageModel? specificMessage,
-    List<MessageModel> recentMessages = const [],
-    UserModel? currentUser,
-    UserModel? matchProfile,
-  }) {
-    final Map<String, dynamic> context = {};
 
-    if (includeMyProfile && currentUser != null) {
-      context['myProfile'] = {
-        'name': '${currentUser.firstName ?? ''} ${currentUser.lastName ?? ''}'.trim(),
-        'username': currentUser.username,
-        'age': currentUser.age,
-        'bio': currentUser.bio,
-        'interests': currentUser.interests,
-        'location': currentUser.location,
-      };
-    }
-
-    if (includeMatchProfile && matchProfile != null) {
-      context['matchProfile'] = {
-        'name': '${matchProfile.firstName ?? ''} ${matchProfile.lastName ?? ''}'.trim(),
-        'username': matchProfile.username,
-        'age': matchProfile.age,
-        'bio': matchProfile.bio,
-        'interests': matchProfile.interests,
-        'location': matchProfile.location,
-      };
-    }
-
-    if (includeConversation && recentMessages.isNotEmpty) {
-      // Limit to last 10 messages to reduce token usage
-      final limitedMessages = recentMessages.take(10).toList();
-      context['recentMessages'] = limitedMessages.map((msg) => {
-        'senderId': msg.senderId,
-        'content': msg.content,
-        'type': msg.type.toString(),
-        'createdAt': msg.createdAt.toIso8601String(),
-        'isFromCurrentUser': currentUser != null && msg.senderId == currentUser.id,
-      }).toList();
-    }
-
-    if (specificMessage != null) {
-      context['specificMessage'] = {
-        'senderId': specificMessage.senderId,
-        'content': specificMessage.content,
-        'type': specificMessage.type.toString(),
-        'createdAt': specificMessage.createdAt.toIso8601String(),
-        'isFromCurrentUser': currentUser != null && specificMessage.senderId == currentUser.id,
-      };
-    }
-
-    if (includeMatchGallery && matchProfile != null) {
-      // Include match's photo info for context
-      context['matchGallery'] = {
-        'hasPhotos': matchProfile.photos.isNotEmpty,
-        'photoCount': matchProfile.photos.length,
-      };
-    }
-
-    if (includePreferences) {
-      context['preferences'] = {
-        'communicationStyle': 'friendly', // Could be from user preferences
-        'tone': 'casual',
-      };
-    }
-
-    return context;
-  }
 }
 
 /// AI Assistance Response Model
