@@ -77,35 +77,37 @@ class ChatRepositoryImpl implements ChatRepository {
         .where((event) => event['type'] == 'messageReceived')
         .listen((data) async {
       try {
-        _logger.d('Processing incoming messageReceived event');
+            _logger.d('Processing incoming messageReceived event');
 
         // Parse the backend event structure: { type, data, timestamp }
         // The structure is: { type: 'messageReceived', data: { type: 'message_sent', data: {...actual message...} } }
         if (data.containsKey('data')) {
-          final outerData = data['data'] as Map<String, dynamic>;
+              final outerData = data['data'] as Map<String, dynamic>;
           
           // Extract the actual message data from the nested structure
-          // Backend sends: {type: 'messageReceived', data: {type: 'message_sent', data: {actual_message}}}
+              // Backend sends: {type: 'messageReceived', data: {type: 'message_sent', data: {actual_message}}}
           if (outerData.containsKey('data')) {
-            final messageData = outerData['data'] as Map<String, dynamic>;
+                final messageData = outerData['data'] as Map<String, dynamic>;
             final message = MessageModel.fromJson(messageData);
             
-            _logger.d('Parsed message: ${message.id} from ${message.senderUsername}');
+                _logger.d(
+                  'Parsed message: ${message.id} from ${message.senderUsername}',
+                );
             
-            // Handle optimistic message correlation if tempId exists
+                // Handle optimistic message correlation if tempId exists
             if (message.tempId != null && message.tempId!.isNotEmpty) {
               final tempId = message.tempId!;
               
-              // Skip if already processed via messageConfirmed
+                  // Skip if already processed via messageConfirmed
               if (_tempIdToRealIdMap.containsKey(tempId)) {
-                _logger.d('Message already processed, skipping: $tempId');
-                return;
+                    _logger.d('Message already processed, skipping: $tempId');
+                    return;
               }
               
-              _logger.d('Correlating optimistic message: $tempId');
+                  _logger.d('Correlating optimistic message: $tempId');
 
-              // Update optimistic message mapping
-              _tempIdToRealIdMap[tempId] = message.id;
+                  // Update optimistic message mapping
+                  _tempIdToRealIdMap[tempId] = message.id;
               _pendingOptimisticMessages.remove(tempId);
               
               // Replace optimistic message in database with real message
@@ -114,23 +116,25 @@ class ChatRepositoryImpl implements ChatRepository {
                 serverMessage: ModelConverters.messageToDbModel(message),
               );
               
-              _logger.d('Mapped optimistic message $tempId -> ${message.id}');
+                  _logger.d(
+                    'Mapped optimistic message $tempId -> ${message.id}',
+                  );
             } else {
               // Save new incoming message to database
               await _databaseService.saveMessage(
                 ModelConverters.messageToDbModel(message),
               );
-              _logger.d('Saved new message: ${message.id}');
+                  _logger.d('Saved new message: ${message.id}');
             }
             
-            // Forward message to stream for UI updates
+                // Forward message to stream for UI updates
             _incomingMessagesController.add(message);
-            _logger.d('Added message to stream: ${message.id}');
+                _logger.d('Added message to stream: ${message.id}');
           } else {
-            _logger.w('messageReceived: missing nested data field');
+                _logger.w('messageReceived: missing nested data field');
           }
         } else {
-          _logger.w('messageReceived: missing data field');
+              _logger.w('messageReceived: missing data field');
         }
       } catch (e) {
         _logger.e('Repository: Error processing incoming message: $e');
