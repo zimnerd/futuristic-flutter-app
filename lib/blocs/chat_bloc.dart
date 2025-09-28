@@ -1069,15 +1069,33 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
         final currentState = state as MessagesLoaded;
         final messages = List<MessageModel>.from(currentState.messages);
 
-        _logger.d(
-          'ChatBloc: Current conversation: ${currentState.conversationId}, Message conversation: ${event.message.conversationId}',
+        _logger.e(
+          '🔍 [CONVERSATION ID DEBUG] Current conversation: "${currentState.conversationId}" | Message conversation: "${event.message.conversationId}"',
+        );
+        _logger.e(
+          '🔍 [CONVERSATION ID DEBUG] Are they equal? ${currentState.conversationId == event.message.conversationId}',
+        );
+        _logger.e(
+          '🔍 [CONVERSATION ID DEBUG] Current length: ${currentState.conversationId.length} | Message length: ${event.message.conversationId.length}',
         );
 
         // Only add messages for the current conversation
         if (currentState.conversationId != event.message.conversationId) {
-          _logger.d('ChatBloc: Ignoring message for different conversation');
+          _logger.e(
+            '❌ [CONVERSATION ID DEBUG] FILTERING OUT MESSAGE - conversation ID mismatch!',
+          );
+          _logger.e(
+            '❌ [CONVERSATION ID DEBUG] Current: "${currentState.conversationId}"',
+          );
+          _logger.e(
+            '❌ [CONVERSATION ID DEBUG] Message: "${event.message.conversationId}"',
+          );
           return;
         }
+
+        _logger.e(
+          '✅ [CONVERSATION ID DEBUG] Conversation IDs match - processing message',
+        );
 
         // Check if this message already exists (by ID or temporary ID mapping)
         final existingIndex = messages.indexWhere(

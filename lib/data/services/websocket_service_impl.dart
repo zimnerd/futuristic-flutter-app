@@ -43,6 +43,12 @@ class WebSocketServiceImpl implements WebSocketService {
       StreamController<String>.broadcast();
   final StreamController<Duration> _latencyController =
       StreamController<Duration>.broadcast();
+  
+  // Message stream controllers - AI COMPANION PATTERN
+  final StreamController<Map<String, dynamic>> _messageController =
+      StreamController<Map<String, dynamic>>.broadcast();
+  final StreamController<Map<String, dynamic>> _errorController =
+      StreamController<Map<String, dynamic>>.broadcast();
 
   // Current namespace - matches backend chat gateway
   String _currentNamespace = '/chat';
@@ -58,6 +64,12 @@ class WebSocketServiceImpl implements WebSocketService {
 
   @override
   Stream<Duration> get latencyStream => _latencyController.stream;
+
+  /// Stream for messages received - AI COMPANION PATTERN
+  Stream<Map<String, dynamic>> get messageStream => _messageController.stream;
+
+  /// Stream for errors - AI COMPANION PATTERN
+  Stream<Map<String, dynamic>> get errorStream => _errorController.stream;
 
   @override
   String get currentNamespace => _currentNamespace;
@@ -266,6 +278,30 @@ class WebSocketServiceImpl implements WebSocketService {
         _logger.e(
           '🚨🚨🚨 [CRITICAL] messageReceived event captured! Data: $data',
         );
+      }
+      
+      // 🎯 AI COMPANION PATTERN: Forward events to message stream
+      if (event == 'messageReceived' ||
+          event == 'messageConfirmed' ||
+          event == 'messageFailed' ||
+          event == 'messageDelivered') {
+        try {
+          final eventData = {
+            'type': event,
+            'data': data,
+            'timestamp': DateTime.now().toIso8601String(),
+          };
+          _messageController.add(eventData);
+          _logger.e('✅ [AI PATTERN] Forwarded $event to message stream');
+        } catch (e) {
+          _logger.e('❌ [AI PATTERN] Error forwarding $event: $e');
+          _errorController.add({
+            'type': 'forwarding_error',
+            'error': e.toString(),
+            'originalEvent': event,
+            'originalData': data,
+          });
+        }
       }
     });
 

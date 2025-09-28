@@ -31,6 +31,10 @@ abstract class WebSocketService {
   void joinUserRoom(String userId);
   void leaveUserRoom(String userId);
 
+  // AI Companion Pattern - Message Streams
+  Stream<Map<String, dynamic>> get messageStream;
+  Stream<Map<String, dynamic>> get errorStream;
+
   // Messaging Events
   void onNewMessage(Function(Map<String, dynamic>) callback);
   void onMessageUpdate(Function(Map<String, dynamic>) callback);
