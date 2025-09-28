@@ -60,84 +60,52 @@ class ChatRepositoryImpl implements ChatRepository {
 
   /// Setup WebSocket listeners for real-time message events
   void _setupWebSocketListeners() {
-    // DEBUG: Listen for ALL events to see what's coming through
-    _logger.e('🔍 [DEBUG] Setting up WebSocket listeners...');
-
-    // First, let's verify the WebSocket connection status
-    _logger.e(
-      '🔍 [DEBUG] WebSocket isConnected: ${_webSocketService.isConnected}',
-    );
-    _logger.e(
-      '🔍 [DEBUG] WebSocket namespace: ${_webSocketService.currentNamespace}',
-    );
-
-    // Note: onAny method may not be available on WebSocketService interface
-    // We'll rely on specific event logging instead
+    _logger.d('Setting up WebSocket listeners for real-time messaging');
 
     // Listen for connection events
     _webSocketService.on('connect', (_) {
-      _logger.e('🔗 [DEBUG] Repository detected WebSocket connection');
+      _logger.d('WebSocket connected for chat repository');
     });
 
     _webSocketService.on('disconnect', (reason) {
-      _logger.e('🔌 [DEBUG] Repository detected WebSocket disconnect: $reason');
+      _logger.w('WebSocket disconnected: $reason');
     });
     
-    // Listen for incoming messages via messageStream (like AI companion)
-    _logger.e('🔧 [DEBUG] *** SETTING UP messageStream SUBSCRIPTION ***');
+    // Listen for incoming messages via messageStream (AI companion pattern)
     final webSocketImpl = _webSocketService as WebSocketServiceImpl;
     _messageSubscription = webSocketImpl.messageStream
         .where((event) => event['type'] == 'messageReceived')
         .listen((data) async {
       try {
-        _logger.e(
-          '📨 [DEBUG] *** REPOSITORY RECEIVED messageReceived EVENT *** DATA: $data',
-        );
-        _logger.e('Repository: Processing messageReceived event: $data');
+        _logger.d('Processing incoming messageReceived event');
 
         // Parse the backend event structure: { type, data, timestamp }
         // The structure is: { type: 'messageReceived', data: { type: 'message_sent', data: {...actual message...} } }
         if (data.containsKey('data')) {
           final outerData = data['data'] as Map<String, dynamic>;
-          _logger.d('Repository: Parsing message data: $outerData');
           
           // Extract the actual message data from the nested structure
+          // Backend sends: {type: 'messageReceived', data: {type: 'message_sent', data: {actual_message}}}
           if (outerData.containsKey('data')) {
             final messageData = outerData['data'] as Map<String, dynamic>;
-            _logger.d('Repository: Parsing actual message data: $messageData');
-            
-            // Debug: Log all fields to see what might be null
-            _logger.d('Repository: DEBUG - id: ${messageData['id']} (${messageData['id'].runtimeType})');
-            _logger.d('Repository: DEBUG - conversationId: ${messageData['conversationId']} (${messageData['conversationId'].runtimeType})');
-            _logger.d('Repository: DEBUG - senderId: ${messageData['senderId']} (${messageData['senderId'].runtimeType})');
-            _logger.d('Repository: DEBUG - senderUsername: ${messageData['senderUsername']} (${messageData['senderUsername'].runtimeType})');
-            
             final message = MessageModel.fromJson(messageData);
             
-            _logger.d(
-              'Repository: Parsed message - ID: ${message.id}, senderId: ${message.senderId}, content: "${message.content}"',
-            );
+            _logger.d('Parsed message: ${message.id} from ${message.senderUsername}');
             
-            // Check if this message has a tempId for correlation with optimistic messages
+            // Handle optimistic message correlation if tempId exists
             if (message.tempId != null && message.tempId!.isNotEmpty) {
               final tempId = message.tempId!;
               
-              // Check if we already processed this message via messageConfirmed
+              // Skip if already processed via messageConfirmed
               if (_tempIdToRealIdMap.containsKey(tempId)) {
-                _logger.d(
-                  'Repository: Message already processed via messageConfirmed, skipping: $tempId',
-                );
-                return; // Don't process again
+                _logger.d('Message already processed, skipping: $tempId');
+                return;
               }
               
-              _logger.d(
-                'Repository: Message contains tempId: $tempId, correlating with optimistic message',
-              );
+              _logger.d('Correlating optimistic message: $tempId');
 
-              // Update the mapping from tempId to real message ID
+              // Update optimistic message mapping
               _tempIdToRealIdMap[tempId] = message.id;
-              
-              // Remove from pending optimistic messages
               _pendingOptimisticMessages.remove(tempId);
               
               // Replace optimistic message in database with real message
@@ -146,31 +114,23 @@ class ChatRepositoryImpl implements ChatRepository {
                 serverMessage: ModelConverters.messageToDbModel(message),
               );
               
-              _logger.d(
-                'Repository: Mapped optimistic ID $tempId to real ID ${message.id} and updated database',
-              );
+              _logger.d('Mapped optimistic message $tempId -> ${message.id}');
             } else {
               // Save new incoming message to database
               await _databaseService.saveMessage(
                 ModelConverters.messageToDbModel(message),
               );
-              _logger.d(
-                'Repository: Saved incoming message to database: ${message.id}',
-              );
+              _logger.d('Saved new message: ${message.id}');
             }
+            
+            // Forward message to stream for UI updates
             _incomingMessagesController.add(message);
-            _logger.d(
-              'Repository: Added incoming message to stream: ${message.id}',
-            );
+            _logger.d('Added message to stream: ${message.id}');
           } else {
-            _logger.w(
-              'Repository: message_sent event missing nested data field: $outerData',
-            );
+            _logger.w('messageReceived: missing nested data field');
           }
         } else {
-          _logger.w(
-            'Repository: messageReceived event missing data field: $data',
-          );
+          _logger.w('messageReceived: missing data field');
         }
       } catch (e) {
         _logger.e('Repository: Error processing incoming message: $e');
