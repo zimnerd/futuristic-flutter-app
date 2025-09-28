@@ -198,18 +198,18 @@ class MessageModel extends Equatable {
 
   factory MessageModel.fromJson(Map<String, dynamic> json) {
     return MessageModel(
-      id: json['id'],
-      conversationId: json['conversationId'],
-      senderId: json['senderId'],
-      senderUsername: json['senderUsername'],
-      senderAvatar: json['senderAvatar'],
-      type: MessageType.values.byName(json['type']),
-      content: json['content'],
+      id: json['id'] as String,
+      conversationId: json['conversationId'] as String,
+      senderId: json['senderId'] as String,
+      senderUsername: json['senderUsername'] as String,
+      senderAvatar: json['senderAvatar'] as String?,
+      type: MessageType.values.byName(json['type'] as String),
+      content: json['content'] as String?,
       mediaUrls: json['mediaUrls'] != null
           ? List<String>.from(json['mediaUrls'])
           : null,
-      metadata: json['metadata'],
-      status: MessageStatus.values.byName(json['status']),
+      metadata: json['metadata'] as Map<String, dynamic>?,
+      status: MessageStatus.values.byName(json['status'] as String),
       replyTo: json['replyTo'] != null
           ? MessageModel.fromJson(json['replyTo'])
           : null,
@@ -219,13 +219,14 @@ class MessageModel extends Equatable {
               .toList()
           : null,
       editedAt: json['editedAt'] != null
-          ? DateTime.parse(json['editedAt'])
+          ? DateTime.parse(json['editedAt'] as String)
           : null,
-      isForwarded: json['isForwarded'] ?? false,
-      forwardedFromConversationId: json['forwardedFromConversationId'],
-      createdAt: DateTime.parse(json['createdAt']),
-      updatedAt: DateTime.parse(json['updatedAt']),
-      tempId: json['tempId'],
+      isForwarded: json['isForwarded'] as bool? ?? false,
+      forwardedFromConversationId:
+          json['forwardedFromConversationId'] as String?,
+      createdAt: DateTime.parse(json['createdAt'] as String),
+      updatedAt: DateTime.parse(json['updatedAt'] as String),
+      tempId: json['tempId'] as String?,
     );
   }
 
