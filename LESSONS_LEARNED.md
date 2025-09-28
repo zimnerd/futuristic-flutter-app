@@ -2017,3 +2017,65 @@ static const String statisticsUser = '$statistics/me'; // ✅ Matches backend ro
 2. **Verify mobile constants** - Ensure API paths match exactly
 3. **Test dependency injection** - Confirm services are registered in provider tree
 4. **Validate service constructors** - Ensure dependencies are properly injected
+
+---
+
+## **✅ Real-Time Chat Implementation (October 2025)**
+
+### **Problem: User-to-User Chat Not Real-Time**
+User-to-user chat messages were sent but not appearing in real-time in the UI, while AI companion chat worked perfectly.
+
+#### **Root Cause Analysis**
+1. **Different Event Handling Patterns**: AI companion used `messageStream` subscription, user chat used direct WebSocket event listeners
+2. **Nested Data Structure**: Backend sends complex nested events: `{type: 'messageReceived', data: {type: 'message_sent', data: {actual_message}}}`
+3. **Type Safety Issues**: MessageModel.fromJson not properly casting required non-nullable String fields
+
+#### **Solution: Copy AI Companion Pattern**
+**Key Insight**: The AI companion chat worked because it used the `messageStream` from WebSocketServiceImpl, which properly forwards events to a broadcast stream.
+
+```dart
+// ✅ Working Pattern (AI Companion)
+_messageSubscription = webSocketImpl.messageStream
+    .where((event) => event['type'] == 'messageReceived')
+    .listen((data) => _handleMessage(data));
+
+// ❌ Previous Pattern (User Chat) - Direct event listeners
+_webSocketService.on('messageReceived', (data) => _handleMessage(data));
+```
+
+#### **Implementation Changes**
+1. **ChatRepositoryImpl**: Replaced direct WebSocket listeners with messageStream subscription
+2. **Data Parsing**: Fixed nested structure handling: `data['data']['data']` contains actual message
+3. **MessageModel.fromJson**: Added proper type casting with `as String` for required fields
+4. **Error Handling**: Added robust null checks and type validation
+
+#### **Code Architecture Lessons**
+1. **Stream-Based Event Forwarding is Robust**: Using broadcast streams provides better error isolation
+2. **Consistent Patterns Across Features**: When one feature works, copy its exact pattern for related features
+3. **Backend Event Structure is Consistent**: Always expect nested `{type, data, timestamp}` structure
+4. **Type Safety in JSON Parsing**: Always cast required fields explicitly in factory constructors
+
+#### **Critical Implementation Details**
+```dart
+// Handle nested backend event structure
+if (data.containsKey('data')) {
+  final outerData = data['data'] as Map<String, dynamic>;
+  if (outerData.containsKey('data')) {
+    final messageData = outerData['data'] as Map<String, dynamic>;
+    final message = MessageModel.fromJson(messageData);
+    // Process message...
+  }
+}
+```
+
+#### **Debugging Patterns for Real-Time Issues**
+1. **Compare Working vs Broken Features**: Find the working pattern and copy it exactly
+2. **Log Event Structure**: Always log the full data structure to understand nesting
+3. **Validate Stream Subscriptions**: Ensure streams are properly set up and disposed
+4. **Test Message Flow**: Backend → WebSocket → Repository → Bloc → UI
+
+#### **Performance & Best Practices**
+- **Dispose Subscriptions**: Always clean up StreamSubscriptions in dispose()
+- **Error Boundaries**: Wrap message parsing in try-catch blocks
+- **Optimistic Updates**: Maintain tempId mapping for correlation with server responses
+- **Broadcast Streams**: Use for multiple listeners (Repository → Bloc)
