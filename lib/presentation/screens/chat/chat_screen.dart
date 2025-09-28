@@ -9,7 +9,7 @@ import 'package:image_picker/image_picker.dart';
 
 import '../../../blocs/chat_bloc.dart';
 import '../../../data/models/chat_model.dart';
-import '../../../services/chat_media_service.dart';
+import '../../../services/media_upload_service.dart';
 import '../../../data/services/service_locator.dart';
 import '../../../domain/entities/message.dart' show MessageType;
 import '../../../presentation/blocs/auth/auth_bloc.dart';
@@ -1325,41 +1325,67 @@ class _ChatScreenState extends State<ChatScreen> {
         'Sending image message with currentUserId: $currentUserId',
       );
 
-      // TODO: Upload image to server and get mediaUrl/mediaId
-      // For now, we'll send a text message indicating image was selected
-      const imageMessage = 'Image selected (upload feature in development)';
-
-      context.read<ChatBloc>().add(
-        SendMessage(
-          conversationId: widget.conversationId,
-          type: MessageType
-              .text, // TODO: Change to MessageType.image once upload is ready
-          content: imageMessage,
-          currentUserId: currentUserId,
-          // mediaIds: [uploadedImageId], // TODO: Add once upload service is implemented
-        ),
-      );
-
-      _scrollToBottom();
-
-      // Show success feedback
+      // Show uploading indicator
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text(
-              'Image selected successfully! Upload feature coming soon.',
+            content: Row(
+              children: [
+                SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+                SizedBox(width: 16),
+                Text('Uploading image...'),
+              ],
             ),
-            backgroundColor: Colors.green,
-            duration: Duration(seconds: 2),
+            duration: Duration(seconds: 30),
           ),
         );
+      }
+
+      // Upload image using MediaUploadService
+      final mediaUploadService = ServiceLocator().mediaUploadService;
+      final uploadResult = await mediaUploadService.uploadChatImage(imageFile.path);
+
+      if (uploadResult.success && uploadResult.mediaId != null) {
+        AppLogger.debug('Image uploaded successfully: ${uploadResult.mediaId}');
+
+        // Send message with uploaded media
+        context.read<ChatBloc>().add(
+          SendMessage(
+            conversationId: widget.conversationId,
+            type: MessageType.image,
+            content: '', // No text content for image messages
+            currentUserId: currentUserId,
+            mediaIds: [uploadResult.mediaId!],
+          ),
+        );
+
+        _scrollToBottom();
+
+        // Show success feedback
+        if (mounted) {
+          ScaffoldMessenger.of(context).clearSnackBars();
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Image sent successfully!'),
+              backgroundColor: Colors.green,
+              duration: Duration(seconds: 2),
+            ),
+          );
+        }
+      } else {
+        throw Exception('Upload failed: ${uploadResult.error ?? "Unknown error"}');
       }
     } catch (e) {
       AppLogger.error('Error sending image message: $e');
       if (mounted) {
+        ScaffoldMessenger.of(context).clearSnackBars();
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Failed to send image. Please try again.'),
+          SnackBar(
+            content: Text('Failed to send image: ${e.toString()}'),
             backgroundColor: Colors.red,
           ),
         );

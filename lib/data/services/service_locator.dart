@@ -26,7 +26,7 @@ import 'saved_payment_methods_service.dart';
 import 'ai_matching_service.dart';
 import 'icebreaker_service.dart';
 import 'auto_reply_service.dart';
-import '../../services/chat_media_service.dart';
+import '../../services/media_upload_service.dart';
 
 /// Simple service locator without external dependencies
 class ServiceLocator {
@@ -58,7 +58,7 @@ class ServiceLocator {
   late final AiMatchingService _aiMatchingService;
   late final IcebreakerService _icebreakerService;
   late final AutoReplyService _autoReplyService;
-  late final ChatMediaService _chatMediaService;
+  late final MediaUploadService _mediaUploadService;
 
   bool _isInitialized = false;
 
@@ -105,7 +105,7 @@ class ServiceLocator {
     _aiMatchingService = AiMatchingService(_apiClient);
     _icebreakerService = IcebreakerService(_apiClient);
     _autoReplyService = AutoReplyService(_apiClient);
-    _chatMediaService = ChatMediaService(
+    _mediaUploadService = MediaUploadService(
       httpClient: Dio(),
       secureStorage: secureStorage,
     );
@@ -254,10 +254,10 @@ class ServiceLocator {
     return _autoReplyService;
   }
 
-  /// Get ChatMediaService instance
-  ChatMediaService get chatMediaService {
+  /// Get MediaUploadService instance
+  MediaUploadService get mediaUploadService {
     if (!_isInitialized) initialize();
-    return _chatMediaService;
+    return _mediaUploadService;
   }
 
   /// Set auth token for all services that require authentication
