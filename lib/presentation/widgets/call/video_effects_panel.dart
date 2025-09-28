@@ -160,7 +160,7 @@ class _VideoEffectsPanelState extends State<VideoEffectsPanel>
         borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 10,
             offset: const Offset(0, -5),
           ),
@@ -174,7 +174,7 @@ class _VideoEffectsPanelState extends State<VideoEffectsPanel>
             decoration: BoxDecoration(
               border: Border(
                 bottom: BorderSide(
-                  color: Theme.of(context).dividerColor.withOpacity(0.1),
+                  color: Theme.of(context).dividerColor.withValues(alpha: 0.1),
                 ),
               ),
             ),
@@ -203,7 +203,7 @@ class _VideoEffectsPanelState extends State<VideoEffectsPanel>
             decoration: BoxDecoration(
               border: Border(
                 bottom: BorderSide(
-                  color: Theme.of(context).dividerColor.withOpacity(0.1),
+                  color: Theme.of(context).dividerColor.withValues(alpha: 0.1),
                 ),
               ),
             ),
@@ -443,7 +443,7 @@ class _VideoEffectsPanelState extends State<VideoEffectsPanel>
               Positioned.fill(
                 child: Container(
                   decoration: BoxDecoration(
-                    color: PulseColors.primary.withOpacity(0.2),
+                    color: PulseColors.primary.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(6),
                   ),
                   child: const Center(
@@ -486,7 +486,7 @@ class _VideoEffectsPanelState extends State<VideoEffectsPanel>
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.7),
+                  color: Colors.black.withValues(alpha: 0.7),
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: Text(

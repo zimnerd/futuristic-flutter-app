@@ -29,7 +29,7 @@ class MediaLoadingOptimizer {
       }
     } catch (e) {
       if (kDebugMode) {
-        print('MediaOptimizer: Failed to preload $mediaUrl: $e');
+              debugPrint('Error optimizing image: $e');
       }
     }
   }

@@ -199,8 +199,8 @@ class _EnhancedCallScreenState extends State<EnhancedCallScreen>
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            Colors.black.withOpacity(0.3),
-            Colors.black.withOpacity(0.7),
+            Colors.black.withValues(alpha: 0.3),
+            Colors.black.withValues(alpha: 0.7),
           ],
         ),
       ),
@@ -213,7 +213,7 @@ class _EnhancedCallScreenState extends State<EnhancedCallScreen>
               width: 200,
               height: 200,
               decoration: BoxDecoration(
-                color: PulseColors.primary.withOpacity(0.3),
+                color: PulseColors.primary.withValues(alpha: 0.3),
                 shape: BoxShape.circle,
                 border: Border.all(
                   color: PulseColors.primary,
@@ -233,7 +233,7 @@ class _EnhancedCallScreenState extends State<EnhancedCallScreen>
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.5),
+                color: Colors.black.withValues(alpha: 0.5),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Text(
@@ -270,7 +270,7 @@ class _EnhancedCallScreenState extends State<EnhancedCallScreen>
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: PulseColors.primary.withOpacity(0.8),
+        color: PulseColors.primary.withValues(alpha: 0.8),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Text(
@@ -300,10 +300,10 @@ class _EnhancedCallScreenState extends State<EnhancedCallScreen>
               height: 80,
               margin: const EdgeInsets.only(bottom: 8),
               decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.7),
+                color: Colors.black.withValues(alpha: 0.7),
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                  color: Colors.white.withOpacity(0.3),
+                  color: Colors.white.withValues(alpha: 0.3),
                   width: 1,
                 ),
               ),
@@ -326,7 +326,7 @@ class _EnhancedCallScreenState extends State<EnhancedCallScreen>
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
                       decoration: BoxDecoration(
-                        color: Colors.black.withOpacity(0.7),
+                        color: Colors.black.withValues(alpha: 0.7),
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: Text(
@@ -369,7 +369,7 @@ class _EnhancedCallScreenState extends State<EnhancedCallScreen>
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
-              color: Colors.black.withOpacity(0.5),
+              color: Colors.black.withValues(alpha: 0.5),
               borderRadius: BorderRadius.circular(16),
             ),
             child: const Text(
@@ -476,10 +476,10 @@ class _EnhancedCallScreenState extends State<EnhancedCallScreen>
           width: 56,
           height: 56,
           decoration: BoxDecoration(
-            color: backgroundColor ?? (isActive ? PulseColors.primary : Colors.white.withOpacity(0.2)),
+            color: backgroundColor ?? (isActive ? PulseColors.primary : Colors.white.withValues(alpha: 0.2)),
             shape: BoxShape.circle,
             border: Border.all(
-              color: Colors.white.withOpacity(0.3),
+              color: Colors.white.withValues(alpha: 0.3),
               width: 1,
             ),
           ),

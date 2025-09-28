@@ -206,7 +206,7 @@ class _GroupCallWidgetState extends State<GroupCallWidget>
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 10,
             offset: const Offset(0, 5),
           ),
@@ -369,7 +369,7 @@ class _GroupCallWidgetState extends State<GroupCallWidget>
               color: Theme.of(context).scaffoldBackgroundColor,
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: Theme.of(context).dividerColor.withOpacity(0.5),
+                color: Theme.of(context).dividerColor.withValues(alpha: 0.5),
               ),
             ),
             child: Row(
@@ -377,7 +377,7 @@ class _GroupCallWidgetState extends State<GroupCallWidget>
                 // Avatar
                 CircleAvatar(
                   radius: 20,
-                  backgroundColor: PulseColors.primary.withOpacity(0.1),
+                  backgroundColor: PulseColors.primary.withValues(alpha: 0.1),
                   backgroundImage: participant.photos.isNotEmpty
                       ? NetworkImage(participant.photos.first)
                       : null,
@@ -412,7 +412,7 @@ class _GroupCallWidgetState extends State<GroupCallWidget>
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                               decoration: BoxDecoration(
-                                color: PulseColors.primary.withOpacity(0.1),
+                                color: PulseColors.primary.withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: Text(
@@ -570,7 +570,7 @@ class _GroupCallWidgetState extends State<GroupCallWidget>
           color: Theme.of(context).scaffoldBackgroundColor,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: Theme.of(context).dividerColor.withOpacity(0.5),
+            color: Theme.of(context).dividerColor.withValues(alpha: 0.5),
           ),
         ),
         child: Column(

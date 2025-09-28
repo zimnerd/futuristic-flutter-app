@@ -135,7 +135,7 @@ class _SmartMatchWidgetState extends State<SmartMatchWidget>
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 10,
             offset: const Offset(0, 5),
           ),
@@ -288,7 +288,7 @@ class _SmartMatchWidgetState extends State<SmartMatchWidget>
           Icon(
             Icons.search_off,
             size: 64,
-            color: Theme.of(context).iconTheme.color?.withOpacity(0.5),
+            color: Theme.of(context).iconTheme.color?.withValues(alpha: 0.5),
           ),
           const SizedBox(height: 16),
           Text(
@@ -330,7 +330,7 @@ class _SmartMatchWidgetState extends State<SmartMatchWidget>
         color: Theme.of(context).scaffoldBackgroundColor,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: Theme.of(context).dividerColor.withOpacity(0.5),
+          color: Theme.of(context).dividerColor.withValues(alpha: 0.5),
         ),
       ),
       child: Column(
@@ -406,7 +406,7 @@ class _SmartMatchWidgetState extends State<SmartMatchWidget>
                                 vertical: 4,
                               ),
                               decoration: BoxDecoration(
-                                color: PulseColors.primary.withOpacity(0.1),
+                                color: PulseColors.primary.withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Text(
@@ -480,9 +480,9 @@ class _SmartMatchWidgetState extends State<SmartMatchWidget>
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 12),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
+          color: color.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: color.withOpacity(0.3)),
+          border: Border.all(color: color.withValues(alpha: 0.3)),
         ),
         child: Column(
           children: [

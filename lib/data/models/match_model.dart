@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import '../../../domain/entities/user_profile.dart';
 
 /// Simple match model without complex JSON generation
@@ -41,21 +42,21 @@ class MatchModel {
 
   // Simple JSON methods without code generation
   factory MatchModel.fromJson(Map<String, dynamic> json) {
-    print('🔍 Parsing MatchModel from JSON: ${json.keys.toList()}');
+    debugPrint('🔍 Parsing MatchModel from JSON: ${json.keys.toList()}');
     UserProfile? userProfile;
 
     // Extract user data from API response (the API returns the 'user' object)
     if (json['user'] != null) {
       try {
-        print('👤 Parsing user profile from: ${json['user']}');
+        debugPrint('👤 Parsing user profile from: ${json['user']}');
         userProfile = MatchModel.parseUserProfile(json['user']);
-        print('✅ Successfully parsed userProfile: ${userProfile?.name}');
+        debugPrint('✅ Successfully parsed userProfile: ${userProfile?.name}');
       } catch (e) {
         // If parsing fails, userProfile will remain null
-        print('❌ Failed to parse user profile from match: $e');
+        debugPrint('❌ Failed to parse user profile from match: $e');
       }
     } else {
-      print('⚠️ No user data found in match JSON response');
+      debugPrint('⚠️ No user data found in match JSON response');
     }
     
     return MatchModel(
@@ -72,7 +73,7 @@ class MatchModel {
       status: json['status'] ?? 'pending',
       matchedAt: () {
         // Debug: Print all available date fields
-        print(
+        debugPrint(
           '🔍 Available date fields in match JSON: ${json.keys.where((key) => key.toString().toLowerCase().contains('at') || key.toString().toLowerCase().contains('date')).toList()}',
         );
 
@@ -84,10 +85,10 @@ class MatchModel {
           if (json[field] != null) {
             try {
               matchTime = DateTime.parse(json[field].toString());
-              print('🕐 Using $field as match time: $matchTime');
+              debugPrint('🕐 Using $field as match time: $matchTime');
               break;
             } catch (e) {
-              print('❌ Failed to parse $field: ${json[field]}');
+              debugPrint('❌ Failed to parse $field: ${json[field]}');
             }
           }
         }

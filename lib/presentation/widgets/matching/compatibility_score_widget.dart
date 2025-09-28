@@ -32,9 +32,9 @@ class CompatibilityScoreWidget extends StatelessWidget {
               Container(
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: color.withOpacity(0.1),
+                  color: color.withValues(alpha: 0.1),
                   border: Border.all(
-                    color: color.withOpacity(0.2),
+                    color: color.withValues(alpha: 0.2),
                     width: 2,
                   ),
                 ),
@@ -71,7 +71,7 @@ class CompatibilityScoreWidget extends StatelessWidget {
                       Icon(
                         Icons.psychology,
                         size: size * 0.2,
-                        color: color.withOpacity(0.7),
+                        color: color.withValues(alpha: 0.7),
                       ),
                     ],
                   ),
@@ -164,7 +164,7 @@ class CompatibilityBar extends StatelessWidget {
           height: 4,
           width: double.infinity,
           decoration: BoxDecoration(
-            color: Theme.of(context).dividerColor.withOpacity(0.3),
+            color: Theme.of(context).dividerColor.withValues(alpha: 0.3),
             borderRadius: BorderRadius.circular(2),
           ),
           child: FractionallySizedBox(
