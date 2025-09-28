@@ -1,12 +1,16 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../../../blocs/chat_bloc.dart';
 import '../../../data/models/chat_model.dart';
+import '../../../services/chat_media_service.dart';
+import '../../../data/services/service_locator.dart';
 import '../../../domain/entities/message.dart' show MessageType;
 import '../../../presentation/blocs/auth/auth_bloc.dart';
 import '../../../presentation/blocs/auth/auth_state.dart';
@@ -1226,18 +1230,66 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
-  void _handleCameraAction() {
-    // Handle camera action - open camera for photo/video
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Camera feature will be implemented')),
-    );
+  void _handleCameraAction() async {
+    try {
+      AppLogger.debug('Opening camera for photo capture');
+
+      final picker = ImagePicker();
+      final imageFile = await picker.pickImage(
+        source: ImageSource.camera,
+        imageQuality: 85,
+        maxWidth: 1920,
+        maxHeight: 1080,
+      );
+
+      if (imageFile != null) {
+        AppLogger.debug('Image captured from camera: ${imageFile.path}');
+        await _sendImageMessage(File(imageFile.path));
+      } else {
+        AppLogger.debug('Camera capture cancelled by user');
+      }
+    } catch (e) {
+      AppLogger.error('Error capturing image from camera: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Failed to capture image. Please try again.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
-  void _handleGalleryAction() {
-    // Handle gallery action - open gallery for media selection
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Gallery feature will be implemented')),
-    );
+  void _handleGalleryAction() async {
+    try {
+      AppLogger.debug('Opening gallery for photo selection');
+
+      final picker = ImagePicker();
+      final imageFile = await picker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 85,
+        maxWidth: 1920,
+        maxHeight: 1080,
+      );
+
+      if (imageFile != null) {
+        AppLogger.debug('Image selected from gallery: ${imageFile.path}');
+        await _sendImageMessage(File(imageFile.path));
+      } else {
+        AppLogger.debug('Gallery selection cancelled by user');
+      }
+    } catch (e) {
+      AppLogger.error('Error selecting image from gallery: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Failed to select image. Please try again.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   void _handleVoiceAction() {
@@ -1247,6 +1299,72 @@ class _ChatScreenState extends State<ChatScreen> {
         content: Text('Voice message feature will be implemented'),
       ),
     );
+  }
+
+  Future<void> _sendImageMessage(File imageFile) async {
+    try {
+      AppLogger.debug('Preparing to send image message: ${imageFile.path}');
+
+      // Don't allow sending messages to "new" conversation
+      if (widget.conversationId == 'new') {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Please wait for conversation to be created'),
+          ),
+        );
+        return;
+      }
+
+      final currentUserId = _currentUserId;
+      if (currentUserId == null) {
+        AppLogger.warning('Cannot send image - no current user ID');
+        return;
+      }
+
+      AppLogger.debug(
+        'Sending image message with currentUserId: $currentUserId',
+      );
+
+      // TODO: Upload image to server and get mediaUrl/mediaId
+      // For now, we'll send a text message indicating image was selected
+      const imageMessage = 'Image selected (upload feature in development)';
+
+      context.read<ChatBloc>().add(
+        SendMessage(
+          conversationId: widget.conversationId,
+          type: MessageType
+              .text, // TODO: Change to MessageType.image once upload is ready
+          content: imageMessage,
+          currentUserId: currentUserId,
+          // mediaIds: [uploadedImageId], // TODO: Add once upload service is implemented
+        ),
+      );
+
+      _scrollToBottom();
+
+      // Show success feedback
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Image selected successfully! Upload feature coming soon.',
+            ),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      AppLogger.error('Error sending image message: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Failed to send image. Please try again.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   void _showMessageOptions(BuildContext context, MessageModel message) {

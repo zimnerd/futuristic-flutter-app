@@ -722,7 +722,7 @@ class _AiMessageInputState extends State<AiMessageInput>
 
   Widget _buildAttachmentOptions() {
     return Container(
-      height: 60,
+      height: 56,
       margin: const EdgeInsets.only(bottom: 8),
       child: Row(
         children: [
@@ -732,14 +732,14 @@ class _AiMessageInputState extends State<AiMessageInput>
             color: Colors.blue,
             onTap: widget.onCamera,
           ),
-          const SizedBox(width: 16),
+          const SizedBox(width: 20),
           _buildAttachmentOption(
             icon: Icons.photo_library,
             label: 'Gallery',
             color: Colors.green,
             onTap: widget.onGallery,
           ),
-          const SizedBox(width: 16),
+          const SizedBox(width: 20),
           _buildAttachmentOption(
             icon: Icons.location_on,
             label: 'Location',
@@ -767,30 +767,22 @@ class _AiMessageInputState extends State<AiMessageInput>
   }) {
     return GestureDetector(
       onTap: onTap,
-      child: Column(
-        children: [
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: color,
-              shape: BoxShape.circle,
+      child: Container(
+        width: 48,
+        height: 48,
+        decoration: BoxDecoration(
+          color: color,
+          shape: BoxShape.circle,
+          boxShadow: [
+            BoxShadow(
+              color: color.withOpacity(0.3),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
             ),
-            child: Icon(
-              icon,
-              color: Colors.white,
-              size: 20,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 12,
-              color: Colors.grey[600],
-            ),
-          ),
-        ],
+          ],
+        ),
+        child: Icon(icon, color: Colors.white,
+          size: 24),
       ),
     );
   }
