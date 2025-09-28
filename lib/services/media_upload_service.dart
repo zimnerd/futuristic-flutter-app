@@ -1,8 +1,33 @@
 import 'dart:io';
+import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:hive/hive.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path/path.dart' as path;
+
+/// Progress callback for upload operations
+typedef ProgressCallback = void Function(int sent, int total, double percentage);
+
+/// Upload task for queue management
+class UploadTask {
+  final String id;
+  final String filePath;
+  final MediaCategory category;
+  final MediaType type;
+  final Map<String, dynamic> metadata;
+  final ProgressCallback? onProgress;
+  final Completer<MediaUploadResult> completer;
+  
+  UploadTask({
+    required this.id,
+    required this.filePath,
+    required this.category,
+    required this.type,
+    required this.metadata,
+    this.onProgress,
+    required this.completer,
+  });
+}
 
 /// Central media upload service for all app components
 /// Supports images, videos, documents for profiles, chat, events, stories, etc.
@@ -10,6 +35,14 @@ class MediaUploadService {
   final Dio _httpClient;
   final Box<String> _secureStorage;
   final ImagePicker _picker = ImagePicker();
+  
+  // Upload queue management
+  final List<UploadTask> _uploadQueue = [];
+  final Map<String, CancelToken> _activeCancelTokens = {};
+  final StreamController<List<UploadTask>> _queueController = StreamController.broadcast();
+  
+  /// Stream of current upload queue
+  Stream<List<UploadTask>> get uploadQueueStream => _queueController.stream;
 
   MediaUploadService({
     required Dio httpClient,
@@ -113,7 +146,137 @@ class MediaUploadService {
   // MEDIA UPLOAD METHODS
   // ===========================================
 
-  /// Upload media file to backend with specified category
+  /// Upload media with advanced progress tracking and queue management
+  Future<MediaUploadResult> uploadMediaWithProgress({
+    required String filePath,
+    required MediaCategory category,
+    required MediaType type,
+    ProgressCallback? onProgress,
+    String? title,
+    String? description,
+    List<String>? tags,
+    bool isPublic = false,
+    bool requiresModeration = true,
+    MediaProcessingOptions? processingOptions,
+  }) async {
+    final taskId = DateTime.now().millisecondsSinceEpoch.toString();
+    final cancelToken = CancelToken();
+    final completer = Completer<MediaUploadResult>();
+    
+    final task = UploadTask(
+      id: taskId,
+      filePath: filePath,
+      category: category,
+      type: type,
+      onProgress: onProgress,
+      completer: completer,
+      metadata: {
+        'title': title,
+        'description': description,
+        'tags': tags,
+        'isPublic': isPublic,
+        'requiresModeration': requiresModeration,
+        'processingOptions': processingOptions,
+      },
+    );
+    
+    // Add to queue and notify listeners
+    _uploadQueue.add(task);
+    _activeCancelTokens[taskId] = cancelToken;
+    _queueController.add(List.from(_uploadQueue));
+    
+    try {
+      final result = await _performUpload(task, cancelToken);
+      completer.complete(result);
+      return result;
+    } catch (e) {
+      completer.completeError(e);
+      rethrow;
+    } finally {
+      // Clean up
+      _uploadQueue.removeWhere((t) => t.id == taskId);
+      _activeCancelTokens.remove(taskId);
+      _queueController.add(List.from(_uploadQueue));
+    }
+  }
+
+  /// Internal method to perform the actual upload
+  Future<MediaUploadResult> _performUpload(UploadTask task, CancelToken cancelToken) async {
+    final token = _secureStorage.get('access_token');
+    if (token == null) {
+      throw MediaUploadException('No authentication token available');
+    }
+
+    // Validate file before upload
+    final validation = await validateMediaFile(task.filePath, task.type);
+    if (!validation.isValid) {
+      throw MediaUploadException(validation.error ?? 'File validation failed');
+    }
+
+    // Prepare multipart form data
+    final formData = FormData.fromMap({
+      'file': await MultipartFile.fromFile(
+        task.filePath,
+        filename: path.basename(task.filePath),
+      ),
+      'type': task.type.value,
+      'category': task.category.value,
+      'isPublic': task.metadata['isPublic'].toString(),
+      'requiresModeration': task.metadata['requiresModeration'].toString(),
+      if (task.metadata['title'] != null) 'title': task.metadata['title'],
+      if (task.metadata['description'] != null) 'description': task.metadata['description'],
+      if (task.metadata['tags'] != null) 'tags': task.metadata['tags'],
+      if (task.metadata['processingOptions'] != null) 
+        'processingOptions': task.metadata['processingOptions'].toJson(),
+    });
+
+    // Upload with progress tracking
+    final response = await _httpClient.post(
+      '/media/upload',
+      data: formData,
+      cancelToken: cancelToken,
+      options: Options(
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'multipart/form-data',
+        },
+      ),
+      onSendProgress: (int sent, int total) {
+        final percentage = (sent / total) * 100;
+        task.onProgress?.call(sent, total, percentage);
+      },
+    );
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      return MediaUploadResult.fromJson(response.data);
+    } else {
+      throw MediaUploadException(
+        'Upload failed with status ${response.statusCode}: ${response.data}',
+      );
+    }
+  }
+
+  /// Cancel upload by task ID
+  Future<void> cancelUpload(String taskId) async {
+    final cancelToken = _activeCancelTokens[taskId];
+    if (cancelToken != null && !cancelToken.isCancelled) {
+      cancelToken.cancel('Upload cancelled by user');
+    }
+  }
+
+  /// Cancel all active uploads
+  Future<void> cancelAllUploads() async {
+    for (final cancelToken in _activeCancelTokens.values) {
+      if (!cancelToken.isCancelled) {
+        cancelToken.cancel('All uploads cancelled');
+      }
+    }
+    _activeCancelTokens.clear();
+    _uploadQueue.clear();
+    _queueController.add([]);
+  }
+
+  /// Upload media file to backend with specified category (legacy method)
   Future<MediaUploadResult> uploadMedia({
     required String filePath,
     required MediaCategory category,
@@ -183,36 +346,48 @@ class MediaUploadService {
   // CONVENIENCE METHODS FOR SPECIFIC USE CASES
   // ===========================================
 
-  /// Upload profile photo
-  Future<MediaUploadResult> uploadProfilePhoto(String imagePath) async {
-    return uploadMedia(
+  /// Upload profile photo with progress tracking
+  Future<MediaUploadResult> uploadProfilePhoto(
+    String imagePath, {
+    ProgressCallback? onProgress,
+  }) async {
+    return uploadMediaWithProgress(
       filePath: imagePath,
       category: MediaCategory.profilePhoto,
       type: MediaType.image,
       isPublic: false,
       requiresModeration: true,
+      onProgress: onProgress,
     );
   }
 
-  /// Upload chat image
-  Future<MediaUploadResult> uploadChatImage(String imagePath) async {
-    return uploadMedia(
+  /// Upload chat image with progress tracking
+  Future<MediaUploadResult> uploadChatImage(
+    String imagePath, {
+    ProgressCallback? onProgress,
+  }) async {
+    return uploadMediaWithProgress(
       filePath: imagePath,
       category: MediaCategory.chatMessage,
       type: MediaType.image,
       isPublic: false,
       requiresModeration: false,
+      onProgress: onProgress,
     );
   }
 
-  /// Upload chat video
-  Future<MediaUploadResult> uploadChatVideo(String videoPath) async {
-    return uploadMedia(
+  /// Upload chat video with progress tracking
+  Future<MediaUploadResult> uploadChatVideo(
+    String videoPath, {
+    ProgressCallback? onProgress,
+  }) async {
+    return uploadMediaWithProgress(
       filePath: videoPath,
       category: MediaCategory.chatMessage,
       type: MediaType.video,
       isPublic: false,
       requiresModeration: false,
+      onProgress: onProgress,
     );
   }
 
@@ -480,6 +655,21 @@ class MediaUploadResult {
     this.metadata,
     this.error,
   });
+
+  factory MediaUploadResult.fromJson(Map<String, dynamic> json) {
+    return MediaUploadResult(
+      success: json['success'] ?? false,
+      mediaId: json['mediaId'],
+      mediaUrl: json['mediaUrl'],
+      thumbnailUrl: json['thumbnailUrl'],
+      mediaType: json['mediaType'],
+      category: json['category'],
+      fileSize: json['fileSize'],
+      mimeType: json['mimeType'],
+      metadata: json['metadata'],
+      error: json['error'],
+    );
+  }
 
   @override
   String toString() {
