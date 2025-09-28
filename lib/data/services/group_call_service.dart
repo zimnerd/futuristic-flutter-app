@@ -181,6 +181,30 @@ class GroupCallService {
     }
   }
 
+  /// End group call
+  Future<bool> endCall(String callId) async {
+    try {
+      final response = await _apiService.delete(
+        '${ApiConstants.webrtc}/calls/$callId',
+      );
+
+      if (response.data['success'] == true) {
+        // Notify all listeners that call ended
+        _moderationController.add({
+          'action': 'CALL_ENDED',
+          'callId': callId,
+          'data': response.data['data'],
+        });
+        return true;
+      }
+      
+      return false;
+    } catch (e) {
+      debugPrint('Error ending call: $e');
+      return false;
+    }
+  }
+
   /// Get call participants list
   Future<List<CallParticipant>> getCallParticipants(String callId) async {
     try {
