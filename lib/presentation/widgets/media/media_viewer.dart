@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:video_player/video_player.dart';
 
 import '../../theme/pulse_colors.dart';
 import '../../../domain/entities/message.dart';
@@ -99,41 +100,46 @@ class _MediaViewerState extends State<MediaViewer>
                   tag: widget.heroTag != null 
                       ? '${widget.heroTag}_$index'
                       : 'media_$index',
-                  child: InteractiveViewer(
-                    minScale: 0.5,
-                    maxScale: 3.0,
-                    child: Center(
-                      child: CachedNetworkImage(
-                        imageUrl: mediaUrl,
-                        fit: BoxFit.contain,
-                        placeholder: (context, url) => const Center(
-                          child: CircularProgressIndicator(
-                            valueColor: AlwaysStoppedAnimation<Color>(PulseColors.primary),
-                          ),
-                        ),
-                        errorWidget: (context, url, error) => Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.broken_image_rounded,
-                                size: 64,
-                                color: Colors.white.withValues(alpha: 0.6),
-                              ),
-                              const SizedBox(height: 16),
-                              Text(
-                                'Failed to load image',
-                                style: TextStyle(
-                                  color: Colors.white.withValues(alpha: 0.8),
-                                  fontSize: 16,
+                  child: widget.messageType == MessageType.video
+                      ? _VideoPlayerWidget(
+                          videoUrl: mediaUrl,
+                          onTap: _toggleOverlay,
+                        )
+                      : InteractiveViewer(
+                          minScale: 0.5,
+                          maxScale: 3.0,
+                          child: Center(
+                            child: CachedNetworkImage(
+                              imageUrl: mediaUrl,
+                              fit: BoxFit.contain,
+                              placeholder: (context, url) => const Center(
+                                child: CircularProgressIndicator(
+                                  valueColor: AlwaysStoppedAnimation<Color>(PulseColors.primary),
                                 ),
                               ),
-                            ],
+                              errorWidget: (context, url, error) => Center(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      Icons.broken_image_rounded,
+                                      size: 64,
+                                      color: Colors.white.withValues(alpha: 0.6),
+                                    ),
+                                    const SizedBox(height: 16),
+                                    Text(
+                                      'Failed to load image',
+                                      style: TextStyle(
+                                        color: Colors.white.withValues(alpha: 0.8),
+                                        fontSize: 16,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
                           ),
                         ),
-                      ),
-                    ),
-                  ),
                 );
               },
             ),
@@ -398,6 +404,164 @@ class _MediaViewerState extends State<MediaViewer>
               ),
               
               const SizedBox(height: 20),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Video player widget for the media viewer
+class _VideoPlayerWidget extends StatefulWidget {
+  final String videoUrl;
+  final VoidCallback? onTap;
+
+  const _VideoPlayerWidget({
+    required this.videoUrl,
+    this.onTap,
+  });
+
+  @override
+  State<_VideoPlayerWidget> createState() => _VideoPlayerWidgetState();
+}
+
+class _VideoPlayerWidgetState extends State<_VideoPlayerWidget> {
+  late VideoPlayerController _controller;
+  bool _isInitialized = false;
+  bool _hasError = false;
+  bool _showControls = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeVideo();
+  }
+
+  void _initializeVideo() async {
+    try {
+      _controller = VideoPlayerController.networkUrl(Uri.parse(widget.videoUrl));
+      await _controller.initialize();
+      
+      if (mounted) {
+        setState(() {
+          _isInitialized = true;
+        });
+      }
+    } catch (error) {
+      if (mounted) {
+        setState(() {
+          _hasError = true;
+        });
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _togglePlayPause() {
+    if (_controller.value.isPlaying) {
+      _controller.pause();
+    } else {
+      _controller.play();
+    }
+  }
+
+  void _toggleControls() {
+    setState(() {
+      _showControls = !_showControls;
+    });
+    widget.onTap?.call();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_hasError) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.error_outline_rounded,
+              size: 64,
+              color: Colors.white.withValues(alpha: 0.6),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Failed to load video',
+              style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.8),
+                fontSize: 16,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (!_isInitialized) {
+      return const Center(
+        child: CircularProgressIndicator(
+          valueColor: AlwaysStoppedAnimation<Color>(PulseColors.primary),
+        ),
+      );
+    }
+
+    return GestureDetector(
+      onTap: _toggleControls,
+      child: Center(
+        child: AspectRatio(
+          aspectRatio: _controller.value.aspectRatio,
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              VideoPlayer(_controller),
+              
+              // Play/Pause overlay
+              if (_showControls || !_controller.value.isPlaying)
+                Container(
+                  color: Colors.black.withValues(alpha: 0.3),
+                  child: Center(
+                    child: GestureDetector(
+                      onTap: _togglePlayPause,
+                      child: Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withValues(alpha: 0.7),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          _controller.value.isPlaying 
+                              ? Icons.pause_rounded 
+                              : Icons.play_arrow_rounded,
+                          size: 48,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              
+              // Video progress bar (bottom)
+              if (_showControls)
+                Positioned(
+                  bottom: 20,
+                  left: 20,
+                  right: 20,
+                  child: VideoProgressIndicator(
+                    _controller,
+                    allowScrubbing: true,
+                    colors: VideoProgressColors(
+                      playedColor: PulseColors.primary,
+                      bufferedColor: Colors.white.withValues(alpha: 0.3),
+                      backgroundColor: Colors.white.withValues(alpha: 0.1),
+                    ),
+                  ),
+                ),
             ],
           ),
         ),
