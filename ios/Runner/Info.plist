@@ -66,5 +66,13 @@
 		<key>NSAllowsArbitraryLoads</key>
 		<true/>
 	</dict>
+	
+	<!-- Google Maps API Key -->
+	<key>GoogleMapsAPIKey</key>
+	<string>AIzaSyD2iddVKdqoPrCPs5O8LdWR1ltaTKy2ZJo</string>
+	
+	<!-- Enable embedded views for Google Maps -->
+	<key>io.flutter.embedded_views_preview</key>
+	<true/>
 </dict>
 </plist>

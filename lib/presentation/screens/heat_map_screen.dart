@@ -1013,49 +1013,6 @@ class _HeatMapScreenState extends State<HeatMapScreen> {
       right: 16,
       child: Column(
         children: [
-          // Map Type Selector
-          Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(8),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.2),
-                  blurRadius: 4,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: PopupMenuButton<MapType>(
-              icon: const Icon(Icons.layers),
-              onSelected: (MapType type) {
-                print('🗺️ Switching map type from $_mapType to $type');
-                setState(() {
-                  _mapType = type;
-                });
-                print('🗺️ Map type changed to: $_mapType');
-              },
-              itemBuilder: (BuildContext context) => [
-                const PopupMenuItem(
-                  value: MapType.normal,
-                  child: Text('Normal'),
-                ),
-                const PopupMenuItem(
-                  value: MapType.satellite,
-                  child: Text('Satellite'),
-                ),
-                const PopupMenuItem(
-                  value: MapType.hybrid,
-                  child: Text('Hybrid'),
-                ),
-                const PopupMenuItem(
-                  value: MapType.terrain,
-                  child: Text('Terrain'),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 8),
           // Zoom Controls
           Container(
             decoration: BoxDecoration(

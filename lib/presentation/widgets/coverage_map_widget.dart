@@ -3,6 +3,7 @@ import 'dart:developer' as dev;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:google_maps_cluster_manager/google_maps_cluster_manager.dart' as cluster;
 
 import '../../core/models/location_models.dart';
 import '../../data/models/heat_map_models.dart';
@@ -45,24 +46,31 @@ class _CoverageMapWidgetState extends State<CoverageMapWidget> {
   late final HeatMapService _heatMapService;
   late final LocationService _locationService;
 
-  // Map styling
-  late String _mapStyle;
+  // Map styling and type
+  MapType _currentMapType = MapType.normal;
+  
+  // Clustering
+  late cluster.ClusterManager<HeatMapClusterItem> _clusterManager;
+  Set<Marker> _clusterMarkers = {};
 
   @override
   void initState() {
     super.initState();
     _heatMapService = context.read<HeatMapService>();
     _locationService = context.read<LocationService>();
+    _initializeClusterManager();
     _initializeMap();
+  }
+
+  void _initializeClusterManager() {
+    _clusterManager = cluster.ClusterManager<HeatMapClusterItem>(
+      [],
+      _updateMarkers,
+    );
   }
 
   Future<void> _initializeMap() async {
     try {
-      // Load map style for better visualization
-      _mapStyle = await DefaultAssetBundle.of(context)
-          .loadString('assets/map_styles/dark_style.json')
-          .catchError((_) => ''); // Fallback to default if no custom style
-
       await _getCurrentLocation();
       await _loadMapData();
     } catch (e) {
@@ -230,6 +238,93 @@ class _CoverageMapWidgetState extends State<CoverageMapWidget> {
     });
   }
 
+  void _updateMarkers(Set<Marker> markers) {
+    setState(() {
+      _clusterMarkers = markers;
+    });
+  }
+
+  Future<Marker> _buildClusterMarker(cluster.Cluster<HeatMapClusterItem> clusterData) async {
+    return Marker(
+      markerId: MarkerId('cluster_${clusterData.getId()}'),
+      position: clusterData.location,
+      icon: await _getClusterBitmapDescriptor(clusterData),
+      onTap: () => _onClusterTap(clusterData),
+    );
+  }
+
+  Future<BitmapDescriptor> _getClusterBitmapDescriptor(
+    cluster.Cluster<HeatMapClusterItem> clusterData,
+  ) async {
+    final int clusterSize = clusterData.count;
+    
+    if (clusterSize == 1) {
+      // Single marker - get color based on match status
+      final item = clusterData.items.first;
+      return _getMarkerColor(item.dataPoint.label ?? 'available');
+    }
+    
+    // Cluster marker - return default cluster marker with count
+    return BitmapDescriptor.defaultMarkerWithHue(
+      clusterSize < 10 
+        ? BitmapDescriptor.hueGreen
+        : clusterSize < 25
+        ? BitmapDescriptor.hueYellow  
+        : BitmapDescriptor.hueRed,
+    );
+  }
+
+  BitmapDescriptor _getMarkerColor(String status) {
+    switch (status) {
+      case 'matched':
+        return BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen);
+      case 'liked_me':
+        return BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueOrange);
+      case 'unmatched':
+        return BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed);
+      case 'available':
+      default:
+        return BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue);
+    }
+  }
+
+  void _onClusterTap(cluster.Cluster<HeatMapClusterItem> clusterData) {
+    if (clusterData.isMultiple) {
+      // Zoom into cluster
+      _mapController?.animateCamera(
+        CameraUpdate.newLatLngZoom(clusterData.location, 15),
+      );
+    } else {
+      // Single marker - show details
+      final item = clusterData.items.first;
+      _showMarkerDetails(item.dataPoint);
+    }
+  }
+
+  void _showMarkerDetails(HeatMapDataPoint point) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('User Details'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Location: ${point.coordinates.latitude.toStringAsFixed(4)}, ${point.coordinates.longitude.toStringAsFixed(4)}'),
+            Text('Density: ${point.density}'),
+            Text('Status: ${point.label ?? 'Unknown'}'),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
+
   LocationBounds _calculateMapBounds() {
     if (_currentLocation == null) {
       // Default bounds (global)
@@ -295,10 +390,6 @@ class _CoverageMapWidgetState extends State<CoverageMapWidget> {
 
   void _onMapCreated(GoogleMapController controller) {
     _mapController = controller;
-    
-    if (_mapStyle.isNotEmpty) {
-      controller.setMapStyle(_mapStyle);
-    }
 
     // Move camera to user location if available
     if (_currentLocation != null) {
@@ -338,6 +429,28 @@ class _CoverageMapWidgetState extends State<CoverageMapWidget> {
     widget.onLocationSelected?.call(coordinates);
   }
 
+  void _switchMapType() {
+    setState(() {
+      switch (_currentMapType) {
+        case MapType.normal:
+          _currentMapType = MapType.satellite;
+          break;
+        case MapType.satellite:
+          _currentMapType = MapType.terrain;
+          break;
+        case MapType.terrain:
+          _currentMapType = MapType.hybrid;
+          break;
+        case MapType.hybrid:
+          _currentMapType = MapType.normal;
+          break;
+        case MapType.none:
+          _currentMapType = MapType.normal;
+          break;
+      }
+    });
+  }
+
   Future<void> _refreshData() async {
     await _loadMapData();
   }
@@ -359,7 +472,7 @@ class _CoverageMapWidgetState extends State<CoverageMapWidget> {
               markers: _markers,
               circles: _circles,
               polygons: _polygons,
-              mapType: MapType.normal,
+              mapType: _currentMapType,
               myLocationEnabled: false, // We handle this manually
               myLocationButtonEnabled: false,
               zoomControlsEnabled: false,
@@ -433,6 +546,15 @@ class _CoverageMapWidgetState extends State<CoverageMapWidget> {
                   onPressed: _centerOnUser,
                   backgroundColor: Colors.white,
                   child: const Icon(Icons.my_location, color: Color(0xFF6E3BFF)),
+                ),
+                const SizedBox(height: 8),
+
+                // Map type switcher
+                FloatingActionButton(
+                  mini: true,
+                  onPressed: _switchMapType,
+                  backgroundColor: Colors.white,
+                  child: const Icon(Icons.layers, color: Color(0xFF6E3BFF)),
                 ),
               ],
             ),
@@ -568,4 +690,19 @@ extension CoverageMapFilterExtension on CoverageMapFilter {
         return Icons.remove_circle_outline;
     }
   }
+}
+
+/// Cluster item for heat map data points
+class HeatMapClusterItem implements cluster.ClusterItem {
+  final HeatMapDataPoint dataPoint;
+  final LatLng _location;
+  
+  HeatMapClusterItem(this.dataPoint) 
+      : _location = LatLng(dataPoint.coordinates.latitude, dataPoint.coordinates.longitude);
+
+  @override
+  LatLng get location => _location;
+
+  @override
+  String get geohash => '${location.latitude}_${location.longitude}';
 }
