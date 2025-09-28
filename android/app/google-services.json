@@ -12,7 +12,12 @@
           "package_name": "co.za.pulsetek.futuristic"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "436349093696-4b71od85cvlt4lnamdf51vsh85l52ve8.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyBpizzbo74ju0c-xcdhiVGF8gkxT1rlOCw"
@@ -20,7 +25,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "436349093696-4b71od85cvlt4lnamdf51vsh85l52ve8.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }
