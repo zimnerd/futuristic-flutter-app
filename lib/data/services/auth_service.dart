@@ -419,6 +419,11 @@ class AuthService {
     return _secureStorage.get(_refreshTokenKey);
   }
 
+  /// Get current access token (public method)
+  Future<String?> getAccessToken() async {
+    return _getAccessToken();
+  }
+
   /// Store authentication data
   Future<void> _storeAuthData({
     required String accessToken,
