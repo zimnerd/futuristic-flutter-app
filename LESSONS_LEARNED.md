@@ -2079,3 +2079,85 @@ if (data.containsKey('data')) {
 - **Error Boundaries**: Wrap message parsing in try-catch blocks
 - **Optimistic Updates**: Maintain tempId mapping for correlation with server responses
 - **Broadcast Streams**: Use for multiple listeners (Repository → Bloc)
+
+---
+
+## 🎛️ **ADVANCED EVENT FILTERING ARCHITECTURE (January 2025)**
+
+### ✅ **Comprehensive Filter System Implementation Complete**
+**Date**: January 5, 2025  
+**Context**: Implemented advanced filtering system with beautiful UI and robust local filtering architecture
+
+#### **🎯 PROBLEM SOLVED: Limited Event Discovery & User Experience**
+- **Issue 1**: Events screen only had basic category and search filtering
+- **Issue 2**: No "Joined Only" filtering despite UI toggle existing  
+- **Issue 3**: No date range filtering for discovering upcoming events
+- **Issue 4**: Placeholder "Advanced filters coming soon!" instead of functional filters
+- **Impact**: Poor event discovery experience, limited user control over displayed content
+
+#### **Key Advanced Filtering Implementation Findings**
+
+##### **✅ Centralized Filter Architecture**
+1. **`_applyAllFilters()` Method Pattern**:
+   - **Design**: Single method handles all filter combinations (search, date, joined status)
+   - **Performance**: Local filtering for real-time UI responsiveness 
+   - **Maintainability**: Centralized logic prevents filter conflicts and ensures consistency
+   - **Key Learning**: Always use centralized filtering logic to avoid state inconsistencies
+
+2. **API + Local Hybrid Strategy**:
+   - **Categories**: Server-side filtering via `/events?category=music` for efficiency
+   - **Search/Date/Status**: Client-side filtering for instant UI feedback
+   - **Pattern**: Use API for expensive operations, local filtering for user interactions
+
+##### **✅ Advanced Filter Modal UI Best Practices**
+1. **Material Design Bottom Sheet**:
+   - **Implementation**: `showModalBottomSheet` with proper theme integration
+   - **UX**: Scrollable, dismissible, with clear action buttons
+   - **Components**: Date picker, quick date chips, sliders, checkboxes, filter chips
+
+2. **Quick Action Patterns**:
+   - **Date Chips**: "Today", "Tomorrow", "This Weekend", "Next Week" for common use cases
+   - **Custom Selectors**: Date picker for specific ranges
+   - **Progressive Enhancement**: UI infrastructure ready for future features (distance, capacity)
+
+##### **✅ State Management & Event Architecture**
+1. **New Event Types**:
+   - `ToggleJoinedOnlyFilter`: Handles joined-only toggle
+   - `ApplyAdvancedFilters`: Processes comprehensive filter selections  
+   - `ClearAdvancedFilters`: Resets all advanced filters
+   - **Pattern**: Create specific event types for each filter operation
+
+2. **Filter State Persistence**:
+   - **Bloc Fields**: Store filter state (_startDate, _endDate, _showJoinedOnly) 
+   - **Navigation**: Filters persist across screen changes and app lifecycle
+   - **Reset Logic**: Clear filters maintains search and category selections
+
+##### **✅ Real-Time Filtering Performance**
+1. **Local Filter Strategy**:
+   - **Search**: `title.contains()`, `description.contains()`, `location.contains()` 
+   - **Date Range**: `event.date.isBefore()` and `event.date.isAfter()` comparisons
+   - **Joined Status**: `event.isAttending` boolean filtering
+   - **Performance**: Instant UI updates without API calls
+
+2. **Filter Combination Logic**:
+   ```dart
+   // All filters applied in sequence for accurate results
+   filtered = events
+     .where(searchMatches)
+     .where(dateInRange) 
+     .where(joinedStatusMatches)
+     .toList();
+   ```
+
+#### **Architecture Patterns for Future Filter Extensions**
+1. **Progressive Enhancement**: Build UI infrastructure with TODO markers for unimplemented features
+2. **Filter Event Separation**: Each filter type has its own event class for clear intentions
+3. **Local + API Hybrid**: Server-side for expensive operations, local for user interactions
+4. **Centralized Application**: Single `_applyAllFilters()` method prevents inconsistencies
+5. **State Persistence**: Store filter preferences in bloc fields for user experience continuity
+
+#### **Key Takeaways for Mobile Filter Systems**
+- **UI First**: Build complete filter UI before backend integration (allows testing/validation)
+- **Performance Balance**: Use local filtering for search/toggles, API for expensive category filtering
+- **User Experience**: Provide both quick actions (chips) and detailed controls (pickers/sliders)
+- **Future-Proof**: Build extensible architecture with clear TODO paths for new filter types

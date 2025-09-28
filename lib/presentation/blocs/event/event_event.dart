@@ -145,3 +145,38 @@ class RefreshEventCategories extends EventEvent {
 class ResetEventState extends EventEvent {
   const ResetEventState();
 }
+
+class ToggleJoinedOnlyFilter extends EventEvent {
+  final bool showJoinedOnly;
+
+  const ToggleJoinedOnlyFilter(this.showJoinedOnly);
+
+  @override
+  List<Object?> get props => [showJoinedOnly];
+}
+
+class ApplyAdvancedFilters extends EventEvent {
+  final DateTime? startDate;
+  final DateTime? endDate;
+  final double? maxDistance;
+  final bool? hasAvailableSpots;
+
+  const ApplyAdvancedFilters({
+    this.startDate,
+    this.endDate,
+    this.maxDistance,
+    this.hasAvailableSpots,
+  });
+
+  @override
+  List<Object?> get props => [
+    startDate,
+    endDate,
+    maxDistance,
+    hasAvailableSpots,
+  ];
+}
+
+class ClearAdvancedFilters extends EventEvent {
+  const ClearAdvancedFilters();
+}

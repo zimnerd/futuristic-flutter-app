@@ -40,6 +40,24 @@ class _ChatListScreenState extends State<ChatListScreen> {
     return null;
   }
 
+  /// Format message time with relative formatting
+  String _formatMessageTime(DateTime messageTime) {
+    final now = DateTime.now();
+    final difference = now.difference(messageTime);
+
+    if (difference.inMinutes < 1) {
+      return 'Just now';
+    } else if (difference.inMinutes < 60) {
+      return '${difference.inMinutes}m ago';
+    } else if (difference.inHours < 24) {
+      return '${difference.inHours}h ago';
+    } else if (difference.inDays < 7) {
+      return '${difference.inDays}d ago';
+    } else {
+      return DateFormat('MMM d').format(messageTime);
+    }
+  }
+
   @override
   void dispose() {
     _searchController.dispose();
@@ -293,9 +311,8 @@ class _ChatListScreenState extends State<ChatListScreen> {
       // Apply filter
       switch (_currentFilter) {
         case DmFilterBy.recent:
-          return conversation.lastMessage?.createdAt != null &&
-              DateTime.now()
-                      .difference(conversation.lastMessage!.createdAt)
+          return DateTime.now()
+                  .difference(conversation.lastMessageTime)
                       .inDays <
                   7;
         case DmFilterBy.unread:
@@ -321,8 +338,9 @@ class _ChatListScreenState extends State<ChatListScreen> {
           );
         }
         // Search in last message content
-        if (conversation.lastMessage?.content != null) {
-          return conversation.lastMessage!.content.toLowerCase().contains(
+        if (conversation.lastMessage.isNotEmpty &&
+            conversation.lastMessage != 'No messages yet') {
+          return conversation.lastMessage.toLowerCase().contains(
             _searchQuery.toLowerCase(),
           );
         }
@@ -337,9 +355,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
     filtered.sort((a, b) {
       switch (_currentSort) {
         case DmSortBy.recent:
-          final aTime = a.lastMessage?.createdAt ?? DateTime(1970);
-          final bTime = b.lastMessage?.createdAt ?? DateTime(1970);
-          return bTime.compareTo(aTime);
+          return b.lastMessageTime.compareTo(a.lastMessageTime);
         case DmSortBy.name:
           final aName = a.name ?? 'Unknown';
           final bName = b.name ?? 'Unknown';
@@ -479,7 +495,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
           children: [
             const SizedBox(height: 4),
             Text(
-              conversation.lastMessage?.content ?? 'No messages yet',
+              conversation.lastMessage, // Use the string directly
               style: TextStyle(
                 color: conversation.unreadCount > 0 
                     ? Colors.black87 
@@ -493,9 +509,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
             ),
             const SizedBox(height: 4),
             Text(
-              conversation.lastMessage?.createdAt != null
-                  ? DateFormat('MMM d, h:mm a').format(conversation.lastMessage!.createdAt)
-                  : '',
+              _formatMessageTime(conversation.lastMessageTime),
               style: TextStyle(
                 color: Colors.grey[500],
                 fontSize: 12,

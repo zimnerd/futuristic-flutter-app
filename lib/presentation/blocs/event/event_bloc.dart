@@ -12,6 +12,13 @@ class EventBloc extends Bloc<EventEvent, EventState> {
   List<Event> _allEvents = [];
   String? _currentCategory;
   String? _searchQuery;
+  bool _showJoinedOnly = false;
+  DateTime? _startDate;
+  DateTime? _endDate;
+  // TODO: Implement distance filtering with geolocation
+  // double? _maxDistance;
+  // TODO: Add capacity field to Event entity for availability filtering
+  // bool? _hasAvailableSpots;
 
   EventBloc({
     EventService? eventService,
@@ -30,6 +37,9 @@ class EventBloc extends Bloc<EventEvent, EventState> {
     on<RefreshEventCategories>(_onRefreshEventCategories);
     on<FilterEventsByCategory>(_onFilterEventsByCategory);
     on<SearchEvents>(_onSearchEvents);
+    on<ToggleJoinedOnlyFilter>(_onToggleJoinedOnlyFilter);
+    on<ApplyAdvancedFilters>(_onApplyAdvancedFilters);
+    on<ClearAdvancedFilters>(_onClearAdvancedFilters);
     on<RefreshEvents>(_onRefreshEvents);
     on<ClearEventError>(_onClearEventError);
     on<ResetEventState>(_onResetEventState);
@@ -411,8 +421,8 @@ class EventBloc extends Bloc<EventEvent, EventState> {
 
       _allEvents = events;
 
-      // Apply only search filter if any (category filtering is handled by API)
-      final filteredEvents = _applySearchFilter(events);
+      // Apply all active filters (search, joined only, date range, etc.)
+      final filteredEvents = _applyAllFilters(events);
 
       emit(
         EventsLoaded(
@@ -438,8 +448,8 @@ class EventBloc extends Bloc<EventEvent, EventState> {
   void _onSearchEvents(SearchEvents event, Emitter<EventState> emit) {
     _searchQuery = event.query.trim().isEmpty ? null : event.query.trim();
 
-    // Apply search filter to current events (search is local for real-time performance)
-    final filteredEvents = _applySearchFilter(_allEvents);
+    // Apply all active filters to current events (local filtering for real-time performance)
+    final filteredEvents = _applyAllFilters(_allEvents);
 
     if (state is EventsLoaded) {
       final currentState = state as EventsLoaded;
@@ -463,7 +473,7 @@ class EventBloc extends Bloc<EventEvent, EventState> {
       );
 
       _allEvents = events;
-      final filteredEvents = _applyFilters(events);
+      final filteredEvents = _applyAllFilters(events);
 
       emit(EventsLoaded(
         events: events,
@@ -532,5 +542,103 @@ class EventBloc extends Bloc<EventEvent, EventState> {
             : event.attendeeCount - 1,
       );
     }
+  }
+
+  void _onToggleJoinedOnlyFilter(
+    ToggleJoinedOnlyFilter event,
+    Emitter<EventState> emit,
+  ) {
+    _showJoinedOnly = event.showJoinedOnly;
+
+    // Apply all current filters to events
+    final filteredEvents = _applyAllFilters(_allEvents);
+
+    if (state is EventsLoaded) {
+      final currentState = state as EventsLoaded;
+      emit(currentState.copyWith(filteredEvents: filteredEvents));
+    }
+  }
+
+  void _onApplyAdvancedFilters(
+    ApplyAdvancedFilters event,
+    Emitter<EventState> emit,
+  ) {
+    _startDate = event.startDate;
+    _endDate = event.endDate;
+    // TODO: Implement distance and availability filtering
+    // _maxDistance = event.maxDistance;
+    // _hasAvailableSpots = event.hasAvailableSpots;
+
+    // Apply all current filters to events
+    final filteredEvents = _applyAllFilters(_allEvents);
+
+    if (state is EventsLoaded) {
+      final currentState = state as EventsLoaded;
+      emit(currentState.copyWith(filteredEvents: filteredEvents));
+    }
+  }
+
+  void _onClearAdvancedFilters(
+    ClearAdvancedFilters event,
+    Emitter<EventState> emit,
+  ) {
+    _startDate = null;
+    _endDate = null;
+    // TODO: Clear distance and availability filters when implemented
+    // _maxDistance = null;
+    // _hasAvailableSpots = null;
+    _showJoinedOnly = false;
+
+    // Apply remaining filters (category + search only)
+    final filteredEvents = _applyAllFilters(_allEvents);
+
+    if (state is EventsLoaded) {
+      final currentState = state as EventsLoaded;
+      emit(currentState.copyWith(filteredEvents: filteredEvents));
+    }
+  }
+
+  /// Apply all active filters to events list
+  List<Event> _applyAllFilters(List<Event> events) {
+    List<Event> filtered = List.from(events);
+
+    // Apply search filter
+    if (_searchQuery != null && _searchQuery!.isNotEmpty) {
+      final query = _searchQuery!.toLowerCase();
+      filtered = filtered.where((event) {
+        return event.title.toLowerCase().contains(query) ||
+            event.description.toLowerCase().contains(query) ||
+            event.location.toLowerCase().contains(query);
+      }).toList();
+    }
+
+    // Apply joined only filter
+    if (_showJoinedOnly) {
+      filtered = filtered.where((event) => event.isAttending).toList();
+    }
+
+    // Apply date range filter
+    if (_startDate != null || _endDate != null) {
+      filtered = filtered.where((event) {
+        if (_startDate != null && event.date.isBefore(_startDate!)) {
+          return false;
+        }
+        if (_endDate != null && event.date.isAfter(_endDate!)) {
+          return false;
+        }
+        return true;
+      }).toList();
+    }
+
+    // Apply availability filter
+    // TODO: Add capacity field to Event entity for availability filtering
+    // if (_hasAvailableSpots != null && _hasAvailableSpots!) {
+    //   filtered = filtered.where((event) {
+    //     return event.maxAttendees == null ||
+    //            event.attendeeCount < event.maxAttendees!;
+    //   }).toList();
+    // }
+
+    return filtered;
   }
 }

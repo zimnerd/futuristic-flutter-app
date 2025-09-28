@@ -9,6 +9,7 @@ import '../../blocs/event/event_state.dart';
 import '../../theme/pulse_colors.dart';
 import '../../widgets/events/event_card.dart';
 import '../../widgets/events/category_chip.dart';
+import '../../widgets/events/advanced_filters_modal.dart';
 
 class EventsScreen extends StatefulWidget {
   const EventsScreen({super.key});
@@ -52,6 +53,7 @@ class _EventsScreenState extends State<EventsScreen> {
     setState(() {
       _showJoinedOnly = !_showJoinedOnly;
     });
+    context.read<EventBloc>().add(ToggleJoinedOnlyFilter(_showJoinedOnly));
   }
 
   void _onSearchChanged(String query) {
@@ -85,16 +87,11 @@ class _EventsScreenState extends State<EventsScreen> {
   }
 
   void _onShowFilters() {
-    // TODO: Implement advanced filters modal
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Text(
-          'Advanced filters coming soon!',
-          style: TextStyle(color: Colors.white),
-        ),
-        backgroundColor: PulseColors.primary,
-        duration: const Duration(seconds: 2),
-      ),
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => const AdvancedFiltersModal(),
     );
   }
 
