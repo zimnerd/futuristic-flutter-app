@@ -190,7 +190,7 @@ class MatchModel {
         isVerified: userJson['isVerified'] ?? false,
       );
     } catch (e) {
-      print('Error parsing user profile: $e');
+      debugPrint('Error parsing user profile: $e');
       return null;
     }
   }

@@ -79,7 +79,7 @@ class MediaLoadingOptimizer {
     }
     
     if (kDebugMode && expiredUrls.isNotEmpty) {
-      print('MediaOptimizer: Cleaned up ${expiredUrls.length} expired cache entries');
+      debugPrint('MediaOptimizer: Cleaned up ${expiredUrls.length} expired cache entries');
     }
   }
   

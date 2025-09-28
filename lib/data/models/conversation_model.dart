@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import '../../domain/entities/conversation.dart';
 
 /// Data model for Conversation with JSON serialization
@@ -59,7 +60,7 @@ class ConversationModel extends Conversation {
           if (participant is Map<String, dynamic>) {
             validParticipants.add(participant);
           } else {
-            print('Invalid participant type in fromBackendJson: ${participant.runtimeType}, value: $participant');
+            debugPrint('Invalid participant type in fromBackendJson: ${participant.runtimeType}, value: $participant');
           }
         }
         
@@ -70,7 +71,7 @@ class ConversationModel extends Conversation {
           );
         }
       } catch (e) {
-        print('Error parsing participants in fromBackendJson: $e');
+        debugPrint('Error parsing participants in fromBackendJson: $e');
         otherParticipant = null;
       }
     }

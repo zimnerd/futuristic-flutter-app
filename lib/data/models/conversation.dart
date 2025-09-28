@@ -125,7 +125,7 @@ class Conversation extends Equatable {
         updatedAt: DateTime.parse(json['updatedAt'] as String),
       );
     } catch (e) {
-      print('Warning: Error in Conversation.fromJson: $e');
+      debugPrint('Warning: Error in Conversation.fromJson: $e');
       rethrow;
     }
   }
@@ -167,17 +167,17 @@ class Conversation extends Equatable {
       // First try profileImageUrl
       if (targetUser.profileImageUrl != null &&
           targetUser.profileImageUrl!.isNotEmpty) {
-        print('🐛 Using profileImageUrl: ${targetUser.profileImageUrl}');
+        debugPrint('🐛 Using profileImageUrl: ${targetUser.profileImageUrl}');
         return targetUser.profileImageUrl!;
       }
 
       // Fallback to first photo if available
       if (targetUser.photos.isNotEmpty) {
-        print('🐛 Using first photo: ${targetUser.photos.first}');
+        debugPrint('🐛 Using first photo: ${targetUser.photos.first}');
         return targetUser.photos.first;
       }
 
-      print('🐛 No avatar found for user: ${targetUser.name}');
+      debugPrint('🐛 No avatar found for user: ${targetUser.name}');
     }
     return '';
   }

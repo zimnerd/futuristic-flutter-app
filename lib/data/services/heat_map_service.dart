@@ -261,7 +261,7 @@ class HeatMapService {
         'longitude': coordinates.longitude,
       };
 
-      await _apiClient.put(ApiConstants.usersMe + '/location', data: requestData);
+      await _apiClient.put('${ApiConstants.usersMe}/location', data: requestData);
 
       dev.log(
         'User location updated successfully: ${coordinates.latitude}, ${coordinates.longitude}',
