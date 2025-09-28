@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:firebase_core/firebase_core.dart';
 
 import 'app_providers.dart';
 import 'blocs/call_bloc.dart';
@@ -48,6 +49,10 @@ import 'presentation/widgets/auto_login_wrapper.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  // Initialize Firebase
+  await Firebase.initializeApp();
+  AppLogger.info('✅ Firebase initialized');
+
   // Set preferred orientations
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
@@ -61,10 +66,24 @@ void main() async {
   // Initialize ServiceLocator (required for token storage)
   await ServiceLocator.instance.initialize();
 
+  // Initialize Firebase notifications
+  await _initializeFirebaseNotifications();
+
   // Initialize authentication tokens
   await _initializeStoredTokens();
 
   runApp(PulseDatingApp(hiveStorage: hiveStorage));
+}
+
+/// Initialize Firebase notifications
+Future<void> _initializeFirebaseNotifications() async {
+  try {
+    final notificationService = ServiceLocator.instance.firebaseNotificationService;
+    await notificationService.initialize();
+    AppLogger.info('✅ Firebase notifications initialized');
+  } catch (e) {
+    AppLogger.error('❌ Failed to initialize Firebase notifications: $e');
+  }
 }
 
 /// Initialize stored authentication tokens in API client

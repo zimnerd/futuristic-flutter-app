@@ -28,6 +28,7 @@ import 'icebreaker_service.dart';
 import 'auto_reply_service.dart';
 import 'ai_chat_assistant_service.dart';
 import '../../services/media_upload_service.dart';
+import '../../services/firebase_notification_service.dart';
 
 /// Simple service locator without external dependencies
 class ServiceLocator {
@@ -61,6 +62,7 @@ class ServiceLocator {
   late final AutoReplyService _autoReplyService;
   late final AiChatAssistantService _aiChatAssistantService;
   late final MediaUploadService _mediaUploadService;
+  late final FirebaseNotificationService _firebaseNotificationService;
 
   bool _isInitialized = false;
 
@@ -112,6 +114,7 @@ class ServiceLocator {
       httpClient: Dio(),
       secureStorage: secureStorage,
     );
+    _firebaseNotificationService = FirebaseNotificationService.instance;
 
     // Initialize SubscriptionService
     _subscriptionService = SubscriptionService(
@@ -269,6 +272,15 @@ class ServiceLocator {
     return _mediaUploadService;
   }
 
+  /// Get Firebase Notification Service instance
+  FirebaseNotificationService get firebaseNotificationService {
+    if (!_isInitialized) initialize();
+    return _firebaseNotificationService;
+  }
+
+  /// Legacy getter for backward compatibility
+  FirebaseNotificationService get pushNotification => firebaseNotificationService;
+
   /// Set auth token for all services that require authentication
   Future<void> setAuthToken(String token) async {
     if (!_isInitialized) initialize();
@@ -363,5 +375,13 @@ class ServiceLocator {
 
     // Set auth token for API client (which sets it for all HTTP services)
     _apiClient.setAuthToken(token);
+
+    // Initialize Firebase notifications with auth token
+    try {
+      Logger().d('🔔 ServiceLocator: Initializing Firebase notifications with auth token');
+      await _firebaseNotificationService.updateAuthToken(token);
+    } catch (e) {
+      Logger().e('❌ ServiceLocator: Failed to initialize Firebase notifications: $e');
+    }
   }
 }

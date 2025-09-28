@@ -3,6 +3,7 @@ import '../../data/services/analytics_service.dart';
 import '../../data/services/messaging_service.dart';
 import '../../data/services/payment_service.dart';
 import '../../data/services/push_notification_service.dart';
+import '../../services/firebase_notification_service.dart';
 import '../../data/services/token_service.dart';
 import '../../data/services/matching_service.dart';
 import '../../data/services/ai_preferences_service.dart';
@@ -32,6 +33,7 @@ class ServiceLocator {
   PaymentService? _paymentService;
   AnalyticsService? _analyticsService;
   PushNotificationService? _pushNotificationService;
+  FirebaseNotificationService? _firebaseNotificationService;
   TokenService? _tokenService;
   AiPreferencesService? _aiPreferencesService;
   LocationService? _locationService;
@@ -60,6 +62,7 @@ class ServiceLocator {
       _paymentService = PaymentService.instance;
       _analyticsService = AnalyticsService.instance;
       _pushNotificationService = PushNotificationService.instance;
+      _firebaseNotificationService = FirebaseNotificationService.instance;
       _tokenService = TokenService();
       _aiPreferencesService = AiPreferencesService();
       _locationService = LocationService();
@@ -85,6 +88,11 @@ class ServiceLocator {
       _apiClient?.setAuthToken(authToken);
       _paymentService?.setAuthToken(authToken);
       _pushNotificationService?.updateAuthToken(authToken);
+      
+      // Initialize Firebase notifications with auth token
+      if (_firebaseNotificationService != null) {
+        await _firebaseNotificationService!.initialize(authToken: authToken);
+      }
 
       // Also set auth token for data services (including WebSocket)
       try {
@@ -199,6 +207,12 @@ class ServiceLocator {
     return _locationService!;
   }
 
+  /// Get Firebase notification service
+  FirebaseNotificationService get firebaseNotificationService {
+    _ensureInitialized();
+    return _firebaseNotificationService!;
+  }
+
   // ===========================================
   // DIRECT API ACCESS (for convenience)
   // ===========================================
@@ -231,12 +245,14 @@ class ServiceLocator {
   /// Dispose all services
   void dispose() {
     _pushNotificationService?.dispose();
+    _firebaseNotificationService?.dispose();
     _analyticsService = null;
     _apiClient = null;
     _matchingService = null;
     _messagingService = null;
     _paymentService = null;
     _pushNotificationService = null;
+    _firebaseNotificationService = null;
     _tokenService = null;
     _aiPreferencesService = null;
     _locationService = null;
