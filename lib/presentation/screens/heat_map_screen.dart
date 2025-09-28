@@ -402,67 +402,88 @@ class _HeatMapScreenState extends State<HeatMapScreen> {
       'HeatMapScreen: Built ${markers.length} markers and ${circles.length} circles',
     );
 
-    return GoogleMap(
-      onMapCreated: (GoogleMapController controller) {
-        _mapController = controller;
-        print('🗺️ Google Maps created successfully with controller');
-        print('🗺️ Map type: $_mapType');
-        print('🗺️ Buildings enabled: true');
-        print('🗺️ Indoor view enabled: true');
-        print('🗺️ Lite mode enabled: false');
-        print('🗺️ Traffic enabled: false');
-        print('🗺️ Initial zoom level: $_currentZoom');
+    print('🗺️ About to build GoogleMap widget...');
+    print('🗺️ Initial position: $initialPosition');
+    print('🗺️ Markers count: ${markers.length}');
+    print('🗺️ Circles count: ${circles.length}');
 
-        // Small delay to ensure map is ready
-        Future.delayed(const Duration(milliseconds: 500), () {
-          if (mounted && _mapController != null) {
-            final zoomLevel = hasGeographicMismatch
-                ? 6.0
-                : _getZoomLevel(state.currentRadius);
-            print(
-              '🗺️ Animating camera to position: $initialPosition with zoom: $zoomLevel',
-            );
-            _mapController!.animateCamera(
+    return GoogleMap(
+      key: const ValueKey('heat_map_google_map'),
+      onMapCreated: (GoogleMapController controller) async {
+        _mapController = controller;
+        print('🗺️ HeatMapScreen: Google Maps created successfully');
+        print('🔧 Map Controller Type: ${controller.runtimeType}');
+        print('🔧 Map ID: ${controller.mapId}');
+        
+        // Check if map tiles are loading by testing a basic operation
+        try {
+          final bounds = await controller.getVisibleRegion();
+          print('🔧 Visible region obtained: ${bounds.toString()}');
+          print('🔧 This indicates map tiles should be loading');
+        } catch (e) {
+          print('🔧 ERROR: Cannot get visible region - $e');
+          print('🔧 This may indicate API key or network issues');
+        }
+
+        // Wait for map to be fully initialized before camera operations
+        await Future.delayed(const Duration(milliseconds: 200));
+
+        if (mounted && _mapController != null) {
+          final zoomLevel = hasGeographicMismatch ? 8.0 : 12.0;
+          print('🗺️ Moving camera to: $initialPosition, zoom: $zoomLevel');
+
+          try {
+            await _mapController!.animateCamera(
               CameraUpdate.newCameraPosition(
                 CameraPosition(target: initialPosition, zoom: zoomLevel),
               ),
             );
-            print('🗺️ Camera animation complete');
-          } else {
-            print(
-              '🗺️ Cannot animate camera - mounted: $mounted, controller: ${_mapController != null}',
-            );
+            print('🗺️ Camera positioned successfully');
+
+            // Test tile loading after positioning
+            await Future.delayed(const Duration(milliseconds: 500));
+            final newBounds = await controller.getVisibleRegion();
+            print('🔧 Post-animation visible region: ${newBounds.toString()}');
+          } catch (e) {
+            print('🗺️ Camera positioning error: $e');
           }
-        });
+        }
       },
       onCameraMove: (CameraPosition position) {
-        setState(() {
-          _currentZoom = position.zoom;
-        });
-        print('🗺️ Zoom changed to: $_currentZoom');
+        if (mounted) {
+          setState(() {
+            _currentZoom = position.zoom;
+          });
+          print('🗺️ Zoom changed to: $_currentZoom');
+        }
       },
       onCameraIdle: () {
         print('🗺️ Camera idle at zoom: $_currentZoom');
       },
       initialCameraPosition: CameraPosition(
         target: initialPosition,
-        zoom: hasGeographicMismatch
-            ? 6.0
-            : 12.0, // Lower zoom for data clusters
+        zoom: 10.0, // Safe initial zoom level
       ),
       markers: markers,
       circles: circles,
       mapType: _mapType,
+      // Essential tile rendering settings
+      minMaxZoomPreference: const MinMaxZoomPreference(2.0, 20.0),
+      cameraTargetBounds: CameraTargetBounds.unbounded,
+      // UI Controls
       zoomControlsEnabled: false,
       compassEnabled: true,
       myLocationEnabled: true,
       myLocationButtonEnabled: false,
+      mapToolbarEnabled: false,
+      // Gesture settings
       rotateGesturesEnabled: true,
       scrollGesturesEnabled: true,
       tiltGesturesEnabled: true,
       zoomGesturesEnabled: true,
-      mapToolbarEnabled: false,
+      // Performance settings
       liteModeEnabled: false,
+      // Map features
       trafficEnabled: false,
       buildingsEnabled: true,
       indoorViewEnabled: true,
@@ -533,20 +554,7 @@ class _HeatMapScreenState extends State<HeatMapScreen> {
     };
   }
 
-  BitmapDescriptor _getMarkerIcon(String status) {
-    switch (status) {
-      case 'matched':
-        return BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen);
-      case 'liked_me':
-        return BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueOrange);
-      case 'unmatched':
-        return BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue);
-      case 'passed':
-        return BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed);
-      default:
-        return BitmapDescriptor.defaultMarker;
-    }
-  }
+  
 
   BitmapDescriptor _getClusterMarkerIcon(int userCount, String dominantStatus) {
     // For now, use the dominant status color with default marker
@@ -967,43 +975,9 @@ class _HeatMapScreenState extends State<HeatMapScreen> {
     );
   }
 
-  void _showMarkerDetails(HeatMapDataPoint point) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF1A1A1A),
-        title: Text(
-          point.label ?? 'User Density Area',
-          style: const TextStyle(color: Colors.white),
-        ),
-        content: Text(
-          'Density: ${point.density} users\nRadius: ${point.radius.toStringAsFixed(0)}m',
-          style: TextStyle(color: Colors.white70),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text(
-              'Close',
-              style: TextStyle(color: Color(0xFF6E3BFF)),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
 
 
-  double _getZoomLevel(int radiusKm) {
-    if (radiusKm <= 5) return 14.0;
-    if (radiusKm <= 10) return 13.0;
-    if (radiusKm <= 25) return 11.0;
-    if (radiusKm <= 50) return 10.0;
-    if (radiusKm <= 100) return 9.0;
-    if (radiusKm <= 200) return 8.0;
-    return 6.0;
-  }
 
 
 

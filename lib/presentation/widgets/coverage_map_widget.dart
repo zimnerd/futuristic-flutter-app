@@ -32,6 +32,7 @@ class CoverageMapWidget extends StatefulWidget {
 }
 
 class _CoverageMapWidgetState extends State<CoverageMapWidget> {
+  final Completer<GoogleMapController> _controller = Completer();
   GoogleMapController? _mapController;
   final Set<Marker> _markers = {};
   final Set<Circle> _circles = {};
@@ -51,7 +52,6 @@ class _CoverageMapWidgetState extends State<CoverageMapWidget> {
   
   // Clustering
   late cluster.ClusterManager<HeatMapClusterItem> _clusterManager;
-  Set<Marker> _clusterMarkers = {};
 
   @override
   void initState() {
@@ -149,6 +149,20 @@ class _CoverageMapWidgetState extends State<CoverageMapWidget> {
     _updateHeatMapVisualization();
     _updateCoverageVisualization();
     _updateUserLocationMarker();
+    _updateClusterData();
+  }
+
+  void _updateClusterData() {
+    final clusterItems = _heatMapData
+        .map((point) => HeatMapClusterItem(point))
+        .toList();
+
+    _clusterManager.setItems(clusterItems);
+
+    // Update cluster markers for current zoom level
+    if (_mapController != null) {
+      _clusterManager.updateMap();
+    }
   }
 
   void _updateHeatMapVisualization() {
@@ -240,90 +254,14 @@ class _CoverageMapWidgetState extends State<CoverageMapWidget> {
 
   void _updateMarkers(Set<Marker> markers) {
     setState(() {
-      _clusterMarkers = markers;
+      _markers.clear();
+      _markers.addAll(markers);
     });
   }
 
-  Future<Marker> _buildClusterMarker(cluster.Cluster<HeatMapClusterItem> clusterData) async {
-    return Marker(
-      markerId: MarkerId('cluster_${clusterData.getId()}'),
-      position: clusterData.location,
-      icon: await _getClusterBitmapDescriptor(clusterData),
-      onTap: () => _onClusterTap(clusterData),
-    );
-  }
 
-  Future<BitmapDescriptor> _getClusterBitmapDescriptor(
-    cluster.Cluster<HeatMapClusterItem> clusterData,
-  ) async {
-    final int clusterSize = clusterData.count;
-    
-    if (clusterSize == 1) {
-      // Single marker - get color based on match status
-      final item = clusterData.items.first;
-      return _getMarkerColor(item.dataPoint.label ?? 'available');
-    }
-    
-    // Cluster marker - return default cluster marker with count
-    return BitmapDescriptor.defaultMarkerWithHue(
-      clusterSize < 10 
-        ? BitmapDescriptor.hueGreen
-        : clusterSize < 25
-        ? BitmapDescriptor.hueYellow  
-        : BitmapDescriptor.hueRed,
-    );
-  }
 
-  BitmapDescriptor _getMarkerColor(String status) {
-    switch (status) {
-      case 'matched':
-        return BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen);
-      case 'liked_me':
-        return BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueOrange);
-      case 'unmatched':
-        return BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed);
-      case 'available':
-      default:
-        return BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue);
-    }
-  }
 
-  void _onClusterTap(cluster.Cluster<HeatMapClusterItem> clusterData) {
-    if (clusterData.isMultiple) {
-      // Zoom into cluster
-      _mapController?.animateCamera(
-        CameraUpdate.newLatLngZoom(clusterData.location, 15),
-      );
-    } else {
-      // Single marker - show details
-      final item = clusterData.items.first;
-      _showMarkerDetails(item.dataPoint);
-    }
-  }
-
-  void _showMarkerDetails(HeatMapDataPoint point) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('User Details'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Location: ${point.coordinates.latitude.toStringAsFixed(4)}, ${point.coordinates.longitude.toStringAsFixed(4)}'),
-            Text('Density: ${point.density}'),
-            Text('Status: ${point.label ?? 'Unknown'}'),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
-          ),
-        ],
-      ),
-    );
-  }
 
   LocationBounds _calculateMapBounds() {
     if (_currentLocation == null) {
@@ -388,45 +326,77 @@ class _CoverageMapWidgetState extends State<CoverageMapWidget> {
     }
   }
 
-  void _onMapCreated(GoogleMapController controller) {
+  void _onMapCreated(GoogleMapController controller) async {
+    dev.log(
+      '🗺️ CoverageMap: Map controller created - starting initialization',
+    );
     _mapController = controller;
+    _controller.complete(controller);
 
-    // Move camera to user location if available
-    if (_currentLocation != null) {
-      controller.animateCamera(
-        CameraUpdate.newCameraPosition(
-          CameraPosition(
-            target: LatLng(_currentLocation!.latitude, _currentLocation!.longitude),
-            zoom: _calculateOptimalZoom(),
-          ),
-        ),
+    try {
+      // Add debug logging for map initialization
+      dev.log('🗺️ CoverageMap: Map ID: ${controller.mapId}');
+
+      // Give more time for tiles to load and detect any errors
+      dev.log('🗺️ CoverageMap: Waiting for map tiles to initialize...');
+      await Future.delayed(const Duration(milliseconds: 2000));
+
+      _clusterManager.setMapId(controller.mapId);
+      dev.log(
+        '🗺️ CoverageMap: Cluster manager initialized with map ID: ${controller.mapId}',
       );
+
+      // Move camera to user location if available
+      if (_currentLocation != null) {
+        final zoom = _calculateOptimalZoom();
+        dev.log(
+          '🗺️ CoverageMap: Setting camera position - lat: ${_currentLocation!.latitude}, lng: ${_currentLocation!.longitude}, zoom: $zoom',
+        );
+
+        await controller.animateCamera(
+          CameraUpdate.newCameraPosition(
+            CameraPosition(
+              target: LatLng(
+                _currentLocation!.latitude,
+                _currentLocation!.longitude,
+              ),
+              zoom: zoom,
+            ),
+          ),
+        );
+        dev.log('🗺️ CoverageMap: Camera animation completed');
+      } else {
+        dev.log(
+          '🗺️ CoverageMap: No current location available for camera positioning',
+        );
+      }
+    } catch (e, stackTrace) {
+      dev.log('🚨 CoverageMap: Error during map initialization: $e');
+      dev.log('🚨 CoverageMap: Stack trace: $stackTrace');
     }
   }
 
   double _calculateOptimalZoom() {
-    // Calculate zoom level based on distance preference
+    // Calculate zoom level based on distance preference - higher zoom to show roads/buildings
     const Map<int, double> distanceToZoom = {
-      5: 13.0,
-      10: 12.0,
-      25: 11.0,
-      50: 10.0,
-      100: 9.0,
+      5: 15.0, // City streets clearly visible
+      10: 14.0, // Neighborhood level
+      25: 13.0, // Multiple neighborhoods
+      50: 12.0, // City-wide view with major roads
+      100: 11.0, // Regional view
     };
 
-    return distanceToZoom.entries
+    final zoom =
+        distanceToZoom.entries
         .where((entry) => widget.maxDistance <= entry.key)
         .map((entry) => entry.value)
-        .firstOrNull ?? 8.0;
-  }
+            .firstOrNull ??
+        10.0; // Use 10.0 as safer default
 
-  void _onMapTap(LatLng position) {
-    final coordinates = LocationCoordinates(
-      latitude: position.latitude,
-      longitude: position.longitude,
+    dev.log(
+      'Coverage Map: Calculated zoom level: $zoom for distance: ${widget.maxDistance}km',
     );
-    
-    widget.onLocationSelected?.call(coordinates);
+    return zoom;
   }
 
   void _switchMapType() {
@@ -455,30 +425,80 @@ class _CoverageMapWidgetState extends State<CoverageMapWidget> {
     await _loadMapData();
   }
 
+  void _onCameraMove(CameraPosition position) {
+    // Update clustering based on zoom level
+    if (_mapController != null) {
+      _clusterManager.onCameraMove(position);
+    }
+  }
+
+  void _onCameraIdle() {
+    // Update clusters when camera stops moving
+    if (_mapController != null) {
+      _clusterManager.updateMap();
+    }
+  }
+
+  void _onMapTap(LatLng position) {
+    // Handle map taps if needed
+    dev.log('Map tapped at: ${position.latitude}, ${position.longitude}');
+
+    if (widget.onLocationSelected != null) {
+      widget.onLocationSelected!(
+        LocationCoordinates(
+          latitude: position.latitude,
+          longitude: position.longitude,
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Stack(
         children: [
           // Map
-          if (_currentLocation != null)
-            GoogleMap(
-              onMapCreated: _onMapCreated,
-              onTap: _onMapTap,
-              initialCameraPosition: CameraPosition(
-                target: LatLng(_currentLocation!.latitude, _currentLocation!.longitude),
-                zoom: _calculateOptimalZoom(),
-              ),
-              markers: _markers,
-              circles: _circles,
-              polygons: _polygons,
-              mapType: _currentMapType,
-              myLocationEnabled: false, // We handle this manually
-              myLocationButtonEnabled: false,
-              zoomControlsEnabled: false,
+          GoogleMap(
+            key: const ValueKey('coverage_google_map'),
+            onMapCreated: (GoogleMapController controller) {
+              dev.log(
+                '🗺️ CoverageMap: GoogleMap onMapCreated callback triggered',
+              );
+              _onMapCreated(controller);
+            },
+            initialCameraPosition: CameraPosition(
+              target: _currentLocation != null
+                  ? LatLng(
+                      _currentLocation!.latitude,
+                      _currentLocation!.longitude,
+                    )
+                  : const LatLng(-33.9249, 18.4241), // Cape Town as fallback
+              zoom: 14.0,
             ),
-
-          // Loading overlay
+            mapType: _currentMapType,
+            markers: _markers,
+            circles: _circles,
+            polygons: _polygons,
+            onCameraMove: _onCameraMove,
+            onCameraIdle: _onCameraIdle,
+            onTap: _onMapTap,
+            myLocationEnabled: true,
+            myLocationButtonEnabled: false,
+            zoomControlsEnabled: false,
+            mapToolbarEnabled: false,
+            compassEnabled: true,
+            rotateGesturesEnabled: true,
+            scrollGesturesEnabled: true,
+            zoomGesturesEnabled: true,
+            tiltGesturesEnabled: false,
+            minMaxZoomPreference: const MinMaxZoomPreference(3.0, 20.0),
+            cameraTargetBounds: CameraTargetBounds.unbounded,
+            buildingsEnabled: true,
+            indoorViewEnabled: false,
+            trafficEnabled: false,
+            liteModeEnabled: false, // Ensure full map rendering
+          ), // Loading overlay
           if (_isLoading)
             Container(
               color: Colors.black54,

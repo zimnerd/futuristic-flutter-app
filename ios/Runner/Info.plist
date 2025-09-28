@@ -68,8 +68,8 @@
 	</dict>
 	
 	<!-- Google Maps API Key -->
-	<key>GoogleMapsAPIKey</key>
-	<string>AIzaSyD2iddVKdqoPrCPs5O8LdWR1ltaTKy2ZJo</string>
+	<key>GMSApiKey</key>
+	<string>AIzaSyAV42zvffrhtkgnhYhOGLJZiqheBCj1-C4</string>
 	
 	<!-- Enable embedded views for Google Maps -->
 	<key>io.flutter.embedded_views_preview</key>
