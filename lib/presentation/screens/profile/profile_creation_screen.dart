@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:dio/dio.dart';
-import 'package:hive/hive.dart';
 
-import '../../../services/photo_upload_service.dart';
 import '../../../services/profile_draft_service.dart';
 import '../../blocs/profile/profile_bloc.dart';
 import '../../blocs/user/user_bloc.dart';
@@ -26,7 +23,6 @@ class ProfileCreationScreen extends StatefulWidget {
 class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
   final PageController _pageController = PageController();
   final _formKey = GlobalKey<FormState>();
-  late final PhotoUploadService _photoUploadService;
   late final ProfileDraftService _draftService;
 
   // Form controllers
@@ -47,10 +43,6 @@ class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
   @override
   void initState() {
     super.initState();
-    _photoUploadService = PhotoUploadService(
-      httpClient: Dio(),
-      secureStorage: Hive.box<String>('secure_storage'),
-    );
     _draftService = ProfileDraftService();
     _initializeDraftService();
   }
@@ -368,16 +360,35 @@ class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Add Photos',
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-              fontWeight: FontWeight.bold,
-              color: PulseColors.primary,
-            ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Add Photos',
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: PulseColors.primary,
+                ),
+              ),
+              TextButton(
+                onPressed: () {
+                  // Skip photos - show confirmation dialog
+                  _showSkipDialog(
+                    'Skip Photos?',
+                    'Adding photos greatly increases your chances of getting matches. Are you sure you want to skip this step?',
+                    () => _goToNextStep(),
+                  );
+                },
+                child: Text(
+                  'Skip for now',
+                  style: TextStyle(color: Colors.grey[600]),
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 8),
           Text(
-            'Upload at least 2 photos to get started',
+            'Upload photos to increase your match potential',
             style: Theme.of(
               context,
             ).textTheme.bodyLarge?.copyWith(color: Colors.grey[600]),
@@ -393,8 +404,7 @@ class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
                 });
               },
               maxPhotos: 6,
-              isRequired: true,
-              photoUploadService: _photoUploadService,
+              isRequired: false, // No longer required since it can be skipped
             ),
           ),
         ],
@@ -408,16 +418,28 @@ class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'About You',
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-              fontWeight: FontWeight.bold,
-              color: PulseColors.primary,
-            ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'About You',
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: PulseColors.primary,
+                ),
+              ),
+              TextButton(
+                onPressed: () => _goToNextStep(),
+                child: Text(
+                  'Skip for now',
+                  style: TextStyle(color: Colors.grey[600]),
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 8),
           Text(
-            'Write a short bio to tell people about yourself',
+            'Write a short bio to tell people about yourself (optional)',
             style: Theme.of(
               context,
             ).textTheme.bodyLarge?.copyWith(color: Colors.grey[600]),
@@ -470,16 +492,34 @@ class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Your Interests',
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-              fontWeight: FontWeight.bold,
-              color: PulseColors.primary,
-            ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Your Interests',
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: PulseColors.primary,
+                ),
+              ),
+              TextButton(
+                onPressed: () {
+                  _showSkipDialog(
+                    'Skip Interests?',
+                    'Adding interests helps us find better matches for you. You can always add them later in your profile settings.',
+                    () => _goToNextStep(),
+                  );
+                },
+                child: Text(
+                  'Skip for now',
+                  style: TextStyle(color: Colors.grey[600]),
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 8),
           Text(
-            'Select interests that represent you',
+            'Select interests that represent you (optional)',
             style: Theme.of(
               context,
             ).textTheme.bodyLarge?.copyWith(color: Colors.grey[600]),
@@ -644,7 +684,7 @@ class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
                 elevation: 0,
               ),
               child: Text(
-                _currentStep == _totalSteps - 1 ? 'Complete Profile' : 'Next',
+                _getNextButtonText(),
                 style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
@@ -664,11 +704,11 @@ class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
             _ageController.text.trim().isNotEmpty &&
             _selectedGender != null;
       case 1:
-        return _selectedPhotos.length >= 2;
+        return true; // Photos are now optional (can be skipped)
       case 2:
         return true; // Bio is optional
       case 3:
-        return _selectedInterests.isNotEmpty;
+        return true; // Interests are now optional (can be skipped)
       case 4:
         return _selectedLookingFor != null;
       default:
@@ -813,6 +853,58 @@ class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
     final draft = _getCurrentDraft();
     if (!draft.isEmpty) {
       await _draftService.saveDraft(draft);
+    }
+  }
+
+  void _showSkipDialog(String title, String message, VoidCallback onConfirm) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(title),
+        content: Text(message),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text('Cancel', style: TextStyle(color: Colors.grey[600])),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              onConfirm();
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: PulseColors.primary,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            child: const Text('Skip'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _getNextButtonText() {
+    switch (_currentStep) {
+      case 0:
+        return 'Continue';
+      case 1:
+        return _selectedPhotos.isNotEmpty ? 'Continue with Photos' : 'Continue';
+      case 2:
+        return _bioController.text.trim().isNotEmpty
+            ? 'Continue with Bio'
+            : 'Continue';
+      case 3:
+        return _selectedInterests.isNotEmpty
+            ? 'Continue with Interests'
+            : 'Continue';
+      case 4:
+        return 'Complete Profile';
+      default:
+        return 'Next';
     }
   }
 }

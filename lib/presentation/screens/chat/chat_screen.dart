@@ -9,8 +9,8 @@ import 'package:image_picker/image_picker.dart';
 
 import '../../../blocs/chat_bloc.dart';
 import '../../../data/models/chat_model.dart';
-import '../../../services/media_upload_service.dart';
 import '../../../data/services/service_locator.dart';
+import '../../../services/media_upload_service.dart' as media_service;
 import '../../../domain/entities/message.dart' show MessageType;
 import '../../../presentation/blocs/auth/auth_bloc.dart';
 import '../../../presentation/blocs/auth/auth_state.dart';
@@ -1347,7 +1347,13 @@ class _ChatScreenState extends State<ChatScreen> {
 
       // Upload image using MediaUploadService
       final mediaUploadService = ServiceLocator().mediaUploadService;
-      final uploadResult = await mediaUploadService.uploadChatImage(imageFile.path);
+      final uploadResult = await mediaUploadService.uploadMedia(
+        filePath: imageFile.path,
+        category: media_service.MediaCategory.chatMessage,
+        type: media_service.MediaType.image,
+        isPublic: false,
+        requiresModeration: false,
+      );
 
       if (uploadResult.success && uploadResult.mediaId != null) {
         AppLogger.debug('Image uploaded successfully: ${uploadResult.mediaId}');
