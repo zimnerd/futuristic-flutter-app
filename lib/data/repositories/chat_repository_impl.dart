@@ -57,10 +57,37 @@ class ChatRepositoryImpl implements ChatRepository {
 
   /// Setup WebSocket listeners for real-time message events
   void _setupWebSocketListeners() {
+    // DEBUG: Listen for ALL events to see what's coming through
+    _logger.e('🔍 [DEBUG] Setting up WebSocket listeners...');
+
+    // First, let's verify the WebSocket connection status
+    _logger.e(
+      '🔍 [DEBUG] WebSocket isConnected: ${_webSocketService.isConnected}',
+    );
+    _logger.e(
+      '🔍 [DEBUG] WebSocket namespace: ${_webSocketService.currentNamespace}',
+    );
+
+    // Note: onAny method may not be available on WebSocketService interface
+    // We'll rely on specific event logging instead
+
+    // Listen for connection events
+    _webSocketService.on('connect', (_) {
+      _logger.e('🔗 [DEBUG] Repository detected WebSocket connection');
+    });
+
+    _webSocketService.on('disconnect', (reason) {
+      _logger.e('🔌 [DEBUG] Repository detected WebSocket disconnect: $reason');
+    });
+    
     // Listen for incoming messages (backend emits 'messageReceived')
+    _logger.e('🔧 [DEBUG] *** SETTING UP messageReceived LISTENER ***');
     _webSocketService.on('messageReceived', (data) async {
       try {
-        _logger.d('Repository: Received messageReceived event: $data');
+        _logger.e(
+          '📨 [DEBUG] *** REPOSITORY RECEIVED messageReceived EVENT *** DATA: $data',
+        );
+        _logger.e('Repository: Processing messageReceived event: $data');
 
         // Parse the backend event structure: { type, data, timestamp }
         if (data is Map<String, dynamic> && data.containsKey('data')) {

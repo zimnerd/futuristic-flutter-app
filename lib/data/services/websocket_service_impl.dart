@@ -257,6 +257,18 @@ class WebSocketServiceImpl implements WebSocketService {
       _connectionStateController.add('connected');
     });
 
+    // 🚨 DEBUG: Listen to ALL incoming events
+    _socket!.onAny((event, data) {
+      _logger.e(
+        '🔥 [ALL_EVENTS] Event: $event | Data: $data | Type: ${data.runtimeType}',
+      );
+      if (event == 'messageReceived') {
+        _logger.e(
+          '🚨🚨🚨 [CRITICAL] messageReceived event captured! Data: $data',
+        );
+      }
+    });
+
     // Pong handler for latency measurement
     _socket!.on('pong', (data) {
       if (data is Map && data['timestamp'] != null) {
