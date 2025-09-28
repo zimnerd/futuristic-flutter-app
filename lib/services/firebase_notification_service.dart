@@ -32,8 +32,7 @@ class FirebaseNotificationService {
     _authToken = authToken;
     
     try {
-      // Initialize Firebase
-      await Firebase.initializeApp();
+      // Get Firebase messaging instance (Firebase should already be initialized)
       _messaging = FirebaseMessaging.instance;
       
       // Request notification permissions
