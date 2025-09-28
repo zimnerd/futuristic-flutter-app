@@ -559,6 +559,27 @@ class MatchingService {
     final userProfile = user != null ? MatchModel.parseUserProfile(user) : null;
     final userId = userProfile?.id ?? '';
 
+    // Parse timestamps from API response, with fallbacks
+    DateTime parseDateTime(String? dateStr) {
+      if (dateStr != null && dateStr.isNotEmpty) {
+        try {
+          return DateTime.parse(dateStr);
+        } catch (e) {
+          print('Error parsing date: $dateStr - $e');
+        }
+      }
+      return DateTime.now();
+    }
+
+    final matchedAt = parseDateTime(
+      apiMatch['matchedAt'] as String? ??
+          apiMatch['createdAt'] as String? ??
+          apiMatch['updatedAt'] as String?,
+    );
+
+    final createdAt = parseDateTime(apiMatch['createdAt'] as String?);
+    final updatedAt = parseDateTime(apiMatch['updatedAt'] as String?);
+
     return MatchModel(
       id: apiMatch['id'] as String? ?? '',
       user1Id: currentUserId, // Use actual current user ID
@@ -566,10 +587,10 @@ class MatchingService {
       isMatched: true, // If it's in matches, it's matched
       compatibilityScore: 0.85, // Default score since API doesn't provide it
       matchReasons: null, // No need to store user data here
-      status: 'matched', // Default to matched status
-      matchedAt: DateTime.now(), // Use current time as fallback
-      createdAt: DateTime.now(), // Use current time as fallback
-      updatedAt: DateTime.now(), // Use current time as fallback
+      status: apiMatch['status'] as String? ?? 'matched',
+      matchedAt: matchedAt,
+      createdAt: createdAt,
+      updatedAt: updatedAt,
       userProfile: userProfile,
       otherUserId: userId,
     );

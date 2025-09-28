@@ -160,12 +160,14 @@ class ApplyAdvancedFilters extends EventEvent {
   final DateTime? endDate;
   final double? maxDistance;
   final bool? hasAvailableSpots;
+  final bool? showJoinedOnly;
 
   const ApplyAdvancedFilters({
     this.startDate,
     this.endDate,
     this.maxDistance,
     this.hasAvailableSpots,
+    this.showJoinedOnly,
   });
 
   @override
@@ -174,6 +176,7 @@ class ApplyAdvancedFilters extends EventEvent {
     endDate,
     maxDistance,
     hasAvailableSpots,
+    showJoinedOnly,
   ];
 }
 

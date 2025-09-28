@@ -565,6 +565,7 @@ class EventBloc extends Bloc<EventEvent, EventState> {
   ) {
     _startDate = event.startDate;
     _endDate = event.endDate;
+    _showJoinedOnly = event.showJoinedOnly ?? false;
     // TODO: Implement distance and availability filtering
     // _maxDistance = event.maxDistance;
     // _hasAvailableSpots = event.hasAvailableSpots;

@@ -229,12 +229,34 @@ class _MatchStoryAvatar extends StatelessWidget {
     final now = DateTime.now();
     final difference = now.difference(matchTime);
 
-    if (difference.inMinutes < 60) {
+    // Debug logging to identify the issue
+    print('🕐 Match time: $matchTime');
+    print('🕐 Current time: $now');
+    print(
+      '🕐 Difference: ${difference.inMinutes}m, ${difference.inHours}h, ${difference.inDays}d',
+    );
+
+    // Handle edge cases
+    if (difference.isNegative) {
+      // Future time - might be a timezone issue or bad data
+      print('⚠️ Match time is in the future! Using "now" instead.');
+      return 'now';
+    }
+
+    if (difference.inMinutes < 1) {
+      return 'now';
+    } else if (difference.inMinutes < 60) {
       return '${difference.inMinutes}m';
     } else if (difference.inHours < 24) {
       return '${difference.inHours}h';
-    } else {
+    } else if (difference.inDays < 7) {
       return '${difference.inDays}d';
+    } else if (difference.inDays < 30) {
+      final weeks = (difference.inDays / 7).floor();
+      return '${weeks}w';
+    } else {
+      final months = (difference.inDays / 30).floor();
+      return '${months}mo';
     }
   }
 }

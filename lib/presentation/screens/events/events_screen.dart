@@ -172,32 +172,6 @@ class _EventsScreenState extends State<EventsScreen> {
                     onCategorySelected: _onCategorySelected,
                   ),
                 ),
-                Padding(
-                  padding: const EdgeInsets.only(right: 16),
-                  child: FilterChip(
-                    label: const Text('Joined Only'),
-                    selected: _showJoinedOnly,
-                    onSelected: (_) => _onToggleJoinedOnly(),
-                    selectedColor: PulseColors.primary,
-                    checkmarkColor: Colors.white,
-                    labelStyle: TextStyle(
-                      color: _showJoinedOnly
-                          ? Colors.white
-                          : PulseColors.primary,
-                      fontWeight: FontWeight.w600,
-                    ),
-                    backgroundColor: PulseColors.primary.withOpacity(0.1),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
-                      side: BorderSide(
-                        color: _showJoinedOnly
-                            ? PulseColors.primary
-                            : PulseColors.primary.withOpacity(0.3),
-                        width: 1,
-                      ),
-                    ),
-                  ),
-                ),
               ],
             ),
             Expanded(

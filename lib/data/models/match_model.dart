@@ -70,17 +70,46 @@ class MatchModel {
           ? Map<String, dynamic>.from(json['matchReasons'])
           : null,
       status: json['status'] ?? 'pending',
-      matchedAt: json['matchedAt'] != null
-          ? DateTime.parse(json['matchedAt'])
-          : null,
+      matchedAt: () {
+        // Debug: Print all available date fields
+        print(
+          '🔍 Available date fields in match JSON: ${json.keys.where((key) => key.toString().toLowerCase().contains('at') || key.toString().toLowerCase().contains('date')).toList()}',
+        );
+
+        // Try different possible date fields for match time
+        final possibleDateFields = ['matchedAt', 'createdAt', 'updatedAt'];
+        DateTime? matchTime;
+
+        for (final field in possibleDateFields) {
+          if (json[field] != null) {
+            try {
+              matchTime = DateTime.parse(json[field].toString());
+              print('🕐 Using $field as match time: $matchTime');
+              break;
+            } catch (e) {
+              print('❌ Failed to parse $field: ${json[field]}');
+            }
+          }
+        }
+
+        return matchTime;
+      }(),
       rejectedAt: json['rejectedAt'] != null
           ? DateTime.parse(json['rejectedAt'])
           : null,
       expiredAt: json['expiredAt'] != null
           ? DateTime.parse(json['expiredAt'])
           : null,
-      createdAt: DateTime.parse(json['createdAt'] ?? json['matchedAt']),
-      updatedAt: DateTime.parse(json['updatedAt'] ?? json['matchedAt']),
+      createdAt: json['createdAt'] != null
+          ? DateTime.parse(json['createdAt'])
+          : (json['matchedAt'] != null
+                ? DateTime.parse(json['matchedAt'])
+                : DateTime.now()),
+      updatedAt: json['updatedAt'] != null
+          ? DateTime.parse(json['updatedAt'])
+          : (json['matchedAt'] != null
+                ? DateTime.parse(json['matchedAt'])
+                : DateTime.now()),
       userProfile: userProfile,
       otherUserId: userProfile?.id,
       conversationId: json['conversationId'],

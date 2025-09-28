@@ -599,19 +599,19 @@ class _ModernOnboardingFlowState extends State<ModernOnboardingFlow> {
               onPageChanged: (index) => setState(() => _currentPage = index),
               children: [
                 _buildOnboardingPage(
-                  title: 'Discover Your\\nPerfect Match',
+                  title: 'Discover Your\nPerfect Match',
                   subtitle: 'Our AI-powered algorithm learns your preferences to find your ideal partner',
                   asset: 'assets/onboarding/match.json', // Lottie animation
                   color: PulseColors.primary,
                 ),
                 _buildOnboardingPage(
-                  title: 'Connect Through\\nVideo & AR',
+                  title: 'Connect Through\nVideo & AR',
                   subtitle: 'Experience immersive dates with video calls and augmented reality features',
                   asset: 'assets/onboarding/video.json',
                   color: PulseColors.secondary,
                 ),
                 _buildOnboardingPage(
-                  title: 'Safe & Secure\\nDating',
+                  title: 'Safe & Secure\nDating',
                   subtitle: 'Your privacy matters. Date with confidence using our verified profiles and safety features',
                   asset: 'assets/onboarding/safety.json',
                   color: PulseColors.success,

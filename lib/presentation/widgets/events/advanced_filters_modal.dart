@@ -26,6 +26,7 @@ class _AdvancedFiltersModalState extends State<AdvancedFiltersModal> {
   DateTime? _endDate;
   double _maxDistance = 25.0;
   bool _hasAvailableSpots = false;
+  bool _showJoinedOnly = false;
 
   @override
   void initState() {
@@ -310,6 +311,24 @@ class _AdvancedFiltersModalState extends State<AdvancedFiltersModal> {
           activeColor: PulseColors.primary,
           contentPadding: EdgeInsets.zero,
         ),
+        const SizedBox(height: 8),
+        CheckboxListTile(
+          title: const Text('Events I joined'),
+          subtitle: Text(
+            'Show only events you are attending',
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: PulseColors.onSurfaceVariant,
+            ),
+          ),
+          value: _showJoinedOnly,
+          onChanged: (value) {
+            setState(() {
+              _showJoinedOnly = value ?? false;
+            });
+          },
+          activeColor: PulseColors.primary,
+          contentPadding: EdgeInsets.zero,
+        ),
       ],
     );
   }
@@ -406,6 +425,7 @@ class _AdvancedFiltersModalState extends State<AdvancedFiltersModal> {
         endDate: _endDate,
         maxDistance: _maxDistance,
         hasAvailableSpots: _hasAvailableSpots ? true : null,
+        showJoinedOnly: _showJoinedOnly ? true : null,
       ),
     );
     Navigator.of(context).pop();

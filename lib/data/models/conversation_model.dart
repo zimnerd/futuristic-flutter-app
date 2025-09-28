@@ -49,13 +49,31 @@ class ConversationModel extends Conversation {
     // We need to find the "other" participant (not the current user)
     // For now, we'll take the first participant, but this should be improved
     // to find the participant who is NOT the current user
-    final otherParticipant = participants.isNotEmpty
-        ? participants.firstWhere(
-            (p) =>
-                p['role'] == 'member', // Try to find the non-admin participant
-            orElse: () => participants.first, // Fallback to first participant
-          )
-        : null;
+    Map<String, dynamic>? otherParticipant;
+    
+    if (participants.isNotEmpty) {
+      try {
+        // Convert participants to proper Map objects and validate
+        final validParticipants = <Map<String, dynamic>>[];
+        for (final participant in participants) {
+          if (participant is Map<String, dynamic>) {
+            validParticipants.add(participant);
+          } else {
+            print('Invalid participant type in fromBackendJson: ${participant.runtimeType}, value: $participant');
+          }
+        }
+        
+        if (validParticipants.isNotEmpty) {
+          otherParticipant = validParticipants.firstWhere(
+            (p) => p['role'] == 'member', // Try to find the non-admin participant
+            orElse: () => validParticipants.first, // Fallback to first participant
+          );
+        }
+      } catch (e) {
+        print('Error parsing participants in fromBackendJson: $e');
+        otherParticipant = null;
+      }
+    }
 
     // Handle lastMessage - use backend response structure
     String lastMessageContent = 'No messages yet';
@@ -89,14 +107,20 @@ class ConversationModel extends Conversation {
     return ConversationModel(
       id: json['id'] as String,
       otherUserId: otherParticipant?['userId'] as String? ?? '',
-      otherUserName: otherParticipant?['username'] as String? ?? 'Unknown',
+      otherUserName:
+          '${otherParticipant?['firstName'] ?? ''} ${otherParticipant?['lastName'] ?? ''}'
+              .trim()
+              .isEmpty
+          ? (otherParticipant?['username'] as String? ?? 'Unknown')
+          : '${otherParticipant?['firstName'] ?? ''} ${otherParticipant?['lastName'] ?? ''}'
+                .trim(),
       otherUserAvatar: otherParticipant?['avatar'] as String? ?? '',
       lastMessage: lastMessageContent,
       lastMessageTime: lastMessageTime,
       unreadCount: json['unreadCount'] as int? ?? 0,
       isOnline: otherParticipant?['isOnline'] as bool? ?? false,
       lastSeen: otherParticipant?['lastSeen'] != null
-          ? DateTime.parse(otherParticipant['lastSeen'] as String)
+          ? DateTime.parse(otherParticipant!['lastSeen'] as String)
           : null,
       isBlocked: json['isBlocked'] as bool? ?? false,
       isMuted: json['isMuted'] as bool? ?? false,
