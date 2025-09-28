@@ -82,12 +82,24 @@ class _MessagesScreenState extends State<MessagesScreen> {
         final avatarUrl = otherParticipant.profileImageUrl ?? '';
         print('🐛 Avatar URL for ${otherParticipant.name}: "$avatarUrl"');
         
+        // Determine last message preview
+        String lastMessagePreview = 'No messages yet';
+        if (conversation.lastMessage != null) {
+          final content = conversation.lastMessage!.content;
+          if (content.isNotEmpty) {
+            // Truncate long messages for preview
+            lastMessagePreview = content.length > 50 
+              ? '${content.substring(0, 50)}...'
+              : content;
+          }
+        }
+        
         return ConversationData(
           id: conversation.id,
           name: otherParticipant
               .name, // Use computed name getter (displayName || fullName || fallback)
           avatar: avatarUrl,
-          lastMessage: conversation.lastMessage?.content ?? 'No messages yet',
+          lastMessage: lastMessagePreview,
           timestamp: _formatTimestamp(conversation.lastActivity ?? conversation.updatedAt),
           unreadCount: conversation.unreadCount,
           isOnline: false, // We'd need real-time status for this
@@ -105,6 +117,12 @@ class _MessagesScreenState extends State<MessagesScreen> {
         }
       }
       final deduplicatedList = uniqueConversations.values.toList();
+      
+      // Sort conversations by most recent activity first (timestamp descending)
+      deduplicatedList.sort((a, b) => b.timestamp.compareTo(a.timestamp));
+      
+      // Sort conversations by most recent activity first
+      deduplicatedList.sort((a, b) => b.timestamp.compareTo(a.timestamp));
       
       print('🗋️ Loaded ${conversations.length} conversations, deduplicated to ${deduplicatedList.length}');
 
@@ -551,14 +569,15 @@ class _MessagesScreenState extends State<MessagesScreen> {
                                   );
                                   return Container(
                                     color: PulseColors.surfaceVariant,
-                                    child: Text(
-                                      conversation.name.isNotEmpty
-                                          ? conversation.name[0].toUpperCase()
-                                          : '?',
-                                      style: const TextStyle(
-                                        color: PulseColors.onSurfaceVariant,
-                                        fontSize: 24,
-                                        fontWeight: FontWeight.bold,
+                                    child: Center(                                      child: Text(
+                                        conversation.name.isNotEmpty
+                                            ? conversation.name[0].toUpperCase()
+                                            : '?',
+                                        style: const TextStyle(
+                                          color: PulseColors.onSurfaceVariant,
+                                          fontSize: 24,
+                                          fontWeight: FontWeight.bold,
+                                        ),
                                       ),
                                     ),
                                   );
@@ -566,14 +585,16 @@ class _MessagesScreenState extends State<MessagesScreen> {
                               )
                             : Container(
                                 color: PulseColors.primary.withOpacity(0.1),
-                                child: Text(
-                                  conversation.name.isNotEmpty
-                                      ? conversation.name[0].toUpperCase()
-                                      : '?',
-                                  style: const TextStyle(
-                                    color: PulseColors.primary,
-                                    fontSize: 24,
-                                    fontWeight: FontWeight.bold,
+                                child: Center(
+                                  child: Text(
+                                    conversation.name.isNotEmpty
+                                        ? conversation.name[0].toUpperCase()
+                                        : '?',
+                                    style: const TextStyle(
+                                      color: PulseColors.primary,
+                                      fontSize: 24,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
                                 ),
                               ),
