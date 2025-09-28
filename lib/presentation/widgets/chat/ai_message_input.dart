@@ -4,7 +4,7 @@ import '../../../data/services/service_locator.dart';
 import '../../../data/services/auto_reply_service.dart';
 import '../../../core/services/service_locator.dart' as core;
 import '../../theme/pulse_colors.dart';
-import '../../screens/chat/widgets/ai_chat_assistant_modal.dart';
+import 'rich_ai_chat_assistant_modal.dart';
 
 class AiMessageInput extends StatefulWidget {
   final TextEditingController controller;
@@ -165,18 +165,11 @@ class _AiMessageInputState extends State<AiMessageInput>
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => AiChatAssistantModal(
-        currentUser: null, // TODO: Get current user from context
-        matchProfile: null, // TODO: Get match profile from context  
-        recentMessages: const [], // TODO: Get recent messages
-        currentMessage: widget.controller.text,
-        onMessageGenerated: (message) {
-          widget.controller.text = message;
-          setState(() {
-            _isComposing = message.isNotEmpty;
-          });
-        },
-        onMessageRefined: (message) {
+      builder: (context) => RichAiChatAssistantModal(
+        conversationId: widget.chatId,
+        specificMessage: widget.controller.text.isNotEmpty ? widget.controller.text : null,
+        onClose: () => Navigator.of(context).pop(),
+        onApplyToChat: (message) {
           widget.controller.text = message;
           setState(() {
             _isComposing = message.isNotEmpty;
