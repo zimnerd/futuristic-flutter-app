@@ -98,15 +98,9 @@ class ChatRepositoryImpl implements ChatRepository {
             if (message.tempId != null && message.tempId!.isNotEmpty) {
               final tempId = message.tempId!;
               
-                  // Skip if already processed via messageConfirmed
-              if (_tempIdToRealIdMap.containsKey(tempId)) {
-                    _logger.d('Message already processed, skipping: $tempId');
-                    return;
-              }
-              
-                  _logger.d('Correlating optimistic message: $tempId');
+                  _logger.d('Processing messageReceived with tempId: $tempId');
 
-                  // Update optimistic message mapping
+                  // Always update optimistic message mapping (messageConfirmed might have done this already)
                   _tempIdToRealIdMap[tempId] = message.id;
               _pendingOptimisticMessages.remove(tempId);
               
@@ -117,7 +111,7 @@ class ChatRepositoryImpl implements ChatRepository {
               );
               
                   _logger.d(
-                    'Mapped optimistic message $tempId -> ${message.id}',
+                    'Processed messageReceived: $tempId -> ${message.id}',
                   );
             } else {
               // Save new incoming message to database
