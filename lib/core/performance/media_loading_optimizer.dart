@@ -138,6 +138,17 @@ class MediaLoadingOptimizer {
       print('MediaOptimizer: Removed $toRemove LRU cache entries for memory optimization');
     }
   }
+  
+  /// Cleanup resources
+  void dispose() {
+    _preloadedUrls.clear();
+    _lastAccessTimes.clear();
+    _downloadTasks.clear();
+
+    if (kDebugMode) {
+      print('MediaOptimizer: Disposed all cached resources');
+    }
+  }
 }
 
 /// Widget-level media optimization helper

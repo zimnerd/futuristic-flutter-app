@@ -16,6 +16,10 @@ import '../../../presentation/blocs/auth/auth_bloc.dart';
 import '../../../presentation/blocs/auth/auth_state.dart';
 import '../../../data/models/user_model.dart';
 import '../../../core/utils/logger.dart';
+
+import '../../../core/performance/message_pagination_optimizer.dart';
+import '../../../core/performance/media_loading_optimizer.dart';
+import '../../../core/performance/memory_manager.dart';
 import '../../theme/pulse_colors.dart';
 import '../../widgets/chat/message_bubble.dart';
 import '../../widgets/chat/ai_message_input.dart';
@@ -48,6 +52,11 @@ class _ChatScreenState extends State<ChatScreen> {
   bool _hasMarkedAsRead =
       false; // Track if we've already marked this conversation as read
   
+  // Performance optimizers
+  late final MessagePaginationOptimizer _paginationOptimizer;
+  late final MediaLoadingOptimizer _mediaOptimizer;
+  late final MemoryManager _memoryManager;
+  
   String? get _currentUserId {
     final authState = context.read<AuthBloc>().state;
     if (authState is AuthAuthenticated) {
@@ -59,6 +68,12 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   void initState() {
     super.initState();
+    
+    // Initialize performance optimizers
+    _paginationOptimizer = MessagePaginationOptimizer();
+    _mediaOptimizer = MediaLoadingOptimizer();
+    _memoryManager = MemoryManager();
+    _memoryManager.startMemoryManagement();
     
     // Debug information
     AppLogger.debug('ChatScreen initialized with:');
@@ -113,16 +128,30 @@ class _ChatScreenState extends State<ChatScreen> {
     _scrollController.removeListener(_scrollListener);
     _scrollController.dispose();
     _messageController.dispose();
+    _typingTimer?.cancel();
+
+    // Cleanup performance optimizers
+    _paginationOptimizer.dispose();
+    _mediaOptimizer.dispose();
+    _memoryManager.stopMemoryManagement();
+    
     super.dispose();
   }
 
   void _scrollListener() {
-    // Load more messages when scrolled to top
+    // Load more messages when scrolled to top with performance optimization
     if (_scrollController.position.pixels == 
         _scrollController.position.maxScrollExtent) {
-      context.read<ChatBloc>().add(
-        LoadMessages(conversationId: widget.conversationId),
-      );
+      
+      // Check if we should load more messages (performance optimization)
+      if (!_paginationOptimizer.isLoadingMore(widget.conversationId)) {
+        context.read<ChatBloc>().add(
+          LoadMessages(conversationId: widget.conversationId),
+        );
+        
+        // Set loading state to prevent duplicate requests
+        _paginationOptimizer.setLoadingMore(widget.conversationId, true);
+      }
     }
   }
 
@@ -133,6 +162,26 @@ class _ChatScreenState extends State<ChatScreen> {
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeOut,
       );
+    }
+  }
+  
+  /// Preload media for visible messages to improve performance
+  void _preloadVisibleMedia(List<MessageModel> messages) {
+    // Preload media from the most recent messages (likely to be visible)
+    final visibleMessages = messages.take(20).toList();
+
+    for (final message in visibleMessages) {
+      if ((message.type == MessageType.image ||
+              message.type == MessageType.video) &&
+          message.mediaUrls?.isNotEmpty == true) {
+        // Preload all media URLs in the message
+        for (final mediaUrl in message.mediaUrls!) {
+          _mediaOptimizer.preloadMedia(
+            mediaUrl,
+            isVideo: message.type == MessageType.video,
+          );
+        }
+      }
     }
   }
 
@@ -192,6 +241,21 @@ class _ChatScreenState extends State<ChatScreen> {
                       'ChatScreen - MessagesLoaded with ${state.messages.length} messages',
                     );
                   _scrollToBottom();
+                  
+                    // Cache messages for performance optimization
+                    _paginationOptimizer.addMessages(
+                      widget.conversationId,
+                      state.messages,
+                    );
+
+                    // Preload media for visible messages
+                    _preloadVisibleMedia(state.messages);
+
+                    // Reset loading state
+                    _paginationOptimizer.setLoadingMore(
+                      widget.conversationId,
+                      false,
+                    );
                   
                     // ✅ Only mark as read if we haven't done so yet and there are unread messages
                     if (!_hasMarkedAsRead && _currentUserId != null) {

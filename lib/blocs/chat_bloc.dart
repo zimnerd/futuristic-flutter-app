@@ -10,6 +10,7 @@ import '../domain/entities/message.dart' show MessageType;
 import '../data/repositories/chat_repository.dart';
 import '../data/services/background_sync_manager.dart';
 
+
 // Events
 abstract class ChatEvent extends Equatable {
   const ChatEvent();
