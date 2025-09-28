@@ -380,31 +380,56 @@ class _RichAiChatAssistantModalState extends State<RichAiChatAssistantModal>
     Function(bool) onChanged,
     IconData icon,
   ) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 200),
+      margin: const EdgeInsets.only(bottom: 14),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: value ? PulseColors.primary.withOpacity(0.3) : Colors.grey[300]!,
+          color: value 
+            ? PulseColors.primary 
+            : (isDark ? Colors.grey[600]! : Colors.grey[300]!),
+          width: value ? 2.5 : 1.5,
         ),
-        color: value ? PulseColors.primary.withOpacity(0.05) : Colors.white,
+        color: value 
+          ? PulseColors.primary.withOpacity(isDark ? 0.15 : 0.08)
+          : (isDark ? Colors.grey[850] : Colors.grey[50]),
+        boxShadow: value ? [
+          BoxShadow(
+            color: PulseColors.primary.withOpacity(0.2),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ] : [],
       ),
       child: Row(
         children: [
-          Container(
-            padding: const EdgeInsets.all(8),
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: value ? PulseColors.primary : Colors.grey[400],
-              borderRadius: BorderRadius.circular(8),
+              color: value 
+                ? PulseColors.primary 
+                : (isDark ? Colors.grey[700] : Colors.grey[400]),
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: value ? [
+                BoxShadow(
+                  color: PulseColors.primary.withOpacity(0.3),
+                  blurRadius: 6,
+                  offset: const Offset(0, 2),
+                ),
+              ] : [],
             ),
             child: Icon(
               icon,
               color: Colors.white,
-              size: 20,
+              size: 22,
             ),
           ),
-          const SizedBox(width: 16),
+          const SizedBox(width: 18),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -412,17 +437,20 @@ class _RichAiChatAssistantModalState extends State<RichAiChatAssistantModal>
                 Text(
                   title,
                   style: TextStyle(
-                    fontSize: 14,
+                    fontSize: 15,
                     fontWeight: FontWeight.w600,
-                    color: value ? PulseColors.primary : Colors.black87,
+                    color: value 
+                      ? PulseColors.primary 
+                      : (isDark ? Colors.grey[200] : Colors.grey[800]),
                   ),
                 ),
-                const SizedBox(height: 2),
+                const SizedBox(height: 4),
                 Text(
                   description,
                   style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey[600],
+                    fontSize: 13,
+                    color: isDark ? Colors.grey[400] : Colors.grey[600],
+                    height: 1.2,
                   ),
                 ),
               ],
@@ -432,6 +460,9 @@ class _RichAiChatAssistantModalState extends State<RichAiChatAssistantModal>
             value: value,
             onChanged: onChanged,
             activeColor: PulseColors.primary,
+            activeTrackColor: PulseColors.primary.withOpacity(0.3),
+            inactiveThumbColor: isDark ? Colors.grey[600] : Colors.grey[400],
+            inactiveTrackColor: isDark ? Colors.grey[700] : Colors.grey[300],
           ),
         ],
       ),
@@ -439,12 +470,20 @@ class _RichAiChatAssistantModalState extends State<RichAiChatAssistantModal>
   }
 
   Widget _buildMessageLimitSlider() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
     return Container(
-      margin: const EdgeInsets.only(left: 16, bottom: 12),
-      padding: const EdgeInsets.all(16),
+      margin: const EdgeInsets.only(left: 16, bottom: 16),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
-        color: Colors.blue[50],
+        borderRadius: BorderRadius.circular(16),
+        color: isDark 
+          ? PulseColors.secondary.withOpacity(0.1) 
+          : PulseColors.secondary.withOpacity(0.05),
+        border: Border.all(
+          color: PulseColors.secondary.withOpacity(0.2),
+          width: 1,
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -733,53 +772,135 @@ class _RichAiChatAssistantModalState extends State<RichAiChatAssistantModal>
   }
 
   Widget _buildActionButtons() {
-    return Row(
-      children: [
-        Expanded(
-          child: OutlinedButton.icon(
-            onPressed: _copyToClipboard,
-            icon: const Icon(Icons.copy, size: 18),
-            label: const Text('Copy'),
-            style: OutlinedButton.styleFrom(
-              foregroundColor: PulseColors.primary,
-              side: BorderSide(color: PulseColors.primary),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: isDark ? Colors.grey[900] : Colors.white,
+        borderRadius: const BorderRadius.only(
+          bottomLeft: Radius.circular(20),
+          bottomRight: Radius.circular(20),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: (isDark ? Colors.black : Colors.grey).withOpacity(0.2),
+            blurRadius: 15,
+            offset: const Offset(0, -5),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          // Copy Button
+          SizedBox(
+            width: double.infinity,
+            height: 52,
+            child: ElevatedButton.icon(
+              onPressed: _copyToClipboard,
+              icon: Icon(
+                Icons.copy_rounded, 
+                size: 22,
+                color: isDark ? Colors.grey[300] : Colors.grey[700],
+              ),
+              label: Text(
+                'Copy Response',
+                style: TextStyle(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 16,
+                  color: isDark ? Colors.grey[300] : Colors.grey[700],
+                ),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: isDark ? Colors.grey[800] : Colors.grey[50],
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  side: BorderSide(
+                    color: isDark ? Colors.grey[600]! : Colors.grey[300]!,
+                    width: 1.5,
+                  ),
+                ),
               ),
             ),
           ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: OutlinedButton.icon(
-            onPressed: _startRefinement,
-            icon: const Icon(Icons.edit, size: 18),
-            label: const Text('Refine'),
-            style: OutlinedButton.styleFrom(
-              foregroundColor: Colors.orange,
-              side: const BorderSide(color: Colors.orange),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
+          const SizedBox(height: 14),
+          // Refine Button
+          SizedBox(
+            width: double.infinity,
+            height: 52,
+            child: ElevatedButton.icon(
+              onPressed: _startRefinement,
+              icon: const Icon(
+                Icons.tune_rounded, 
+                size: 22,
+                color: Colors.white,
+              ),
+              label: const Text(
+                'Refine Response',
+                style: TextStyle(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 16,
+                  color: Colors.white,
+                ),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: PulseColors.secondary,
+                elevation: 2,
+                shadowColor: PulseColors.secondary.withOpacity(0.3),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
               ),
             ),
           ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: ElevatedButton.icon(
-            onPressed: _applyToChat,
-            icon: const Icon(Icons.send, size: 18),
-            label: const Text('Apply'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: PulseColors.success,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
+          const SizedBox(height: 14),
+          // Apply to Chat Button
+          Container(
+            width: double.infinity,
+            height: 52,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              gradient: LinearGradient(
+                colors: [PulseColors.primary, PulseColors.primary.withOpacity(0.8)],
+                begin: Alignment.centerLeft,
+                end: Alignment.centerRight,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: PulseColors.primary.withOpacity(0.4),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: ElevatedButton.icon(
+              onPressed: _applyToChat,
+              icon: const Icon(
+                Icons.send_rounded, 
+                size: 22,
+                color: Colors.white,
+              ),
+              label: const Text(
+                'Apply to Chat',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                  color: Colors.white,
+                ),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.transparent,
+                elevation: 0,
+                shadowColor: Colors.transparent,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
               ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 

@@ -23,6 +23,7 @@ import '../../../core/performance/memory_manager.dart';
 import '../../theme/pulse_colors.dart';
 import '../../widgets/chat/message_bubble.dart';
 import '../../widgets/chat/ai_message_input.dart';
+import '../../widgets/chat/rich_ai_chat_assistant_modal.dart';
 
 class ChatScreen extends StatefulWidget {
   final String conversationId;
@@ -1687,6 +1688,17 @@ class _ChatScreenState extends State<ChatScreen> {
                 _replyToMessage(message);
               },
             ),
+            // Only show AI assistance for received messages (not my own)
+            if (!isMyMessage)
+              _buildOptionTile(
+                icon: Icons.smart_toy_rounded,
+                title: 'Reply using AI assistance',
+                color: PulseColors.secondary,
+                onTap: () {
+                  Navigator.pop(context);
+                  _showAiAssistanceForMessage(message);
+                },
+              ),
             _buildOptionTile(
               icon: Icons.copy,
               title: 'Copy',
@@ -1849,6 +1861,35 @@ class _ChatScreenState extends State<ChatScreen> {
   void _reportMessage(MessageModel message) {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Report feature will be implemented')),
+    );
+  }
+
+  void _showAiAssistanceForMessage(MessageModel message) {
+    // Show AI assistance modal with specific message context
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.8,
+        minChildSize: 0.5,
+        maxChildSize: 0.95,
+        builder: (context, scrollController) => RichAiChatAssistantModal(
+          conversationId: widget.conversationId,
+          currentUserId: _currentUserId,
+          matchUserId: widget.otherUserId,
+          specificMessage:
+              message.content, // Pass the specific message content for context
+          onApplyToChat: (generatedMessage) {
+            // Apply the generated message to chat input
+            setState(() {
+              _messageController.text = generatedMessage;
+            });
+            Navigator.of(context).pop();
+          },
+          onClose: () => Navigator.of(context).pop(),
+        ),
+      ),
     );
   }
 
