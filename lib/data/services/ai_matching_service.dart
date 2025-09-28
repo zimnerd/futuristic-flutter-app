@@ -326,4 +326,99 @@ class AiMatchingService {
       return null;
     }
   }
+
+  /// Get AI-powered user recommendations
+  Future<List<MatchModel>> getRecommendations({
+    String? userId,
+    int limit = 10,
+    double? minCompatibility,
+  }) async {
+    try {
+      final queryParams = <String, dynamic>{
+        'limit': limit.toString(),
+      };
+      if (userId != null) queryParams['userId'] = userId;
+      if (minCompatibility != null) queryParams['minCompatibility'] = minCompatibility.toString();
+
+      final response = await _apiClient.get(
+        '/api/v1/matching/ai/recommendations',
+        queryParameters: queryParams,
+      );
+
+      if (response.statusCode == 200 && response.data != null) {
+        final List<dynamic> recommendationsData = response.data['data'] ?? [];
+        final recommendations = recommendationsData
+            .map((r) => MatchModel.fromJson(r))
+            .toList();
+        
+        _logger.d('AI recommendations found ${recommendations.length} matches');
+        return recommendations;
+      } else {
+        _logger.e('Failed to get AI recommendations: ${response.statusMessage}');
+        return [];
+      }
+    } catch (e) {
+      _logger.e('Error getting AI recommendations: $e');
+      return [];
+    }
+  }
+
+  /// Calculate compatibility score between users
+  Future<Map<String, dynamic>?> calculateCompatibilityScore({
+    required String userId,
+    required String targetUserId,
+  }) async {
+    try {
+      final response = await _apiClient.post(
+        '/api/v1/matching/ai/score',
+        data: {
+          'userId': userId,
+          'targetUserId': targetUserId,
+        },
+      );
+
+      if (response.statusCode == 200 && response.data != null) {
+        _logger.d('Compatibility score calculated');
+        return response.data['data'];
+      } else {
+        _logger.e('Failed to calculate compatibility score: ${response.statusMessage}');
+        return null;
+      }
+    } catch (e) {
+      _logger.e('Error calculating compatibility score: $e');
+      return null;
+    }
+  }
+
+  /// Submit feedback to improve AI recommendations
+  Future<bool> submitFeedback({
+    required String userId,
+    required String targetUserId,
+    required String action,
+    Map<String, dynamic>? context,
+  }) async {
+    try {
+      final response = await _apiClient.post(
+        '/api/v1/matching/ai/feedback',
+        data: {
+          'userId': userId,
+          'targetUserId': targetUserId,
+          'action': action,
+          'context': context ?? {},
+          'timestamp': DateTime.now().toIso8601String(),
+        },
+      );
+
+      if (response.statusCode == 200 && response.data != null) {
+        _logger.d('AI feedback submitted successfully');
+        return response.data['success'] == true;
+      } else {
+        _logger.e('Failed to submit feedback: ${response.statusMessage}');
+        return false;
+      }
+    } catch (e) {
+      _logger.e('Error submitting feedback: $e');
+      return false;
+    }
+  }
 }
