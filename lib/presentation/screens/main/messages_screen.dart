@@ -81,16 +81,26 @@ class _MessagesScreenState extends State<MessagesScreen> {
 
         final avatarUrl = otherParticipant.profileImageUrl ?? '';
         print('🐛 Avatar URL for ${otherParticipant.name}: "$avatarUrl"');
-        
+
+        // Debug last message data
+        print(
+          '🐛 Last message for ${otherParticipant.name}: ${conversation.lastMessage}',
+        );
+        print(
+          '🐛 Last message content: "${conversation.lastMessage?.content ?? 'NULL'}"',
+        );
+
         // Determine last message preview
         String lastMessagePreview = 'No messages yet';
         if (conversation.lastMessage != null) {
           final content = conversation.lastMessage!.content;
+          print('🐛 Processing message content: "$content"');
           if (content.isNotEmpty) {
             // Truncate long messages for preview
-            lastMessagePreview = content.length > 50 
-              ? '${content.substring(0, 50)}...'
-              : content;
+            lastMessagePreview = content.length > 50
+                ? '${content.substring(0, 50)}...'
+                : content;
+            print('🐛 Final preview: "$lastMessagePreview"');
           }
         }
         
@@ -118,11 +128,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
       }
       final deduplicatedList = uniqueConversations.values.toList();
       
-      // Sort conversations by most recent activity first (timestamp descending)
-      deduplicatedList.sort((a, b) => b.timestamp.compareTo(a.timestamp));
-      
-      // Sort conversations by most recent activity first
-      deduplicatedList.sort((a, b) => b.timestamp.compareTo(a.timestamp));
+      // Sort conversations by most recent activity first (timestamp descending)\n      deduplicatedList.sort((a, b) => b.timestamp.compareTo(a.timestamp));
       
       print('🗋️ Loaded ${conversations.length} conversations, deduplicated to ${deduplicatedList.length}');
 
@@ -569,7 +575,8 @@ class _MessagesScreenState extends State<MessagesScreen> {
                                   );
                                   return Container(
                                     color: PulseColors.surfaceVariant,
-                                    child: Center(                                      child: Text(
+                                    child: Center(
+                                      child: Text(
                                         conversation.name.isNotEmpty
                                             ? conversation.name[0].toUpperCase()
                                             : '?',
@@ -860,6 +867,12 @@ class _MessagesScreenState extends State<MessagesScreen> {
   }
 
   bool _matchesCurrentFilters(ConversationData conversation) {
+    // 🎯 CORE FILTER: Only show conversations that have actual messages
+    // Exclude conversations with "No messages yet" (users should only appear in matches section)
+    if (conversation.lastMessage == 'No messages yet') {
+      return false;
+    }
+
     // Type filter
     if (_currentFilters.type != MessageFilterType.all &&
         conversation.type != _currentFilters.type) {

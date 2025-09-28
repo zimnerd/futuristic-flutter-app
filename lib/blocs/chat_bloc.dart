@@ -887,9 +887,19 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       if (state is MessagesLoaded) {
         final messagesState = state as MessagesLoaded;
         // Get all message IDs (backend will filter out own messages)
+        // Filter to only valid UUIDs to avoid validation error
+        final RegExp uuidPattern = RegExp(
+          r'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$',
+          caseSensitive: false,
+        );
         messageIds = messagesState.messages
             .map((message) => message.id)
+            .where((id) => uuidPattern.hasMatch(id))
             .toList();
+        
+        _logger.d(
+          'Filtered ${messagesState.messages.length} messages to ${messageIds.length} valid UUIDs',
+        );
       }
 
       await _chatRepository.markConversationAsRead(
