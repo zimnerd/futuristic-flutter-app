@@ -236,10 +236,10 @@ class _EventsScreenState extends State<EventsScreen> {
           // Reload Button
           Container(
             decoration: BoxDecoration(
-              color: PulseColors.primary.withOpacity(0.1),
+              color: PulseColors.primary.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: PulseColors.primary.withOpacity(0.3),
+                color: PulseColors.primary.withValues(alpha: 0.3),
                 width: 1,
               ),
             ),

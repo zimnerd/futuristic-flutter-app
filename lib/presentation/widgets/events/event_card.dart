@@ -168,7 +168,7 @@ class EventCard extends StatelessWidget {
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: PulseColors.success.withOpacity(0.15),
+                    color: PulseColors.success.withValues(alpha: 0.15),
                     blurRadius: 6,
                     offset: const Offset(0, 2),
                   ),

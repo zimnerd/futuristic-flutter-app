@@ -34,12 +34,12 @@ class UploadProgressIndicator extends StatelessWidget {
         border: Border.all(
           color: hasError 
               ? Colors.red.shade200
-              : PulseColors.primary.withOpacity(0.2),
+              : PulseColors.primary.withValues(alpha: 0.2),
           width: 1,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -189,7 +189,7 @@ class CompactUploadProgress extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.7),
+        color: Colors.black.withValues(alpha: 0.7),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
@@ -201,7 +201,7 @@ class CompactUploadProgress extends StatelessWidget {
             child: CircularProgressIndicator(
               value: progress / 100,
               strokeWidth: 2,
-              backgroundColor: Colors.white.withOpacity(0.3),
+              backgroundColor: Colors.white.withValues(alpha: 0.3),
               valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
             ),
           ),

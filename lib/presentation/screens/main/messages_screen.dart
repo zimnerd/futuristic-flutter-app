@@ -606,7 +606,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
                                 },
                               )
                             : Container(
-                                color: PulseColors.primary.withOpacity(0.1),
+                                color: PulseColors.primary.withValues(alpha: 0.1),
                                 child: Center(
                                   child: Text(
                                     conversation.name.isNotEmpty

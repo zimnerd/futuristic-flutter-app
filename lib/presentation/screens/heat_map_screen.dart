@@ -526,7 +526,7 @@ class _HeatMapScreenState extends State<HeatMapScreen> {
         circleId: const CircleId('coverage_circle'),
         center: LatLng(state.userLocation!.latitude, state.userLocation!.longitude),
         radius: state.currentRadius * 1000.0, // Convert km to meters
-        fillColor: const Color(0xFF6E3BFF).withOpacity(0.1),
+        fillColor: const Color(0xFF6E3BFF).withValues(alpha: 0.1),
         strokeColor: const Color(0xFF6E3BFF),
         strokeWidth: 2,
       ),
@@ -605,9 +605,9 @@ class _HeatMapScreenState extends State<HeatMapScreen> {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.black.withOpacity(0.8),
+          color: Colors.black.withValues(alpha: 0.8),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.white.withOpacity(0.1)),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -686,12 +686,12 @@ class _HeatMapScreenState extends State<HeatMapScreen> {
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              const Color(0xFF6E3BFF).withOpacity(0.9),
-              const Color(0xFF00C2FF).withOpacity(0.9),
+              const Color(0xFF6E3BFF).withValues(alpha: 0.9),
+              const Color(0xFF00C2FF).withValues(alpha: 0.9),
             ],
           ),
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: Colors.white.withOpacity(0.2)),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -903,7 +903,7 @@ class _HeatMapScreenState extends State<HeatMapScreen> {
                   width: 40,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.3),
+                    color: Colors.white.withValues(alpha: 0.3),
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -1020,7 +1020,7 @@ class _HeatMapScreenState extends State<HeatMapScreen> {
               borderRadius: BorderRadius.circular(8),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.2),
+                  color: Colors.black.withValues(alpha: 0.2),
                   blurRadius: 4,
                   offset: const Offset(0, 2),
                 ),
@@ -1063,7 +1063,7 @@ class _HeatMapScreenState extends State<HeatMapScreen> {
               borderRadius: BorderRadius.circular(8),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.2),
+                  color: Colors.black.withValues(alpha: 0.2),
                   blurRadius: 4,
                   offset: const Offset(0, 2),
                 ),
@@ -1095,7 +1095,7 @@ class _HeatMapScreenState extends State<HeatMapScreen> {
               borderRadius: BorderRadius.circular(8),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.2),
+                  color: Colors.black.withValues(alpha: 0.2),
                   blurRadius: 4,
                   offset: const Offset(0, 2),
                 ),

@@ -130,7 +130,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> with SingleTickerPr
         icon: Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.1),
+            color: Colors.white.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(12),
           ),
           child: const Icon(Icons.arrow_back, color: Colors.white),
@@ -154,7 +154,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> with SingleTickerPr
               icon: Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF6E3BFF).withOpacity(0.2),
+                  color: const Color(0xFF6E3BFF).withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: const Icon(Icons.refresh, color: Color(0xFF6E3BFF)),
@@ -242,7 +242,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> with SingleTickerPr
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF6E3BFF).withOpacity(0.3),
+            color: const Color(0xFF6E3BFF).withValues(alpha: 0.3),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -274,7 +274,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> with SingleTickerPr
                     Text(
                       activityLevel,
                       style: TextStyle(
-                        color: Colors.white.withOpacity(0.8),
+                        color: Colors.white.withValues(alpha: 0.8),
                         fontSize: 14,
                       ),
                     ),
@@ -333,7 +333,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> with SingleTickerPr
         Text(
           label,
           style: TextStyle(
-            color: Colors.white.withOpacity(0.7),
+            color: Colors.white.withValues(alpha: 0.7),
             fontSize: 12,
           ),
         ),
@@ -387,10 +387,10 @@ class _StatisticsScreenState extends State<StatisticsScreen> with SingleTickerPr
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: Colors.white.withOpacity(0.1),
+          color: Colors.white.withValues(alpha: 0.1),
           width: 1,
         ),
       ),
@@ -454,10 +454,10 @@ class _StatisticsScreenState extends State<StatisticsScreen> with SingleTickerPr
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: Colors.white.withOpacity(0.1),
+          color: Colors.white.withValues(alpha: 0.1),
           width: 1,
         ),
       ),
@@ -523,10 +523,10 @@ class _StatisticsScreenState extends State<StatisticsScreen> with SingleTickerPr
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: Colors.white.withOpacity(0.1),
+          color: Colors.white.withValues(alpha: 0.1),
           width: 1,
         ),
       ),
@@ -591,7 +591,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> with SingleTickerPr
         Container(
           height: 8,
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.1),
+            color: Colors.white.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(4),
           ),
           child: FractionallySizedBox(

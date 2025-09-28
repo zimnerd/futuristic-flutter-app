@@ -135,7 +135,7 @@ class _AdvancedFiltersModalState extends State<AdvancedFiltersModal> {
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           border: Border.all(
-            color: PulseColors.primary.withOpacity(0.3),
+            color: PulseColors.primary.withValues(alpha: 0.3),
           ),
           borderRadius: BorderRadius.circular(12),
         ),
@@ -224,13 +224,13 @@ class _AdvancedFiltersModalState extends State<AdvancedFiltersModal> {
         color: isSelected ? Colors.white : PulseColors.primary,
         fontWeight: FontWeight.w600,
       ),
-      backgroundColor: PulseColors.primary.withOpacity(0.1),
+      backgroundColor: PulseColors.primary.withValues(alpha: 0.1),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
         side: BorderSide(
           color: isSelected
               ? PulseColors.primary
-              : PulseColors.primary.withOpacity(0.3),
+              : PulseColors.primary.withValues(alpha: 0.3),
         ),
       ),
     );
@@ -264,7 +264,7 @@ class _AdvancedFiltersModalState extends State<AdvancedFiltersModal> {
           data: SliderTheme.of(context).copyWith(
             activeTrackColor: PulseColors.primary,
             thumbColor: PulseColors.primary,
-            overlayColor: PulseColors.primary.withOpacity(0.1),
+            overlayColor: PulseColors.primary.withValues(alpha: 0.1),
           ),
           child: Slider(
             value: _maxDistance,

@@ -114,7 +114,7 @@ class _RichAiChatAssistantModalState extends State<RichAiChatAssistantModal>
       animation: _animationController,
       builder: (context, child) {
         return Container(
-          color: Colors.black.withOpacity(0.5 * _fadeAnimation.value),
+          color: Colors.black.withValues(alpha: 0.5 * _fadeAnimation.value),
           child: SlideTransition(
             position: _slideAnimation,
             child: DraggableScrollableSheet(
@@ -395,11 +395,11 @@ class _RichAiChatAssistantModalState extends State<RichAiChatAssistantModal>
           width: value ? 2.5 : 1.5,
         ),
         color: value 
-          ? PulseColors.primary.withOpacity(isDark ? 0.15 : 0.08)
+          ? PulseColors.primary.withValues(alpha: isDark ? 0.15 : 0.08)
           : (isDark ? Colors.grey[850] : Colors.grey[50]),
         boxShadow: value ? [
           BoxShadow(
-            color: PulseColors.primary.withOpacity(0.2),
+            color: PulseColors.primary.withValues(alpha: 0.2),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -417,7 +417,7 @@ class _RichAiChatAssistantModalState extends State<RichAiChatAssistantModal>
               borderRadius: BorderRadius.circular(12),
               boxShadow: value ? [
                 BoxShadow(
-                  color: PulseColors.primary.withOpacity(0.3),
+                  color: PulseColors.primary.withValues(alpha: 0.3),
                   blurRadius: 6,
                   offset: const Offset(0, 2),
                 ),
@@ -460,7 +460,7 @@ class _RichAiChatAssistantModalState extends State<RichAiChatAssistantModal>
             value: value,
             onChanged: onChanged,
             activeColor: PulseColors.primary,
-            activeTrackColor: PulseColors.primary.withOpacity(0.3),
+            activeTrackColor: PulseColors.primary.withValues(alpha: 0.3),
             inactiveThumbColor: isDark ? Colors.grey[600] : Colors.grey[400],
             inactiveTrackColor: isDark ? Colors.grey[700] : Colors.grey[300],
           ),
@@ -478,10 +478,10 @@ class _RichAiChatAssistantModalState extends State<RichAiChatAssistantModal>
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
         color: isDark 
-          ? PulseColors.secondary.withOpacity(0.1) 
-          : PulseColors.secondary.withOpacity(0.05),
+          ? PulseColors.secondary.withValues(alpha: 0.1) 
+          : PulseColors.secondary.withValues(alpha: 0.05),
         border: Border.all(
-          color: PulseColors.secondary.withOpacity(0.2),
+          color: PulseColors.secondary.withValues(alpha: 0.2),
           width: 1,
         ),
       ),
@@ -513,7 +513,7 @@ class _RichAiChatAssistantModalState extends State<RichAiChatAssistantModal>
             data: SliderTheme.of(context).copyWith(
               activeTrackColor: PulseColors.primary,
               thumbColor: PulseColors.primary,
-              overlayColor: PulseColors.primary.withOpacity(0.2),
+              overlayColor: PulseColors.primary.withValues(alpha: 0.2),
             ),
             child: Slider(
               value: _conversationMessageLimit,
@@ -589,9 +589,9 @@ class _RichAiChatAssistantModalState extends State<RichAiChatAssistantModal>
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: PulseColors.error.withOpacity(0.1),
+        color: PulseColors.error.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: PulseColors.error.withOpacity(0.3)),
+        border: Border.all(color: PulseColors.error.withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [
@@ -683,12 +683,12 @@ class _RichAiChatAssistantModalState extends State<RichAiChatAssistantModal>
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            PulseColors.primary.withOpacity(0.05),
-            PulseColors.secondary.withOpacity(0.05),
+            PulseColors.primary.withValues(alpha: 0.05),
+            PulseColors.secondary.withValues(alpha: 0.05),
           ],
         ),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: PulseColors.primary.withOpacity(0.2)),
+        border: Border.all(color: PulseColors.primary.withValues(alpha: 0.2)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -784,7 +784,7 @@ class _RichAiChatAssistantModalState extends State<RichAiChatAssistantModal>
         ),
         boxShadow: [
           BoxShadow(
-            color: (isDark ? Colors.black : Colors.grey).withOpacity(0.2),
+            color: (isDark ? Colors.black : Colors.grey).withValues(alpha: 0.2),
             blurRadius: 15,
             offset: const Offset(0, -5),
           ),
@@ -847,7 +847,7 @@ class _RichAiChatAssistantModalState extends State<RichAiChatAssistantModal>
               style: ElevatedButton.styleFrom(
                 backgroundColor: PulseColors.secondary,
                 elevation: 2,
-                shadowColor: PulseColors.secondary.withOpacity(0.3),
+                shadowColor: PulseColors.secondary.withValues(alpha: 0.3),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
                 ),
@@ -862,13 +862,13 @@ class _RichAiChatAssistantModalState extends State<RichAiChatAssistantModal>
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(16),
               gradient: LinearGradient(
-                colors: [PulseColors.primary, PulseColors.primary.withOpacity(0.8)],
+                colors: [PulseColors.primary, PulseColors.primary.withValues(alpha: 0.8)],
                 begin: Alignment.centerLeft,
                 end: Alignment.centerRight,
               ),
               boxShadow: [
                 BoxShadow(
-                  color: PulseColors.primary.withOpacity(0.4),
+                  color: PulseColors.primary.withValues(alpha: 0.4),
                   blurRadius: 10,
                   offset: const Offset(0, 4),
                 ),

@@ -154,7 +154,7 @@ class _CoverageMapWidgetState extends State<CoverageMapWidget> {
           circleId: CircleId('heatmap_$i'),
           center: LatLng(point.coordinates.latitude, point.coordinates.longitude),
           radius: _calculateHeatMapRadius(point.density),
-          fillColor: _getHeatMapColor(point.density).withOpacity(0.3),
+          fillColor: _getHeatMapColor(point.density).withValues(alpha: 0.3),
           strokeColor: _getHeatMapColor(point.density),
           strokeWidth: 1,
         ),
@@ -182,7 +182,7 @@ class _CoverageMapWidgetState extends State<CoverageMapWidget> {
         Polygon(
           polygonId: PolygonId('coverage_$i'),
           points: polygonPoints,
-          fillColor: _getCoverageColor(area.density).withOpacity(0.2),
+          fillColor: _getCoverageColor(area.density).withValues(alpha: 0.2),
           strokeColor: _getCoverageColor(area.density),
           strokeWidth: 2,
         ),
@@ -218,7 +218,7 @@ class _CoverageMapWidgetState extends State<CoverageMapWidget> {
         circleId: const CircleId('user_range'),
         center: LatLng(_currentLocation!.latitude, _currentLocation!.longitude),
         radius: widget.maxDistance * 1000.0, // Convert km to meters
-        fillColor: Colors.blue.withOpacity(0.1),
+        fillColor: Colors.blue.withValues(alpha: 0.1),
         strokeColor: Colors.blue,
         strokeWidth: 2,
       ),
@@ -459,7 +459,7 @@ class _CoverageMapWidgetState extends State<CoverageMapWidget> {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
