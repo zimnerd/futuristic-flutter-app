@@ -739,33 +739,263 @@ class _HeatMapScreenState extends State<HeatMapScreen> {
   }
 
   void _showClusterDetails(MapCluster cluster) {
+    // Calculate detailed statistics
+    final statusBreakdown = <String, Map<String, dynamic>>{};
+    int totalUsers = 0;
+    double totalDensity = 0;
+
+    for (final point in cluster.dataPoints) {
+      final status = point.label ?? 'Unknown';
+      final users = point.density;
+      totalUsers += users;
+      totalDensity += point.density;
+
+      statusBreakdown.putIfAbsent(
+        status,
+        () => {'users': 0, 'points': 0, 'avgDensity': 0.0},
+      );
+
+      statusBreakdown[status]!['users'] += users;
+      statusBreakdown[status]!['points'] += 1;
+    }
+
+    // Calculate average densities
+    for (final status in statusBreakdown.keys) {
+      final data = statusBreakdown[status]!;
+      data['avgDensity'] = data['users'] / data['points'];
+    }
+    
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Cluster Details'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Total Users: ${cluster.totalUserCount}'),
-            Text('Data Points: ${cluster.count}'),
-            Text('Dominant Status: ${cluster.dominantStatus}'),
-            Text('Location: ${cluster.position.latitude.toStringAsFixed(4)}, ${cluster.position.longitude.toStringAsFixed(4)}'),
-            const SizedBox(height: 16),
-            const Text('Breakdown:', style: TextStyle(fontWeight: FontWeight.bold)),
-            ...cluster.dataPoints.map((point) => 
-              Text('• ${point.label ?? 'Unknown'}: ${point.density} users')
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
+      builder: (context) => Dialog(
+        child: Container(
+          width: MediaQuery.of(context).size.width * 0.9,
+          height: MediaQuery.of(context).size.height * 0.7,
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header
+              Row(
+                children: [
+                  Container(
+                    width: 12,
+                    height: 12,
+                    decoration: BoxDecoration(
+                      color: _getClusterColor(cluster.dominantStatus),
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Cluster Analysis',
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const Spacer(),
+                  IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: const Icon(Icons.close),
+                  ),
+                ],
+              ),
+              const Divider(),
+
+              // Overview Statistics
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        '📊 Overview',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      _buildStatRow('Total Users', '$totalUsers'),
+                      _buildStatRow('Data Points', '${cluster.count}'),
+                      _buildStatRow('Dominant Status', cluster.dominantStatus),
+                      _buildStatRow(
+                        'Cluster Radius',
+                        '${(cluster.radius / 1000).toStringAsFixed(1)} km',
+                      ),
+                      _buildStatRow(
+                        'Average Density',
+                        '${(totalDensity / cluster.count).toStringAsFixed(1)} users/point',
+                      ),
+
+                      const SizedBox(height: 16),
+                      const Text(
+                        '📍 Location',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      _buildStatRow(
+                        'Latitude',
+                        cluster.position.latitude.toStringAsFixed(6),
+                      ),
+                      _buildStatRow(
+                        'Longitude',
+                        cluster.position.longitude.toStringAsFixed(6),
+                      ),
+                      _buildStatRow(
+                        'Zoom Level',
+                        '${_currentZoom.toStringAsFixed(1)}x',
+                      ),
+
+                      const SizedBox(height: 16),
+                      const Text(
+                        '👥 Status Breakdown',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+
+                      // Status breakdown with visual indicators
+                      ...statusBreakdown.entries.map((entry) {
+                        final status = entry.key;
+                        final data = entry.value;
+                        final percentage = ((data['users'] / totalUsers) * 100)
+                            .toStringAsFixed(1);
+
+                        return Container(
+                          margin: const EdgeInsets.only(bottom: 12),
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: _getClusterColor(
+                              status,
+                            ).withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: _getClusterColor(
+                                status,
+                              ).withValues(alpha: 0.3),
+                            ),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Container(
+                                    width: 8,
+                                    height: 8,
+                                    decoration: BoxDecoration(
+                                      color: _getClusterColor(status),
+                                      shape: BoxShape.circle,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    _getStatusDisplayName(status),
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  const Spacer(),
+                                  Text(
+                                    '$percentage%',
+                                    style: TextStyle(
+                                      color: _getClusterColor(status),
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 4),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text('${data['users']} users'),
+                                  Text('${data['points']} points'),
+                                  Text(
+                                    '${data['avgDensity'].toStringAsFixed(1)} avg density',
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        );
+                      }).toList(),
+
+                      const SizedBox(height: 16),
+                      const Text(
+                        '🔒 Privacy Notes',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.blue.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: Colors.blue.withValues(alpha: 0.3),
+                          ),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('• Individual locations are never shown'),
+                            Text('• Users are grouped by status for privacy'),
+                            Text('• Minimum cluster radius enforced'),
+                            Text('• Positions are stable across zoom levels'),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStatRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: const TextStyle(color: Colors.grey)),
+          Text(value, style: const TextStyle(fontWeight: FontWeight.w500)),
         ],
       ),
     );
+  }
+  
+  String _getStatusDisplayName(String status) {
+    switch (status.toLowerCase()) {
+      case 'matched':
+        return '💖 Matched';
+      case 'liked_me':
+      case 'likedme':
+        return '💕 Liked Me';
+      case 'unmatched':
+      case 'available':
+        return '👋 Available';
+      case 'passed':
+        return '❌ Passed';
+      default:
+        return '❓ Unknown';
+    }
   }
 
   Widget _buildMapOverlay(BuildContext context, HeatMapLoaded state) {
