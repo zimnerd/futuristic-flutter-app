@@ -26,11 +26,11 @@ class MapClusteringService {
     print(
       'MapClusteringService: Stable clustering ${dataPoints.length} points at zoom $zoomLevel',
     );
-    
+
     // Use hierarchical clustering based on zoom level
     return _performHierarchicalClustering(dataPoints, zoomLevel);
   }
-  
+
   /// Check if data points have changed significantly
   static bool _dataPointsChanged(List<HeatMapDataPoint> newPoints) {
     if (_lastDataPoints.length != newPoints.length) return true;
