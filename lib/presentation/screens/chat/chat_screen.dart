@@ -57,6 +57,14 @@ class _ChatScreenState extends State<ChatScreen> {
   // Reply functionality state
   MessageModel? _replyToMessage;
   
+  // Search functionality state
+  bool _isSearchActive = false;
+  final TextEditingController _searchController = TextEditingController();
+  final FocusNode _searchFocusNode = FocusNode();
+  List<MessageModel> _searchResults = [];
+  String _currentSearchQuery = '';
+  int _currentSearchIndex = 0;
+  
   // Performance optimizers
   late final MessagePaginationOptimizer _paginationOptimizer;
   late final MediaLoadingOptimizer _mediaOptimizer;
@@ -134,6 +142,8 @@ class _ChatScreenState extends State<ChatScreen> {
     _scrollController.dispose();
     _messageController.dispose();
     _messageInputFocusNode.dispose();
+    _searchController.dispose();
+    _searchFocusNode.dispose();
     _typingTimer?.cancel();
 
     // Cleanup performance optimizers
@@ -381,6 +391,116 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   PreferredSizeWidget _buildAppBar() {
+    return _isSearchActive ? _buildSearchAppBar() : _buildNormalAppBar();
+  }
+
+  PreferredSizeWidget _buildSearchAppBar() {
+    return PreferredSize(
+      preferredSize: const Size.fromHeight(80),
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              PulseColors.primary,
+              PulseColors.primary.withValues(alpha: 0.8),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.1),
+              blurRadius: 10,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Row(
+              children: [
+                // Back button for search
+                IconButton(
+                  onPressed: () {
+                    setState(() {
+                      _isSearchActive = false;
+                      _currentSearchQuery = '';
+                      _searchResults.clear();
+                      _searchController.clear();
+                    });
+                  },
+                  icon: const Icon(
+                    Icons.arrow_back,
+                    color: Colors.white,
+                    size: 24,
+                  ),
+                ),
+
+                // Search input
+                Expanded(
+                  child: Container(
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: TextField(
+                      controller: _searchController,
+                      focusNode: _searchFocusNode,
+                      style: const TextStyle(color: Colors.white),
+                      decoration: const InputDecoration(
+                        hintText: 'Search messages...',
+                        hintStyle: TextStyle(color: Colors.white70),
+                        border: InputBorder.none,
+                        contentPadding: EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
+                        ),
+                        prefixIcon: Icon(Icons.search, color: Colors.white70),
+                      ),
+                      onChanged: _performSearch,
+                    ),
+                  ),
+                ),
+
+                // Search navigation buttons
+                if (_searchResults.isNotEmpty) ...[
+                  const SizedBox(width: 8),
+                  Text(
+                    '${_currentSearchIndex + 1}/${_searchResults.length}',
+                    style: const TextStyle(color: Colors.white, fontSize: 12),
+                  ),
+                  IconButton(
+                    onPressed: _currentSearchIndex > 0
+                        ? _previousSearchResult
+                        : null,
+                    icon: const Icon(
+                      Icons.keyboard_arrow_up,
+                      color: Colors.white,
+                      size: 20,
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: _currentSearchIndex < _searchResults.length - 1
+                        ? _nextSearchResult
+                        : null,
+                    icon: const Icon(
+                      Icons.keyboard_arrow_down,
+                      color: Colors.white,
+                      size: 20,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  PreferredSizeWidget _buildNormalAppBar() {
     return PreferredSize(
       preferredSize: const Size.fromHeight(80),
       child: Container(
@@ -555,6 +675,22 @@ class _ChatScreenState extends State<ChatScreen> {
                         Icons.videocam,
                         color: Colors.white,
                         size: 24,
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () {
+                        setState(() {
+                          _isSearchActive = true;
+                        });
+                        // Auto-focus search field
+                        WidgetsBinding.instance.addPostFrameCallback((_) {
+                          _searchFocusNode.requestFocus();
+                        });
+                      },
+                      icon: const Icon(
+                        Icons.search,
+                        color: Colors.white,
+                        size: 22,
                       ),
                     ),
                     PopupMenuButton<String>(
@@ -866,6 +1002,13 @@ class _ChatScreenState extends State<ChatScreen> {
                   onReaction: (emoji) => _onReaction(message, emoji),
                   onReply: () => _onReply(message),
                   onMediaTap: () => _onMediaTap(message),
+                  isHighlighted:
+                      _searchResults.contains(message) &&
+                      _searchResults.isNotEmpty &&
+                      _searchResults[_currentSearchIndex] == message,
+                  searchQuery: _currentSearchQuery.isNotEmpty
+                      ? _currentSearchQuery
+                      : null,
                 );
               }
 
@@ -899,6 +1042,13 @@ class _ChatScreenState extends State<ChatScreen> {
                     onReaction: (emoji) => _onReaction(state.message, emoji),
                     onReply: () => _onReply(state.message),
                     onMediaTap: () => _onMediaTap(state.message),
+                    isHighlighted:
+                        _searchResults.contains(state.message) &&
+                        _searchResults.isNotEmpty &&
+                        _searchResults[_currentSearchIndex] == state.message,
+                    searchQuery: _currentSearchQuery.isNotEmpty
+                        ? _currentSearchQuery
+                        : null,
                   ),
                 ],
               ),
@@ -1968,6 +2118,74 @@ class _ChatScreenState extends State<ChatScreen> {
         ),
       ),
     );
+  }
+
+  // Search functionality methods
+  void _performSearch(String query) {
+    setState(() {
+      _currentSearchQuery = query.trim().toLowerCase();
+      _currentSearchIndex = 0;
+
+      if (_currentSearchQuery.isEmpty) {
+        _searchResults.clear();
+        return;
+      }
+
+      // Get messages from current chat state
+      final chatState = context.read<ChatBloc>().state;
+      if (chatState is MessagesLoaded) {
+        _searchResults = chatState.messages
+            .where(
+              (message) =>
+                  message.content?.toLowerCase().contains(
+                    _currentSearchQuery,
+                  ) ??
+                  false,
+            )
+            .toList();
+
+        // Scroll to first result if any found
+        if (_searchResults.isNotEmpty) {
+          _scrollToSearchResult(_searchResults[0]);
+        }
+      }
+    });
+  }
+
+  void _previousSearchResult() {
+    if (_currentSearchIndex > 0) {
+      setState(() {
+        _currentSearchIndex--;
+        _scrollToSearchResult(_searchResults[_currentSearchIndex]);
+      });
+    }
+  }
+
+  void _nextSearchResult() {
+    if (_currentSearchIndex < _searchResults.length - 1) {
+      setState(() {
+        _currentSearchIndex++;
+        _scrollToSearchResult(_searchResults[_currentSearchIndex]);
+      });
+    }
+  }
+
+  void _scrollToSearchResult(MessageModel message) {
+    // Find the message in the list and scroll to it
+    final chatState = context.read<ChatBloc>().state;
+    if (chatState is MessagesLoaded) {
+      final messageIndex = chatState.messages.indexOf(message);
+      if (messageIndex >= 0) {
+        // Calculate scroll position (approximate)
+        final double position =
+            messageIndex * 80.0; // Approximate message height
+        _scrollController.animateTo(
+          position,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
+        );
+      }
+    }
   }
 
   // Callback methods for MessageBubble

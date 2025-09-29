@@ -290,3 +290,32 @@ class MessageDeliveryUpdate extends Equatable {
   @override
   List<Object?> get props => [messageId, status, timestamp];
 }
+
+/// Message read update model for real-time read status updates
+class MessageReadUpdate extends Equatable {
+  final String messageId;
+  final String conversationId;
+  final String userId;
+  final DateTime timestamp;
+
+  const MessageReadUpdate({
+    required this.messageId,
+    required this.conversationId,
+    required this.userId,
+    required this.timestamp,
+  });
+
+  factory MessageReadUpdate.fromJson(Map<String, dynamic> json) {
+    return MessageReadUpdate(
+      messageId: (json['messageId'] ?? '').toString(),
+      conversationId: (json['conversationId'] ?? '').toString(),
+      userId: (json['userId'] ?? '').toString(),
+      timestamp: json['timestamp'] != null
+          ? DateTime.parse(json['timestamp'] as String)
+          : DateTime.now(),
+    );
+  }
+
+  @override
+  List<Object?> get props => [messageId, conversationId, userId, timestamp];
+}

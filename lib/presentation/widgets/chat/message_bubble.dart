@@ -17,6 +17,8 @@ class MessageBubble extends StatelessWidget {
   final VoidCallback? onReply;
   final VoidCallback? onMediaTap;
   final String? currentUserId;
+  final bool isHighlighted;
+  final String? searchQuery;
 
   const MessageBubble({
     super.key,
@@ -27,6 +29,8 @@ class MessageBubble extends StatelessWidget {
     this.onReply,
     this.onMediaTap,
     this.currentUserId,
+    this.isHighlighted = false,
+    this.searchQuery,
   });
 
   @override
@@ -65,9 +69,16 @@ class MessageBubble extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: _hasMedia()
                           ? Colors.transparent
+                          : isHighlighted
+                          ? (isCurrentUser
+                                ? PulseColors.primary.withValues(alpha: 0.9)
+                                : PulseColors.secondary.withValues(alpha: 0.2))
                           : (isCurrentUser
-                          ? PulseColors.primary
+                                ? PulseColors.primary
                                 : Colors.grey[50]),
+                      border: isHighlighted
+                          ? Border.all(color: PulseColors.primary, width: 2)
+                          : null,
                       borderRadius: BorderRadius.only(
                         topLeft: const Radius.circular(20),
                         topRight: const Radius.circular(20),
@@ -186,15 +197,9 @@ class MessageBubble extends StatelessWidget {
                         else if (!_hasMedia() &&
                             message.content != null &&
                             message.content!.isNotEmpty) ...[
-                          Text(
+                          _buildHighlightedText(
                             message.content!,
-                            style: TextStyle(
-                              color: isCurrentUser
-                                  ? Colors.white
-                                  : Colors.black87,
-                              fontSize: 16,
-                              height: 1.3,
-                            ),
+                            isCurrentUser,
                           ),
                           const SizedBox(height: 4),
                           Row(
@@ -582,5 +587,74 @@ class MessageBubble extends StatelessWidget {
       default:
         return message.content ?? '';
     }
+  }
+  
+  Widget _buildHighlightedText(String content, bool isCurrentUser) {
+    // If no search query or not highlighted, show normal text
+    if (searchQuery == null || searchQuery!.isEmpty || !isHighlighted) {
+      return Text(
+        content,
+        style: TextStyle(
+          color: isCurrentUser ? Colors.white : Colors.black87,
+          fontSize: 16,
+          height: 1.3,
+        ),
+      );
+    }
+    
+    // Build highlighted text
+    final List<TextSpan> spans = [];
+    final String lowerContent = content.toLowerCase();
+    final String lowerQuery = searchQuery!.toLowerCase();
+    
+    int start = 0;
+    int index = lowerContent.indexOf(lowerQuery, start);
+    
+    while (index != -1) {
+      // Add text before the match
+      if (index > start) {
+        spans.add(TextSpan(
+          text: content.substring(start, index),
+          style: TextStyle(
+            color: isCurrentUser ? Colors.white : Colors.black87,
+            fontSize: 16,
+            height: 1.3,
+          ),
+        ));
+      }
+      
+      // Add highlighted match
+      spans.add(TextSpan(
+        text: content.substring(index, index + searchQuery!.length),
+        style: TextStyle(
+          color: isCurrentUser ? Colors.black : Colors.white,
+          backgroundColor: isCurrentUser 
+              ? Colors.yellow.withValues(alpha: 0.8) 
+              : PulseColors.primary.withValues(alpha: 0.8),
+          fontSize: 16,
+          height: 1.3,
+          fontWeight: FontWeight.bold,
+        ),
+      ));
+      
+      start = index + searchQuery!.length;
+      index = lowerContent.indexOf(lowerQuery, start);
+    }
+    
+    // Add remaining text
+    if (start < content.length) {
+      spans.add(TextSpan(
+        text: content.substring(start),
+        style: TextStyle(
+          color: isCurrentUser ? Colors.white : Colors.black87,
+          fontSize: 16,
+          height: 1.3,
+        ),
+      ));
+    }
+    
+    return RichText(
+      text: TextSpan(children: spans),
+    );
   }
 }

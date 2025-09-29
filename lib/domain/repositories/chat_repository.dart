@@ -1,6 +1,7 @@
 import '../../data/models/chat_model.dart' hide ConversationModel;
 import '../../data/models/conversation_model.dart';
-import '../../data/models/message.dart' show MessageDeliveryUpdate;
+import '../../data/models/message.dart'
+    show MessageDeliveryUpdate, MessageReadUpdate;
 import '../entities/message.dart' show MessageType;
 
 /// Repository interface for chat operations
@@ -34,6 +35,10 @@ abstract class ChatRepository {
   Future<MessageModel> editMessage(String messageId, String newContent);
   Future<void> deleteMessage(String messageId);
   Future<void> markMessageAsRead(String messageId);
+  Future<void> markMessageAsReadWithRealTimeUpdate(
+    String messageId,
+    String conversationId,
+  );
   Future<void> markConversationAsRead(String conversationId);
 
   // Message reactions
@@ -60,10 +65,14 @@ abstract class ChatRepository {
   
   // Message delivery status updates
   Stream<MessageDeliveryUpdate> getDeliveryUpdates();
+  
+  // Message read status updates
+  Stream<MessageReadUpdate> getMessageReadUpdates();
 
   // Convenient getters for streams (for backward compatibility)
   Stream<MessageModel> get messageStream => getMessageUpdates();
   Stream<MessageDeliveryUpdate> get deliveryUpdates => getDeliveryUpdates();
+  Stream<MessageReadUpdate> get messageReadUpdates => getMessageReadUpdates();
 
   // Advanced message actions
   Future<MessageModel> getMessage(String messageId);

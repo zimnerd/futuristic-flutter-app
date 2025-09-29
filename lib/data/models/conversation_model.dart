@@ -78,7 +78,7 @@ class ConversationModel extends Conversation {
 
     // Handle lastMessage - use backend response structure
     String lastMessageContent = 'No messages yet';
-    DateTime lastMessageTime = DateTime.now();
+    DateTime lastMessageTime;
     
     final lastMessageData = json['lastMessage'];
     
@@ -92,16 +92,36 @@ class ConversationModel extends Conversation {
           lastMessageTime = DateTime.parse(lastMessageData['createdAt'] as String);
         } catch (e) {
           print('Error parsing lastMessage createdAt: $e');
+          // Fallback to conversation creation time or a reasonable past time
+          lastMessageTime = json['createdAt'] != null
+              ? DateTime.parse(json['createdAt'] as String)
+              : DateTime.now().subtract(const Duration(hours: 24));
         }
+      } else {
+        // Fallback to conversation creation time
+        lastMessageTime = json['createdAt'] != null
+            ? DateTime.parse(json['createdAt'] as String)
+            : DateTime.now().subtract(const Duration(hours: 24));
       }
     } else {
-      // Check if there's an updatedAt field we can use for timing
-      if (json['updatedAt'] != null) {
+      // No last message - use conversation creation time or updatedAt
+      if (json['createdAt'] != null) {
+        try {
+          lastMessageTime = DateTime.parse(json['createdAt'] as String);
+        } catch (e) {
+          print('Error parsing createdAt: $e');
+          lastMessageTime = DateTime.now().subtract(const Duration(hours: 24));
+        }
+      } else if (json['updatedAt'] != null) {
         try {
           lastMessageTime = DateTime.parse(json['updatedAt'] as String);
         } catch (e) {
           print('Error parsing updatedAt: $e');
+          lastMessageTime = DateTime.now().subtract(const Duration(hours: 24));
         }
+      } else {
+        // Ultimate fallback - 24 hours ago instead of now
+        lastMessageTime = DateTime.now().subtract(const Duration(hours: 24));
       }
     }
 

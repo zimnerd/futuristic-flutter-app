@@ -442,14 +442,14 @@ class _ChatListScreenState extends State<ChatListScreen> {
       return const SizedBox.shrink();
     }
     
-    // Get the other participant (not current user)
-    final otherParticipant = conversation.participants?.firstWhere(
-      (p) => p.id != currentUserId,
-      orElse: () => null,
-    );
-
-    final otherUserName = otherParticipant?.name ?? 'Unknown User';
-    final otherUserPhoto = otherParticipant?.profilePicture;
+    // Use the conversation's built-in otherUserName and otherUserAvatar
+    // The ConversationModel already constructed the proper name from firstName + lastName
+    final otherUserName = conversation.otherUserName.isNotEmpty
+        ? conversation.otherUserName
+        : 'Unknown User';
+    final otherUserPhoto = conversation.otherUserAvatar.isNotEmpty
+        ? conversation.otherUserAvatar
+        : null;
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
@@ -541,12 +541,12 @@ class _ChatListScreenState extends State<ChatListScreen> {
             : null,
         onTap: () {
           // Only navigate if we have a valid other user ID
-          if (otherParticipant?.id != null && otherParticipant!.id.isNotEmpty) {
+          if (conversation.otherUserId.isNotEmpty) {
             Navigator.of(context).push(
               MaterialPageRoute(
                 builder: (context) => ChatScreen(
                   conversationId: conversation.id,
-                  otherUserId: otherParticipant.id,
+                  otherUserId: conversation.otherUserId,
                   otherUserName: otherUserName,
                   otherUserPhoto: otherUserPhoto,
                 ),

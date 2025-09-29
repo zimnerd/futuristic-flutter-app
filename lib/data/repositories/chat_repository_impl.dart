@@ -4,7 +4,7 @@ import 'package:uuid/uuid.dart';
 
 import '../models/chat_model.dart' hide ConversationModel;
 import '../models/conversation_model.dart';
-import '../models/message.dart' show MessageDeliveryUpdate;
+import '../models/message.dart' show MessageDeliveryUpdate, MessageReadUpdate;
 import '../../domain/entities/message.dart' show MessageType;
 import '../datasources/remote/chat_remote_data_source.dart';
 import '../../domain/services/websocket_service.dart';
@@ -30,6 +30,8 @@ class ChatRepositoryImpl implements ChatRepository {
       StreamController<MessageModel>.broadcast();
   final StreamController<MessageDeliveryUpdate> _deliveryUpdatesController =
       StreamController<MessageDeliveryUpdate>.broadcast();
+  final StreamController<MessageReadUpdate> _messageReadUpdatesController =
+      StreamController<MessageReadUpdate>.broadcast();
   
   // Track optimistic message tempId to real message ID mapping
   final Map<String, String> _tempIdToRealIdMap = {};
@@ -57,6 +59,10 @@ class ChatRepositoryImpl implements ChatRepository {
   @override
   Stream<MessageDeliveryUpdate> get messageDeliveryUpdates =>
       _deliveryUpdatesController.stream;
+
+  @override
+  Stream<MessageReadUpdate> get messageReadUpdates =>
+      _messageReadUpdatesController.stream;
 
   /// Setup WebSocket listeners for real-time message events
   void _setupWebSocketListeners() {
@@ -242,6 +248,23 @@ class ChatRepositoryImpl implements ChatRepository {
         _logger.e('Repository: Error processing message failure: $e');
       }
     });
+
+    // Listen for message read events
+    _webSocketService.on('messageRead', (data) {
+      try {
+        _logger.d('Received messageRead event: $data');
+
+        if (data is Map<String, dynamic>) {
+          final readUpdate = MessageReadUpdate.fromJson(data);
+          _messageReadUpdatesController.add(readUpdate);
+          _logger.d(
+            'Added message read update to stream: messageId=${readUpdate.messageId}, userId=${readUpdate.userId}',
+          );
+        }
+      } catch (e) {
+        _logger.e('Error processing message read update: $e');
+      }
+    });
   }
 
   /// Dispose of stream controllers
@@ -249,6 +272,7 @@ class ChatRepositoryImpl implements ChatRepository {
     _messageSubscription?.cancel();
     _incomingMessagesController.close();
     _deliveryUpdatesController.close();
+    _messageReadUpdatesController.close();
     _tempIdToRealIdMap.clear();
     _pendingOptimisticMessages.clear();
   }
@@ -417,9 +441,36 @@ class ChatRepositoryImpl implements ChatRepository {
     try {
       _logger.d('Marking message as read: $messageId');
       await _remoteDataSource.markMessageAsRead(messageId);
-      _logger.d('Successfully marked message as read');
+      _logger.d('Successfully marked message as read via API');
     } catch (e) {
       _logger.e('Error marking message as read: $e');
+      rethrow;
+    }
+  }
+
+  /// Mark message as read and emit WebSocket event for real-time updates
+  @override
+  Future<void> markMessageAsReadWithRealTimeUpdate(
+    String messageId,
+    String conversationId,
+  ) async {
+    try {
+      _logger.d('Marking message as read with real-time update: $messageId');
+
+      // Mark as read via REST API
+      await markMessageAsRead(messageId);
+
+      // Emit WebSocket event for real-time notification to other participants
+      _webSocketService.emit('markMessageRead', {
+        'messageId': messageId,
+        'conversationId': conversationId,
+      });
+
+      _logger.d(
+        'Successfully marked message as read and emitted WebSocket event',
+      );
+    } catch (e) {
+      _logger.e('Error marking message as read with real-time update: $e');
       rethrow;
     }
   }
@@ -1020,5 +1071,15 @@ class ChatRepositoryImpl implements ChatRepository {
         'Background refresh failed for conversation $conversationId: $e',
       );
     }
+  }
+
+  @override
+  Stream<MessageDeliveryUpdate> getDeliveryUpdates() {
+    return messageDeliveryUpdates;
+  }
+
+  @override
+  Stream<MessageReadUpdate> getMessageReadUpdates() {
+    return messageReadUpdates;
   }
 }
