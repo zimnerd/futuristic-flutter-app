@@ -181,6 +181,8 @@ class _HeatMapScreenState extends State<HeatMapScreen> {
   MapType _mapType = MapType.normal;
   double _currentZoom = 6.0;
   bool _showHeatmap = false; // Disabled by default for better UX
+  bool _showClusters = true; // Enabled by default for better performance
+  bool _isStatisticsPopupVisible = false;
   
   // Debouncing for camera movements to optimize performance
   Timer? _debounceTimer;
@@ -219,14 +221,120 @@ class _HeatMapScreenState extends State<HeatMapScreen> {
     }
   }
 
-  /// Get maximum clusters based on zoom level for optimal performance
-  int _getMaxClustersForZoom(double zoom) {
-    if (zoom >= 16) return 100; // Very zoomed in - more detail
-    if (zoom >= 14) return 75;  // Zoomed in - good detail
-    if (zoom >= 12) return 50;  // Medium zoom - balanced
-    if (zoom >= 10) return 30;  // Zoomed out - fewer clusters
-    return 20; // Very zoomed out - minimal clusters
+  /// Toggle cluster visibility (separate from heatmap)
+  void _toggleClusters() {
+    setState(() {
+      _showClusters = !_showClusters;
+    });
+    print('HeatMapScreen: Clusters ${_showClusters ? 'enabled' : 'disabled'}');
   }
+
+  /// Show statistics popup for users within radius
+  void _showStatisticsPopup() async {
+    if (_isStatisticsPopupVisible) return;
+
+    setState(() {
+      _isStatisticsPopupVisible = true;
+    });
+
+    final state = context.read<HeatMapBloc>().state;
+    if (state is HeatMapLoaded) {
+      _showUserStatisticsDialog(state.heatmapData, state.coverageData);
+    } else {
+      // Load data first if not available
+      context.read<HeatMapBloc>().add(LoadHeatMapData(_currentRadius));
+      // TODO: Show popup after data loads
+    }
+  }
+
+  /// Show dialog with user statistics within radius
+  void _showUserStatisticsDialog(
+    HeatMapData heatmapData,
+    LocationCoverageData coverageData,
+  ) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text(
+            '📊 User Statistics',
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF6E3BFF),
+            ),
+          ),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildStatRow('Radius', '${_currentRadius} km'),
+                _buildStatRow(
+                  'Total Users',
+                  '${heatmapData.dataPoints.length}',
+                ),
+                _buildStatRow(
+                  'Coverage Areas',
+                  '${coverageData.coverageAreas.length}',
+                ),
+                _buildStatRow(
+                  'Active Regions',
+                  '${heatmapData.dataPoints.where((p) => p.density > 5).length}',
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  'Density Distribution:',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey[800],
+                  ),
+                ),
+                const SizedBox(height: 8),
+                ..._buildStatsPopupDensityStats(heatmapData.dataPoints),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                setState(() {
+                  _isStatisticsPopupVisible = false;
+                });
+              },
+              child: const Text(
+                'Close',
+                style: TextStyle(color: Color(0xFF6E3BFF)),
+              ),
+            ),
+          ],
+        );
+      },
+    ).then((_) {
+      setState(() {
+        _isStatisticsPopupVisible = false;
+      });
+    });
+  }
+
+  /// Build density statistics widgets
+  List<Widget> _buildStatsPopupDensityStats(List<HeatMapDataPoint> points) {
+    final lowDensity = points.where((p) => p.density <= 2).length;
+    final mediumDensity = points
+        .where((p) => p.density > 2 && p.density <= 5)
+        .length;
+    final highDensity = points.where((p) => p.density > 5).length;
+
+    return [
+      _buildStatRow('Low Density (≤2)', '$lowDensity areas'),
+      _buildStatRow('Medium Density (3-5)', '$mediumDensity areas'),
+      _buildStatRow('High Density (>5)', '$highDensity areas'),
+    ];
+  }
+
+  /// TODO: Implement optimized backend clustering in future iteration
+  /// Method removed to avoid unused code warnings
 
   /// Update clusters based on current zoom level with debouncing
   void _updateClustersForZoom() {
@@ -380,8 +488,8 @@ class _HeatMapScreenState extends State<HeatMapScreen> {
       children: [
         // Full screen Google Map
         Positioned.fill(child: _buildGoogleMap(state)),
-        // Cluster number overlays
-        ..._buildClusterNumberOverlays(state),
+        // Cluster number overlays (only show if clustering is enabled)
+        if (_showClusters) ..._buildClusterNumberOverlays(state),
         // Map controls overlay
         _buildMapControls(context),
         // Map overlay info
@@ -645,7 +753,7 @@ class _HeatMapScreenState extends State<HeatMapScreen> {
     print(
       'HeatMapScreen: 🔍 Starting privacy clustering for ${state.heatmapData.dataPoints.length} data points at zoom $_currentZoom',
     );
-    final clusters = MapClusteringService.clusterDataPoints(
+    final clusters = MapClusteringService.clusterDataPointsInViewport(
       state.heatmapData.dataPoints,
       _currentZoom,
     );
@@ -722,12 +830,13 @@ class _HeatMapScreenState extends State<HeatMapScreen> {
       );
     }
 
-    // Only add cluster/heatmap circles when heatmap is enabled
-    if (_showHeatmap) {
-      // Add privacy cluster circles
+    // Add privacy cluster circles when clustering is enabled
+    if (_showClusters) {
       circles.addAll(_buildClusterCircles(state));
-      
-      // Add heatmap overlay circles
+    }
+    
+    // Add heatmap overlay circles when heatmap is enabled
+    if (_showHeatmap) {
       circles.addAll(_buildHeatmapCircles(state));
     }
 
@@ -793,7 +902,7 @@ class _HeatMapScreenState extends State<HeatMapScreen> {
     final overlays = <Widget>[];
 
     // Get clusters for positioning
-    final clusters = MapClusteringService.clusterDataPoints(
+    final clusters = MapClusteringService.clusterDataPointsInViewport(
       state.heatmapData.dataPoints,
       _currentZoom,
     );
@@ -1657,6 +1766,49 @@ class _HeatMapScreenState extends State<HeatMapScreen> {
                 });
               },
               tooltip: _showHeatmap ? 'Hide Heatmap' : 'Show Heatmap',
+            ),
+          ),
+          const SizedBox(height: 8),
+          // Clustering Toggle
+          Container(
+            decoration: BoxDecoration(
+              color: _showClusters ? const Color(0xFF00C2FF) : Colors.white,
+              borderRadius: BorderRadius.circular(8),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.2),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: IconButton(
+              icon: Icon(
+                Icons.scatter_plot,
+                color: _showClusters ? Colors.white : Colors.black87,
+              ),
+              onPressed: _toggleClusters,
+              tooltip: _showClusters ? 'Hide Clusters' : 'Show Clusters',
+            ),
+          ),
+          const SizedBox(height: 8),
+          // Statistics Button
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(8),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.2),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: IconButton(
+              icon: const Icon(Icons.analytics, color: Color(0xFF00D4AA)),
+              onPressed: _showStatisticsPopup,
+              tooltip: 'Show Statistics',
             ),
           ),
           const SizedBox(height: 8),

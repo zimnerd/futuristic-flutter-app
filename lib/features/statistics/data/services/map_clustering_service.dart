@@ -4,66 +4,112 @@ import '../../../../data/models/heat_map_models.dart';
 import '../../domain/models/map_cluster.dart';
 
 /// Service for clustering heat map data points based on zoom level
+/// Optimized for viewport-based clustering with intelligent caching
 class MapClusteringService {
   // Cache for stable cluster positions across zoom levels
   static final Map<String, LatLng> _stableClusterPositions = {};
   static List<HeatMapDataPoint> _lastDataPoints = [];
   
-  // Performance optimization: Cache clusters by zoom level
+  // Performance optimization: Cache clusters by zoom level and viewport
   static final Map<String, List<MapCluster>> _clusterCache = {};
+  static final Map<String, DateTime> _cacheTimestamps = {};
   static double _lastZoomLevel = -1;
+  static LatLngBounds? _lastViewport;
   static DateTime _lastClusterTime = DateTime.now();
 
-  // Debounce threshold in milliseconds
+  // Debounce and cache settings
   static const int _debounceMs = 300;
+  static const int _cacheValidityMs = 30000; // 30 seconds
+  static const int _maxCacheSize = 50; // Maximum cache entries
   
-  /// Cluster data points based on zoom level for privacy
-  /// Uses stable hierarchical clustering to maintain consistent positions
-  static List<MapCluster> clusterDataPoints(
+  // Zoom level thresholds for optimization
+  static const double _minZoomLevel = 2.0;
+  static const double _maxZoomLevel = 20.0;
+  static const double _extremeZoomThreshold =
+      4.0; // Below this, show single cluster
+
+  /// Cluster data points based on zoom level and viewport for privacy
+  /// Uses stable hierarchical clustering with viewport optimization
+  static List<MapCluster> clusterDataPointsInViewport(
     List<HeatMapDataPoint> dataPoints,
-    double zoomLevel,
-  ) {
+    double zoomLevel, {
+    LatLngBounds? viewport,
+    bool forceRefresh = false,
+  }) {
     if (dataPoints.isEmpty) return [];
     
-    // Performance optimization: Check if we can use cached results
     final now = DateTime.now();
-    final timeSinceLastCluster = now
-        .difference(_lastClusterTime)
-        .inMilliseconds;
-    final zoomDiff = (zoomLevel - _lastZoomLevel).abs();
+    
+    // Debounce rapid clustering requests
+    if (!forceRefresh &&
+        now.difference(_lastClusterTime).inMilliseconds < _debounceMs &&
+        (zoomLevel - _lastZoomLevel).abs() < 0.5) {
+      // Return last cached result if available
+      final lastCacheKey = _getCacheKeyWithViewport(
+        _lastDataPoints.length,
+        _lastZoomLevel,
+        _lastViewport,
+      );
+      final cached = _clusterCache[lastCacheKey];
+      if (cached != null) return cached;
+    }
 
-    // Use cache if zoom level is similar and recent
-    if (timeSinceLastCluster < _debounceMs &&
-        zoomDiff < 0.5 &&
-        !_dataPointsChanged(dataPoints)) {
-      final cacheKey = _getCacheKey(dataPoints.length, zoomLevel);
-      if (_clusterCache.containsKey(cacheKey)) {
+    // Clamp zoom level to valid range
+    zoomLevel = zoomLevel.clamp(_minZoomLevel, _maxZoomLevel);
+
+    // Handle extreme zoom out - show single cluster to prevent black screen
+    if (zoomLevel <= _extremeZoomThreshold) {
+      return _createSingleClusterForExtremeZoom(dataPoints);
+    }
+
+    // Filter data points to viewport if provided (performance optimization)
+    final viewportFilteredPoints = viewport != null
+        ? _filterPointsToViewport(dataPoints, viewport)
+        : dataPoints;
+
+    if (viewportFilteredPoints.isEmpty) return [];
+
+    // Check cache with viewport consideration
+    final cacheKey = _getCacheKeyWithViewport(
+      viewportFilteredPoints.length,
+      zoomLevel,
+      viewport,
+    );
+    if (!forceRefresh && _isCacheValid(cacheKey)) {
+      final cached = _clusterCache[cacheKey];
+      if (cached != null) {
         print(
           'MapClusteringService: Using cached clusters for zoom $zoomLevel',
         );
-        return _clusterCache[cacheKey]!;
+        return cached;
       }
     }
     
-    // Clear cache if data changed significantly
-    if (_dataPointsChanged(dataPoints)) {
+    // Clean old cache entries to prevent memory issues
+    _cleanOldCache();
+
+    // Clear stable positions if data changed significantly
+    if (_dataPointsChanged(viewportFilteredPoints)) {
       _stableClusterPositions.clear();
-      _clusterCache.clear();
-      _lastDataPoints = List.from(dataPoints);
     }
 
     print(
-      'MapClusteringService: Stable clustering ${dataPoints.length} points at zoom $zoomLevel',
+      'MapClusteringService: Viewport clustering ${viewportFilteredPoints.length} points at zoom $zoomLevel',
     );
 
-    // Use hierarchical clustering based on zoom level
-    final clusters = _performHierarchicalClustering(dataPoints, zoomLevel);
+    // Use hierarchical clustering based on zoom level with viewport-filtered data
+    final clusters = _performHierarchicalClustering(
+      viewportFilteredPoints,
+      zoomLevel,
+    );
 
-    // Cache the results
-    final cacheKey = _getCacheKey(dataPoints.length, zoomLevel);
+    // Cache the results with viewport consideration
     _clusterCache[cacheKey] = clusters;
+    _cacheTimestamps[cacheKey] = now;
     _lastZoomLevel = zoomLevel;
+    _lastViewport = viewport;
     _lastClusterTime = now;
+    _lastDataPoints = List.from(viewportFilteredPoints);
 
     // Keep cache size reasonable
     if (_clusterCache.length > 10) {
@@ -73,11 +119,7 @@ class MapClusteringService {
     return clusters;
   }
 
-  /// Generate cache key for clustering results
-  static String _getCacheKey(int dataPointCount, double zoomLevel) {
-    final zoomInt = (zoomLevel * 2).round(); // 0.5 zoom precision
-    return '${dataPointCount}_${zoomInt}';
-  }
+
 
   /// Check if data points have changed significantly
   static bool _dataPointsChanged(List<HeatMapDataPoint> newPoints) {
@@ -262,10 +304,116 @@ class MapClusteringService {
 
 
   
+  /// Create single cluster for extreme zoom out to prevent black screen
+  static List<MapCluster> _createSingleClusterForExtremeZoom(
+    List<HeatMapDataPoint> dataPoints,
+  ) {
+    if (dataPoints.isEmpty) return [];
+
+    // Calculate center of all points
+    double totalLat = 0;
+    double totalLng = 0;
+
+    for (final point in dataPoints) {
+      totalLat += point.coordinates.latitude;
+      totalLng += point.coordinates.longitude;
+    }
+
+    final centerLat = totalLat / dataPoints.length;
+    final centerLng = totalLng / dataPoints.length;
+
+    return [
+      MapCluster(
+        id: 'extreme_zoom_cluster',
+        position: LatLng(centerLat, centerLng),
+        dataPoints: dataPoints,
+        count: dataPoints.length,
+        radius: 50000, // Large radius for extreme zoom
+      ),
+    ];
+  }
+
+  /// Filter data points to only include those within viewport bounds
+  static List<HeatMapDataPoint> _filterPointsToViewport(
+    List<HeatMapDataPoint> dataPoints,
+    LatLngBounds viewport,
+  ) {
+    return dataPoints.where((point) {
+      final lat = point.coordinates.latitude;
+      final lng = point.coordinates.longitude;
+
+      return lat >= viewport.southwest.latitude &&
+          lat <= viewport.northeast.latitude &&
+          lng >= viewport.southwest.longitude &&
+          lng <= viewport.northeast.longitude;
+    }).toList();
+  }
+
+  /// Generate cache key with viewport consideration
+  static String _getCacheKeyWithViewport(
+    int pointCount,
+    double zoomLevel,
+    LatLngBounds? viewport,
+  ) {
+    final zoomInt = (zoomLevel * 10).round();
+    if (viewport != null) {
+      final swLat = (viewport.southwest.latitude * 1000).round();
+      final swLng = (viewport.southwest.longitude * 1000).round();
+      final neLat = (viewport.northeast.latitude * 1000).round();
+      final neLng = (viewport.northeast.longitude * 1000).round();
+      return '${pointCount}_${zoomInt}_${swLat}_${swLng}_${neLat}_$neLng';
+    }
+    return '${pointCount}_$zoomInt';
+  }
+
+  /// Check if cache entry is valid
+  static bool _isCacheValid(String cacheKey) {
+    final timestamp = _cacheTimestamps[cacheKey];
+    if (timestamp == null) return false;
+
+    final now = DateTime.now();
+    final age = now.difference(timestamp).inMilliseconds;
+    return age < _cacheValidityMs;
+  }
+
+  /// Clean old cache entries to prevent memory bloat
+  static void _cleanOldCache() {
+    if (_clusterCache.length <= _maxCacheSize) return;
+
+    final now = DateTime.now();
+    final keysToRemove = <String>[];
+
+    for (final entry in _cacheTimestamps.entries) {
+      final age = now.difference(entry.value).inMilliseconds;
+      if (age > _cacheValidityMs) {
+        keysToRemove.add(entry.key);
+      }
+    }
+
+    // Remove oldest entries if still over limit
+    if (_clusterCache.length - keysToRemove.length > _maxCacheSize) {
+      final sortedEntries = _cacheTimestamps.entries.toList()
+        ..sort((a, b) => a.value.compareTo(b.value));
+
+      final additionalToRemove =
+          (_clusterCache.length - keysToRemove.length) - _maxCacheSize;
+      for (int i = 0; i < additionalToRemove; i++) {
+        keysToRemove.add(sortedEntries[i].key);
+      }
+    }
+
+    for (final key in keysToRemove) {
+      _clusterCache.remove(key);
+      _cacheTimestamps.remove(key);
+    }
+  }
+
   /// Clear cluster cache (useful when data changes completely)
   static void clearCache() {
     _stableClusterPositions.clear();
     _lastDataPoints.clear();
+    _clusterCache.clear();
+    _cacheTimestamps.clear();
   }
 
 
