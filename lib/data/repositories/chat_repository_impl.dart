@@ -34,6 +34,8 @@ class ChatRepositoryImpl implements ChatRepository {
       StreamController<MessageReadUpdate>.broadcast();
   final StreamController<Map<String, dynamic>> _messageStatusUpdatesController =
       StreamController<Map<String, dynamic>>.broadcast();
+  final StreamController<Map<String, dynamic>> _typingEventsController =
+      StreamController<Map<String, dynamic>>.broadcast();
   
   // Track optimistic message tempId to real message ID mapping
   final Map<String, String> _tempIdToRealIdMap = {};
@@ -69,6 +71,10 @@ class ChatRepositoryImpl implements ChatRepository {
   @override
   Stream<Map<String, dynamic>> get messageStatusUpdates =>
       _messageStatusUpdatesController.stream;
+
+  @override
+  Stream<Map<String, dynamic>> get typingEvents =>
+      _typingEventsController.stream;
 
   /// Setup WebSocket listeners for real-time message events
   void _setupWebSocketListeners() {
@@ -271,6 +277,45 @@ class ChatRepositoryImpl implements ChatRepository {
         _logger.e('Error processing message read update: $e');
       }
     });
+
+    // Listen for typing indicator events
+    _webSocketService.onTypingStart((data) {
+      try {
+        _logger.d('Received typing start event: $data');
+        
+        final typingEvent = {
+          'type': 'typing_start',
+          'userId': data['userId'],
+          'username': data['username'],
+          'conversationId': data['conversationId'],
+          'timestamp': DateTime.now().toIso8601String(),
+        };
+        
+        _typingEventsController.add(typingEvent);
+        _logger.d('Added typing start event to stream for user: ${data['username']}');
+      } catch (e) {
+        _logger.e('Error processing typing start event: $e');
+      }
+    });
+
+    _webSocketService.onTypingStop((data) {
+      try {
+        _logger.d('Received typing stop event: $data');
+        
+        final typingEvent = {
+          'type': 'typing_stop',
+          'userId': data['userId'],
+          'username': data['username'],
+          'conversationId': data['conversationId'],
+          'timestamp': DateTime.now().toIso8601String(),
+        };
+        
+        _typingEventsController.add(typingEvent);
+        _logger.d('Added typing stop event to stream for user: ${data['username']}');
+      } catch (e) {
+        _logger.e('Error processing typing stop event: $e');
+      }
+    });
   }
 
   /// Dispose of stream controllers
@@ -279,6 +324,8 @@ class ChatRepositoryImpl implements ChatRepository {
     _incomingMessagesController.close();
     _deliveryUpdatesController.close();
     _messageReadUpdatesController.close();
+    _messageStatusUpdatesController.close();
+    _typingEventsController.close();
     _tempIdToRealIdMap.clear();
     _pendingOptimisticMessages.clear();
   }

@@ -119,8 +119,29 @@ class MessageBubble extends StatelessWidget {
                           ),
                         ],
 
-                        // Text content with media
-                        if (_hasMedia() &&
+                        // Location content
+                        if (_hasLocation()) ...[
+                          ClipRRect(
+                            borderRadius: BorderRadius.only(
+                              topLeft: const Radius.circular(20),
+                              topRight: const Radius.circular(20),
+                              bottomLeft: Radius.circular(
+                                message.content?.isNotEmpty == true
+                                    ? 4
+                                    : (isCurrentUser ? 20 : 6),
+                              ),
+                              bottomRight: Radius.circular(
+                                message.content?.isNotEmpty == true
+                                    ? 4
+                                    : (isCurrentUser ? 6 : 20),
+                              ),
+                            ),
+                            child: _buildLocationContent(context),
+                          ),
+                        ],
+
+                        // Text content with media or location
+                        if ((_hasMedia() || _hasLocation()) &&
                             message.content != null &&
                             message.content!.isNotEmpty) ...[
                           Container(
@@ -195,6 +216,7 @@ class MessageBubble extends StatelessWidget {
                         ]
                         // Text-only content
                         else if (!_hasMedia() &&
+                            !_hasLocation() &&
                             message.content != null &&
                             message.content!.isNotEmpty) ...[
                           _buildHighlightedText(
@@ -394,8 +416,8 @@ class MessageBubble extends StatelessWidget {
 
     return Container(
       margin: EdgeInsets.only(
-        left: isCurrentUser ? 60 : 40,
-        right: isCurrentUser ? 16 : 60,
+        left: isCurrentUser ? 20 : 4,
+        right: isCurrentUser ? 4 : 20,
         top: 4,
       ),
       child: Wrap(
@@ -454,6 +476,154 @@ class MessageBubble extends StatelessWidget {
         (message.type == entities.MessageType.image ||
             message.type == entities.MessageType.video ||
             message.type == entities.MessageType.gif);
+  }
+
+  /// Check if message has location content
+  bool _hasLocation() {
+    return message.type == entities.MessageType.location &&
+        message.mediaUrls != null &&
+        message.mediaUrls!.isNotEmpty &&
+        message.mediaUrls!.any((url) => url.startsWith('geo:'));
+  }
+
+  /// Build location content widget
+  Widget _buildLocationContent(BuildContext context) {
+    if (!_hasLocation()) return const SizedBox.shrink();
+
+    // Extract coordinates from geo URL
+    final geoUrl = message.mediaUrls!.firstWhere(
+      (url) => url.startsWith('geo:'),
+      orElse: () => '',
+    );
+
+    if (geoUrl.isEmpty) return const SizedBox.shrink();
+
+    // Parse coordinates from geo:lat,lng format
+    final coords = geoUrl.substring(4).split(','); // Remove 'geo:' prefix
+    if (coords.length < 2) return const SizedBox.shrink();
+
+    final lat = double.tryParse(coords[0]);
+    final lng = double.tryParse(coords[1]);
+    if (lat == null || lng == null) return const SizedBox.shrink();
+
+    return GestureDetector(
+      onTap: () => _openLocationViewer(context, lat, lng),
+      child: Container(
+        width: 280,
+        height: 160,
+        decoration: BoxDecoration(
+          color: Colors.grey[100],
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.grey[300]!),
+        ),
+        child: Stack(
+          children: [
+            // Map placeholder with gradient
+            Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    PulseColors.primary.withValues(alpha: 0.1),
+                    PulseColors.secondary.withValues(alpha: 0.1),
+                  ],
+                ),
+              ),
+            ),
+
+            // Location icon and coordinates
+            Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.location_on, size: 40, color: PulseColors.primary),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Location',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.grey[800],
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '${lat.toStringAsFixed(4)}, ${lng.toStringAsFixed(4)}',
+                    style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                  ),
+                ],
+              ),
+            ),
+
+            // Tap to view overlay
+            Positioned(
+              bottom: 8,
+              right: 8,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: 0.6),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Text(
+                  'Tap to view',
+                  style: TextStyle(color: Colors.white, fontSize: 11),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Open location in external map application or viewer
+  void _openLocationViewer(BuildContext context, double lat, double lng) {
+    // For now, show a simple dialog with location details
+    // TODO: Integrate with map_launcher or url_launcher to open in Maps app
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Row(
+          children: [
+            Icon(Icons.location_on, color: PulseColors.primary),
+            SizedBox(width: 8),
+            Text('Location'),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Coordinates:',
+              style: TextStyle(
+                fontWeight: FontWeight.w600,
+                color: Colors.grey[700],
+              ),
+            ),
+            const SizedBox(height: 4),
+            SelectableText(
+              'Latitude: $lat\nLongitude: $lng',
+              style: const TextStyle(fontFamily: 'monospace'),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Tap the coordinates above to copy them, or use a map application to navigate to this location.',
+              style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
   }
 
   /// Build media content widget

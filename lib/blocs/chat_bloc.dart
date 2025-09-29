@@ -140,6 +140,23 @@ class UpdateTypingStatus extends ChatEvent {
   List<Object?> get props => [conversationId, isTyping];
 }
 
+class ReceiveTypingEvent extends ChatEvent {
+  final String conversationId;
+  final String userId;
+  final String username;
+  final bool isTyping;
+
+  const ReceiveTypingEvent({
+    required this.conversationId,
+    required this.userId,
+    required this.username,
+    required this.isTyping,
+  });
+
+  @override
+  List<Object?> get props => [conversationId, userId, username, isTyping];
+}
+
 class MarkConversationAsRead extends ChatEvent {
   final String conversationId;
 
@@ -512,6 +529,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     on<MarkMessageAsRead>(_onMarkMessageAsRead);
     on<DeleteMessage>(_onDeleteMessage);
     on<UpdateTypingStatus>(_onUpdateTypingStatus);
+    on<ReceiveTypingEvent>(_onReceiveTypingEvent);
     on<MarkConversationAsRead>(_onMarkConversationAsRead);
     on<CreateConversation>(_onCreateConversation);
     on<EditMessage>(_onEditMessage);
@@ -972,6 +990,25 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       // indicators that confuse users.
     } catch (e) {
       _logger.e('Error updating typing status: $e');
+    }
+  }
+
+  void _onReceiveTypingEvent(ReceiveTypingEvent event, Emitter<ChatState> emit) {
+    if (state is MessagesLoaded) {
+      final currentState = state as MessagesLoaded;
+      
+      // Only update typing state for the current conversation
+      if (currentState.conversationId == event.conversationId) {
+        final typingUsers = Map<String, bool>.from(currentState.typingUsers);
+
+        if (event.isTyping) {
+          typingUsers[event.userId] = true;
+        } else {
+          typingUsers.remove(event.userId);
+        }
+
+        emit(currentState.copyWith(typingUsers: typingUsers));
+      }
     }
   }
 

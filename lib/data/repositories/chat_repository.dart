@@ -17,6 +17,9 @@ abstract class ChatRepository {
 
   /// Stream of message status updates (delivered, read, failed, etc.)
   Stream<Map<String, dynamic>> get messageStatusUpdates;
+
+  /// Stream of typing indicator events
+  Stream<Map<String, dynamic>> get typingEvents;
   /// Get list of conversations for the current user
   Future<List<ConversationModel>> getConversations();
 
