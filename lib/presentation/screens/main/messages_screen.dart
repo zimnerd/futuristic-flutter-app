@@ -90,17 +90,8 @@ class _MessagesScreenState extends State<MessagesScreen> {
           '🐛 Last message content: "${conversation.lastMessage?.content ?? 'NULL'}"',
         );
 
-        // Determine last message preview
-        String lastMessagePreview = 'No messages yet';
-        if (conversation.lastMessage != null) {
-          final content = conversation.lastMessage!.content;
-          if (content.isNotEmpty) {
-            // Truncate long messages for preview
-            lastMessagePreview = content.length > 50
-                ? '${content.substring(0, 50)}...'
-                : content;
-          }
-        }
+        // Determine enhanced last message preview with type detection
+        String lastMessagePreview = _formatMessagePreview(conversation.lastMessage);
         
         final lastMessageDateTime =
             conversation.lastActivity ?? conversation.updatedAt;
@@ -169,6 +160,35 @@ class _MessagesScreenState extends State<MessagesScreen> {
     } else {
       return '${difference.inDays}d ago';
     }
+  }
+
+  /// Enhanced message preview with type detection and formatting
+  String _formatMessagePreview(dynamic message) {
+    if (message == null) {
+      return 'No messages yet';
+    }
+
+    // Extract content from message object
+    final content = message.content ?? '';
+    if (content.isEmpty) {
+      return 'No messages yet';
+    }
+
+    // Handle different message types with appropriate icons
+    if (content.toLowerCase().contains('location') || content.startsWith('geo:')) {
+      return '📍 Location shared';
+    } else if (content.toLowerCase().contains('image') || content.toLowerCase().contains('photo')) {
+      return '📷 Photo';
+    } else if (content.toLowerCase().contains('video')) {
+      return '🎥 Video';
+    } else if (content.toLowerCase().contains('voice') || content.toLowerCase().contains('audio')) {
+      return '🎵 Voice message';
+    } else if (content.toLowerCase().contains('file') || content.toLowerCase().contains('document')) {
+      return '📄 File';
+    }
+    
+    // Regular text message - truncate if too long
+    return content.length > 50 ? '${content.substring(0, 50)}...' : content;
   }
 
   /// Load match stories for users that haven't been chatted with yet
