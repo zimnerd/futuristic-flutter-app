@@ -546,7 +546,6 @@ class UserRepositorySimple implements UserRepository {
   }
 
   @override
-  @override
   Future<Map<String, dynamic>> resendOTP({required String sessionId}) async {
     try {
       final response = await _apiService.post(
@@ -564,6 +563,36 @@ class UserRepositorySimple implements UserRepository {
       throw Exception('Failed to resend OTP');
     } catch (e) {
       throw Exception('Resend OTP failed: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>> validatePhone({
+    required String phone,
+    required String countryCode,
+  }) async {
+    try {
+      _logger.i('Validating phone: $phone for country: $countryCode');
+
+      final response = await _apiService.post(
+        '/auth/validate-phone',
+        data: {'phoneNumber': phone, 'countryCode': countryCode},
+      );
+
+      if (response.statusCode == 200) {
+        return {
+          'isValid': response.data['data']['isValid'] ?? false,
+          'formattedNumber': response.data['data']['formattedNumber'] ?? phone,
+          'isRegistered': response.data['data']['isRegistered'] ?? false,
+          'hasWhatsApp': response.data['data']['hasWhatsApp'] ?? false,
+          'suggestion': response.data['data']['suggestion'] ?? '',
+        };
+      }
+
+      throw Exception('Phone validation failed: ${response.statusCode}');
+    } catch (e) {
+      _logger.e('Phone validation error: $e');
+      throw Exception('Phone validation failed: ${e.toString()}');
     }
   }
 }
