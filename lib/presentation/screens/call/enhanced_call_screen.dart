@@ -32,7 +32,7 @@ class _EnhancedCallScreenState extends State<EnhancedCallScreen>
   bool _showGroupControls = false;
   bool _isMuted = false;
   bool _isVideoEnabled = true;
-  bool _isRecording = false;
+  final bool _isRecording = false;
   String? _currentBackground;
   String? _currentFilter;
 

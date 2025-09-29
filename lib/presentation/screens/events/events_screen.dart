@@ -22,7 +22,7 @@ class _EventsScreenState extends State<EventsScreen> {
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   String? _selectedCategory;
-  bool _showJoinedOnly = false;
+  final bool _showJoinedOnly = false;
   String? _joiningEventId;
 
   @override

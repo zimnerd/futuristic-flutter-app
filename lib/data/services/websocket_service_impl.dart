@@ -66,6 +66,7 @@ class WebSocketServiceImpl implements WebSocketService {
   Stream<Duration> get latencyStream => _latencyController.stream;
 
   /// Stream for messages received - AI COMPANION PATTERN
+  @override
   Stream<Map<String, dynamic>> get messageStream => _messageController.stream;
 
   /// Stream for errors - AI COMPANION PATTERN
