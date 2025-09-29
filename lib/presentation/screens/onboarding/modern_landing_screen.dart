@@ -121,7 +121,7 @@ class _ModernLandingScreenState extends State<ModernLandingScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       floatingActionButton: _buildStartJourneyFab(),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
@@ -146,30 +146,36 @@ class _ModernLandingScreenState extends State<ModernLandingScreen>
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    // Skip button at the top
+                    // Skip button at the top - better positioned
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      mainAxisAlignment: MainAxisAlignment.end,
                       children: [
-                        const SizedBox(width: 60), // Balance for centering
-                        const Spacer(),
                         FadeTransition(
                           opacity: _fadeAnimation,
-                          child: TextButton(
-                            onPressed: () => context.go('/login'),
-                            style: TextButton.styleFrom(
-                              foregroundColor: Colors.white70,
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: PulseSpacing.md,
-                                vertical: PulseSpacing.sm,
+                          child: Container(
+                            margin: const EdgeInsets.only(top: 8),
+                            child: TextButton(
+                              onPressed: () => context.go('/login'),
+                              style: TextButton.styleFrom(
+                                foregroundColor: Colors.white70,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: PulseSpacing.sm,
+                                  vertical: PulseSpacing.xs,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(
+                                    PulseRadii.md,
+                                  ),
+                                ),
                               ),
-                            ),
-                            child: const Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text('Skip'),
-                                SizedBox(width: 4),
-                                Icon(Icons.favorite_outline, size: 16),
-                              ],
+                              child: const Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text('Skip'),
+                                  SizedBox(width: 4),
+                                  Icon(Icons.favorite_outline, size: 14),
+                                ],
+                              ),
                             ),
                           ),
                         ),
@@ -195,7 +201,7 @@ class _ModernLandingScreenState extends State<ModernLandingScreen>
                       child: _buildFeaturesSection(),
                     ),
 
-                    const SizedBox(height: PulseSpacing.sm),
+                    const SizedBox(height: PulseSpacing.xl),
 
                     // Action buttons
                     ScaleTransition(
@@ -203,13 +209,18 @@ class _ModernLandingScreenState extends State<ModernLandingScreen>
                       child: _buildActionButtons(),
                     ),
 
-                    const SizedBox(height: PulseSpacing.lg),
+                    const SizedBox(height: PulseSpacing.xxl),
 
-                    // Terms and privacy
-                    _buildTermsSection(),
+                    // Terms and privacy - with more space from FAB
+                    Padding(
+                      padding: const EdgeInsets.only(
+                        bottom: 80.0,
+                      ), // Space for FAB
+                      child: _buildTermsSection(),
+                    ),
 
                     // Extra padding at bottom to ensure content doesn't get cut off
-                    const SizedBox(height: PulseSpacing.md),
+                    const SizedBox(height: PulseSpacing.xl),
                   ],
                 ),
               ),
@@ -223,26 +234,26 @@ class _ModernLandingScreenState extends State<ModernLandingScreen>
   Widget _buildBackgroundElements() {
     return Stack(
       children: [
-        // Floating hearts
+        // Floating hearts - repositioned to avoid skip button overlap
         Positioned(
-          top: 100,
-          right: 50,
+          top: 150,
+          right: 30,
           child: AnimatedBuilder(
             animation: _scaleController,
             builder: (context, child) {
               return Transform.scale(
                 scale: _scaleAnimation.value,
                 child: Container(
-                  width: 30,
-                  height: 30,
+                  width: 25,
+                  height: 25,
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.1),
+                    color: Colors.white.withValues(alpha: 0.08),
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(
                     Icons.favorite,
                     color: Colors.white,
-                    size: 16,
+                    size: 14,
                   ),
                 ),
               );
@@ -250,22 +261,40 @@ class _ModernLandingScreenState extends State<ModernLandingScreen>
           ),
         ),
         
-        // More decorative elements
+        // More decorative elements - positioned to avoid content overlap
         Positioned(
-          bottom: 200,
-          left: 30,
+          top: 250,
+          left: 20,
           child: AnimatedBuilder(
             animation: _slideController,
             builder: (context, child) {
               return Transform.translate(
                 offset: Offset(0, 20 * (1 - _slideAnimation.value.dy)),
                 child: Container(
-                  width: 60,
-                  height: 60,
+                  width: 40,
+                  height: 40,
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.05),
-                    borderRadius: BorderRadius.circular(PulseRadii.lg),
+                    color: Colors.white.withValues(alpha: 0.04),
+                    borderRadius: BorderRadius.circular(PulseRadii.md),
                   ),
+                ),
+              );
+            },
+          ),
+        ),
+        // Additional heart decoration
+        Positioned(
+          bottom: 300,
+          right: 80,
+          child: AnimatedBuilder(
+            animation: _fadeController,
+            builder: (context, child) {
+              return Opacity(
+                opacity: _fadeAnimation.value * 0.3,
+                child: const Icon(
+                  Icons.favorite_outline,
+                  color: Colors.white,
+                  size: 20,
                 ),
               );
             },
@@ -369,7 +398,7 @@ class _ModernLandingScreenState extends State<ModernLandingScreen>
           },
         ),
         
-        const SizedBox(height: PulseSpacing.xs),
+        const SizedBox(height: PulseSpacing.md),
         
         AnimatedBuilder(
           animation: _slideController,
@@ -388,7 +417,7 @@ class _ModernLandingScreenState extends State<ModernLandingScreen>
           },
         ),
         
-        const SizedBox(height: PulseSpacing.xs),
+        const SizedBox(height: PulseSpacing.md),
         
         AnimatedBuilder(
           animation: _slideController,
@@ -416,30 +445,31 @@ class _ModernLandingScreenState extends State<ModernLandingScreen>
     required String subtitle,
   }) {
     return Container(
-      padding: const EdgeInsets.all(PulseSpacing.md),
+      padding: const EdgeInsets.all(PulseSpacing.lg),
+      margin: const EdgeInsets.symmetric(horizontal: PulseSpacing.xs),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.1),
+        color: Colors.white.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(PulseRadii.lg),
         border: Border.all(
-          color: Colors.white.withValues(alpha: 0.2),
+          color: Colors.white.withValues(alpha: 0.15),
         ),
       ),
       child: Row(
         children: [
           Container(
-            width: 50,
-            height: 50,
+            width: 48,
+            height: 48,
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.2),
+              color: Colors.white.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(PulseRadii.md),
             ),
             child: Icon(
               icon,
               color: Colors.white,
-              size: 24,
+              size: 22,
             ),
           ),
-          const SizedBox(width: PulseSpacing.md),
+          const SizedBox(width: PulseSpacing.lg),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -451,10 +481,12 @@ class _ModernLandingScreenState extends State<ModernLandingScreen>
                     fontWeight: FontWeight.w600,
                   ),
                 ),
+                const SizedBox(height: 4),
                 Text(
                   subtitle,
                   style: PulseTextStyles.bodySmall.copyWith(
-                    color: Colors.white.withValues(alpha: 0.7),
+                    color: Colors.white.withValues(alpha: 0.75),
+                    height: 1.3,
                   ),
                 ),
               ],
@@ -495,31 +527,48 @@ class _ModernLandingScreenState extends State<ModernLandingScreen>
       builder: (context, child) {
         return Transform.scale(
           scale: _scaleAnimation.value,
-          child: FloatingActionButton.extended(
-            onPressed: () => context.go(AppRoutes.register),
-            backgroundColor: Colors.white,
-            foregroundColor: PulseColors.primary,
-            elevation: 8,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(PulseRadii.lg),
-            ),
-            label: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  'Start Journey',
-                  style: PulseTextStyles.titleSmall.copyWith(
-                    color: PulseColors.primary,
-                    fontWeight: FontWeight.w600,
-                  ),
+          child: Container(
+            margin: const EdgeInsets.only(bottom: 20),
+            child: FloatingActionButton.extended(
+              onPressed: () => context.go(AppRoutes.register),
+              backgroundColor: Colors.white,
+              foregroundColor: PulseColors.primary,
+              elevation: 12,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(PulseRadii.xl),
+              ),
+              label: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: PulseSpacing.sm,
+                  vertical: PulseSpacing.xs,
                 ),
-                const SizedBox(width: PulseSpacing.xs),
-                Icon(
-                  Icons.arrow_forward,
-                  color: PulseColors.primary,
-                  size: 18,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'Start Journey',
+                      style: PulseTextStyles.titleSmall.copyWith(
+                        color: PulseColors.primary,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 16,
+                      ),
+                    ),
+                    const SizedBox(width: PulseSpacing.sm),
+                    Container(
+                      padding: const EdgeInsets.all(2),
+                      decoration: BoxDecoration(
+                        color: PulseColors.primary.withValues(alpha: 0.1),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.arrow_forward,
+                        color: PulseColors.primary,
+                        size: 16,
+                      ),
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
           ),
         );
