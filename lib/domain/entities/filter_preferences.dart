@@ -109,6 +109,18 @@ class FilterPreferences {
     );
   }
 
+  /// Convert FilterPreferences to DiscoveryFilters for matching
+  toDiscoveryFilters() {
+    return {
+      'minAge': minAge,
+      'maxAge': maxAge,
+      'maxDistance': maxDistance,
+      'interests': interests,
+      'verifiedOnly': showOnlyVerified,
+      'hasPhotos': showOnlyWithPhotos,
+    };
+  }
+
   @override
   String toString() {
     return 'FilterPreferences(minAge: $minAge, maxAge: $maxAge, maxDistance: $maxDistance, interests: $interests, education: $education, occupation: $occupation, showOnlyVerified: $showOnlyVerified, showOnlyWithPhotos: $showOnlyWithPhotos, dealBreakers: $dealBreakers)';

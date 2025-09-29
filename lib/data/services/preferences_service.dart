@@ -19,7 +19,8 @@ class PreferencesService {
       final response = await _apiClient.get(ApiConstants.usersPreferences);
       
       if (response.statusCode == 200) {
-        final data = response.data as Map<String, dynamic>;
+        final responseData = response.data as Map<String, dynamic>;
+        final data = responseData['data'] as Map<String, dynamic>;
         final preferences = FilterPreferences.fromJson(data);
         _logger.d('Filter preferences loaded successfully');
         return preferences;
@@ -64,7 +65,8 @@ class PreferencesService {
       final response = await _apiClient.get('${ApiConstants.users}/interests');
       
       if (response.statusCode == 200) {
-        final data = response.data as Map<String, dynamic>;
+        final responseData = response.data as Map<String, dynamic>;
+        final data = responseData['data'] as Map<String, dynamic>;
         final interests = List<String>.from(data['interests'] ?? []);
         _logger.d('Loaded ${interests.length} available interests');
         return interests;
@@ -88,7 +90,8 @@ class PreferencesService {
       );
       
       if (response.statusCode == 200) {
-        final data = response.data as Map<String, dynamic>;
+        final responseData = response.data as Map<String, dynamic>;
+        final data = responseData['data'] as Map<String, dynamic>;
         final levels = List<String>.from(data['levels'] ?? []);
         _logger.d('Loaded ${levels.length} education levels');
         return levels;

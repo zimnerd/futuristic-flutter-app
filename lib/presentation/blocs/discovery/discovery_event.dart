@@ -110,3 +110,8 @@ class DismissMatch extends DiscoveryEvent {
 class ClearRewindFlag extends DiscoveryEvent {
   const ClearRewindFlag();
 }
+
+/// Load discoverable users with user's saved filter preferences
+class LoadDiscoverableUsersWithPreferences extends DiscoveryEvent {
+  const LoadDiscoverableUsersWithPreferences();
+}

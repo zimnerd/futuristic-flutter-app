@@ -106,10 +106,10 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
       ),
     );
 
-    // Initialize with smooth entrance animation
+    // Initialize with smooth entrance animation and load user preferences
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _headerController.forward();
-      context.read<DiscoveryBloc>().add(const LoadDiscoverableUsers());
+      _loadDiscoveryWithPreferences();
     });
   }
 
@@ -1418,6 +1418,15 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
           ),
         ],
       ),
+    );
+  }
+
+  /// Load discovery with user's saved filter preferences
+  void _loadDiscoveryWithPreferences() {
+    // Add event to load discoverable users with preferences
+    // The DiscoveryBloc will handle loading preferences internally
+    context.read<DiscoveryBloc>().add(
+      const LoadDiscoverableUsersWithPreferences(),
     );
   }
 }

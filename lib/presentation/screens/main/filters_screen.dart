@@ -5,6 +5,10 @@ import '../../blocs/filters/filter_bloc.dart';
 import '../heat_map_screen.dart';
 import '../../blocs/filters/filter_event.dart';
 import '../../blocs/filters/filter_state.dart';
+import '../../blocs/discovery/discovery_bloc.dart';
+import '../../blocs/discovery/discovery_event.dart';
+import '../../../domain/entities/filter_preferences.dart';
+import '../../../domain/entities/discovery_types.dart';
 import '../../theme/pulse_colors.dart';
 import '../../widgets/common/pulse_button.dart';
 
@@ -64,6 +68,9 @@ class _FiltersScreenState extends State<FiltersScreen> {
                 backgroundColor: PulseColors.success,
               ),
             );
+            
+            // ✅ Apply saved filters to discovery automatically
+            _applyFiltersToDiscovery(state.preferences);
           }
         },
         builder: (context, state) {
@@ -420,5 +427,27 @@ class _FiltersScreenState extends State<FiltersScreen> {
         ],
       ),
     );
+  }
+
+  /// Apply filter preferences to discovery 
+  void _applyFiltersToDiscovery(FilterPreferences preferences) {
+    try {
+      // Convert FilterPreferences to DiscoveryFilters format
+      final filters = DiscoveryFilters(
+        minAge: preferences.minAge,
+        maxAge: preferences.maxAge,
+        maxDistance: preferences.maxDistance,
+        interests: preferences.interests,
+        verifiedOnly: preferences.showOnlyVerified,
+        premiumOnly: false, // Not in FilterPreferences, keep default
+        recentlyActive: false, // Not in FilterPreferences, keep default
+      );
+
+      // Apply filters to discovery bloc
+      context.read<DiscoveryBloc>().add(ApplyFilters(filters));
+    } catch (e) {
+      // Handle error silently or show debug info
+      print('Error applying filters to discovery: $e');
+    }
   }
 }

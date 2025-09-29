@@ -2,6 +2,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../domain/entities/user_profile.dart';
 import '../../../domain/entities/discovery_types.dart';
 import '../../../data/services/discovery_service.dart';
+import '../../../data/services/preferences_service.dart';
 import 'discovery_event.dart';
 import 'discovery_state.dart';
 
@@ -16,10 +17,15 @@ import 'discovery_state.dart';
 class DiscoveryBloc extends Bloc<DiscoveryEvent, DiscoveryState> {
   DiscoveryBloc({
     required DiscoveryService discoveryService,
+    required PreferencesService preferencesService,
   })  : _discoveryService = discoveryService,
+       _preferencesService = preferencesService,
         super(const DiscoveryInitial()) {
     // Register event handlers
     on<LoadDiscoverableUsers>(_onLoadDiscoverableUsers);
+    on<LoadDiscoverableUsersWithPreferences>(
+      _onLoadDiscoverableUsersWithPreferences,
+    );
     on<SwipeLeft>(_onSwipeLeft);
     on<SwipeRight>(_onSwipeRight);
     on<SwipeUp>(_onSwipeUp);
@@ -34,6 +40,7 @@ class DiscoveryBloc extends Bloc<DiscoveryEvent, DiscoveryState> {
   }
 
   final DiscoveryService _discoveryService;
+  final PreferencesService _preferencesService;
 
   /// Load initial discoverable users with optional filters
   Future<void> _onLoadDiscoverableUsers(
@@ -64,6 +71,53 @@ class DiscoveryBloc extends Bloc<DiscoveryEvent, DiscoveryState> {
       emit(DiscoveryError(
         message: 'Failed to load users: ${error.toString()}',
       ));
+    }
+  }
+
+  /// Load discoverable users with saved filter preferences
+  Future<void> _onLoadDiscoverableUsersWithPreferences(
+    LoadDiscoverableUsersWithPreferences event,
+    Emitter<DiscoveryState> emit,
+  ) async {
+    try {
+      emit(const DiscoveryLoading());
+
+      // Load user's saved filter preferences
+      final preferences = await _preferencesService.getFilterPreferences();
+
+      // Convert FilterPreferences to DiscoveryFilters
+      final filters = DiscoveryFilters(
+        minAge: preferences.minAge,
+        maxAge: preferences.maxAge,
+        maxDistance: preferences.maxDistance,
+        interests: preferences.interests,
+        verifiedOnly: preferences.showOnlyVerified,
+        premiumOnly: false, // Not in FilterPreferences
+        recentlyActive: false, // Not in FilterPreferences
+      );
+
+      // Load users with the filters applied
+      final users = await _discoveryService.getDiscoverableUsers(
+        filters: filters,
+      );
+
+      if (users.isEmpty) {
+        emit(DiscoveryEmpty(currentFilters: filters, hasUsedAllUsers: true));
+        return;
+      }
+
+      emit(
+        DiscoveryLoaded(
+          userStack: users,
+          currentFilters: filters,
+          canUndo: false,
+          hasMoreUsers: users.length >= 10,
+        ),
+      );
+    } catch (error) {
+      // Fallback to loading without filters if preferences fail
+      print('Error loading with preferences, falling back: $error');
+      add(const LoadDiscoverableUsers());
     }
   }
 

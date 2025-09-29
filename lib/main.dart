@@ -233,6 +233,7 @@ class PulseDatingApp extends StatelessWidget {
               discoveryService: DiscoveryService(
                 apiClient: context.read<ApiClient>(),
               ),
+              preferencesService: PreferencesService(context.read<ApiClient>()),
             ),
           ),
         ],
