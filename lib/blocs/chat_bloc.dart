@@ -9,6 +9,7 @@ import '../data/models/message.dart' show MessageDeliveryUpdate;
 import '../domain/entities/message.dart' show MessageType;
 import '../data/repositories/chat_repository.dart';
 import '../data/services/background_sync_manager.dart';
+import '../data/services/service_locator.dart';
 
 
 // Events
@@ -262,6 +263,40 @@ class MessageDeliveryStatusUpdated extends ChatEvent {
   List<Object?> get props => [messageId, status];
 }
 
+class AddReaction extends ChatEvent {
+  final String messageId;
+  final String conversationId;
+  final String emoji;
+
+  const AddReaction({
+    required this.messageId,
+    required this.conversationId,
+    required this.emoji,
+  });
+
+  @override
+  List<Object?> get props => [messageId, conversationId, emoji];
+}
+
+class ReactionAdded extends ChatEvent {
+  final String messageId;
+  final String conversationId;
+  final String emoji;
+  final String userId;
+  final String username;
+
+  const ReactionAdded({
+    required this.messageId,
+    required this.conversationId,
+    required this.emoji,
+    required this.userId,
+    required this.username,
+  });
+
+  @override
+  List<Object?> get props => [messageId, conversationId, emoji, userId, username];
+}
+
 // States
 abstract class ChatState extends Equatable {
   const ChatState();
@@ -460,6 +495,8 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     on<UpdateMessageStatus>(_onUpdateMessageStatus);
     on<MessageReceived>(_onMessageReceived);
     on<MessageDeliveryStatusUpdated>(_onMessageDeliveryStatusUpdated);
+    on<AddReaction>(_onAddReaction);
+    on<ReactionAdded>(_onReactionAdded);
 
     _initializeStreamSubscriptions();
   }
@@ -1275,6 +1312,64 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     } catch (e) {
       _logger.e('Error handling delivery status update: $e');
       emit(ChatError(message: 'Failed to handle delivery status update: $e'));
+    }
+  }
+
+  // Reaction event handlers
+  Future<void> _onAddReaction(AddReaction event, Emitter<ChatState> emit) async {
+    try {
+      _logger.d('Adding reaction ${event.emoji} to message ${event.messageId}');
+      
+      // Emit reaction via WebSocket using the service locator pattern
+      final websocketService = ServiceLocator().webSocketService;
+      
+      websocketService.emit('performMessageAction', {
+        'action': 'add_reaction',
+        'messageId': event.messageId,
+        'conversationId': event.conversationId,
+        'data': {'emoji': event.emoji},
+      });
+
+      _logger.d('Reaction event emitted successfully');
+    } catch (e) {
+      _logger.e('Error adding reaction: $e');
+      emit(ChatError(message: 'Failed to add reaction: $e'));
+    }
+  }
+
+  Future<void> _onReactionAdded(ReactionAdded event, Emitter<ChatState> emit) async {
+    try {
+      _logger.d(
+        'Reaction added by ${event.userId}: ${event.emoji} on message ${event.messageId}',
+      );
+
+      // Update message with reaction in the current state
+      if (state is MessagesLoaded) {
+        final messagesState = state as MessagesLoaded;
+        final updatedMessages = messagesState.messages.map((message) {
+          if (message.id == event.messageId) {
+            // Add reaction to message's reactions list
+            final currentReactions = List<MessageReaction>.from(message.reactions ?? []);
+            
+            // Add the new reaction
+            currentReactions.add(MessageReaction(
+              emoji: event.emoji,
+              userId: event.userId,
+              username: event.username,
+              createdAt: DateTime.now(),
+            ));
+            
+            return message.copyWith(reactions: currentReactions);
+          }
+          return message;
+        }).toList();
+
+        emit(messagesState.copyWith(messages: updatedMessages));
+        _logger.d('Message reactions updated successfully');
+      }
+    } catch (e) {
+      _logger.e('Error handling reaction added: $e');
+      emit(ChatError(message: 'Failed to handle reaction: $e'));
     }
   }
 

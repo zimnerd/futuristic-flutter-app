@@ -1783,10 +1783,14 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   void _addReaction(String messageId, String emoji) {
-    // Add reaction logic
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Added reaction: $emoji')),
-    );
+    // Emit AddReaction event to ChatBloc
+    context.read<ChatBloc>().add(AddReaction(
+      messageId: messageId,
+      conversationId: widget.conversationId,
+      emoji: emoji,
+    ));
+    
+    AppLogger.debug('Added reaction $emoji to message $messageId');
   }
 
   void _replyToMessage(MessageModel message) {
