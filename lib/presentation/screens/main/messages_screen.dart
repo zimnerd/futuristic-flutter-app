@@ -102,13 +102,17 @@ class _MessagesScreenState extends State<MessagesScreen> {
           }
         }
         
+        final lastMessageDateTime =
+            conversation.lastActivity ?? conversation.updatedAt;
+        
         return ConversationData(
           id: conversation.id,
           name: otherParticipant
               .name, // Use computed name getter (displayName || fullName || fallback)
           avatar: avatarUrl,
           lastMessage: lastMessagePreview,
-          timestamp: _formatTimestamp(conversation.lastActivity ?? conversation.updatedAt),
+          timestamp: _formatTimestamp(lastMessageDateTime),
+          lastMessageTime: lastMessageDateTime,
           unreadCount: conversation.unreadCount,
           isOnline: false, // We'd need real-time status for this
           otherUserId: otherParticipant.id,
@@ -120,13 +124,18 @@ class _MessagesScreenState extends State<MessagesScreen> {
       final Map<String, ConversationData> uniqueConversations = {};
       for (final conv in conversationDataList) {
         if (!uniqueConversations.containsKey(conv.otherUserId) || 
-            uniqueConversations[conv.otherUserId]!.timestamp.compareTo(conv.timestamp) < 0) {
+            uniqueConversations[conv.otherUserId]!.lastMessageTime.isBefore(
+              conv.lastMessageTime,
+            )) {
           uniqueConversations[conv.otherUserId] = conv;
         }
       }
       final deduplicatedList = uniqueConversations.values.toList();
       
-      // Sort conversations by most recent activity first (timestamp descending)\n      deduplicatedList.sort((a, b) => b.timestamp.compareTo(a.timestamp));
+      // Sort conversations by most recent activity first (DateTime descending)
+      deduplicatedList.sort(
+        (a, b) => b.lastMessageTime.compareTo(a.lastMessageTime),
+      );
       
       print('🗋️ Loaded ${conversations.length} conversations, deduplicated to ${deduplicatedList.length}');
 
@@ -1007,6 +1016,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
           avatar: conversation.avatar,
           lastMessage: conversation.lastMessage,
           timestamp: conversation.timestamp,
+          lastMessageTime: conversation.lastMessageTime,
           unreadCount: 0, // Mark as read
           isOnline: conversation.isOnline,
           otherUserId: conversation.otherUserId,
@@ -1033,6 +1043,7 @@ class ConversationData {
     required this.avatar,
     required this.lastMessage,
     required this.timestamp,
+    required this.lastMessageTime,
     required this.unreadCount,
     required this.isOnline,
     required this.otherUserId,
@@ -1044,6 +1055,7 @@ class ConversationData {
   final String avatar;
   final String lastMessage;
   final String timestamp;
+  final DateTime lastMessageTime;
   final int unreadCount;
   final bool isOnline;
   final String otherUserId;
