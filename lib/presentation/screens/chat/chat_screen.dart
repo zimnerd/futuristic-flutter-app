@@ -48,10 +48,14 @@ class ChatScreen extends StatefulWidget {
 class _ChatScreenState extends State<ChatScreen> {
   final ScrollController _scrollController = ScrollController();
   final TextEditingController _messageController = TextEditingController();
+  final FocusNode _messageInputFocusNode = FocusNode();
   Timer? _typingTimer;
   bool _isCurrentlyTyping = false;
   bool _hasMarkedAsRead =
       false; // Track if we've already marked this conversation as read
+  
+  // Reply functionality state
+  MessageModel? _replyToMessage;
   
   // Performance optimizers
   late final MessagePaginationOptimizer _paginationOptimizer;
@@ -129,6 +133,7 @@ class _ChatScreenState extends State<ChatScreen> {
     _scrollController.removeListener(_scrollListener);
     _scrollController.dispose();
     _messageController.dispose();
+    _messageInputFocusNode.dispose();
     _typingTimer?.cancel();
 
     // Cleanup performance optimizers
@@ -1685,7 +1690,7 @@ class _ChatScreenState extends State<ChatScreen> {
               title: 'Reply',
               onTap: () {
                 Navigator.pop(context);
-                _replyToMessage(message);
+                _setReplyToMessage(message);
               },
             ),
             // Only show AI assistance for received messages (not my own)
@@ -1793,11 +1798,16 @@ class _ChatScreenState extends State<ChatScreen> {
     AppLogger.debug('Added reaction $emoji to message $messageId');
   }
 
-  void _replyToMessage(MessageModel message) {
-    // Set reply context
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Replying to: ${message.content ?? "message"}')),
-    );
+  void _setReplyToMessage(MessageModel message) {
+    // Set reply context in the input field
+    setState(() {
+      _replyToMessage = message;
+    });
+
+    // Focus on the input field
+    _messageInputFocusNode.requestFocus();
+
+    AppLogger.debug('Set reply context for message: ${message.id}');
   }
 
   void _openMedia(MessageModel message) {
@@ -1825,14 +1835,77 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   void _forwardMessage(MessageModel message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Forward feature will be implemented')),
+    // Show conversation selection dialog for forwarding
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Forward Message'),
+        content: const Text(
+          'Select a conversation to forward this message to:',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              // TODO: Implement conversation selection
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Forward feature coming soon')),
+              );
+            },
+            child: const Text('Forward'),
+          ),
+        ],
+      ),
     );
   }
 
   void _editMessage(MessageModel message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Edit feature will be implemented')),
+    if (message.type != MessageType.text) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Can only edit text messages')),
+      );
+      return;
+    }
+
+    final editController = TextEditingController(text: message.content);
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Edit Message'),
+        content: TextField(
+          controller: editController,
+          maxLines: 3,
+          decoration: const InputDecoration(
+            hintText: 'Edit your message...',
+            border: OutlineInputBorder(),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              if (editController.text.trim().isNotEmpty) {
+                context.read<ChatBloc>().add(
+                  EditMessage(
+                    messageId: message.id,
+                    newContent: editController.text.trim(),
+                  ),
+                );
+              }
+              Navigator.pop(context);
+            },
+            child: const Text('Save'),
+          ),
+        ],
+      ),
     );
   }
 
@@ -1850,8 +1923,8 @@ class _ChatScreenState extends State<ChatScreen> {
           TextButton(
             onPressed: () {
               Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Message deleted')),
+              context.read<ChatBloc>().add(
+                DeleteMessage(messageId: message.id),
               );
             },
             style: TextButton.styleFrom(foregroundColor: Colors.red),

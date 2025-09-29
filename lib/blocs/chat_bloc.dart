@@ -1324,10 +1324,10 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       final websocketService = ServiceLocator().webSocketService;
       
       websocketService.emit('performMessageAction', {
-        'action': 'add_reaction',
+        'action': 'react',
         'messageId': event.messageId,
         'conversationId': event.conversationId,
-        'data': {'emoji': event.emoji},
+        'emoji': event.emoji,
       });
 
       _logger.d('Reaction event emitted successfully');
