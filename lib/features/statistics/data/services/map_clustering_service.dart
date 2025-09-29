@@ -9,6 +9,14 @@ class MapClusteringService {
   static final Map<String, LatLng> _stableClusterPositions = {};
   static List<HeatMapDataPoint> _lastDataPoints = [];
   
+  // Performance optimization: Cache clusters by zoom level
+  static final Map<String, List<MapCluster>> _clusterCache = {};
+  static double _lastZoomLevel = -1;
+  static DateTime _lastClusterTime = DateTime.now();
+
+  // Debounce threshold in milliseconds
+  static const int _debounceMs = 300;
+  
   /// Cluster data points based on zoom level for privacy
   /// Uses stable hierarchical clustering to maintain consistent positions
   static List<MapCluster> clusterDataPoints(
@@ -17,9 +25,30 @@ class MapClusteringService {
   ) {
     if (dataPoints.isEmpty) return [];
     
+    // Performance optimization: Check if we can use cached results
+    final now = DateTime.now();
+    final timeSinceLastCluster = now
+        .difference(_lastClusterTime)
+        .inMilliseconds;
+    final zoomDiff = (zoomLevel - _lastZoomLevel).abs();
+
+    // Use cache if zoom level is similar and recent
+    if (timeSinceLastCluster < _debounceMs &&
+        zoomDiff < 0.5 &&
+        !_dataPointsChanged(dataPoints)) {
+      final cacheKey = _getCacheKey(dataPoints.length, zoomLevel);
+      if (_clusterCache.containsKey(cacheKey)) {
+        print(
+          'MapClusteringService: Using cached clusters for zoom $zoomLevel',
+        );
+        return _clusterCache[cacheKey]!;
+      }
+    }
+    
     // Clear cache if data changed significantly
     if (_dataPointsChanged(dataPoints)) {
       _stableClusterPositions.clear();
+      _clusterCache.clear();
       _lastDataPoints = List.from(dataPoints);
     }
 
@@ -28,7 +57,26 @@ class MapClusteringService {
     );
 
     // Use hierarchical clustering based on zoom level
-    return _performHierarchicalClustering(dataPoints, zoomLevel);
+    final clusters = _performHierarchicalClustering(dataPoints, zoomLevel);
+
+    // Cache the results
+    final cacheKey = _getCacheKey(dataPoints.length, zoomLevel);
+    _clusterCache[cacheKey] = clusters;
+    _lastZoomLevel = zoomLevel;
+    _lastClusterTime = now;
+
+    // Keep cache size reasonable
+    if (_clusterCache.length > 10) {
+      _clusterCache.clear();
+    }
+
+    return clusters;
+  }
+
+  /// Generate cache key for clustering results
+  static String _getCacheKey(int dataPointCount, double zoomLevel) {
+    final zoomInt = (zoomLevel * 2).round(); // 0.5 zoom precision
+    return '${dataPointCount}_${zoomInt}';
   }
 
   /// Check if data points have changed significantly
@@ -52,38 +100,38 @@ class MapClusteringService {
     List<HeatMapDataPoint> dataPoints,
     double zoomLevel,
   ) {
-    // Determine clustering level based on zoom - more granular levels
+    // Determine clustering level based on zoom - optimized for performance
     int clusterLevel;
     double baseRadius;
     
-    if (zoomLevel <= 5) {
-      // Global level - single cluster
+    if (zoomLevel <= 6) {
+      // Global/continental level - single or very few clusters
       clusterLevel = 0;
-      baseRadius = 100000; // 100km for very wide view
-    } else if (zoomLevel <= 7) {
-      // Country/continent level - few clusters
+      baseRadius = 200000; // 200km for very wide view
+    } else if (zoomLevel <= 8) {
+      // Country level - few large clusters
       clusterLevel = 1;
-      baseRadius = 50000; // 50km
-    } else if (zoomLevel <= 9) {
+      baseRadius = 75000; // 75km
+    } else if (zoomLevel <= 10) {
       // Regional level - moderate clusters
       clusterLevel = 2;
-      baseRadius = 25000; // 25km
-    } else if (zoomLevel <= 11) {
+      baseRadius = 30000; // 30km
+    } else if (zoomLevel <= 12) {
       // City level - smaller clusters
       clusterLevel = 3;
-      baseRadius = 10000; // 10km
-    } else if (zoomLevel <= 13) {
+      baseRadius = 15000; // 15km
+    } else if (zoomLevel <= 14) {
       // District level - fine clusters
       clusterLevel = 4;
-      baseRadius = 5000; // 5km
-    } else if (zoomLevel <= 15) {
+      baseRadius = 7000; // 7km
+    } else if (zoomLevel <= 16) {
       // Neighborhood level - very fine clusters
       clusterLevel = 5;
-      baseRadius = 2000; // 2km
+      baseRadius = 3000; // 3km
     } else {
       // Street level - minimum privacy clusters
       clusterLevel = 6;
-      baseRadius = 800; // 800m for privacy
+      baseRadius = 1200; // 1.2km for privacy
     }
     
     print(

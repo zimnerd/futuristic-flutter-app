@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import '../../core/constants/api_constants.dart';
 import '../../core/network/api_client.dart';
 import '../models/heat_map_models.dart';
+import '../models/optimized_heatmap_models.dart';
 import '../../core/models/location_models.dart';
 
 /// Service for handling heat map and location-based statistics
@@ -10,6 +11,61 @@ class HeatMapService {
   final ApiClient _apiClient;
 
   HeatMapService(this._apiClient);
+
+  /// Get optimized heatmap data with viewport-based clustering
+  /// Designed to handle thousands of users efficiently
+  Future<OptimizedHeatmapResponse> getOptimizedHeatMapData({
+    required double zoom,
+    double? northLat,
+    double? southLat, 
+    double? eastLng,
+    double? westLng,
+    int maxClusters = 50,
+  }) async {
+    try {
+      final queryParams = <String, dynamic>{
+        'zoom': zoom,
+        'maxClusters': maxClusters,
+      };
+      
+      if (northLat != null) queryParams['northLat'] = northLat;
+      if (southLat != null) queryParams['southLat'] = southLat;
+      if (eastLng != null) queryParams['eastLng'] = eastLng;
+      if (westLng != null) queryParams['westLng'] = westLng;
+
+      final response = await _apiClient.get(
+        '${ApiConstants.statisticsHeatMap}/optimized',
+        queryParameters: queryParams,
+      );
+
+      if (response.data != null && response.data['clusters'] is List) {
+        final clusters = (response.data['clusters'] as List)
+            .map((json) => OptimizedClusterData.fromJson(json))
+            .toList();
+            
+        final performance = response.data['performance'] != null 
+            ? PerformanceMetrics.fromJson(response.data['performance'])
+            : PerformanceMetrics(queryTimeMs: 0, clusteringTimeMs: 0);
+        
+        dev.log('Fetched ${clusters.length} optimized clusters (${performance.queryTimeMs}ms query, ${performance.clusteringTimeMs}ms clustering)', name: 'HeatMapService');
+        
+        return OptimizedHeatmapResponse(
+          clusters: clusters,
+          performance: performance,
+          totalUsers: clusters.fold<int>(0, (sum, cluster) => sum + cluster.userCount),
+        );
+      }
+
+      return OptimizedHeatmapResponse(
+        clusters: [],
+        performance: PerformanceMetrics(queryTimeMs: 0, clusteringTimeMs: 0),
+        totalUsers: 0,
+      );
+    } catch (e) {
+      dev.log('Failed to fetch optimized heatmap data: $e', name: 'HeatMapService');
+      throw Exception('Failed to load optimized heatmap data: ${e.toString()}');
+    }
+  }
 
   /// Get heat map data for user locations
   Future<List<HeatMapDataPoint>> getHeatMapData({

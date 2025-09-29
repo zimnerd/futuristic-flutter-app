@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -179,7 +180,72 @@ class _HeatMapScreenState extends State<HeatMapScreen> {
   int _currentRadius = 50;
   MapType _mapType = MapType.normal;
   double _currentZoom = 6.0;
-  bool _showHeatmap = false;
+  bool _showHeatmap = false; // Disabled by default for better UX
+  
+  // Debouncing for camera movements to optimize performance
+  Timer? _debounceTimer;
+  bool _isMapReady = false;
+  bool _isUpdatingClusters = false;
+  
+  // Cache management
+  DateTime? _lastDataFetch;
+  static const Duration _cacheValidity = Duration(minutes: 5);
+  List<MapCluster>? _cachedClusters;
+  
+  // Performance tracking
+  // Clustering performance tracking (removed unused counter)
+
+  @override
+  void dispose() {
+    _debounceTimer?.cancel();
+    super.dispose();
+  }
+
+  /// Check if cached data is still valid
+  bool _isCacheValid() {
+    if (_lastDataFetch == null || _cachedClusters == null) return false;
+    return DateTime.now().difference(_lastDataFetch!) < _cacheValidity;
+  }
+
+  /// Toggle heatmap visibility
+  void _toggleHeatmap() {
+    setState(() {
+      _showHeatmap = !_showHeatmap;
+    });
+    
+    // If enabling heatmap and we need fresh data, trigger reload
+    if (_showHeatmap && !_isCacheValid()) {
+      context.read<HeatMapBloc>().add(LoadHeatMapData(_currentRadius));
+    }
+  }
+
+  /// Get maximum clusters based on zoom level for optimal performance
+  int _getMaxClustersForZoom(double zoom) {
+    if (zoom >= 16) return 100; // Very zoomed in - more detail
+    if (zoom >= 14) return 75;  // Zoomed in - good detail
+    if (zoom >= 12) return 50;  // Medium zoom - balanced
+    if (zoom >= 10) return 30;  // Zoomed out - fewer clusters
+    return 20; // Very zoomed out - minimal clusters
+  }
+
+  /// Update clusters based on current zoom level with debouncing
+  void _updateClustersForZoom() {
+    if (_isUpdatingClusters || !_isMapReady) return;
+
+    _isUpdatingClusters = true;
+
+    // Trigger a rebuild with current zoom level
+    if (mounted) {
+      setState(() {
+        // Force rebuild to update clusters
+      });
+    }
+
+    // Reset flag after a short delay
+    Timer(const Duration(milliseconds: 100), () {
+      _isUpdatingClusters = false;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -247,6 +313,20 @@ class _HeatMapScreenState extends State<HeatMapScreen> {
             icon: Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
+                color: _showHeatmap ? const Color(0xFF00C2FF) : Colors.grey,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Icon(Icons.scatter_plot, color: Colors.white, size: 20),
+            ),
+            onPressed: _toggleHeatmap,
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
+          ),
+          const SizedBox(width: 8),
+          IconButton(
+            icon: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
                 color: const Color(0xFF6E3BFF),
                 borderRadius: BorderRadius.circular(8),
               ),
@@ -308,6 +388,45 @@ class _HeatMapScreenState extends State<HeatMapScreen> {
         _buildMapOverlay(context, state),
         // Stats panel
         _buildStatsPanel(context, state),
+        // Loading overlay during cluster updates
+        if (_isUpdatingClusters)
+          Positioned(
+            top: 100,
+            left: 0,
+            right: 0,
+            child: Center(
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: 0.7),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          Theme.of(context).primaryColor,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    const Text(
+                      'Updating clusters...',
+                      style: TextStyle(color: Colors.white, fontSize: 12),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
       ],
     );
   }
@@ -458,10 +577,27 @@ class _HeatMapScreenState extends State<HeatMapScreen> {
             _currentZoom = position.zoom;
           });
           print('🗺️ Zoom changed to: $_currentZoom');
+          
+          // Debounce cluster updates during camera movement
+          _debounceTimer?.cancel();
+          _debounceTimer = Timer(const Duration(milliseconds: 500), () {
+            if (mounted && !_isUpdatingClusters) {
+              _updateClustersForZoom();
+            }
+          });
         }
       },
       onCameraIdle: () {
+        _isMapReady = true;
         print('🗺️ Camera idle at zoom: $_currentZoom');
+        
+        // Cancel any pending debounced updates
+        _debounceTimer?.cancel();
+
+        // Update clusters immediately when camera stops
+        if (mounted && !_isUpdatingClusters) {
+          _updateClustersForZoom();
+        }
       },
       initialCameraPosition: CameraPosition(
         target: initialPosition,
@@ -569,7 +705,7 @@ class _HeatMapScreenState extends State<HeatMapScreen> {
   Set<Circle> _buildCircles(HeatMapLoaded state) {
     final circles = <Circle>{};
 
-    // Add user coverage circle if location available
+    // Add user coverage circle (always shown)
     if (state.userLocation != null) {
       circles.add(
         Circle(
@@ -586,11 +722,12 @@ class _HeatMapScreenState extends State<HeatMapScreen> {
       );
     }
 
-    // Add privacy cluster circles (always shown for privacy)
-    circles.addAll(_buildClusterCircles(state));
-
-    // Add heatmap overlay circles if enabled
+    // Only add cluster/heatmap circles when heatmap is enabled
     if (_showHeatmap) {
+      // Add privacy cluster circles
+      circles.addAll(_buildClusterCircles(state));
+      
+      // Add heatmap overlay circles
       circles.addAll(_buildHeatmapCircles(state));
     }
 
