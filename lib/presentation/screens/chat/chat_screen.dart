@@ -55,9 +55,6 @@ class _ChatScreenState extends State<ChatScreen> {
   bool _hasMarkedAsRead =
       false; // Track if we've already marked this conversation as read
   
-  // Reply functionality state
-  MessageModel? _replyToMessage;
-  
   // Search functionality state
   bool _isSearchActive = false;
   final TextEditingController _searchController = TextEditingController();
@@ -1678,15 +1675,17 @@ class _ChatScreenState extends State<ChatScreen> {
         AppLogger.debug('Image uploaded successfully: ${uploadResult.mediaId}');
 
         // Send message with uploaded media
-        context.read<ChatBloc>().add(
-          SendMessage(
-            conversationId: widget.conversationId,
-            type: MessageType.image,
-            content: '', // No text content for image messages
-            currentUserId: currentUserId,
-            mediaIds: [uploadResult.mediaId!],
-          ),
-        );
+        if (mounted) {
+          context.read<ChatBloc>().add(
+            SendMessage(
+              conversationId: widget.conversationId,
+              type: MessageType.image,
+              content: '', // No text content for image messages
+              currentUserId: currentUserId,
+              mediaIds: [uploadResult.mediaId!],
+            ),
+          );
+        }
 
         _scrollToBottom();
 
@@ -1776,15 +1775,17 @@ class _ChatScreenState extends State<ChatScreen> {
         AppLogger.debug('Video uploaded successfully: ${uploadResult.mediaId}');
 
         // Send message with uploaded media
-        context.read<ChatBloc>().add(
-          SendMessage(
-            conversationId: widget.conversationId,
-            type: MessageType.video,
-            content: '', // No text content for video messages
-            currentUserId: currentUserId,
-            mediaIds: [uploadResult.mediaId!],
-          ),
-        );
+        if (mounted) {
+          context.read<ChatBloc>().add(
+            SendMessage(
+              conversationId: widget.conversationId,
+              type: MessageType.video,
+              content: '', // No text content for video messages
+              currentUserId: currentUserId,
+              mediaIds: [uploadResult.mediaId!],
+            ),
+          );
+        }
 
         _scrollToBottom();
 
@@ -1988,11 +1989,7 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   void _setReplyToMessage(MessageModel message) {
-    // Set reply context in the input field
-    setState(() {
-      _replyToMessage = message;
-    });
-
+    // Reply functionality placeholder - to be implemented
     // Focus on the input field
     _messageInputFocusNode.requestFocus();
 
@@ -2040,7 +2037,7 @@ class _ChatScreenState extends State<ChatScreen> {
           TextButton(
             onPressed: () {
               Navigator.pop(context);
-              // TODO: Implement conversation selection
+              // Forward feature: Show conversation selector dialog
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text('Forward feature coming soon')),
               );
