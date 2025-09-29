@@ -58,6 +58,9 @@ class _RichAiChatAssistantModalState extends State<RichAiChatAssistantModal>
   bool _isRefining = false;
   final TextEditingController _refinementController = TextEditingController();
   
+  // UI state
+  bool _isTopSectionExpanded = true;
+  
   // Custom notification state
   OverlayEntry? _overlayEntry;
   
@@ -143,16 +146,7 @@ class _RichAiChatAssistantModalState extends State<RichAiChatAssistantModal>
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              _buildAssistanceTypeSelector(),
-                              const SizedBox(height: 24),
-                              _buildUserRequestInput(),
-                              const SizedBox(height: 24),
-                              _buildContextSelection(),
-                              const SizedBox(height: 24),
-                              _buildToneSelector(),
-                              const SizedBox(height: 24),
-                              _buildGenerateButton(),
-                              // Error messages now shown as toast notifications
+                              _buildCollapsibleInputSection(),
                               if (_currentResponse != null) ...[
                                 const SizedBox(height: 24),
                                 _buildResponseSection(),
@@ -217,6 +211,60 @@ class _RichAiChatAssistantModalState extends State<RichAiChatAssistantModal>
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildCollapsibleInputSection() {
+    return Column(
+      children: [
+        // Collapse/Expand button when response exists
+        if (_currentResponse != null)
+          Container(
+            margin: const EdgeInsets.only(bottom: 16),
+            child: Row(
+              children: [
+                Icon(
+                  _isTopSectionExpanded
+                      ? Icons.keyboard_arrow_up
+                      : Icons.keyboard_arrow_down,
+                  color: PulseColors.primary,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        _isTopSectionExpanded = !_isTopSectionExpanded;
+                      });
+                    },
+                    child: Text(
+                      _isTopSectionExpanded
+                          ? 'Hide Input Options'
+                          : 'Show Input Options',
+                      style: TextStyle(
+                        color: PulseColors.primary,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        // Collapsible content
+        if (_isTopSectionExpanded || _currentResponse == null) ...[
+          _buildAssistanceTypeSelector(),
+          const SizedBox(height: 24),
+          _buildUserRequestInput(),
+          const SizedBox(height: 24),
+          _buildContextSelection(),
+          const SizedBox(height: 24),
+          _buildToneSelector(),
+          const SizedBox(height: 24),
+          _buildGenerateButton(),
+        ],
+      ],
     );
   }
 
@@ -730,12 +778,32 @@ class _RichAiChatAssistantModalState extends State<RichAiChatAssistantModal>
               borderRadius: BorderRadius.circular(8),
               border: Border.all(color: Colors.grey[300]!),
             ),
-            child: Text(
-              alternative,
-              style: const TextStyle(
-                fontSize: 14,
-                color: Colors.black87,
-              ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Text(
+                    alternative,
+                    style: const TextStyle(fontSize: 14, color: Colors.black87),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                GestureDetector(
+                  onTap: () => _copyAlternativeToClipboard(alternative),
+                  child: Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: Colors.grey[200],
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Icon(
+                      Icons.copy_rounded,
+                      size: 16,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                ),
+              ],
             ),
           );
         })),
@@ -985,6 +1053,20 @@ class _RichAiChatAssistantModalState extends State<RichAiChatAssistantModal>
 
       setState(() {
         _currentResponse = response;
+        _isTopSectionExpanded =
+            false; // Collapse input section when response is generated
+      });
+
+      // Scroll to response section with a slight delay for UI update
+      Future.delayed(const Duration(milliseconds: 200), () {
+        if (_scrollController.hasClients) {
+          _scrollController.animateTo(
+            _scrollController.position.maxScrollExtent *
+                0.3, // Scroll to show response
+            duration: const Duration(milliseconds: 400),
+            curve: Curves.easeInOut,
+          );
+        }
       });
     } catch (e) {
       AppLogger.error('AI assistance generation failed: $e');
@@ -1008,6 +1090,15 @@ class _RichAiChatAssistantModalState extends State<RichAiChatAssistantModal>
       Clipboard.setData(ClipboardData(text: _currentResponse!.suggestion));
       _showToast('Copied to clipboard', Icons.copy, PulseColors.success);
     }
+  }
+
+  void _copyAlternativeToClipboard(String alternative) {
+    Clipboard.setData(ClipboardData(text: alternative));
+    _showToast(
+      'Alternative copied to clipboard',
+      Icons.copy,
+      PulseColors.success,
+    );
   }
 
   void _startRefinement() {

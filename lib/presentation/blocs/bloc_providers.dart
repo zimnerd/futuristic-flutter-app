@@ -12,6 +12,7 @@ import 'messaging/messaging_bloc.dart';
 import '../../data/services/discovery_service.dart';
 import '../../data/services/matching_service.dart';
 import '../../data/services/messaging_service.dart';
+import '../../data/services/preferences_service.dart';
 import '../../data/services/service_locator.dart';
 import '../../core/network/api_client.dart';
 import '../../core/di/service_locator.dart' as di;
@@ -45,6 +46,7 @@ class BlocProviders extends StatelessWidget {
           create: (context) =>
               DiscoveryBloc(
             discoveryService: DiscoveryService(apiClient: ApiClient.instance),
+            preferencesService: PreferencesService(ApiClient.instance),
           ),
         ),
 

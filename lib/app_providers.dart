@@ -59,8 +59,10 @@ class AppProviders extends StatelessWidget {
         
         // Discovery & Matching
         BlocProvider<DiscoveryBloc>(
-          create: (context) =>
-              DiscoveryBloc(discoveryService: serviceLocator.discoveryService),
+          create: (context) => DiscoveryBloc(
+            discoveryService: serviceLocator.discoveryService,
+            preferencesService: serviceLocator.preferencesService,
+          ),
         ),
 
         // Communication BLoCs

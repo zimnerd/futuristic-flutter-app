@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../core/network/api_client.dart';
 import '../../../data/services/discovery_service.dart';
+import '../../../data/services/preferences_service.dart';
 import '../../blocs/discovery/discovery_bloc.dart';
 import '../../blocs/discovery/discovery_event.dart';
 import '../../blocs/user/user_bloc.dart';
@@ -48,6 +49,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   discoveryService: DiscoveryService(
                     apiClient: ApiClient.instance,
                   ),
+                  preferencesService: PreferencesService(ApiClient.instance),
                 )..add(const LoadDiscoverableUsers()),
                 child: const DiscoveryScreen(),
               ),
