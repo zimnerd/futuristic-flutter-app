@@ -1,4 +1,7 @@
 import 'dart:developer' as developer;
+import 'package:geolocator/geolocator.dart';
+import 'package:geocoding/geocoding.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 /// Phone number utilities for formatting, validation, and cleanup
 /// Mobile equivalent of web/src/lib/phone-utils.ts
@@ -31,6 +34,65 @@ class PhoneUtils {
 
   /// Default country code (South Africa as per requirements)
   static const String defaultCountryCode = 'ZA';
+
+  /// Get default country code based on user's location
+  /// Falls back to South Africa if location detection fails
+  static Future<String> getDefaultCountryCode() async {
+    try {
+      // Check if location permissions are granted
+      final locationStatus = await Permission.location.status;
+      if (!locationStatus.isGranted) {
+        // Request permission if not granted
+        final result = await Permission.location.request();
+        if (!result.isGranted) {
+          developer.log(
+            '📍 Location permission denied, using fallback country: ZA',
+          );
+          return defaultCountryCode;
+        }
+      }
+
+      // Get current position
+      final position = await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy
+              .low, // Low accuracy is sufficient for country detection
+          timeLimit: Duration(seconds: 10), // Timeout after 10 seconds
+        ),
+      );
+
+      // Get country from coordinates
+      final placemarks = await placemarkFromCoordinates(
+        position.latitude,
+        position.longitude,
+      );
+
+      if (placemarks.isNotEmpty && placemarks.first.isoCountryCode != null) {
+        final detectedCountry = placemarks.first.isoCountryCode!.toUpperCase();
+
+        // Verify the detected country exists in our supported countries
+        if (countryData.containsKey(detectedCountry)) {
+          developer.log('📍 Detected country from location: $detectedCountry');
+          return detectedCountry;
+        } else {
+          developer.log(
+            '📍 Detected country $detectedCountry not in supported list, using fallback: ZA',
+          );
+          return defaultCountryCode;
+        }
+      } else {
+        developer.log(
+          '📍 Unable to determine country from location, using fallback: ZA',
+        );
+        return defaultCountryCode;
+      }
+    } catch (e) {
+      developer.log(
+        '📍 Error detecting country from location: $e, using fallback: ZA',
+      );
+      return defaultCountryCode;
+    }
+  }
 
   /// Get phone code for a country
   static String getPhoneCode(String countryCode) {

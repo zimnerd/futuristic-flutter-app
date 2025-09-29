@@ -44,6 +44,32 @@ class _PhoneInputState extends State<PhoneInput> {
     _selectedCountryCode = widget.initialCountryCode;
     _phoneCode = PhoneUtils.getPhoneCode(_selectedCountryCode);
     _controller = TextEditingController(text: widget.initialValue);
+    
+    // Try to detect user's country from location if using default
+    if (widget.initialCountryCode == PhoneUtils.defaultCountryCode) {
+      _detectUserCountry();
+    }
+  }
+
+  /// Detect user's country from location and update country code
+  Future<void> _detectUserCountry() async {
+    try {
+      final detectedCountry = await PhoneUtils.getDefaultCountryCode();
+      if (mounted && detectedCountry != _selectedCountryCode) {
+        setState(() {
+          _selectedCountryCode = detectedCountry;
+          _phoneCode = PhoneUtils.getPhoneCode(detectedCountry);
+        });
+
+        // Notify parent about the country change
+        if (widget.onCountryChanged != null) {
+          widget.onCountryChanged!(detectedCountry);
+        }
+      }
+    } catch (e) {
+      // Silently fail and keep the default country
+      // Error is already logged in PhoneUtils.getDefaultCountryCode()
+    }
   }
 
   @override
@@ -99,6 +125,7 @@ class _PhoneInputState extends State<PhoneInput> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     
     return TextFormField(
       controller: _controller,
@@ -128,13 +155,14 @@ class _PhoneInputState extends State<PhoneInput> {
                   _phoneCode,
                   style: theme.textTheme.bodyMedium?.copyWith(
                     fontWeight: FontWeight.w500,
+                    color: colorScheme.onSurface,
                   ),
                 ),
                 const SizedBox(width: 4),
                 Icon(
                   Icons.arrow_drop_down,
                   size: 20,
-                  color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                  color: colorScheme.onSurface.withValues(alpha: 0.6),
                 ),
               ],
             ),
@@ -231,11 +259,16 @@ class _CountryPickerBottomSheetState extends State<_CountryPickerBottomSheet> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     final mediaQuery = MediaQuery.of(context);
     
     return Container(
       height: mediaQuery.size.height * 0.7,
       padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: colorScheme.surface,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+      ),
       child: Column(
         children: [
           // Handle bar
@@ -244,7 +277,7 @@ class _CountryPickerBottomSheetState extends State<_CountryPickerBottomSheet> {
             height: 4,
             margin: const EdgeInsets.only(bottom: 16),
             decoration: BoxDecoration(
-              color: theme.colorScheme.onSurface.withValues(alpha: 0.2),
+              color: colorScheme.onSurface.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -254,6 +287,7 @@ class _CountryPickerBottomSheetState extends State<_CountryPickerBottomSheet> {
             'Select Country',
             style: theme.textTheme.titleLarge?.copyWith(
               fontWeight: FontWeight.bold,
+              color: colorScheme.onSurface,
             ),
           ),
           
@@ -262,11 +296,31 @@ class _CountryPickerBottomSheetState extends State<_CountryPickerBottomSheet> {
           // Search field
           TextField(
             controller: _searchController,
-            decoration: const InputDecoration(
+            decoration: InputDecoration(
               hintText: 'Search countries...',
-              prefixIcon: Icon(Icons.search),
-              border: OutlineInputBorder(),
+              hintStyle: TextStyle(
+                color: colorScheme.onSurface.withValues(alpha: 0.6),
+              ),
+              prefixIcon: Icon(
+                Icons.search,
+                color: colorScheme.onSurface.withValues(alpha: 0.6),
+              ),
+              border: OutlineInputBorder(
+                borderSide: BorderSide(color: colorScheme.outline),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderSide: BorderSide(color: colorScheme.outline),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderSide: BorderSide(color: colorScheme.primary, width: 2),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              filled: true,
+              fillColor: colorScheme.surface,
             ),
+            style: TextStyle(color: colorScheme.onSurface),
             onChanged: _filterCountries,
           ),
           
@@ -285,16 +339,22 @@ class _CountryPickerBottomSheetState extends State<_CountryPickerBottomSheet> {
                     _getCountryFlag(country['code']!),
                     style: const TextStyle(fontSize: 24),
                   ),
-                  title: Text(country['name']!),
+                  title: Text(
+                    country['name']!,
+                    style: TextStyle(color: colorScheme.onSurface),
+                  ),
                   trailing: Text(
                     country['phoneCode']!,
                     style: theme.textTheme.bodyMedium?.copyWith(
-                      color: theme.colorScheme.primary,
+                      color: colorScheme.primary,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
                   selected: isSelected,
-                  selectedTileColor: theme.colorScheme.primary.withValues(alpha: 0.1),
+                  selectedTileColor: colorScheme.primary.withValues(alpha: 0.1),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
                   onTap: () => Navigator.of(context).pop(country),
                 );
               },

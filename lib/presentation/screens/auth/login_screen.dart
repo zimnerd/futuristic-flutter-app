@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/utils/phone_utils.dart';
 import '../../blocs/auth/auth_bloc.dart';
 import '../../blocs/auth/auth_event.dart';
 import '../../blocs/auth/auth_state.dart';
 import '../../theme/pulse_colors.dart';
 import '../../widgets/developer_auto_login_fab.dart';
+import '../../widgets/phone_input.dart';
 
 /// Simple login screen with phone and email/password options
 class LoginScreen extends StatefulWidget {
@@ -25,6 +27,15 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _isLoading = false;
   bool _isPhoneMode = true;
   bool _obscurePassword = true;
+  String _selectedCountryCode = PhoneUtils.defaultCountryCode;
+  String _formattedPhoneNumber = '';
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize with location-based country detection
+    _initializeCountryCode();
+  }
 
   @override
   void dispose() {
@@ -34,10 +45,25 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
+  /// Initialize country code based on user location
+  Future<void> _initializeCountryCode() async {
+    try {
+      final detectedCountry = await PhoneUtils.getDefaultCountryCode();
+      if (mounted) {
+        setState(() {
+          _selectedCountryCode = detectedCountry;
+        });
+      }
+    } catch (e) {
+      // Keep default if detection fails
+    }
+  }
+
   void _handleLogin() {
     if (_formKey.currentState?.validate() == true) {
       if (_isPhoneMode) {
-        final phone = _phoneController.text.trim();
+        // Use the formatted phone number from PhoneInput widget
+        final phone = _formattedPhoneNumber.isNotEmpty ? _formattedPhoneNumber : _phoneController.text.trim();
         context.read<AuthBloc>().add(
           AuthSignInRequested(email: phone, password: 'temp'),
         );
@@ -176,15 +202,23 @@ class _LoginScreenState extends State<LoginScreen> {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       if (_isPhoneMode) ...[
-                        // Phone login
-                        TextFormField(
-                          controller: _phoneController,
-                          keyboardType: TextInputType.phone,
+                        // Phone login with country picker
+                        PhoneInput(
+                          initialCountryCode: _selectedCountryCode,
+                          onChanged: (formattedPhone) {
+                            setState(() {
+                              _formattedPhoneNumber = formattedPhone;
+                            });
+                          },
+                          onCountryChanged: (countryCode) {
+                            setState(() {
+                              _selectedCountryCode = countryCode;
+                            });
+                          },
                           validator: _validatePhone,
                           decoration: const InputDecoration(
                             labelText: 'Phone Number',
                             hintText: 'Enter your phone number',
-                            prefixIcon: Icon(Icons.phone),
                           ),
                         ),
                       ] else ...[

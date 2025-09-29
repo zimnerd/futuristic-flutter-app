@@ -34,12 +34,33 @@ class _RegisterScreenState extends State<RegisterScreen> {
   bool _obscurePassword = true;
 
   @override
+  void initState() {
+    super.initState();
+    // Initialize with location-based country detection
+    _initializeCountryCode();
+  }
+
+  @override
   void dispose() {
     _nameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     _phoneController.dispose();
     super.dispose();
+  }
+
+  /// Initialize country code based on user location
+  Future<void> _initializeCountryCode() async {
+    try {
+      final detectedCountry = await PhoneUtils.getDefaultCountryCode();
+      if (mounted) {
+        setState(() {
+          _selectedCountryCode = detectedCountry;
+        });
+      }
+    } catch (e) {
+      // Keep default if detection fails
+    }
   }
 
   void _handleRegister() {
