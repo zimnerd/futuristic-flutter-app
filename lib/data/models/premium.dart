@@ -522,6 +522,12 @@ enum PremiumFeatureType {
   aiCompanion,
   conciergeService,
   exclusiveEvents,
+  // New AI Features for Phase 4
+  aiSmartMatching,
+  aiCompatibilityAnalysis,
+  aiConversationStarters,
+  aiProfileOptimization,
+  aiBehavioralInsights,
 }
 
 /// Purchase result information
