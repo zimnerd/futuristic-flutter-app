@@ -5,7 +5,8 @@ import 'dart:async';
 
 import '../data/models/chat_model.dart' hide ConversationModel;
 import '../data/models/conversation_model.dart';
-import '../data/models/message.dart' show MessageDeliveryUpdate;
+import '../data/models/message.dart'
+    show MessageDeliveryUpdate, MessageReadUpdate;
 import '../domain/entities/message.dart' show MessageType;
 import '../data/repositories/chat_repository.dart';
 import '../data/services/background_sync_manager.dart';
@@ -263,6 +264,23 @@ class MessageDeliveryStatusUpdated extends ChatEvent {
   List<Object?> get props => [messageId, status];
 }
 
+class MessageReadStatusReceived extends ChatEvent {
+  final String messageId;
+  final String conversationId;
+  final String userId;
+  final DateTime timestamp;
+
+  const MessageReadStatusReceived({
+    required this.messageId,
+    required this.conversationId,
+    required this.userId,
+    required this.timestamp,
+  });
+
+  @override
+  List<Object?> get props => [messageId, conversationId, userId, timestamp];
+}
+
 class AddReaction extends ChatEvent {
   final String messageId;
   final String conversationId;
@@ -470,6 +488,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
   // Stream subscriptions
   late StreamSubscription<MessageModel> _messageSubscription;
   late StreamSubscription<MessageDeliveryUpdate> _deliverySubscription;
+  late StreamSubscription<MessageReadUpdate> _messageReadSubscription;
 
   ChatBloc({required ChatRepository chatRepository})
       : _chatRepository = chatRepository,
@@ -495,6 +514,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     on<UpdateMessageStatus>(_onUpdateMessageStatus);
     on<MessageReceived>(_onMessageReceived);
     on<MessageDeliveryStatusUpdated>(_onMessageDeliveryStatusUpdated);
+    on<MessageReadStatusReceived>(_onMessageReadStatusReceived);
     on<AddReaction>(_onAddReaction);
     on<ReactionAdded>(_onReactionAdded);
 
@@ -544,6 +564,24 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
         MessageDeliveryStatusUpdated(
           messageId: update.messageId,
           status: chatModelStatus,
+        ),
+      );
+    });
+
+    // Subscribe to message read status updates
+    _messageReadSubscription = _chatRepository.messageReadUpdates.listen((
+      readUpdate,
+    ) {
+      _logger.d(
+        'ChatBloc: Received message read update from repository stream - messageId: ${readUpdate.messageId}, userId: ${readUpdate.userId}',
+      );
+
+      add(
+        MessageReadStatusReceived(
+          messageId: readUpdate.messageId,
+          conversationId: readUpdate.conversationId,
+          userId: readUpdate.userId,
+          timestamp: readUpdate.timestamp,
         ),
       );
     });
@@ -1315,6 +1353,53 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     }
   }
 
+  Future<void> _onMessageReadStatusReceived(
+    MessageReadStatusReceived event,
+    Emitter<ChatState> emit,
+  ) async {
+    try {
+      _logger.d(
+        'Message read status received: ${event.messageId} read by ${event.userId} at ${event.timestamp}',
+      );
+
+      // Update message status to 'read' if we're in MessagesLoaded state
+      if (state is MessagesLoaded) {
+        final messagesState = state as MessagesLoaded;
+
+        // Only update if this is for the current conversation
+        if (messagesState.conversationId == event.conversationId) {
+          final updatedMessages = messagesState.messages.map((message) {
+            if (message.id == event.messageId &&
+                message.status != MessageStatus.read) {
+              _logger.d(
+                'Updating message ${message.id} status from ${message.status} to read',
+              );
+              return message.copyWith(status: MessageStatus.read);
+            }
+            return message;
+          }).toList();
+
+          // Maintain MessagesLoaded state with updated messages
+          emit(messagesState.copyWith(messages: updatedMessages));
+          _logger.d(
+            'Updated message read status while preserving MessagesLoaded state',
+          );
+        } else {
+          _logger.d(
+            'Read status update for different conversation (${event.conversationId} vs ${messagesState.conversationId})',
+          );
+        }
+      } else {
+        _logger.d(
+          'Read status update received but not in MessagesLoaded state: ${state.runtimeType}',
+        );
+      }
+    } catch (e) {
+      _logger.e('Error handling message read status: $e');
+      emit(ChatError(message: 'Failed to handle message read status: $e'));
+    }
+  }
+
   // Reaction event handlers
   Future<void> _onAddReaction(AddReaction event, Emitter<ChatState> emit) async {
     try {
@@ -1381,6 +1466,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
   Future<void> close() {
     _messageSubscription.cancel();
     _deliverySubscription.cancel();
+    _messageReadSubscription.cancel();
     return super.close();
   }
 }

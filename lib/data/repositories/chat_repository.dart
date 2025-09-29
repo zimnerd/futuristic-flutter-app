@@ -1,7 +1,7 @@
 import 'dart:async';
 import '../models/chat_model.dart' hide ConversationModel;
 import '../models/conversation_model.dart';
-import '../models/message.dart' show MessageDeliveryUpdate;
+import '../models/message.dart' show MessageDeliveryUpdate, MessageReadUpdate;
 import '../../domain/entities/message.dart' show MessageType;
 
 /// Abstract repository for chat operations
@@ -11,6 +11,9 @@ abstract class ChatRepository {
 
   /// Stream of message delivery confirmations
   Stream<MessageDeliveryUpdate> get messageDeliveryUpdates;
+  
+  /// Stream of message read confirmations
+  Stream<MessageReadUpdate> get messageReadUpdates;
   /// Get list of conversations for the current user
   Future<List<ConversationModel>> getConversations();
 
