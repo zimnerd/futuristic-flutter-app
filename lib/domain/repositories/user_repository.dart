@@ -40,6 +40,12 @@ abstract class UserRepository {
   });
   Future<Map<String, dynamic>> resendOTP({required String sessionId});
 
+  // Phone Validation
+  Future<Map<String, dynamic>> validatePhone({
+    required String phone,
+    required String countryCode,
+  });
+
   // User Profile
   Future<UserModel?> getUserById(String userId);
   Future<UserModel> updateUserProfile(

@@ -275,6 +275,28 @@ class UserRepositoryImpl implements UserRepository {
   }
 
   @override
+  Future<Map<String, dynamic>> validatePhone({
+    required String phone,
+    required String countryCode,
+  }) async {
+    try {
+      _logger.i('Validating phone: $phone with country code: $countryCode');
+
+      final result = await _remoteDataSource.validatePhone(
+        phone: phone,
+        countryCode: countryCode,
+      );
+
+      _logger.i('Phone validation completed: ${result['isValid']}');
+      return result;
+    } catch (e) {
+      _logger.e('Phone validation failed: $e');
+      if (e is AppException) rethrow;
+      throw AuthException('Phone validation failed: ${e.toString()}');
+    }
+  }
+
+  @override
   Future<UserModel?> getUserById(String userId) async {
     try {
       _logger.i('Getting user by ID: $userId');

@@ -45,6 +45,12 @@ abstract class UserRemoteDataSource {
   });
   Future<Map<String, dynamic>> resendOTP({required String sessionId});
 
+  // Phone Validation
+  Future<Map<String, dynamic>> validatePhone({
+    required String phone,
+    required String countryCode,
+  });
+
   // User Profile
   Future<UserModel> getUserById(String userId);
   Future<UserModel> updateUserProfile(
@@ -549,6 +555,48 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
       _logger.e('Resend OTP error: $e');
       if (e is ApiException) rethrow;
       throw ApiException('Failed to resend OTP: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>> validatePhone({
+    required String phone,
+    required String countryCode,
+  }) async {
+    try {
+      _logger.i('Validating phone: $phone with country code: $countryCode');
+
+      final response = await _apiClient.rawPost(
+        '/auth/validate-phone',
+        data: {
+          'phone': phone,
+          'countryCode': countryCode,
+        },
+      );
+
+      if (response.statusCode == 200) {
+        return {
+          'isValid': response.data['isValid'],
+          'formattedPhone': response.data['formattedPhone'],
+          'message': response.data['message'],
+          'errorCode': response.data['errorCode'],
+        };
+      } else {
+        return {
+          'isValid': false,
+          'formattedPhone': phone,
+          'message': response.statusMessage ?? 'Phone validation failed',
+          'errorCode': 'VALIDATION_ERROR',
+        };
+      }
+    } catch (e) {
+      _logger.e('Phone validation error: $e');
+      return {
+        'isValid': false,
+        'formattedPhone': phone,
+        'message': e is ApiException ? e.message : 'Phone validation failed',
+        'errorCode': e is ApiException ? e.code ?? 'API_ERROR' : 'NETWORK_ERROR',
+      };
     }
   }
 

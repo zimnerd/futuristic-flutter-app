@@ -119,3 +119,38 @@ final class AuthOTPVerificationFailed extends AuthState {
   @override
   List<Object?> get props => [message, attemptsRemaining, sessionId];
 }
+
+/// State when phone validation is in progress
+final class AuthPhoneValidating extends AuthState {
+  const AuthPhoneValidating();
+}
+
+/// State when phone validation is successful
+final class AuthPhoneValidationSuccess extends AuthState {
+  const AuthPhoneValidationSuccess({
+    required this.formattedPhone,
+    required this.isValid,
+    this.message,
+  });
+
+  final String formattedPhone;
+  final bool isValid;
+  final String? message;
+
+  @override
+  List<Object?> get props => [formattedPhone, isValid, message];
+}
+
+/// State when phone validation fails
+final class AuthPhoneValidationError extends AuthState {
+  const AuthPhoneValidationError({
+    required this.message,
+    required this.errorCode,
+  });
+
+  final String message;
+  final String errorCode;
+
+  @override
+  List<Object?> get props => [message, errorCode];
+}

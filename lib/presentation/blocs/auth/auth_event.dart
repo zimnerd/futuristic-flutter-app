@@ -168,3 +168,17 @@ final class AuthAutoLoginRequested extends AuthEvent {
   @override
   List<Object?> get props => [email, password];
 }
+
+/// Event triggered when phone number validation is requested
+final class AuthPhoneValidationRequested extends AuthEvent {
+  const AuthPhoneValidationRequested({
+    required this.phone,
+    required this.countryCode,
+  });
+
+  final String phone;
+  final String countryCode;
+
+  @override
+  List<Object?> get props => [phone, countryCode];
+}

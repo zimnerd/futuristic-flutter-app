@@ -35,6 +35,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<AuthOTPVerifyRequested>(_onOTPVerifyRequested);
     on<AuthOTPResendRequested>(_onOTPResendRequested);
     on<AuthAutoLoginRequested>(_onAutoLoginRequested);
+    on<AuthPhoneValidationRequested>(_onPhoneValidationRequested);
 
     // Check authentication status when BLoC is created
     add(const AuthStatusChecked());
@@ -495,6 +496,51 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       return currentState.user;
     }
     return null;
+  }
+
+  /// Handles phone number validation request
+  Future<void> _onPhoneValidationRequested(
+    AuthPhoneValidationRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    try {
+      _logger.i('📱 Validating phone number: ${event.phone} with country code: ${event.countryCode}');
+      emit(const AuthPhoneValidating());
+
+      final response = await _userRepository.validatePhone(
+        phone: event.phone,
+        countryCode: event.countryCode,
+      );
+
+      if (response['isValid'] == true) {
+        _logger.i('✅ Phone validation successful');
+        emit(AuthPhoneValidationSuccess(
+          formattedPhone: response['formattedPhone'] ?? event.phone,
+          isValid: true,
+          message: response['message'],
+        ));
+      } else {
+        _logger.w('❌ Phone validation failed: ${response['message']}');
+        emit(AuthPhoneValidationError(
+          message: response['message'] ?? 'Invalid phone number',
+          errorCode: response['errorCode'] ?? 'INVALID_PHONE',
+        ));
+      }
+    } catch (e, stackTrace) {
+      _logger.e(
+        '💥 Error validating phone number',
+        error: e,
+        stackTrace: stackTrace,
+      );
+      emit(
+        AuthPhoneValidationError(
+          message: e is AppException
+              ? e.message
+              : 'Failed to validate phone number',
+          errorCode: e is AppException ? (e.code ?? 'VALIDATION_ERROR') : 'VALIDATION_ERROR',
+        ),
+      );
+    }
   }
 
   /// Checks if user is currently authenticated

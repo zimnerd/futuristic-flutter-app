@@ -120,6 +120,8 @@ class _ModernLandingScreenState extends State<ModernLandingScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      floatingActionButton: _buildStartJourneyFab(),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
@@ -466,56 +468,7 @@ class _ModernLandingScreenState extends State<ModernLandingScreen>
   Widget _buildActionButtons() {
     return Column(
       children: [
-        // Primary CTA
-        Container(
-          width: double.infinity,
-          height: 56,
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [Colors.white, Color(0xFFF0F8FF)],
-            ),
-            borderRadius: BorderRadius.circular(PulseRadii.lg),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.2),
-                blurRadius: 20,
-                offset: const Offset(0, 10),
-              ),
-            ],
-          ),
-          child: ElevatedButton(
-            onPressed: () => context.go(AppRoutes.register),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.transparent,
-              elevation: 0,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(PulseRadii.lg),
-              ),
-            ),
-            
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  'Start Your Journey',
-                  style: PulseTextStyles.titleMedium.copyWith(
-                    color: PulseColors.primary,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(width: PulseSpacing.sm),
-                Icon(
-                  Icons.arrow_forward,
-                  color: PulseColors.primary,
-                ),
-              ],
-            ),
-          ),
-        ),
-        
-        const SizedBox(height: PulseSpacing.lg),
-        
-        // Secondary CTA
+        // Secondary CTA (now primary)
         TextButton(
           onPressed: () => context.go(AppRoutes.login),
           style: TextButton.styleFrom(
@@ -531,7 +484,46 @@ class _ModernLandingScreenState extends State<ModernLandingScreen>
             ),
           ),
         ),
+        const SizedBox(height: PulseSpacing.lg),
       ],
+    );
+  }
+
+  Widget _buildStartJourneyFab() {
+    return AnimatedBuilder(
+      animation: _scaleAnimation,
+      builder: (context, child) {
+        return Transform.scale(
+          scale: _scaleAnimation.value,
+          child: FloatingActionButton.extended(
+            onPressed: () => context.go(AppRoutes.register),
+            backgroundColor: Colors.white,
+            foregroundColor: PulseColors.primary,
+            elevation: 8,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(PulseRadii.lg),
+            ),
+            label: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'Start Journey',
+                  style: PulseTextStyles.titleSmall.copyWith(
+                    color: PulseColors.primary,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(width: PulseSpacing.xs),
+                Icon(
+                  Icons.arrow_forward,
+                  color: PulseColors.primary,
+                  size: 18,
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 
