@@ -6,6 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 import '../../../blocs/chat_bloc.dart';
 import '../../../data/models/chat_model.dart';
@@ -350,6 +351,8 @@ class _ChatScreenState extends State<ChatScreen> {
           AiMessageInput(
             controller: _messageController,
             chatId: widget.conversationId,
+              currentUserId: _currentUserId,
+              matchUserId: widget.otherUserId,
             onSend: _sendMessage,
             onCamera: _handleCameraAction,
             onGallery: _handleGalleryAction,
@@ -1456,6 +1459,23 @@ class _ChatScreenState extends State<ChatScreen> {
     try {
       AppLogger.debug('Opening camera for photo capture');
 
+      // Check and request camera permission
+      final cameraPermission = await Permission.camera.request();
+      if (cameraPermission != PermissionStatus.granted) {
+        AppLogger.warning('Camera permission denied');
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Camera permission is required to take photos. Please enable it in settings.',
+              ),
+              backgroundColor: Colors.orange,
+            ),
+          );
+        }
+        return;
+      }
+
       final picker = ImagePicker();
       final imageFile = await picker.pickImage(
         source: ImageSource.camera,
@@ -1475,7 +1495,9 @@ class _ChatScreenState extends State<ChatScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Failed to capture image. Please try again.'),
+            content: Text(
+              'Failed to capture image. Please check camera permissions and try again.',
+            ),
             backgroundColor: Colors.red,
           ),
         );
@@ -1517,6 +1539,23 @@ class _ChatScreenState extends State<ChatScreen> {
   void _handleVideoCameraAction() async {
     try {
       AppLogger.debug('Opening camera for video capture');
+
+      // Check and request camera permission
+      final cameraPermission = await Permission.camera.request();
+      if (cameraPermission != PermissionStatus.granted) {
+        AppLogger.warning('Camera permission denied for video capture');
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Camera permission is required to record videos. Please enable it in settings.',
+              ),
+              backgroundColor: Colors.orange,
+            ),
+          );
+        }
+        return;
+      }
 
       final picker = ImagePicker();
       final videoFile = await picker.pickVideo(

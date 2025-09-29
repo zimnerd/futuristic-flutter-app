@@ -111,11 +111,17 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
         
         _logger.d('Extracted ${conversationsData.length} conversations from response');
         
+        // Get current user ID for proper participant identification
+        final currentUserId = await _apiService.getCurrentUserId();
+        
         final conversations = conversationsData
             .map((json) {
               try {
                 _logger.d('Processing conversation JSON: $json');
-                final conversation = ConversationModel.fromBackendJson(json);
+            final conversation = ConversationModel.fromBackendJson(
+              json,
+              currentUserId: currentUserId,
+            );
                 _logger.d('Parsed conversation: ${conversation.lastMessage}');
                 return conversation;
               } catch (e) {
@@ -148,7 +154,11 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
 
       if (response.statusCode == 200) {
         final responseData = ResponseParser.extractData(response);
-        return ConversationModel.fromBackendJson(responseData);
+        final currentUserId = await _apiService.getCurrentUserId();
+        return ConversationModel.fromBackendJson(
+          responseData,
+          currentUserId: currentUserId,
+        );
       } else {
         throw ApiException(
           'Failed to get conversation: ${response.statusMessage}',
@@ -187,7 +197,11 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
 
       if (response.statusCode == 201) {
         final responseData = ResponseParser.extractData(response);
-        return ConversationModel.fromBackendJson(responseData);
+        final currentUserId = await _apiService.getCurrentUserId();
+        return ConversationModel.fromBackendJson(
+          responseData,
+          currentUserId: currentUserId,
+        );
       } else {
         throw ApiException(
           'Failed to create conversation: ${response.statusMessage}',
@@ -215,7 +229,11 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
 
       if (response.statusCode == 200) {
         final responseData = ResponseParser.extractData(response);
-        return ConversationModel.fromBackendJson(responseData);
+        final currentUserId = await _apiService.getCurrentUserId();
+        return ConversationModel.fromBackendJson(
+          responseData,
+          currentUserId: currentUserId,
+        );
       } else {
         throw ApiException(
           'Failed to update conversation: ${response.statusMessage}',

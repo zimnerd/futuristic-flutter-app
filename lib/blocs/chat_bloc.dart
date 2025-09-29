@@ -440,6 +440,15 @@ class MessageEdited extends ChatState {
   List<Object?> get props => [editedMessage];
 }
 
+class MessageDeleted extends ChatState {
+  final String messageId;
+
+  const MessageDeleted({required this.messageId});
+
+  @override
+  List<Object?> get props => [messageId];
+}
+
 class ContextualActionPerformed extends ChatState {
   final String actionId;
   final String result;
@@ -927,7 +936,20 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
   ) async {
     try {
       await _chatRepository.deleteMessage(event.messageId);
-      _logger.d('Message deleted: ${event.messageId}');
+      
+      // Emit state to update UI - remove message from local state
+      if (state is MessagesLoaded) {
+        final messagesState = state as MessagesLoaded;
+        final updatedMessages = messagesState.messages
+            .where((message) => message.id != event.messageId)
+            .toList();
+
+        emit(messagesState.copyWith(messages: updatedMessages));
+      }
+
+      // Also emit specific deleted state for any UI that needs it
+      emit(MessageDeleted(messageId: event.messageId));
+      _logger.d('Message deleted and UI updated: ${event.messageId}');
     } catch (e) {
       _logger.e('Error deleting message: $e');
       emit(ChatError(message: 'Failed to delete message: $e'));

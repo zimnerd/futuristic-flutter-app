@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../data/services/service_locator.dart';
-import '../../../data/services/auto_reply_service.dart';
-import '../../../core/services/service_locator.dart' as core;
+
 import '../../theme/pulse_colors.dart';
 import 'rich_ai_chat_assistant_modal.dart';
 
@@ -17,6 +15,8 @@ class AiMessageInput extends StatefulWidget {
   final VoidCallback? onVoice;
   final String? lastReceivedMessage;
   final String chatId;
+  final String? currentUserId;
+  final String? matchUserId;
 
   const AiMessageInput({
     super.key,
@@ -30,6 +30,8 @@ class AiMessageInput extends StatefulWidget {
     this.onVideoGallery,
     this.onVoice,
     this.lastReceivedMessage,
+    this.currentUserId,
+    this.matchUserId,
   });
 
   @override
@@ -50,7 +52,7 @@ class _AiMessageInputState extends State<AiMessageInput>
   late Animation<double> _aiGlowAnimation;
   late Animation<double> _suggestionAnimation;
   
-  final AutoReplyService _autoReplyService = ServiceLocator().autoReplyService;
+
 
   @override
   void initState() {
@@ -105,51 +107,7 @@ class _AiMessageInputState extends State<AiMessageInput>
     }
   }
 
-  Future<void> _generateAiSuggestions() async {
-    if (widget.lastReceivedMessage == null) return;
-    
-    // Check if AI suggestions are enabled
-    final aiPreferences = core.ServiceLocator.instance.aiPreferences;
-    final isEnabled = await aiPreferences.isFeatureEnabled('auto_suggestions');
-    
-    if (!isEnabled) {
-      return;
-    }
-    
-    setState(() {
-      _isLoadingSuggestions = true;
-      _showAiSuggestions = true;
-    });
-    
-    _suggestionController.forward();
-    
-    try {
-      final suggestions = await _autoReplyService.generateReplySuggestions(
-        conversationId: widget.chatId,
-        lastMessage: widget.lastReceivedMessage!,
-        count: 3,
-      );
-      
-      setState(() {
-        _suggestions = suggestions;
-        _isLoadingSuggestions = false;
-      });
-    } catch (e) {
-      setState(() {
-        _isLoadingSuggestions = false;
-        _showAiSuggestions = false;
-      });
-      
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to generate suggestions: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    }
-  }
+
 
 
 
@@ -167,6 +125,8 @@ class _AiMessageInputState extends State<AiMessageInput>
       backgroundColor: Colors.transparent,
       builder: (context) => RichAiChatAssistantModal(
         conversationId: widget.chatId,
+        currentUserId: widget.currentUserId,
+        matchUserId: widget.matchUserId,
         specificMessage: widget.controller.text.isNotEmpty ? widget.controller.text : null,
         onClose: () => Navigator.of(context).pop(),
         onApplyToChat: (message) {

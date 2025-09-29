@@ -53,7 +53,6 @@ class _RichAiChatAssistantModalState extends State<RichAiChatAssistantModal>
   MessageTone _selectedTone = MessageTone.friendly;
   AiChatAssistanceResponse? _currentResponse;
   bool _isLoading = false;
-  String _errorMessage = '';
   
   // Response refinement state
   bool _isRefining = false;
@@ -582,35 +581,7 @@ class _RichAiChatAssistantModalState extends State<RichAiChatAssistantModal>
     );
   }
 
-  Widget _buildErrorMessage() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: PulseColors.error.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: PulseColors.error.withValues(alpha: 0.3)),
-      ),
-      child: Row(
-        children: [
-          Icon(
-            Icons.error_outline,
-            color: PulseColors.error,
-            size: 20,
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              _errorMessage,
-              style: TextStyle(
-                color: PulseColors.error,
-                fontSize: 14,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+
 
   Widget _buildGenerateButton() {
     return SizedBox(
@@ -994,7 +965,6 @@ class _RichAiChatAssistantModalState extends State<RichAiChatAssistantModal>
 
     setState(() {
       _isLoading = true;
-      _errorMessage = '';
     });
 
     try {

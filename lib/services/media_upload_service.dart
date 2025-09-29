@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path/path.dart' as path;
+import 'package:permission_handler/permission_handler.dart';
 import '../data/services/service_locator.dart';
 
 /// Progress callback for upload operations
@@ -58,6 +59,14 @@ class MediaUploadService {
     int imageQuality = 85,
   }) async {
     try {
+      // Check and request camera permission
+      final cameraPermission = await Permission.camera.request();
+      if (cameraPermission != PermissionStatus.granted) {
+        throw MediaUploadException(
+          'Camera permission denied. Please enable camera access in settings.',
+        );
+      }
+
       return await _picker.pickImage(
         source: ImageSource.camera,
         maxWidth: maxWidth.toDouble(),
@@ -287,12 +296,6 @@ class MediaUploadService {
     MediaProcessingOptions? processingOptions,
   }) async {
     try {
-      final authService = ServiceLocator().authService;
-      final token = await authService.getAccessToken();
-      if (token == null) {
-        throw MediaUploadException('No authentication token available');
-      }
-
       // Validate file before upload
       final validation = await validateMediaFile(filePath, type);
       if (!validation.isValid) {
@@ -316,13 +319,12 @@ class MediaUploadService {
           'processingOptions': processingOptions.toJson(),
       });
 
-      // Upload to unified media endpoint
+      // Upload to unified media endpoint - ApiClient handles auth automatically
       final response = await _httpClient.post(
         '/media/upload',
         data: formData,
         options: Options(
           headers: {
-            'Authorization': 'Bearer $token',
             'Content-Type': 'multipart/form-data',
           },
         ),

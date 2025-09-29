@@ -32,6 +32,8 @@ class ChatRepositoryImpl implements ChatRepository {
       StreamController<MessageDeliveryUpdate>.broadcast();
   final StreamController<MessageReadUpdate> _messageReadUpdatesController =
       StreamController<MessageReadUpdate>.broadcast();
+  final StreamController<Map<String, dynamic>> _messageStatusUpdatesController =
+      StreamController<Map<String, dynamic>>.broadcast();
   
   // Track optimistic message tempId to real message ID mapping
   final Map<String, String> _tempIdToRealIdMap = {};
@@ -63,6 +65,10 @@ class ChatRepositoryImpl implements ChatRepository {
   @override
   Stream<MessageReadUpdate> get messageReadUpdates =>
       _messageReadUpdatesController.stream;
+
+  @override
+  Stream<Map<String, dynamic>> get messageStatusUpdates =>
+      _messageStatusUpdatesController.stream;
 
   /// Setup WebSocket listeners for real-time message events
   void _setupWebSocketListeners() {
@@ -449,7 +455,6 @@ class ChatRepositoryImpl implements ChatRepository {
   }
 
   /// Mark message as read and emit WebSocket event for real-time updates
-  @override
   Future<void> markMessageAsReadWithRealTimeUpdate(
     String messageId,
     String conversationId,
@@ -999,7 +1004,6 @@ class ChatRepositoryImpl implements ChatRepository {
     }
   }
 
-  @override
   Future<void> sendTypingIndicator(String conversationId, bool isTyping) async {
     try {
       _logger.d(
@@ -1012,7 +1016,6 @@ class ChatRepositoryImpl implements ChatRepository {
     }
   }
 
-  @override
   Future<String> uploadMedia(String filePath, MessageType type) async {
     try {
       _logger.d('Uploading media: $filePath of type $type');
@@ -1025,7 +1028,6 @@ class ChatRepositoryImpl implements ChatRepository {
     }
   }
 
-  @override
   Future<List<MessageModel>> searchMessages(
     String query, {
     String? conversationId,
@@ -1073,12 +1075,10 @@ class ChatRepositoryImpl implements ChatRepository {
     }
   }
 
-  @override
   Stream<MessageDeliveryUpdate> getDeliveryUpdates() {
     return messageDeliveryUpdates;
   }
 
-  @override
   Stream<MessageReadUpdate> getMessageReadUpdates() {
     return messageReadUpdates;
   }

@@ -12,8 +12,11 @@ abstract class ChatRepository {
   /// Stream of message delivery confirmations
   Stream<MessageDeliveryUpdate> get messageDeliveryUpdates;
   
-  /// Stream of message read confirmations
+  /// Stream of message read updates
   Stream<MessageReadUpdate> get messageReadUpdates;
+
+  /// Stream of message status updates (delivered, read, failed, etc.)
+  Stream<Map<String, dynamic>> get messageStatusUpdates;
   /// Get list of conversations for the current user
   Future<List<ConversationModel>> getConversations();
 

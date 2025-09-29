@@ -43,13 +43,12 @@ class ConversationModel extends Conversation {
   }
 
   /// Convert from backend API response
-  factory ConversationModel.fromBackendJson(Map<String, dynamic> json) {
+  /// [currentUserId] is needed to identify which participant is the "other" user
+  factory ConversationModel.fromBackendJson(Map<String, dynamic> json, {String? currentUserId}) {
     // Map backend fields to our model fields
     final participants = json['participants'] as List<dynamic>? ?? [];
     
-    // We need to find the "other" participant (not the current user)
-    // For now, we'll take the first participant, but this should be improved
-    // to find the participant who is NOT the current user
+    // Find the "other" participant (not the current user)
     Map<String, dynamic>? otherParticipant;
     
     if (participants.isNotEmpty) {
@@ -65,10 +64,19 @@ class ConversationModel extends Conversation {
         }
         
         if (validParticipants.isNotEmpty) {
-          otherParticipant = validParticipants.firstWhere(
-            (p) => p['role'] == 'member', // Try to find the non-admin participant
-            orElse: () => validParticipants.first, // Fallback to first participant
-          );
+          if (currentUserId != null) {
+            // Find participant that is NOT the current user
+            otherParticipant = validParticipants.firstWhere(
+              (p) => p['userId'] != currentUserId,
+              orElse: () => validParticipants.first,
+            );
+          } else {
+            // Fallback: try to find the non-admin participant
+            otherParticipant = validParticipants.firstWhere(
+              (p) => p['role'] == 'member',
+              orElse: () => validParticipants.first,
+            );
+          }
         }
       } catch (e) {
         debugPrint('Error parsing participants in fromBackendJson: $e');
@@ -125,16 +133,25 @@ class ConversationModel extends Conversation {
       }
     }
 
+    // Construct other user's display name with better fallbacks
+    String otherUserDisplayName = 'Unknown User';
+    if (otherParticipant != null) {
+      final firstName = otherParticipant['firstName'] as String? ?? '';
+      final lastName = otherParticipant['lastName'] as String? ?? '';
+      final username = otherParticipant['username'] as String? ?? '';
+      
+      final fullName = '$firstName $lastName'.trim();
+      if (fullName.isNotEmpty) {
+        otherUserDisplayName = fullName;
+      } else if (username.isNotEmpty) {
+        otherUserDisplayName = username;
+      }
+    }
+
     return ConversationModel(
       id: json['id'] as String,
       otherUserId: otherParticipant?['userId'] as String? ?? '',
-      otherUserName:
-          '${otherParticipant?['firstName'] ?? ''} ${otherParticipant?['lastName'] ?? ''}'
-              .trim()
-              .isEmpty
-          ? (otherParticipant?['username'] as String? ?? 'Unknown')
-          : '${otherParticipant?['firstName'] ?? ''} ${otherParticipant?['lastName'] ?? ''}'
-                .trim(),
+      otherUserName: otherUserDisplayName,
       otherUserAvatar: otherParticipant?['avatar'] as String? ?? '',
       lastMessage: lastMessageContent,
       lastMessageTime: lastMessageTime,
