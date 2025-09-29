@@ -1,9 +1,5 @@
-import 'dart:convert';
-import 'package:http/http.dart' as http;
-
-import '../../core/config/app_config.dart';
+import '../../core/network/api_client.dart';
 import '../../core/utils/logger.dart';
-import 'service_locator.dart';
 
 enum AiAssistanceType {
   response,
@@ -56,7 +52,7 @@ class AiChatAssistantService {
   factory AiChatAssistantService() => _instance;
   AiChatAssistantService._internal();
 
-  final String _baseUrl = AppConfig.apiBaseUrl;
+  final ApiClient _apiClient = ApiClient.instance;
 
   /// Generate comprehensive AI assistance with rich context
   Future<AiChatAssistanceResponse> getChatAssistance({
@@ -69,40 +65,21 @@ class AiChatAssistantService {
     int suggestionCount = 1,
   }) async {
     try {
-      final authService = ServiceLocator().authService;
-      final token = await authService.getAccessToken();
-      
-      if (token == null) {
-        throw Exception('User not authenticated');
-      }
-
-      final response = await http.post(
-        Uri.parse('$_baseUrl/ai/chat-assistance'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
-        body: json.encode({
-          'assistanceType': assistanceType.name,
-          'conversationId': conversationId,
-          'userRequest': userRequest,
-          'contextOptions': contextOptions.toJson(),
-          'specificMessage': specificMessage,
-          'tone': tone.name,
-          'suggestionCount': suggestionCount,
-        }),
+      final response = await _apiClient.getChatAssistance(
+        assistanceType: assistanceType.name,
+        conversationId: conversationId,
+        userRequest: userRequest,
+        contextOptions: contextOptions.toJson(),
+        specificMessage: specificMessage,
+        tone: tone.name,
+        suggestionCount: suggestionCount,
       );
 
-      if (response.statusCode == 200) {
-        final responseData = json.decode(response.body);
-        final data =
-            responseData['data'] ??
-            responseData; // Handle both wrapped and unwrapped responses
-        return AiChatAssistanceResponse.fromJson(data);
-      } else {
-        final errorData = json.decode(response.body);
-        throw Exception(errorData['message'] ?? 'Failed to get AI assistance');
-      }
+      final responseData = response.data;
+      final data =
+          responseData['data'] ??
+          responseData; // Handle both wrapped and unwrapped responses
+      return AiChatAssistanceResponse.fromJson(data);
     } catch (e) {
       AppLogger.error('Error getting AI chat assistance: $e');
       rethrow;

@@ -58,6 +58,9 @@ class _RichAiChatAssistantModalState extends State<RichAiChatAssistantModal>
   bool _isRefining = false;
   final TextEditingController _refinementController = TextEditingController();
   
+  // Custom notification state
+  OverlayEntry? _overlayEntry;
+  
   @override
   void initState() {
     super.initState();
@@ -100,6 +103,7 @@ class _RichAiChatAssistantModalState extends State<RichAiChatAssistantModal>
 
   @override
   void dispose() {
+    _overlayEntry?.remove();
     _animationController.dispose();
     _requestController.dispose();
     _refinementController.dispose();
@@ -945,19 +949,10 @@ class _RichAiChatAssistantModalState extends State<RichAiChatAssistantModal>
   Future<void> _generateAssistance() async {
     if (_requestController.text.trim().isEmpty) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Row(
-              children: [
-                Icon(Icons.info_outline, color: Colors.white, size: 20),
-                SizedBox(width: 8),
-                Text('Please describe what you need help with'),
-              ],
-            ),
-            backgroundColor: Colors.orange[600],
-            duration: const Duration(seconds: 3),
-            behavior: SnackBarBehavior.floating,
-          ),
+        _showToast(
+          'Please describe what you need help with',
+          Icons.info_outline,
+          Colors.orange[600]!,
         );
       }
       return;
@@ -995,21 +990,10 @@ class _RichAiChatAssistantModalState extends State<RichAiChatAssistantModal>
       AppLogger.error('AI assistance generation failed: $e');
       // Show toast message for better visibility
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Row(
-              children: [
-                const Icon(Icons.error_outline, color: Colors.white, size: 20),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text('Failed to generate assistance: ${e.toString()}'),
-                ),
-              ],
-            ),
-            backgroundColor: Colors.red[600],
-            duration: const Duration(seconds: 5),
-            behavior: SnackBarBehavior.floating,
-          ),
+        _showToast(
+          'Failed to generate assistance: ${e.toString()}',
+          Icons.error_outline,
+          Colors.red[600]!,
         );
       }
     } finally {
@@ -1022,7 +1006,7 @@ class _RichAiChatAssistantModalState extends State<RichAiChatAssistantModal>
   void _copyToClipboard() {
     if (_currentResponse != null) {
       Clipboard.setData(ClipboardData(text: _currentResponse!.suggestion));
-      _showSnackBar('Copied to clipboard', Icons.copy);
+      _showToast('Copied to clipboard', Icons.copy, PulseColors.success);
     }
   }
 
@@ -1077,9 +1061,13 @@ class _RichAiChatAssistantModalState extends State<RichAiChatAssistantModal>
         _refinementController.clear();
       });
 
-      _showSnackBar('Response refined successfully', Icons.check);
+      _showToast(
+        'Response refined successfully',
+        Icons.check,
+        PulseColors.success,
+      );
     } catch (e) {
-      _showSnackBar('Failed to refine response', Icons.error);
+      _showToast('Failed to refine response', Icons.error, Colors.red[600]!);
       AppLogger.error('Response refinement failed: $e');
     } finally {
       setState(() {
@@ -1091,7 +1079,7 @@ class _RichAiChatAssistantModalState extends State<RichAiChatAssistantModal>
   void _applyToChat() {
     if (_currentResponse != null) {
       widget.onApplyToChat(_currentResponse!.suggestion);
-      _showSnackBar('Applied to chat', Icons.send);
+      _showToast('Applied to chat', Icons.send, PulseColors.success);
       _closeModal();
     }
   }
@@ -1102,23 +1090,58 @@ class _RichAiChatAssistantModalState extends State<RichAiChatAssistantModal>
     });
   }
 
-  void _showSnackBar(String message, IconData icon) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            Icon(icon, color: Colors.white, size: 20),
-            const SizedBox(width: 8),
-            Text(message),
-          ],
-        ),
-        backgroundColor: PulseColors.success,
-        duration: const Duration(seconds: 2),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
+  void _showToast(String message, IconData icon, Color backgroundColor) {
+    // Remove existing overlay if present
+    _overlayEntry?.remove();
+
+    _overlayEntry = OverlayEntry(
+      builder: (context) => Positioned(
+        top: MediaQuery.of(context).padding.top + 60,
+        left: 20,
+        right: 20,
+        child: Material(
+          color: Colors.transparent,
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: backgroundColor,
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.3),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                Icon(icon, color: Colors.white, size: 20),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    message,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );
+    
+    // Insert the overlay
+    Overlay.of(context).insert(_overlayEntry!);
+
+    // Auto-remove after duration
+    Future.delayed(const Duration(seconds: 3), () {
+      _overlayEntry?.remove();
+      _overlayEntry = null;
+    });
   }
 }

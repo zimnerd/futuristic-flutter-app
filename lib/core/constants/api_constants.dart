@@ -145,6 +145,7 @@ class ApiConstants {
 
   // AI Services endpoints (ai.controller.ts)
   static const String ai = '/ai';
+  static const String aiChatAssistance = '$ai/chat-assistance';
   static const String aiConversationAnalyze = '$ai/conversation/analyze';
   static const String aiProfileAnalyze = '$ai/profile/analyze';
   static const String aiProfileConversationStarters =

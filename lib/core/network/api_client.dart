@@ -775,6 +775,30 @@ class ApiClient {
     );
   }
 
+  /// Get comprehensive AI chat assistance
+  Future<Response> getChatAssistance({
+    required String assistanceType,
+    required String conversationId,
+    required String userRequest,
+    Map<String, dynamic>? contextOptions,
+    String? specificMessage,
+    String? tone,
+    int? suggestionCount,
+  }) async {
+    return await _dio.post(
+      ApiConstants.aiChatAssistance,
+      data: {
+        'assistanceType': assistanceType,
+        'conversationId': conversationId,
+        'userRequest': userRequest,
+        if (contextOptions != null) 'contextOptions': contextOptions,
+        if (specificMessage != null) 'specificMessage': specificMessage,
+        if (tone != null) 'tone': tone,
+        if (suggestionCount != null) 'suggestionCount': suggestionCount,
+      },
+    );
+  }
+
   /// Submit feedback for AI suggestions
   Future<Response> submitAiFeedback({
     required String aiResponseId,
