@@ -44,10 +44,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   void _handleRegister() {
     if (_formKey.currentState?.validate() == true && _acceptedTerms) {
-      final name = _nameController.text.trim();
-      final email = _emailController.text.trim();
-      final password = _passwordController.text;
-
       // Clean phone number before submission using PhoneUtils
       final cleanedPhone = PhoneUtils.cleanPhoneForSubmission(
         _currentPhone.isNotEmpty ? _currentPhone : _phoneController.text,
@@ -114,10 +110,20 @@ class _RegisterScreenState extends State<RegisterScreen> {
       body: BlocListener<AuthBloc, AuthState>(
         listener: (context, state) {
           setState(() {
-            _isLoading = state is AuthLoading;
+            _isLoading = state is AuthLoading || state is AuthPhoneValidating;
           });
 
           if (state is AuthError) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(state.message),
+                backgroundColor: PulseColors.error,
+              ),
+            );
+          } else if (state is AuthPhoneValidationSuccess && state.isValid) {
+            // Phone validation successful, proceed with registration
+            _proceedWithRegistration();
+          } else if (state is AuthPhoneValidationError) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(state.message),
