@@ -94,7 +94,10 @@ class AiChatAssistantService {
       );
 
       if (response.statusCode == 200) {
-        final data = json.decode(response.body);
+        final responseData = json.decode(response.body);
+        final data =
+            responseData['data'] ??
+            responseData; // Handle both wrapped and unwrapped responses
         return AiChatAssistanceResponse.fromJson(data);
       } else {
         final errorData = json.decode(response.body);
