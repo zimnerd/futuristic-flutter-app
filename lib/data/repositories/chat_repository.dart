@@ -130,4 +130,10 @@ abstract class ChatRepository {
 
   /// Check if a message ID is mapped from an optimistic message
   bool isOptimisticMessage(String? messageId, String realMessageId);
+
+  /// Add reaction to a message
+  Future<void> addReaction(String messageId, String emoji);
+
+  /// Remove reaction from a message
+  Future<void> removeReaction(String messageId, String emoji);
 }

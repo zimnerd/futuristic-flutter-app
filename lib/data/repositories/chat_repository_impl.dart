@@ -924,6 +924,75 @@ class ChatRepositoryImpl implements ChatRepository {
     }
   }
 
+  @override
+  Future<void> addReaction(String messageId, String emoji) async {
+    try {
+      _logger.d('Adding reaction $emoji to message $messageId');
+      await _remoteDataSource.addReaction(messageId, emoji);
+      _logger.d('Reaction added successfully');
+    } catch (e) {
+      _logger.e('Error adding reaction: $e');
+      rethrow;
+    }
+  }
+
+  @override
+  Future<void> removeReaction(String messageId, String emoji) async {
+    try {
+      _logger.d('Removing reaction $emoji from message $messageId');
+      await _remoteDataSource.removeReaction(messageId, emoji);
+      _logger.d('Reaction removed successfully');
+    } catch (e) {
+      _logger.e('Error removing reaction: $e');
+      rethrow;
+    }
+  }
+
+  @override
+  Future<void> sendTypingIndicator(String conversationId, bool isTyping) async {
+    try {
+      _logger.d(
+        'Sending typing indicator for conversation $conversationId: $isTyping',
+      );
+      await _remoteDataSource.sendTypingIndicator(conversationId, isTyping);
+    } catch (e) {
+      _logger.e('Error sending typing indicator: $e');
+      // Don't throw exception for typing indicators as they're not critical
+    }
+  }
+
+  @override
+  Future<String> uploadMedia(String filePath, MessageType type) async {
+    try {
+      _logger.d('Uploading media: $filePath of type $type');
+      final mediaUrl = await _remoteDataSource.uploadMedia(filePath, type);
+      _logger.d('Media uploaded successfully: $mediaUrl');
+      return mediaUrl;
+    } catch (e) {
+      _logger.e('Error uploading media: $e');
+      rethrow;
+    }
+  }
+
+  @override
+  Future<List<MessageModel>> searchMessages(
+    String query, {
+    String? conversationId,
+  }) async {
+    try {
+      _logger.d('Searching messages with query: $query');
+      final messages = await _remoteDataSource.searchMessages(
+        query,
+        conversationId: conversationId,
+      );
+      _logger.d('Found ${messages.length} messages matching query');
+      return messages;
+    } catch (e) {
+      _logger.e('Error searching messages: $e');
+      rethrow;
+    }
+  }
+
   // ================== HELPER METHODS ==================
 
   /// Refresh latest messages from network in background

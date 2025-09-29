@@ -1320,7 +1320,11 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     try {
       _logger.d('Adding reaction ${event.emoji} to message ${event.messageId}');
       
-      // Emit reaction via WebSocket using the service locator pattern
+      // Call repository to persist reaction via REST API
+      await _chatRepository.addReaction(event.messageId, event.emoji);
+      _logger.d('Reaction persisted via API successfully');
+
+      // Emit reaction via WebSocket for real-time update
       final websocketService = ServiceLocator().webSocketService;
       
       websocketService.emit('performMessageAction', {
@@ -1330,7 +1334,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
         'emoji': event.emoji,
       });
 
-      _logger.d('Reaction event emitted successfully');
+      _logger.d('Reaction event emitted via WebSocket successfully');
     } catch (e) {
       _logger.e('Error adding reaction: $e');
       emit(ChatError(message: 'Failed to add reaction: $e'));
