@@ -257,11 +257,8 @@ class _AiMessageInputState extends State<AiMessageInput>
               size: 20,
             ),
             onPressed: _isLoadingSuggestions ? null : () {
-              if (_showAiSuggestions) {
-                _showAiCustomModal();
-              } else {
-                _generateAiSuggestions();
-              }
+              // Always show the modal directly for better UX
+              _showAiCustomModal();
             },
           ),
         );

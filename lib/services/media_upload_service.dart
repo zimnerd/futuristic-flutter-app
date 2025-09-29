@@ -1,9 +1,9 @@
 import 'dart:io';
 import 'dart:async';
 import 'package:dio/dio.dart';
-import 'package:hive/hive.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path/path.dart' as path;
+import '../data/services/service_locator.dart';
 
 /// Progress callback for upload operations
 typedef ProgressCallback = void Function(int sent, int total, double percentage);
@@ -33,7 +33,6 @@ class UploadTask {
 /// Supports images, videos, documents for profiles, chat, events, stories, etc.
 class MediaUploadService {
   final Dio _httpClient;
-  final Box<String> _secureStorage;
   final ImagePicker _picker = ImagePicker();
   
   // Upload queue management
@@ -46,9 +45,7 @@ class MediaUploadService {
 
   MediaUploadService({
     required Dio httpClient,
-    required Box<String> secureStorage,
-  })  : _httpClient = httpClient,
-        _secureStorage = secureStorage;
+  }) : _httpClient = httpClient;
 
   // ===========================================
   // MEDIA PICKING METHODS
@@ -202,7 +199,8 @@ class MediaUploadService {
 
   /// Internal method to perform the actual upload
   Future<MediaUploadResult> _performUpload(UploadTask task, CancelToken cancelToken) async {
-    final token = _secureStorage.get('access_token');
+    final authService = ServiceLocator().authService;
+    final token = await authService.getAccessToken();
     if (token == null) {
       throw MediaUploadException('No authentication token available');
     }
@@ -289,7 +287,8 @@ class MediaUploadService {
     MediaProcessingOptions? processingOptions,
   }) async {
     try {
-      final token = _secureStorage.get('access_token');
+      final authService = ServiceLocator().authService;
+      final token = await authService.getAccessToken();
       if (token == null) {
         throw MediaUploadException('No authentication token available');
       }

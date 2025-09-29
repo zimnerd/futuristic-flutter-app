@@ -112,7 +112,6 @@ class ServiceLocator {
     _aiChatAssistantService = AiChatAssistantService();
     _mediaUploadService = MediaUploadService(
       httpClient: Dio(),
-      secureStorage: secureStorage,
     );
     _firebaseNotificationService = FirebaseNotificationService.instance;
 

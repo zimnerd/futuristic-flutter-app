@@ -149,10 +149,7 @@ class _RichAiChatAssistantModalState extends State<RichAiChatAssistantModal>
                               _buildToneSelector(),
                               const SizedBox(height: 24),
                               _buildGenerateButton(),
-                              if (_errorMessage.isNotEmpty) ...[
-                                const SizedBox(height: 16),
-                                _buildErrorMessage(),
-                              ],
+                              // Error messages now shown as toast notifications
                               if (_currentResponse != null) ...[
                                 const SizedBox(height: 24),
                                 _buildResponseSection(),
@@ -976,9 +973,22 @@ class _RichAiChatAssistantModalState extends State<RichAiChatAssistantModal>
   // Action methods
   Future<void> _generateAssistance() async {
     if (_requestController.text.trim().isEmpty) {
-      setState(() {
-        _errorMessage = 'Please describe what you need help with';
-      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Row(
+              children: [
+                Icon(Icons.info_outline, color: Colors.white, size: 20),
+                SizedBox(width: 8),
+                Text('Please describe what you need help with'),
+              ],
+            ),
+            backgroundColor: Colors.orange[600],
+            duration: const Duration(seconds: 3),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
       return;
     }
 
@@ -1012,10 +1022,26 @@ class _RichAiChatAssistantModalState extends State<RichAiChatAssistantModal>
         _currentResponse = response;
       });
     } catch (e) {
-      setState(() {
-        _errorMessage = 'Failed to generate assistance: ${e.toString()}';
-      });
       AppLogger.error('AI assistance generation failed: $e');
+      // Show toast message for better visibility
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.error_outline, color: Colors.white, size: 20),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text('Failed to generate assistance: ${e.toString()}'),
+                ),
+              ],
+            ),
+            backgroundColor: Colors.red[600],
+            duration: const Duration(seconds: 5),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
     } finally {
       setState(() {
         _isLoading = false;
