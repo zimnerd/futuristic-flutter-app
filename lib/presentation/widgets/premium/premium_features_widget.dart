@@ -236,6 +236,41 @@ class PremiumFeaturesWidget extends StatelessWidget {
           icon: Icons.event,
           coinCost: 0,
         );
+      case PremiumFeatureType.aiSmartMatching:
+        return _FeatureInfo(
+          title: 'AI Smart Matching',
+          description: 'Advanced AI algorithms find your perfect matches',
+          icon: Icons.psychology,
+          coinCost: 0,
+        );
+      case PremiumFeatureType.aiCompatibilityAnalysis:
+        return _FeatureInfo(
+          title: 'AI Compatibility Analysis',
+          description: 'Deep compatibility insights powered by AI',
+          icon: Icons.analytics,
+          coinCost: 0,
+        );
+      case PremiumFeatureType.aiConversationStarters:
+        return _FeatureInfo(
+          title: 'AI Conversation Starters',
+          description: 'Personalized icebreakers for every match',
+          icon: Icons.chat_bubble,
+          coinCost: 0,
+        );
+      case PremiumFeatureType.aiProfileOptimization:
+        return _FeatureInfo(
+          title: 'AI Profile Optimization',
+          description: 'AI-powered profile improvement suggestions',
+          icon: Icons.tune,
+          coinCost: 0,
+        );
+      case PremiumFeatureType.aiBehavioralInsights:
+        return _FeatureInfo(
+          title: 'AI Behavioral Insights',
+          description: 'Understand your dating patterns with AI analysis',
+          icon: Icons.insights,
+          coinCost: 0,
+        );
     }
   }
 }
