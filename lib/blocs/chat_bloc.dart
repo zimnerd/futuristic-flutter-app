@@ -515,6 +515,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
   late StreamSubscription<MessageModel> _messageSubscription;
   late StreamSubscription<MessageDeliveryUpdate> _deliverySubscription;
   late StreamSubscription<MessageReadUpdate> _messageReadSubscription;
+  late StreamSubscription<Map<String, dynamic>> _typingEventsSubscription;
 
   ChatBloc({required ChatRepository chatRepository})
       : _chatRepository = chatRepository,
@@ -609,6 +610,24 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
           conversationId: readUpdate.conversationId,
           userId: readUpdate.userId,
           timestamp: readUpdate.timestamp,
+        ),
+      );
+    });
+
+    // Subscribe to typing events
+    _typingEventsSubscription = _chatRepository.typingEvents.listen((
+      typingEvent,
+    ) {
+      _logger.d(
+        'ChatBloc: Received typing event - conversationId: ${typingEvent['conversationId']}, userId: ${typingEvent['userId']}, isTyping: ${typingEvent['isTyping']}',
+      );
+
+      add(
+        ReceiveTypingEvent(
+          conversationId: typingEvent['conversationId'] as String,
+          userId: typingEvent['userId'] as String,
+          username: typingEvent['username'] as String,
+          isTyping: typingEvent['isTyping'] as bool,
         ),
       );
     });
@@ -1526,6 +1545,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     _messageSubscription.cancel();
     _deliverySubscription.cancel();
     _messageReadSubscription.cancel();
+    _typingEventsSubscription.cancel();
     return super.close();
   }
 }
