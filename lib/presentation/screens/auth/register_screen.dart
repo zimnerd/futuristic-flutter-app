@@ -62,12 +62,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
         return;
       }
 
+      // Validate phone number first
       context.read<AuthBloc>().add(
-        AuthSignUpRequested(
-          email: email,
-          password: password,
-          username: name,
+        AuthPhoneValidationRequested(
           phone: cleanedPhone,
+          countryCode: _selectedCountryCode,
         ),
       );
     } else if (!_acceptedTerms) {
@@ -76,6 +75,25 @@ class _RegisterScreenState extends State<RegisterScreen> {
         'Please accept the Terms of Service and Privacy Policy',
       );
     }
+  }
+
+  void _proceedWithRegistration() {
+    final name = _nameController.text.trim();
+    final email = _emailController.text.trim();
+    final password = _passwordController.text;
+    final cleanedPhone = PhoneUtils.cleanPhoneForSubmission(
+      _currentPhone.isNotEmpty ? _currentPhone : _phoneController.text,
+      _selectedCountryCode,
+    );
+
+    context.read<AuthBloc>().add(
+      AuthSignUpRequested(
+        email: email,
+        password: password,
+        username: name,
+        phone: cleanedPhone,
+      ),
+    );
   }
 
   void _onPhoneChanged(String formattedPhone) {
