@@ -27,6 +27,13 @@ class SpeedDatingBloc extends Bloc<SpeedDatingEvent, SpeedDatingState> {
     on<RefreshSpeedDatingData>(_onRefreshSpeedDatingData);
   }
 
+  /// Get current user ID from auth context
+  /// TODO: Replace with actual auth context when available
+  String _getCurrentUserId() {
+    // This should be replaced with actual user ID from AuthBloc or similar
+    return 'current-user-id'; // Placeholder
+  }
+
   Future<void> _onLoadSpeedDatingEvents(
     LoadSpeedDatingEvents event,
     Emitter<SpeedDatingState> emit,
@@ -35,7 +42,7 @@ class SpeedDatingBloc extends Bloc<SpeedDatingEvent, SpeedDatingState> {
       emit(SpeedDatingLoading());
       _logger.d('$_tag: Loading speed dating events');
 
-      final events = await _speedDatingService.getAvailableSessions();
+      final events = await _speedDatingService.getUpcomingEvents();
 
       if (state is SpeedDatingLoaded) {
         final currentState = state as SpeedDatingLoaded;
@@ -58,7 +65,7 @@ class SpeedDatingBloc extends Bloc<SpeedDatingEvent, SpeedDatingState> {
     try {
       _logger.d('$_tag: Loading user speed dating sessions');
 
-      final sessions = await _speedDatingService.getAvailableSessions();
+      final sessions = await _speedDatingService.getUpcomingEvents();
 
       if (state is SpeedDatingLoaded) {
         final currentState = state as SpeedDatingLoaded;
@@ -82,8 +89,8 @@ class SpeedDatingBloc extends Bloc<SpeedDatingEvent, SpeedDatingState> {
       emit(SpeedDatingJoining(event.eventId));
       _logger.d('$_tag: Joining speed dating event: ${event.eventId}');
 
-      final result = await _speedDatingService.joinSpeedDatingSession(
-        sessionId: event.eventId,
+      final userId = _getCurrentUserId();
+      final result = await _speedDatingService.joinEvent(event.eventId, userId,
       );
 
       if (result != null) {
@@ -109,7 +116,11 @@ class SpeedDatingBloc extends Bloc<SpeedDatingEvent, SpeedDatingState> {
       emit(SpeedDatingLeaving(event.eventId));
       _logger.d('$_tag: Leaving speed dating event: ${event.eventId}');
 
-      final success = await _speedDatingService.leaveSession(event.eventId);
+      final userId = _getCurrentUserId();
+      final success = await _speedDatingService.leaveEvent(
+        event.eventId,
+        userId,
+      );
 
       if (success) {
         emit(SpeedDatingLeft(event.eventId));
@@ -135,8 +146,10 @@ class SpeedDatingBloc extends Bloc<SpeedDatingEvent, SpeedDatingState> {
       _logger.d('$_tag: Starting speed dating session for event: ${event.eventId}');
 
       // Note: Service doesn't have startSession method - using join instead
-      final session = await _speedDatingService.joinSpeedDatingSession(
-        sessionId: event.eventId,
+      final userId = _getCurrentUserId();
+      final session = await _speedDatingService.joinEvent(
+        event.eventId,
+        userId,
       );
 
       if (session != null) {
@@ -167,7 +180,11 @@ class SpeedDatingBloc extends Bloc<SpeedDatingEvent, SpeedDatingState> {
       _logger.d('$_tag: Ending speed dating session: ${event.sessionId}');
 
       // Note: Service doesn't have endSession method - using leave instead
-      final success = await _speedDatingService.leaveSession(event.sessionId);
+      final userId = _getCurrentUserId();
+      final success = await _speedDatingService.leaveEvent(
+        event.sessionId,
+        userId,
+      );
 
       if (success) {
         emit(SpeedDatingSessionEnded(event.sessionId));
@@ -214,14 +231,14 @@ class SpeedDatingBloc extends Bloc<SpeedDatingEvent, SpeedDatingState> {
       emit(SpeedDatingRatingSubmitting(event.sessionId, event.matchUserId));
       _logger.d('$_tag: Rating match: ${event.matchUserId} with ${event.rating}');
 
-      final success = await _speedDatingService.submitRating(
-        sessionId: event.sessionId,
-        matchUserId: event.matchUserId,
-        rating: event.rating,
-        feedback: event.notes,
+      final result = await _speedDatingService.rateSession(
+        event.sessionId,
+        event.matchUserId,
+        event.rating,
+        notes: event.notes,
       );
 
-      if (success) {
+      if (result != null) {
         emit(SpeedDatingRatingSubmitted(event.sessionId, event.matchUserId, event.rating));
         _logger.d('$_tag: Rating submitted successfully');
       } else {
@@ -241,7 +258,11 @@ class SpeedDatingBloc extends Bloc<SpeedDatingEvent, SpeedDatingState> {
       emit(SpeedDatingMatchesLoading(event.eventId));
       _logger.d('$_tag: Loading matches for event: ${event.eventId}');
 
-      final matches = await _speedDatingService.getSpeedDatingResults(event.eventId);
+      final userId = _getCurrentUserId();
+      final matches = await _speedDatingService.getEventMatches(
+        event.eventId,
+        userId,
+      );
 
       emit(SpeedDatingMatchesLoaded(matches));
       

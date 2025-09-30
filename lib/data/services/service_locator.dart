@@ -99,7 +99,8 @@ class ServiceLocator {
     _safetyService = SafetyService(_apiClient);
     _premiumService = PremiumService(_apiClient);
     _aiCompanionService = AiCompanionService();
-    _speedDatingService = SpeedDatingService(_apiClient);
+        // Initialize Speed Dating Service
+    _speedDatingService = SpeedDatingService();
     _liveStreamingService = LiveStreamingService(_apiClient);
     _datePlanningService = DatePlanningService(_apiClient);
     _voiceMessageService = VoiceMessageService(_apiClient);

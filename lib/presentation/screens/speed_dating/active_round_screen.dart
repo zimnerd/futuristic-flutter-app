@@ -7,8 +7,7 @@ import '../../../data/services/audio_call_service.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../blocs/auth/auth_bloc.dart';
 import '../../blocs/auth/auth_state.dart';
-// TODO: Uncomment when round_transition_screen.dart is created (Task 5)
-// import 'round_transition_screen.dart';
+import 'round_transition_screen.dart';
 
 /// Active Round Screen for Speed Dating
 /// Shows partner profile, countdown timer, and audio call controls
@@ -300,31 +299,19 @@ class _ActiveRoundScreenState extends State<ActiveRoundScreen>
     // End audio call
     _audioCallService.leaveCall();
 
-    // TODO: Navigate to transition screen for rating (Task 5)
-    // For now, just go back to lobby
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Round complete! Rating screen coming in Task 5.'),
-          duration: Duration(seconds: 3),
+    // Navigate to transition screen for rating
+    if (mounted && _currentSession != null) {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (_) => RoundTransitionScreen(
+            eventId: widget.eventId,
+            sessionId: widget.sessionId,
+            partnerProfile: _partnerProfile,
+            nextSession: _nextSession,
+          ),
         ),
       );
-      Navigator.of(context).pop();
     }
-    
-    // TODO: Uncomment when RoundTransitionScreen is created
-    // if (mounted && _currentSession != null) {
-    //   Navigator.of(context).pushReplacement(
-    //     MaterialPageRoute(
-    //       builder: (_) => RoundTransitionScreen(
-    //         eventId: widget.eventId,
-    //         sessionId: widget.sessionId,
-    //         partnerProfile: _partnerProfile,
-    //         nextSession: _nextSession,
-    //       ),
-    //     ),
-    //   );
-    // }
   }
 
   String _formatTime(int seconds) {
