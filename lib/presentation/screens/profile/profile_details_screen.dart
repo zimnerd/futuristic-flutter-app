@@ -62,10 +62,12 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
   }
 
   void _onPhotoTap() {
+    if (!mounted) return;
     _showPhotoModal();
   }
 
   void _showPhotoModal() {
+    if (!mounted) return;
     showDialog(
       context: context,
       barrierDismissible: true,
@@ -1097,7 +1099,11 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
           elevation: 0,
           leading: IconButton(
             icon: const Icon(Icons.close, color: Colors.white),
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: () {
+              if (mounted) {
+                Navigator.of(context).pop();
+              }
+            },
           ),
           title: Text(
             '${_currentPhotoIndex + 1} of ${widget.profile.photos.length}',
@@ -1107,9 +1113,11 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
         body: PageView.builder(
           controller: PageController(initialPage: _currentPhotoIndex),
           onPageChanged: (index) {
-            setState(() {
-              _currentPhotoIndex = index;
-            });
+            if (mounted) {
+              setState(() {
+                _currentPhotoIndex = index;
+              });
+            }
           },
           itemCount: widget.profile.photos.length,
           itemBuilder: (context, index) {
