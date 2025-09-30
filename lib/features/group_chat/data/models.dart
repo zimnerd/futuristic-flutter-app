@@ -204,6 +204,7 @@ class LiveSession {
   final String? hostPhoto;
   final String title;
   final String? description;
+  final GroupType groupType;
   final LiveSessionStatus status;
   final int currentParticipants;
   final int maxParticipants;
@@ -219,6 +220,7 @@ class LiveSession {
     this.hostPhoto,
     required this.title,
     this.description,
+    required this.groupType,
     required this.status,
     required this.currentParticipants,
     required this.maxParticipants,
@@ -242,6 +244,10 @@ class LiveSession {
       hostPhoto: json['host']?['profilePhoto'] as String?,
       title: json['title'] as String,
       description: json['description'] as String?,
+      groupType: GroupSettings._parseGroupType(
+        json['conversation']?['groupSettings']?['groupType'] as String? ??
+            'STANDARD',
+      ),
       status: _parseStatus(json['status'] as String),
       currentParticipants: json['currentParticipants'] as int? ?? 0,
       maxParticipants: json['maxParticipants'] as int? ?? 10,

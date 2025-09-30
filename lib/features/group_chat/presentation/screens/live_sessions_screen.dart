@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../bloc/group_chat_bloc.dart';
 import '../../data/models.dart';
+import 'video_call_screen.dart';
 
 class LiveSessionsScreen extends StatefulWidget {
   const LiveSessionsScreen({super.key});
@@ -222,11 +223,65 @@ class _LiveSessionsScreenState extends State<LiveSessionsScreen> {
     // Join WebSocket room
     context.read<GroupChatBloc>().add(JoinLiveSessionRoom(session.id));
 
-    // Navigate to session screen (to be implemented)
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Joined ${session.title}'),
-        backgroundColor: Colors.green,
+    // Show video call option
+    _showVideoCallDialog(session);
+  }
+
+  void _showVideoCallDialog(LiveSession session) {
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text('Join ${session.title}'),
+        content: const Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('Would you like to join with video/audio?'),
+            SizedBox(height: 8),
+            Text(
+              'You can chat without video or join the video call.',
+              style: TextStyle(fontSize: 12, color: Colors.grey),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(dialogContext).pop();
+              // Navigate to chat screen (to be implemented)
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Joined ${session.title} chat'),
+                  backgroundColor: Colors.green,
+                ),
+              );
+            },
+            child: const Text('Chat Only'),
+          ),
+          ElevatedButton.icon(
+            onPressed: () {
+              Navigator.of(dialogContext).pop();
+              _navigateToVideoCall(session);
+            },
+            icon: const Icon(Icons.videocam),
+            label: const Text('Join Video Call'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _navigateToVideoCall(LiveSession session) async {
+    // TODO: Get RTC token from backend
+    // For now, use a placeholder token
+    final rtcToken = 'YOUR_RTC_TOKEN'; // This should come from backend
+
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => VideoCallScreen(
+          liveSessionId: session.id,
+          rtcToken: rtcToken,
+          session: session,
+        ),
       ),
     );
   }
@@ -343,9 +398,7 @@ class _LiveSessionCard extends StatelessWidget {
                             ),
                             const SizedBox(width: 4),
                             Text(
-                              session.maxParticipants != null
-                                  ? '${session.currentParticipants}/${session.maxParticipants}'
-                                  : '${session.currentParticipants}',
+                              '${session.currentParticipants}/${session.maxParticipants}',
                               style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 12,
@@ -380,13 +433,14 @@ class _LiveSessionCard extends StatelessWidget {
                   const SizedBox(height: 8),
 
                   // Time elapsed
-                  Text(
-                    _getTimeElapsed(session.startedAt),
-                    style: TextStyle(
-                      color: Colors.white.withOpacity(0.8),
-                      fontSize: 11,
+                  if (session.startedAt != null)
+                    Text(
+                      _getTimeElapsed(session.startedAt!),
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.8),
+                        fontSize: 11,
+                      ),
                     ),
-                  ),
                 ],
               ),
             ),

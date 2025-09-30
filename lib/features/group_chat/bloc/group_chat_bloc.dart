@@ -3,6 +3,7 @@ import 'package:equatable/equatable.dart';
 import '../data/models.dart';
 import '../data/group_chat_service.dart';
 import '../data/group_chat_websocket_service.dart';
+import '../data/group_chat_webrtc_service.dart';
 import 'dart:async';
 
 // Events
@@ -188,6 +189,29 @@ class SendTypingIndicator extends GroupChatEvent {
   List<Object?> get props => [conversationId, isTyping];
 }
 
+class StartVideoCall extends GroupChatEvent {
+  final String liveSessionId;
+  final String token;
+  final bool enableVideo;
+  StartVideoCall({
+    required this.liveSessionId,
+    required this.token,
+    this.enableVideo = true,
+  });
+  @override
+  List<Object?> get props => [liveSessionId, token, enableVideo];
+}
+
+class EndVideoCall extends GroupChatEvent {}
+
+class ToggleMute extends GroupChatEvent {}
+
+class ToggleVideo extends GroupChatEvent {}
+
+class ToggleSpeaker extends GroupChatEvent {}
+
+class SwitchCamera extends GroupChatEvent {}
+
 // States
 abstract class GroupChatState extends Equatable {
   @override
@@ -267,10 +291,28 @@ class GroupCreated extends GroupChatState {
   List<Object?> get props => [group];
 }
 
+class VideoCallStarted extends GroupChatState {
+  final String liveSessionId;
+  final int localUid;
+  VideoCallStarted({required this.liveSessionId, required this.localUid});
+  @override
+  List<Object?> get props => [liveSessionId, localUid];
+}
+
+class VideoCallEnded extends GroupChatState {}
+
+class VideoCallError extends GroupChatState {
+  final String message;
+  VideoCallError(this.message);
+  @override
+  List<Object?> get props => [message];
+}
+
 // BLoC
 class GroupChatBloc extends Bloc<GroupChatEvent, GroupChatState> {
   final GroupChatService service;
   final GroupChatWebSocketService wsService;
+  final GroupChatWebRTCService? webrtcService;
   StreamSubscription? _joinRequestSubscription;
   StreamSubscription? _approvedSubscription;
   StreamSubscription? _rejectedSubscription;
@@ -280,6 +322,7 @@ class GroupChatBloc extends Bloc<GroupChatEvent, GroupChatState> {
   GroupChatBloc({
     required this.service,
     required this.wsService,
+    this.webrtcService,
   }) : super(GroupChatInitial()) {
     // Connect to WebSocket
     wsService.connect();
@@ -308,6 +351,14 @@ class GroupChatBloc extends Bloc<GroupChatEvent, GroupChatState> {
     on<JoinRequestRejectedEvent>(_onJoinRequestRejectedEvent);
     on<NewLiveSessionStarted>(_onNewLiveSessionStarted);
     on<LiveSessionEndedEvent>(_onLiveSessionEndedEvent);
+
+    // Video call event handlers
+    on<StartVideoCall>(_onStartVideoCall);
+    on<EndVideoCall>(_onEndVideoCall);
+    on<ToggleMute>(_onToggleMute);
+    on<ToggleVideo>(_onToggleVideo);
+    on<ToggleSpeaker>(_onToggleSpeaker);
+    on<SwitchCamera>(_onSwitchCamera);
   }
 
   void _setupWebSocketListeners() {
@@ -552,6 +603,104 @@ class GroupChatBloc extends Bloc<GroupChatEvent, GroupChatState> {
       conversationId: event.conversationId,
       isTyping: event.isTyping,
     );
+  }
+
+  // Video call handlers
+  Future<void> _onStartVideoCall(
+    StartVideoCall event,
+    Emitter<GroupChatState> emit,
+  ) async {
+    if (webrtcService == null) {
+      emit(VideoCallError('WebRTC service not initialized'));
+      return;
+    }
+
+    try {
+      emit(GroupChatLoading());
+      await webrtcService!.joinCall(
+        channelId: event.liveSessionId,
+        token: event.token,
+        enableVideo: event.enableVideo,
+      );
+
+      final localUid = webrtcService!.localUid;
+      if (localUid != null) {
+        emit(
+          VideoCallStarted(
+            liveSessionId: event.liveSessionId,
+            localUid: localUid,
+          ),
+        );
+      }
+    } catch (e) {
+      emit(VideoCallError('Failed to start video call: $e'));
+    }
+  }
+
+  Future<void> _onEndVideoCall(
+    EndVideoCall event,
+    Emitter<GroupChatState> emit,
+  ) async {
+    if (webrtcService == null) return;
+
+    try {
+      await webrtcService!.leaveCall();
+      emit(VideoCallEnded());
+    } catch (e) {
+      emit(VideoCallError('Failed to end video call: $e'));
+    }
+  }
+
+  Future<void> _onToggleMute(
+    ToggleMute event,
+    Emitter<GroupChatState> emit,
+  ) async {
+    if (webrtcService == null) return;
+
+    try {
+      await webrtcService!.toggleMute();
+    } catch (e) {
+      emit(VideoCallError('Failed to toggle mute: $e'));
+    }
+  }
+
+  Future<void> _onToggleVideo(
+    ToggleVideo event,
+    Emitter<GroupChatState> emit,
+  ) async {
+    if (webrtcService == null) return;
+
+    try {
+      await webrtcService!.toggleVideo();
+    } catch (e) {
+      emit(VideoCallError('Failed to toggle video: $e'));
+    }
+  }
+
+  Future<void> _onToggleSpeaker(
+    ToggleSpeaker event,
+    Emitter<GroupChatState> emit,
+  ) async {
+    if (webrtcService == null) return;
+
+    try {
+      await webrtcService!.toggleSpeaker();
+    } catch (e) {
+      emit(VideoCallError('Failed to toggle speaker: $e'));
+    }
+  }
+
+  Future<void> _onSwitchCamera(
+    SwitchCamera event,
+    Emitter<GroupChatState> emit,
+  ) async {
+    if (webrtcService == null) return;
+
+    try {
+      await webrtcService!.switchCamera();
+    } catch (e) {
+      emit(VideoCallError('Failed to switch camera: $e'));
+    }
   }
 
   @override

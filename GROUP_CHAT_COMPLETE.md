@@ -113,11 +113,35 @@ Comprehensive Monkey.app-style Group Chat system with live session hosting, appr
    - ✅ Stream listeners for all backend events
    - ✅ Proper cleanup on disconnect
 
+4. **group_chat_webrtc_service.dart** (320 lines) ✅ **NEW**
+   - ✅ Agora RTC Engine integration
+   - ✅ Video and audio call management
+   - ✅ **Features:**
+     - Initialize RTC engine with Agora App ID
+     - Join/leave video/audio channels
+     - Toggle microphone mute state
+     - Toggle video enable state
+     - Toggle speaker on/off
+     - Switch camera (front/back)
+     - Mute specific remote users
+   - ✅ **Event Streams:**
+     - `onUserJoined` - New participant joined call
+     - `onUserLeft` - Participant left call
+     - `onLocalUserJoined` - Local user successfully joined
+     - `onError` - Error notifications
+     - `onConnectionStateChanged` - Connection state updates
+   - ✅ **Media State Tracking:**
+     - Remote user video/audio state changes
+     - Local media state (mute, video, speaker)
+   - ✅ **Error Handling:**
+     - Graceful error handling with descriptive messages
+     - Proper resource cleanup on dispose
+
 #### BLoC Layer
 **`/mobile/lib/features/group_chat/bloc/`**
 
-**group_chat_bloc.dart** (431 lines)
-- ✅ **Events** (11 events):
+**group_chat_bloc.dart** (700+ lines)
+- ✅ **Events** (17 events):
   - `LoadActiveLiveSessions` - Fetch sessions with optional type filter
   - `LoadPendingJoinRequests` - Host loads pending requests
   - `CreateLiveSession` - Create new session
@@ -128,8 +152,15 @@ Comprehensive Monkey.app-style Group Chat system with live session hosting, appr
   - `LeaveLiveSessionRoom` - Leave WebSocket room
   - `CreateGroup` - Create group conversation
   - Real-time events: `NewJoinRequestReceived`, `JoinRequestApprovedEvent`, `JoinRequestRejectedEvent`, `NewLiveSessionStarted`, `LiveSessionEndedEvent`
+  - **NEW Video Call Events:**
+    - `StartVideoCall` - Join video/audio call with RTC token
+    - `EndVideoCall` - Leave call
+    - `ToggleMute` - Toggle microphone
+    - `ToggleVideo` - Toggle camera
+    - `ToggleSpeaker` - Toggle speaker/earpiece
+    - `SwitchCamera` - Switch front/back camera
 
-- ✅ **States** (7 states):
+- ✅ **States** (10 states):
   - `GroupChatInitial`
   - `GroupChatLoading`
   - `GroupChatLoaded` (with copyWith for immutability)
@@ -137,17 +168,22 @@ Comprehensive Monkey.app-style Group Chat system with live session hosting, appr
   - `LiveSessionCreated`
   - `JoinRequestSent`
   - `GroupCreated`
+  - **NEW Video Call States:**
+    - `VideoCallStarted` - Call joined successfully
+    - `VideoCallEnded` - Call ended
+    - `VideoCallError` - Video call error occurred
 
 - ✅ **Features:**
   - WebSocket auto-connection on BLoC initialization
   - Stream subscriptions for all real-time events
   - State updates for live data (join requests, sessions)
   - Proper resource cleanup in `close()`
+  - **NEW:** WebRTC service integration for video/audio calls
 
 #### Presentation Layer
 **`/mobile/lib/features/group_chat/presentation/screens/`**
 
-1. **live_sessions_screen.dart** (441 lines) ✅
+1. **live_sessions_screen.dart** (535+ lines) ✅
    - **Purpose:** Browse active live sessions (Monkey.app style)
    - **Features:**
      - Grid view with 2 columns
@@ -164,7 +200,8 @@ Comprehensive Monkey.app-style Group Chat system with live session hosting, appr
        - Live status indicator
        - "FULL" overlay when capacity reached
      - Join request dialog for approval-required sessions
-     - Direct join for open sessions
+     - **NEW:** Video call option dialog after joining
+     - Choice between "Chat Only" and "Join Video Call"
      - Empty state with icon and helpful text
    - **UX:**
      - Gradient backgrounds (pink/purple for dating, red/orange for speed dating, etc.)
@@ -194,6 +231,93 @@ Comprehensive Monkey.app-style Group Chat system with live session hosting, appr
      - Real-time request additions via WebSocket
      - Empty state when no requests
      - Settings view (read-only for now)
+
+3. **video_call_screen.dart** (550 lines) ✅ **NEW**
+   - **Purpose:** Group video/audio calling for live sessions
+   - **Features:**
+     - Grid layout for participants (1 or 2 columns based on count)
+     - Real-time video streams using Agora SDK
+     - Local video preview
+     - Remote participant videos
+     - **Control Buttons:**
+       - Mute/Unmute microphone (red when muted)
+       - Start/Stop Video (red when off)
+       - Toggle Speaker/Earpiece
+       - Switch Camera (front/back)
+       - End Call (red, confirmation dialog)
+     - **Participant Views:**
+       - Video feed with camera enabled
+       - Avatar placeholder when camera off
+       - Audio/video status badges (mic off, camera off)
+       - "You" label for local user
+       - Border highlight for local user
+     - **Session Info:**
+       - Live indicator (red dot + "LIVE" text)
+       - Participant count in app bar
+       - Session title
+     - **Real-time Updates:**
+       - Participant joins/leaves dynamically
+       - Video/audio state changes
+       - Connection state monitoring
+     - **Error Handling:**
+       - Connection errors with snackbar
+       - Graceful cleanup on exit
+       - Auto-leave call on screen disposal
+   - **UX:**
+     - Black background for immersive experience
+       - Glassmorphism overlays
+     - Circular control buttons with color coding
+     - Grid view adapts to participant count
+     - Portrait aspect ratio (9:16) for mobile optimization
+     - No back button during call (use End Call button)
+
+4. **create_group_screen.dart** ✅ **NEW**
+   - **Purpose:** Create new group conversations
+   - **Features:**
+     - Group title input
+     - Description text area
+     - GroupType dropdown selection
+     - Max participants slider
+     - Permission toggles (invite, approval, auto-accept friends)
+     - Media toggles (voice/video chat)
+     - Participant selection (multi-select chips)
+     - Create button with validation
+   - **UX:**
+     - Clean form layout
+     - Real-time validation
+     - Loading state on creation
+     - Navigation to group on success
+
+5. **group_list_screen.dart** ✅ **NEW**
+   - **Purpose:** Display user's joined groups
+   - **Features:**
+     - List of user's groups with details
+     - Group avatar, title, last message
+     - Active participants count
+     - Navigate to group chat on tap
+     - Pull-to-refresh
+     - Empty state for no groups
+   - **UX:**
+     - Card-based list design
+     - Smooth navigation
+     - Responsive loading states
+
+6. **group_chat_screen.dart** ✅ **NEW**
+   - **Purpose:** Chat interface for group conversations
+   - **Features:**
+     - Message list with sender info
+     - Message input field
+     - Send button
+     - Typing indicators
+     - Real-time message updates via WebSocket
+     - Participant list view
+     - Group settings access
+     - Leave group option
+   - **UX:**
+     - Bubble-style messages
+     - Color-coded by sender
+     - Smooth scrolling
+     - Auto-scroll to bottom on new messages
 
 ### Mobile Status
 ✅ **0 compilation errors**
