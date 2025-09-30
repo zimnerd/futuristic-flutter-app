@@ -150,6 +150,7 @@ class GroupParticipant {
 class GroupConversation {
   final String id;
   final String title;
+  final String? description;
   final GroupSettings? settings;
   final List<GroupParticipant> participants;
   final int participantCount;
@@ -160,6 +161,7 @@ class GroupConversation {
   const GroupConversation({
     required this.id,
     required this.title,
+    this.description,
     this.settings,
     this.participants = const [],
     required this.participantCount,
@@ -168,10 +170,15 @@ class GroupConversation {
     this.hasUnread = false,
   });
 
+  // Helper getters for GroupListScreen compatibility
+  String get name => title;
+  GroupType get groupType => settings?.groupType ?? GroupType.standard;
+
   factory GroupConversation.fromJson(Map<String, dynamic> json) {
     return GroupConversation(
       id: json['id'] as String,
       title: json['title'] as String,
+      description: json['description'] as String?,
       settings: json['groupSettings'] != null
           ? GroupSettings.fromJson(json['groupSettings'] as Map<String, dynamic>)
           : null,
@@ -199,11 +206,10 @@ class LiveSession {
   final String? description;
   final LiveSessionStatus status;
   final int currentParticipants;
-  final int? maxParticipants;
+  final int maxParticipants;
   final bool requireApproval;
-  final GroupType groupType;
-  final DateTime startedAt;
-  final DateTime? endedAt;
+  final DateTime? startedAt;
+  final DateTime createdAt;
 
   const LiveSession({
     required this.id,
@@ -215,34 +221,35 @@ class LiveSession {
     this.description,
     required this.status,
     required this.currentParticipants,
-    this.maxParticipants,
+    required this.maxParticipants,
     required this.requireApproval,
-    required this.groupType,
-    required this.startedAt,
-    this.endedAt,
+    this.startedAt,
+    required this.createdAt,
   });
 
-  bool get isFull =>
-      maxParticipants != null && currentParticipants >= maxParticipants!;
+  bool get isFull => currentParticipants >= maxParticipants;
+
+  // Helper getters for backward compatibility
+  String? get hostAvatarUrl => hostPhoto;
+  String get hostFirstName => hostName.split(' ').first;
 
   factory LiveSession.fromJson(Map<String, dynamic> json) {
     return LiveSession(
       id: json['id'] as String,
       conversationId: json['conversationId'] as String,
       hostId: json['hostId'] as String,
-      hostName: json['hostName'] as String? ?? 'Unknown Host',
-      hostPhoto: json['hostPhoto'] as String?,
+      hostName: json['host']?['firstName'] as String? ?? 'Unknown',
+      hostPhoto: json['host']?['profilePhoto'] as String?,
       title: json['title'] as String,
       description: json['description'] as String?,
       status: _parseStatus(json['status'] as String),
       currentParticipants: json['currentParticipants'] as int? ?? 0,
-      maxParticipants: json['maxParticipants'] as int?,
+      maxParticipants: json['maxParticipants'] as int? ?? 10,
       requireApproval: json['requireApproval'] as bool? ?? true,
-      groupType: GroupSettings._parseGroupType(json['groupType'] as String),
-      startedAt: DateTime.parse(json['startedAt'] as String),
-      endedAt: json['endedAt'] != null
-          ? DateTime.parse(json['endedAt'] as String)
+      startedAt: json['startedAt'] != null
+          ? DateTime.parse(json['startedAt'] as String)
           : null,
+      createdAt: DateTime.parse(json['createdAt'] as String),
     );
   }
 

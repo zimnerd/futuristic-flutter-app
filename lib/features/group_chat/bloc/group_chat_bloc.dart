@@ -25,6 +25,8 @@ class LoadPendingJoinRequests extends GroupChatEvent {
   List<Object?> get props => [liveSessionId];
 }
 
+class LoadUserGroups extends GroupChatEvent {}
+
 class CreateLiveSession extends GroupChatEvent {
   final String conversationId;
   final String title;
@@ -164,6 +166,28 @@ class LiveSessionEndedEvent extends GroupChatEvent {
   List<Object?> get props => [session];
 }
 
+class JoinGroup extends GroupChatEvent {
+  final String conversationId;
+  JoinGroup(this.conversationId);
+  @override
+  List<Object?> get props => [conversationId];
+}
+
+class LeaveGroup extends GroupChatEvent {
+  final String conversationId;
+  LeaveGroup(this.conversationId);
+  @override
+  List<Object?> get props => [conversationId];
+}
+
+class SendTypingIndicator extends GroupChatEvent {
+  final String conversationId;
+  final bool isTyping;
+  SendTypingIndicator({required this.conversationId, required this.isTyping});
+  @override
+  List<Object?> get props => [conversationId, isTyping];
+}
+
 // States
 abstract class GroupChatState extends Equatable {
   @override
@@ -178,27 +202,41 @@ class GroupChatLoaded extends GroupChatState {
   final List<LiveSession> liveSessions;
   final List<JoinRequest> pendingRequests;
   final GroupConversation? currentGroup;
+  final List<GroupConversation> userGroups;
+  final List<LiveSession> activeLiveSessions;
 
   GroupChatLoaded({
     this.liveSessions = const [],
     this.pendingRequests = const [],
     this.currentGroup,
+    this.userGroups = const [],
+    this.activeLiveSessions = const [],
   });
 
   GroupChatLoaded copyWith({
     List<LiveSession>? liveSessions,
     List<JoinRequest>? pendingRequests,
     GroupConversation? currentGroup,
+    List<GroupConversation>? userGroups,
+    List<LiveSession>? activeLiveSessions,
   }) {
     return GroupChatLoaded(
       liveSessions: liveSessions ?? this.liveSessions,
       pendingRequests: pendingRequests ?? this.pendingRequests,
       currentGroup: currentGroup ?? this.currentGroup,
+      userGroups: userGroups ?? this.userGroups,
+      activeLiveSessions: activeLiveSessions ?? this.activeLiveSessions,
     );
   }
 
   @override
-  List<Object?> get props => [liveSessions, pendingRequests, currentGroup];
+  List<Object?> get props => [
+    liveSessions,
+    pendingRequests,
+    currentGroup,
+    userGroups,
+    activeLiveSessions,
+  ];
 }
 
 class GroupChatError extends GroupChatState {
@@ -252,12 +290,16 @@ class GroupChatBloc extends Bloc<GroupChatEvent, GroupChatState> {
     // Event handlers
     on<LoadActiveLiveSessions>(_onLoadActiveLiveSessions);
     on<LoadPendingJoinRequests>(_onLoadPendingJoinRequests);
+    on<LoadUserGroups>(_onLoadUserGroups);
     on<CreateLiveSession>(_onCreateLiveSession);
     on<RequestToJoinSession>(_onRequestToJoinSession);
     on<ApproveJoinRequest>(_onApproveJoinRequest);
     on<RejectJoinRequest>(_onRejectJoinRequest);
     on<JoinLiveSessionRoom>(_onJoinLiveSessionRoom);
     on<LeaveLiveSessionRoom>(_onLeaveLiveSessionRoom);
+    on<JoinGroup>(_onJoinGroup);
+    on<LeaveGroup>(_onLeaveGroup);
+    on<SendTypingIndicator>(_onSendTypingIndicator);
     on<CreateGroup>(_onCreateGroup);
 
     // Real-time event handlers
@@ -477,6 +519,39 @@ class GroupChatBloc extends Bloc<GroupChatEvent, GroupChatState> {
           .toList();
       emit(currentState.copyWith(liveSessions: updatedSessions));
     }
+  }
+
+  Future<void> _onLoadUserGroups(
+    LoadUserGroups event,
+    Emitter<GroupChatState> emit,
+  ) async {
+    emit(GroupChatLoading());
+    try {
+      // TODO: Implement getUserGroups() in service
+      // For now, return empty list
+      final groups = <GroupConversation>[];
+      emit(GroupChatLoaded(userGroups: groups));
+    } catch (e) {
+      emit(GroupChatError('Failed to load groups: $e'));
+    }
+  }
+
+  void _onJoinGroup(JoinGroup event, Emitter<GroupChatState> emit) {
+    wsService.joinGroup(event.conversationId);
+  }
+
+  void _onLeaveGroup(LeaveGroup event, Emitter<GroupChatState> emit) {
+    wsService.leaveGroup(event.conversationId);
+  }
+
+  void _onSendTypingIndicator(
+    SendTypingIndicator event,
+    Emitter<GroupChatState> emit,
+  ) {
+    wsService.sendTypingIndicator(
+      conversationId: event.conversationId,
+      isTyping: event.isTyping,
+    );
   }
 
   @override
