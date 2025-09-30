@@ -584,6 +584,24 @@ class ApiClient {
     );
   }
 
+  /// Search messages across conversations
+  Future<Response> searchMessages({
+    required String query,
+    String? conversationId,
+    int limit = 50,
+    int offset = 0,
+  }) async {
+    return await _dio.get(
+      '/api/v1/chat/search/messages',
+      queryParameters: {
+        'query': query,
+        if (conversationId != null) 'conversationId': conversationId,
+        'limit': limit,
+        'offset': offset,
+      },
+    );
+  }
+
   /// Send a message
   Future<Response> sendMessage({
     required String conversationId,

@@ -1075,23 +1075,7 @@ class ChatRepositoryImpl implements ChatRepository {
     }
   }
 
-  Future<List<MessageModel>> searchMessages(
-    String query, {
-    String? conversationId,
-  }) async {
-    try {
-      _logger.d('Searching messages with query: $query');
-      final messages = await _remoteDataSource.searchMessages(
-        query,
-        conversationId: conversationId,
-      );
-      _logger.d('Found ${messages.length} messages matching query');
-      return messages;
-    } catch (e) {
-      _logger.e('Error searching messages: $e');
-      rethrow;
-    }
-  }
+
 
   // ================== HELPER METHODS ==================
 
@@ -1128,5 +1112,55 @@ class ChatRepositoryImpl implements ChatRepository {
 
   Stream<MessageReadUpdate> getMessageReadUpdates() {
     return messageReadUpdates;
+  }
+
+  @override
+  Future<List<MessageModel>> searchMessages(
+    String query, {
+    String? conversationId,
+  }) async {
+    try {
+      _logger.d(
+        'Searching messages: query="$query", conversationId="$conversationId"',
+      );
+
+      final response = await _apiClient.searchMessages(
+        query: query,
+        conversationId: conversationId,
+        limit: 50,
+        offset: 0,
+      );
+
+      if (response.statusCode == 200 && response.data != null) {
+        _logger.d('Search response received: ${response.data}');
+
+        // Parse the response - backend returns { data: MessageResponseDto[] }
+        final responseData = response.data['data'] ?? response.data;
+
+        if (responseData is List) {
+          final messages = responseData
+              .map((json) => MessageModel.fromJson(json))
+              .toList();
+
+          _logger.d('Successfully parsed ${messages.length} search results');
+          return messages;
+        } else {
+          _logger.w(
+            'Unexpected response format for message search: $responseData',
+          );
+          return [];
+        }
+      } else {
+        _logger.e(
+          'Message search failed: ${response.statusCode} - ${response.statusMessage}',
+        );
+        throw NetworkException(
+          'Failed to search messages: ${response.statusMessage}',
+        );
+      }
+    } catch (e) {
+      _logger.e('Error searching messages: $e');
+      throw NetworkException('Failed to search messages: $e');
+    }
   }
 }

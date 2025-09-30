@@ -332,6 +332,16 @@ class ReactionAdded extends ChatEvent {
   List<Object?> get props => [messageId, conversationId, emoji, userId, username];
 }
 
+class SearchMessages extends ChatEvent {
+  final String query;
+  final String? conversationId;
+
+  const SearchMessages({required this.query, this.conversationId});
+
+  @override
+  List<Object?> get props => [query, conversationId];
+}
+
 // States
 abstract class ChatState extends Equatable {
   const ChatState();
@@ -506,6 +516,29 @@ class FirstMessageSent extends ChatState {
   List<Object?> get props => [message, conversationId];
 }
 
+class MessageSearchLoading extends ChatState {
+  const MessageSearchLoading();
+}
+
+class MessageSearchLoaded extends ChatState {
+  final List<MessageModel> searchResults;
+  final String query;
+
+  const MessageSearchLoaded({required this.searchResults, required this.query});
+
+  @override
+  List<Object?> get props => [searchResults, query];
+}
+
+class MessageSearchError extends ChatState {
+  final String error;
+
+  const MessageSearchError({required this.error});
+
+  @override
+  List<Object?> get props => [error];
+}
+
 // BLoC
 class ChatBloc extends Bloc<ChatEvent, ChatState> {
   final ChatRepository _chatRepository;
@@ -545,6 +578,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     on<MessageReadStatusReceived>(_onMessageReadStatusReceived);
     on<AddReaction>(_onAddReaction);
     on<ReactionAdded>(_onReactionAdded);
+    on<SearchMessages>(_onSearchMessages);
 
     _initializeStreamSubscriptions();
   }
@@ -1537,6 +1571,31 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     } catch (e) {
       _logger.e('Error handling reaction added: $e');
       emit(ChatError(message: 'Failed to handle reaction: $e'));
+    }
+  }
+
+  Future<void> _onSearchMessages(
+    SearchMessages event,
+    Emitter<ChatState> emit,
+  ) async {
+    try {
+      _logger.d('Searching messages with query: ${event.query}');
+
+      emit(const MessageSearchLoading());
+
+      final searchResults = await _chatRepository.searchMessages(
+        event.query,
+        conversationId: event.conversationId,
+      );
+
+      _logger.d('Found ${searchResults.length} messages matching query');
+
+      emit(
+        MessageSearchLoaded(searchResults: searchResults, query: event.query),
+      );
+    } catch (e) {
+      _logger.e('Error searching messages: $e');
+      emit(MessageSearchError(error: 'Failed to search messages: $e'));
     }
   }
 

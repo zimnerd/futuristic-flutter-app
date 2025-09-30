@@ -7,6 +7,7 @@ import 'message.dart';
 class Conversation extends Equatable {
   final String id;
   final String? title;
+  final bool isGroup;
   final List<User> participants;
   final Message? lastMessage;
   final DateTime? lastActivity;
@@ -20,6 +21,7 @@ class Conversation extends Equatable {
   const Conversation({
     required this.id,
     this.title,
+    this.isGroup = false,
     required this.participants,
     this.lastMessage,
     this.lastActivity,
@@ -41,6 +43,7 @@ class Conversation extends Equatable {
       return Conversation(
         id: conversationId,
         title: conversationTitle,
+        isGroup: json['isGroup'] ?? false,
         participants:
             (json['participants'] as List?)?.map<User>((p) {
               try {
@@ -230,6 +233,7 @@ class Conversation extends Equatable {
   List<Object?> get props => [
         id,
         title,
+    isGroup,
         participants,
         lastMessage,
         lastActivity,

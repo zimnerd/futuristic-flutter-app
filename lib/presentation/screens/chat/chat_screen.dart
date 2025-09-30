@@ -333,6 +333,29 @@ class _ChatScreenState extends State<ChatScreen> {
                     );
                     // Note: MessageSent should rarely occur if we're in MessagesLoaded state
                     _scrollToBottom();
+                  } else if (state is MessageSearchLoaded) {
+                    AppLogger.debug(
+                      'ChatScreen - MessageSearchLoaded: Found ${state.searchResults.length} results for query "${state.query}"',
+                    );
+                    // Update local search results for UI navigation
+                    setState(() {
+                      _searchResults = state.searchResults;
+                      _currentSearchIndex = 0;
+                      // Scroll to first result if any found
+                      if (_searchResults.isNotEmpty) {
+                        _scrollToSearchResult(_searchResults[0]);
+                      }
+                    });
+                  } else if (state is MessageSearchError) {
+                    AppLogger.error(
+                      'ChatScreen - MessageSearchError: ${state.error}',
+                    );
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Search failed: ${state.error}'),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
                   } else if (state is ChatError) {
                     AppLogger.error('ChatScreen - ChatError: ${state.message}');
                     ScaffoldMessenger.of(context).showSnackBar(
@@ -2296,7 +2319,7 @@ class _ChatScreenState extends State<ChatScreen> {
   // Search functionality methods
   void _performSearch(String query) {
     setState(() {
-      _currentSearchQuery = query.trim().toLowerCase();
+      _currentSearchQuery = query.trim();
       _currentSearchIndex = 0;
 
       if (_currentSearchQuery.isEmpty) {
@@ -2304,24 +2327,13 @@ class _ChatScreenState extends State<ChatScreen> {
         return;
       }
 
-      // Get messages from current chat state
-      final chatState = context.read<ChatBloc>().state;
-      if (chatState is MessagesLoaded) {
-        _searchResults = chatState.messages
-            .where(
-              (message) =>
-                  message.content?.toLowerCase().contains(
-                    _currentSearchQuery,
-                  ) ??
-                  false,
-            )
-            .toList();
-
-        // Scroll to first result if any found
-        if (_searchResults.isNotEmpty) {
-          _scrollToSearchResult(_searchResults[0]);
-        }
-      }
+      // Use BLoC to search messages via backend API
+      context.read<ChatBloc>().add(
+        SearchMessages(
+          query: _currentSearchQuery,
+          conversationId: widget.conversationId,
+        ),
+      );
     });
   }
 

@@ -506,15 +506,15 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
       _logger.i('Searching messages with query: $query');
 
       final response = await _apiService.get(
-        '/chat/messages/search',
+        '/chat/search/messages',
         queryParameters: {
-          'q': query,
+          'query': query,
           if (conversationId != null) 'conversationId': conversationId,
         },
       );
 
       if (response.statusCode == 200) {
-        final messagesData = ResponseParser.extractList(response, 'messages');
+        final messagesData = ResponseParser.extractListDirect(response);
         return messagesData.map((json) => MessageModel.fromJson(json)).toList();
       } else {
         throw ApiException('Failed to search messages: ${response.statusMessage}');

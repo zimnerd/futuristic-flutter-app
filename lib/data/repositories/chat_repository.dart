@@ -145,4 +145,10 @@ abstract class ChatRepository {
 
   /// Remove reaction from a message
   Future<void> removeReaction(String messageId, String emoji);
+
+  /// Search messages across conversations
+  Future<List<MessageModel>> searchMessages(
+    String query, {
+    String? conversationId,
+  });
 }
