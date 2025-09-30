@@ -6,6 +6,7 @@ import '../../blocs/premium/premium_bloc.dart';
 import '../../blocs/premium/premium_event.dart';
 import '../../blocs/premium/premium_state.dart';
 import '../../theme/pulse_colors.dart';
+import '../../theme/theme_extensions.dart';
 import '../../widgets/common/pulse_loading_widget.dart';
 import '../../widgets/common/pulse_error_widget.dart';
 import '../../widgets/premium/subscription_plans_widget.dart';
@@ -45,13 +46,13 @@ class _PremiumScreenState extends State<PremiumScreen>
     return Scaffold(
       appBar: AppBar(
         title: const Text('Premium'),
-        backgroundColor: PulseColors.primary,
-        foregroundColor: Colors.white,
+        backgroundColor: context.primaryColor,
+        foregroundColor: context.onPrimaryColor,
         bottom: TabBar(
           controller: _tabController,
-          labelColor: Colors.white,
-          unselectedLabelColor: Colors.white70,
-          indicatorColor: Colors.white,
+          labelColor: context.onPrimaryColor,
+          unselectedLabelColor: context.onPrimaryColor.withValues(alpha: 0.7),
+          indicatorColor: context.onPrimaryColor,
           tabs: const [
             Tab(text: 'Plans', icon: Icon(Icons.star)),
             Tab(text: 'Features', icon: Icon(Icons.featured_play_list)),
@@ -65,7 +66,7 @@ class _PremiumScreenState extends State<PremiumScreen>
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(state.message),
-                backgroundColor: Colors.red,
+                backgroundColor: context.errorColor,
               ),
             );
           }
@@ -74,7 +75,7 @@ class _PremiumScreenState extends State<PremiumScreen>
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text('Subscription updated successfully!'),
-                backgroundColor: Colors.green,
+                backgroundColor: context.successColor,
               ),
             );
           }
@@ -218,10 +219,10 @@ class _PremiumScreenState extends State<PremiumScreen>
           if (state.subscription != null) ...[
             const Divider(height: 1),
             ListTile(
-              leading: Icon(Icons.cancel, color: Colors.red[600]),
+              leading: Icon(Icons.cancel, color: context.errorColor),
               title: Text(
                 'Cancel Subscription',
-                style: TextStyle(color: Colors.red[600]),
+                style: TextStyle(color: context.errorColor),
               ),
               subtitle: const Text('Cancel your premium subscription'),
               trailing: const Icon(Icons.arrow_forward_ios),
@@ -244,9 +245,9 @@ class _PremiumScreenState extends State<PremiumScreen>
 
   Widget _buildPurchaseBottomSheet(PremiumPlan plan) {
     return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      decoration: BoxDecoration(
+        color: context.surfaceColor,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
       ),
       child: Padding(
         padding: const EdgeInsets.all(24),
@@ -257,7 +258,7 @@ class _PremiumScreenState extends State<PremiumScreen>
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: Colors.grey[300],
+                color: context.outlineColor,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -292,7 +293,11 @@ class _PremiumScreenState extends State<PremiumScreen>
               padding: const EdgeInsets.symmetric(vertical: 4),
               child: Row(
                 children: [
-                  Icon(Icons.check, color: Colors.green[600], size: 20),
+                        Icon(
+                          Icons.check,
+                          color: context.successColor,
+                          size: 20,
+                        ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
@@ -324,8 +329,8 @@ class _PremiumScreenState extends State<PremiumScreen>
                   child: ElevatedButton(
                     onPressed: () => _confirmPurchase(plan),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: PulseColors.primary,
-                      foregroundColor: Colors.white,
+                      backgroundColor: context.primaryColor,
+                      foregroundColor: context.onPrimaryColor,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                     ),
                     child: const Text('Subscribe'),
@@ -339,7 +344,7 @@ class _PremiumScreenState extends State<PremiumScreen>
             Text(
               'Cancel anytime. No commitment.',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Colors.grey[600],
+                color: context.onSurfaceVariantColor,
               ),
               textAlign: TextAlign.center,
             ),

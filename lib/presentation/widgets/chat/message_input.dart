@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../theme/pulse_colors.dart';
+import '../../theme/theme_extensions.dart';
 
 class MessageInput extends StatefulWidget {
   final TextEditingController controller;
@@ -62,9 +62,9 @@ class _MessageInputState extends State<MessageInput> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.surfaceColor,
         border: Border(
-          top: BorderSide(color: Colors.grey[200]!),
+          top: BorderSide(color: ThemeColors.getBorderColor(context)),
         ),
       ),
       child: Column(
@@ -89,7 +89,7 @@ class _MessageInputState extends State<MessageInput> {
     return IconButton(
       icon: Icon(
         _showAttachments ? Icons.close : Icons.add,
-        color: Colors.grey[600],
+        color: context.onSurfaceVariantColor,
       ),
       onPressed: () {
         setState(() {
@@ -103,7 +103,7 @@ class _MessageInputState extends State<MessageInput> {
     return Container(
       constraints: const BoxConstraints(maxHeight: 120),
       decoration: BoxDecoration(
-        color: Colors.grey[100],
+        color: context.surfaceVariantColor,
         borderRadius: BorderRadius.circular(24),
       ),
       child: TextField(
@@ -128,13 +128,15 @@ class _MessageInputState extends State<MessageInput> {
       width: 48,
       height: 48,
       decoration: BoxDecoration(
-        color: _isComposing ? PulseColors.primary : Colors.grey[400],
+        color: _isComposing
+            ? context.primaryColor
+            : ThemeColors.getDisabledColor(context),
         shape: BoxShape.circle,
       ),
       child: IconButton(
         icon: Icon(
           _isComposing ? Icons.send : Icons.mic,
-          color: Colors.white,
+          color: _isComposing ? context.onPrimaryColor : context.surfaceColor,
           size: 20,
         ),
         onPressed: _isComposing ? _onSendPressed : widget.onVoice,
@@ -154,21 +156,21 @@ class _MessageInputState extends State<MessageInput> {
             _buildAttachmentOption(
               icon: Icons.camera_alt,
               label: 'Camera',
-              color: Colors.blue,
+              color: context.primaryColor,
               onTap: widget.onCamera,
             ),
             const SizedBox(width: 16),
             _buildAttachmentOption(
               icon: Icons.photo_library,
               label: 'Gallery',
-              color: Colors.green,
+              color: context.successColor,
               onTap: widget.onGallery,
             ),
             const SizedBox(width: 16),
             _buildAttachmentOption(
               icon: Icons.location_on,
               label: 'Location',
-              color: Colors.orange,
+              color: context.secondaryColor,
               onTap: () {
                 // Implement location sharing
                 Navigator.pop(context);
@@ -206,7 +208,7 @@ class _MessageInputState extends State<MessageInput> {
             ),
             child: Icon(
               icon,
-              color: Colors.white,
+              color: context.surfaceColor,
               size: 20,
             ),
           ),
@@ -215,7 +217,7 @@ class _MessageInputState extends State<MessageInput> {
             label,
             style: TextStyle(
               fontSize: 12,
-              color: Colors.grey[600],
+              color: context.onSurfaceVariantColor,
             ),
           ),
         ],

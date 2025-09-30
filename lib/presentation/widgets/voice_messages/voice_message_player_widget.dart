@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+
+import '../../theme/theme_extensions.dart';
 import 'package:just_audio/just_audio.dart';
 import 'dart:async';
 
@@ -130,7 +132,7 @@ class _VoiceMessagePlayerWidgetState extends State<VoiceMessagePlayerWidget>
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: Colors.red,
+        backgroundColor: context.errorColor,
       ),
     );
   }
@@ -186,7 +188,7 @@ class _VoiceMessagePlayerWidgetState extends State<VoiceMessagePlayerWidget>
                 Text(
                   _formatDate(widget.message.createdAt),
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Colors.grey[600],
+                    color: context.onSurfaceVariantColor,
                   ),
                 ),
               ],
@@ -223,8 +225,8 @@ class _VoiceMessagePlayerWidgetState extends State<VoiceMessagePlayerWidget>
                     height: amplitude * 60,
                     decoration: BoxDecoration(
                       color: isPlayed 
-                          ? PulseColors.primary 
-                          : Colors.grey[300],
+                          ? context.primaryColor
+                          : context.outlineColor,
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
@@ -258,8 +260,8 @@ class _VoiceMessagePlayerWidgetState extends State<VoiceMessagePlayerWidget>
                 );
                 _seek(position);
               },
-              activeColor: PulseColors.primary,
-              inactiveColor: Colors.grey[300],
+              activeColor: context.primaryColor,
+              inactiveColor: context.outlineColor,
             ),
           ),
           Padding(
@@ -307,7 +309,7 @@ class _VoiceMessagePlayerWidgetState extends State<VoiceMessagePlayerWidget>
           Container(
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: PulseColors.primary,
+              color: context.primaryColor,
               boxShadow: [
                 BoxShadow(
                   color: PulseColors.primary.withValues(alpha: 0.3),
@@ -319,17 +321,19 @@ class _VoiceMessagePlayerWidgetState extends State<VoiceMessagePlayerWidget>
             child: IconButton(
               onPressed: _isLoading ? null : _playPause,
               icon: _isLoading
-                  ? const SizedBox(
+                  ? SizedBox(
                       width: 24,
                       height: 24,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          context.onPrimaryColor,
+                        ),
                       ),
                     )
                   : Icon(_isPlaying ? Icons.pause : Icons.play_arrow),
               iconSize: 32,
-              color: Colors.white,
+              color: context.onPrimaryColor,
             ),
           ),
           
@@ -341,7 +345,7 @@ class _VoiceMessagePlayerWidgetState extends State<VoiceMessagePlayerWidget>
             },
             icon: const Icon(Icons.forward_10),
             iconSize: 32,
-            color: Colors.grey[700],
+            color: context.onSurfaceVariantColor,
           ),
           
           // Stop
@@ -349,7 +353,7 @@ class _VoiceMessagePlayerWidgetState extends State<VoiceMessagePlayerWidget>
             onPressed: _stop,
             icon: const Icon(Icons.stop),
             iconSize: 32,
-            color: Colors.grey[700],
+            color: context.onSurfaceVariantColor,
           ),
         ],
       ),
@@ -370,7 +374,7 @@ class _VoiceMessagePlayerWidgetState extends State<VoiceMessagePlayerWidget>
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
-          border: Border.all(color: Colors.grey[400]!),
+          border: Border.all(color: context.outlineColor),
           borderRadius: BorderRadius.circular(20),
         ),
         child: Text(
