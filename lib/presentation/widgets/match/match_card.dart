@@ -13,6 +13,7 @@ class MatchCard extends StatelessWidget {
     this.onAccept,
     this.onReject,
     this.onUnmatch,
+    this.onCall,
     this.showStatus = true,
   });
 
@@ -22,6 +23,7 @@ class MatchCard extends StatelessWidget {
   final VoidCallback? onAccept;
   final VoidCallback? onReject;
   final VoidCallback? onUnmatch;
+  final VoidCallback? onCall;
   final bool showStatus;
 
 
@@ -137,11 +139,21 @@ class MatchCard extends StatelessWidget {
               ),
               
               // Action buttons
-              if (onAccept != null || onReject != null || onUnmatch != null) ...[
+              if (onAccept != null ||
+                  onReject != null ||
+                  onUnmatch != null ||
+                  onCall != null) ...[
                 const SizedBox(height: 16),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
+                    if (onCall != null)
+                      _ActionButton(
+                        onPressed: onCall!,
+                        icon: Icons.phone,
+                        label: 'Call',
+                        color: const Color(0xFF6E3BFF),
+                      ),
                     if (onAccept != null)
                       _ActionButton(
                         onPressed: onAccept!,

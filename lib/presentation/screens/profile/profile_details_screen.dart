@@ -6,6 +6,7 @@ import 'dart:io';
 import '../../../domain/entities/user_profile.dart';
 import '../../../blocs/chat_bloc.dart';
 import '../chat/chat_screen.dart';
+import '../calls/audio_call_screen.dart';
 import '../../theme/pulse_colors.dart';
 import '../../widgets/common/pulse_button.dart';
 import 'enhanced_profile_edit_screen.dart';
@@ -73,6 +74,27 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
       barrierDismissible: true,
       barrierColor: Colors.black.withValues(alpha: 0.9),
       builder: (context) => _buildPhotoModal(),
+    );
+  }
+
+  /// Handles starting a voice call with the user
+  void _startVoiceCall(BuildContext context) {
+    if (!mounted) return;
+
+    // Navigate to audio call screen
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => AudioCallScreen(
+          callId:
+              'call_${widget.profile.id}_${DateTime.now().millisecondsSinceEpoch}',
+          recipientId: widget.profile.id,
+          userName: widget.profile.name,
+          userPhotoUrl: widget.profile.photos.isNotEmpty
+              ? widget.profile.photos.first.url
+              : null,
+          isOutgoing: true,
+        ),
+      ),
     );
   }
 
@@ -1005,7 +1027,16 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
                   children: [
                     Expanded(
                       child: PulseButton(
-                        text: '💬 Start Conversation',
+                        text: '� Call',
+                        onPressed: () => _startVoiceCall(context),
+                        variant: PulseButtonVariant.secondary,
+                        icon: const Icon(Icons.phone, size: 18),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: PulseButton(
+                        text: '💬 Chat',
                         onPressed:
                             widget.onMessage ??
                             () => _startConversation(context),
@@ -1071,11 +1102,20 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
                         ),
                       ),
                     ),
-                    const SizedBox(width: 16),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: PulseButton(
+                        text: '📞 Call',
+                        onPressed: () => _startVoiceCall(context),
+                        variant: PulseButtonVariant.secondary,
+                        icon: const Icon(Icons.phone, size: 18),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
                     Expanded(
                       flex: 2,
                       child: PulseButton(
-                        text: '💬 Start Chat',
+                        text: '💬 Chat',
                         onPressed:
                             widget.onMessage ??
                             () => _startConversation(context),

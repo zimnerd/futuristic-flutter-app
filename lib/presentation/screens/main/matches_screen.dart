@@ -10,6 +10,7 @@ import '../../../data/models/match_model.dart';
 import '../../../core/theme/pulse_design_system.dart';
 import '../../widgets/match/match_card.dart';
 import '../../widgets/profile/profile_modal.dart';
+import '../calls/audio_call_screen.dart';
 
 /// Actual Matches Screen - Shows mutual matches and people who liked you
 ///
@@ -328,6 +329,24 @@ class _MatchesScreenState extends State<MatchesScreen>
             match: match,
             userProfile: match.userProfile,
             showStatus: false, // Hide redundant status on matches screen
+            onCall: match.userProfile != null
+                ? () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => AudioCallScreen(
+                          callId:
+                              'call_${match.userProfile!.id}_${DateTime.now().millisecondsSinceEpoch}',
+                          recipientId: match.userProfile!.id,
+                          userName: match.userProfile!.name,
+                          userPhotoUrl: match.userProfile!.photos.isNotEmpty
+                              ? match.userProfile!.photos.first.url
+                              : null,
+                          isOutgoing: true,
+                        ),
+                      ),
+                    );
+                  }
+                : null,
             onTap: () {
               if (match.userProfile != null) {
                 ProfileModal.show(
