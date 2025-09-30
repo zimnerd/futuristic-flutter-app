@@ -324,4 +324,46 @@ class LiveStreamingService {
       return [];
     }
   }
+
+  /// Generate Agora RTC token for live streaming
+  ///
+  /// [streamId] - The ID of the stream to generate token for
+  /// [role] - Either 'broadcaster' (for host) or 'audience' (for viewers)
+  ///
+  /// Returns a map containing:
+  /// - token: The Agora RTC token
+  /// - channelName: The channel name (stream_${streamId})
+  /// - uid: The user ID
+  /// - appId: The Agora app ID
+  /// - expiresIn: Token expiration time in seconds
+  /// - role: The role used for token generation
+  /// - isBroadcaster: Boolean indicating if user is the broadcaster
+  Future<Map<String, dynamic>?> generateStreamRtcToken({
+    required String streamId,
+    required String role, // 'broadcaster' or 'audience'
+  }) async {
+    try {
+      final response = await _apiClient.post(
+        '/api/v1/live-streaming/streams/$streamId/rtc-token',
+        queryParameters: {'role': role},
+      );
+
+      if (response.statusCode == 200 && response.data != null) {
+        final data = response.data['data'] as Map<String, dynamic>;
+        _logger.d(
+          'Successfully generated RTC token for stream: $streamId as $role',
+        );
+        _logger.d(
+          'Channel: ${data['channelName']}, UID: ${data['uid']}, Is Broadcaster: ${data['isBroadcaster']}',
+        );
+        return data;
+      } else {
+        _logger.e('Failed to generate RTC token: ${response.statusMessage}');
+        return null;
+      }
+    } catch (e) {
+      _logger.e('Error generating RTC token: $e');
+      return null;
+    }
+  }
 }
