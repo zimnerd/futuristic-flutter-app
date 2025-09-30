@@ -8,6 +8,7 @@ import '../../../data/models/chat_model.dart';
 import '../../../domain/entities/message.dart' as entities;
 import '../media/media_grid.dart';
 import '../media/media_viewer.dart';
+import 'voice_message_bubble.dart';
 
 class MessageBubble extends StatelessWidget {
   final MessageModel message;
@@ -140,8 +141,31 @@ class MessageBubble extends StatelessWidget {
                           ),
                         ],
 
+                        // Voice message content
+                        if (_hasVoiceMessage()) ...[
+                          ClipRRect(
+                            borderRadius: BorderRadius.only(
+                              topLeft: const Radius.circular(20),
+                              topRight: const Radius.circular(20),
+                              bottomLeft: Radius.circular(
+                                message.content?.isNotEmpty == true
+                                    ? 4
+                                    : (isCurrentUser ? 20 : 6),
+                              ),
+                              bottomRight: Radius.circular(
+                                message.content?.isNotEmpty == true
+                                    ? 4
+                                    : (isCurrentUser ? 6 : 20),
+                              ),
+                            ),
+                            child: _buildVoiceMessageContent(context),
+                          ),
+                        ],
+
                         // Text content with media or location
-                        if ((_hasMedia() || _hasLocation()) &&
+                        if ((_hasMedia() ||
+                                _hasLocation() ||
+                                _hasVoiceMessage()) &&
                             message.content != null &&
                             message.content!.isNotEmpty) ...[
                           Container(
@@ -475,7 +499,15 @@ class MessageBubble extends StatelessWidget {
         message.mediaUrls!.isNotEmpty &&
         (message.type == entities.MessageType.image ||
             message.type == entities.MessageType.video ||
-            message.type == entities.MessageType.gif);
+            message.type == entities.MessageType.gif ||
+            message.type == entities.MessageType.audio);
+  }
+
+  /// Check if message is a voice message
+  bool _hasVoiceMessage() {
+    return message.type == entities.MessageType.audio &&
+        message.mediaUrls != null &&
+        message.mediaUrls!.isNotEmpty;
   }
 
   /// Check if message has location content
@@ -623,6 +655,26 @@ class MessageBubble extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+
+  /// Build voice message content widget
+  Widget _buildVoiceMessageContent(BuildContext context) {
+    if (message.mediaUrls == null || message.mediaUrls!.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    final audioUrl = message.mediaUrls!.first;
+    final duration = message.metadata?['duration'] ?? 0;
+    final waveformData = List<double>.from(
+      message.metadata?['waveform'] ?? List.generate(20, (index) => 0.5),
+    );
+
+    return VoiceMessageBubble(
+      audioUrl: audioUrl,
+      duration: duration,
+      waveformData: waveformData,
+      isCurrentUser: isCurrentUser,
     );
   }
 

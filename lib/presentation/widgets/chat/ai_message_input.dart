@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-
+import '../../../data/models/chat_model.dart';
 import '../../theme/pulse_colors.dart';
 import 'rich_ai_chat_assistant_modal.dart';
 
@@ -17,6 +17,8 @@ class AiMessageInput extends StatefulWidget {
   final String chatId;
   final String? currentUserId;
   final String? matchUserId;
+  final MessageModel? replyToMessage;
+  final VoidCallback? onCancelReply;
 
   const AiMessageInput({
     super.key,
@@ -32,6 +34,8 @@ class AiMessageInput extends StatefulWidget {
     this.lastReceivedMessage,
     this.currentUserId,
     this.matchUserId,
+    this.replyToMessage,
+    this.onCancelReply,
   });
 
   @override
@@ -158,6 +162,7 @@ class _AiMessageInputState extends State<AiMessageInput>
       ),
       child: Column(
         children: [
+          if (widget.replyToMessage != null) _buildReplyPreview(),
           if (_showAiSuggestions) _buildAiSuggestions(),
           if (_showAttachments) _buildAttachmentOptions(),
           Row(
@@ -223,6 +228,62 @@ class _AiMessageInputState extends State<AiMessageInput>
           ),
         );
       },
+    );
+  }
+
+  Widget _buildReplyPreview() {
+    final message = widget.replyToMessage!;
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: PulseColors.primary.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(12),
+        border: Border(left: BorderSide(color: PulseColors.primary, width: 3)),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.reply, size: 16, color: PulseColors.primary),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Replying to ${message.senderUsername}',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: PulseColors.primary,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  message.content?.isNotEmpty == true
+                      ? (message.content!.length > 50
+                            ? '${message.content!.substring(0, 50)}...'
+                            : message.content!)
+                      : 'Media message',
+                  style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+          GestureDetector(
+            onTap: widget.onCancelReply,
+            child: Container(
+              padding: const EdgeInsets.all(4),
+              decoration: BoxDecoration(
+                color: Colors.grey[200],
+                shape: BoxShape.circle,
+              ),
+              child: Icon(Icons.close, size: 14, color: Colors.grey[600]),
+            ),
+          ),
+        ],
+      ),
     );
   }
 

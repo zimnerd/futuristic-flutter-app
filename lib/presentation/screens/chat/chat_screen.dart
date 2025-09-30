@@ -17,6 +17,8 @@ import '../../../presentation/blocs/auth/auth_bloc.dart';
 import '../../../presentation/blocs/auth/auth_state.dart';
 import '../../../data/models/user_model.dart';
 import '../../../core/utils/logger.dart';
+import '../../../data/models/voice_message.dart';
+import '../../widgets/chat/compact_voice_recorder.dart';
 
 import '../../../core/performance/message_pagination_optimizer.dart';
 import '../../../core/performance/media_loading_optimizer.dart';
@@ -62,6 +64,9 @@ class _ChatScreenState extends State<ChatScreen> {
   List<MessageModel> _searchResults = [];
   String _currentSearchQuery = '';
   int _currentSearchIndex = 0;
+  
+  // Reply functionality state
+  MessageModel? _replyToMessage;
   
   // Performance optimizers
   late final MessagePaginationOptimizer _paginationOptimizer;
@@ -222,10 +227,17 @@ class _ChatScreenState extends State<ChatScreen> {
         type: MessageType.text,
         content: text,
         currentUserId: currentUserId,
+        replyToMessageId: _replyToMessage?.id,
       ),
     );
 
     _messageController.clear();
+    
+    // Clear reply state after sending
+    if (_replyToMessage != null) {
+      _cancelReply();
+    }
+    
     _scrollToBottom();
   }
 
@@ -356,6 +368,8 @@ class _ChatScreenState extends State<ChatScreen> {
               onVideoCamera: _handleVideoCameraAction,
               onVideoGallery: _handleVideoGalleryAction,
             onVoice: _handleVoiceAction,
+              replyToMessage: _replyToMessage,
+              onCancelReply: _cancelReply,
             onTyping: () {
               // Debounce typing status to avoid spam
               // Only send typing_start if we're not already typing
@@ -1608,13 +1622,128 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
-  void _handleVoiceAction() {
-    // Handle voice message recording
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Voice message feature will be implemented'),
+  void _handleVoiceAction() async {
+    // Check microphone permission
+    final permission = await Permission.microphone.request();
+    if (permission != PermissionStatus.granted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Microphone permission is required for voice messages'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    // Show voice recorder modal
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      isDismissible: false,
+      enableDrag: false,
+      builder: (context) => Container(
+        height: MediaQuery.of(context).size.height * 0.4,
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(20),
+            topRight: Radius.circular(20),
+          ),
+        ),
+        child: CompactVoiceRecorder(
+          onMessageRecorded: (voiceMessage) {
+            Navigator.of(context).pop();
+            _sendVoiceMessage(voiceMessage);
+          },
+          onCancel: () {
+            Navigator.of(context).pop();
+          },
+        ),
       ),
     );
+  }
+
+  void _sendVoiceMessage(VoiceMessage voiceMessage) async {
+    final currentUserId = _currentUserId;
+    if (currentUserId == null) return;
+
+    try {
+      // Show uploading indicator
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Uploading voice message...'),
+          backgroundColor: PulseColors.primary,
+          duration: Duration(seconds: 2),
+        ),
+      );
+
+      // Upload voice message file
+      final mediaUploadService = ServiceLocator().mediaUploadService;
+      final uploadResult = await mediaUploadService.uploadMedia(
+        filePath: voiceMessage.audioUrl,
+        category: media_service.MediaCategory.chatMessage,
+        type: media_service.MediaType.audio,
+        isPublic: false,
+        requiresModeration: false,
+      );
+
+      if (uploadResult.success && uploadResult.mediaId != null) {
+        AppLogger.debug(
+          'Voice message uploaded successfully: ${uploadResult.mediaId}',
+        );
+
+        // Send message with uploaded media
+        if (mounted) {
+          context.read<ChatBloc>().add(
+            SendMessage(
+              conversationId: widget.conversationId,
+              content: '',
+              type: MessageType.audio,
+              currentUserId: currentUserId,
+              mediaIds: [uploadResult.mediaId!],
+              metadata: {
+                'duration': voiceMessage.duration,
+                'waveform': voiceMessage.waveformData,
+              },
+              replyToMessageId: _replyToMessage?.id,
+            ),
+          );
+
+          // Clear reply if set
+          if (_replyToMessage != null) {
+            setState(() {
+              _replyToMessage = null;
+            });
+          }
+
+          // Scroll to bottom
+          _scrollToBottom();
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Voice message sent!'),
+              backgroundColor: PulseColors.primary,
+              duration: Duration(seconds: 2),
+            ),
+          );
+        }
+      } else {
+        throw Exception(
+          'Failed to upload voice message: ${uploadResult.error}',
+        );
+      }
+    } catch (e) {
+      AppLogger.error('Failed to send voice message: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Failed to send voice message'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   Future<void> _sendImageMessage(File imageFile) async {
@@ -1989,11 +2118,19 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   void _setReplyToMessage(MessageModel message) {
-    // Reply functionality placeholder - to be implemented
+    setState(() {
+      _replyToMessage = message;
+    });
     // Focus on the input field
     _messageInputFocusNode.requestFocus();
 
     AppLogger.debug('Set reply context for message: ${message.id}');
+  }
+
+  void _cancelReply() {
+    setState(() {
+      _replyToMessage = null;
+    });
   }
 
   void _openMedia(MessageModel message) {
@@ -2237,10 +2374,7 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   void _onReply(MessageModel message) {
-    // Set reply-to message
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Reply feature coming soon')),
-    );
+    _setReplyToMessage(message);
   }
 
   void _onMediaTap(MessageModel message) {
