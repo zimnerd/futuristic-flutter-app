@@ -100,7 +100,7 @@ class _LiveSessionHostScreenState extends State<LiveSessionHostScreen> {
   Widget _buildSessionInfo() {
     return Container(
       padding: const EdgeInsets.all(16),
-      color: Theme.of(context).primaryColor.withOpacity(0.1),
+      color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -131,9 +131,7 @@ class _LiveSessionHostScreenState extends State<LiveSessionHostScreen> {
               ),
               const SizedBox(width: 4),
               Text(
-                widget.session.maxParticipants != null
-                    ? '${widget.session.currentParticipants}/${widget.session.maxParticipants}'
-                    : '${widget.session.currentParticipants}',
+                '${widget.session.currentParticipants}/${widget.session.maxParticipants}',
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
@@ -256,7 +254,7 @@ class _LiveSessionHostScreenState extends State<LiveSessionHostScreen> {
             ListTile(
               leading: const Icon(Icons.people_alt),
               title: const Text('Max Participants'),
-              trailing: Text(widget.session.maxParticipants?.toString() ?? 'No limit'),
+              trailing: Text(widget.session.maxParticipants.toString()),
             ),
           ],
         ),
