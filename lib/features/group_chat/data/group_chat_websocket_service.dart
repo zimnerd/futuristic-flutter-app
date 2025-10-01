@@ -18,6 +18,8 @@ class GroupChatWebSocketService {
   final _participantRemovedController = StreamController<Map<String, dynamic>>.broadcast();
   final _groupSettingsUpdatedController = StreamController<GroupSettings>.broadcast();
   final _typingController = StreamController<Map<String, dynamic>>.broadcast();
+  final _messageReceivedController = StreamController<GroupMessage>.broadcast();
+  final _messageConfirmedController = StreamController<GroupMessage>.broadcast();
 
   // Public streams
   Stream<JoinRequest> get onJoinRequestReceived => _joinRequestReceivedController.stream;
@@ -30,6 +32,8 @@ class GroupChatWebSocketService {
   Stream<Map<String, dynamic>> get onParticipantRemoved => _participantRemovedController.stream;
   Stream<GroupSettings> get onGroupSettingsUpdated => _groupSettingsUpdatedController.stream;
   Stream<Map<String, dynamic>> get onTyping => _typingController.stream;
+  Stream<GroupMessage> get onMessageReceived => _messageReceivedController.stream;
+  Stream<GroupMessage> get onMessageConfirmed => _messageConfirmedController.stream;
 
   GroupChatWebSocketService({
     required this.baseUrl,
@@ -161,6 +165,31 @@ class GroupChatWebSocketService {
     socket.on('group_typing', (data) {
       _typingController.add(data as Map<String, dynamic>);
     });
+
+    // New message received
+    socket.on('new_message', (data) {
+      try {
+        final message = GroupMessage.fromJson(data as Map<String, dynamic>);
+        _messageReceivedController.add(message);
+        print('📨 New message received: ${message.content}');
+      } catch (e) {
+        print('Error parsing new_message: $e');
+      }
+    });
+
+    // Message confirmed (sent successfully)
+    socket.on('messageConfirmed', (data) {
+      try {
+        final messageData = (data as Map<String, dynamic>)['data'];
+        if (messageData != null) {
+          final message = GroupMessage.fromJson(messageData as Map<String, dynamic>);
+          _messageConfirmedController.add(message);
+          print('✅ Message confirmed: ${message.id}');
+        }
+      } catch (e) {
+        print('Error parsing messageConfirmed: $e');
+      }
+    });
   }
 
   /// Join a live session room
@@ -178,9 +207,29 @@ class GroupChatWebSocketService {
     socket.emit('join_group', {'conversationId': conversationId});
   }
 
+
   /// Leave a group conversation room
   void leaveGroup(String conversationId) {
     socket.emit('leave_group', {'conversationId': conversationId});
+  }
+
+  /// Send a message to the group
+  void sendMessage({
+    required String conversationId,
+    required String content,
+    String type = 'text',
+    String? replyToMessageId,
+    String? tempId,
+    Map<String, dynamic>? metadata,
+  }) {
+    socket.emit('send_message', {
+      'conversationId': conversationId,
+      'content': content,
+      'type': type,
+      'replyToMessageId': replyToMessageId,
+      'tempId': tempId,
+      'metadata': metadata,
+    });
   }
 
   /// Send typing indicator
@@ -211,5 +260,8 @@ class GroupChatWebSocketService {
     _participantRemovedController.close();
     _groupSettingsUpdatedController.close();
     _typingController.close();
+    _messageReceivedController.close();
+    _messageConfirmedController.close();
   }
 }
+

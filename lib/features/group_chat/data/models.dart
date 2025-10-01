@@ -328,3 +328,111 @@ class JoinRequest {
     }
   }
 }
+
+/// Group message model
+class GroupMessage {
+  final String id;
+  final String conversationId;
+  final String senderId;
+  final String senderUsername;
+  final String? senderFirstName;
+  final String? senderLastName;
+  final String? senderProfilePhoto;
+  final String content;
+  final String type;
+  final DateTime timestamp;
+  final String status;
+  final String? tempId;
+  final ReplyToMessage? replyTo;
+  final Map<String, dynamic>? metadata;
+
+  const GroupMessage({
+    required this.id,
+    required this.conversationId,
+    required this.senderId,
+    required this.senderUsername,
+    this.senderFirstName,
+    this.senderLastName,
+    this.senderProfilePhoto,
+    required this.content,
+    required this.type,
+    required this.timestamp,
+    required this.status,
+    this.tempId,
+    this.replyTo,
+    this.metadata,
+  });
+
+  factory GroupMessage.fromJson(Map<String, dynamic> json) {
+    return GroupMessage(
+      id: json['id'] as String,
+      conversationId: json['conversationId'] as String,
+      senderId: json['senderId'] as String,
+      senderUsername: json['senderUsername'] as String,
+      senderFirstName: json['senderFirstName'] as String?,
+      senderLastName: json['senderLastName'] as String?,
+      senderProfilePhoto: json['senderProfilePhoto'] as String?,
+      content: json['content'] as String,
+      type: json['type'] as String? ?? 'text',
+      timestamp: DateTime.parse(json['timestamp'] as String),
+      status: json['status'] as String? ?? 'sent',
+      tempId: json['tempId'] as String?,
+      replyTo: json['replyTo'] != null
+          ? ReplyToMessage.fromJson(json['replyTo'] as Map<String, dynamic>)
+          : null,
+      metadata: json['metadata'] as Map<String, dynamic>?,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'conversationId': conversationId,
+      'senderId': senderId,
+      'senderUsername': senderUsername,
+      'senderFirstName': senderFirstName,
+      'senderLastName': senderLastName,
+      'senderProfilePhoto': senderProfilePhoto,
+      'content': content,
+      'type': type,
+      'timestamp': timestamp.toIso8601String(),
+      'status': status,
+      'tempId': tempId,
+      'replyTo': replyTo?.toJson(),
+      'metadata': metadata,
+    };
+  }
+}
+
+/// Reply-to message model
+class ReplyToMessage {
+  final String id;
+  final String content;
+  final String senderId;
+  final String senderUsername;
+
+  const ReplyToMessage({
+    required this.id,
+    required this.content,
+    required this.senderId,
+    required this.senderUsername,
+  });
+
+  factory ReplyToMessage.fromJson(Map<String, dynamic> json) {
+    return ReplyToMessage(
+      id: json['id'] as String,
+      content: json['content'] as String,
+      senderId: json['senderId'] as String,
+      senderUsername: json['senderUsername'] as String,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'content': content,
+      'senderId': senderId,
+      'senderUsername': senderUsername,
+    };
+  }
+}

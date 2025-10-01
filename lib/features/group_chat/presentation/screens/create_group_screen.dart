@@ -392,8 +392,8 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
   void _showParticipantPicker() async {
     final selectedIds = await showDialog<List<String>>(
       context: context,
-      builder: (context) => ParticipantPickerDialog(
-        initialSelectedIds: _selectedParticipantIds,
+      builder: (context) =>
+          ParticipantPickerDialog(initialSelectedIds: _selectedParticipantIds,
       ),
     );
 
