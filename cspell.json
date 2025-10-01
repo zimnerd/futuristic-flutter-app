@@ -20,7 +20,9 @@
     "glassmorphism",
     "shimmer",
     "lottie",
-    "placemarks"
+    "placemarks",
+    "Vbad",
+    "unmuting"
   ],
   "ignorePaths": [
     "build/**",

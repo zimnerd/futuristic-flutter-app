@@ -38,8 +38,8 @@ class _GroupCallWidgetState extends State<GroupCallWidget>
   bool _isLoading = false;
   bool _showParticipants = false;
   String _callDuration = "00:00";
-  Map<String, bool> _participantAudioStatus = {};
-  Map<String, bool> _participantVideoStatus = {};
+  final Map<String, bool> _participantAudioStatus = {};
+  final Map<String, bool> _participantVideoStatus = {};
 
   @override
   void initState() {
@@ -138,7 +138,9 @@ class _GroupCallWidgetState extends State<GroupCallWidget>
         widget.onError?.call('Failed to ${shouldMute ? 'mute' : 'unmute'} participant');
       }
     } catch (e) {
-      widget.onError?.call('Error ${shouldMute ? 'muting' : 'unmuting'} participant: $e');
+      widget.onError?.call(
+        'Error ${shouldMute ? 'muting' : 'un-muting'} participant: $e',
+      );
     }
   }
 

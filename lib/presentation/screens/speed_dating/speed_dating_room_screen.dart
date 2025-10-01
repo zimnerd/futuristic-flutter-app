@@ -411,7 +411,7 @@ class _SpeedDatingRoomScreenState extends State<SpeedDatingRoomScreen> {
                   GestureDetector(
                     onTap: () async {
                       await _audioService.leaveCall();
-                      if (mounted) {
+                      if (mounted && context.mounted) {
                         Navigator.pop(context);
                       }
                     },
