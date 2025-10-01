@@ -530,3 +530,137 @@ class MessageReaction {
     };
   }
 }
+
+/// Blocked user model for group moderation
+class BlockedUser {
+  final String id;
+  final String userId;
+  final String username;
+  final String? firstName;
+  final String? lastName;
+  final String? photoUrl;
+  final String? reason;
+  final DateTime blockedAt;
+  final String blockedBy;
+
+  const BlockedUser({
+    required this.id,
+    required this.userId,
+    required this.username,
+    this.firstName,
+    this.lastName,
+    this.photoUrl,
+    this.reason,
+    required this.blockedAt,
+    required this.blockedBy,
+  });
+
+  String get fullName {
+    if (firstName != null && lastName != null) {
+      return '$firstName $lastName';
+    }
+    return username;
+  }
+
+  factory BlockedUser.fromJson(Map<String, dynamic> json) {
+    return BlockedUser(
+      id: json['id'] as String,
+      userId: json['userId'] as String,
+      username: json['username'] as String,
+      firstName: json['firstName'] as String?,
+      lastName: json['lastName'] as String?,
+      photoUrl: json['photoUrl'] as String?,
+      reason: json['reason'] as String?,
+      blockedAt: DateTime.parse(json['blockedAt'] as String),
+      blockedBy: json['blockedBy'] as String,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'userId': userId,
+      'username': username,
+      if (firstName != null) 'firstName': firstName,
+      if (lastName != null) 'lastName': lastName,
+      if (photoUrl != null) 'photoUrl': photoUrl,
+      if (reason != null) 'reason': reason,
+      'blockedAt': blockedAt.toIso8601String(),
+      'blockedBy': blockedBy,
+    };
+  }
+}
+
+/// Reported content model for content moderation
+class ReportedContent {
+  final String id;
+  final String messageId;
+  final String reportedBy;
+  final String reporterUsername;
+  final String? reporterPhotoUrl;
+  final String reason;
+  final String? description;
+  final DateTime reportedAt;
+  final String status; // pending, reviewed, dismissed, action_taken
+  final String? reviewedBy;
+  final DateTime? reviewedAt;
+  final String? reviewNotes;
+  final GroupMessage? message;
+
+  const ReportedContent({
+    required this.id,
+    required this.messageId,
+    required this.reportedBy,
+    required this.reporterUsername,
+    this.reporterPhotoUrl,
+    required this.reason,
+    this.description,
+    required this.reportedAt,
+    required this.status,
+    this.reviewedBy,
+    this.reviewedAt,
+    this.reviewNotes,
+    this.message,
+  });
+
+  factory ReportedContent.fromJson(Map<String, dynamic> json) {
+    return ReportedContent(
+      id: json['id'] as String,
+      messageId: json['messageId'] as String,
+      reportedBy: json['reportedBy'] as String,
+      reporterUsername: json['reporterUsername'] as String,
+      reporterPhotoUrl: json['reporterPhotoUrl'] as String?,
+      reason: json['reason'] as String,
+      description: json['description'] as String?,
+      reportedAt: DateTime.parse(json['reportedAt'] as String),
+      status: json['status'] as String,
+      reviewedBy: json['reviewedBy'] as String?,
+      reviewedAt: json['reviewedAt'] != null
+          ? DateTime.parse(json['reviewedAt'] as String)
+          : null,
+      reviewNotes: json['reviewNotes'] as String?,
+      message: json['message'] != null
+          ? GroupMessage.fromJson(json['message'] as Map<String, dynamic>)
+          : null,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'messageId': messageId,
+      'reportedBy': reportedBy,
+      'reporterUsername': reporterUsername,
+      if (reporterPhotoUrl != null) 'reporterPhotoUrl': reporterPhotoUrl,
+      'reason': reason,
+      if (description != null) 'description': description,
+      'reportedAt': reportedAt.toIso8601String(),
+      'status': status,
+      if (reviewedBy != null) 'reviewedBy': reviewedBy,
+      if (reviewedAt != null) 'reviewedAt': reviewedAt!.toIso8601String(),
+      if (reviewNotes != null) 'reviewNotes': reviewNotes,
+      if (message != null) 'message': message!.toJson(),
+    };
+  }
+}
+

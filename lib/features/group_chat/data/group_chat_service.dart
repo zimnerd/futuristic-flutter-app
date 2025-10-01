@@ -394,4 +394,172 @@ class GroupChatService {
       throw Exception('Failed to update group settings: ${response.body}');
     }
   }
+
+  /// Change a participant's role in the group (owner only)
+  Future<void> changeParticipantRole({
+    required String conversationId,
+    required String targetUserId,
+    required ParticipantRole role,
+    String? reason,
+  }) async {
+    final response = await http.patch(
+      Uri.parse(
+        '$baseUrl/group-chat/conversation/$conversationId/participants/$targetUserId/role',
+      ),
+      headers: _headers,
+      body: jsonEncode({
+        'role': role.name.toUpperCase(),
+        if (reason != null) 'reason': reason,
+      }),
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Failed to change participant role: ${response.body}');
+    }
+  }
+
+  /// Leave a group conversation
+  Future<void> leaveGroup({
+    required String conversationId,
+    String? message,
+  }) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/group-chat/conversation/$conversationId/leave'),
+      headers: _headers,
+      body: jsonEncode({
+        if (message != null) 'message': message,
+      }),
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Failed to leave group: ${response.body}');
+    }
+  }
+
+  /// Delete a group conversation (owner only)
+  Future<void> deleteGroup({
+    required String conversationId,
+  }) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/group-chat/conversation/$conversationId/delete'),
+      headers: _headers,
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Failed to delete group: ${response.body}');
+    }
+  }
+
+  /// Upload group photo
+  Future<String> uploadGroupPhoto({
+    required String conversationId,
+    required String imagePath,
+  }) async {
+    final request = http.MultipartRequest(
+      'POST',
+      Uri.parse('$baseUrl/group-chat/conversation/$conversationId/photo'),
+    );
+
+    request.headers.addAll(_headers);
+    request.files.add(await http.MultipartFile.fromPath('photo', imagePath));
+
+    final streamedResponse = await request.send();
+    final response = await http.Response.fromStream(streamedResponse);
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return data['data']['photoUrl'] as String;
+    } else {
+      throw Exception('Failed to upload group photo: ${response.body}');
+    }
+  }
+
+  /// Remove group photo
+  Future<void> removeGroupPhoto({
+    required String conversationId,
+  }) async {
+    final response = await http.delete(
+      Uri.parse('$baseUrl/group-chat/conversation/$conversationId/photo'),
+      headers: _headers,
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Failed to remove group photo: ${response.body}');
+    }
+  }
+
+  /// Get blocked users in a conversation
+  Future<List<BlockedUser>> getBlockedUsers({
+    required String conversationId,
+  }) async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/group-chat/conversation/$conversationId/blocked-users'),
+      headers: _headers,
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      final users = data['data'] as List;
+      return users.map((u) => BlockedUser.fromJson(u)).toList();
+    } else {
+      throw Exception('Failed to get blocked users: ${response.body}');
+    }
+  }
+
+  /// Block a user in a conversation
+  Future<void> blockUser({
+    required String conversationId,
+    required String userId,
+    String? reason,
+  }) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/group-chat/conversation/$conversationId/block-user'),
+      headers: _headers,
+      body: jsonEncode({
+        'userId': userId,
+        if (reason != null) 'reason': reason,
+      }),
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Failed to block user: ${response.body}');
+    }
+  }
+
+  /// Unblock a user in a conversation
+  Future<void> unblockUser({
+    required String conversationId,
+    required String userId,
+  }) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/group-chat/conversation/$conversationId/unblock-user'),
+      headers: _headers,
+      body: jsonEncode({
+        'userId': userId,
+      }),
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Failed to unblock user: ${response.body}');
+    }
+  }
+
+  /// Get reported content in a conversation
+  Future<List<ReportedContent>> getReportedContent({
+    required String conversationId,
+  }) async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/group-chat/conversation/$conversationId/reports'),
+      headers: _headers,
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      final reports = data['data'] as List;
+      return reports.map((r) => ReportedContent.fromJson(r)).toList();
+    } else {
+      throw Exception('Failed to get reported content: ${response.body}');
+    }
+  }
 }
+

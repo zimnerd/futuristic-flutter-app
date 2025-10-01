@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:get_it/get_it.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../../../features/group_chat/data/models.dart';
 import '../../../features/group_chat/data/group_chat_service.dart';
@@ -1010,7 +1011,7 @@ class _GroupChatSettingsScreenState extends State<GroupChatSettingsScreen> {
               title: const Text('Choose from gallery', style: TextStyle(color: Colors.white)),
               onTap: () {
                 Navigator.pop(context);
-                // TODO: Implement image picker
+                _pickImageFromGallery();
               },
             ),
             ListTile(
@@ -1018,7 +1019,7 @@ class _GroupChatSettingsScreenState extends State<GroupChatSettingsScreen> {
               title: const Text('Take photo', style: TextStyle(color: Colors.white)),
               onTap: () {
                 Navigator.pop(context);
-                // TODO: Implement camera
+                _takePhotoWithCamera();
               },
             ),
             ListTile(
@@ -1026,7 +1027,7 @@ class _GroupChatSettingsScreenState extends State<GroupChatSettingsScreen> {
               title: const Text('Remove photo', style: TextStyle(color: Colors.red)),
               onTap: () {
                 Navigator.pop(context);
-                // TODO: Implement remove photo
+                _removeGroupPhoto();
               },
             ),
           ],
@@ -1036,9 +1037,16 @@ class _GroupChatSettingsScreenState extends State<GroupChatSettingsScreen> {
   }
 
   void _showAddParticipantsDialog() {
-    // TODO: Implement add participants dialog
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Add participants feature coming soon')),
+    showDialog(
+      context: context,
+      builder: (context) => AddParticipantsDialog(
+        groupId: widget.group.id,
+        existingParticipantIds: widget.group.participants.map((p) => p.userId).toList(),
+        onParticipantsAdded: () {
+          // Refresh group data
+          setState(() {});
+        },
+      ),
     );
   }
 
@@ -1085,8 +1093,13 @@ class _GroupChatSettingsScreenState extends State<GroupChatSettingsScreen> {
 
   Future<void> _changeParticipantRole(GroupParticipant participant, ParticipantRole newRole) async {
     try {
-      // TODO: Implement API call
-      await Future.delayed(const Duration(milliseconds: 300));
+      final service = sl<GroupChatService>();
+      await service.changeParticipantRole(
+        conversationId: widget.group.id,
+        targetUserId: participant.userId,
+        role: newRole,
+        reason: 'Role changed by admin',
+      );
       
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -1159,16 +1172,24 @@ class _GroupChatSettingsScreenState extends State<GroupChatSettingsScreen> {
   }
 
   void _showBlockedUsers() {
-    // TODO: Implement blocked users screen
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Blocked users feature coming soon')),
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => BlockedUsersScreen(
+          conversationId: widget.group.id,
+        ),
+      ),
     );
   }
 
   void _showReportedContent() {
-    // TODO: Implement reported content screen
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Reported content feature coming soon')),
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ReportedContentScreen(
+          conversationId: widget.group.id,
+        ),
+      ),
     );
   }
 
@@ -1201,8 +1222,11 @@ class _GroupChatSettingsScreenState extends State<GroupChatSettingsScreen> {
 
   Future<void> _leaveGroup() async {
     try {
-      // TODO: Implement leave group API call
-      await Future.delayed(const Duration(milliseconds: 300));
+      final service = sl<GroupChatService>();
+      await service.leaveGroup(
+        conversationId: widget.group.id,
+        message: 'Left the group',
+      );
       
       if (mounted) {
         Navigator.pop(context); // Close settings screen
@@ -1252,9 +1276,10 @@ class _GroupChatSettingsScreenState extends State<GroupChatSettingsScreen> {
 
   Future<void> _deleteGroup() async {
     try {
-      // TODO: Implement delete group API call
-      // context.read<GroupChatBloc>().add(DeleteGroup(conversationId: widget.group.id));
-      await Future.delayed(const Duration(milliseconds: 300));
+      final service = sl<GroupChatService>();
+      await service.deleteGroup(
+        conversationId: widget.group.id,
+      );
       
       if (mounted) {
         Navigator.pop(context); // Close settings screen
@@ -1276,6 +1301,152 @@ class _GroupChatSettingsScreenState extends State<GroupChatSettingsScreen> {
   }
 
   // ========== UTILITY METHODS ==========
+
+  /// Pick image from gallery
+  Future<void> _pickImageFromGallery() async {
+    try {
+      final picker = ImagePicker();
+      final XFile? image = await picker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 85,
+        maxWidth: 1024,
+        maxHeight: 1024,
+      );
+
+      if (image != null) {
+        await _uploadGroupPhoto(image.path);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to pick image: $e'), backgroundColor: Colors.red),
+        );
+      }
+    }
+  }
+
+  /// Take photo with camera
+  Future<void> _takePhotoWithCamera() async {
+    try {
+      final picker = ImagePicker();
+      final XFile? photo = await picker.pickImage(
+        source: ImageSource.camera,
+        imageQuality: 85,
+        maxWidth: 1024,
+        maxHeight: 1024,
+      );
+
+      if (photo != null) {
+        await _uploadGroupPhoto(photo.path);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to take photo: $e'), backgroundColor: Colors.red),
+        );
+      }
+    }
+  }
+
+  /// Upload group photo
+  Future<void> _uploadGroupPhoto(String imagePath) async {
+    try {
+      // Show loading indicator
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Row(
+              children: [
+                SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                ),
+                SizedBox(width: 16),
+                Text('Uploading photo...'),
+              ],
+            ),
+            duration: Duration(seconds: 60),
+          ),
+        );
+      }
+
+      final service = sl<GroupChatService>();
+      await service.uploadGroupPhoto(
+        conversationId: widget.group.id,
+        imagePath: imagePath,
+      );
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Group photo updated successfully'),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 2),
+          ),
+        );
+        // Refresh the screen
+        setState(() {});
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to upload photo: $e'), backgroundColor: Colors.red),
+        );
+      }
+    }
+  }
+
+  /// Remove group photo
+  Future<void> _removeGroupPhoto() async {
+    try {
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          backgroundColor: const Color(0xFF1A1F3A),
+          title: const Text('Remove Photo', style: TextStyle(color: Colors.white)),
+          content: const Text(
+            'Are you sure you want to remove the group photo?',
+            style: TextStyle(color: Colors.white70),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('Remove', style: TextStyle(color: Colors.red)),
+            ),
+          ],
+        ),
+      );
+
+      if (confirmed == true) {
+        final service = sl<GroupChatService>();
+        await service.removeGroupPhoto(conversationId: widget.group.id);
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Group photo removed'),
+              backgroundColor: Colors.green,
+            ),
+          );
+          // Refresh the screen
+          setState(() {});
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to remove photo: $e'), backgroundColor: Colors.red),
+        );
+      }
+    }
+  }
 
   String _formatDate(DateTime? date) {
     if (date == null) return 'Unknown';
@@ -1310,3 +1481,593 @@ class _GroupChatSettingsScreenState extends State<GroupChatSettingsScreen> {
     }
   }
 }
+
+// ========== ADD PARTICIPANTS DIALOG ==========
+
+class AddParticipantsDialog extends StatefulWidget {
+  final String groupId;
+  final List<String> existingParticipantIds;
+  final VoidCallback onParticipantsAdded;
+
+  const AddParticipantsDialog({
+    super.key,
+    required this.groupId,
+    required this.existingParticipantIds,
+    required this.onParticipantsAdded,
+  });
+
+  @override
+  State<AddParticipantsDialog> createState() => _AddParticipantsDialogState();
+}
+
+class _AddParticipantsDialogState extends State<AddParticipantsDialog> {
+  final TextEditingController _searchController = TextEditingController();
+  final List<String> _selectedUserIds = [];
+  bool _isLoading = false;
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      backgroundColor: const Color(0xFF1A1F3A),
+      child: Container(
+        constraints: const BoxConstraints(maxHeight: 600, maxWidth: 400),
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  'Add Participants',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.close, color: Colors.white),
+                  onPressed: () => Navigator.pop(context),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: _searchController,
+              style: const TextStyle(color: Colors.white),
+              decoration: InputDecoration(
+                hintText: 'Search users...',
+                hintStyle: const TextStyle(color: Colors.white54),
+                prefixIcon: const Icon(Icons.search, color: Colors.white54),
+                filled: true,
+                fillColor: Colors.white.withOpacity(0.1),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
+                ),
+              ),
+              onChanged: (value) {
+                // TODO: Implement user search
+                setState(() {});
+              },
+            ),
+            const SizedBox(height: 16),
+            Expanded(
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.05),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: _isLoading
+                    ? const Center(
+                        child: CircularProgressIndicator(),
+                      )
+                    : const Center(
+                        child: Text(
+                          'Search for users to add',
+                          style: TextStyle(color: Colors.white54),
+                        ),
+                      ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: _selectedUserIds.isEmpty ? null : _addParticipants,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.purple,
+                  disabledBackgroundColor: Colors.grey.withOpacity(0.3),
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: Text(
+                  'Add ${_selectedUserIds.length} ${_selectedUserIds.length == 1 ? 'Person' : 'People'}',
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _addParticipants() async {
+    setState(() => _isLoading = true);
+
+    try {
+      final service = sl<GroupChatService>();
+      for (final userId in _selectedUserIds) {
+        await service.addParticipant(
+          conversationId: widget.groupId,
+          userId: userId,
+          role: ParticipantRole.member,
+        );
+      }
+
+      if (mounted) {
+        Navigator.pop(context);
+        widget.onParticipantsAdded();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Participants added successfully'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to add participants: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+}
+
+// ========== BLOCKED USERS SCREEN ==========
+
+class BlockedUsersScreen extends StatefulWidget {
+  final String conversationId;
+
+  const BlockedUsersScreen({
+    super.key,
+    required this.conversationId,
+  });
+
+  @override
+  State<BlockedUsersScreen> createState() => _BlockedUsersScreenState();
+}
+
+class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
+  List<BlockedUser>? _blockedUsers;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadBlockedUsers();
+  }
+
+  Future<void> _loadBlockedUsers() async {
+    try {
+      final service = sl<GroupChatService>();
+      final users = await service.getBlockedUsers(conversationId: widget.conversationId);
+      
+      if (mounted) {
+        setState(() {
+          _blockedUsers = users;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to load blocked users: $e'), backgroundColor: Colors.red),
+        );
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFF0A0E21),
+      appBar: AppBar(
+        backgroundColor: const Color(0xFF1A1F3A),
+        title: const Text('Blocked Users'),
+        elevation: 0,
+      ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : _blockedUsers == null || _blockedUsers!.isEmpty
+              ? const Center(
+                  child: Text(
+                    'No blocked users',
+                    style: TextStyle(color: Colors.white54, fontSize: 16),
+                  ),
+                )
+              : ListView.builder(
+                  itemCount: _blockedUsers!.length,
+                  padding: const EdgeInsets.all(16),
+                  itemBuilder: (context, index) {
+                    final user = _blockedUsers![index];
+                    return Card(
+                      color: const Color(0xFF1A1F3A),
+                      margin: const EdgeInsets.only(bottom: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: ListTile(
+                        contentPadding: const EdgeInsets.all(12),
+                        leading: CircleAvatar(
+                          radius: 25,
+                          backgroundImage: user.photoUrl != null
+                              ? CachedNetworkImageProvider(user.photoUrl!)
+                              : null,
+                          child: user.photoUrl == null
+                              ? Text(
+                                  user.fullName[0].toUpperCase(),
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                )
+                              : null,
+                        ),
+                        title: Text(
+                          user.fullName,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        subtitle: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '@${user.username}',
+                              style: const TextStyle(color: Colors.white70),
+                            ),
+                            if (user.reason != null) ...[
+                              const SizedBox(height: 4),
+                              Text(
+                                'Reason: ${user.reason}',
+                                style: const TextStyle(
+                                  color: Colors.white54,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                        trailing: ElevatedButton(
+                          onPressed: () => _unblockUser(user),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.green,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 8,
+                            ),
+                          ),
+                          child: const Text('Unblock'),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+    );
+  }
+
+  Future<void> _unblockUser(BlockedUser user) async {
+    try {
+      final service = sl<GroupChatService>();
+      await service.unblockUser(
+        conversationId: widget.conversationId,
+        userId: user.userId,
+      );
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${user.fullName} unblocked'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        _loadBlockedUsers(); // Reload the list
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to unblock user: $e'), backgroundColor: Colors.red),
+        );
+      }
+    }
+  }
+}
+
+// ========== REPORTED CONTENT SCREEN ==========
+
+class ReportedContentScreen extends StatefulWidget {
+  final String conversationId;
+
+  const ReportedContentScreen({
+    super.key,
+    required this.conversationId,
+  });
+
+  @override
+  State<ReportedContentScreen> createState() => _ReportedContentScreenState();
+}
+
+class _ReportedContentScreenState extends State<ReportedContentScreen> {
+  List<ReportedContent>? _reports;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadReportedContent();
+  }
+
+  Future<void> _loadReportedContent() async {
+    try {
+      final service = sl<GroupChatService>();
+      final reports = await service.getReportedContent(
+        conversationId: widget.conversationId,
+      );
+      
+      if (mounted) {
+        setState(() {
+          _reports = reports;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to load reported content: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFF0A0E21),
+      appBar: AppBar(
+        backgroundColor: const Color(0xFF1A1F3A),
+        title: const Text('Reported Content'),
+        elevation: 0,
+      ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : _reports == null || _reports!.isEmpty
+              ? const Center(
+                  child: Text(
+                    'No reported content',
+                    style: TextStyle(color: Colors.white54, fontSize: 16),
+                  ),
+                )
+              : ListView.builder(
+                  itemCount: _reports!.length,
+                  padding: const EdgeInsets.all(16),
+                  itemBuilder: (context, index) {
+                    final report = _reports![index];
+                    return Card(
+                      color: const Color(0xFF1A1F3A),
+                      margin: const EdgeInsets.only(bottom: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                CircleAvatar(
+                                  radius: 20,
+                                  backgroundImage: report.reporterPhotoUrl != null
+                                      ? CachedNetworkImageProvider(report.reporterPhotoUrl!)
+                                      : null,
+                                  child: report.reporterPhotoUrl == null
+                                      ? Text(
+                                          report.reporterUsername[0].toUpperCase(),
+                                          style: const TextStyle(color: Colors.white),
+                                        )
+                                      : null,
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Reported by @${report.reporterUsername}',
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      Text(
+                                        _formatDate(report.reportedAt),
+                                        style: const TextStyle(
+                                          color: Colors.white54,
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 6,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: _getStatusColor(report.status),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Text(
+                                    report.status.toUpperCase(),
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+                            Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: Colors.red.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(color: Colors.red.withOpacity(0.3)),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Reason: ${report.reason}',
+                                    style: const TextStyle(
+                                      color: Colors.red,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  if (report.description != null) ...[
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      report.description!,
+                                      style: const TextStyle(color: Colors.white70),
+                                    ),
+                                  ],
+                                ],
+                              ),
+                            ),
+                            if (report.message != null) ...[
+                              const SizedBox(height: 12),
+                              Container(
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.05),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Text(
+                                  report.message!.content,
+                                  style: const TextStyle(color: Colors.white70),
+                                  maxLines: 3,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                            if (report.status == 'pending') ...[
+                              const SizedBox(height: 12),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: ElevatedButton.icon(
+                                      onPressed: () => _reviewReport(report, 'dismissed'),
+                                      icon: const Icon(Icons.close, size: 18),
+                                      label: const Text('Dismiss'),
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Colors.grey,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: ElevatedButton.icon(
+                                      onPressed: () => _reviewReport(report, 'action_taken'),
+                                      icon: const Icon(Icons.check, size: 18),
+                                      label: const Text('Take Action'),
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Colors.red,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+    );
+  }
+
+  Color _getStatusColor(String status) {
+    switch (status.toLowerCase()) {
+      case 'pending':
+        return Colors.orange;
+      case 'reviewed':
+        return Colors.blue;
+      case 'dismissed':
+        return Colors.grey;
+      case 'action_taken':
+        return Colors.green;
+      default:
+        return Colors.grey;
+    }
+  }
+
+  String _formatDate(DateTime date) {
+    final now = DateTime.now();
+    final difference = now.difference(date);
+
+    if (difference.inDays > 0) {
+      return '${difference.inDays}d ago';
+    } else if (difference.inHours > 0) {
+      return '${difference.inHours}h ago';
+    } else if (difference.inMinutes > 0) {
+      return '${difference.inMinutes}m ago';
+    } else {
+      return 'Just now';
+    }
+  }
+
+  Future<void> _reviewReport(ReportedContent report, String action) async {
+    // TODO: Implement review report API call
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Report $action - API integration pending'),
+        backgroundColor: Colors.orange,
+      ),
+    );
+  }
+}
+
