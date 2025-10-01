@@ -8,6 +8,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:get_it/get_it.dart';
 
 import '../../../features/group_chat/data/models.dart';
+import '../../../features/group_chat/data/group_chat_service.dart';
 import '../../../features/group_chat/data/group_chat_websocket_service.dart';
 import '../../../presentation/blocs/group_chat/group_chat_bloc.dart';
 import '../../../presentation/blocs/group_chat/group_chat_event.dart';
@@ -39,6 +40,7 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
   // Services
   final ChatBloc _chatBloc = GetIt.I<ChatBloc>();
   late final GroupChatWebSocketService _groupChatWS;
+  late final GroupChatService _groupChatService;
   final ImagePicker _imagePicker = ImagePicker();
 
   // State
@@ -60,6 +62,7 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
     super.initState();
     
     _groupChatWS = GetIt.I<GroupChatWebSocketService>();
+    _groupChatService = GetIt.I<GroupChatService>();
     
     // Initialize animations
     _typingAnimationController = AnimationController(
@@ -1167,10 +1170,115 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
   }
 
   void _showAddParticipantsDialog() {
-    // FUTURE: Implement add participants dialog with user search
-    // Requires backend API for user search and group member management
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Add participants feature coming soon')),
+    final searchController = TextEditingController();
+    List<dynamic> searchResults = [];
+    bool isSearching = false;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) => Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+            left: 16,
+            right: 16,
+            top: 16,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'Add Participants',
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: searchController,
+                decoration: InputDecoration(
+                  hintText: 'Search users...',
+                  prefixIcon: const Icon(Icons.search),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                onChanged: (query) async {
+                  if (query.length >= 2) {
+                    setState(() => isSearching = true);
+                    try {
+                      final results = await _groupChatService.searchUsers(
+                        query: query,
+                        conversationId: widget.group.id,
+                      );
+                      setState(() {
+                        searchResults = results;
+                        isSearching = false;
+                      });
+                    } catch (e) {
+                      setState(() => isSearching = false);
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Search failed: $e')),
+                        );
+                      }
+                    }
+                  }
+                },
+              ),
+              const SizedBox(height: 16),
+              if (isSearching)
+                const CircularProgressIndicator()
+              else
+                Flexible(
+                  child: ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: searchResults.length,
+                    itemBuilder: (context, index) {
+                      final user = searchResults[index] as Map<String, dynamic>;
+                      return ListTile(
+                        leading: CircleAvatar(
+                          backgroundImage: user['avatar'] != null
+                              ? CachedNetworkImageProvider(user['avatar'])
+                              : null,
+                          child: user['avatar'] == null
+                              ? Text(user['username']?[0] ?? '?')
+                              : null,
+                        ),
+                        title: Text(user['username'] ?? 'Unknown'),
+                        subtitle: Text(user['firstName'] ?? ''),
+                        trailing: IconButton(
+                          icon: const Icon(Icons.add_circle),
+                          onPressed: () async {
+                            try {
+                              await _groupChatService.addParticipant(
+                                conversationId: widget.group.id,
+                                userId: user['userId'],
+                              );
+                              if (context.mounted) {
+                                Navigator.pop(context);
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Participant added'),
+                                  ),
+                                );
+                              }
+                            } catch (e) {
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text('Failed to add: $e')),
+                                );
+                              }
+                            }
+                          },
+                        ),
+                      );
+                    },
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
@@ -1208,30 +1316,405 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
   }
 
   void _showSearchMessages() {
-    // FUTURE: Implement message search (see group_chat_screen.dart for reference)
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Search feature coming soon')),
+    final searchController = TextEditingController();
+    List<dynamic> searchResults = [];
+    bool isSearching = false;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) => Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+            left: 16,
+            right: 16,
+            top: 16,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'Search Messages',
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: searchController,
+                autofocus: true,
+                decoration: InputDecoration(
+                  hintText: 'Search in messages...',
+                  prefixIcon: const Icon(Icons.search),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                onSubmitted: (query) async {
+                  if (query.length >= 2) {
+                    setState(() => isSearching = true);
+                    try {
+                      final results = await _groupChatService.searchMessages(
+                        conversationId: widget.group.id,
+                        query: query,
+                      );
+                      setState(() {
+                        searchResults = results;
+                        isSearching = false;
+                      });
+                    } catch (e) {
+                      setState(() => isSearching = false);
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Search failed: $e')),
+                        );
+                      }
+                    }
+                  }
+                },
+              ),
+              const SizedBox(height: 16),
+              if (isSearching)
+                const CircularProgressIndicator()
+              else if (searchResults.isEmpty)
+                const Padding(
+                  padding: EdgeInsets.all(32),
+                  child: Text('No messages found'),
+                )
+              else
+                Flexible(
+                  child: ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: searchResults.length,
+                    itemBuilder: (context, index) {
+                      final message = searchResults[index] as Map<String, dynamic>;
+                      return ListTile(
+                        title: Text(
+                          message['senderUsername'] ?? 'Unknown',
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        subtitle: Text(
+                          message['content'] ?? '',
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        trailing: Text(
+                          _formatTimestamp(message['createdAt']),
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
+                        onTap: () {
+                          Navigator.pop(context);
+                          // Optionally scroll to message
+                        },
+                      );
+                    },
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
-  void _showMediaGallery() {
-    // FUTURE: Implement media gallery - shows all images/videos from conversation
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Media gallery coming soon')),
-    );
+  String _formatTimestamp(dynamic timestamp) {
+    try {
+      final dt = timestamp is DateTime
+          ? timestamp
+          : DateTime.parse(timestamp.toString());
+      final now = DateTime.now();
+      final diff = now.difference(dt);
+
+      if (diff.inDays > 0) {
+        return '${diff.inDays}d ago';
+      } else if (diff.inHours > 0) {
+        return '${diff.inHours}h ago';
+      } else if (diff.inMinutes > 0) {
+        return '${diff.inMinutes}m ago';
+      } else {
+        return 'Just now';
+      }
+    } catch (e) {
+      return '';
+    }
+  }
+
+  void _showMediaGallery() async {
+    try {
+      final media = await _groupChatService.getConversationMedia(
+        conversationId: widget.group.id,
+        limit: 100,
+      );
+
+      if (!mounted) return;
+
+      showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        builder: (context) => DraggableScrollableSheet(
+          initialChildSize: 0.9,
+          minChildSize: 0.5,
+          maxChildSize: 0.95,
+          expand: false,
+          builder: (context, scrollController) => Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Media Gallery (${media.length})',
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: media.isEmpty
+                    ? const Center(
+                        child: Text('No media in this conversation'),
+                      )
+                    : GridView.builder(
+                        controller: scrollController,
+                        padding: const EdgeInsets.all(8),
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 3,
+                          crossAxisSpacing: 4,
+                          mainAxisSpacing: 4,
+                        ),
+                        itemCount: media.length,
+                        itemBuilder: (context, index) {
+                          final item = media[index];
+                          final content = item['content'] ?? '';
+                          final type = item['type'] ?? '';
+
+                          return GestureDetector(
+                            onTap: () {
+                              // Show full image/video viewer
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => Scaffold(
+                                    appBar: AppBar(
+                                      backgroundColor: Colors.black,
+                                    ),
+                                    backgroundColor: Colors.black,
+                                    body: Center(
+                                      child: CachedNetworkImage(
+                                        imageUrl: content,
+                                        fit: BoxFit.contain,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
+                            child: Stack(
+                              fit: StackFit.expand,
+                              children: [
+                                CachedNetworkImage(
+                                  imageUrl: content,
+                                  fit: BoxFit.cover,
+                                  placeholder: (context, url) => Container(
+                                    color: Colors.grey[300],
+                                    child: const Center(
+                                      child: CircularProgressIndicator(),
+                                    ),
+                                  ),
+                                  errorWidget: (context, url, error) =>
+                                      Container(
+                                    color: Colors.grey[300],
+                                    child: const Icon(Icons.broken_image),
+                                  ),
+                                ),
+                                if (type == 'video')
+                                  const Center(
+                                    child: Icon(
+                                      Icons.play_circle_filled,
+                                      color: Colors.white,
+                                      size: 40,
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+              ),
+            ],
+          ),
+        ),
+      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to load media: $e')),
+        );
+      }
+    }
   }
 
   void _showGroupSettings() {
-    // FUTURE: Navigate to group settings screen (permissions, notifications, etc.)
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Group settings coming soon')),
+    final nameController = TextEditingController(text: widget.group.title);
+    final descController = TextEditingController(
+      text: widget.group.description ?? '',
+    );
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Group Settings'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: nameController,
+                decoration: const InputDecoration(
+                  labelText: 'Group Name',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: descController,
+                decoration: const InputDecoration(
+                  labelText: 'Description',
+                  border: OutlineInputBorder(),
+                ),
+                maxLines: 3,
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              try {
+                await _groupChatService.updateGroupSettings(
+                  conversationId: widget.group.id,
+                  title: nameController.text,
+                  description: descController.text,
+                );
+                if (context.mounted) {
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Settings updated')),
+                  );
+                }
+              } catch (e) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Failed to update: $e')),
+                  );
+                }
+              }
+            },
+            child: const Text('Save'),
+          ),
+        ],
+      ),
     );
   }
 
   void _reportGroup() {
-    // FUTURE: Implement report functionality (requires moderation system)
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Report submitted')),
+    String? selectedReason;
+    final detailsController = TextEditingController();
+    final reasons = [
+      'Spam',
+      'Harassment',
+      'Inappropriate Content',
+      'Scam or Fraud',
+      'Hate Speech',
+      'Violence',
+      'Other',
+    ];
+
+    showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          title: const Text('Report Group'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('Why are you reporting this group?'),
+                const SizedBox(height: 16),
+                ...reasons.map((reason) => RadioListTile<String>(
+                      title: Text(reason),
+                      value: reason,
+                      groupValue: selectedReason,
+                      onChanged: (value) {
+                        setState(() => selectedReason = value);
+                      },
+                    )),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: detailsController,
+                  decoration: const InputDecoration(
+                    labelText: 'Additional Details (Optional)',
+                    border: OutlineInputBorder(),
+                  ),
+                  maxLines: 3,
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+              onPressed: selectedReason == null
+                  ? null
+                  : () async {
+                      try {
+                        await _groupChatService.reportGroup(
+                          conversationId: widget.group.id,
+                          reason: selectedReason!,
+                          details: detailsController.text.isEmpty
+                              ? null
+                              : detailsController.text,
+                        );
+                        if (context.mounted) {
+                          Navigator.pop(context);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                'Report submitted. We\'ll review it shortly.',
+                              ),
+                            ),
+                          );
+                        }
+                      } catch (e) {
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Failed to report: $e')),
+                          );
+                        }
+                      }
+                    },
+              child: const Text(
+                'Submit Report',
+                style: TextStyle(color: Colors.white),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -1252,10 +1735,26 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.red,
             ),
-            onPressed: () {
-              // Implement leave group logic
-              Navigator.pop(context); // Close dialog
-              Navigator.pop(context); // Close screen
+            onPressed: () async {
+              try {
+                await _groupChatService.leaveGroup(
+                  conversationId: widget.group.id,
+                );
+                if (context.mounted) {
+                  Navigator.pop(context); // Close dialog
+                  Navigator.pop(context); // Close screen
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('You left the group')),
+                  );
+                }
+              } catch (e) {
+                if (context.mounted) {
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Failed to leave group: $e')),
+                  );
+                }
+              }
             },
             child: const Text('Leave', style: TextStyle(color: Colors.white)),
           ),
@@ -1265,27 +1764,48 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
   }
 
   void _startVoiceCall() {
-    // FUTURE: Integrate with WebRTC service for group voice calls
-    // See group_chat_screen.dart _initiateCall method for implementation pattern
+    // WebRTC voice call functionality
+    // Requires WebRTC token and navigation to call screen
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Starting voice call...')),
+      const SnackBar(
+        content: Text('Voice call feature requires WebRTC setup'),
+      ),
     );
+    // TODO: Implement WebRTC call flow:
+    // 1. Request RTC token from backend
+    // 2. Initialize WebRTC connection
+    // 3. Navigate to voice call screen
+    // See group_chat_webrtc_service.dart for implementation
   }
 
   void _startVideoCall() {
-    // FUTURE: Navigate to video call screen with WebRTC
-    // See group_chat_screen.dart _initiateCall method for implementation pattern
+    // WebRTC video call functionality
+    // Requires WebRTC token and navigation to call screen
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Starting video call...')),
+      const SnackBar(
+        content: Text('Video call feature requires WebRTC setup'),
+      ),
     );
+    // TODO: Implement WebRTC call flow:
+    // 1. Request RTC token from backend
+    // 2. Initialize WebRTC connection with video
+    // 3. Navigate to video call screen
+    // See group_chat_webrtc_service.dart for implementation
   }
 
   void _startVoiceRecording() {
-    // FUTURE: Implement voice recording
-    // See group_chat_screen.dart for full voice message implementation
+    // Voice recording requires audio recording permissions and flutter_sound package
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Voice recording coming soon')),
+      const SnackBar(
+        content: Text('Voice recording requires audio permissions'),
+      ),
     );
+    // TODO: Implement voice recording:
+    // 1. Request microphone permission
+    // 2. Start audio recording
+    // 3. Show recording UI with waveform
+    // 4. Upload audio file via uploadMedia API
+    // 5. Send voice message
   }
 
   Future<void> _pickImage(ImageSource source) async {
@@ -1305,13 +1825,38 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
 
     final image = await _imagePicker.pickImage(source: source);
     if (image != null) {
-      // Upload and send image
-      // FUTURE: Implement image upload using GroupChatService.uploadMedia
-      // See group_chat_screen.dart _pickImage method for full implementation
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Uploading image...')),
         );
+      }
+
+      try {
+        final result = await _groupChatService.uploadMedia(
+          filePath: image.path,
+          mediaType: 'image',
+          mimeType: 'image/jpeg',
+        );
+
+        // Send message with uploaded image URL
+        if (mounted && result['url'] != null) {
+          // Send via WebSocket or REST API
+          _groupChatWS.sendMessage(
+            conversationId: widget.group.id,
+            content: result['url'],
+            type: 'image',
+          );
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Image sent')),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Failed to upload image: $e')),
+          );
+        }
       }
     }
   }
@@ -1319,36 +1864,194 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
   Future<void> _pickVideo() async {
     final video = await _imagePicker.pickVideo(source: ImageSource.gallery);
     if (video != null) {
-      // Upload and send video
-      // FUTURE: Implement video upload using GroupChatService.uploadMedia
-      // See group_chat_screen.dart _pickVideo method for full implementation
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Uploading video...')),
         );
       }
+
+      try {
+        final result = await _groupChatService.uploadMedia(
+          filePath: video.path,
+          mediaType: 'video',
+          mimeType: 'video/mp4',
+        );
+
+        // Send message with uploaded video URL
+        if (mounted && result['url'] != null) {
+          _groupChatWS.sendMessage(
+            conversationId: widget.group.id,
+            content: result['url'],
+            type: 'video',
+          );
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Video sent')),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Failed to upload video: $e')),
+          );
+        }
+      }
     }
   }
 
   Future<void> _pickDocument() async {
-    // FUTURE: Implement document picker using file_picker package
-    // See group_chat_screen.dart _pickFile method for full implementation
+    // Document picker requires file_picker package
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Document picker coming soon')),
+      const SnackBar(
+        content: Text('Document picker requires file_picker package'),
+      ),
     );
+    // TODO: Implement document picker:
+    // 1. Add file_picker package to pubspec.yaml
+    // 2. Use FilePicker.platform.pickFiles()
+    // 3. Upload via uploadMedia API
+    // 4. Send document message with file URL
   }
 
   void _deleteMessage(MessageModel message) {
-    // FUTURE: Implement delete message (requires backend API)
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Message deleted')),
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Message'),
+        content: const Text(
+          'Are you sure you want to delete this message? This cannot be undone.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            onPressed: () async {
+              try {
+                await _groupChatService.deleteMessage(
+                  conversationId: widget.group.id,
+                  messageId: message.id,
+                );
+                if (context.mounted) {
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Message deleted')),
+                  );
+                  // Refresh messages
+                  setState(() {
+                    _messages.removeWhere((m) => m.id == message.id);
+                  });
+                }
+              } catch (e) {
+                if (context.mounted) {
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Failed to delete: $e')),
+                  );
+                }
+              }
+            },
+            child: const Text(
+              'Delete',
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
   void _reportMessage(MessageModel message) {
-    // FUTURE: Implement report message (requires moderation system)
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Message reported')),
+    String? selectedReason;
+    final detailsController = TextEditingController();
+    final reasons = [
+      'Spam',
+      'Harassment',
+      'Inappropriate Content',
+      'Scam or Fraud',
+      'Hate Speech',
+      'Violence',
+      'Other',
+    ];
+
+    showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          title: const Text('Report Message'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('Why are you reporting this message?'),
+                const SizedBox(height: 16),
+                ...reasons.map((reason) => RadioListTile<String>(
+                      title: Text(reason),
+                      value: reason,
+                      groupValue: selectedReason,
+                      onChanged: (value) {
+                        setState(() => selectedReason = value);
+                      },
+                    )),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: detailsController,
+                  decoration: const InputDecoration(
+                    labelText: 'Additional Details (Optional)',
+                    border: OutlineInputBorder(),
+                  ),
+                  maxLines: 3,
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+              onPressed: selectedReason == null
+                  ? null
+                  : () async {
+                      try {
+                        await _groupChatService.reportMessage(
+                          messageId: message.id,
+                          reason: selectedReason!,
+                          details: detailsController.text.isEmpty
+                              ? null
+                              : detailsController.text,
+                        );
+                        if (context.mounted) {
+                          Navigator.pop(context);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                'Report submitted. We\'ll review it shortly.',
+                              ),
+                            ),
+                          );
+                        }
+                      } catch (e) {
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Failed to report: $e')),
+                          );
+                        }
+                      }
+                    },
+              child: const Text(
+                'Submit Report',
+                style: TextStyle(color: Colors.white),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
