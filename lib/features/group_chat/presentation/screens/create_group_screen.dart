@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../bloc/group_chat_bloc.dart';
 import '../../data/models.dart';
+import '../widgets/participant_picker_dialog.dart';
 
 class CreateGroupScreen extends StatefulWidget {
   const CreateGroupScreen({super.key});
@@ -388,24 +389,21 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
     }
   }
 
-  void _showParticipantPicker() {
-    // TODO: Implement participant picker with user search
-    // For now, show a simple dialog
-    showDialog(
+  void _showParticipantPicker() async {
+    final selectedIds = await showDialog<List<String>>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Add Participants'),
-        content: const Text(
-          'Participant picker will be implemented with user search functionality.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('OK'),
-          ),
-        ],
+      builder: (context) => ParticipantPickerDialog(
+        initialSelectedIds: _selectedParticipantIds,
       ),
     );
+
+    if (selectedIds != null && mounted) {
+      setState(() {
+        _selectedParticipantIds
+          ..clear()
+          ..addAll(selectedIds);
+      });
+    }
   }
 
   void _createGroup() {
