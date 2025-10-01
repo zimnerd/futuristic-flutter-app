@@ -564,7 +564,9 @@ class GroupChatService {
     required String conversationId,
   }) async {
     final response = await http.get(
-      Uri.parse('$baseUrl/group-chat/conversation/$conversationId/search-users?query=$query'),
+      Uri.parse(
+        '$baseUrl/group-chat/conversation/$conversationId/search-users?query=$query',
+      ),
       headers: _headers,
     );
 
@@ -584,7 +586,9 @@ class GroupChatService {
     String? reviewNotes,
   }) async {
     final response = await http.post(
-      Uri.parse('$baseUrl/group-chat/conversation/$conversationId/reports/$reportId/review'),
+      Uri.parse(
+        '$baseUrl/group-chat/conversation/$conversationId/reports/$reportId/review',
+      ),
       headers: _headers,
       body: jsonEncode({
         'action': action,
@@ -619,13 +623,53 @@ class GroupChatService {
     required bool enabled,
   }) async {
     final response = await http.post(
-      Uri.parse('$baseUrl/group-chat/conversation/$conversationId/screen-sharing'),
+      Uri.parse(
+        '$baseUrl/group-chat/conversation/$conversationId/screen-sharing',
+      ),
       headers: _headers,
       body: jsonEncode({'enabled': enabled}),
     );
 
     if (response.statusCode != 200) {
       throw Exception('Failed to toggle screen sharing: ${response.body}');
+    }
+  }
+
+  /// Upload media file (image, video, audio, document)
+  Future<Map<String, dynamic>> uploadMedia({
+    required String filePath,
+    required String mediaType, // 'image', 'video', 'audio', 'document'
+    String? mimeType,
+    Map<String, dynamic>? metadata,
+  }) async {
+    final uri = Uri.parse('$baseUrl/media/upload');
+    final request = http.MultipartRequest('POST', uri);
+    
+    // Add authorization header
+    if (accessToken != null) {
+      request.headers['Authorization'] = 'Bearer $accessToken';
+    }
+
+    // Add file
+    request.files.add(await http.MultipartFile.fromPath('file', filePath));
+
+    // Add form fields
+    request.fields['type'] = mediaType;
+    if (mimeType != null) {
+      request.fields['mimeType'] = mimeType;
+    }
+    if (metadata != null) {
+      request.fields['metadata'] = jsonEncode(metadata);
+    }
+
+    final streamedResponse = await request.send();
+    final response = await http.Response.fromStream(streamedResponse);
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      final data = jsonDecode(response.body);
+      return data['data'] as Map<String, dynamic>;
+    } else {
+      throw Exception('Failed to upload media: ${response.body}');
     }
   }
 }

@@ -1,11 +1,15 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:uuid/uuid.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:get_it/get_it.dart';
 import '../../bloc/group_chat_bloc.dart';
 import '../../data/models.dart';
+import '../../data/group_chat_service.dart';
 import 'video_call_screen.dart';
 import '../../../../data/services/webrtc_service.dart';
 import '../widgets/message_bubble.dart';
@@ -472,18 +476,48 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
 
   Future<void> _sendVoiceMessage(String filePath, int duration) async {
     try {
-      // TODO: Upload voice file to server
-      // For now, just show a message
+      // Show loading indicator
+      if (!mounted) return;
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(child: CircularProgressIndicator()),
+      );
+
+      // Upload voice file to server
+      final service = GetIt.instance<GroupChatService>();
+      final mediaData = await service.uploadMedia(
+        filePath: filePath,
+        mediaType: 'audio',
+        mimeType: 'audio/m4a',
+        metadata: {
+          'duration': duration,
+          'conversationId': widget.group.id,
+          'messageType': 'voice',
+        },
+      );
+
+      // Close loading dialog
+      if (!mounted) return;
+      Navigator.of(context).pop();
+
       final tempId = const Uuid().v4();
+      final voiceUrl = mediaData['url'] as String;
       
-      // Send voice message via BLoC (backend will handle file upload)
+      // Send voice message with uploaded URL
+      // Note: Storing media info in content as JSON since metadata field not yet supported
       context.read<GroupChatBloc>().add(
         SendMessage(
           conversationId: widget.group.id,
-          content: 'Voice message',
+          content: jsonEncode({
+            'type': 'voice',
+            'voiceUrl': voiceUrl,
+            'duration': duration,
+            'mediaId': mediaData['id'],
+          }),
+          type: 'voice',
           tempId: tempId,
           replyToMessageId: _replyToMessage?.id,
-          // metadata: {'type': 'voice', 'duration': duration, 'filePath': filePath},
         ),
       );
 
@@ -491,8 +525,17 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
         _replyToMessage = null;
       });
     } catch (e) {
+      // Close loading dialog if still showing
+      if (mounted && Navigator.of(context).canPop()) {
+        Navigator.of(context).pop();
+      }
+
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to send voice message: $e')),
+        SnackBar(
+          content: Text('Failed to send voice message: $e'),
+          backgroundColor: Colors.red,
+        ),
       );
     }
   }
@@ -514,23 +557,17 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
             ListTile(
               leading: const Icon(Icons.video_library, color: Colors.red),
               title: const Text('Video'),
-              onTap: () {
+              onTap: () async {
                 Navigator.pop(context);
-                // TODO: Pick video
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Video upload coming soon')),
-                );
+                await _pickVideo();
               },
             ),
             ListTile(
               leading: const Icon(Icons.insert_drive_file, color: Colors.orange),
               title: const Text('File'),
-              onTap: () {
+              onTap: () async {
                 Navigator.pop(context);
-                // TODO: Pick file
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('File upload coming soon')),
-                );
+                await _pickFile();
               },
             ),
           ],
@@ -575,18 +612,35 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
         throw Exception('Failed to compress image');
       }
 
-      // TODO: Upload to server and get URL
-      // For now, send a placeholder message
+      // Upload to server and get URL
+      final service = GetIt.instance<GroupChatService>();
+      final mediaData = await service.uploadMedia(
+        filePath: compressedFile.path,
+        mediaType: 'image',
+        mimeType: 'image/jpeg',
+        metadata: {'conversationId': widget.group.id, 'messageType': 'image'},
+      );
+
+      // Close loading dialog
+      if (!mounted) return;
+      Navigator.of(context).pop();
+
       final tempId = const Uuid().v4();
+      final imageUrl = mediaData['url'] as String;
       
+      // Note: Storing media info in content as JSON since metadata field not yet supported
       context.read<GroupChatBloc>().add(
         SendMessage(
           conversationId: widget.group.id,
-          content: 'Image',
+          content: jsonEncode({
+            'type': 'image',
+            'imageUrl': imageUrl,
+            'mediaId': mediaData['id'],
+            'thumbnailUrl': mediaData['thumbnailUrl'],
+          }),
           type: 'image',
           tempId: tempId,
           replyToMessageId: _replyToMessage?.id,
-          // metadata: {'imageUrl': uploadedUrl},
         ),
       );
 
@@ -602,6 +656,185 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Failed to pick image: $e')),
+      );
+    }
+  }
+
+  Future<void> _pickVideo() async {
+    try {
+      final pickedFile = await _imagePicker.pickVideo(
+        source: ImageSource.gallery,
+        maxDuration: const Duration(minutes: 5), // 5 min limit
+      );
+
+      if (pickedFile == null) return;
+
+      // Show loading indicator
+      if (!mounted) return;
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircularProgressIndicator(),
+              SizedBox(height: 16),
+              Text('Uploading video...', style: TextStyle(color: Colors.white)),
+            ],
+          ),
+        ),
+      );
+
+      // Upload video to server
+      final service = GetIt.instance<GroupChatService>();
+      final mediaData = await service.uploadMedia(
+        filePath: pickedFile.path,
+        mediaType: 'video',
+        mimeType: 'video/mp4',
+        metadata: {'conversationId': widget.group.id, 'messageType': 'video'},
+      );
+
+      // Close loading dialog
+      if (!mounted) return;
+      Navigator.of(context).pop();
+
+      final tempId = const Uuid().v4();
+      final videoUrl = mediaData['url'] as String;
+
+      // Note: Storing media info in content as JSON since metadata field not yet supported
+      context.read<GroupChatBloc>().add(
+        SendMessage(
+          conversationId: widget.group.id,
+          content: jsonEncode({
+            'type': 'video',
+            'videoUrl': videoUrl,
+            'mediaId': mediaData['id'],
+            'thumbnailUrl': mediaData['thumbnailUrl'],
+            'duration': mediaData['duration'],
+          }),
+          type: 'video',
+          tempId: tempId,
+          replyToMessageId: _replyToMessage?.id,
+        ),
+      );
+
+      setState(() {
+        _replyToMessage = null;
+      });
+    } catch (e) {
+      // Close loading dialog if still showing
+      if (mounted && Navigator.of(context).canPop()) {
+        Navigator.of(context).pop();
+      }
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to upload video: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  Future<void> _pickFile() async {
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'txt', 'zip'],
+      );
+
+      if (result == null || result.files.isEmpty) return;
+
+      final file = result.files.first;
+      if (file.path == null) return;
+
+      // Check file size (max 10MB for documents)
+      if (file.size > 10 * 1024 * 1024) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('File too large. Maximum size is 10MB'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
+
+      // Show loading indicator
+      if (!mounted) return;
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircularProgressIndicator(),
+              SizedBox(height: 16),
+              Text('Uploading file...', style: TextStyle(color: Colors.white)),
+            ],
+          ),
+        ),
+      );
+
+      // Upload file to server
+      final service = GetIt.instance<GroupChatService>();
+      final mediaData = await service.uploadMedia(
+        filePath: file.path!,
+        mediaType: 'document',
+        mimeType: file.extension != null
+            ? 'application/${file.extension}'
+            : null,
+        metadata: {
+          'conversationId': widget.group.id,
+          'messageType': 'file',
+          'fileName': file.name,
+          'fileSize': file.size,
+        },
+      );
+
+      // Close loading dialog
+      if (!mounted) return;
+      Navigator.of(context).pop();
+
+      final tempId = const Uuid().v4();
+      final fileUrl = mediaData['url'] as String;
+
+      // Note: Storing media info in content as JSON since metadata field not yet supported
+      context.read<GroupChatBloc>().add(
+        SendMessage(
+          conversationId: widget.group.id,
+          content: jsonEncode({
+            'type': 'file',
+            'fileUrl': fileUrl,
+            'mediaId': mediaData['id'],
+            'fileName': file.name,
+            'fileSize': file.size,
+            'fileExtension': file.extension,
+          }),
+          type: 'file',
+          tempId: tempId,
+          replyToMessageId: _replyToMessage?.id,
+        ),
+      );
+
+      setState(() {
+        _replyToMessage = null;
+      });
+    } catch (e) {
+      // Close loading dialog if still showing
+      if (mounted && Navigator.of(context).canPop()) {
+        Navigator.of(context).pop();
+      }
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to upload file: $e'),
+          backgroundColor: Colors.red,
+        ),
       );
     }
   }

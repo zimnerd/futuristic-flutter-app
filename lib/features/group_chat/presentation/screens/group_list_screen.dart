@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:get_it/get_it.dart';
 import '../../bloc/group_chat_bloc.dart';
 import '../../data/models.dart';
+import '../../data/group_chat_service.dart';
 import 'create_group_screen.dart';
 import 'group_chat_screen.dart';
+import 'video_call_screen.dart';
+import '../../../../data/services/webrtc_service.dart';
 
 class GroupListScreen extends StatefulWidget {
   const GroupListScreen({super.key});
@@ -233,25 +237,269 @@ class _GroupListScreenState extends State<GroupListScreen>
   }
 
   void _createLiveSession() {
-    // TODO: Show live session creation dialog
+    final titleController = TextEditingController();
+    final descriptionController = TextEditingController();
+    final maxParticipantsController = TextEditingController(text: '10');
+    GroupConversation? selectedGroup;
+    bool requireApproval = true;
+
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Create Live Session'),
-        content: const Text('Live session creation dialog will be implemented'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              // Create session
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (context, setState) {
+          return BlocBuilder<GroupChatBloc, GroupChatState>(
+            builder: (context, state) {
+              final groups = state is GroupChatLoaded
+                  ? state.userGroups
+                      .where((g) => g.groupType == GroupType.liveHost)
+                      .toList()
+                  : <GroupConversation>[];
+
+              return AlertDialog(
+                title: const Text('Create Live Session'),
+                content: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Group Selection
+                      const Text(
+                        'Select Group',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      DropdownButtonFormField<GroupConversation>(
+                        value: selectedGroup,
+                        decoration: const InputDecoration(
+                          hintText: 'Choose a live host group',
+                          border: OutlineInputBorder(),
+                          contentPadding: EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 8,
+                          ),
+                        ),
+                        items: groups.map((group) {
+                          return DropdownMenuItem(
+                            value: group,
+                            child: Text(group.name),
+                          );
+                        }).toList(),
+                        onChanged: (value) {
+                          setState(() {
+                            selectedGroup = value;
+                          });
+                        },
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Title
+                      const Text(
+                        'Session Title',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      TextField(
+                        controller: titleController,
+                        decoration: const InputDecoration(
+                          hintText: 'Enter session title',
+                          border: OutlineInputBorder(),
+                          contentPadding: EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 8,
+                          ),
+                        ),
+                        maxLength: 100,
+                      ),
+                      const SizedBox(height: 8),
+
+                      // Description
+                      const Text(
+                        'Description (Optional)',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      TextField(
+                        controller: descriptionController,
+                        decoration: const InputDecoration(
+                          hintText: 'Enter session description',
+                          border: OutlineInputBorder(),
+                          contentPadding: EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 8,
+                          ),
+                        ),
+                        maxLines: 3,
+                        maxLength: 500,
+                      ),
+                      const SizedBox(height: 8),
+
+                      // Max Participants
+                      const Text(
+                        'Max Participants',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      TextField(
+                        controller: maxParticipantsController,
+                        decoration: const InputDecoration(
+                          border: OutlineInputBorder(),
+                          contentPadding: EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 8,
+                          ),
+                        ),
+                        keyboardType: TextInputType.number,
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Require Approval
+                      SwitchListTile(
+                        title: const Text(
+                          'Require Approval',
+                          style: TextStyle(fontSize: 14),
+                        ),
+                        subtitle: const Text(
+                          'Approve participants before they join',
+                          style: TextStyle(fontSize: 12),
+                        ),
+                        value: requireApproval,
+                        onChanged: (value) {
+                          setState(() {
+                            requireApproval = value;
+                          });
+                        },
+                        contentPadding: EdgeInsets.zero,
+                      ),
+                    ],
+                  ),
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      titleController.dispose();
+                      descriptionController.dispose();
+                      maxParticipantsController.dispose();
+                      Navigator.pop(dialogContext);
+                    },
+                    child: const Text('Cancel'),
+                  ),
+                  ElevatedButton(
+                    onPressed: () async {
+                      // Validation
+                      if (selectedGroup == null) {
+                        ScaffoldMessenger.of(this.context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Please select a group'),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                        return;
+                      }
+
+                      if (titleController.text.trim().isEmpty) {
+                        ScaffoldMessenger.of(this.context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Please enter a title'),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                        return;
+                      }
+
+                      final maxParticipants =
+                          int.tryParse(maxParticipantsController.text) ?? 10;
+
+                      if (maxParticipants < 2 || maxParticipants > 100) {
+                        ScaffoldMessenger.of(this.context).showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                              'Max participants must be between 2 and 100',
+                            ),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                        return;
+                      }
+
+                      // Show loading
+                      Navigator.pop(dialogContext);
+                      showDialog(
+                        context: this.context,
+                        barrierDismissible: false,
+                        builder: (context) => const Center(
+                          child: CircularProgressIndicator(),
+                        ),
+                      );
+
+                      try {
+                        // Create live session via service
+                        final service = GetIt.instance<GroupChatService>();
+                        final session = await service.createLiveSession(
+                          conversationId: selectedGroup!.id,
+                          title: titleController.text.trim(),
+                          description: descriptionController.text.trim().isEmpty
+                              ? null
+                              : descriptionController.text.trim(),
+                          maxParticipants: maxParticipants,
+                          requireApproval: requireApproval,
+                        );
+
+                        // Close loading
+                        if (!this.mounted) return;
+                        Navigator.of(this.context).pop();
+
+                        // Show success
+                        ScaffoldMessenger.of(this.context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Live session created successfully!'),
+                            backgroundColor: Colors.green,
+                          ),
+                        );
+
+                        // Reload sessions
+                        this.context.read<GroupChatBloc>().add(
+                              LoadActiveLiveSessions(),
+                            );
+
+                        // Auto-join the created session
+                        _joinLiveSession(session);
+                      } catch (e) {
+                        // Close loading
+                        if (!this.mounted) return;
+                        Navigator.of(this.context).pop();
+
+                        ScaffoldMessenger.of(this.context).showSnackBar(
+                          SnackBar(
+                            content:
+                                Text('Failed to create session: ${e.toString()}'),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                      } finally {
+                        titleController.dispose();
+                        descriptionController.dispose();
+                        maxParticipantsController.dispose();
+                      }
+                    },
+                    child: const Text('Create'),
+                  ),
+                ],
+              );
             },
-            child: const Text('Create'),
-          ),
-        ],
+          );
+        },
       ),
     );
   }
@@ -265,13 +513,72 @@ class _GroupListScreenState extends State<GroupListScreen>
     );
   }
 
-  void _joinLiveSession(LiveSession session) {
-    // TODO: Implement join logic
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Joining ${session.title}...'),
-      ),
-    );
+  void _joinLiveSession(LiveSession session) async {
+    try {
+      // Show loading
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircularProgressIndicator(),
+              SizedBox(height: 16),
+              Text(
+                'Joining session...',
+                style: TextStyle(color: Colors.white),
+              ),
+            ],
+          ),
+        ),
+      );
+
+      // Get RTC token for the live session
+      final webrtcService = WebRTCService();
+      final tokenData = await webrtcService.getRtcToken(
+        channelName: session.id,
+        role: 1, // PUBLISHER role
+      );
+
+      // Close loading
+      if (!mounted) return;
+      Navigator.of(context).pop();
+
+      // Navigate to video call screen
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => VideoCallScreen(
+            liveSessionId: session.id,
+            rtcToken: tokenData['token'] as String,
+            session: session,
+          ),
+        ),
+      );
+
+      // Show success feedback
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Joined ${session.title}'),
+          backgroundColor: Colors.green,
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    } catch (e) {
+      // Close loading if still showing
+      if (mounted && Navigator.of(context).canPop()) {
+        Navigator.of(context).pop();
+      }
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to join session: ${e.toString()}'),
+          backgroundColor: Colors.red,
+          duration: const Duration(seconds: 3),
+        ),
+      );
+    }
   }
 }
 

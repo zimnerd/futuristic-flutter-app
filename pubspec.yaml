@@ -49,6 +49,7 @@ dependencies:
   dartz: ^0.10.1
   image_cropper: ^8.0.2
   geocoding: ^2.2.2
+  file_picker: ^8.1.4
 
   # Voice Messages
   just_audio: ^0.10.5
