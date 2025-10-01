@@ -1703,13 +1703,27 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
                 const Text('Why are you reporting this group?'),
                 const SizedBox(height: 16),
                 ...reasons.map(
-                  (reason) => RadioListTile<String>(
-                    title: Text(reason),
-                    value: reason,
-                    groupValue: selectedReason,
-                    onChanged: (value) =>
-                        setState(() => selectedReason = value),
-                  )),
+                  (reason) => InkWell(
+                    onTap: () => setState(() => selectedReason = reason),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 4),
+                      child: Row(
+                        children: [
+                          Icon(
+                            selectedReason == reason
+                                ? Icons.radio_button_checked
+                                : Icons.radio_button_unchecked,
+                            color: selectedReason == reason
+                                ? Theme.of(context).primaryColor
+                                : null,
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(child: Text(reason)),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
                 const SizedBox(height: 16),
                 TextField(
                   controller: detailsController,
@@ -2179,13 +2193,27 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
                 const Text('Why are you reporting this message?'),
                 const SizedBox(height: 16),
                 ...reasons.map(
-                  (reason) => RadioListTile<String>(
-                    title: Text(reason),
-                    value: reason,
-                    groupValue: selectedReason,
-                    onChanged: (value) =>
-                        setState(() => selectedReason = value),
-                  )),
+                  (reason) => InkWell(
+                    onTap: () => setState(() => selectedReason = reason),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 4),
+                      child: Row(
+                        children: [
+                          Icon(
+                            selectedReason == reason
+                                ? Icons.radio_button_checked
+                                : Icons.radio_button_unchecked,
+                            color: selectedReason == reason
+                                ? Theme.of(context).primaryColor
+                                : null,
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(child: Text(reason)),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
                 const SizedBox(height: 16),
                 TextField(
                   controller: detailsController,

@@ -40,7 +40,7 @@ class SpeedDatingService {
       _matchesController.stream;
 
   // Current state
-  Map<String, dynamic>? _currentEvent;
+  Map<String, dynamic>? currentEvent;
   Map<String, dynamic>? _currentSession;
   Timer? _sessionTimer;
   int _remainingSeconds = 0;
@@ -93,9 +93,9 @@ class SpeedDatingService {
 
       if (response.statusCode == 200 && response.data != null) {
         // Refresh event details
-        _currentEvent = await getEventById(eventId);
-        if (_currentEvent != null) {
-          final statusStr = _currentEvent!['status'] as String;
+        currentEvent = await getEventById(eventId);
+        if (currentEvent != null) {
+          final statusStr = currentEvent!['status'] as String;
           _eventStatusController.add(_parseEventStatus(statusStr));
         }
 
@@ -119,7 +119,7 @@ class SpeedDatingService {
       );
 
       if (response.statusCode == 200) {
-        _currentEvent = null;
+        currentEvent = null;
         _currentSession = null;
         _stopTimer();
         return true;
@@ -141,7 +141,7 @@ class SpeedDatingService {
       );
 
       if (response.statusCode == 200 && response.data != null) {
-        _currentEvent = await getEventById(eventId);
+        currentEvent = await getEventById(eventId);
         _eventStatusController.add(SpeedDatingEventStatus.active);
 
         return response.data['data'] as Map<String, dynamic>;
@@ -356,16 +356,8 @@ class SpeedDatingService {
   /// Get remaining time in current session
   int get remainingSeconds => _remainingSeconds;
 
-  /// Get current event
-  Map<String, dynamic>? get currentEvent => _currentEvent;
-
   /// Get current session
   Map<String, dynamic>? get currentSession => _currentSession;
-
-  /// Set current event (for tracking)
-  set currentEvent(Map<String, dynamic>? event) {
-    _currentEvent = event;
-  }
 
   /// Check if WebSocket is connected
   bool get isWebSocketConnected => _isWebSocketConnected;
