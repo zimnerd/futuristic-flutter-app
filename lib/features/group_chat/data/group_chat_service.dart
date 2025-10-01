@@ -672,5 +672,79 @@ class GroupChatService {
       throw Exception('Failed to upload media: ${response.body}');
     }
   }
-}
 
+  /// Report a message
+  Future<Map<String, dynamic>> reportMessage({
+    required String messageId,
+    required String reason,
+    String? details,
+  }) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/chat/messages/$messageId/report'),
+      headers: _headers,
+      body: jsonEncode({
+        'reason': reason,
+        if (details != null) 'details': details,
+      }),
+    );
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      final data = jsonDecode(response.body);
+      return data as Map<String, dynamic>;
+    } else {
+      throw Exception('Failed to report message: ${response.body}');
+    }
+  }
+
+  /// Get conversation media gallery
+  Future<List<Map<String, dynamic>>> getConversationMedia({
+    required String conversationId,
+    String? mediaType, // 'image', 'video', 'audio', 'file'
+    int limit = 50,
+  }) async {
+    final queryParams = <String>[];
+    if (mediaType != null) {
+      queryParams.add('type=$mediaType');
+    }
+    queryParams.add('limit=$limit');
+
+    final response = await http.get(
+      Uri.parse(
+        '$baseUrl/chat/conversations/$conversationId/media?${queryParams.join('&')}',
+      ),
+      headers: _headers,
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      final messages = data['data']['messages'] as List;
+      return List<Map<String, dynamic>>.from(messages);
+    } else {
+      throw Exception('Failed to get conversation media: ${response.body}');
+    }
+  }
+
+  /// Report a group
+  Future<Map<String, dynamic>> reportGroup({
+    required String conversationId,
+    required String reason,
+    String? details,
+  }) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/group-chat/report'),
+      headers: _headers,
+      body: jsonEncode({
+        'conversationId': conversationId,
+        'reason': reason,
+        if (details != null) 'details': details,
+      }),
+    );
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      final data = jsonDecode(response.body);
+      return data as Map<String, dynamic>;
+    } else {
+      throw Exception('Failed to report group: ${response.body}');
+    }
+  }
+}
