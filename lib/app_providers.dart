@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'core/storage/hive_storage_service.dart';
 import 'data/services/service_locator.dart';
+import 'presentation/blocs/auth/auth_bloc.dart';
 import 'presentation/blocs/matching/matching_bloc.dart';
 import 'presentation/blocs/messaging/messaging_bloc.dart';
 import 'presentation/blocs/profile/profile_bloc.dart';
@@ -38,6 +39,12 @@ class AppProviders extends StatelessWidget {
 
     return MultiBlocProvider(
       providers: [
+        // Authentication BLoC
+        BlocProvider<AuthBloc>(
+          create: (context) =>
+              AuthBloc(userRepository: serviceLocator.userRepository),
+        ),
+        
         // Core BLoCs
         BlocProvider<MatchingBloc>(
           create: (context) => MatchingBloc(
@@ -96,6 +103,7 @@ class AppProviders extends StatelessWidget {
         BlocProvider<SpeedDatingBloc>(
           create: (context) => SpeedDatingBloc(
             speedDatingService: serviceLocator.speedDatingService,
+            authBloc: context.read<AuthBloc>(),
           ),
         ),
         BlocProvider<LiveStreamingBloc>(

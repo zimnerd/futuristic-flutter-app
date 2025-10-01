@@ -2,6 +2,9 @@ import '../../../core/network/api_client.dart';
 import 'package:logger/logger.dart';
 import 'package:dio/dio.dart';
 import 'package:hive/hive.dart';
+import '../../domain/repositories/user_repository.dart';
+import '../repositories/user_repository_simple.dart';
+import '../../domain/services/api_service.dart';
 import 'matching_service.dart';
 import 'messaging_service.dart';
 import 'profile_service.dart';
@@ -38,6 +41,7 @@ class ServiceLocator {
 
   // Service instances
   late final ApiClient _apiClient;
+  late final UserRepository _userRepository;
   late final MatchingService _matchingService;
   late final MessagingService _messagingService;
   late final ProfileService _profileService;
@@ -72,6 +76,11 @@ class ServiceLocator {
 
     // Initialize API client
     _apiClient = ApiClient.instance;
+
+    // Initialize UserRepository
+    _userRepository = UserRepositorySimple(
+      apiService: _apiClient as ApiService,
+    );
 
     // Initialize AuthService with provided secure storage box or try to get existing one
     final secureStorage =
@@ -160,6 +169,12 @@ class ServiceLocator {
   ApiClient get apiClient {
     if (!_isInitialized) initialize();
     return _apiClient;
+  }
+
+  /// Get UserRepository instance
+  UserRepository get userRepository {
+    if (!_isInitialized) initialize();
+    return _userRepository;
   }
 
   /// Get PreferencesService instance

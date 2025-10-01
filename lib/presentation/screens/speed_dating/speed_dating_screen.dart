@@ -379,7 +379,10 @@ class _SpeedDatingScreenState extends State<SpeedDatingScreen>
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => SpeedDatingRoomScreen(session: session),
+        builder: (context) => SpeedDatingRoomScreen(
+          session: session,
+          eventId: session['eventId'] ?? '',
+        ),
       ),
     );
   }
@@ -397,7 +400,10 @@ class _SpeedDatingScreenState extends State<SpeedDatingScreen>
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => SpeedDatingRoomScreen(session: session),
+        builder: (context) => SpeedDatingRoomScreen(
+          session: session,
+          eventId: session['eventId'] ?? '',
+        ),
       ),
     );
   }
