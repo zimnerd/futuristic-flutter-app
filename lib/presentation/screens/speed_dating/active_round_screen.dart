@@ -427,7 +427,7 @@ class _ActiveRoundScreenState extends State<ActiveRoundScreen>
                   child: CircularProgressIndicator(
                     value: _remainingSeconds / 180.0,
                     strokeWidth: 4,
-                    backgroundColor: Colors.white.withOpacity(0.2),
+                    backgroundColor: Colors.white.withValues(alpha: 0.2),
                     valueColor: AlwaysStoppedAnimation(
                       _remainingSeconds < 30
                           ? Colors.red
@@ -537,7 +537,7 @@ class _ActiveRoundScreenState extends State<ActiveRoundScreen>
               ),
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.primary.withOpacity(0.3),
+                  color: AppColors.primary.withValues(alpha: 0.3),
                   blurRadius: 20,
                   spreadRadius: 5,
                 ),
@@ -616,7 +616,7 @@ class _ActiveRoundScreenState extends State<ActiveRoundScreen>
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.1),
+                color: Colors.white.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Text(
@@ -643,7 +643,7 @@ class _ActiveRoundScreenState extends State<ActiveRoundScreen>
                     vertical: 8,
                   ),
                   decoration: BoxDecoration(
-                    color: AppColors.primary.withOpacity(0.3),
+                    color: AppColors.primary.withValues(alpha: 0.3),
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
                       color: AppColors.primary,
@@ -667,10 +667,10 @@ class _ActiveRoundScreenState extends State<ActiveRoundScreen>
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.05),
+                color: Colors.white.withValues(alpha: 0.05),
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                  color: Colors.white.withOpacity(0.1),
+                  color: Colors.white.withValues(alpha: 0.1),
                   width: 1,
                 ),
               ),
@@ -757,8 +757,8 @@ class _ActiveRoundScreenState extends State<ActiveRoundScreen>
             label: _isMuted ? 'Unmute' : 'Mute',
             color: _isMuted ? Colors.red : Colors.white,
             backgroundColor: _isMuted
-                ? Colors.red.withOpacity(0.2)
-                : Colors.white.withOpacity(0.2),
+                ? Colors.red.withValues(alpha: 0.2)
+                : Colors.white.withValues(alpha: 0.2),
             onPressed: _toggleMute,
           ),
           // Speaker button
@@ -767,8 +767,8 @@ class _ActiveRoundScreenState extends State<ActiveRoundScreen>
             label: _isSpeakerOn ? 'Speaker On' : 'Speaker Off',
             color: _isSpeakerOn ? AppColors.primary : Colors.white,
             backgroundColor: _isSpeakerOn
-                ? AppColors.primary.withOpacity(0.2)
-                : Colors.white.withOpacity(0.2),
+                ? AppColors.primary.withValues(alpha: 0.2)
+                : Colors.white.withValues(alpha: 0.2),
             onPressed: _toggleSpeaker,
           ),
           // End call button

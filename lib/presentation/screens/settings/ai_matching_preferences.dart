@@ -284,7 +284,7 @@ class _AiMatchingPreferencesState extends State<AiMatchingPreferences> {
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: isEnabled ? AppColors.primary.withOpacity(0.3) : AppColors.border,
+          color: isEnabled ? AppColors.primary.withValues(alpha: 0.3) : AppColors.border,
         ),
       ),
       child: ListTile(
@@ -292,7 +292,7 @@ class _AiMatchingPreferencesState extends State<AiMatchingPreferences> {
         leading: Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: AppColors.primary.withOpacity(0.1),
+            color: AppColors.primary.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Icon(

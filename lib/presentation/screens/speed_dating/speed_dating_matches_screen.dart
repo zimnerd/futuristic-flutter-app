@@ -186,7 +186,7 @@ class _SpeedDatingMatchesScreenState extends State<SpeedDatingMatchesScreen> {
                 _errorMessage!,
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: Colors.white.withOpacity(0.7),
+                  color: Colors.white.withValues(alpha: 0.7),
                   fontSize: 14,
                 ),
               ),
@@ -238,8 +238,8 @@ class _SpeedDatingMatchesScreenState extends State<SpeedDatingMatchesScreen> {
               shape: BoxShape.circle,
               gradient: LinearGradient(
                 colors: [
-                  AppColors.primary.withOpacity(0.2),
-                  AppColors.accent.withOpacity(0.2),
+                  AppColors.primary.withValues(alpha: 0.2),
+                  AppColors.accent.withValues(alpha: 0.2),
                 ],
               ),
             ),
@@ -265,7 +265,7 @@ class _SpeedDatingMatchesScreenState extends State<SpeedDatingMatchesScreen> {
               'Complete more rounds to find your matches!\nBoth users need to rate 4+ stars.',
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: Colors.white.withOpacity(0.7),
+                color: Colors.white.withValues(alpha: 0.7),
                 fontSize: 16,
               ),
             ),
@@ -309,12 +309,12 @@ class _SpeedDatingMatchesScreenState extends State<SpeedDatingMatchesScreen> {
           end: Alignment.bottomRight,
           colors: [
             AppColors.surface,
-            AppColors.surface.withOpacity(0.8),
+            AppColors.surface.withValues(alpha: 0.8),
           ],
         ),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: Colors.white.withOpacity(0.1),
+          color: Colors.white.withValues(alpha: 0.1),
           width: 1,
         ),
       ),
@@ -387,7 +387,7 @@ class _SpeedDatingMatchesScreenState extends State<SpeedDatingMatchesScreen> {
                                 colors: [
                                   _getMatchColor(matchPercentage),
                                   _getMatchColor(matchPercentage)
-                                      .withOpacity(0.8),
+                                      .withValues(alpha: 0.8),
                                 ],
                               ),
                               borderRadius: BorderRadius.circular(12),
@@ -432,7 +432,7 @@ class _SpeedDatingMatchesScreenState extends State<SpeedDatingMatchesScreen> {
                                 Text(
                                   '$age',
                                   style: TextStyle(
-                                    color: Colors.white.withOpacity(0.7),
+                                    color: Colors.white.withValues(alpha: 0.7),
                                     fontSize: 18,
                                   ),
                                 ),
@@ -446,14 +446,14 @@ class _SpeedDatingMatchesScreenState extends State<SpeedDatingMatchesScreen> {
                                 Icon(
                                   Icons.location_on,
                                   size: 14,
-                                  color: Colors.white.withOpacity(0.6),
+                                  color: Colors.white.withValues(alpha: 0.6),
                                 ),
                                 const SizedBox(width: 4),
                                 Flexible(
                                   child: Text(
                                     location,
                                     style: TextStyle(
-                                      color: Colors.white.withOpacity(0.6),
+                                      color: Colors.white.withValues(alpha: 0.6),
                                       fontSize: 14,
                                     ),
                                     overflow: TextOverflow.ellipsis,
@@ -469,7 +469,7 @@ class _SpeedDatingMatchesScreenState extends State<SpeedDatingMatchesScreen> {
                               Text(
                                 'You: ',
                                 style: TextStyle(
-                                  color: Colors.white.withOpacity(0.6),
+                                  color: Colors.white.withValues(alpha: 0.6),
                                   fontSize: 12,
                                 ),
                               ),
@@ -489,7 +489,7 @@ class _SpeedDatingMatchesScreenState extends State<SpeedDatingMatchesScreen> {
                               Text(
                                 'Them: ',
                                 style: TextStyle(
-                                  color: Colors.white.withOpacity(0.6),
+                                  color: Colors.white.withValues(alpha: 0.6),
                                   fontSize: 12,
                                 ),
                               ),
@@ -517,13 +517,13 @@ class _SpeedDatingMatchesScreenState extends State<SpeedDatingMatchesScreen> {
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.2),
+                      color: Colors.black.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
                       bio,
                       style: TextStyle(
-                        color: Colors.white.withOpacity(0.8),
+                        color: Colors.white.withValues(alpha: 0.8),
                         fontSize: 14,
                       ),
                       maxLines: 2,
@@ -612,7 +612,7 @@ class _SpeedDatingMatchesScreenState extends State<SpeedDatingMatchesScreen> {
                   width: 40,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.3),
+                    color: Colors.white.withValues(alpha: 0.3),
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -679,13 +679,13 @@ class _SpeedDatingMatchesScreenState extends State<SpeedDatingMatchesScreen> {
                     Icon(
                       Icons.location_on,
                       size: 16,
-                      color: Colors.white.withOpacity(0.6),
+                      color: Colors.white.withValues(alpha: 0.6),
                     ),
                     const SizedBox(width: 4),
                     Text(
                       location,
                       style: TextStyle(
-                        color: Colors.white.withOpacity(0.6),
+                        color: Colors.white.withValues(alpha: 0.6),
                         fontSize: 16,
                       ),
                     ),
@@ -697,7 +697,7 @@ class _SpeedDatingMatchesScreenState extends State<SpeedDatingMatchesScreen> {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.2),
+                  color: Colors.black.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Column(
@@ -719,7 +719,7 @@ class _SpeedDatingMatchesScreenState extends State<SpeedDatingMatchesScreen> {
                             Text(
                               'Your Rating',
                               style: TextStyle(
-                                color: Colors.white.withOpacity(0.6),
+                                color: Colors.white.withValues(alpha: 0.6),
                                 fontSize: 12,
                               ),
                             ),
@@ -745,7 +745,7 @@ class _SpeedDatingMatchesScreenState extends State<SpeedDatingMatchesScreen> {
                             Text(
                               'Their Rating',
                               style: TextStyle(
-                                color: Colors.white.withOpacity(0.6),
+                                color: Colors.white.withValues(alpha: 0.6),
                                 fontSize: 12,
                               ),
                             ),
@@ -776,7 +776,7 @@ class _SpeedDatingMatchesScreenState extends State<SpeedDatingMatchesScreen> {
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.2),
+                    color: Colors.black.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Column(
@@ -794,7 +794,7 @@ class _SpeedDatingMatchesScreenState extends State<SpeedDatingMatchesScreen> {
                       Text(
                         myNotes,
                         style: TextStyle(
-                          color: Colors.white.withOpacity(0.8),
+                          color: Colors.white.withValues(alpha: 0.8),
                           fontSize: 14,
                         ),
                       ),
@@ -816,7 +816,7 @@ class _SpeedDatingMatchesScreenState extends State<SpeedDatingMatchesScreen> {
                 Text(
                   bio,
                   style: TextStyle(
-                    color: Colors.white.withOpacity(0.8),
+                    color: Colors.white.withValues(alpha: 0.8),
                     fontSize: 14,
                   ),
                 ),
@@ -844,13 +844,13 @@ class _SpeedDatingMatchesScreenState extends State<SpeedDatingMatchesScreen> {
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
                           colors: [
-                            AppColors.primary.withOpacity(0.3),
-                            AppColors.accent.withOpacity(0.3),
+                            AppColors.primary.withValues(alpha: 0.3),
+                            AppColors.accent.withValues(alpha: 0.3),
                           ],
                         ),
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(
-                          color: AppColors.primary.withOpacity(0.5),
+                          color: AppColors.primary.withValues(alpha: 0.5),
                         ),
                       ),
                       child: Text(
@@ -876,7 +876,7 @@ class _SpeedDatingMatchesScreenState extends State<SpeedDatingMatchesScreen> {
                       style: OutlinedButton.styleFrom(
                         foregroundColor: Colors.white,
                         side: BorderSide(
-                          color: Colors.white.withOpacity(0.3),
+                          color: Colors.white.withValues(alpha: 0.3),
                         ),
                         padding: const EdgeInsets.symmetric(vertical: 12),
                         shape: RoundedRectangleBorder(

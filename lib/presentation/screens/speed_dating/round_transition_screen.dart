@@ -254,13 +254,13 @@ class _RoundTransitionScreenState extends State<RoundTransitionScreen>
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            AppColors.primary.withOpacity(0.2),
-            AppColors.primary.withOpacity(0.05),
+            AppColors.primary.withValues(alpha: 0.2),
+            AppColors.primary.withValues(alpha: 0.05),
           ],
         ),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: AppColors.primary.withOpacity(0.3),
+          color: AppColors.primary.withValues(alpha: 0.3),
           width: 1,
         ),
       ),
@@ -466,10 +466,10 @@ class _RoundTransitionScreenState extends State<RoundTransitionScreen>
         const SizedBox(height: 12),
         Container(
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.1),
+            color: Colors.white.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: Colors.white.withOpacity(0.2),
+              color: Colors.white.withValues(alpha: 0.2),
               width: 1,
             ),
           ),
@@ -524,10 +524,10 @@ class _RoundTransitionScreenState extends State<RoundTransitionScreen>
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: Colors.white.withOpacity(0.1),
+          color: Colors.white.withValues(alpha: 0.1),
           width: 1,
         ),
       ),
@@ -652,7 +652,7 @@ class _RoundTransitionScreenState extends State<RoundTransitionScreen>
           end: Alignment.bottomCenter,
           colors: [
             Colors.black,
-            AppColors.primary.withOpacity(0.3),
+            AppColors.primary.withValues(alpha: 0.3),
             Colors.black,
           ],
         ),
@@ -676,12 +676,12 @@ class _RoundTransitionScreenState extends State<RoundTransitionScreen>
                       gradient: LinearGradient(
                         colors: [
                           AppColors.primary,
-                          AppColors.primary.withOpacity(0.6),
+                          AppColors.primary.withValues(alpha: 0.6),
                         ],
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: AppColors.primary.withOpacity(0.5),
+                          color: AppColors.primary.withValues(alpha: 0.5),
                           blurRadius: 30,
                           spreadRadius: 10,
                         ),

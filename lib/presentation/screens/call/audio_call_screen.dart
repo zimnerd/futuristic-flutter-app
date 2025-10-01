@@ -223,7 +223,7 @@ class _AudioCallScreenState extends State<AudioCallScreen>
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              PulseColors.primary.withOpacity(0.8),
+              PulseColors.primary.withValues(alpha: 0.8),
               const Color(0xFF0F0F1E),
             ],
           ),
@@ -253,10 +253,10 @@ class _AudioCallScreenState extends State<AudioCallScreen>
           // Connection quality indicator
           Container(
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.1),
+              color: Colors.white.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
-                color: Colors.white.withOpacity(0.2),
+                color: Colors.white.withValues(alpha: 0.2),
                 width: 1,
               ),
             ),
@@ -291,10 +291,10 @@ class _AudioCallScreenState extends State<AudioCallScreen>
           if (_isConnected)
             Container(
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.1),
+                color: Colors.white.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(
-                  color: Colors.white.withOpacity(0.2),
+                  color: Colors.white.withValues(alpha: 0.2),
                   width: 1,
                 ),
               ),
@@ -352,7 +352,7 @@ class _AudioCallScreenState extends State<AudioCallScreen>
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: PulseColors.primary.withOpacity(0.4),
+                      color: PulseColors.primary.withValues(alpha: 0.4),
                       blurRadius: 30,
                       spreadRadius: 5,
                     ),
@@ -392,7 +392,7 @@ class _AudioCallScreenState extends State<AudioCallScreen>
         Text(
           _statusMessage,
           style: TextStyle(
-            color: Colors.white.withOpacity(0.8),
+            color: Colors.white.withValues(alpha: 0.8),
             fontSize: 16,
           ),
         ),
@@ -402,7 +402,7 @@ class _AudioCallScreenState extends State<AudioCallScreen>
           Text(
             '${widget.remoteUser.age} years old',
             style: TextStyle(
-              color: Colors.white.withOpacity(0.6),
+              color: Colors.white.withValues(alpha: 0.6),
               fontSize: 14,
             ),
           ),
@@ -474,7 +474,7 @@ class _AudioCallScreenState extends State<AudioCallScreen>
     Color? color,
     double size = 64,
   }) {
-    final buttonColor = color ?? (isActive ? PulseColors.primary : Colors.white.withOpacity(0.2));
+    final buttonColor = color ?? (isActive ? PulseColors.primary : Colors.white.withValues(alpha: 0.2));
     
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -489,7 +489,7 @@ class _AudioCallScreenState extends State<AudioCallScreen>
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
-                  color: buttonColor.withOpacity(0.3),
+                  color: buttonColor.withValues(alpha: 0.3),
                   blurRadius: 15,
                   spreadRadius: 2,
                 ),
