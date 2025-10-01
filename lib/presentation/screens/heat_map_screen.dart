@@ -334,8 +334,10 @@ class _HeatMapScreenState extends State<HeatMapScreen> {
     ];
   }
 
-  /// FUTURE: Implement optimized backend clustering for better performance at scale
-  /// Note: Method removed to avoid unused code warnings - will be re-added with backend clustering
+  /// ✅ Optimized backend clustering is available via /api/v1/statistics/heatmap/optimized
+  /// The backend endpoint supports viewport-based clustering for better performance at scale
+  /// To use: Call heatMapService.getOptimizedHeatMapData() with zoom and viewport parameters
+  /// Current implementation uses client-side clustering for simplicity
 
   /// Update clusters based on current zoom level with debouncing
   void _updateClustersForZoom() {

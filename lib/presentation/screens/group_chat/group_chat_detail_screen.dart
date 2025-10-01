@@ -10,6 +10,10 @@ import 'package:get_it/get_it.dart';
 import '../../../features/group_chat/data/models.dart';
 import '../../../features/group_chat/data/group_chat_service.dart';
 import '../../../features/group_chat/data/group_chat_websocket_service.dart';
+import '../../../data/services/webrtc_service.dart';
+import '../../../features/group_chat/presentation/screens/video_call_screen.dart';
+import '../../../features/group_chat/presentation/widgets/voice_recorder_widget.dart';
+import 'package:file_picker/file_picker.dart';
 import '../../../presentation/blocs/group_chat/group_chat_bloc.dart';
 import '../../../presentation/blocs/group_chat/group_chat_event.dart';
 import '../../../data/models/chat_model.dart';
@@ -42,6 +46,9 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
   late final GroupChatWebSocketService _groupChatWS;
   late final GroupChatService _groupChatService;
   final ImagePicker _imagePicker = ImagePicker();
+  
+  // State
+  bool _isRecordingVoice = false;
 
   // State
   bool _isTyping = false;
@@ -157,6 +164,50 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
                     left: 0,
                     right: 0,
                     child: _buildTypingIndicator(),
+                  ),
+                  
+                // Voice recorder overlay
+                if (_isRecordingVoice)
+                  Positioned.fill(
+                    child: Container(
+                      color: Colors.black.withValues(alpha: 0.5),
+                      child: VoiceRecorderWidget(
+                        onRecordComplete: (filePath, duration) async {
+                          setState(() {
+                            _isRecordingVoice = false;
+                          });
+
+                          try {
+                            final result = await _groupChatService.uploadMedia(
+                              filePath: filePath,
+                              mediaType: 'audio',
+                              mimeType: 'audio/m4a',
+                            );
+
+                            if (result['url'] != null) {
+                              _groupChatWS.sendMessage(
+                                conversationId: widget.group.id,
+                                content: result['url'],
+                                type: 'audio',
+                              );
+                            }
+                          } catch (e) {
+                            if (mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('Failed to send voice: $e'),
+                                ),
+                              );
+                            }
+                          }
+                        },
+                        onCancel: () {
+                          setState(() {
+                            _isRecordingVoice = false;
+                          });
+                        },
+                      ),
+                    ),
                   ),
               ],
             ),
@@ -1763,49 +1814,150 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
     );
   }
 
-  void _startVoiceCall() {
-    // WebRTC voice call functionality
-    // Requires WebRTC token and navigation to call screen
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Voice call feature requires WebRTC setup'),
-      ),
-    );
-    // TODO: Implement WebRTC call flow:
-    // 1. Request RTC token from backend
-    // 2. Initialize WebRTC connection
-    // 3. Navigate to voice call screen
-    // See group_chat_webrtc_service.dart for implementation
+  void _startVoiceCall() async {
+    try {
+      // Show loading indicator
+      if (!mounted) return;
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircularProgressIndicator(),
+              SizedBox(height: 16),
+              Text(
+                'Starting voice call...',
+                style: TextStyle(color: Colors.white),
+              ),
+            ],
+          ),
+        ),
+      );
+
+      // Get RTC token from backend using group ID as channel name
+      final webrtcService = WebRTCService();
+      final tokenData = await webrtcService.getRtcToken(
+        channelName: widget.group.id,
+        role: 1, // PUBLISHER role for group calls
+      );
+
+      // Close loading dialog
+      if (!mounted) return;
+      Navigator.of(context).pop();
+
+      // Create a pseudo LiveSession for the voice call
+      final callSession = LiveSession(
+        id: widget.group.id,
+        conversationId: widget.group.id,
+        hostId: '', // Current user - managed by backend
+        hostName: 'Group Call',
+        title: '${widget.group.title} Voice Call',
+        description: 'Group voice call',
+        groupType: widget.group.groupType,
+        status: LiveSessionStatus.active,
+        currentParticipants: widget.group.participantCount,
+        maxParticipants: widget.group.participantCount,
+        requireApproval: false,
+        createdAt: DateTime.now(),
+      );
+
+      // Navigate to video call screen (users can disable video for voice-only)
+      if (!mounted) return;
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => VideoCallScreen(
+            liveSessionId: widget.group.id,
+            rtcToken: tokenData['token'] as String,
+            session: callSession,
+          ),
+        ),
+      );
+    } catch (e) {
+      if (mounted) {
+        Navigator.of(context).pop(); // Close loading dialog
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to start voice call: $e')),
+        );
+      }
+    }
   }
 
-  void _startVideoCall() {
-    // WebRTC video call functionality
-    // Requires WebRTC token and navigation to call screen
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Video call feature requires WebRTC setup'),
-      ),
-    );
-    // TODO: Implement WebRTC call flow:
-    // 1. Request RTC token from backend
-    // 2. Initialize WebRTC connection with video
-    // 3. Navigate to video call screen
-    // See group_chat_webrtc_service.dart for implementation
+  void _startVideoCall() async {
+    try {
+      // Show loading indicator
+      if (!mounted) return;
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircularProgressIndicator(),
+              SizedBox(height: 16),
+              Text(
+                'Starting video call...',
+                style: TextStyle(color: Colors.white),
+              ),
+            ],
+          ),
+        ),
+      );
+
+      // Get RTC token from backend using group ID as channel name
+      final webrtcService = WebRTCService();
+      final tokenData = await webrtcService.getRtcToken(
+        channelName: widget.group.id,
+        role: 1, // PUBLISHER role for group calls
+      );
+
+      // Close loading dialog
+      if (!mounted) return;
+      Navigator.of(context).pop();
+
+      // Create a pseudo LiveSession for the video call
+      final callSession = LiveSession(
+        id: widget.group.id,
+        conversationId: widget.group.id,
+        hostId: '', // Current user - managed by backend
+        hostName: 'Group Call',
+        title: '${widget.group.title} Video Call',
+        description: 'Group video call',
+        groupType: widget.group.groupType,
+        status: LiveSessionStatus.active,
+        currentParticipants: widget.group.participantCount,
+        maxParticipants: widget.group.participantCount,
+        requireApproval: false,
+        createdAt: DateTime.now(),
+      );
+
+      // Navigate to video call screen with token
+      if (!mounted) return;
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => VideoCallScreen(
+            liveSessionId: widget.group.id,
+            rtcToken: tokenData['token'] as String,
+            session: callSession,
+          ),
+        ),
+      );
+    } catch (e) {
+      if (mounted) {
+        Navigator.of(context).pop(); // Close loading dialog
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to start video call: $e')),
+        );
+      }
+    }
   }
 
   void _startVoiceRecording() {
-    // Voice recording requires audio recording permissions and flutter_sound package
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Voice recording requires audio permissions'),
-      ),
-    );
-    // TODO: Implement voice recording:
-    // 1. Request microphone permission
-    // 2. Start audio recording
-    // 3. Show recording UI with waveform
-    // 4. Upload audio file via uploadMedia API
-    // 5. Send voice message
+    setState(() {
+      _isRecordingVoice = true;
+    });
   }
 
   Future<void> _pickImage(ImageSource source) async {
@@ -1900,17 +2052,55 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
   }
 
   Future<void> _pickDocument() async {
-    // Document picker requires file_picker package
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Document picker requires file_picker package'),
-      ),
-    );
-    // TODO: Implement document picker:
-    // 1. Add file_picker package to pubspec.yaml
-    // 2. Use FilePicker.platform.pickFiles()
-    // 3. Upload via uploadMedia API
-    // 4. Send document message with file URL
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: [
+          'pdf',
+          'doc',
+          'docx',
+          'txt',
+          'xls',
+          'xlsx',
+          'ppt',
+          'pptx',
+        ],
+      );
+
+      if (result != null && result.files.single.path != null) {
+        final file = result.files.single;
+        if (mounted) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('Uploading ${file.name}...')));
+        }
+
+        final uploadResult = await _groupChatService.uploadMedia(
+          filePath: file.path!,
+          mediaType: 'document',
+          mimeType: file.extension ?? 'application/octet-stream',
+        );
+
+        // Send message with uploaded document URL
+        if (mounted && uploadResult['url'] != null) {
+          _groupChatWS.sendMessage(
+            conversationId: widget.group.id,
+            content: uploadResult['url'],
+            type: 'document',
+          );
+
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('${file.name} sent')));
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to upload document: $e')),
+        );
+      }
+    }
   }
 
   void _deleteMessage(MessageModel message) {

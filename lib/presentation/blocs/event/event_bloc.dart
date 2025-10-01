@@ -1,13 +1,17 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:geolocator/geolocator.dart';
 
 import '../../../core/utils/logger.dart';
 import '../../../data/services/event_service.dart';
 import '../../../domain/entities/event.dart';
+import '../../../core/services/location_service.dart';
+import '../../../core/models/location_models.dart';
 import 'event_event.dart';
 import 'event_state.dart';
 
 class EventBloc extends Bloc<EventEvent, EventState> {
   final EventService _eventService;
+  final LocationService? _locationService;
 
   List<Event> _allEvents = [];
   String? _currentCategory;
@@ -15,12 +19,16 @@ class EventBloc extends Bloc<EventEvent, EventState> {
   bool _showJoinedOnly = false;
   DateTime? _startDate;
   DateTime? _endDate;
-  // double? _maxDistance; // FUTURE: For distance-based filtering (requires user location)
+  double? _maxDistance; // Distance filter in kilometers
   bool? _hasAvailableSpots;
+  LocationCoordinates?
+  _userLocation; // Cache user location for distance filtering
 
   EventBloc({
     EventService? eventService,
+    LocationService? locationService,
   })  : _eventService = eventService ?? EventService.instance,
+      _locationService = locationService,
         super(const EventInitial()) {
     on<LoadEvents>(_onLoadEvents);
     on<LoadNearbyEvents>(_onLoadNearbyEvents);
@@ -559,15 +567,32 @@ class EventBloc extends Bloc<EventEvent, EventState> {
   void _onApplyAdvancedFilters(
     ApplyAdvancedFilters event,
     Emitter<EventState> emit,
-  ) {
+  ) async {
     _startDate = event.startDate;
     _endDate = event.endDate;
     _showJoinedOnly = event.showJoinedOnly ?? false;
-    // _maxDistance = event.maxDistance; // FUTURE: Distance filtering
+    _maxDistance = event.maxDistance; // ✅ Distance filtering enabled
     _hasAvailableSpots = event.hasAvailableSpots;
 
-    // Apply all current filters including availability
-    // Note: Distance filtering requires user location and is handled in _applyAllFilters
+    // Get user location if distance filtering is enabled
+    if (_maxDistance != null && _locationService != null) {
+      try {
+        final position = await _locationService.getCurrentLocation();
+        if (position != null) {
+          _userLocation = LocationCoordinates(
+            latitude: position.latitude,
+            longitude: position.longitude,
+          );
+        }
+      } catch (e) {
+        AppLogger.error(
+          'Failed to get user location for distance filtering: $e',
+        );
+        _userLocation = null;
+      }
+    }
+
+    // Apply all current filters including distance
     final filteredEvents = _applyAllFilters(_allEvents);
 
     if (state is EventsLoaded) {
@@ -582,7 +607,8 @@ class EventBloc extends Bloc<EventEvent, EventState> {
   ) {
     _startDate = null;
     _endDate = null;
-    // _maxDistance = null; // FUTURE: Distance filtering
+    _maxDistance = null; // ✅ Clear distance filter
+    _userLocation = null; // Clear cached location
     _hasAvailableSpots = null;
     _showJoinedOnly = false;
 
@@ -632,6 +658,29 @@ class EventBloc extends Bloc<EventEvent, EventState> {
       filtered = filtered.where((event) {
         return event.maxAttendees == null ||
             event.attendeeCount < event.maxAttendees!;
+      }).toList();
+    }
+
+    // ✅ Apply distance filter - filters events based on distance from user location
+    if (_maxDistance != null && _userLocation != null) {
+      filtered = filtered.where((event) {
+        try {
+          // Calculate distance between user and event location
+          final distanceInMeters = Geolocator.distanceBetween(
+            _userLocation!.latitude,
+            _userLocation!.longitude,
+            event.coordinates.lat,
+            event.coordinates.lng,
+          );
+          final distanceInKm = distanceInMeters / 1000;
+          return distanceInKm <= _maxDistance!;
+        } catch (e) {
+          AppLogger.error(
+            'Error calculating distance for event ${event.id}: $e',
+          );
+          // Include event if distance calculation fails
+          return true;
+        }
       }).toList();
     }
 
