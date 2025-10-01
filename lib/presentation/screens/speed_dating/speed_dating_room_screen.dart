@@ -1,13 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:agora_rtc_engine/agora_rtc_engine.dart';
+import 'package:logger/logger.dart';
 import '../../theme/pulse_colors.dart';
+import '../../../data/services/audio_call_service.dart';
 
-/// Speed dating room screen for video chat
+/// Speed dating room screen for audio chat
+/// Integrates Agora RTC Engine for real-time audio communication
 class SpeedDatingRoomScreen extends StatefulWidget {
   final Map<String, dynamic> session;
+  final String eventId;
 
   const SpeedDatingRoomScreen({
     super.key,
     required this.session,
+    required this.eventId,
   });
 
   @override
@@ -15,8 +21,153 @@ class SpeedDatingRoomScreen extends StatefulWidget {
 }
 
 class _SpeedDatingRoomScreenState extends State<SpeedDatingRoomScreen> {
+  final Logger _logger = Logger();
+  final AudioCallService _audioService = AudioCallService.instance;
+  
   bool _isMuted = false;
   bool _isCameraOff = false;
+  bool _isAudioInitialized = false;
+  bool _isConnected = false;
+  QualityType _connectionQuality = QualityType.qualityUnknown;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeAudio();
+    _setupAudioListeners();
+  }
+
+  @override
+  void dispose() {
+    _audioService.leaveCall();
+    super.dispose();
+  }
+
+  /// Initialize Agora audio engine and join channel
+  Future<void> _initializeAudio() async {
+    try {
+      // Agora App ID (same as used in other features)
+      const agoraAppId = '0bb5c5b508884aa4bfc25381d51fa329';
+
+      // Initialize audio service if not already initialized
+      if (!_audioService.isInCall) {
+        await _audioService.initialize(appId: agoraAppId);
+      }
+
+      // Get session details
+      final sessionId = widget.session['id'] as String?;
+      final partnerId = widget.session['partnerId'] as String?;
+
+      if (sessionId == null || partnerId == null) {
+        _logger.e('❌ Missing session details for audio initialization');
+        return;
+      }
+
+      // Join audio call with speed dating channel
+      final success = await _audioService.joinAudioCall(
+        callId: sessionId,
+        recipientId: partnerId,
+        channelName: 'speed_date_${widget.eventId}_$sessionId',
+      );
+
+      if (success) {
+        setState(() {
+          _isAudioInitialized = true;
+        });
+        _logger.i('✅ Speed dating audio initialized');
+      } else {
+        _logger.e('❌ Failed to join speed dating audio channel');
+        _showError('Failed to connect audio');
+      }
+    } catch (e) {
+      _logger.e('❌ Error initializing speed dating audio: $e');
+      _showError('Audio initialization failed');
+    }
+  }
+
+  /// Setup audio event listeners
+  void _setupAudioListeners() {
+    // Listen for remote user joining
+    _audioService.onRemoteUserJoined.listen((uid) {
+      setState(() {
+        _isConnected = true;
+      });
+      _logger.i('🎤 Partner connected to audio call (UID: $uid)');
+    });
+
+    // Listen for connection quality changes
+    _audioService.onQualityChanged.listen((quality) {
+      setState(() {
+        _connectionQuality = quality;
+      });
+    });
+
+    // Listen for audio errors
+    _audioService.onCallError.listen((error) {
+      _showError(error);
+    });
+
+    // Listen for call state changes
+    _audioService.onCallStateChanged.listen((isInCall) {
+      if (!isInCall && mounted) {
+        // Call ended, return to previous screen
+        Navigator.pop(context);
+      }
+    });
+  }
+
+  /// Toggle microphone mute
+  Future<void> _toggleMute() async {
+    await _audioService.toggleMute();
+    setState(() {
+      _isMuted = _audioService.isMuted;
+    });
+  }
+
+  /// Show error message
+  void _showError(String message) {
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red,
+        duration: const Duration(seconds: 3),
+      ),
+    );
+  }
+
+  /// Get connection quality icon
+  Widget _getQualityIcon() {
+    switch (_connectionQuality) {
+      case QualityType.qualityExcellent:
+      case QualityType.qualityGood:
+        return const Icon(
+          Icons.signal_cellular_alt,
+          color: Colors.green,
+          size: 20,
+        );
+      case QualityType.qualityPoor:
+        return const Icon(
+          Icons.signal_cellular_alt_2_bar,
+          color: Colors.orange,
+          size: 20,
+        );
+      case QualityType.qualityBad:
+      case QualityType.qualityVbad:
+        return const Icon(
+          Icons.signal_cellular_alt_1_bar,
+          color: Colors.red,
+          size: 20,
+        );
+      default:
+        return const Icon(
+          Icons.signal_cellular_null,
+          color: Colors.grey,
+          size: 20,
+        );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -66,6 +217,51 @@ class _SpeedDatingRoomScreenState extends State<SpeedDatingRoomScreen> {
                               fontWeight: FontWeight.w600,
                             ),
                           ),
+                          const SizedBox(height: 8),
+                          // Audio connection status
+                          if (!_isConnected && _isAudioInitialized)
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                SizedBox(
+                                  width: 16,
+                                  height: 16,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                      PulseColors.primary,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                const Text(
+                                  'Connecting audio...',
+                                  style: TextStyle(
+                                    color: Colors.white70,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ],
+                            )
+                          else if (_isConnected)
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.mic,
+                                  size: 16,
+                                  color: PulseColors.primary,
+                                ),
+                                const SizedBox(width: 4),
+                                const Text(
+                                  'Audio connected',
+                                  style: TextStyle(
+                                    color: Colors.white70,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ],
+                            ),
                         ],
                       ),
                     ),
@@ -176,6 +372,11 @@ class _SpeedDatingRoomScreenState extends State<SpeedDatingRoomScreen> {
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
+                    // Connection quality indicator
+                    if (_isConnected) ...[
+                      const SizedBox(width: 8),
+                      _getQualityIcon(),
+                    ],
                   ],
                 ),
               ),
@@ -191,11 +392,7 @@ class _SpeedDatingRoomScreenState extends State<SpeedDatingRoomScreen> {
                 children: [
                   // Mute button
                   GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        _isMuted = !_isMuted;
-                      });
-                    },
+                    onTap: _toggleMute,
                     child: Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
@@ -212,7 +409,12 @@ class _SpeedDatingRoomScreenState extends State<SpeedDatingRoomScreen> {
                   
                   // End call button
                   GestureDetector(
-                    onTap: () => Navigator.pop(context),
+                    onTap: () async {
+                      await _audioService.leaveCall();
+                      if (mounted) {
+                        Navigator.pop(context);
+                      }
+                    },
                     child: Container(
                       padding: const EdgeInsets.all(20),
                       decoration: const BoxDecoration(
