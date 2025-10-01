@@ -12,6 +12,8 @@ import '../../data/models.dart';
 import '../../data/group_chat_service.dart';
 import 'video_call_screen.dart';
 import '../../../../data/services/webrtc_service.dart';
+import '../../../../presentation/blocs/auth/auth_bloc.dart';
+import '../../../../presentation/blocs/auth/auth_state.dart';
 import '../widgets/message_bubble.dart';
 import '../widgets/typing_indicator.dart';
 import '../widgets/voice_recorder_widget.dart';
@@ -243,13 +245,17 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                   itemCount: messages.length,
                   itemBuilder: (context, index) {
                     final message = messages[messages.length - 1 - index];
-                    // TODO: Get current user ID from auth service
-                    final currentUserId = 'current_user_id'; // Replace with actual user ID
+                    // Get current user ID from AuthBloc state
+                    final authState = context.read<AuthBloc>().state;
+                    final currentUserId = authState is AuthAuthenticated 
+                        ? authState.user.id 
+                        : '';
                     final isMe = message.senderId == currentUserId;
                     
                     return MessageBubble(
                       message: message,
                       isMe: isMe,
+                      currentUserId: currentUserId,
                       onReply: () {
                         setState(() {
                           _replyToMessage = message;

@@ -6,6 +6,7 @@ import '../../data/models.dart';
 class MessageBubble extends StatelessWidget {
   final GroupMessage message;
   final bool isMe;
+  final String currentUserId;
   final VoidCallback? onReply;
   final VoidCallback? onDelete;
   final Function(String emoji)? onAddReaction;
@@ -16,6 +17,7 @@ class MessageBubble extends StatelessWidget {
     super.key,
     required this.message,
     required this.isMe,
+    required this.currentUserId,
     this.onReply,
     this.onDelete,
     this.onAddReaction,
@@ -267,7 +269,7 @@ class MessageBubble extends StatelessWidget {
         children: reactionCounts.entries.map((entry) {
           final emoji = entry.key;
           final reactions = entry.value;
-          final hasMyReaction = reactions.any((r) => r.userId == 'currentUserId'); // TODO: Get from auth
+          final hasMyReaction = reactions.any((r) => r.userId == currentUserId);
 
           return GestureDetector(
             onTap: () {
