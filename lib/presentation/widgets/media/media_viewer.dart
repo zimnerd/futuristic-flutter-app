@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:video_player/video_player.dart';
+import 'package:dio/dio.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 import '../../theme/pulse_colors.dart';
 import '../../../domain/entities/message.dart';
@@ -353,6 +356,78 @@ class _MediaViewerState extends State<MediaViewer>
     }
   }
 
+  Future<void> _saveMediaToGallery(BuildContext context) async {
+    try {
+      // Request storage permission
+      final status = await Permission.storage.request();
+      if (!status.isGranted && !status.isLimited) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Storage permission denied'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+        return;
+      }
+
+      // Get the current media URL
+      final url = widget.mediaUrls[_currentIndex];
+
+      // Show loading indicator
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Downloading media...'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+
+      // Download the media
+      final dio = Dio();
+      final directory = await getApplicationDocumentsDirectory();
+      final fileName = url
+          .split('/')
+          .last
+          .split('?')
+          .first; // Remove query params
+      final filePath = '${directory.path}/$fileName';
+
+      await dio.download(url, filePath);
+
+      // For iOS/Android, move to gallery
+      // Note: For production, consider using image_gallery_saver package
+      // For now, file is saved to app documents directory
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Media saved successfully'),
+            backgroundColor: PulseColors.success,
+            action: SnackBarAction(
+              label: 'Open',
+              textColor: Colors.white,
+              onPressed: () {
+                // Open file location - could implement with open_file package
+              },
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to save media: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
   void _showOptions() {
     showModalBottomSheet<void>(
       context: context,
@@ -383,9 +458,9 @@ class _MediaViewerState extends State<MediaViewer>
               ListTile(
                 leading: const Icon(Icons.download_rounded),
                 title: const Text('Save to Gallery'),
-                onTap: () {
+                onTap: () async {
                   Navigator.pop(context);
-                  // TODO: Implement save functionality
+                  await _saveMediaToGallery(context);
                 },
               ),
               

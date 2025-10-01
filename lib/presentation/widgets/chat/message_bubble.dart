@@ -1,7 +1,9 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../theme/pulse_colors.dart';
 import '../../../data/models/chat_model.dart';
@@ -611,10 +613,42 @@ class MessageBubble extends StatelessWidget {
     );
   }
 
-  /// Open location in external map application or viewer
-  void _openLocationViewer(BuildContext context, double lat, double lng) {
-    // For now, show a simple dialog with location details
-    // TODO: Integrate with map_launcher or url_launcher to open in Maps app
+  /// Open location in external map application
+  void _openLocationViewer(BuildContext context, double lat, double lng) async {
+    // Try to open in external maps app using url_launcher
+    try {
+      // Try Apple Maps first (iOS), then Google Maps
+      final appleMapsUrl = Uri.parse('https://maps.apple.com/?q=$lat,$lng');
+      final googleMapsUrl = Uri.parse(
+        'https://www.google.com/maps/search/?api=1&query=$lat,$lng',
+      );
+
+      if (Platform.isIOS) {
+        if (await canLaunchUrl(appleMapsUrl)) {
+          await launchUrl(appleMapsUrl, mode: LaunchMode.externalApplication);
+          return;
+        }
+      }
+
+      if (await canLaunchUrl(googleMapsUrl)) {
+        await launchUrl(googleMapsUrl, mode: LaunchMode.externalApplication);
+        return;
+      }
+
+      // Fallback: show coordinates dialog
+      if (context.mounted) {
+        _showLocationDialog(context, lat, lng);
+      }
+    } catch (e) {
+      // Show fallback dialog on error
+      if (context.mounted) {
+        _showLocationDialog(context, lat, lng);
+      }
+    }
+  }
+
+  /// Show location coordinates in a dialog (fallback)
+  void _showLocationDialog(BuildContext context, double lat, double lng) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(

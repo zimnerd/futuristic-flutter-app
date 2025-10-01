@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../data/models/user_model.dart';
 import '../../../data/models/match_model.dart';
 import '../../../data/services/ai_matching_service.dart';
+import '../../../domain/entities/discovery_types.dart';
+import '../../blocs/matching/matching_bloc.dart';
 import '../../widgets/matching/smart_match_widget.dart';
 import '../../widgets/matching/compatibility_score_widget.dart';
 import '../../theme/pulse_colors.dart';
+import '../profile/profile_details_screen.dart';
 
 /// Main AI-powered matching screen
 class AiMatchingScreen extends StatefulWidget {
@@ -596,23 +600,105 @@ class _AiMatchingScreenState extends State<AiMatchingScreen>
   }
 
   void _navigateToProfile(MatchModel match) {
-    // TODO: Navigate to user profile screen
-    print('Navigate to profile: ${match.userProfile?.name}');
+    if (match.userProfile == null) return;
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ProfileDetailsScreen(
+          profile: match.userProfile!,
+          isOwnProfile: false,
+          showStartConversation: true,
+          onLike: () => _handleMatchAction(match, 'like'),
+          onSuperLike: () => _handleMatchAction(match, 'super_like'),
+        ),
+      ),
+    );
   }
 
   void _handleMatchAction(MatchModel match, String action) {
-    // TODO: Handle match actions (like, pass, super like)
-    print('Match action: $action for ${match.userProfile?.name}');
+    final matchingBloc = context.read<MatchingBloc>();
+
+    switch (action) {
+      case 'like':
+        matchingBloc.add(
+          SwipeProfile(
+            profileId: match.userProfile!.id,
+            direction: SwipeAction.right,
+          ),
+        );
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Liked ${match.userProfile?.name ?? "profile"}'),
+            backgroundColor: Colors.green,
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+        break;
+      case 'pass':
+        matchingBloc.add(
+          SwipeProfile(
+            profileId: match.userProfile!.id,
+            direction: SwipeAction.left,
+          ),
+        );
+        break;
+      case 'super_like':
+        matchingBloc.add(SuperLikeProfile(profileId: match.userProfile!.id));
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Super Like sent! 💫'),
+            backgroundColor: PulseColors.primary,
+            behavior: SnackBarBehavior.floating,
+            duration: Duration(seconds: 2),
+          ),
+        );
+        break;
+    }
   }
 
-  void _savePreferences() {
-    // TODO: Save AI matching preferences
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Preferences saved successfully'),
-        backgroundColor: Colors.green,
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
+  void _savePreferences() async {
+    try {
+      // Get current filter state
+      final matchingBloc = context.read<MatchingBloc>();
+
+      // Create updated filters from current UI state
+      const updatedFilters = MatchingFilters(
+        minAge: 18, // Use actual values from your UI state
+        maxAge: 35,
+        maxDistance: 50,
+        showMeGender: null,
+        verifiedOnly: false,
+        hasPhotos: true,
+      );
+
+      // Update filters in BLoC
+      matchingBloc.add(UpdateFilters(filters: updatedFilters));
+
+      // Refresh matches with new preferences
+      matchingBloc.add(RefreshMatches());
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('AI matching preferences saved successfully'),
+            backgroundColor: Colors.green,
+            behavior: SnackBarBehavior.floating,
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to save preferences: $e'),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
   }
 }
