@@ -358,4 +358,40 @@ class GroupChatService {
       throw Exception('Failed to search messages: ${response.body}');
     }
   }
+
+  /// Update group settings
+  Future<GroupConversation> updateGroupSettings({
+    required String conversationId,
+    String? title,
+    String? description,
+    bool? allowParticipantInvite,
+    bool? requireApproval,
+    bool? autoAcceptFriends,
+    bool? enableVoiceChat,
+    bool? enableVideoChat,
+    int? maxParticipants,
+  }) async {
+    final response = await http.patch(
+      Uri.parse('$baseUrl/group-chat/conversation/$conversationId/settings'),
+      headers: _headers,
+      body: jsonEncode({
+        if (title != null) 'title': title,
+        if (description != null) 'description': description,
+        if (allowParticipantInvite != null)
+          'allowParticipantInvite': allowParticipantInvite,
+        if (requireApproval != null) 'requireApproval': requireApproval,
+        if (autoAcceptFriends != null) 'autoAcceptFriends': autoAcceptFriends,
+        if (enableVoiceChat != null) 'enableVoiceChat': enableVoiceChat,
+        if (enableVideoChat != null) 'enableVideoChat': enableVideoChat,
+        if (maxParticipants != null) 'maxParticipants': maxParticipants,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return GroupConversation.fromJson(data['data']);
+    } else {
+      throw Exception('Failed to update group settings: ${response.body}');
+    }
+  }
 }

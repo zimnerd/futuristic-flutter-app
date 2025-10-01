@@ -901,27 +901,97 @@ class _GroupChatSettingsScreenState extends State<GroupChatSettingsScreen> {
     if (!_formKey.currentState!.validate()) return;
 
     try {
-      // TODO: Implement API call to update group settings
-      // For now, just show success message
-      await Future.delayed(const Duration(milliseconds: 500));
-
+      // Show loading indicator
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Settings saved successfully'),
-            backgroundColor: Colors.green,
+            content: Row(
+              children: [
+                SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  ),
+                ),
+                SizedBox(width: 16),
+                Text('Saving settings...'),
+              ],
+            ),
+            duration: Duration(seconds: 60),
           ),
         );
+      }
+
+      // Call API to update group settings
+      final service = sl<GroupChatService>();
+      final updatedGroup = await service.updateGroupSettings(
+        conversationId: widget.group.id,
+        title: _groupNameController.text.trim(),
+        description: _descriptionController.text.trim().isEmpty
+            ? null
+            : _descriptionController.text.trim(),
+        allowParticipantInvite: _allowParticipantInvite,
+        requireApproval: _requireApproval,
+        autoAcceptFriends: _autoAcceptFriends,
+        enableVoiceChat: _enableVoiceChat,
+        enableVideoChat: _enableVideoChat,
+        maxParticipants: _maxParticipants,
+      );
+
+      if (mounted) {
+        // Dismiss loading indicator
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+
+        // Show success message
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Row(
+              children: [
+                Icon(Icons.check_circle, color: Colors.white),
+                SizedBox(width: 16),
+                Text('Settings saved successfully'),
+              ],
+            ),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 3),
+          ),
+        );
+        
         setState(() {
           _hasUnsavedChanges = false;
         });
+
+        // Return updated group to previous screen
+        Navigator.pop(context, updatedGroup);
       }
     } catch (e) {
       if (mounted) {
+        // Dismiss loading indicator
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+
+        // Show error message
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to save settings: $e'),
+            content: Row(
+              children: [
+                const Icon(Icons.error_outline, color: Colors.white),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Text(
+                    'Failed to save settings: ${e.toString().replaceAll('Exception: ', '')}',
+                  ),
+                ),
+              ],
+            ),
             backgroundColor: Colors.red,
+            duration: const Duration(seconds: 5),
+            action: SnackBarAction(
+              label: 'Retry',
+              textColor: Colors.white,
+              onPressed: _saveSettings,
+            ),
           ),
         );
       }
