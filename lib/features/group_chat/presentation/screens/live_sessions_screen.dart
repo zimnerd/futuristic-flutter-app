@@ -437,7 +437,7 @@ class _LiveSessionCard extends StatelessWidget {
                     Text(
                       _getTimeElapsed(session.startedAt!),
                       style: TextStyle(
-                        color: Colors.white.withOpacity(0.8),
+                        color: Colors.white.withValues(alpha: 0.8),
                         fontSize: 11,
                       ),
                     ),
@@ -449,7 +449,7 @@ class _LiveSessionCard extends StatelessWidget {
             if (session.isFull)
               Positioned.fill(
                 child: Container(
-                  color: Colors.black.withOpacity(0.5),
+                  color: Colors.black.withValues(alpha: 0.5),
                   child: const Center(
                     child: Chip(
                       label: Text(
