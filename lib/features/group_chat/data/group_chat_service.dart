@@ -276,4 +276,86 @@ class GroupChatService {
       throw Exception('Failed to load messages: ${response.body}');
     }
   }
+
+  /// Delete a message
+  Future<void> deleteMessage({
+    required String conversationId,
+    required String messageId,
+  }) async {
+    final response = await http.delete(
+      Uri.parse('$baseUrl/group-chat/conversations/$conversationId/messages/$messageId'),
+      headers: _headers,
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Failed to delete message: ${response.body}');
+    }
+  }
+
+  /// Add reaction to a message
+  Future<void> addReaction({
+    required String conversationId,
+    required String messageId,
+    required String emoji,
+  }) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/group-chat/conversations/$conversationId/messages/$messageId/reactions'),
+      headers: _headers,
+      body: jsonEncode({'emoji': emoji}),
+    );
+
+    if (response.statusCode != 201) {
+      throw Exception('Failed to add reaction: ${response.body}');
+    }
+  }
+
+  /// Remove reaction from a message
+  Future<void> removeReaction({
+    required String conversationId,
+    required String messageId,
+    required String emoji,
+  }) async {
+    final response = await http.delete(
+      Uri.parse('$baseUrl/group-chat/conversations/$conversationId/messages/$messageId/reactions/$emoji'),
+      headers: _headers,
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Failed to remove reaction: ${response.body}');
+    }
+  }
+
+  /// Mark message as read
+  Future<void> markMessageAsRead({
+    required String conversationId,
+    required String messageId,
+  }) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/group-chat/conversations/$conversationId/messages/$messageId/read'),
+      headers: _headers,
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Failed to mark message as read: ${response.body}');
+    }
+  }
+
+  /// Search messages in a conversation
+  Future<List<GroupMessage>> searchMessages({
+    required String conversationId,
+    required String query,
+  }) async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/group-chat/conversations/$conversationId/messages/search?q=$query'),
+      headers: _headers,
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      final messages = data['data'] as List;
+      return messages.map((m) => GroupMessage.fromJson(m)).toList();
+    } else {
+      throw Exception('Failed to search messages: ${response.body}');
+    }
+  }
 }

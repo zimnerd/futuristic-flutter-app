@@ -233,6 +233,71 @@ class MessageConfirmed extends GroupChatEvent {
   List<Object?> get props => [message];
 }
 
+class DeleteMessage extends GroupChatEvent {
+  final String messageId;
+  final String conversationId;
+  DeleteMessage({required this.messageId, required this.conversationId});
+  @override
+  List<Object?> get props => [messageId, conversationId];
+}
+
+class AddReaction extends GroupChatEvent {
+  final String messageId;
+  final String conversationId;
+  final String emoji;
+  AddReaction({
+    required this.messageId,
+    required this.conversationId,
+    required this.emoji,
+  });
+  @override
+  List<Object?> get props => [messageId, conversationId, emoji];
+}
+
+class RemoveReaction extends GroupChatEvent {
+  final String messageId;
+  final String conversationId;
+  final String emoji;
+  RemoveReaction({
+    required this.messageId,
+    required this.conversationId,
+    required this.emoji,
+  });
+  @override
+  List<Object?> get props => [messageId, conversationId, emoji];
+}
+
+class MarkMessageAsRead extends GroupChatEvent {
+  final String messageId;
+  final String conversationId;
+  MarkMessageAsRead({required this.messageId, required this.conversationId});
+  @override
+  List<Object?> get props => [messageId, conversationId];
+}
+
+class SearchMessages extends GroupChatEvent {
+  final String conversationId;
+  final String query;
+  SearchMessages({required this.conversationId, required this.query});
+  @override
+  List<Object?> get props => [conversationId, query];
+}
+
+class ClearMessageSearch extends GroupChatEvent {}
+
+class TypingIndicatorReceived extends GroupChatEvent {
+  final String userId;
+  final String username;
+  final bool isTyping;
+  TypingIndicatorReceived({
+    required this.userId,
+    required this.username,
+    required this.isTyping,
+  });
+  @override
+  List<Object?> get props => [userId, username, isTyping];
+}
+
 class StartVideoCall extends GroupChatEvent {
   final String liveSessionId;
   final String token;
@@ -274,6 +339,9 @@ class GroupChatLoaded extends GroupChatState {
   final List<LiveSession> activeLiveSessions;
   final List<GroupMessage> messages;
   final bool isLoadingMessages;
+  final Map<String, String> typingUsers; // userId -> username
+  final List<GroupMessage> searchResults;
+  final String? searchQuery;
 
   GroupChatLoaded({
     this.liveSessions = const [],
@@ -283,6 +351,9 @@ class GroupChatLoaded extends GroupChatState {
     this.activeLiveSessions = const [],
     this.messages = const [],
     this.isLoadingMessages = false,
+    this.typingUsers = const {},
+    this.searchResults = const [],
+    this.searchQuery,
   });
 
   GroupChatLoaded copyWith({
@@ -293,6 +364,9 @@ class GroupChatLoaded extends GroupChatState {
     List<LiveSession>? activeLiveSessions,
     List<GroupMessage>? messages,
     bool? isLoadingMessages,
+    Map<String, String>? typingUsers,
+    List<GroupMessage>? searchResults,
+    String? searchQuery,
   }) {
     return GroupChatLoaded(
       liveSessions: liveSessions ?? this.liveSessions,
@@ -302,6 +376,9 @@ class GroupChatLoaded extends GroupChatState {
       activeLiveSessions: activeLiveSessions ?? this.activeLiveSessions,
       messages: messages ?? this.messages,
       isLoadingMessages: isLoadingMessages ?? this.isLoadingMessages,
+      typingUsers: typingUsers ?? this.typingUsers,
+      searchResults: searchResults ?? this.searchResults,
+      searchQuery: searchQuery ?? this.searchQuery,
     );
   }
 
@@ -313,6 +390,10 @@ class GroupChatLoaded extends GroupChatState {
     userGroups,
     activeLiveSessions,
     messages,
+    isLoadingMessages,
+    typingUsers,
+    searchResults,
+    searchQuery,
     isLoadingMessages,
   ];
 }

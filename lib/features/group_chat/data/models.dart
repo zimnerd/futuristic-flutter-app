@@ -345,6 +345,9 @@ class GroupMessage {
   final String? tempId;
   final ReplyToMessage? replyTo;
   final Map<String, dynamic>? metadata;
+  final List<MessageReaction> reactions;
+  final List<String> readBy;
+  final List<String> deliveredTo;
 
   const GroupMessage({
     required this.id,
@@ -361,6 +364,9 @@ class GroupMessage {
     this.tempId,
     this.replyTo,
     this.metadata,
+    this.reactions = const [],
+    this.readBy = const [],
+    this.deliveredTo = const [],
   });
 
   factory GroupMessage.fromJson(Map<String, dynamic> json) {
@@ -381,6 +387,17 @@ class GroupMessage {
           ? ReplyToMessage.fromJson(json['replyTo'] as Map<String, dynamic>)
           : null,
       metadata: json['metadata'] as Map<String, dynamic>?,
+      reactions: json['reactions'] != null
+          ? (json['reactions'] as List)
+              .map((r) => MessageReaction.fromJson(r as Map<String, dynamic>))
+              .toList()
+          : [],
+      readBy: json['readBy'] != null
+          ? List<String>.from(json['readBy'] as List)
+          : [],
+      deliveredTo: json['deliveredTo'] != null
+          ? List<String>.from(json['deliveredTo'] as List)
+          : [],
     );
   }
 
@@ -400,7 +417,51 @@ class GroupMessage {
       'tempId': tempId,
       'replyTo': replyTo?.toJson(),
       'metadata': metadata,
+      'reactions': reactions.map((r) => r.toJson()).toList(),
+      'readBy': readBy,
+      'deliveredTo': deliveredTo,
     };
+  }
+
+  /// Copy with method for updating message properties
+  GroupMessage copyWith({
+    String? id,
+    String? conversationId,
+    String? senderId,
+    String? senderUsername,
+    String? senderFirstName,
+    String? senderLastName,
+    String? senderProfilePhoto,
+    String? content,
+    String? type,
+    DateTime? timestamp,
+    String? status,
+    String? tempId,
+    ReplyToMessage? replyTo,
+    Map<String, dynamic>? metadata,
+    List<MessageReaction>? reactions,
+    List<String>? readBy,
+    List<String>? deliveredTo,
+  }) {
+    return GroupMessage(
+      id: id ?? this.id,
+      conversationId: conversationId ?? this.conversationId,
+      senderId: senderId ?? this.senderId,
+      senderUsername: senderUsername ?? this.senderUsername,
+      senderFirstName: senderFirstName ?? this.senderFirstName,
+      senderLastName: senderLastName ?? this.senderLastName,
+      senderProfilePhoto: senderProfilePhoto ?? this.senderProfilePhoto,
+      content: content ?? this.content,
+      type: type ?? this.type,
+      timestamp: timestamp ?? this.timestamp,
+      status: status ?? this.status,
+      tempId: tempId ?? this.tempId,
+      replyTo: replyTo ?? this.replyTo,
+      metadata: metadata ?? this.metadata,
+      reactions: reactions ?? this.reactions,
+      readBy: readBy ?? this.readBy,
+      deliveredTo: deliveredTo ?? this.deliveredTo,
+    );
   }
 }
 
@@ -433,6 +494,39 @@ class ReplyToMessage {
       'content': content,
       'senderId': senderId,
       'senderUsername': senderUsername,
+    };
+  }
+}
+
+/// Message reaction model
+class MessageReaction {
+  final String emoji;
+  final String userId;
+  final String username;
+  final DateTime timestamp;
+
+  const MessageReaction({
+    required this.emoji,
+    required this.userId,
+    required this.username,
+    required this.timestamp,
+  });
+
+  factory MessageReaction.fromJson(Map<String, dynamic> json) {
+    return MessageReaction(
+      emoji: json['emoji'] as String,
+      userId: json['userId'] as String,
+      username: json['username'] as String,
+      timestamp: DateTime.parse(json['timestamp'] as String),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'emoji': emoji,
+      'userId': userId,
+      'username': username,
+      'timestamp': timestamp.toIso8601String(),
     };
   }
 }

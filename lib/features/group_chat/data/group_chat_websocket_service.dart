@@ -20,6 +20,10 @@ class GroupChatWebSocketService {
   final _typingController = StreamController<Map<String, dynamic>>.broadcast();
   final _messageReceivedController = StreamController<GroupMessage>.broadcast();
   final _messageConfirmedController = StreamController<GroupMessage>.broadcast();
+  final _messageDeletedController = StreamController<String>.broadcast();
+  final _reactionAddedController = StreamController<Map<String, dynamic>>.broadcast();
+  final _reactionRemovedController = StreamController<Map<String, dynamic>>.broadcast();
+  final _messageReadController = StreamController<Map<String, dynamic>>.broadcast();
 
   // Public streams
   Stream<JoinRequest> get onJoinRequestReceived => _joinRequestReceivedController.stream;
@@ -34,6 +38,10 @@ class GroupChatWebSocketService {
   Stream<Map<String, dynamic>> get onTyping => _typingController.stream;
   Stream<GroupMessage> get onMessageReceived => _messageReceivedController.stream;
   Stream<GroupMessage> get onMessageConfirmed => _messageConfirmedController.stream;
+  Stream<String> get onMessageDeleted => _messageDeletedController.stream;
+  Stream<Map<String, dynamic>> get onReactionAdded => _reactionAddedController.stream;
+  Stream<Map<String, dynamic>> get onReactionRemoved => _reactionRemovedController.stream;
+  Stream<Map<String, dynamic>> get onMessageRead => _messageReadController.stream;
 
   GroupChatWebSocketService({
     required this.baseUrl,
@@ -190,6 +198,47 @@ class GroupChatWebSocketService {
         print('Error parsing messageConfirmed: $e');
       }
     });
+
+    // Message deleted
+    socket.on('message_deleted', (data) {
+      try {
+        final messageId = (data as Map<String, dynamic>)['messageId'] as String;
+        _messageDeletedController.add(messageId);
+        print('🗑️ Message deleted: $messageId');
+      } catch (e) {
+        print('Error parsing message_deleted: $e');
+      }
+    });
+
+    // Reaction added
+    socket.on('reaction_added', (data) {
+      try {
+        _reactionAddedController.add(data as Map<String, dynamic>);
+        print('👍 Reaction added');
+      } catch (e) {
+        print('Error parsing reaction_added: $e');
+      }
+    });
+
+    // Reaction removed
+    socket.on('reaction_removed', (data) {
+      try {
+        _reactionRemovedController.add(data as Map<String, dynamic>);
+        print('👎 Reaction removed');
+      } catch (e) {
+        print('Error parsing reaction_removed: $e');
+      }
+    });
+
+    // Message read
+    socket.on('message_read', (data) {
+      try {
+        _messageReadController.add(data as Map<String, dynamic>);
+        print('👁️ Message read');
+      } catch (e) {
+        print('Error parsing message_read: $e');
+      }
+    });
   }
 
   /// Join a live session room
@@ -243,6 +292,54 @@ class GroupChatWebSocketService {
     });
   }
 
+  /// Delete a message
+  void deleteMessage({
+    required String conversationId,
+    required String messageId,
+  }) {
+    socket.emit('delete_message', {
+      'conversationId': conversationId,
+      'messageId': messageId,
+    });
+  }
+
+  /// Add reaction to message
+  void addReaction({
+    required String conversationId,
+    required String messageId,
+    required String emoji,
+  }) {
+    socket.emit('add_reaction', {
+      'conversationId': conversationId,
+      'messageId': messageId,
+      'emoji': emoji,
+    });
+  }
+
+  /// Remove reaction from message
+  void removeReaction({
+    required String conversationId,
+    required String messageId,
+    required String emoji,
+  }) {
+    socket.emit('remove_reaction', {
+      'conversationId': conversationId,
+      'messageId': messageId,
+      'emoji': emoji,
+    });
+  }
+
+  /// Mark message as read
+  void markMessageAsRead({
+    required String conversationId,
+    required String messageId,
+  }) {
+    socket.emit('mark_read', {
+      'conversationId': conversationId,
+      'messageId': messageId,
+    });
+  }
+
   /// Disconnect from WebSocket
   void disconnect() {
     socket.disconnect();
@@ -262,6 +359,10 @@ class GroupChatWebSocketService {
     _typingController.close();
     _messageReceivedController.close();
     _messageConfirmedController.close();
+    _messageDeletedController.close();
+    _reactionAddedController.close();
+    _reactionRemovedController.close();
+    _messageReadController.close();
   }
 }
 

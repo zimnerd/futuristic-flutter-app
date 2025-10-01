@@ -2,10 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:uuid/uuid.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:flutter_image_compress/flutter_image_compress.dart';
 import '../../bloc/group_chat_bloc.dart';
 import '../../data/models.dart';
 import 'video_call_screen.dart';
 import '../../../../data/services/webrtc_service.dart';
+import '../widgets/message_bubble.dart';
+import '../widgets/typing_indicator.dart';
+import '../widgets/voice_recorder_widget.dart';
+import '../widgets/message_search_bar.dart';
 
 class GroupChatScreen extends StatefulWidget {
   final GroupConversation group;
@@ -22,7 +28,11 @@ class GroupChatScreen extends StatefulWidget {
 class _GroupChatScreenState extends State<GroupChatScreen> {
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
+  final ImagePicker _imagePicker = ImagePicker();
   bool _isTyping = false;
+  bool _isSearchMode = false;
+  bool _isRecordingVoice = false;
+  GroupMessage? _replyToMessage;
 
   @override
   void initState() {
@@ -68,6 +78,40 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
   }
 
   PreferredSizeWidget _buildAppBar() {
+    if (_isSearchMode) {
+      return PreferredSize(
+        preferredSize: const Size.fromHeight(56),
+        child: BlocBuilder<GroupChatBloc, GroupChatState>(
+          builder: (context, state) {
+            final resultCount = state is GroupChatLoaded 
+                ? state.searchResults.length
+                : null;
+            return MessageSearchBar(
+              onSearch: (query) {
+                if (query.isEmpty) {
+                  context.read<GroupChatBloc>().add(ClearMessageSearch());
+                } else {
+                  context.read<GroupChatBloc>().add(
+                    SearchMessages(
+                      conversationId: widget.group.id,
+                      query: query,
+                    ),
+                  );
+                }
+              },
+              onClose: () {
+                setState(() {
+                  _isSearchMode = false;
+                });
+                context.read<GroupChatBloc>().add(ClearMessageSearch());
+              },
+              resultCount: resultCount,
+            );
+          },
+        ),
+      );
+    }
+
     return AppBar(
       title: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -80,6 +124,15 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
         ],
       ),
       actions: [
+        IconButton(
+          icon: const Icon(Icons.search),
+          onPressed: () {
+            setState(() {
+              _isSearchMode = true;
+            });
+          },
+          tooltip: 'Search messages',
+        ),
         if (widget.group.settings?.enableVideoChat == true)
           IconButton(
             icon: const Icon(Icons.videocam),
@@ -140,24 +193,35 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
         }
 
         if (state is GroupChatLoaded) {
-          if (state.messages.isEmpty) {
+          // Use search results if in search mode, otherwise use all messages
+          final messages = state.searchQuery != null && state.searchQuery!.isNotEmpty
+              ? state.searchResults
+              : state.messages;
+
+          if (messages.isEmpty) {
             return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(
-                    Icons.chat_bubble_outline,
+                    state.searchQuery != null
+                        ? Icons.search_off
+                        : Icons.chat_bubble_outline,
                     size: 80,
                     color: Colors.grey[400],
                   ),
                   const SizedBox(height: 16),
-                  const Text(
-                    'No messages yet',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  Text(
+                    state.searchQuery != null
+                        ? 'No messages found'
+                        : 'No messages yet',
+                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Be the first to say something!',
+                    state.searchQuery != null
+                        ? 'Try a different search term'
+                        : 'Be the first to say something!',
                     style: TextStyle(color: Colors.grey[600]),
                   ),
                 ],
@@ -165,15 +229,61 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
             );
           }
 
-          return ListView.builder(
-            controller: _scrollController,
-            reverse: true,
-            padding: const EdgeInsets.all(8),
-            itemCount: state.messages.length,
-            itemBuilder: (context, index) {
-              final message = state.messages[state.messages.length - 1 - index];
-              return _buildMessageBubble(message);
-            },
+          return Column(
+            children: [
+              Expanded(
+                child: ListView.builder(
+                  controller: _scrollController,
+                  reverse: true,
+                  padding: const EdgeInsets.all(8),
+                  itemCount: messages.length,
+                  itemBuilder: (context, index) {
+                    final message = messages[messages.length - 1 - index];
+                    // TODO: Get current user ID from auth service
+                    final currentUserId = 'current_user_id'; // Replace with actual user ID
+                    final isMe = message.senderId == currentUserId;
+                    
+                    return MessageBubble(
+                      message: message,
+                      isMe: isMe,
+                      onReply: () {
+                        setState(() {
+                          _replyToMessage = message;
+                        });
+                      },
+                      onDelete: () {
+                        context.read<GroupChatBloc>().add(
+                          DeleteMessage(
+                            messageId: message.id,
+                            conversationId: widget.group.id,
+                          ),
+                        );
+                      },
+                      onAddReaction: (emoji) {
+                        context.read<GroupChatBloc>().add(
+                          AddReaction(
+                            messageId: message.id,
+                            conversationId: widget.group.id,
+                            emoji: emoji,
+                          ),
+                        );
+                      },
+                      onRemoveReaction: (emoji) {
+                        context.read<GroupChatBloc>().add(
+                          RemoveReaction(
+                            messageId: message.id,
+                            conversationId: widget.group.id,
+                            emoji: emoji,
+                          ),
+                        );
+                      },
+                    );
+                  },
+                ),
+              ),
+              // Typing indicator
+              TypingIndicator(typingUsers: state.typingUsers),
+            ],
           );
         }
 
@@ -182,66 +292,23 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
     );
   }
 
-  Widget _buildMessageBubble(GroupMessage message) {
-    // TODO: Pass current user ID from parent widget or get from auth BLoC
-    // For now, compare with sender ID - you'll need to inject this
-    final currentUserId = ''; // Will be injected via context or constructor
-    final isMe = message.senderId == currentUserId;
-
-    return Align(
-      alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
-      child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: isMe ? Theme.of(context).primaryColor : Colors.grey[300],
-          borderRadius: BorderRadius.circular(16),
-        ),
-        constraints: BoxConstraints(
-          maxWidth: MediaQuery.of(context).size.width * 0.7,
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (!isMe)
-              Text(
-                message.senderFirstName ?? message.senderUsername,
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: isMe ? Colors.white : Colors.black87,
-                  fontSize: 12,
-                ),
-              ),
-            if (!isMe) const SizedBox(height: 4),
-            Text(
-              message.content,
-              style: TextStyle(color: isMe ? Colors.white : Colors.black87),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              _formatTimestamp(message.timestamp),
-              style: TextStyle(
-                fontSize: 10,
-                color: isMe ? Colors.white70 : Colors.black54,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  String _formatTimestamp(DateTime timestamp) {
-    final now = DateTime.now();
-    final diff = now.difference(timestamp);
-
-    if (diff.inMinutes < 1) return 'Just now';
-    if (diff.inHours < 1) return '${diff.inMinutes}m ago';
-    if (diff.inDays < 1) return '${diff.inHours}h ago';
-    return '${timestamp.day}/${timestamp.month}/${timestamp.year}';
-  }
-
   Widget _buildMessageInput() {
+    if (_isRecordingVoice) {
+      return VoiceRecorderWidget(
+        onRecordComplete: (filePath, duration) async {
+          setState(() {
+            _isRecordingVoice = false;
+          });
+          await _sendVoiceMessage(filePath, duration);
+        },
+        onCancel: () {
+          setState(() {
+            _isRecordingVoice = false;
+          });
+        },
+      );
+    }
+
     return Container(
       padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
@@ -255,41 +322,90 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
         ],
       ),
       child: SafeArea(
-        child: Row(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            IconButton(
-              icon: const Icon(Icons.add_circle_outline),
-              onPressed: _showAttachmentOptions,
-            ),
-            Expanded(
-              child: TextField(
-                controller: _messageController,
-                decoration: InputDecoration(
-                  hintText: 'Type a message...',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(24),
-                  ),
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 8,
+            // Reply preview
+            if (_replyToMessage != null)
+              Container(
+                padding: const EdgeInsets.all(8),
+                margin: const EdgeInsets.only(bottom: 8),
+                decoration: BoxDecoration(
+                  color: Colors.grey[200],
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Replying to ${_replyToMessage!.senderUsername}',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Theme.of(context).primaryColor,
+                              fontSize: 12,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            _replyToMessage!.content,
+                            style: const TextStyle(fontSize: 12),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close, size: 20),
+                      onPressed: () {
+                        setState(() {
+                          _replyToMessage = null;
+                        });
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            Row(
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.add_circle_outline),
+                  onPressed: _showAttachmentOptions,
+                ),
+                Expanded(
+                  child: TextField(
+                    controller: _messageController,
+                    decoration: InputDecoration(
+                      hintText: 'Type a message...',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(24),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
+                    ),
+                    maxLines: null,
+                    textInputAction: TextInputAction.newline,
+                    onChanged: _handleTyping,
                   ),
                 ),
-                maxLines: null,
-                textInputAction: TextInputAction.newline,
-                onChanged: _handleTyping,
-              ),
-            ),
-            const SizedBox(width: 8),
-            IconButton(
-              icon: Icon(
-                _messageController.text.trim().isEmpty
-                    ? Icons.mic
-                    : Icons.send,
-                color: Theme.of(context).primaryColor,
-              ),
-              onPressed: _messageController.text.trim().isEmpty
-                  ? _recordVoiceMessage
-                  : _sendMessage,
+                const SizedBox(width: 8),
+                IconButton(
+                  icon: Icon(
+                    _messageController.text.trim().isEmpty
+                        ? Icons.mic
+                        : Icons.send,
+                    color: Theme.of(context).primaryColor,
+                  ),
+                  onPressed: _messageController.text.trim().isEmpty
+                      ? _recordVoiceMessage
+                      : _sendMessage,
+                ),
+              ],
             ),
           ],
         ),
@@ -326,12 +442,14 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
         conversationId: widget.group.id,
         content: text,
         tempId: tempId,
+        replyToMessageId: _replyToMessage?.id,
       ),
     );
 
     _messageController.clear();
     setState(() {
       _isTyping = false;
+      _replyToMessage = null;
     });
 
     // Scroll to bottom to show new message
@@ -347,10 +465,36 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
   }
 
   void _recordVoiceMessage() {
-    // TODO: Implement voice recording
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Voice recording will be implemented')),
-    );
+    setState(() {
+      _isRecordingVoice = true;
+    });
+  }
+
+  Future<void> _sendVoiceMessage(String filePath, int duration) async {
+    try {
+      // TODO: Upload voice file to server
+      // For now, just show a message
+      final tempId = const Uuid().v4();
+      
+      // Send voice message via BLoC (backend will handle file upload)
+      context.read<GroupChatBloc>().add(
+        SendMessage(
+          conversationId: widget.group.id,
+          content: 'Voice message',
+          tempId: tempId,
+          replyToMessageId: _replyToMessage?.id,
+          // metadata: {'type': 'voice', 'duration': duration, 'filePath': filePath},
+        ),
+      );
+
+      setState(() {
+        _replyToMessage = null;
+      });
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to send voice message: $e')),
+      );
+    }
   }
 
   void _showAttachmentOptions() {
@@ -362,9 +506,9 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
             ListTile(
               leading: const Icon(Icons.photo, color: Colors.blue),
               title: const Text('Photo'),
-              onTap: () {
+              onTap: () async {
                 Navigator.pop(context);
-                // TODO: Pick photo
+                await _pickImage();
               },
             ),
             ListTile(
@@ -373,6 +517,9 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
               onTap: () {
                 Navigator.pop(context);
                 // TODO: Pick video
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Video upload coming soon')),
+                );
               },
             ),
             ListTile(
@@ -381,12 +528,82 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
               onTap: () {
                 Navigator.pop(context);
                 // TODO: Pick file
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('File upload coming soon')),
+                );
               },
             ),
           ],
         ),
       ),
     );
+  }
+
+  Future<void> _pickImage() async {
+    try {
+      final pickedFile = await _imagePicker.pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 1920,
+        maxHeight: 1920,
+        imageQuality: 85,
+      );
+
+      if (pickedFile == null) return;
+
+      // Show loading indicator
+      if (!mounted) return;
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+
+      // Compress image
+      final compressedFile = await FlutterImageCompress.compressAndGetFile(
+        pickedFile.path,
+        '${pickedFile.path}_compressed.jpg',
+        quality: 85,
+      );
+
+      // Close loading dialog
+      if (!mounted) return;
+      Navigator.of(context).pop();
+
+      if (compressedFile == null) {
+        throw Exception('Failed to compress image');
+      }
+
+      // TODO: Upload to server and get URL
+      // For now, send a placeholder message
+      final tempId = const Uuid().v4();
+      
+      context.read<GroupChatBloc>().add(
+        SendMessage(
+          conversationId: widget.group.id,
+          content: 'Image',
+          type: 'image',
+          tempId: tempId,
+          replyToMessageId: _replyToMessage?.id,
+          // metadata: {'imageUrl': uploadedUrl},
+        ),
+      );
+
+      setState(() {
+        _replyToMessage = null;
+      });
+    } catch (e) {
+      // Close loading dialog if still showing
+      if (mounted && Navigator.of(context).canPop()) {
+        Navigator.of(context).pop();
+      }
+      
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to pick image: $e')),
+      );
+    }
   }
 
   void _startVideoCall() {
