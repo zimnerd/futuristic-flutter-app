@@ -1,6 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
-import '../../../lib/data/models/match_model.dart';
-import '../../../lib/domain/entities/user_profile.dart';
+import 'package:pulse_dating_app/data/services/ai_matching_service.dart';
+import 'package:pulse_dating_app/core/network/api_client.dart';
+import 'package:pulse_dating_app/data/models/match_model.dart';
+import 'package:pulse_dating_app/data/models/user_profile.dart';
+import 'package:pulse_dating_app/data/models/profile_photo.dart';
+import 'package:pulse_dating_app/data/models/user_location.dart';
 
 void main() {
   group('AI Matching Models Tests', () {

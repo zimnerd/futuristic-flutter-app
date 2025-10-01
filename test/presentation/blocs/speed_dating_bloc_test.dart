@@ -5,17 +5,24 @@ import 'package:pulse_dating_app/data/services/speed_dating_service.dart';
 import 'package:pulse_dating_app/presentation/blocs/speed_dating/speed_dating_bloc.dart';
 import 'package:pulse_dating_app/presentation/blocs/speed_dating/speed_dating_event.dart';
 import 'package:pulse_dating_app/presentation/blocs/speed_dating/speed_dating_state.dart';
+import 'package:pulse_dating_app/presentation/blocs/auth/auth_bloc.dart';
 
-// Mock class
+// Mock classes
 class MockSpeedDatingService extends Mock implements SpeedDatingService {}
+class MockAuthBloc extends Mock implements AuthBloc {}
 
 void main() {
   late SpeedDatingBloc bloc;
   late MockSpeedDatingService mockService;
+  late MockAuthBloc mockAuthBloc;
 
   setUp(() {
     mockService = MockSpeedDatingService();
-    bloc = SpeedDatingBloc(speedDatingService: mockService);
+    mockAuthBloc = MockAuthBloc();
+    bloc = SpeedDatingBloc(
+      speedDatingService: mockService,
+      authBloc: mockAuthBloc,
+    );
   });
 
   tearDown(() {
