@@ -1,0 +1,354 @@
+import 'package:flutter_test/flutter_test.dart';
+import 'package:pulse_dating_app/data/models/match_model.dart';
+
+void main() {
+  group('AI Matching Models Tests', () {
+    
+    group('MatchModel', () {
+      test('should create MatchModel from JSON with user data', () {
+        // Arrange
+        final json = {
+          'id': 'match123',
+          'user1Id': 'user1',
+          'user2Id': 'user2',
+          'compatibilityScore': 0.85,
+          'status': 'pending',
+          'createdAt': '2024-01-01T00:00:00Z',
+          'updatedAt': '2024-01-01T00:00:00Z',
+          'user': {
+            'id': 'user2',
+            'firstName': 'Jane',
+            'lastName': 'Smith',
+            'age': 28,
+            'photos': ['https://example.com/photo1.jpg'],
+            'interests': ['music', 'travel', 'fitness'],
+            'bio': 'Love to explore new places',
+            'gender': 'female',
+            'location': 'New York',
+            'occupation': 'Designer',
+          }
+        };
+
+        // Act
+        final match = MatchModel.fromJson(json);
+
+        // Assert
+        expect(match.id, equals('match123'));
+        expect(match.user1Id, equals('user1'));
+        expect(match.user2Id, equals('user2'));
+        expect(match.compatibilityScore, equals(0.85));
+        expect(match.status, equals('pending'));
+        expect(match.userProfile?.name, equals('Jane Smith'));
+        expect(match.userProfile?.age, equals(28));
+        expect(match.userProfile?.photos.length, equals(1));
+        expect(match.userProfile?.interests.length, equals(3));
+      });
+
+      test('should handle missing user data gracefully', () {
+        // Arrange
+        final json = {
+          'id': 'match123',
+          'user1Id': 'user1',
+          'user2Id': 'user2',
+          'compatibilityScore': 0.75,
+          'status': 'pending',
+          'createdAt': '2024-01-01T00:00:00Z',
+          'updatedAt': '2024-01-01T00:00:00Z',
+          // No 'user' field
+        };
+
+        // Act
+        final match = MatchModel.fromJson(json);
+
+        // Assert
+        expect(match.id, equals('match123'));
+        expect(match.compatibilityScore, equals(0.75));
+        expect(match.userProfile, isNull);
+        expect(match.otherUserId, isNull);
+      });
+
+      test('should handle malformed user data', () {
+        // Arrange
+        final json = {
+          'id': 'match123',
+          'user1Id': 'user1',
+          'user2Id': 'user2',
+          'compatibilityScore': 0.65,
+          'status': 'pending',
+          'createdAt': '2024-01-01T00:00:00Z',
+          'updatedAt': '2024-01-01T00:00:00Z',
+          'user': {
+            'id': 'user2',
+            // Missing firstName, lastName
+            'age': 'invalid_age', // Invalid age format
+            'photos': 'not_an_array', // Invalid photos format
+          }
+        };
+
+        // Act & Assert
+        expect(() => MatchModel.fromJson(json), returnsNormally);
+        
+        final match = MatchModel.fromJson(json);
+        expect(match.userProfile?.name.trim(), isEmpty);
+        expect(match.userProfile?.age, equals(0)); // Default age
+        expect(match.userProfile?.photos, isEmpty); // Empty photos list
+      });
+
+      test('should convert MatchModel to JSON', () {
+        // Arrange
+        final match = MatchModel(
+          id: 'match123',
+          user1Id: 'user1',
+          user2Id: 'user2',
+          compatibilityScore: 0.85,
+          status: 'matched',
+          createdAt: DateTime.parse('2024-01-01T00:00:00Z'),
+          updatedAt: DateTime.parse('2024-01-01T00:00:00Z'),
+          otherUserId: 'user2',
+        );
+
+        // Act
+        final json = match.toJson();
+
+        // Assert
+        expect(json['id'], equals('match123'));
+        expect(json['compatibilityScore'], equals(0.85));
+        expect(json['status'], equals('matched'));
+        expect(json['otherUserId'], equals('user2'));
+      });
+
+      test('should handle different date formats', () {
+        // Arrange
+        final json = {
+          'id': 'match123',
+          'user1Id': 'user1',
+          'user2Id': 'user2',
+          'compatibilityScore': 0.80,
+          'status': 'pending',
+          'matchedAt': '2024-01-01T12:30:00Z',
+          // Missing createdAt and updatedAt
+        };
+
+        // Act
+        final match = MatchModel.fromJson(json);
+
+        // Assert
+        expect(match.matchedAt, isNotNull);
+        expect(match.createdAt, isNotNull); // Should use matchedAt as fallback
+        expect(match.updatedAt, isNotNull); // Should use matchedAt as fallback
+      });
+
+      test('should validate compatibility score bounds', () {
+        // Test various compatibility scores
+        final testCases = [
+          {'score': 0.0, 'expected': 0.0},
+          {'score': 0.5, 'expected': 0.5},
+          {'score': 1.0, 'expected': 1.0},
+          {'score': 1.5, 'expected': 1.5}, // Above 1.0
+          {'score': -0.5, 'expected': -0.5}, // Below 0.0
+        ];
+
+        for (final testCase in testCases) {
+          // Arrange
+          final json = {
+            'id': 'match123',
+            'user1Id': 'user1',
+            'user2Id': 'user2',
+            'compatibilityScore': testCase['score'],
+            'status': 'pending',
+            'createdAt': '2024-01-01T00:00:00Z',
+            'updatedAt': '2024-01-01T00:00:00Z',
+          };
+
+          // Act
+          final match = MatchModel.fromJson(json);
+
+          // Assert
+          expect(match.compatibilityScore, equals(testCase['expected']));
+        }
+      });
+    });
+
+    group('UserProfile Integration', () {
+      test('should create UserProfile with all fields', () {
+        // Arrange
+        final userJson = {
+          'id': 'user123',
+          'firstName': 'John',
+          'lastName': 'Doe',
+          'age': 30,
+          'bio': 'Software developer who loves hiking',
+          'photos': [
+            {
+              'id': 'photo1',
+              'url': 'https://example.com/photo1.jpg',
+              'order': 0,
+              'isVerified': true,
+            },
+            'https://example.com/photo2.jpg', // String format
+          ],
+          'coordinates': {
+            'latitude': 37.7749,
+            'longitude': -122.4194,
+          },
+          'location': {
+            'city': 'San Francisco',
+            'country': 'USA',
+          },
+          'interests': [
+            {'name': 'hiking'},
+            'programming', // String format
+            {'name': 'photography'},
+          ],
+          'occupation': 'Software Engineer',
+          'education': 'Computer Science',
+          'gender': 'male',
+          'isVerified': true,
+        };
+
+        // Act
+        final userProfile = MatchModel.parseUserProfile(userJson);
+
+        // Assert
+        expect(userProfile?.id, equals('user123'));
+        expect(userProfile?.name, equals('John Doe'));
+        expect(userProfile?.age, equals(30));
+        expect(userProfile?.bio, equals('Software developer who loves hiking'));
+        expect(userProfile?.photos.length, equals(2));
+        expect(userProfile?.photos.first.isVerified, isTrue);
+        expect(userProfile?.location.city, equals('San Francisco'));
+        expect(userProfile?.location.latitude, equals(37.7749));
+        expect(userProfile?.interests.length, equals(3));
+        expect(userProfile?.interests, contains('hiking'));
+        expect(userProfile?.interests, contains('programming'));
+        expect(userProfile?.occupation, equals('Software Engineer'));
+        expect(userProfile?.gender, equals('male'));
+        expect(userProfile?.isVerified, isTrue);
+      });
+
+      test('should handle empty or null user data', () {
+        // Test cases for various invalid inputs
+        final testCases = [
+          null,
+          {},
+          {'id': null},
+          {'id': ''},
+          {
+            'id': 'user123',
+            'firstName': null,
+            'lastName': null,
+            'age': null,
+            'photos': null,
+            'interests': null,
+          }
+        ];
+
+        for (final testCase in testCases) {
+          // Act & Assert
+          if (testCase == null) {
+            expect(() => MatchModel.parseUserProfile(<String, dynamic>{}), throwsException);
+          } else {
+            final typedTestCase = Map<String, dynamic>.from(testCase);
+            final result = MatchModel.parseUserProfile(typedTestCase);
+            if (typedTestCase.isEmpty || typedTestCase['id'] == null || typedTestCase['id'] == '') {
+              expect(result?.id, anyOf(equals(''), isNull));
+            } else {
+              expect(result, isNotNull);
+              expect(result?.name.trim(), anyOf(equals(''), equals('')));
+            }
+          }
+        }
+      });
+
+      test('should parse location data correctly', () {
+        // Test different location formats
+        final testCases = [
+          // Object format
+          {
+            'location': {'city': 'London', 'country': 'UK'},
+            'coordinates': {'latitude': 51.5074, 'longitude': -0.1278},
+            'expectedCity': 'London',
+            'expectedCountry': 'UK',
+            'expectedLat': 51.5074,
+          },
+          // String format
+          {
+            'location': 'Paris, France',
+            'expectedCity': null,
+            'expectedAddress': 'Paris, France',
+          },
+          // Missing coordinates
+          {
+            'location': {'city': 'Tokyo'},
+            'expectedCity': 'Tokyo',
+            'expectedLat': 0.0,
+          },
+        ];
+
+        for (final testCase in testCases) {
+          // Arrange
+          final userJson = {
+            'id': 'user123',
+            'firstName': 'Test',
+            'lastName': 'User',
+            ...testCase,
+          };
+
+          // Act
+          final userProfile = MatchModel.parseUserProfile(userJson);
+
+          // Assert
+          expect(userProfile, isNotNull);
+          if (testCase.containsKey('expectedCity')) {
+            expect(userProfile?.location.city, equals(testCase['expectedCity']));
+          }
+          if (testCase.containsKey('expectedCountry')) {
+            expect(userProfile?.location.country, equals(testCase['expectedCountry']));
+          }
+          if (testCase.containsKey('expectedLat')) {
+            expect(userProfile?.location.latitude, equals(testCase['expectedLat']));
+          }
+          if (testCase.containsKey('expectedAddress')) {
+            expect(userProfile?.location.address, equals(testCase['expectedAddress']));
+          }
+        }
+      });
+    });
+
+    group('Performance Tests', () {
+      test('should handle large number of matches efficiently', () {
+        // Arrange
+        final largeJsonList = List.generate(1000, (index) => {
+          'id': 'match$index',
+          'user1Id': 'user1',
+          'user2Id': 'user$index',
+          'compatibilityScore': (index % 100) / 100.0,
+          'status': 'pending',
+          'createdAt': '2024-01-01T00:00:00Z',
+          'updatedAt': '2024-01-01T00:00:00Z',
+          'user': {
+            'id': 'user$index',
+            'firstName': 'User',
+            'lastName': '$index',
+            'age': 20 + (index % 30),
+          }
+        });
+
+        // Act
+        final startTime = DateTime.now();
+        final matches = largeJsonList.map((json) => MatchModel.fromJson(json)).toList();
+        final endTime = DateTime.now();
+        final duration = endTime.difference(startTime);
+
+        // Assert
+        expect(matches.length, equals(1000));
+        expect(duration.inMilliseconds, lessThan(5000)); // Should complete within 5 seconds
+        
+        // Verify random samples
+        expect(matches[0].userProfile?.name, equals('User 0'));
+        expect(matches[500].compatibilityScore, equals(0.0)); // 500 % 100 = 0
+        expect(matches[999].userProfile?.age, equals(49)); // 20 + (999 % 30) = 49
+      });
+    });
+  });
+}

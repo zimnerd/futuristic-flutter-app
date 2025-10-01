@@ -18,10 +18,8 @@ class MockResponse extends Mock implements Response {
 
 void main() {
   late SpeedDatingService service;
-  late MockApiClient mockApiClient;
 
   setUp(() {
-    mockApiClient = MockApiClient();
     // SpeedDatingService is a singleton, so we'll test with the singleton instance
     service = SpeedDatingService();
   });
@@ -29,6 +27,7 @@ void main() {
   group('SpeedDatingService - Upcoming Events', () {
     test('getUpcomingEvents should return list of events', () async {
       // Arrange
+      // ignore: unused_local_variable
       final mockEvents = [
         {
           'id': 'event1',
@@ -69,6 +68,7 @@ void main() {
       const eventId = 'event1';
 
       // Act
+      // ignore: unused_local_variable
       final result = await service.getEventById(eventId);
 
       // Assert - In a real test with proper mocking, we'd verify the result
