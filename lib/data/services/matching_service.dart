@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/constants/api_constants.dart';
 import '../../../domain/entities/user_profile.dart';
+import '../../../core/utils/logger.dart';
 import '../models/match_model.dart';
 import '../models/user_model.dart';
 
@@ -358,7 +359,7 @@ class MatchingService {
       // Get current user ID once at the beginning
       final currentUserId = await _apiClient.getCurrentUserId() ?? '';
       
-      print('🔍 MatchingService: Getting matches with excludeWithConversations=$excludeWithConversations');
+      AppLogger.debug('🔍 MatchingService: Getting matches with excludeWithConversations=$excludeWithConversations');
       
       final response = await _apiClient.getMatches(
         limit: limit ?? 20,
@@ -370,11 +371,11 @@ class MatchingService {
       final matches = data['data'] as List<dynamic>?;
 
       if (matches == null) {
-        print('🔍 MatchingService: No matches data returned');
+        AppLogger.debug('🔍 MatchingService: No matches data returned');
         return [];
       }
 
-      print('🔍 MatchingService: Received ${matches.length} matches from API');
+      AppLogger.debug('🔍 MatchingService: Received ${matches.length} matches from API');
 
       List<MatchModel> matchModels = matches
           .map(
@@ -574,7 +575,7 @@ class MatchingService {
         try {
           return DateTime.parse(dateStr);
         } catch (e) {
-          print('Error parsing date: $dateStr - $e');
+          AppLogger.debug('Error parsing date: $dateStr - $e');
         }
       }
       return DateTime.now();

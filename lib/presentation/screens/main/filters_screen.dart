@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../core/utils/logger.dart';
 
 import '../../blocs/filters/filter_bloc.dart';
 import '../heat_map_screen.dart';
@@ -447,7 +448,7 @@ class _FiltersScreenState extends State<FiltersScreen> {
       context.read<DiscoveryBloc>().add(ApplyFilters(filters));
     } catch (e) {
       // Handle error silently or show debug info
-      print('Error applying filters to discovery: $e');
+      AppLogger.debug('Error applying filters to discovery: $e');
     }
   }
 }

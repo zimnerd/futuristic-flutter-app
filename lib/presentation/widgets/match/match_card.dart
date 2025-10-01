@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:pulse_dating_app/core/utils/logger.dart';
 import '../../../data/models/match_model.dart';
 import '../../../domain/entities/user_profile.dart';
 
@@ -223,7 +224,9 @@ class MatchCard extends StatelessWidget {
 
   /// Get user display name from userProfile or fallback
   String _getUserDisplayName() {
-    print('🏷️ Getting display name - userProfile: ${userProfile?.name}, match.otherUserId: ${match.otherUserId}');
+    AppLogger.debug(
+      '🏷️ Getting display name - userProfile: ${userProfile?.name}, match.otherUserId: ${match.otherUserId}',
+    );
     
     if (userProfile != null && userProfile!.name.isNotEmpty) {
       return userProfile!.name;

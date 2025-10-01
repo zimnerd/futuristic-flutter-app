@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../core/utils/logger.dart';
 import '../../../data/models/user_model.dart';
 import '../../../data/models/match_model.dart';
 import '../../../data/services/ai_matching_service.dart';
@@ -79,7 +80,7 @@ class _AiMatchingScreenState extends State<AiMatchingScreen>
         'recommendation_accuracy': 0.87,
       };
     } catch (e) {
-      print('Error loading AI insights: $e');
+      AppLogger.debug('Error loading AI insights: $e');
     }
   }
 
@@ -93,7 +94,7 @@ class _AiMatchingScreenState extends State<AiMatchingScreen>
       
       _topMatches = matches;
     } catch (e) {
-      print('Error loading top matches: $e');
+      AppLogger.debug('Error loading top matches: $e');
     }
   }
 

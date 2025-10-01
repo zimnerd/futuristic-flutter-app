@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import '../../domain/entities/conversation.dart';
+import '../../core/utils/logger.dart';
 
 /// Data model for Conversation with JSON serialization
 class ConversationModel extends Conversation {
@@ -99,7 +100,7 @@ class ConversationModel extends Conversation {
         try {
           lastMessageTime = DateTime.parse(lastMessageData['createdAt'] as String);
         } catch (e) {
-          print('Error parsing lastMessage createdAt: $e');
+          AppLogger.debug('Error parsing lastMessage createdAt: $e');
           // Fallback to conversation creation time or a reasonable past time
           lastMessageTime = json['createdAt'] != null
               ? DateTime.parse(json['createdAt'] as String)
@@ -117,14 +118,14 @@ class ConversationModel extends Conversation {
         try {
           lastMessageTime = DateTime.parse(json['createdAt'] as String);
         } catch (e) {
-          print('Error parsing createdAt: $e');
+          AppLogger.debug('Error parsing createdAt: $e');
           lastMessageTime = DateTime.now().subtract(const Duration(hours: 24));
         }
       } else if (json['updatedAt'] != null) {
         try {
           lastMessageTime = DateTime.parse(json['updatedAt'] as String);
         } catch (e) {
-          print('Error parsing updatedAt: $e');
+          AppLogger.debug('Error parsing updatedAt: $e');
           lastMessageTime = DateTime.now().subtract(const Duration(hours: 24));
         }
       } else {

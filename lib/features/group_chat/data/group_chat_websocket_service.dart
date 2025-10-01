@@ -1,5 +1,6 @@
 import 'package:socket_io_client/socket_io_client.dart' as io;
 import 'dart:async';
+import '../../../core/utils/logger.dart';
 import '../data/models.dart';
 
 class GroupChatWebSocketService {
@@ -64,19 +65,19 @@ class GroupChatWebSocketService {
 
     // Connection events
     socket.onConnect((_) {
-      print('🟢 Connected to Group Chat WebSocket');
+      AppLogger.debug('🟢 Connected to Group Chat WebSocket');
     });
 
     socket.onDisconnect((_) {
-      print('🔴 Disconnected from Group Chat WebSocket');
+      AppLogger.debug('🔴 Disconnected from Group Chat WebSocket');
     });
 
     socket.onConnectError((error) {
-      print('❌ Connection Error: $error');
+      AppLogger.debug('❌ Connection Error: $error');
     });
 
     socket.onError((error) {
-      print('❌ Socket Error: $error');
+      AppLogger.debug('❌ Socket Error: $error');
     });
 
     // Listen to real-time events
@@ -90,7 +91,7 @@ class GroupChatWebSocketService {
         final request = JoinRequest.fromJson(data as Map<String, dynamic>);
         _joinRequestReceivedController.add(request);
       } catch (e) {
-        print('Error parsing join_request_received: $e');
+        AppLogger.debug('Error parsing join_request_received: $e');
       }
     });
 
@@ -100,7 +101,7 @@ class GroupChatWebSocketService {
         final request = JoinRequest.fromJson(data as Map<String, dynamic>);
         _joinRequestApprovedController.add(request);
       } catch (e) {
-        print('Error parsing join_request_approved: $e');
+        AppLogger.debug('Error parsing join_request_approved: $e');
       }
     });
 
@@ -110,7 +111,7 @@ class GroupChatWebSocketService {
         final request = JoinRequest.fromJson(data as Map<String, dynamic>);
         _joinRequestRejectedController.add(request);
       } catch (e) {
-        print('Error parsing join_request_rejected: $e');
+        AppLogger.debug('Error parsing join_request_rejected: $e');
       }
     });
 
@@ -120,7 +121,7 @@ class GroupChatWebSocketService {
         final participant = GroupParticipant.fromJson(data as Map<String, dynamic>);
         _participantJoinedController.add(participant);
       } catch (e) {
-        print('Error parsing participant_joined: $e');
+        AppLogger.debug('Error parsing participant_joined: $e');
       }
     });
 
@@ -130,7 +131,7 @@ class GroupChatWebSocketService {
         final participant = GroupParticipant.fromJson(data as Map<String, dynamic>);
         _participantLeftController.add(participant);
       } catch (e) {
-        print('Error parsing participant_left: $e');
+        AppLogger.debug('Error parsing participant_left: $e');
       }
     });
 
@@ -140,7 +141,7 @@ class GroupChatWebSocketService {
         final session = LiveSession.fromJson(data as Map<String, dynamic>);
         _liveSessionStartedController.add(session);
       } catch (e) {
-        print('Error parsing live_session_started: $e');
+        AppLogger.debug('Error parsing live_session_started: $e');
       }
     });
 
@@ -150,7 +151,7 @@ class GroupChatWebSocketService {
         final session = LiveSession.fromJson(data as Map<String, dynamic>);
         _liveSessionEndedController.add(session);
       } catch (e) {
-        print('Error parsing live_session_ended: $e');
+        AppLogger.debug('Error parsing live_session_ended: $e');
       }
     });
 
@@ -165,7 +166,7 @@ class GroupChatWebSocketService {
         final settings = GroupSettings.fromJson(data as Map<String, dynamic>);
         _groupSettingsUpdatedController.add(settings);
       } catch (e) {
-        print('Error parsing group_settings_updated: $e');
+        AppLogger.debug('Error parsing group_settings_updated: $e');
       }
     });
 
@@ -179,9 +180,9 @@ class GroupChatWebSocketService {
       try {
         final message = GroupMessage.fromJson(data as Map<String, dynamic>);
         _messageReceivedController.add(message);
-        print('📨 New message received: ${message.content}');
+        AppLogger.debug('📨 New message received: ${message.content}');
       } catch (e) {
-        print('Error parsing new_message: $e');
+        AppLogger.debug('Error parsing new_message: $e');
       }
     });
 
@@ -192,10 +193,10 @@ class GroupChatWebSocketService {
         if (messageData != null) {
           final message = GroupMessage.fromJson(messageData as Map<String, dynamic>);
           _messageConfirmedController.add(message);
-          print('✅ Message confirmed: ${message.id}');
+          AppLogger.debug('✅ Message confirmed: ${message.id}');
         }
       } catch (e) {
-        print('Error parsing messageConfirmed: $e');
+        AppLogger.debug('Error parsing messageConfirmed: $e');
       }
     });
 
@@ -204,9 +205,9 @@ class GroupChatWebSocketService {
       try {
         final messageId = (data as Map<String, dynamic>)['messageId'] as String;
         _messageDeletedController.add(messageId);
-        print('🗑️ Message deleted: $messageId');
+        AppLogger.debug('🗑️ Message deleted: $messageId');
       } catch (e) {
-        print('Error parsing message_deleted: $e');
+        AppLogger.debug('Error parsing message_deleted: $e');
       }
     });
 
@@ -214,9 +215,9 @@ class GroupChatWebSocketService {
     socket.on('reaction_added', (data) {
       try {
         _reactionAddedController.add(data as Map<String, dynamic>);
-        print('👍 Reaction added');
+        AppLogger.debug('👍 Reaction added');
       } catch (e) {
-        print('Error parsing reaction_added: $e');
+        AppLogger.debug('Error parsing reaction_added: $e');
       }
     });
 
@@ -224,9 +225,9 @@ class GroupChatWebSocketService {
     socket.on('reaction_removed', (data) {
       try {
         _reactionRemovedController.add(data as Map<String, dynamic>);
-        print('👎 Reaction removed');
+        AppLogger.debug('👎 Reaction removed');
       } catch (e) {
-        print('Error parsing reaction_removed: $e');
+        AppLogger.debug('Error parsing reaction_removed: $e');
       }
     });
 
@@ -234,9 +235,9 @@ class GroupChatWebSocketService {
     socket.on('message_read', (data) {
       try {
         _messageReadController.add(data as Map<String, dynamic>);
-        print('👁️ Message read');
+        AppLogger.debug('👁️ Message read');
       } catch (e) {
-        print('Error parsing message_read: $e');
+        AppLogger.debug('Error parsing message_read: $e');
       }
     });
   }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:pulse_dating_app/core/utils/logger.dart';
 import '../../../domain/entities/user_profile.dart';
 import '../../../data/models/match_model.dart';
 import '../../theme/pulse_colors.dart';
@@ -233,7 +234,7 @@ class _MatchStoryAvatar extends StatelessWidget {
     // Handle edge cases
     if (difference.isNegative) {
       // Future time - might be a timezone issue or bad data
-      print('⚠️ Match time is in the future! Using "now" instead.');
+      AppLogger.debug('⚠️ Match time is in the future! Using "now" instead.');
       return 'now';
     }
 

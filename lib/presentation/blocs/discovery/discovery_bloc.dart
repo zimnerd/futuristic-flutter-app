@@ -3,6 +3,7 @@ import '../../../domain/entities/user_profile.dart';
 import '../../../domain/entities/discovery_types.dart';
 import '../../../data/services/discovery_service.dart';
 import '../../../data/services/preferences_service.dart';
+import '../../../core/utils/logger.dart';
 import 'discovery_event.dart';
 import 'discovery_state.dart';
 
@@ -116,7 +117,7 @@ class DiscoveryBloc extends Bloc<DiscoveryEvent, DiscoveryState> {
       );
     } catch (error) {
       // Fallback to loading without filters if preferences fail
-      print('Error loading with preferences, falling back: $error');
+      AppLogger.debug('Error loading with preferences, falling back: $error');
       add(const LoadDiscoverableUsers());
     }
   }
