@@ -3,6 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../bloc/group_chat_bloc.dart';
 import '../../data/models.dart';
+import 'video_call_screen.dart';
+import '../../../../data/services/webrtc_service.dart';
 
 class GroupChatScreen extends StatefulWidget {
   final GroupConversation group;
@@ -290,15 +292,92 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
             child: const Text('Cancel'),
           ),
           ElevatedButton(
-            onPressed: () {
+            onPressed: () async {
               Navigator.pop(context);
-              // TODO: Start video call
+              await _initiateCall(isVideoCall: true);
             },
             child: const Text('Start'),
           ),
         ],
       ),
     );
+  }
+
+  Future<void> _initiateCall({required bool isVideoCall}) async {
+    try {
+      // Show loading indicator
+      if (!mounted) return;
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const CircularProgressIndicator(),
+              const SizedBox(height: 16),
+              Text(
+                'Starting ${isVideoCall ? 'video' : 'voice'} call...',
+                style: const TextStyle(color: Colors.white),
+              ),
+            ],
+          ),
+        ),
+      );
+
+      // Get RTC token from backend using group ID as channel name
+      final webrtcService = WebRTCService();
+      final tokenData = await webrtcService.getRtcToken(
+        channelName: widget.group.id,
+        role: 1, // PUBLISHER role for group calls
+      );
+
+      // Close loading dialog
+      if (!mounted) return;
+      Navigator.of(context).pop();
+
+      // Create a pseudo LiveSession for the group call
+      final callSession = LiveSession(
+        id: widget.group.id,
+        conversationId: widget.group.id,
+        hostId: '', // Current user - will be managed by backend
+        hostName: 'Group Call',
+        title: '${widget.group.title} ${isVideoCall ? 'Video' : 'Voice'} Call',
+        description: 'Group ${isVideoCall ? 'video' : 'voice'} call',
+        groupType: widget.group.groupType,
+        status: LiveSessionStatus.active,
+        currentParticipants: widget.group.participantCount,
+        maxParticipants: widget.group.participantCount,
+        requireApproval: false,
+        createdAt: DateTime.now(),
+      );
+
+      // Navigate to video call screen with token
+      if (!mounted) return;
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => VideoCallScreen(
+            liveSessionId: widget.group.id,
+            rtcToken: tokenData['token'] as String,
+            session: callSession,
+          ),
+        ),
+      );
+    } catch (e) {
+      // Close loading dialog if still showing
+      if (mounted && Navigator.of(context).canPop()) {
+        Navigator.of(context).pop();
+      }
+
+      // Show error message
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to start call: ${e.toString()}'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   void _startVoiceCall() {
@@ -315,9 +394,9 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
             child: const Text('Cancel'),
           ),
           ElevatedButton(
-            onPressed: () {
+            onPressed: () async {
               Navigator.pop(context);
-              // TODO: Start voice call
+              await _initiateCall(isVideoCall: false);
             },
             child: const Text('Start'),
           ),

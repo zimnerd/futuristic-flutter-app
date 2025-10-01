@@ -162,6 +162,22 @@ class GroupChatService {
     }
   }
 
+  /// Get all groups the user belongs to
+  Future<List<GroupConversation>> getUserGroups() async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/group-chat/user-groups'),
+      headers: _headers,
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      final groups = data['data'] as List;
+      return groups.map((g) => GroupConversation.fromJson(g)).toList();
+    } else {
+      throw Exception('Failed to load user groups: ${response.body}');
+    }
+  }
+
   /// Get group details
   Future<GroupConversation> getGroupDetails(String conversationId) async {
     final response = await http.get(

@@ -578,9 +578,7 @@ class GroupChatBloc extends Bloc<GroupChatEvent, GroupChatState> {
   ) async {
     emit(GroupChatLoading());
     try {
-      // TODO: Implement getUserGroups() in service
-      // For now, return empty list
-      final groups = <GroupConversation>[];
+      final groups = await service.getUserGroups();
       emit(GroupChatLoaded(userGroups: groups));
     } catch (e) {
       emit(GroupChatError('Failed to load groups: $e'));
