@@ -398,7 +398,7 @@ class _AiMatchingScreenState extends State<AiMatchingScreen>
             'Discovery Range',
             'How far to look for matches',
             child: DropdownButtonFormField<String>(
-              value: '25km',
+              initialValue: '25km',
               decoration: const InputDecoration(
                 border: OutlineInputBorder(),
                 contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),

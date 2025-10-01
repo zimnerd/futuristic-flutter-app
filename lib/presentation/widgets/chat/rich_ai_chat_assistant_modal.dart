@@ -507,7 +507,6 @@ class _RichAiChatAssistantModalState extends State<RichAiChatAssistantModal>
           Switch.adaptive(
             value: value,
             onChanged: onChanged,
-            activeColor: PulseColors.primary,
             activeTrackColor: PulseColors.primary.withValues(alpha: 0.3),
             inactiveThumbColor: isDark ? Colors.grey[600] : Colors.grey[400],
             inactiveTrackColor: isDark ? Colors.grey[700] : Colors.grey[300],

@@ -322,8 +322,11 @@ class _ActiveRoundScreenState extends State<ActiveRoundScreen>
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () async {
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) return;
+        
         final confirmed = await showDialog<bool>(
           context: context,
           builder: (context) => AlertDialog(
@@ -347,9 +350,10 @@ class _ActiveRoundScreenState extends State<ActiveRoundScreen>
         
         if (confirmed == true) {
           await _audioCallService.leaveCall();
+          if (context.mounted) {
+            Navigator.of(context).pop();
+          }
         }
-        
-        return confirmed ?? false;
       },
       child: Scaffold(
         backgroundColor: Colors.black,
