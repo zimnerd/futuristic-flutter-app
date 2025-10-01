@@ -192,7 +192,7 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
                               );
                             }
                           } catch (e) {
-                            if (mounted) {
+                            if (mounted && context.mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
                                   content: Text('Failed to send voice: $e'),
@@ -1702,12 +1702,17 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
               children: [
                 const Text('Why are you reporting this group?'),
                 const SizedBox(height: 16),
-                ...reasons.map((reason) => RadioListTile<String>(
+                ...reasons.map(
+                  (reason) => ListTile(
                       title: Text(reason),
+                    leading: Radio<String>(
                       value: reason,
                       groupValue: selectedReason,
-                      onChanged: (value) {
-                        setState(() => selectedReason = value);
+                      onChanged: (value) =>
+                          setState(() => selectedReason = value),
+                    ),
+                    onTap: () {
+                      setState(() => selectedReason = reason);
                       },
                     )),
                 const SizedBox(height: 16),
@@ -2178,12 +2183,17 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
               children: [
                 const Text('Why are you reporting this message?'),
                 const SizedBox(height: 16),
-                ...reasons.map((reason) => RadioListTile<String>(
+                ...reasons.map(
+                  (reason) => ListTile(
                       title: Text(reason),
+                    leading: Radio<String>(
                       value: reason,
                       groupValue: selectedReason,
-                      onChanged: (value) {
-                        setState(() => selectedReason = value);
+                      onChanged: (value) =>
+                          setState(() => selectedReason = value),
+                    ),
+                    onTap: () {
+                      setState(() => selectedReason = reason);
                       },
                     )),
                 const SizedBox(height: 16),

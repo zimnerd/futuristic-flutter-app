@@ -361,7 +361,7 @@ class _MediaViewerState extends State<MediaViewer>
       // Request storage permission
       final status = await Permission.storage.request();
       if (!status.isGranted && !status.isLimited) {
-        if (mounted) {
+        if (mounted && context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('Storage permission denied'),
@@ -376,7 +376,7 @@ class _MediaViewerState extends State<MediaViewer>
       final url = widget.mediaUrls[_currentIndex];
 
       // Show loading indicator
-      if (mounted) {
+      if (mounted && context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Downloading media...'),
@@ -401,7 +401,7 @@ class _MediaViewerState extends State<MediaViewer>
       // Note: For production, consider using image_gallery_saver package
       // For now, file is saved to app documents directory
 
-      if (mounted) {
+      if (mounted && context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Media saved successfully'),
@@ -417,7 +417,7 @@ class _MediaViewerState extends State<MediaViewer>
         );
       }
     } catch (e) {
-      if (mounted) {
+      if (mounted && context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Failed to save media: ${e.toString()}'),

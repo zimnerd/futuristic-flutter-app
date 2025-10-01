@@ -1649,16 +1649,21 @@ class _ChatScreenState extends State<ChatScreen> {
     // Check microphone permission
     final permission = await Permission.microphone.request();
     if (permission != PermissionStatus.granted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Microphone permission is required for voice messages'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      if (mounted && context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Microphone permission is required for voice messages',
+            ),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
       return;
     }
 
     // Show voice recorder modal
+    if (!mounted || !context.mounted) return;
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
