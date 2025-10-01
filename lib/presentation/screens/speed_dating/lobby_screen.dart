@@ -14,9 +14,9 @@ class SpeedDatingLobbyScreen extends StatefulWidget {
   final String eventId;
 
   const SpeedDatingLobbyScreen({
-    Key? key,
+    super.key,
     required this.eventId,
-  }) : super(key: key);
+  });
 
   @override
   State<SpeedDatingLobbyScreen> createState() => _SpeedDatingLobbyScreenState();

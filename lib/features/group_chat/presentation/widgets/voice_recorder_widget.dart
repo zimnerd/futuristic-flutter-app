@@ -111,7 +111,9 @@ class _VoiceRecorderWidgetState extends State<VoiceRecorderWidget> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Theme.of(context).primaryColor.withOpacity(0.1),
+        color: Theme.of(context).primaryColor.withValues(
+          alpha: Theme.of(context).primaryColor.a * 0.1,
+        ),
         borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
       ),
       child: Column(
@@ -128,7 +130,7 @@ class _VoiceRecorderWidgetState extends State<VoiceRecorderWidget> {
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.red.withOpacity(0.5),
+                      color: Colors.red.withValues(alpha: Colors.red.a * 0.5),
                       blurRadius: 8,
                       spreadRadius: 2,
                     ),
@@ -217,7 +219,9 @@ class _VoiceRecorderWidgetState extends State<VoiceRecorderWidget> {
             width: 3,
             height: height,
             decoration: BoxDecoration(
-              color: Theme.of(context).primaryColor.withOpacity(0.7),
+              color: Theme.of(context).primaryColor.withValues(
+                alpha: Theme.of(context).primaryColor.a * 0.7,
+              ),
               borderRadius: BorderRadius.circular(2),
             ),
           );

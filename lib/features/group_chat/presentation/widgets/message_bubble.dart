@@ -283,7 +283,9 @@ class MessageBubble extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
               decoration: BoxDecoration(
                 color: hasMyReaction
-                    ? Theme.of(context).primaryColor.withOpacity(0.2)
+                    ? Theme.of(context).primaryColor.withValues(
+                        alpha: Theme.of(context).primaryColor.a * 0.2,
+                      )
                     : Colors.grey[200],
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(

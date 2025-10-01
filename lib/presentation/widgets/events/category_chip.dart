@@ -60,8 +60,9 @@ class CategoryChip extends StatelessWidget {
   }
 
   String _getCategoryDisplayText() {
-    if (category == null)
+    if (category == null) {
       return 'All'; // Don't show count for "All" to keep it simple
+    }
 
     // Show event count if available (only show count if > 0)
     final count = category!.eventCount;

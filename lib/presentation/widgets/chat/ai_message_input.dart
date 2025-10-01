@@ -47,9 +47,9 @@ class _AiMessageInputState extends State<AiMessageInput>
   bool _isComposing = false;
   bool _showAttachments = false;
   bool _showAiSuggestions = false;
-  bool _isLoadingSuggestions = false;
+  final bool _isLoadingSuggestions = false;
   
-  List<String> _suggestions = [];
+  final List<String> _suggestions = [];
   
   late AnimationController _aiGlowController;
   late AnimationController _suggestionController;

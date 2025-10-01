@@ -15,9 +15,9 @@ class ParticipantPickerDialog extends StatefulWidget {
   final List<String> initialSelectedIds;
 
   const ParticipantPickerDialog({
-    Key? key,
+    super.key,
     this.initialSelectedIds = const [],
-  }) : super(key: key);
+  });
 
   @override
   State<ParticipantPickerDialog> createState() =>

@@ -1,3 +1,4 @@
+import 'dart:developer' as developer;
 import 'dart:math' as math;
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../../../../data/models/heat_map_models.dart';
@@ -78,8 +79,9 @@ class MapClusteringService {
     if (!forceRefresh && _isCacheValid(cacheKey)) {
       final cached = _clusterCache[cacheKey];
       if (cached != null) {
-        print(
+        developer.log(
           'MapClusteringService: Using cached clusters for zoom $zoomLevel',
+          name: 'MapClusteringService',
         );
         return cached;
       }
@@ -93,8 +95,9 @@ class MapClusteringService {
       _stableClusterPositions.clear();
     }
 
-    print(
+    developer.log(
       'MapClusteringService: Viewport clustering ${viewportFilteredPoints.length} points at zoom $zoomLevel',
+      name: 'MapClusteringService',
     );
 
     // Use hierarchical clustering based on zoom level with viewport-filtered data
@@ -176,8 +179,9 @@ class MapClusteringService {
       baseRadius = 1200; // 1.2km for privacy
     }
     
-    print(
+    developer.log(
       'MapClusteringService: Zoom $zoomLevel -> Level $clusterLevel, Radius ${baseRadius}m',
+      name: 'MapClusteringService',
     );
     
     // Create stable grid-based clusters
@@ -231,7 +235,7 @@ class MapClusteringService {
       if (dominantPoints.isNotEmpty) {
         clusters.add(
           MapCluster(
-            id: 'stable_${cellKey}_${dominantStatus}',
+            id: 'stable_${cellKey}_$dominantStatus',
             position: stablePosition,
             dataPoints: dominantPoints,
             count: dominantPoints.length,
@@ -241,8 +245,9 @@ class MapClusteringService {
       }
     }
     
-    print(
+    developer.log(
       'MapClusteringService: Created ${clusters.length} stable grid clusters',
+      name: 'MapClusteringService',
     );
     return clusters;
   }
@@ -258,7 +263,7 @@ class MapClusteringService {
     final cellSize = cellSizeKm * 0.01; // Convert to degrees approximately
     final gridLat = (coordinates.latitude / cellSize).floor();
     final gridLng = (coordinates.longitude / cellSize).floor();
-    return 'L${level}_${gridLat}_${gridLng}';
+    return 'L${level}_${gridLat}_$gridLng';
   }
 
   /// Get or create stable position for grid cell

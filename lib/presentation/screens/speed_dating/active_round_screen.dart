@@ -16,10 +16,10 @@ class ActiveRoundScreen extends StatefulWidget {
   final String sessionId;
 
   const ActiveRoundScreen({
-    Key? key,
+    super.key,
     required this.eventId,
     required this.sessionId,
-  }) : super(key: key);
+  });
 
   @override
   State<ActiveRoundScreen> createState() => _ActiveRoundScreenState();

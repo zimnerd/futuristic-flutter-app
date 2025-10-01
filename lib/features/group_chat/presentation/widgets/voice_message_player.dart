@@ -114,8 +114,10 @@ class _VoiceMessagePlayerState extends State<VoiceMessagePlayer> {
               height: 36,
               decoration: BoxDecoration(
                 color: widget.isMe
-                    ? Colors.white.withOpacity(0.3)
-                    : Theme.of(context).primaryColor.withOpacity(0.2),
+                    ? Colors.white.withValues(alpha: Colors.white.a * 0.3)
+                    : Theme.of(context).primaryColor.withValues(
+                        alpha: Theme.of(context).primaryColor.a * 0.2,
+                      ),
                 shape: BoxShape.circle,
               ),
               child: _isLoading
@@ -217,7 +219,7 @@ class WaveformPainter extends CustomPainter {
 
       paint.color = isPast
           ? color
-          : color.withOpacity(0.3);
+          : color.withValues(alpha: color.a * 0.3);
 
       canvas.drawRRect(
         RRect.fromRectAndRadius(

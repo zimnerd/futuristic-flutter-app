@@ -63,7 +63,7 @@ class StatisticsBloc extends Bloc<StatisticsEvent, StatisticsState> {
 
 // Statistics Screen Widget
 class StatisticsScreen extends StatefulWidget {
-  const StatisticsScreen({Key? key}) : super(key: key);
+  const StatisticsScreen({super.key});
 
   @override
   State<StatisticsScreen> createState() => _StatisticsScreenState();

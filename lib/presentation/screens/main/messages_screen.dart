@@ -56,6 +56,8 @@ class _MessagesScreenState extends State<MessagesScreen> {
     try {
       final conversations = await _conversationService.getUserConversations();
       
+      if (!mounted || !context.mounted) return;
+      
       // Get current user ID
       final authState = context.read<AuthBloc>().state;
       String? currentUserId;
@@ -80,13 +82,15 @@ class _MessagesScreenState extends State<MessagesScreen> {
         );
 
         final avatarUrl = otherParticipant.profileImageUrl ?? '';
-        print('🐛 Avatar URL for ${otherParticipant.name}: "$avatarUrl"');
+        AppLogger.debug(
+          '🐛 Avatar URL for ${otherParticipant.name}: "$avatarUrl"',
+        );
 
         // Debug last message data
-        print(
+        AppLogger.debug(
           '🐛 Last message for ${otherParticipant.name}: ${conversation.lastMessage}',
         );
-        print(
+        AppLogger.debug(
           '🐛 Last message content: "${conversation.lastMessage?.content ?? 'NULL'}"',
         );
 
@@ -128,7 +132,9 @@ class _MessagesScreenState extends State<MessagesScreen> {
         (a, b) => b.lastMessageTime.compareTo(a.lastMessageTime),
       );
       
-      print('🗋️ Loaded ${conversations.length} conversations, deduplicated to ${deduplicatedList.length}');
+      AppLogger.debug(
+        '🗋️ Loaded ${conversations.length} conversations, deduplicated to ${deduplicatedList.length}',
+      );
 
       setState(() {
         _allConversations = deduplicatedList;
@@ -318,7 +324,9 @@ class _MessagesScreenState extends State<MessagesScreen> {
               // Match stories section - using BlocBuilder to get real match data
               BlocBuilder<MatchBloc, MatchState>(
                 builder: (context, matchState) {
-                  print('🐛 MatchBloc state: ${matchState.runtimeType}');
+                  AppLogger.debug(
+                    '🐛 MatchBloc state: ${matchState.runtimeType}',
+                  );
                   if (matchState is MatchesLoaded) {
                   // Convert MatchModel to MatchStoryData synchronously for now
                   final matchStories = matchState.matches.map((match) {
@@ -375,7 +383,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
                 }
 
                 if (matchState is MatchLoading) {
-                    print('🐛 MatchLoading state');
+                    AppLogger.debug('🐛 MatchLoading state');
                   return Container(
                     height: 120,
                     padding: const EdgeInsets.symmetric(vertical: 8),
@@ -384,7 +392,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
                 }
 
                 if (matchState is MatchError) {
-                    print('🐛 MatchError: ${matchState.message}');
+                    AppLogger.debug('🐛 MatchError: ${matchState.message}');
                   return Container(
                     height: 60,
                     padding: const EdgeInsets.symmetric(
@@ -420,7 +428,9 @@ class _MessagesScreenState extends State<MessagesScreen> {
                 }
 
                   // If no specific state, show empty but log it
-                  print('🐛 Unknown match state: ${matchState.runtimeType}');
+                  AppLogger.debug(
+                    '🐛 Unknown match state: ${matchState.runtimeType}',
+                  );
                 return const SizedBox.shrink();
               },
             ),
@@ -614,7 +624,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
                                   ),
                                 ),
                                 errorWidget: (context, url, error) {
-                                  print(
+                                  AppLogger.debug(
                                     '🐛 Avatar loading error for ${conversation.name}: $error',
                                   );
                                   return Container(

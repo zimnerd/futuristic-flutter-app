@@ -272,7 +272,7 @@ class _GroupListScreenState extends State<GroupListScreen>
                       ),
                       const SizedBox(height: 8),
                       DropdownButtonFormField<GroupConversation>(
-                        value: selectedGroup,
+                        initialValue: selectedGroup,
                         decoration: const InputDecoration(
                           hintText: 'Choose a live host group',
                           border: OutlineInputBorder(),
@@ -457,11 +457,11 @@ class _GroupListScreenState extends State<GroupListScreen>
                         );
 
                         // Close loading
-                        if (!this.mounted) return;
-                        Navigator.of(this.context).pop();
+                        if (!mounted || !context.mounted) return;
+                        Navigator.of(context).pop();
 
                         // Show success
-                        ScaffoldMessenger.of(this.context).showSnackBar(
+                        ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
                             content: Text('Live session created successfully!'),
                             backgroundColor: Colors.green,
@@ -477,10 +477,10 @@ class _GroupListScreenState extends State<GroupListScreen>
                         _joinLiveSession(session);
                       } catch (e) {
                         // Close loading
-                        if (!this.mounted) return;
-                        Navigator.of(this.context).pop();
+                        if (!mounted || !context.mounted) return;
+                        Navigator.of(context).pop();
 
-                        ScaffoldMessenger.of(this.context).showSnackBar(
+                        ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             content:
                                 Text('Failed to create session: ${e.toString()}'),

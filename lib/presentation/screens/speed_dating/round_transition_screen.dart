@@ -17,12 +17,12 @@ class RoundTransitionScreen extends StatefulWidget {
   final Map<String, dynamic>? nextSession;
 
   const RoundTransitionScreen({
-    Key? key,
+    super.key,
     required this.eventId,
     required this.sessionId,
     this.partnerProfile,
     this.nextSession,
-  }) : super(key: key);
+  });
 
   @override
   State<RoundTransitionScreen> createState() => _RoundTransitionScreenState();

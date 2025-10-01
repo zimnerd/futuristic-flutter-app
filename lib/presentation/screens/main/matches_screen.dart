@@ -191,7 +191,7 @@ class _MatchesScreenState extends State<MatchesScreen>
                     ),
                     const SizedBox(width: 4),
                     Text(
-                      '${matchCount}',
+                      '$matchCount',
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,

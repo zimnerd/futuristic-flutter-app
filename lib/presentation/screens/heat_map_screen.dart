@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../../data/services/heat_map_service.dart';
 import '../../core/services/location_service.dart';
+import '../../core/utils/logger.dart';
 import '../../data/models/heat_map_models.dart';
 import '../../core/models/location_models.dart';
 import '../../data/models/location_models.dart' as data_models;
@@ -78,16 +79,16 @@ class HeatMapBloc extends Bloc<HeatMapEvent, HeatMapState> {
     emit(HeatMapLoading());
     
     try {
-      print('HeatMapBloc: Starting location request...');
+      AppLogger.debug('HeatMapBloc: Starting location request...');
       final position = await _locationService.getCurrentLocation();
-      print('HeatMapBloc: Location result: $position');
+      AppLogger.debug('HeatMapBloc: Location result: $position');
       
       final userCoords = position != null 
         ? LocationCoordinates(latitude: position.latitude, longitude: position.longitude) 
         : null;
       
       if (userCoords == null) {
-        print('HeatMapBloc: No location available, emitting error');
+        AppLogger.debug('HeatMapBloc: No location available, emitting error');
         emit(
           HeatMapError(
             'Unable to get current location. Please enable location services and grant permission.',
@@ -97,15 +98,15 @@ class HeatMapBloc extends Bloc<HeatMapEvent, HeatMapState> {
       }
       
       // First, update user location in backend
-      print('HeatMapBloc: Updating user location in backend...');
+      AppLogger.debug('HeatMapBloc: Updating user location in backend...');
       try {
         await _heatMapService.updateUserLocation(userCoords);
-        print('HeatMapBloc: User location updated successfully');
+        AppLogger.debug('HeatMapBloc: User location updated successfully');
       } catch (e) {
-        print('HeatMapBloc: Failed to update user location: $e');
+        AppLogger.debug('HeatMapBloc: Failed to update user location: $e');
         // Continue anyway - try to fetch data without updating location
       }
-      print('HeatMapBloc: Now fetching heat map data...');
+      AppLogger.debug('HeatMapBloc: Now fetching heat map data...');
       
       final [heatmapDataPoints, coverageData] = await Future.wait([
         _heatMapService.getHeatMapData(),
@@ -169,7 +170,7 @@ class HeatMapBloc extends Bloc<HeatMapEvent, HeatMapState> {
 
 // Heat Map Screen Widget
 class HeatMapScreen extends StatefulWidget {
-  const HeatMapScreen({Key? key}) : super(key: key);
+  const HeatMapScreen({super.key});
 
   @override
   State<HeatMapScreen> createState() => _HeatMapScreenState();
@@ -226,7 +227,9 @@ class _HeatMapScreenState extends State<HeatMapScreen> {
     setState(() {
       _showClusters = !_showClusters;
     });
-    print('HeatMapScreen: Clusters ${_showClusters ? 'enabled' : 'disabled'}');
+    AppLogger.debug(
+      'HeatMapScreen: Clusters ${_showClusters ? 'enabled' : 'disabled'}',
+    );
   }
 
   /// Show statistics popup for users within radius
@@ -270,7 +273,7 @@ class _HeatMapScreenState extends State<HeatMapScreen> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildStatRow('Radius', '${_currentRadius} km'),
+                _buildStatRow('Radius', '$_currentRadius km'),
                 _buildStatRow(
                   'Total Users',
                   '${heatmapData.dataPoints.length}',
@@ -484,7 +487,7 @@ class _HeatMapScreenState extends State<HeatMapScreen> {
   }
 
   Widget _buildMapWithData(BuildContext context, HeatMapLoaded state) {
-    print(
+    AppLogger.debug(
       'HeatMapScreen: Building map with data - userLocation: ${state.userLocation}, dataPoints: ${state.heatmapData.dataPoints.length}, radius: ${state.currentRadius}',
     );
     return Stack(
@@ -543,9 +546,9 @@ class _HeatMapScreenState extends State<HeatMapScreen> {
   }
 
   Widget _buildGoogleMap(HeatMapLoaded state) {
-    print('HeatMapScreen: Building GoogleMap widget');
-    print('HeatMapScreen: User location: ${state.userLocation}');
-    print(
+    AppLogger.debug('HeatMapScreen: Building GoogleMap widget');
+    AppLogger.debug('HeatMapScreen: User location: ${state.userLocation}');
+    AppLogger.debug(
       'HeatMapScreen: Heatmap data points: ${state.heatmapData.dataPoints.length}',
     );
 
@@ -553,43 +556,43 @@ class _HeatMapScreenState extends State<HeatMapScreen> {
     LatLng initialPosition;
     bool hasGeographicMismatch = false;
 
-    print('HeatMapScreen: 🔍 Checking data points for geographic mismatch...');
-    print(
+    AppLogger.debug('HeatMapScreen: 🔍 Checking data points for geographic mismatch...');
+    AppLogger.debug(
       'HeatMapScreen: Data points count: ${state.heatmapData.dataPoints.length}',
     );
 
     if (state.heatmapData.dataPoints.isNotEmpty) {
       final firstPoint = state.heatmapData.dataPoints.first;
       final lastPoint = state.heatmapData.dataPoints.last;
-      print(
+      AppLogger.debug(
         'HeatMapScreen: First data point: ${firstPoint.coordinates.latitude}, ${firstPoint.coordinates.longitude}',
       );
-      print(
+      AppLogger.debug(
         'HeatMapScreen: Last data point: ${lastPoint.coordinates.latitude}, ${lastPoint.coordinates.longitude}',
       );
 
       // Check if user location and data are on different continents
       final userLat = state.userLocation?.latitude ?? 0;
       final dataLat = firstPoint.coordinates.latitude;
-      print('HeatMapScreen: 🔍 User latitude: $userLat');
-      print('HeatMapScreen: 🔍 Data latitude: $dataLat');
-      print('HeatMapScreen: 🔍 User > 0: ${userLat > 0}');
-      print('HeatMapScreen: 🔍 Data < 0: ${dataLat < 0}');
-      print('HeatMapScreen: 🔍 User < 0: ${userLat < 0}');
-      print('HeatMapScreen: 🔍 Data > 0: ${dataLat > 0}');
+      AppLogger.debug('HeatMapScreen: 🔍 User latitude: $userLat');
+      AppLogger.debug('HeatMapScreen: 🔍 Data latitude: $dataLat');
+      AppLogger.debug('HeatMapScreen: 🔍 User > 0: ${userLat > 0}');
+      AppLogger.debug('HeatMapScreen: 🔍 Data < 0: ${dataLat < 0}');
+      AppLogger.debug('HeatMapScreen: 🔍 User < 0: ${userLat < 0}');
+      AppLogger.debug('HeatMapScreen: 🔍 Data > 0: ${dataLat > 0}');
 
       hasGeographicMismatch =
           (userLat > 0 && dataLat < 0) || (userLat < 0 && dataLat > 0);
-      print(
+      AppLogger.debug(
         'HeatMapScreen: 🔍 Geographic mismatch detected: $hasGeographicMismatch',
       );
 
       if (hasGeographicMismatch) {
-        print(
+        AppLogger.debug(
           'HeatMapScreen: ⚠️ WARNING: User location and data points are on different continents!',
         );
-        print('HeatMapScreen: User: $userLat, Data: $dataLat');
-        print(
+        AppLogger.debug('HeatMapScreen: User: $userLat, Data: $dataLat');
+        AppLogger.debug(
           'HeatMapScreen: Centering map on data cluster instead of user location',
         );
 
@@ -606,7 +609,7 @@ class _HeatMapScreenState extends State<HeatMapScreen> {
             state.heatmapData.dataPoints.length;
 
         initialPosition = LatLng(avgLat, avgLng);
-        print('HeatMapScreen: Data center position: $initialPosition');
+        AppLogger.debug('HeatMapScreen: Data center position: $initialPosition');
       } else {
         // Use user location if data is in same region
         initialPosition = state.userLocation != null
@@ -626,36 +629,36 @@ class _HeatMapScreenState extends State<HeatMapScreen> {
           : const LatLng(-26.2041028, 28.0473051); // Default to Johannesburg
     }
 
-    print('HeatMapScreen: Initial position: $initialPosition');
+    AppLogger.debug('HeatMapScreen: Initial position: $initialPosition');
 
     final markers = _buildMarkers(state);
     final circles = _buildCircles(state);
 
-    print(
+    AppLogger.debug(
       'HeatMapScreen: Built ${markers.length} markers and ${circles.length} circles',
     );
 
-    print('🗺️ About to build GoogleMap widget...');
-    print('🗺️ Initial position: $initialPosition');
-    print('🗺️ Markers count: ${markers.length}');
-    print('🗺️ Circles count: ${circles.length}');
+    AppLogger.debug('🗺️ About to build GoogleMap widget...');
+    AppLogger.debug('🗺️ Initial position: $initialPosition');
+    AppLogger.debug('🗺️ Markers count: ${markers.length}');
+    AppLogger.debug('🗺️ Circles count: ${circles.length}');
 
     return GoogleMap(
       key: const ValueKey('heat_map_google_map'),
       onMapCreated: (GoogleMapController controller) async {
         _mapController = controller;
-        print('🗺️ HeatMapScreen: Google Maps created successfully');
-        print('🔧 Map Controller Type: ${controller.runtimeType}');
-        print('🔧 Map ID: ${controller.mapId}');
+        AppLogger.debug('🗺️ HeatMapScreen: Google Maps created successfully');
+        AppLogger.debug('🔧 Map Controller Type: ${controller.runtimeType}');
+        AppLogger.debug('🔧 Map ID: ${controller.mapId}');
         
         // Check if map tiles are loading by testing a basic operation
         try {
           final bounds = await controller.getVisibleRegion();
-          print('🔧 Visible region obtained: ${bounds.toString()}');
-          print('🔧 This indicates map tiles should be loading');
+          AppLogger.debug('🔧 Visible region obtained: ${bounds.toString()}');
+          AppLogger.debug('🔧 This indicates map tiles should be loading');
         } catch (e) {
-          print('🔧 ERROR: Cannot get visible region - $e');
-          print('🔧 This may indicate API key or network issues');
+          AppLogger.debug('🔧 ERROR: Cannot get visible region - $e');
+          AppLogger.debug('🔧 This may indicate API key or network issues');
         }
 
         // Wait for map to be fully initialized before camera operations
@@ -663,7 +666,7 @@ class _HeatMapScreenState extends State<HeatMapScreen> {
 
         if (mounted && _mapController != null) {
           final zoomLevel = hasGeographicMismatch ? 8.0 : 12.0;
-          print('🗺️ Moving camera to: $initialPosition, zoom: $zoomLevel');
+          AppLogger.debug('🗺️ Moving camera to: $initialPosition, zoom: $zoomLevel');
 
           try {
             await _mapController!.animateCamera(
@@ -671,14 +674,14 @@ class _HeatMapScreenState extends State<HeatMapScreen> {
                 CameraPosition(target: initialPosition, zoom: zoomLevel),
               ),
             );
-            print('🗺️ Camera positioned successfully');
+            AppLogger.debug('🗺️ Camera positioned successfully');
 
             // Test tile loading after positioning
             await Future.delayed(const Duration(milliseconds: 500));
             final newBounds = await controller.getVisibleRegion();
-            print('🔧 Post-animation visible region: ${newBounds.toString()}');
+            AppLogger.debug('🔧 Post-animation visible region: ${newBounds.toString()}');
           } catch (e) {
-            print('🗺️ Camera positioning error: $e');
+            AppLogger.debug('🗺️ Camera positioning error: $e');
           }
         }
       },
@@ -687,7 +690,7 @@ class _HeatMapScreenState extends State<HeatMapScreen> {
           setState(() {
             _currentZoom = position.zoom;
           });
-          print('🗺️ Zoom changed to: $_currentZoom');
+          AppLogger.debug('🗺️ Zoom changed to: $_currentZoom');
           
           // Debounce cluster updates during camera movement
           _debounceTimer?.cancel();
@@ -700,7 +703,7 @@ class _HeatMapScreenState extends State<HeatMapScreen> {
       },
       onCameraIdle: () {
         _isMapReady = true;
-        print('🗺️ Camera idle at zoom: $_currentZoom');
+        AppLogger.debug('🗺️ Camera idle at zoom: $_currentZoom');
         
         // Cancel any pending debounced updates
         _debounceTimer?.cancel();
@@ -745,29 +748,29 @@ class _HeatMapScreenState extends State<HeatMapScreen> {
     final clusterCircles = <Circle>{};
 
     // Note: User location shown via myLocationEnabled: true (Google blue dot)
-    print('HeatMapScreen: User location will be shown via Google blue dot');
+    AppLogger.debug('HeatMapScreen: User location will be shown via Google blue dot');
     if (state.userLocation != null) {
-      print(
+      AppLogger.debug(
         'HeatMapScreen: User location coordinates: ${state.userLocation!.latitude}, ${state.userLocation!.longitude}',
       );
     }
 
     // Cluster the data points based on zoom level
-    print(
+    AppLogger.debug(
       'HeatMapScreen: 🔍 Starting privacy clustering for ${state.heatmapData.dataPoints.length} data points at zoom $_currentZoom',
     );
     final clusters = MapClusteringService.clusterDataPointsInViewport(
       state.heatmapData.dataPoints,
       _currentZoom,
     );
-    print(
+    AppLogger.debug(
       'HeatMapScreen: 🎯 Privacy clustering completed: ${clusters.length} clusters from ${state.heatmapData.dataPoints.length} points',
     );
     
     // Debug cluster details
     for (int i = 0; i < clusters.length && i < 5; i++) {
       final cluster = clusters[i];
-      print(
+      AppLogger.debug(
         'HeatMapScreen: 🔍 Privacy Cluster $i: ${cluster.count} points, ${cluster.totalUserCount} users at ${cluster.position}',
       );
     }
@@ -775,7 +778,7 @@ class _HeatMapScreenState extends State<HeatMapScreen> {
     // Add cluster circles - PRIVACY: Show as circles with user count, never individual locations
     for (int i = 0; i < clusters.length; i++) {
       final cluster = clusters[i];
-      print(
+      AppLogger.debug(
         'HeatMapScreen: 🔐 Adding PRIVACY CLUSTER circle $i at ${cluster.position.latitude}, ${cluster.position.longitude} with ${cluster.count} points (${cluster.totalUserCount} users)',
       );
       
@@ -783,7 +786,7 @@ class _HeatMapScreenState extends State<HeatMapScreen> {
       final circleRadius = _getClusterRadius(cluster.totalUserCount);
       final circleColor = _getClusterColor(cluster.dominantStatus);
 
-      print('🔵 Creating circle: id=${cluster.id}, center=${cluster.position}, radius=${circleRadius}m, color=$circleColor');
+      AppLogger.debug('🔵 Creating circle: id=${cluster.id}, center=${cluster.position}, radius=${circleRadius}m, color=$circleColor');
       
       clusterCircles.add(
         Circle(
@@ -798,7 +801,7 @@ class _HeatMapScreenState extends State<HeatMapScreen> {
       );
     }
 
-    print(
+    AppLogger.debug(
       'HeatMapScreen: Total privacy cluster circles built: ${clusterCircles.length}',
     );
     return clusterCircles;
@@ -807,7 +810,7 @@ class _HeatMapScreenState extends State<HeatMapScreen> {
   /// No individual markers for privacy - using empty set
   Set<Marker> _buildMarkers(HeatMapLoaded state) {
     // PRIVACY: Return empty markers set - all user locations shown as clusters only
-    print(
+    AppLogger.debug(
       'HeatMapScreen: 🔐 No individual markers for privacy - using cluster circles only',
     );
     return <Marker>{};
@@ -872,7 +875,7 @@ class _HeatMapScreenState extends State<HeatMapScreen> {
       );
     }
 
-    print(
+    AppLogger.debug(
       'HeatMapScreen: Built ${heatmapCircles.length} heatmap overlay circles',
     );
     return heatmapCircles;
@@ -994,7 +997,7 @@ class _HeatMapScreenState extends State<HeatMapScreen> {
     }
     
     final finalRadius = baseRadius * zoomMultiplier;
-    print('🎯 Cluster radius calculation: userCount=$userCount, zoom=$_currentZoom, base=$baseRadius, multiplier=$zoomMultiplier, final=${finalRadius}m');
+    AppLogger.debug('🎯 Cluster radius calculation: userCount=$userCount, zoom=$_currentZoom, base=$baseRadius, multiplier=$zoomMultiplier, final=${finalRadius}m');
     return finalRadius;
   }
 
@@ -1205,7 +1208,7 @@ class _HeatMapScreenState extends State<HeatMapScreen> {
                             ],
                           ),
                         );
-                      }).toList(),
+                      }),
 
                       const SizedBox(height: 16),
                       const Text(
