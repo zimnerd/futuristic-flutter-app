@@ -48,11 +48,15 @@
 	
 	<!-- Camera and Photo Library Permissions -->
 	<key>NSCameraUsageDescription</key>
-	<string>This app needs access to camera to take profile photos</string>
+	<string>This app needs access to camera to take profile photos and make video calls</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>This app needs access to photo library to select profile photos</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>This app needs access to photo library to save photos</string>
+	
+	<!-- Microphone Permission for Audio/Video Calls -->
+	<key>NSMicrophoneUsageDescription</key>
+	<string>PulseLink needs access to your microphone for audio and video calls</string>
 	
 	<!-- Location Permissions -->
 	<key>NSLocationWhenInUseUsageDescription</key>
