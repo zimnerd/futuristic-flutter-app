@@ -334,8 +334,8 @@ class _HeatMapScreenState extends State<HeatMapScreen> {
     ];
   }
 
-  /// TODO: Implement optimized backend clustering in future iteration
-  /// Method removed to avoid unused code warnings
+  /// FUTURE: Implement optimized backend clustering for better performance at scale
+  /// Note: Method removed to avoid unused code warnings - will be re-added with backend clustering
 
   /// Update clusters based on current zoom level with debouncing
   void _updateClustersForZoom() {

@@ -15,7 +15,7 @@ class EventBloc extends Bloc<EventEvent, EventState> {
   bool _showJoinedOnly = false;
   DateTime? _startDate;
   DateTime? _endDate;
-  double? _maxDistance;
+  // double? _maxDistance; // FUTURE: For distance-based filtering (requires user location)
   bool? _hasAvailableSpots;
 
   EventBloc({
@@ -563,10 +563,10 @@ class EventBloc extends Bloc<EventEvent, EventState> {
     _startDate = event.startDate;
     _endDate = event.endDate;
     _showJoinedOnly = event.showJoinedOnly ?? false;
-    _maxDistance = event.maxDistance;
+    // _maxDistance = event.maxDistance; // FUTURE: Distance filtering
     _hasAvailableSpots = event.hasAvailableSpots;
 
-    // Apply all current filters including distance and availability
+    // Apply all current filters including availability
     // Note: Distance filtering requires user location and is handled in _applyAllFilters
     final filteredEvents = _applyAllFilters(_allEvents);
 
@@ -582,7 +582,7 @@ class EventBloc extends Bloc<EventEvent, EventState> {
   ) {
     _startDate = null;
     _endDate = null;
-    _maxDistance = null;
+    // _maxDistance = null; // FUTURE: Distance filtering
     _hasAvailableSpots = null;
     _showJoinedOnly = false;
 

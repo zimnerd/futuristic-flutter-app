@@ -370,7 +370,8 @@ class EventCategory {
 }
 
 /// Legacy EventCategories class for backward compatibility
-/// TODO: Remove once all references are updated to use EventCategory model
+/// Note: Still in use by events_screen.dart, category_chip.dart, and event_card.dart
+/// Migration to EventCategory model pending
 class EventCategories {
   static const String music = 'music';
   static const String sports = 'sports';

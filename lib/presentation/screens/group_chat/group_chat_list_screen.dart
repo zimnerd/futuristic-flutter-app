@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../core/di/service_locator.dart';
 import '../../../features/group_chat/data/models.dart';
+import '../../../features/group_chat/presentation/screens/group_chat_screen.dart';
+import '../../../features/group_chat/presentation/screens/video_call_screen.dart';
+import '../../../data/services/webrtc_service.dart';
 import '../../blocs/group_chat/group_chat_barrel.dart';
 import '../../theme/pulse_colors.dart';
 
@@ -320,7 +323,7 @@ class _GroupChatListScreenState extends State<GroupChatListScreen>
         borderRadius: BorderRadius.circular(16),
       ),
       child: InkWell(
-        onTap: () => _navigateToGroupDetails(group),
+        onTap: () => _navigateToGroupDetails(context, group),
         borderRadius: BorderRadius.circular(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -401,7 +404,7 @@ class _GroupChatListScreenState extends State<GroupChatListScreen>
         borderRadius: BorderRadius.circular(12),
       ),
       child: ListTile(
-        onTap: () => _navigateToGroupDetails(group),
+        onTap: () => _navigateToGroupDetails(context, group),
         contentPadding: const EdgeInsets.all(12),
         leading: CircleAvatar(
           radius: 28,
@@ -1062,22 +1065,45 @@ class _GroupChatListScreenState extends State<GroupChatListScreen>
     }
   }
 
-  void _navigateToGroupDetails(GroupConversation group) {
-    // TODO: Navigate to group details screen
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Opening ${group.title}...'),
+  void _navigateToGroupDetails(BuildContext context, dynamic group) {
+    // Navigate to group chat screen (GroupChatDetailScreen is for settings/info)
+    // Using the main group chat screen from features/group_chat
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => GroupChatScreen(group: group),
       ),
     );
   }
 
-  void _navigateToSessionDetails(LiveSession session) {
-    // TODO: Navigate to live session screen
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Joining ${session.title}...'),
-        backgroundColor: Colors.red,
-      ),
-    );
+  void _navigateToSessionDetails(LiveSession session) async {
+    // Navigate to video call screen with WebRTC session
+    try {
+      final webrtcService = WebRTCService();
+      final tokenData = await webrtcService.getRtcToken(
+        channelName: session.id,
+        role: 1, // PUBLISHER role
+      );
+      
+      if (!mounted) return;
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => VideoCallScreen(
+            liveSessionId: session.id,
+            rtcToken: tokenData['token'] as String,
+            session: session,
+          ),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to join live session: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 }

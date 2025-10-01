@@ -217,49 +217,48 @@ class _SpeedDatingLobbyScreenState extends State<SpeedDatingLobbyScreen> {
     }
   }
 
-  // TODO: Uncomment when organizer detection is implemented
-  // Future<void> _startEvent() async {
-  //   final confirmed = await showDialog<bool>(
-  //     context: context,
-  //     builder: (context) => AlertDialog(
-  //       title: const Text('Start Event'),
-  //       content: const Text(
-  //         'Are you sure you want to start the speed dating event? '
-  //         'All participants will begin their first round.',
-  //       ),
-  //       actions: [
-  //         TextButton(
-  //           onPressed: () => Navigator.pop(context, false),
-  //           child: const Text('Cancel'),
-  //         ),
-  //         ElevatedButton(
-  //           onPressed: () => Navigator.pop(context, true),
-  //           child: const Text('Start Event'),
-  //         ),
-  //       ],
-  //     ),
-  //   );
-  //
-  //   if (confirmed != true) return;
-  //
-  //   setState(() {
-  //     _isLoading = true;
-  //     _error = null;
-  //   });
-  //
-  //   try {
-  //     await _speedDatingService.startEvent(widget.eventId);
-  //     
-  //     // Navigation will happen via event status listener
-  //   } catch (e) {
-  //     if (mounted) {
-  //       setState(() {
-  //         _error = 'Failed to start event: $e';
-  //         _isLoading = false;
-  //       });
-  //     }
-  //   }
-  // }
+  Future<void> _startEvent() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Start Event'),
+        content: const Text(
+          'Are you sure you want to start the speed dating event? '
+          'All participants will begin their first round.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Start Event'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+
+    try {
+      await _speedDatingService.startEvent(widget.eventId);
+
+      // Navigation will happen via event status listener
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _error = 'Failed to start event: $e';
+          _isLoading = false;
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -559,7 +558,13 @@ class _SpeedDatingLobbyScreenState extends State<SpeedDatingLobbyScreen> {
     if (_event == null) return const SizedBox.shrink();
 
     final status = _event!['status'] as String;
-    // final isOrganizer = false; // TODO: Check if user is organizer
+    
+    // Check if current user is organizer (event creator)
+    final authState = context.read<AuthBloc>().state;
+    final currentUserId = authState is AuthAuthenticated
+        ? authState.user.id
+        : '';
+    final isOrganizer = _event!['creatorId'] == currentUserId;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -593,7 +598,7 @@ class _SpeedDatingLobbyScreenState extends State<SpeedDatingLobbyScreen> {
             ElevatedButton(
               onPressed: _isJoining ? null : _joinEvent,
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
+                backgroundColor: const Color(0xFF6E3BFF),
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -613,21 +618,21 @@ class _SpeedDatingLobbyScreenState extends State<SpeedDatingLobbyScreen> {
                       style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                     ),
             ),
-          // TODO: Uncomment when organizer detection is implemented
-          // if (isOrganizer && _participants.length >= 4) ...[
-          //   const SizedBox(height: 12),
-          //   OutlinedButton.icon(
-          //     onPressed: _startEvent,
-          //     icon: const Icon(Icons.play_arrow),
-          //     label: const Text('Start Event'),
-          //     style: OutlinedButton.styleFrom(
-          //       padding: const EdgeInsets.symmetric(vertical: 16),
-          //       shape: RoundedRectangleBorder(
-          //         borderRadius: BorderRadius.circular(12),
-          //       ),
-          //     ),
-          //   ),
-          // ],
+          // Organizer can start event when 4+ participants are present
+          if (isOrganizer && _participants.length >= 4) ...[
+            const SizedBox(height: 12),
+            OutlinedButton.icon(
+              onPressed: _startEvent,
+              icon: const Icon(Icons.play_arrow),
+              label: const Text('Start Event'),
+              style: OutlinedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+          ],
         ],
       ],
     );

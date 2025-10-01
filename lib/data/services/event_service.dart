@@ -582,13 +582,6 @@ class EventService {
     return await _eventsDb.getCacheStats();
   }
 
-  /// Legacy method for backward compatibility
-  /// TODO: Remove once all references are updated
-  Future<List<String>> getEventCategorySlugs() async {
-    final categories = await getEventCategories();
-    return categories.map((category) => category.slug).toList();
-  }
-
   /// Get popular events
   Future<List<Event>> getPopularEvents() async {
     try {
