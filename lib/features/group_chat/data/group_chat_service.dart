@@ -254,4 +254,26 @@ class GroupChatService {
       throw Exception('Failed to report user: ${response.body}');
     }
   }
+
+  /// Get messages for a conversation
+  Future<List<GroupMessage>> getMessages(
+    String conversationId, {
+    int limit = 50,
+    int offset = 0,
+  }) async {
+    final response = await http.get(
+      Uri.parse(
+        '$baseUrl/group-chat/conversations/$conversationId/messages?limit=$limit&offset=$offset',
+      ),
+      headers: _headers,
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      final messages = data['data'] as List;
+      return messages.map((m) => GroupMessage.fromJson(m)).toList();
+    } else {
+      throw Exception('Failed to load messages: ${response.body}');
+    }
+  }
 }

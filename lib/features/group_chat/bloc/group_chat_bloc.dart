@@ -189,6 +189,50 @@ class SendTypingIndicator extends GroupChatEvent {
   List<Object?> get props => [conversationId, isTyping];
 }
 
+class SendMessage extends GroupChatEvent {
+  final String conversationId;
+  final String content;
+  final String type;
+  final String? replyToMessageId;
+  final String? tempId;
+  SendMessage({
+    required this.conversationId,
+    required this.content,
+    this.type = 'text',
+    this.replyToMessageId,
+    this.tempId,
+  });
+  @override
+  List<Object?> get props => [
+    conversationId,
+    content,
+    type,
+    replyToMessageId,
+    tempId,
+  ];
+}
+
+class LoadMessages extends GroupChatEvent {
+  final String conversationId;
+  LoadMessages(this.conversationId);
+  @override
+  List<Object?> get props => [conversationId];
+}
+
+class MessageReceived extends GroupChatEvent {
+  final GroupMessage message;
+  MessageReceived(this.message);
+  @override
+  List<Object?> get props => [message];
+}
+
+class MessageConfirmed extends GroupChatEvent {
+  final GroupMessage message;
+  MessageConfirmed(this.message);
+  @override
+  List<Object?> get props => [message];
+}
+
 class StartVideoCall extends GroupChatEvent {
   final String liveSessionId;
   final String token;
@@ -228,6 +272,8 @@ class GroupChatLoaded extends GroupChatState {
   final GroupConversation? currentGroup;
   final List<GroupConversation> userGroups;
   final List<LiveSession> activeLiveSessions;
+  final List<GroupMessage> messages;
+  final bool isLoadingMessages;
 
   GroupChatLoaded({
     this.liveSessions = const [],
@@ -235,6 +281,8 @@ class GroupChatLoaded extends GroupChatState {
     this.currentGroup,
     this.userGroups = const [],
     this.activeLiveSessions = const [],
+    this.messages = const [],
+    this.isLoadingMessages = false,
   });
 
   GroupChatLoaded copyWith({
@@ -243,6 +291,8 @@ class GroupChatLoaded extends GroupChatState {
     GroupConversation? currentGroup,
     List<GroupConversation>? userGroups,
     List<LiveSession>? activeLiveSessions,
+    List<GroupMessage>? messages,
+    bool? isLoadingMessages,
   }) {
     return GroupChatLoaded(
       liveSessions: liveSessions ?? this.liveSessions,
@@ -250,6 +300,8 @@ class GroupChatLoaded extends GroupChatState {
       currentGroup: currentGroup ?? this.currentGroup,
       userGroups: userGroups ?? this.userGroups,
       activeLiveSessions: activeLiveSessions ?? this.activeLiveSessions,
+      messages: messages ?? this.messages,
+      isLoadingMessages: isLoadingMessages ?? this.isLoadingMessages,
     );
   }
 
@@ -260,6 +312,8 @@ class GroupChatLoaded extends GroupChatState {
     currentGroup,
     userGroups,
     activeLiveSessions,
+    messages,
+    isLoadingMessages,
   ];
 }
 
@@ -308,6 +362,20 @@ class VideoCallError extends GroupChatState {
   List<Object?> get props => [message];
 }
 
+class MessagesLoaded extends GroupChatState {
+  final List<GroupMessage> messages;
+  MessagesLoaded(this.messages);
+  @override
+  List<Object?> get props => [messages];
+}
+
+class MessageSent extends GroupChatState {
+  final GroupMessage message;
+  MessageSent(this.message);
+  @override
+  List<Object?> get props => [message];
+}
+
 // BLoC
 class GroupChatBloc extends Bloc<GroupChatEvent, GroupChatState> {
   final GroupChatService service;
@@ -318,6 +386,8 @@ class GroupChatBloc extends Bloc<GroupChatEvent, GroupChatState> {
   StreamSubscription? _rejectedSubscription;
   StreamSubscription? _sessionStartedSubscription;
   StreamSubscription? _sessionEndedSubscription;
+  StreamSubscription? _messageReceivedSubscription;
+  StreamSubscription? _messageConfirmedSubscription;
 
   GroupChatBloc({
     required this.service,
@@ -344,6 +414,10 @@ class GroupChatBloc extends Bloc<GroupChatEvent, GroupChatState> {
     on<LeaveGroup>(_onLeaveGroup);
     on<SendTypingIndicator>(_onSendTypingIndicator);
     on<CreateGroup>(_onCreateGroup);
+    on<SendMessage>(_onSendMessage);
+    on<LoadMessages>(_onLoadMessages);
+    on<MessageReceived>(_onMessageReceived);
+    on<MessageConfirmed>(_onMessageConfirmed);
 
     // Real-time event handlers
     on<NewJoinRequestReceived>(_onNewJoinRequestReceived);
@@ -380,6 +454,19 @@ class GroupChatBloc extends Bloc<GroupChatEvent, GroupChatState> {
 
     _sessionEndedSubscription = wsService.onLiveSessionEnded.listen((session) {
       add(LiveSessionEndedEvent(session));
+    });
+
+    // Message stream subscriptions
+    _messageReceivedSubscription = wsService.onMessageReceived.listen((
+      message,
+    ) {
+      add(MessageReceived(message));
+    });
+
+    _messageConfirmedSubscription = wsService.onMessageConfirmed.listen((
+      message,
+    ) {
+      add(MessageConfirmed(message));
     });
   }
 
@@ -701,6 +788,80 @@ class GroupChatBloc extends Bloc<GroupChatEvent, GroupChatState> {
     }
   }
 
+  // Message handlers
+  Future<void> _onSendMessage(
+    SendMessage event,
+    Emitter<GroupChatState> emit,
+  ) async {
+    try {
+      wsService.sendMessage(
+        conversationId: event.conversationId,
+        content: event.content,
+        type: event.type,
+        replyToMessageId: event.replyToMessageId,
+        tempId: event.tempId,
+      );
+    } catch (e) {
+      emit(GroupChatError('Failed to send message: $e'));
+    }
+  }
+
+  Future<void> _onLoadMessages(
+    LoadMessages event,
+    Emitter<GroupChatState> emit,
+  ) async {
+    if (state is GroupChatLoaded) {
+      final currentState = state as GroupChatLoaded;
+      emit(currentState.copyWith(isLoadingMessages: true));
+    } else {
+      emit(GroupChatLoading());
+    }
+
+    try {
+      final messages = await service.getMessages(event.conversationId);
+
+      if (state is GroupChatLoaded) {
+        final currentState = state as GroupChatLoaded;
+        emit(
+          currentState.copyWith(messages: messages, isLoadingMessages: false),
+        );
+      } else {
+        emit(GroupChatLoaded(messages: messages));
+      }
+    } catch (e) {
+      if (state is GroupChatLoaded) {
+        final currentState = state as GroupChatLoaded;
+        emit(currentState.copyWith(isLoadingMessages: false));
+      }
+      emit(GroupChatError('Failed to load messages: $e'));
+    }
+  }
+
+  void _onMessageReceived(MessageReceived event, Emitter<GroupChatState> emit) {
+    if (state is GroupChatLoaded) {
+      final currentState = state as GroupChatLoaded;
+      final updatedMessages = [...currentState.messages, event.message];
+      emit(currentState.copyWith(messages: updatedMessages));
+    }
+  }
+
+  void _onMessageConfirmed(
+    MessageConfirmed event,
+    Emitter<GroupChatState> emit,
+  ) {
+    if (state is GroupChatLoaded) {
+      final currentState = state as GroupChatLoaded;
+      // Replace temp message with confirmed message
+      final updatedMessages = currentState.messages.map((msg) {
+        if (msg.tempId == event.message.tempId) {
+          return event.message;
+        }
+        return msg;
+      }).toList();
+      emit(currentState.copyWith(messages: updatedMessages));
+    }
+  }
+
   @override
   Future<void> close() {
     _joinRequestSubscription?.cancel();
@@ -708,7 +869,10 @@ class GroupChatBloc extends Bloc<GroupChatEvent, GroupChatState> {
     _rejectedSubscription?.cancel();
     _sessionStartedSubscription?.cancel();
     _sessionEndedSubscription?.cancel();
+    _messageReceivedSubscription?.cancel();
+    _messageConfirmedSubscription?.cancel();
     wsService.disconnect();
     return super.close();
   }
 }
+

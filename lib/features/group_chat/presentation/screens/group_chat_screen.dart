@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:uuid/uuid.dart';
 import '../../bloc/group_chat_bloc.dart';
 import '../../data/models.dart';
 import 'video_call_screen.dart';
@@ -26,10 +27,11 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
   @override
   void initState() {
     super.initState();
+    final bloc = context.read<GroupChatBloc>();
     // Join the group room
-    context.read<GroupChatBloc>().add(
-          JoinGroup(widget.group.id),
-        );
+    bloc.add(JoinGroup(widget.group.id));
+    // Load message history
+    bloc.add(LoadMessages(widget.group.id));
   }
 
   @override
@@ -45,15 +47,22 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: _buildAppBar(),
-      body: Column(
-        children: [
-          Expanded(
-            child: _buildMessageList(),
-          ),
-          _buildMessageInput(),
-        ],
+    return BlocListener<GroupChatBloc, GroupChatState>(
+      listener: (context, state) {
+        if (state is GroupChatError) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(state.message), backgroundColor: Colors.red),
+          );
+        }
+      },
+      child: Scaffold(
+        appBar: _buildAppBar(),
+        body: Column(
+          children: [
+            Expanded(child: _buildMessageList()),
+            _buildMessageInput(),
+          ],
+        ),
       ),
     );
   }
@@ -123,29 +132,113 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
   }
 
   Widget _buildMessageList() {
-    // TODO: Implement real message list with chat service
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.chat_bubble_outline,
-            size: 80,
-            color: Colors.grey[400],
-          ),
-          const SizedBox(height: 16),
-          const Text(
-            'No messages yet',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Be the first to say something!',
-            style: TextStyle(color: Colors.grey[600]),
-          ),
-        ],
+    return BlocBuilder<GroupChatBloc, GroupChatState>(
+      builder: (context, state) {
+        if (state is GroupChatLoading ||
+            (state is GroupChatLoaded && state.isLoadingMessages)) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        if (state is GroupChatLoaded) {
+          if (state.messages.isEmpty) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.chat_bubble_outline,
+                    size: 80,
+                    color: Colors.grey[400],
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'No messages yet',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Be the first to say something!',
+                    style: TextStyle(color: Colors.grey[600]),
+                  ),
+                ],
+              ),
+            );
+          }
+
+          return ListView.builder(
+            controller: _scrollController,
+            reverse: true,
+            padding: const EdgeInsets.all(8),
+            itemCount: state.messages.length,
+            itemBuilder: (context, index) {
+              final message = state.messages[state.messages.length - 1 - index];
+              return _buildMessageBubble(message);
+            },
+          );
+        }
+
+        return const Center(child: Text('Something went wrong'));
+      },
+    );
+  }
+
+  Widget _buildMessageBubble(GroupMessage message) {
+    // TODO: Pass current user ID from parent widget or get from auth BLoC
+    // For now, compare with sender ID - you'll need to inject this
+    final currentUserId = ''; // Will be injected via context or constructor
+    final isMe = message.senderId == currentUserId;
+
+    return Align(
+      alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: isMe ? Theme.of(context).primaryColor : Colors.grey[300],
+          borderRadius: BorderRadius.circular(16),
+        ),
+        constraints: BoxConstraints(
+          maxWidth: MediaQuery.of(context).size.width * 0.7,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (!isMe)
+              Text(
+                message.senderFirstName ?? message.senderUsername,
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: isMe ? Colors.white : Colors.black87,
+                  fontSize: 12,
+                ),
+              ),
+            if (!isMe) const SizedBox(height: 4),
+            Text(
+              message.content,
+              style: TextStyle(color: isMe ? Colors.white : Colors.black87),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              _formatTimestamp(message.timestamp),
+              style: TextStyle(
+                fontSize: 10,
+                color: isMe ? Colors.white70 : Colors.black54,
+              ),
+            ),
+          ],
+        ),
       ),
     );
+  }
+
+  String _formatTimestamp(DateTime timestamp) {
+    final now = DateTime.now();
+    final diff = now.difference(timestamp);
+
+    if (diff.inMinutes < 1) return 'Just now';
+    if (diff.inHours < 1) return '${diff.inMinutes}m ago';
+    if (diff.inDays < 1) return '${diff.inHours}h ago';
+    return '${timestamp.day}/${timestamp.month}/${timestamp.year}';
   }
 
   Widget _buildMessageInput() {
@@ -224,14 +317,32 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
     final text = _messageController.text.trim();
     if (text.isEmpty) return;
 
-    // TODO: Implement actual message sending
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Sending: $text')),
+    // Generate temporary ID for optimistic UI
+    final tempId = const Uuid().v4();
+
+    // Send message via BLoC
+    context.read<GroupChatBloc>().add(
+      SendMessage(
+        conversationId: widget.group.id,
+        content: text,
+        tempId: tempId,
+      ),
     );
 
     _messageController.clear();
     setState(() {
       _isTyping = false;
+    });
+
+    // Scroll to bottom to show new message
+    Future.delayed(const Duration(milliseconds: 100), () {
+      if (_scrollController.hasClients) {
+        _scrollController.animateTo(
+          0.0,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      }
     });
   }
 
