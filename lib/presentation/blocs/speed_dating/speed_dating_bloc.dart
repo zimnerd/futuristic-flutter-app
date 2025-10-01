@@ -1,17 +1,22 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:logger/logger.dart';
 import '../../../data/services/speed_dating_service.dart';
+import '../auth/auth_bloc.dart';
+import '../auth/auth_state.dart';
 import 'speed_dating_event.dart';
 import 'speed_dating_state.dart';
 
 class SpeedDatingBloc extends Bloc<SpeedDatingEvent, SpeedDatingState> {
   final SpeedDatingService _speedDatingService;
+  final AuthBloc _authBloc;
   final Logger _logger = Logger();
   static const String _tag = 'SpeedDatingBloc';
 
   SpeedDatingBloc({
     required SpeedDatingService speedDatingService,
+    required AuthBloc authBloc,
   })  : _speedDatingService = speedDatingService,
+        _authBloc = authBloc,
         super(SpeedDatingInitial()) {
     on<LoadSpeedDatingEvents>(_onLoadSpeedDatingEvents);
     on<LoadUserSpeedDatingSessions>(_onLoadUserSpeedDatingSessions);
@@ -28,10 +33,14 @@ class SpeedDatingBloc extends Bloc<SpeedDatingEvent, SpeedDatingState> {
   }
 
   /// Get current user ID from auth context
-  /// TODO: Replace with actual auth context when available
   String _getCurrentUserId() {
-    // This should be replaced with actual user ID from AuthBloc or similar
-    return 'current-user-id'; // Placeholder
+    final authState = _authBloc.state;
+    if (authState is AuthAuthenticated) {
+      return authState.user.id;
+    }
+    throw Exception(
+      'User not authenticated. Please log in to access Speed Dating.',
+    );
   }
 
   Future<void> _onLoadSpeedDatingEvents(
