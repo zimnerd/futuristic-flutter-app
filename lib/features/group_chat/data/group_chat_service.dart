@@ -557,5 +557,76 @@ class GroupChatService {
       throw Exception('Failed to get reported content: ${response.body}');
     }
   }
+
+  /// Search users to add to group
+  Future<List<Map<String, dynamic>>> searchUsers({
+    required String query,
+    required String conversationId,
+  }) async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/group-chat/conversation/$conversationId/search-users?query=$query'),
+      headers: _headers,
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return List<Map<String, dynamic>>.from(data['data']);
+    } else {
+      throw Exception('Failed to search users: ${response.body}');
+    }
+  }
+
+  /// Review/moderate a report
+  Future<void> reviewReport({
+    required String conversationId,
+    required String reportId,
+    required String action,
+    String? reviewNotes,
+  }) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/group-chat/conversation/$conversationId/reports/$reportId/review'),
+      headers: _headers,
+      body: jsonEncode({
+        'action': action,
+        if (reviewNotes != null) 'reviewNotes': reviewNotes,
+      }),
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Failed to review report: ${response.body}');
+    }
+  }
+
+  /// Toggle call recording
+  Future<void> toggleRecording({
+    required String conversationId,
+    required bool enabled,
+  }) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/group-chat/conversation/$conversationId/recording'),
+      headers: _headers,
+      body: jsonEncode({'enabled': enabled}),
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Failed to toggle recording: ${response.body}');
+    }
+  }
+
+  /// Enable/disable screen sharing
+  Future<void> toggleScreenSharing({
+    required String conversationId,
+    required bool enabled,
+  }) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/group-chat/conversation/$conversationId/screen-sharing'),
+      headers: _headers,
+      body: jsonEncode({'enabled': enabled}),
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Failed to toggle screen sharing: ${response.body}');
+    }
+  }
 }
 

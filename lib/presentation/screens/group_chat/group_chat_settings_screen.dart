@@ -1503,11 +1503,16 @@ class AddParticipantsDialog extends StatefulWidget {
 class _AddParticipantsDialogState extends State<AddParticipantsDialog> {
   final TextEditingController _searchController = TextEditingController();
   final List<String> _selectedUserIds = [];
+  final Map<String, Map<String, dynamic>> _selectedUsers = {};
+  List<Map<String, dynamic>> _searchResults = [];
   bool _isLoading = false;
+  bool _isSearching = false;
+  Timer? _debounceTimer;
 
   @override
   void dispose() {
     _searchController.dispose();
+    _debounceTimer?.cancel();
     super.dispose();
   }
 
@@ -1555,8 +1560,18 @@ class _AddParticipantsDialogState extends State<AddParticipantsDialog> {
                 ),
               ),
               onChanged: (value) {
-                // TODO: Implement user search
-                setState(() {});
+                _debounceTimer?.cancel();
+                if (value.length < 2) {
+                  setState(() {
+                    _searchResults = [];
+                    _isSearching = false;
+                  });
+                  return;
+                }
+                setState(() => _isSearching = true);
+                _debounceTimer = Timer(const Duration(milliseconds: 500), () {
+                  _searchUsers(value);
+                });
               },
             ),
             const SizedBox(height: 16),
@@ -1566,16 +1581,66 @@ class _AddParticipantsDialogState extends State<AddParticipantsDialog> {
                   color: Colors.white.withValues(alpha: 0.05),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: _isLoading
-                    ? const Center(
-                        child: CircularProgressIndicator(),
-                      )
-                    : const Center(
-                        child: Text(
-                          'Search for users to add',
-                          style: TextStyle(color: Colors.white54),
-                        ),
-                      ),
+                child: _isSearching
+                    ? const Center(child: CircularProgressIndicator())
+                    : _searchResults.isEmpty
+                        ? const Center(
+                            child: Text(
+                              'Search for users to add',
+                              style: TextStyle(color: Colors.white54),
+                            ),
+                          )
+                        : ListView.builder(
+                            itemCount: _searchResults.length,
+                            padding: const EdgeInsets.all(8),
+                            itemBuilder: (context, index) {
+                              final user = _searchResults[index];
+                              final userId = user['id'] as String;
+                              final isSelected = _selectedUserIds.contains(userId);
+                              final isExisting = widget.existingParticipantIds.contains(userId);
+
+                              return ListTile(
+                                enabled: !isExisting,
+                                leading: CircleAvatar(
+                                  backgroundImage: user['photoUrl'] != null
+                                      ? CachedNetworkImageProvider(user['photoUrl'])
+                                      : null,
+                                  child: user['photoUrl'] == null
+                                      ? Text(user['firstName'][0].toUpperCase())
+                                      : null,
+                                ),
+                                title: Text(
+                                  '${user['firstName']} ${user['lastName']}',
+                                  style: TextStyle(
+                                    color: isExisting ? Colors.grey : Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                subtitle: Text(
+                                  isExisting ? 'Already in group' : '@${user['username']}',
+                                  style: TextStyle(
+                                    color: isExisting ? Colors.grey : Colors.white70,
+                                  ),
+                                ),
+                                trailing: isExisting
+                                    ? const Icon(Icons.check, color: Colors.grey)
+                                    : Checkbox(
+                                        value: isSelected,
+                                        onChanged: (value) {
+                                          setState(() {
+                                            if (value == true) {
+                                              _selectedUserIds.add(userId);
+                                              _selectedUsers[userId] = user;
+                                            } else {
+                                              _selectedUserIds.remove(userId);
+                                              _selectedUsers.remove(userId);
+                                            }
+                                          });
+                                        },
+                                      ),
+                              );
+                            },
+                          ),
               ),
             ),
             const SizedBox(height: 16),
@@ -1641,6 +1706,33 @@ class _AddParticipantsDialogState extends State<AddParticipantsDialog> {
     } finally {
       if (mounted) {
         setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  Future<void> _searchUsers(String query) async {
+    try {
+      final service = sl<GroupChatService>();
+      final results = await service.searchUsers(
+        query: query,
+        conversationId: widget.groupId,
+      );
+
+      if (mounted) {
+        setState(() {
+          _searchResults = results;
+          _isSearching = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isSearching = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Search failed: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
       }
     }
   }
@@ -2061,13 +2153,33 @@ class _ReportedContentScreenState extends State<ReportedContentScreen> {
   }
 
   Future<void> _reviewReport(ReportedContent report, String action) async {
-    // TODO: Implement review report API call
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Report $action - API integration pending'),
-        backgroundColor: Colors.orange,
-      ),
-    );
+    try {
+      final service = sl<GroupChatService>();
+      await service.reviewReport(
+        conversationId: widget.conversationId,
+        reportId: report.id,
+        action: action,
+      );
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Report $action successfully'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        _loadReportedContent(); // Reload the list
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to review report: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 }
 

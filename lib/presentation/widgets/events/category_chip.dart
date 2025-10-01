@@ -77,8 +77,7 @@ class CategoryChip extends StatelessWidget {
 
     // Use icon from API if available, otherwise fall back to slug-based mapping
     if (category!.icon != null && category!.icon!.isNotEmpty) {
-      // TODO: Implement icon mapping from string to IconData if needed
-      // For now, fall back to slug-based mapping
+      return _mapStringToIcon(category!.icon!);
     }
 
     switch (category!.slug) {
@@ -131,6 +130,102 @@ class CategoryChip extends StatelessWidget {
       default:
         return Icons.event;
     }
+  }
+
+  /// Map string icon names from backend to Material IconData
+  IconData _mapStringToIcon(String iconName) {
+    // Normalize icon name (remove spaces, convert to lowercase)
+    final normalized = iconName.toLowerCase().replaceAll(' ', '_');
+    
+    // Comprehensive icon mapping
+    final iconMap = <String, IconData>{
+      // Common event icons
+      'music': Icons.music_note,
+      'music_note': Icons.music_note,
+      'sports': Icons.sports_soccer,
+      'soccer': Icons.sports_soccer,
+      'food': Icons.restaurant,
+      'restaurant': Icons.restaurant,
+      'dining': Icons.dining,
+      'drinks': Icons.local_bar,
+      'bar': Icons.local_bar,
+      'coffee': Icons.local_cafe,
+      'culture': Icons.palette,
+      'art': Icons.brush,
+      'palette': Icons.palette,
+      'outdoors': Icons.nature,
+      'nature': Icons.park,
+      'park': Icons.park,
+      'networking': Icons.people,
+      'people': Icons.group,
+      'group': Icons.group,
+      'education': Icons.school,
+      'school': Icons.school,
+      'learning': Icons.menu_book,
+      'book': Icons.menu_book,
+      'wellness': Icons.spa,
+      'spa': Icons.spa,
+      'social': Icons.group,
+      'nightlife': Icons.nightlife,
+      'night': Icons.nightlife,
+      'fitness': Icons.fitness_center,
+      'gym': Icons.fitness_center,
+      'business': Icons.business,
+      'work': Icons.work,
+      'community': Icons.group_work,
+      'entertainment': Icons.movie,
+      'movie': Icons.movie,
+      'film': Icons.movie,
+      'health': Icons.health_and_safety,
+      'medical': Icons.medical_services,
+      'hobbies': Icons.palette,
+      'outdoor': Icons.park,
+      'photography': Icons.camera_alt,
+      'camera': Icons.camera_alt,
+      'technology': Icons.computer,
+      'tech': Icons.computer,
+      'computer': Icons.computer,
+      'travel': Icons.travel_explore,
+      'explore': Icons.explore,
+      'gaming': Icons.sports_esports,
+      'games': Icons.videogame_asset,
+      'theater': Icons.theater_comedy,
+      'comedy': Icons.theater_comedy,
+      'dance': Icons.music_note,
+      'volunteer': Icons.volunteer_activism,
+      'charity': Icons.volunteer_activism,
+      'festival': Icons.celebration,
+      'celebration': Icons.celebration,
+      'party': Icons.celebration,
+      'workshop': Icons.construction,
+      'class': Icons.school,
+      'lecture': Icons.school,
+      'conference': Icons.business_center,
+      'meetup': Icons.people,
+      'concert': Icons.music_note,
+      'exhibition': Icons.museum,
+      'museum': Icons.museum,
+      'cooking': Icons.restaurant_menu,
+      'wine': Icons.wine_bar,
+      'beer': Icons.sports_bar,
+      'hiking': Icons.hiking,
+      'running': Icons.directions_run,
+      'cycling': Icons.directions_bike,
+      'yoga': Icons.self_improvement,
+      'meditation': Icons.self_improvement,
+      'reading': Icons.menu_book,
+      'writing': Icons.edit,
+      'speaking': Icons.mic,
+      'karaoke': Icons.mic,
+      'trivia': Icons.quiz,
+      'quiz': Icons.quiz,
+      'shopping': Icons.shopping_bag,
+      'market': Icons.storefront,
+      'craft': Icons.color_lens,
+      'diy': Icons.handyman,
+    };
+    
+    return iconMap[normalized] ?? Icons.event;
   }
 }
 
