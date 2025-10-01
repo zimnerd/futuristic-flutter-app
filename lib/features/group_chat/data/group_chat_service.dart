@@ -426,9 +426,7 @@ class GroupChatService {
     final response = await http.post(
       Uri.parse('$baseUrl/group-chat/conversation/$conversationId/leave'),
       headers: _headers,
-      body: jsonEncode({
-        if (message != null) 'message': message,
-      }),
+      body: jsonEncode({if (message != null) 'message': message}),
     );
 
     if (response.statusCode != 200) {
@@ -437,9 +435,7 @@ class GroupChatService {
   }
 
   /// Delete a group conversation (owner only)
-  Future<void> deleteGroup({
-    required String conversationId,
-  }) async {
+  Future<void> deleteGroup({required String conversationId}) async {
     final response = await http.post(
       Uri.parse('$baseUrl/group-chat/conversation/$conversationId/delete'),
       headers: _headers,
@@ -475,9 +471,7 @@ class GroupChatService {
   }
 
   /// Remove group photo
-  Future<void> removeGroupPhoto({
-    required String conversationId,
-  }) async {
+  Future<void> removeGroupPhoto({required String conversationId}) async {
     final response = await http.delete(
       Uri.parse('$baseUrl/group-chat/conversation/$conversationId/photo'),
       headers: _headers,
@@ -493,7 +487,9 @@ class GroupChatService {
     required String conversationId,
   }) async {
     final response = await http.get(
-      Uri.parse('$baseUrl/group-chat/conversation/$conversationId/blocked-users'),
+      Uri.parse(
+        '$baseUrl/group-chat/conversation/$conversationId/blocked-users',
+      ),
       headers: _headers,
     );
 
@@ -532,11 +528,11 @@ class GroupChatService {
     required String userId,
   }) async {
     final response = await http.post(
-      Uri.parse('$baseUrl/group-chat/conversation/$conversationId/unblock-user'),
+      Uri.parse(
+        '$baseUrl/group-chat/conversation/$conversationId/unblock-user',
+      ),
       headers: _headers,
-      body: jsonEncode({
-        'userId': userId,
-      }),
+      body: jsonEncode({'userId': userId}),
     );
 
     if (response.statusCode != 200) {
