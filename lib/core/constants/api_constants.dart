@@ -119,6 +119,7 @@ class ApiConstants {
   static const String webrtcCandidate = '$webrtc/candidate';
   static const String webrtcEndCall = '$webrtc/end-call';
   static const String webrtcCallHistory = '$webrtc/call-history';
+  static const String webrtcRtcToken = '$webrtc/rtc-token';
 
   // Social Gaming endpoints (social-gaming.controller.ts)
   static const String socialGaming = '/social-gaming';

@@ -5,6 +5,8 @@ import 'package:logger/logger.dart';
 
 import '../models/call_model.dart';
 import '../../domain/services/websocket_service.dart';
+import '../../core/network/api_client.dart';
+import '../../core/constants/api_constants.dart';
 
 class WebRTCService {
   static final WebRTCService _instance = WebRTCService._internal();
@@ -430,6 +432,51 @@ class WebRTCService {
     );
 
     _webSocketService!.sendWebRTCSignaling(_currentCall!.id, signal.toJson());
+  }
+
+  /// Get RTC token from backend for a specific channel
+  /// 
+  /// This calls the POST /api/v1/webrtc/rtc-token endpoint
+  /// 
+  /// Parameters:
+  /// - [channelName]: The name of the channel to join
+  /// - [role]: 1 = PUBLISHER/Host (default), 2 = SUBSCRIBER/Audience
+  /// 
+  /// Returns a Map with:
+  /// - token: The Agora RTC token
+  /// - channelName: The channel name
+  /// - uid: The user ID for this session
+  /// - appId: The Agora app ID
+  /// - expiresIn: Token expiration time in seconds
+  /// - role: The role string (PUBLISHER or SUBSCRIBER)
+  Future<Map<String, dynamic>> getRtcToken({
+    required String channelName,
+    int role = 1,
+  }) async {
+    try {
+      final apiClient = ApiClient.instance;
+      
+      final response = await apiClient.post(
+        ApiConstants.webrtcRtcToken,
+        data: {
+          'channelName': channelName,
+          'role': role,
+        },
+      );
+
+      final data = response.data as Map<String, dynamic>;
+      
+      // Backend returns { data: { token, channelName, uid, appId, expiresIn, role } }
+      if (data.containsKey('data')) {
+        return data['data'] as Map<String, dynamic>;
+      }
+      
+      // Fallback if response structure is different
+      return data;
+    } catch (e) {
+      _logger.e('Failed to get RTC token: $e');
+      throw Exception('Failed to get RTC token: $e');
+    }
   }
 
   /// Dispose resources

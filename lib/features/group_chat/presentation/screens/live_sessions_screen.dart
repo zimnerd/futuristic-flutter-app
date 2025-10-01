@@ -4,6 +4,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import '../../bloc/group_chat_bloc.dart';
 import '../../data/models.dart';
 import 'video_call_screen.dart';
+import '../../../../data/services/webrtc_service.dart';
 
 class LiveSessionsScreen extends StatefulWidget {
   const LiveSessionsScreen({super.key});
@@ -271,19 +272,54 @@ class _LiveSessionsScreenState extends State<LiveSessionsScreen> {
   }
 
   Future<void> _navigateToVideoCall(LiveSession session) async {
-    // TODO: Get RTC token from backend
-    // For now, use a placeholder token
-    final rtcToken = 'YOUR_RTC_TOKEN'; // This should come from backend
-
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => VideoCallScreen(
-          liveSessionId: session.id,
-          rtcToken: rtcToken,
-          session: session,
+    try {
+      // Show loading indicator
+      if (!mounted) return;
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(
+          child: CircularProgressIndicator(),
         ),
-      ),
-    );
+      );
+
+      // Get RTC token from backend using session ID as channel name
+      final webrtcService = WebRTCService();
+      final tokenData = await webrtcService.getRtcToken(
+        channelName: session.id,
+        role: 1, // PUBLISHER role for live sessions
+      );
+
+      // Close loading dialog
+      if (!mounted) return;
+      Navigator.of(context).pop();
+
+      // Navigate to video call screen with token
+      if (!mounted) return;
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => VideoCallScreen(
+            liveSessionId: session.id,
+            rtcToken: tokenData['token'] as String,
+            session: session,
+          ),
+        ),
+      );
+    } catch (e) {
+      // Close loading dialog if still showing
+      if (mounted && Navigator.of(context).canPop()) {
+        Navigator.of(context).pop();
+      }
+
+      // Show error message
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to join session: ${e.toString()}'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 }
 
