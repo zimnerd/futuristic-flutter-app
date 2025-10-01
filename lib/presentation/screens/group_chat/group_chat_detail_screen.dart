@@ -1167,7 +1167,8 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
   }
 
   void _showAddParticipantsDialog() {
-    // TODO: Implement add participants dialog with user search
+    // FUTURE: Implement add participants dialog with user search
+    // Requires backend API for user search and group member management
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Add participants feature coming soon')),
     );
@@ -1207,28 +1208,28 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
   }
 
   void _showSearchMessages() {
-    // TODO: Implement message search
+    // FUTURE: Implement message search (see group_chat_screen.dart for reference)
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Search feature coming soon')),
     );
   }
 
   void _showMediaGallery() {
-    // TODO: Implement media gallery
+    // FUTURE: Implement media gallery - shows all images/videos from conversation
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Media gallery coming soon')),
     );
   }
 
   void _showGroupSettings() {
-    // TODO: Navigate to group settings screen
+    // FUTURE: Navigate to group settings screen (permissions, notifications, etc.)
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Group settings coming soon')),
     );
   }
 
   void _reportGroup() {
-    // TODO: Implement report functionality
+    // FUTURE: Implement report functionality (requires moderation system)
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Report submitted')),
     );
@@ -1264,21 +1265,24 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
   }
 
   void _startVoiceCall() {
-    // TODO: Integrate with WebRTC service
+    // FUTURE: Integrate with WebRTC service for group voice calls
+    // See group_chat_screen.dart _initiateCall method for implementation pattern
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Starting voice call...')),
     );
   }
 
   void _startVideoCall() {
-    // TODO: Navigate to video call screen
+    // FUTURE: Navigate to video call screen with WebRTC
+    // See group_chat_screen.dart _initiateCall method for implementation pattern
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Starting video call...')),
     );
   }
 
   void _startVoiceRecording() {
-    // TODO: Implement voice recording
+    // FUTURE: Implement voice recording
+    // See group_chat_screen.dart for full voice message implementation
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Voice recording coming soon')),
     );
@@ -1302,7 +1306,8 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
     final image = await _imagePicker.pickImage(source: source);
     if (image != null) {
       // Upload and send image
-      // TODO: Implement image upload
+      // FUTURE: Implement image upload using GroupChatService.uploadMedia
+      // See group_chat_screen.dart _pickImage method for full implementation
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Uploading image...')),
@@ -1315,7 +1320,8 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
     final video = await _imagePicker.pickVideo(source: ImageSource.gallery);
     if (video != null) {
       // Upload and send video
-      // TODO: Implement video upload
+      // FUTURE: Implement video upload using GroupChatService.uploadMedia
+      // See group_chat_screen.dart _pickVideo method for full implementation
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Uploading video...')),
@@ -1325,21 +1331,22 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
   }
 
   Future<void> _pickDocument() async {
-    // TODO: Implement document picker
+    // FUTURE: Implement document picker using file_picker package
+    // See group_chat_screen.dart _pickFile method for full implementation
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Document picker coming soon')),
     );
   }
 
   void _deleteMessage(MessageModel message) {
-    // TODO: Implement delete message
+    // FUTURE: Implement delete message (requires backend API)
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Message deleted')),
     );
   }
 
   void _reportMessage(MessageModel message) {
-    // TODO: Implement report message
+    // FUTURE: Implement report message (requires moderation system)
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Message reported')),
     );

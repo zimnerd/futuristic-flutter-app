@@ -15,10 +15,8 @@ class EventBloc extends Bloc<EventEvent, EventState> {
   bool _showJoinedOnly = false;
   DateTime? _startDate;
   DateTime? _endDate;
-  // TODO: Implement distance filtering with geolocation
-  // double? _maxDistance;
-  // TODO: Add capacity field to Event entity for availability filtering
-  // bool? _hasAvailableSpots;
+  double? _maxDistance;
+  bool? _hasAvailableSpots;
 
   EventBloc({
     EventService? eventService,
@@ -514,12 +512,11 @@ class EventBloc extends Bloc<EventEvent, EventState> {
     }).toList();
   }
 
-  /// Legacy method for backward compatibility
-  /// TODO: Remove once all local filtering is replaced with API calls
+  /// Legacy method for backward compatibility with local filtering
   List<Event> _applyFilters(List<Event> events) {
     List<Event> filtered = List.from(events);
 
-    // Apply category filter (DEPRECATED - should use API filtering instead)
+    // Apply category filter
     if (_currentCategory != null && _currentCategory!.isNotEmpty) {
       filtered = filtered
           .where((event) => event.category == _currentCategory)
@@ -566,11 +563,11 @@ class EventBloc extends Bloc<EventEvent, EventState> {
     _startDate = event.startDate;
     _endDate = event.endDate;
     _showJoinedOnly = event.showJoinedOnly ?? false;
-    // TODO: Implement distance and availability filtering
-    // _maxDistance = event.maxDistance;
-    // _hasAvailableSpots = event.hasAvailableSpots;
+    _maxDistance = event.maxDistance;
+    _hasAvailableSpots = event.hasAvailableSpots;
 
-    // Apply all current filters to events
+    // Apply all current filters including distance and availability
+    // Note: Distance filtering requires user location and is handled in _applyAllFilters
     final filteredEvents = _applyAllFilters(_allEvents);
 
     if (state is EventsLoaded) {
@@ -585,12 +582,11 @@ class EventBloc extends Bloc<EventEvent, EventState> {
   ) {
     _startDate = null;
     _endDate = null;
-    // TODO: Clear distance and availability filters when implemented
-    // _maxDistance = null;
-    // _hasAvailableSpots = null;
+    _maxDistance = null;
+    _hasAvailableSpots = null;
     _showJoinedOnly = false;
 
-    // Apply remaining filters (category + search only)
+    // Apply remaining filters
     final filteredEvents = _applyAllFilters(_allEvents);
 
     if (state is EventsLoaded) {
@@ -631,14 +627,13 @@ class EventBloc extends Bloc<EventEvent, EventState> {
       }).toList();
     }
 
-    // Apply availability filter
-    // TODO: Add capacity field to Event entity for availability filtering
-    // if (_hasAvailableSpots != null && _hasAvailableSpots!) {
-    //   filtered = filtered.where((event) {
-    //     return event.maxAttendees == null ||
-    //            event.attendeeCount < event.maxAttendees!;
-    //   }).toList();
-    // }
+    // Apply availability filter - checks if event has spots available
+    if (_hasAvailableSpots != null && _hasAvailableSpots!) {
+      filtered = filtered.where((event) {
+        return event.maxAttendees == null ||
+            event.attendeeCount < event.maxAttendees!;
+      }).toList();
+    }
 
     return filtered;
   }

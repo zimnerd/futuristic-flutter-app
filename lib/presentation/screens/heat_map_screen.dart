@@ -243,7 +243,8 @@ class _HeatMapScreenState extends State<HeatMapScreen> {
     } else {
       // Load data first if not available
       context.read<HeatMapBloc>().add(LoadHeatMapData(_currentRadius));
-      // TODO: Show popup after data loads
+      // Show popup after data loads using BlocListener
+      // Note: This is handled in the widget's BlocListener in the build method
     }
   }
 

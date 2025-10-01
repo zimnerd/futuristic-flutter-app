@@ -47,6 +47,7 @@ class Event {
   final List<EventAttendance> attendees;
   final bool isAttending;
   final int attendeeCount;
+  final int? maxAttendees; // Maximum number of attendees allowed
 
   const Event({
     required this.id,
@@ -62,6 +63,7 @@ class Event {
     this.attendees = const [],
     this.isAttending = false,
     this.attendeeCount = 0,
+    this.maxAttendees,
   });
 
   factory Event.fromJson(Map<String, dynamic> json) {
@@ -145,6 +147,7 @@ class Event {
       attendees: attendeesList,
       isAttending: false, // Default to false, will be determined by app logic
       attendeeCount: json['currentAttendees'] as int? ?? attendeesList.length,
+      maxAttendees: json['maxAttendees'] as int?,
     );
   }
 
@@ -163,6 +166,7 @@ class Event {
       'attendees': attendees.map((e) => e.toJson()).toList(),
       'isAttending': isAttending,
       'attendeeCount': attendeeCount,
+      'maxAttendees': maxAttendees,
     };
   }
 
@@ -180,6 +184,7 @@ class Event {
     List<EventAttendance>? attendees,
     bool? isAttending,
     int? attendeeCount,
+    int? maxAttendees,
   }) {
     return Event(
       id: id ?? this.id,
@@ -195,6 +200,7 @@ class Event {
       attendees: attendees ?? this.attendees,
       isAttending: isAttending ?? this.isAttending,
       attendeeCount: attendeeCount ?? this.attendeeCount,
+      maxAttendees: maxAttendees ?? this.maxAttendees,
     );
   }
 
