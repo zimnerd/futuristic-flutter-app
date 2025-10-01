@@ -70,6 +70,7 @@ class WebSocketServiceImpl implements WebSocketService {
   Stream<Map<String, dynamic>> get messageStream => _messageController.stream;
 
   /// Stream for errors - AI COMPANION PATTERN
+  @override
   Stream<Map<String, dynamic>> get errorStream => _errorController.stream;
 
   @override

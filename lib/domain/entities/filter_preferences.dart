@@ -110,7 +110,7 @@ class FilterPreferences {
   }
 
   /// Convert FilterPreferences to DiscoveryFilters for matching
-  toDiscoveryFilters() {
+  Map<String, dynamic> toDiscoveryFilters() {
     return {
       'minAge': minAge,
       'maxAge': maxAge,

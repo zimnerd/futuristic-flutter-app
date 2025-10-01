@@ -282,13 +282,13 @@ class _RoundTransitionScreenState extends State<RoundTransitionScreen>
                   ? CachedNetworkImage(
                       imageUrl: photoUrl,
                       fit: BoxFit.cover,
-                      placeholder: (_, __) => Container(
+                      placeholder: (context, url) => Container(
                         color: Colors.grey[800],
                         child: const Center(
                           child: CircularProgressIndicator(),
                         ),
                       ),
-                      errorWidget: (_, __, ___) => Container(
+                      errorWidget: (context, url, error) => Container(
                         color: Colors.grey[800],
                         child: const Icon(
                           Icons.person,

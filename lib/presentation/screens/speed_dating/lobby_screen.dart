@@ -500,7 +500,7 @@ class _SpeedDatingLobbyScreenState extends State<SpeedDatingLobbyScreen> {
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             itemCount: _participants.length,
-            separatorBuilder: (_, __) => const Divider(height: 1),
+            separatorBuilder: (context, index) => const Divider(height: 1),
             itemBuilder: (context, index) => _buildParticipantItem(
               _participants[index],
             ),

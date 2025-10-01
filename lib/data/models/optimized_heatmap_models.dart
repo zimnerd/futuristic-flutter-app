@@ -1,5 +1,6 @@
 /// Models for optimized heatmap clustering
 /// Designed to handle thousands of users efficiently
+library;
 
 class OptimizedClusterData {
   final String id;

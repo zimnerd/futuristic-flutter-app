@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:geolocator/geolocator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../core/utils/logger.dart';
 import '../../domain/services/api_service.dart';
 
 class LocationService {
@@ -85,7 +86,7 @@ class LocationService {
         await _handleLocationUpdate(position);
       },
       onError: (error) {
-        print('Location tracking error: $error');
+            AppLogger.debug('Location tracking error: $error');
       },
     );
   }
@@ -139,7 +140,7 @@ class LocationService {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setInt(_lastUpdateKey, DateTime.now().millisecondsSinceEpoch);
     } catch (e) {
-      print('Failed to update server location: $e');
+      AppLogger.debug('Failed to update server location: $e');
     }
   }
 
@@ -206,7 +207,7 @@ class LocationService {
         'distancePreferenceKm': distanceKm,
       });
     } catch (e) {
-      print('Failed to update distance preference: $e');
+      AppLogger.debug('Failed to update distance preference: $e');
     }
   }
 

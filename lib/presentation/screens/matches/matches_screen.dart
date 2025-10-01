@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/utils/logger.dart';
 
 import '../../blocs/match/match_bloc.dart';
 import '../../blocs/match/match_event.dart';
@@ -873,13 +874,17 @@ class _MatchesScreenState extends State<MatchesScreen>
   }
 
   void _onMatchTapped(MatchModel match) {
-    print('🎯 Match tapped: ${match.id}, userProfile: ${match.userProfile?.name}, status: ${match.status}');
+    AppLogger.debug(
+      '🎯 Match tapped: ${match.id}, userProfile: ${match.userProfile?.name}, status: ${match.status}',
+    );
     
     if (match.userProfile != null && mounted) {
-      print('📱 Showing profile modal for: ${match.userProfile!.name}');
+      AppLogger.debug(
+        '📱 Showing profile modal for: ${match.userProfile!.name}',
+      );
       _showProfileModal(match);
     } else {
-      print('ℹ️ Showing match details for: ${match.id}');
+      AppLogger.debug('ℹ️ Showing match details for: ${match.id}');
       // Show match details
       _showMatchDetails(match);
     }
@@ -1008,7 +1013,7 @@ class _MatchesScreenState extends State<MatchesScreen>
   }
 
   void _startConversation(MatchModel match) {
-    print('💬 Starting conversation for match: ${match.id}');
+    AppLogger.debug('💬 Starting conversation for match: ${match.id}');
 
     if (match.conversationId != null && mounted) {
       // Navigate to existing conversation
