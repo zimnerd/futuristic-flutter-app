@@ -311,7 +311,7 @@ class _ModernLandingScreenState extends State<ModernLandingScreen>
         // Modern logo container
         Container(
           width: 140,
-          height: 140,
+          height: 100,
           decoration: BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topLeft,
@@ -500,6 +500,7 @@ class _ModernLandingScreenState extends State<ModernLandingScreen>
   Widget _buildActionButtons() {
     return Column(
       children: [
+        const SizedBox(height: PulseSpacing.xl),
         // Secondary CTA (now primary)
         TextButton(
           onPressed: () => context.go(AppRoutes.login),

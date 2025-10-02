@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:line_icons/line_icons.dart';
 import '../../../core/theme/pulse_design_system.dart';
+import '../../blocs/auth/auth_bloc.dart';
+import '../../blocs/auth/auth_event.dart';
 
 /// Modern Main Navigation Wrapper with PulseLink Design
 /// 
@@ -125,11 +128,11 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper>
     final isDark = Theme.of(context).brightness == Brightness.dark;
     
     return Container(
-      margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+      margin: const EdgeInsets.fromLTRB(8, 8, 8, 8),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(30),
         child: Container(
-          height: 70,
+          height: 80,
           decoration: BoxDecoration(
             color: isDark
                 ? const Color(0xFF1C1C1E)
@@ -143,15 +146,18 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper>
               ),
             ],
           ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              _buildModernNavItem(_navigationItems[0], 0),
-              _buildModernNavItem(_navigationItems[1], 1),
-              _buildModernNavItem(_navigationItems[2], 2),
-              _buildModernNavItem(_navigationItems[3], 3),
-              _buildModernNavItem(_navigationItems[4], 4),
-            ],
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 8),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                _buildModernNavItem(_navigationItems[0], 0),
+                _buildModernNavItem(_navigationItems[1], 1),
+                _buildModernNavItem(_navigationItems[2], 2),
+                _buildModernNavItem(_navigationItems[3], 3),
+                _buildModernNavItem(_navigationItems[4], 4),
+              ],
+            ),
           ),
         ),
       ),
@@ -163,7 +169,7 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper>
     final isActive = index == widget.navigationShell.currentIndex;
     
     // Use theme colors for active state
-    final activeColor = PulseColors.primary;
+    final activeColor = PulseColors.backgroundDark;
     final inactiveColor = isDark ? PulseColors.grey500 : PulseColors.grey400;
     
     return AnimatedBuilder(
@@ -179,54 +185,66 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper>
           scale: scale,
           child: InkWell(
             onTap: () => _onItemTapped(index),
-            borderRadius: BorderRadius.circular(25),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.easeInOut,
-              padding: EdgeInsets.symmetric(
-                horizontal: isActive ? 16 : 12,
-                vertical: 10,
-              ),
-              decoration: isActive
-                  ? BoxDecoration(
-                      color: activeColor.withValues(alpha: 0.01),
-                      border: Border.all(
-                        color: activeColor.withValues(alpha: 0.8),
-                        width: 1.5,
+            borderRadius: BorderRadius.circular(22),
+            child: isActive
+                ? Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Colors.white.withValues(alpha: 0.6),
+                          PulseColors.primary.withValues(alpha: 0.8),
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
                       ),
-                      borderRadius: BorderRadius.circular(25),
+                      borderRadius: BorderRadius.circular(22),
                       boxShadow: [
                         BoxShadow(
-                          color: activeColor.withValues(alpha: 0.4),
+                          color: activeColor.withValues(alpha: 0.8),
                           blurRadius: 8,
                           offset: const Offset(0, 2),
                         ),
                       ],
-                    )
-                  : null,
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    isActive ? item.activeIcon : item.icon,
-                    color: isActive ? Colors.white : inactiveColor,
-                    size: 24,
-                  ),
-                  if (isActive) ...[
-                    const SizedBox(width: 8),
-                    Text(
-                      item.label,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        
+                    ),
+                    padding: const EdgeInsets.all(1.5), // Border width
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 600),
+                      curve: Curves.easeInOut,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 18,
+                        vertical: 14,
+                      ),
+                      decoration: BoxDecoration(
+                        color: activeColor.withValues(alpha: 0.3),
+                        borderRadius: BorderRadius.circular(20.5),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            item.activeIcon, color: Colors.white, size: 24),
+                          const SizedBox(width: 10),
+                          Text(
+                            item.label,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 15,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                  ],
-                ],
-              ),
-            ),
+                  )
+                : AnimatedContainer(
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeInOut,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 10,
+                    ),
+                    child: Icon(item.icon, color: inactiveColor, size: 24),
+                  ),
           ),
         );
       },
@@ -529,10 +547,8 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper>
           ElevatedButton(
             onPressed: () {
               Navigator.of(dialogContext).pop(); // Close dialog
-              // Logout functionality ready
-              // TODO: Integrate with AuthService/TokenService to clear auth state
-              // Example: await TokenService.clearTokens();
-              context.go('/welcome');
+              // Trigger proper logout through AuthBloc
+              context.read<AuthBloc>().add(const AuthSignOutRequested());
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: PulseColors.reject,
