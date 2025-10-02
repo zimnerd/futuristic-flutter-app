@@ -41,7 +41,9 @@ class Event {
   final EventCoordinates coordinates;
   final DateTime date;
   final String? image;
-  final String category;
+  final String category; // Legacy: slug string
+  final EventCategory?
+  categoryDetails; // Full category object with icon, color, etc.
   final String? createdBy;
   final DateTime createdAt;
   final List<EventAttendance> attendees;
@@ -58,6 +60,7 @@ class Event {
     required this.date,
     this.image,
     required this.category,
+    this.categoryDetails,
     this.createdBy,
     required this.createdAt,
     this.attendees = const [],
@@ -143,13 +146,23 @@ class Event {
 
     // Handle category - prioritize category object's slug, fallback to tags
     String eventCategory = 'general';
+    EventCategory? categoryDetails;
+    
     if (eventData['category'] is Map<String, dynamic>) {
-      // API returns category as object with id, name, slug, etc.
+      // API returns category as object with id, name, slug, icon, color, etc.
       final categoryObj = eventData['category'] as Map<String, dynamic>;
       eventCategory =
           categoryObj['slug'] as String? ??
           categoryObj['name'] as String? ??
           'general';
+      
+      // Parse full category object
+      try {
+        categoryDetails = EventCategory.fromJson(categoryObj);
+      } catch (e) {
+        // If parsing fails, just use slug
+        categoryDetails = null;
+      }
     } else if (eventData['category'] is String) {
       // Legacy: category as direct string
       eventCategory = eventData['category'] as String;
@@ -157,6 +170,20 @@ class Event {
         (eventData['tags'] as List).isNotEmpty) {
       // Fallback: extract from tags array
       eventCategory = eventData['tags'][0] as String;
+    }
+
+    // Parse attendee count - handle both old format (currentAttendees) and new format (_count.attendees)
+    int parsedAttendeeCount = 0;
+    if (eventData['_count'] != null &&
+        eventData['_count']['attendees'] != null) {
+      // New privacy-protected format: { "_count": { "attendees": 14 } }
+      parsedAttendeeCount = eventData['_count']['attendees'] as int;
+    } else if (eventData['currentAttendees'] != null) {
+      // Legacy format: { "currentAttendees": 14 }
+      parsedAttendeeCount = eventData['currentAttendees'] as int;
+    } else {
+      // Fallback: count from attendees array if present
+      parsedAttendeeCount = attendeesList.length;
     }
 
     return Event(
@@ -169,12 +196,12 @@ class Event {
       date: eventDate,
       image: eventData['image'] as String?,
       category: eventCategory,
+      categoryDetails: categoryDetails,
       createdBy: eventData['creatorId'] as String?,
       createdAt: eventDate,
       attendees: attendeesList,
       isAttending: userIsAttending,
-      attendeeCount:
-          eventData['currentAttendees'] as int? ?? attendeesList.length,
+      attendeeCount: parsedAttendeeCount,
       maxAttendees: eventData['maxAttendees'] as int?,
     );
   }
@@ -189,6 +216,7 @@ class Event {
       'date': date.toIso8601String(),
       'image': image,
       'category': category,
+      'categoryDetails': categoryDetails?.toJson(),
       'createdBy': createdBy,
       'createdAt': createdAt.toIso8601String(),
       'attendees': attendees.map((e) => e.toJson()).toList(),
@@ -207,6 +235,7 @@ class Event {
     DateTime? date,
     String? image,
     String? category,
+    EventCategory? categoryDetails,
     String? createdBy,
     DateTime? createdAt,
     List<EventAttendance>? attendees,
@@ -223,6 +252,7 @@ class Event {
       date: date ?? this.date,
       image: image ?? this.image,
       category: category ?? this.category,
+      categoryDetails: categoryDetails ?? this.categoryDetails,
       createdBy: createdBy ?? this.createdBy,
       createdAt: createdAt ?? this.createdAt,
       attendees: attendees ?? this.attendees,

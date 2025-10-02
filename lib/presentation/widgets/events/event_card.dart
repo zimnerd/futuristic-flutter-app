@@ -215,7 +215,8 @@ class EventCard extends StatelessWidget {
         ),
       ),
       child: Text(
-        EventCategories.getDisplayName(event.category),
+        event.categoryDetails?.name ??
+            EventCategories.getDisplayName(event.category),
         style: TextStyle(
           color: PulseColors.primary,
           fontSize: 12,

@@ -7,7 +7,6 @@ import '../../../core/network/api_client.dart';
 import '../../blocs/event/event_bloc.dart';
 import '../../blocs/event/event_event.dart';
 import '../../blocs/event/event_state.dart';
-import '../../widgets/events/attendee_avatar.dart';
 import '../../widgets/common/robust_network_image.dart';
 
 class EventDetailsScreen extends StatefulWidget {
@@ -200,23 +199,32 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Category badge
+          // Category badge with icon and color
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
-              color: Theme.of(context).primaryColor,
+              color: event.categoryDetails?.color != null
+                  ? _parseColor(event.categoryDetails!.color!)
+                  : Theme.of(context).primaryColor,
               borderRadius: BorderRadius.circular(20),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(
-                  Icons.category_outlined,
-                  size: 14,
-                  color: Colors.white,
-                ),
+                if (event.categoryDetails?.icon != null)
+                  Text(
+                    event.categoryDetails!.icon!,
+                    style: const TextStyle(fontSize: 14),
+                  )
+                else
+                  const Icon(
+                    Icons.category_outlined,
+                    size: 14,
+                    color: Colors.white,
+                  ),
                 const SizedBox(width: 6),
                 Text(
+                  event.categoryDetails?.name.toUpperCase() ?? 
                   event.category.toUpperCase(),
                   style: const TextStyle(
                     color: Colors.white,
@@ -229,6 +237,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
             ),
           ),
           const SizedBox(height: 16),
+          
           // Event title
           Text(
             event.title,
@@ -237,9 +246,48 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
               height: 1.2,
             ),
           ),
+          
+          // Attendance badge
+          if (event.isAttending)
+            Padding(
+              padding: const EdgeInsets.only(top: 12),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  color: Colors.green[50],
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.green[300]!, width: 1.5),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.check_circle, color: Colors.green[700], size: 18),
+                    const SizedBox(width: 6),
+                    Text(
+                      'You\'re going!',
+                      style: TextStyle(
+                        color: Colors.green[800],
+                        fontWeight: FontWeight.w600,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
         ],
       ),
     );
+  }
+
+  // Helper to parse hex color strings
+  Color _parseColor(String hexColor) {
+    try {
+      final hex = hexColor.replaceAll('#', '');
+      return Color(int.parse('FF$hex', radix: 16));
+    } catch (e) {
+      return Theme.of(context).primaryColor;
+    }
   }
 
   Widget _buildDescription(BuildContext context, Event event) {
@@ -318,13 +366,16 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
           const Divider(height: 1),
           const SizedBox(height: 16),
 
-          // Location
+          // Location with map link
           _buildInfoRow(
             context,
             Icons.location_on,
             'Location',
             event.location,
             Colors.red[400]!,
+            showAction: true,
+            actionIcon: Icons.map_outlined,
+            onActionTap: () => _openMap(event),
           ),
           const SizedBox(height: 16),
           const Divider(height: 1),
@@ -338,6 +389,20 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
             '${event.attendeeCount} going${event.maxAttendees != null ? ' / ${event.maxAttendees} max' : ''}',
             Colors.green[400]!,
           ),
+          
+          // Category description if available
+          if (event.categoryDetails?.description != null) ...[
+            const SizedBox(height: 16),
+            const Divider(height: 1),
+            const SizedBox(height: 16),
+            _buildInfoRow(
+              context,
+              Icons.info_outline,
+              'Category Info',
+              event.categoryDetails!.description!,
+              Colors.blue[400]!,
+            ),
+          ],
         ],
       ),
     );
@@ -348,8 +413,11 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
     IconData icon,
     String label,
     String value,
-    Color iconColor,
-  ) {
+    Color iconColor, {
+    bool showAction = false,
+    IconData? actionIcon,
+    VoidCallback? onActionTap,
+  }) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -386,7 +454,31 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
             ],
           ),
         ),
+        if (showAction && actionIcon != null && onActionTap != null)
+          IconButton(
+            icon: Icon(actionIcon, size: 20),
+            onPressed: onActionTap,
+            color: iconColor,
+            tooltip: 'Open in Maps',
+          ),
       ],
+    );
+  }
+
+  void _openMap(Event event) {
+    final lat = event.coordinates.lat;
+    final lng = event.coordinates.lng;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('📍 Location: $lat, $lng\nTap to open in maps (coming soon)'),
+        duration: const Duration(seconds: 3),
+        action: SnackBarAction(
+          label: 'Close',
+          onPressed: () {
+            ScaffoldMessenger.of(context).hideCurrentSnackBar();
+          },
+        ),
+      ),
     );
   }
 
@@ -423,7 +515,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                   ),
                 ],
               ),
-              if (event.attendees.length > 5)
+              if (event.attendeeCount > 0)
                 TextButton(
                   onPressed: () {
                     _showAllAttendees(context, event);
@@ -431,13 +523,13 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                   style: TextButton.styleFrom(
                     foregroundColor: Theme.of(context).primaryColor,
                   ),
-                  child: const Text('See all →'),
+                  child: const Text('View details →'),
                 ),
             ],
           ),
           const SizedBox(height: 16),
 
-          if (event.attendees.isEmpty)
+          if (event.attendeeCount == 0)
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
@@ -465,19 +557,30 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
               ),
             )
           else
-            SizedBox(
-              height: 70,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount: event.attendees.take(10).length,
-                itemBuilder: (context, index) {
-                  final attendee = event.attendees[index];
-                  return Padding(
-                    padding: const EdgeInsets.only(right: 12),
-                    child: AttendeeAvatar(attendance: attendee,
-                      size: 60),
-                  );
-                },
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.7),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.people_outline,
+                    color: Theme.of(context).primaryColor,
+                    size: 32,
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      '${event.attendeeCount} ${event.attendeeCount == 1 ? 'person is' : 'people are'} attending this event',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: Colors.grey[800],
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
         ],
@@ -659,53 +762,90 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
           content: SizedBox(
             width: double.maxFinite,
             height: 400,
-            child: event.attendees.isEmpty
-                ? const Center(child: Text('No attendees yet'))
-                : ListView.builder(
-                    itemCount: event.attendees.length,
-                    itemBuilder: (context, index) {
-                      final attendee = event.attendees[index];
-                      final userInfo = attendee.user;
-                      final displayName =
-                          userInfo?['displayName'] ??
-                          userInfo?['name'] ??
-                          'Unknown User';
-                      final profilePictureUrl =
-                          userInfo?['profilePictureUrl'] as String?;
-
-                      return ListTile(
-                        leading: CircleAvatar(
-                          backgroundImage: profilePictureUrl != null
-                              ? NetworkImage(profilePictureUrl)
-                              : null,
-                          child: profilePictureUrl == null
-                              ? Text(displayName.toString()[0].toUpperCase())
-                              : null,
-                        ),
-                        title: Text(displayName.toString()),
-                        subtitle: Text(
-                          'Joined ${attendee.timestamp.toString().split(' ')[0]}',
-                        ),
-                        trailing: Icon(
-                          attendee.status == 'confirmed'
-                              ? Icons.check_circle
-                              : Icons.help_outline,
-                          color: attendee.status == 'confirmed'
-                              ? Colors.green
-                              : Colors.orange,
-                        ),
-                      );
-                    },
+            child: event.attendeeCount == 0
+                ? const Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(20),
+                      child: Text(
+                        'No attendees yet. Be the first to join!',
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  )
+                : Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(20),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.privacy_tip_outlined,
+                            size: 64,
+                            color: Colors.grey[400],
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            '${event.attendeeCount} ${event.attendeeCount == 1 ? 'person is' : 'people are'} attending',
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Attendee details are kept private for security',
+                            style: TextStyle(
+                              color: Colors.grey[600],
+                              fontSize: 14,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.of(context).pop(),
+              onPressed: () => Navigator.pop(context),
               child: const Text('Close'),
             ),
           ],
         );
       },
+    );
+  }
+
+}
+
+class AttendeeAvatar extends StatelessWidget {
+  final EventAttendance attendance;
+  final double size;
+
+  const AttendeeAvatar({required this.attendance, this.size = 50, super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final userInfo = attendance.user;
+    final displayName = userInfo?['displayName'] ?? userInfo?['name'] ?? 'User';
+    final profilePictureUrl = userInfo?['profilePictureUrl'] as String?;
+
+    return Column(
+      children: [
+        CircleAvatar(
+          radius: size / 2,
+          backgroundImage: profilePictureUrl != null
+              ? NetworkImage(profilePictureUrl)
+              : null,
+          child: profilePictureUrl == null
+              ? Text(
+                  displayName.toString()[0].toUpperCase(),
+                  style: TextStyle(fontSize: size / 2.5),
+                )
+              : null,
+        ),
+      ],
     );
   }
 }
