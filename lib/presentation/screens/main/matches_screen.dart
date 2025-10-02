@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../blocs/match/match_bloc.dart';
 import '../../blocs/match/match_event.dart';
@@ -7,10 +8,10 @@ import '../../blocs/match/match_state.dart';
 import '../../../data/services/matching_service.dart';
 import '../../../core/network/api_client.dart';
 import '../../../data/models/match_model.dart';
+import '../../../data/models/user_model.dart';
 import '../../../core/theme/pulse_design_system.dart';
 import '../../widgets/match/match_card.dart';
-import '../profile/profile_details_screen.dart';
-import '../calls/audio_call_screen.dart';
+import '../../navigation/app_router.dart';
 
 /// Actual Matches Screen - Shows mutual matches and people who liked you
 ///
@@ -331,21 +332,26 @@ class _MatchesScreenState extends State<MatchesScreen>
             showStatus: false, // Hide redundant status on matches screen
             onCall: match.userProfile != null
                 ? () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        fullscreenDialog:
-                            true, // Hide bottom navigation bar for call UI
-                        builder: (context) => AudioCallScreen(
-                          callId:
-                              'call_${match.userProfile!.id}_${DateTime.now().millisecondsSinceEpoch}',
-                          recipientId: match.userProfile!.id,
-                          userName: match.userProfile!.name,
-                          userPhotoUrl: match.userProfile!.photos.isNotEmpty
-                              ? match.userProfile!.photos.first.url
-                              : null,
-                          isOutgoing: true,
-                        ),
-                      ),
+                    final callId =
+                        'call_${match.userProfile!.id}_${DateTime.now().millisecondsSinceEpoch}';
+                    // Convert UserProfile to UserModel for AudioCallScreen
+                    final remoteUser = UserModel(
+                      id: match.userProfile!.id,
+                      email: '', // Not available in UserProfile
+                      username: match.userProfile!.name,
+                      firstName: match.userProfile!.name.split(' ').first,
+                      lastName: match.userProfile!.name.split(' ').length > 1
+                          ? match.userProfile!.name.split(' ').last
+                          : null,
+                      photos: match.userProfile!.photos
+                          .map((p) => p.url)
+                          .toList(),
+                      createdAt: DateTime.now(), // Not available in UserProfile
+                    );
+
+                    context.push(
+                      '/audio-call/$callId',
+                      extra: {'remoteUser': remoteUser, 'isIncoming': false},
                     );
                   }
                 : null,
@@ -363,28 +369,12 @@ class _MatchesScreenState extends State<MatchesScreen>
             },
             onViewProfile: () {
               if (match.userProfile != null) {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    fullscreenDialog:
-                        true, // Hide bottom nav for full-screen experience
-                    builder: (context) => ProfileDetailsScreen(
-                      profile: match.userProfile!,
-                      isOwnProfile: false,
-                      showStartConversation: true,
-                      onMessage: () {
-                        Navigator.pop(context); // Close profile screen
-                        Navigator.pushNamed(
-                          context,
-                          '/conversation',
-                          arguments: {
-                            'user': match.userProfile,
-                            'conversationId': match.id,
-                          },
-                        );
-                      },
-                    ),
+                context.push(
+                  AppRoutes.profileDetails.replaceFirst(
+                    ':profileId',
+                    match.userProfile!.id,
                   ),
+                  extra: match.userProfile,
                 );
               }
             },

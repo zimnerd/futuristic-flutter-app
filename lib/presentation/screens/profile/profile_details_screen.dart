@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'dart:io';
 
 import '../../../domain/entities/user_profile.dart';
+import '../../../data/models/user_model.dart';
 import '../../../blocs/chat_bloc.dart';
-import '../chat/chat_screen.dart';
-import '../calls/audio_call_screen.dart';
 import '../../theme/pulse_colors.dart';
 import '../../widgets/common/pulse_button.dart';
-import 'enhanced_profile_edit_screen.dart';
 
 /// Comprehensive profile details screen with social media style layout
 class ProfileDetailsScreen extends StatefulWidget {
@@ -81,28 +80,32 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
   void _startVoiceCall(BuildContext context) {
     if (!mounted) return;
 
-    // Navigate to audio call screen
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        fullscreenDialog: true, // Hide bottom navigation bar for call UI
-        builder: (context) => AudioCallScreen(
-          callId:
-              'call_${widget.profile.id}_${DateTime.now().millisecondsSinceEpoch}',
-          recipientId: widget.profile.id,
-          userName: widget.profile.name,
-          userPhotoUrl: widget.profile.photos.isNotEmpty
-              ? widget.profile.photos.first.url
-              : null,
-          isOutgoing: true,
-        ),
-      ),
+    final callId =
+        'call_${widget.profile.id}_${DateTime.now().millisecondsSinceEpoch}';
+
+    // Convert UserProfile to UserModel for AudioCallScreen
+    final remoteUser = UserModel(
+      id: widget.profile.id,
+      email: '', // Not available in UserProfile
+      username: widget.profile.name,
+      firstName: widget.profile.name.split(' ').first,
+      lastName: widget.profile.name.split(' ').length > 1
+          ? widget.profile.name.split(' ').last
+          : null,
+      photos: widget.profile.photos.map((p) => p.url).toList(),
+      createdAt: DateTime.now(), // Not available in UserProfile
+    );
+
+    context.push(
+      '/audio-call/$callId',
+      extra: {'remoteUser': remoteUser, 'isIncoming': false},
     );
   }
 
   /// Handles starting a conversation with the user
   void _startConversation(BuildContext context) {
-    // Capture context and navigation functions before async operations
-    final navigator = Navigator.of(context);
+    if (!mounted) return;
+
     final scaffoldMessenger = ScaffoldMessenger.of(context);
     final chatBloc = context.read<ChatBloc>();
     
@@ -117,18 +120,16 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
         // Check if widget is still mounted before navigation
         if (mounted) {
           // Navigate to chat screen with the new conversation
-          // Use push instead of go to maintain navigation stack
-          navigator.push(
-            MaterialPageRoute(
-              builder: (context) => ChatScreen(
-                conversationId: state.conversation.id,
-                otherUserId: widget.profile.id,
-                otherUserName: widget.profile.name,
-                otherUserPhoto: widget.profile.photos.isNotEmpty 
-                    ? widget.profile.photos.first.url 
-                    : null,
-              ),
-            ),
+          // Use push to maintain navigation stack
+          context.push(
+            '/chat/${state.conversation.id}',
+            extra: {
+              'otherUserId': widget.profile.id,
+              'otherUserName': widget.profile.name,
+              'otherUserPhoto': widget.profile.photos.isNotEmpty
+                  ? widget.profile.photos.first.url
+                  : null,
+            },
           );
         }
       } else if (state is ChatError) {
@@ -221,13 +222,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
         if (widget.isOwnProfile)
           IconButton(
             onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  fullscreenDialog:
-                      true, // Hide bottom navigation bar for edit UI
-                  builder: (context) => const EnhancedProfileEditScreen(),
-                ),
-              );
+              context.push('/enhanced-profile-edit');
             },
             icon: const Icon(Icons.edit),
           )

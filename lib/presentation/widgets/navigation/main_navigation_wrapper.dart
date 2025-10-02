@@ -10,12 +10,13 @@ import '../../../core/theme/pulse_design_system.dart';
 /// - Smooth animations and haptic feedback
 /// - PulseLink brand colors and theming
 /// - Burger menu integration
+/// - StatefulShellRoute integration for tab state preservation
 class MainNavigationWrapper extends StatefulWidget {
-  final Widget child;
+  final StatefulNavigationShell navigationShell;
 
   const MainNavigationWrapper({
     super.key,
-    required this.child,
+    required this.navigationShell,
   });
 
   @override
@@ -26,7 +27,6 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper>
     with TickerProviderStateMixin {
   late AnimationController _animationController;
   late AnimationController _fabController;
-  int _currentIndex = 0;
 
   final List<NavigationItem> _navigationItems = [
     NavigationItem(
@@ -77,19 +77,21 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper>
   }
 
   void _onItemTapped(int index) {
-    if (index == _currentIndex) return;
-
-    setState(() {
-      _currentIndex = index;
-    });
+    // Prevent unnecessary navigation if already on the tab
+    if (widget.navigationShell.currentIndex == index) {
+      return;
+    }
 
     HapticFeedback.lightImpact();
     _animationController.forward().then((_) {
       _animationController.reverse();
     });
 
-    // Navigate to the selected route
-    context.go(_navigationItems[index].route);
+    // Use navigationShell.goBranch for tab switching (preserves state)
+    widget.navigationShell.goBranch(
+      index,
+      initialLocation: index == widget.navigationShell.currentIndex,
+    );
   }
 
   void _onBurgerMenuTapped() {
@@ -109,7 +111,7 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: widget.child,
+      body: widget.navigationShell,
       extendBody: true,
       bottomNavigationBar: _buildCurvedBottomBar(),
     );
@@ -159,12 +161,14 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper>
   }
 
   Widget _buildCurvedNavItem(NavigationItem item, int index) {
-    final isActive = index == _currentIndex;
+    final isActive = index == widget.navigationShell.currentIndex;
     
     return AnimatedBuilder(
       animation: _animationController,
       builder: (context, child) {
-        final scale = index == _currentIndex && _animationController.isAnimating
+        final scale =
+            index == widget.navigationShell.currentIndex &&
+                _animationController.isAnimating
             ? 1.0 - (_animationController.value * 0.1)
             : 1.0;
 

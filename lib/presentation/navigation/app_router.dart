@@ -31,12 +31,15 @@ import '../screens/profile/profile_creation_screen.dart';
 import '../screens/profile/profile_overview_screen.dart';
 import '../screens/profile/profile_section_edit_screen.dart';
 import '../screens/profile/profile_details_screen.dart';
+import '../screens/profile/enhanced_profile_edit_screen.dart';
 import '../screens/chat/chat_screen.dart';
 import '../screens/call/video_call_screen.dart';
+import '../screens/call/audio_call_screen.dart';
 import '../screens/discovery/discovery_screen.dart';
 import '../screens/features/advanced_features_screen.dart';
 import '../screens/heat_map_screen.dart';
 import '../../../domain/entities/user_profile.dart';
+import '../../../data/models/user_model.dart';
 import '../../../domain/entities/event.dart';
 // Events screens
 import '../screens/events/events_screen.dart';
@@ -116,62 +119,89 @@ class AppRouter {
           },
         ),
 
-      // Main app routes with shell navigation
-      ShellRoute(
-        builder: (context, state, child) => MainNavigationWrapper(child: child),
-        routes: [
-          GoRoute(
-            path: AppRoutes.home,
-            name: 'home',
-            builder: (context, state) => const HomeScreen(),
-          ),
-          GoRoute(
-            path: AppRoutes.matches,
-            name: 'matches',
-            builder: (context, state) => const MatchesScreen(),
-          ),
-          GoRoute(
-            path: AppRoutes.messages,
-            name: 'messages',
-            builder: (context, state) => const MessagesScreen(),
-          ),
-          GoRoute(
-            path: AppRoutes.profile,
-            name: 'profile',
-            builder: (context, state) => const ProfileScreen(),
-          ),
-          GoRoute(
-            path: AppRoutes.settings,
-            name: 'settings',
-            builder: (context, state) => const SettingsScreen(),
-          ),
-          GoRoute(
-            path: AppRoutes.filters,
-            name: 'filters',
-            builder: (context, state) => const FiltersScreen(),
-          ),
-          GoRoute(
-              path: AppRoutes.statistics,
-              name: 'statistics',
-              builder: (context, state) => const StatisticsScreen(),
+        // Main app routes with StatefulShellRoute for tab state preservation
+        StatefulShellRoute.indexedStack(
+          builder: (context, state, navigationShell) {
+            return MainNavigationWrapper(navigationShell: navigationShell);
+          },
+          branches: [
+            // Branch 0: Discover/Home Tab
+            StatefulShellBranch(
+              routes: [
+                GoRoute(
+                  path: AppRoutes.home,
+                  name: 'home',
+                  builder: (context, state) => const HomeScreen(),
+                ),
+              ],
             ),
-            GoRoute(
-              path: AppRoutes.heatMap,
-              name: 'heat-map',
-              builder: (context, state) => const HeatMapScreen(),
+
+            // Branch 1: Sparks/Matches Tab
+            StatefulShellBranch(
+              routes: [
+                GoRoute(
+                  path: AppRoutes.matches,
+                  name: 'matches',
+                  builder: (context, state) => const MatchesScreen(),
+              ),
+              ],
             ),
-            GoRoute(
-            path: AppRoutes.subscription,
-            name: 'subscription',
-            builder: (context, state) => const SubscriptionManagementScreen(),
-          ),
-          GoRoute(
-            path: AppRoutes.events,
-            name: 'events',
-            builder: (context, state) => const EventsScreen(),
-          ),
-        ],
-      ),
+
+            // Branch 2: Events Tab
+            StatefulShellBranch(
+              routes: [
+                GoRoute(
+                  path: AppRoutes.events,
+                  name: 'events',
+                  builder: (context, state) => const EventsScreen(),
+                ),
+              ],
+            ),
+
+            // Branch 3: DMs/Messages Tab
+            StatefulShellBranch(
+              routes: [
+                GoRoute(
+                  path: AppRoutes.messages,
+                  name: 'messages',
+                  builder: (context, state) => const MessagesScreen(),
+                ),
+              ],
+            ),
+          ],
+        ),
+
+        // Detail screens (outside tabs - no bottom nav)
+        GoRoute(
+          path: AppRoutes.profile,
+          name: 'profile',
+          builder: (context, state) => const ProfileScreen(),
+        ),
+        GoRoute(
+          path: AppRoutes.settings,
+          name: 'settings',
+          builder: (context, state) => const SettingsScreen(),
+        ),
+        GoRoute(
+          path: AppRoutes.filters,
+          name: 'filters',
+          builder: (context, state) => const FiltersScreen(),
+        ),
+        GoRoute(
+          path: AppRoutes.statistics,
+          name: 'statistics',
+          builder: (context, state) => const StatisticsScreen(),
+        ),
+        GoRoute(
+          path: AppRoutes.heatMap,
+          name: 'heat-map',
+          builder: (context, state) => const HeatMapScreen(),
+        ),
+        GoRoute(
+          path: AppRoutes.subscription,
+          name: 'subscription',
+          builder: (context, state) => const SubscriptionManagementScreen(),
+        ),
       
       // Events routes (full screen)
       GoRoute(
@@ -351,6 +381,27 @@ class AppRouter {
           );
         },
       ),
+        GoRoute(
+          path: AppRoutes.audioCall,
+          name: 'audioCall',
+          builder: (context, state) {
+            final callId = state.pathParameters['callId'] ?? '';
+            final extra = state.extra as Map<String, dynamic>?;
+            final remoteUser = extra?['remoteUser'] as UserModel;
+            final isIncoming = extra?['isIncoming'] as bool? ?? false;
+
+            return AudioCallScreen(
+              callId: callId,
+              remoteUser: remoteUser,
+              isIncoming: isIncoming,
+            );
+          },
+        ),
+        GoRoute(
+          path: AppRoutes.enhancedProfileEdit,
+          name: 'enhancedProfileEdit',
+          builder: (context, state) => const EnhancedProfileEditScreen(),
+        ),
     ],
     errorBuilder: (context, state) => Scaffold(
       body: Center(
@@ -475,6 +526,8 @@ class AppRoutes {
   static const String profileDetails = '/profile-details/:profileId';
   static const String chat = '/chat/:conversationId';
   static const String videoCall = '/video-call/:callId';
+  static const String audioCall = '/audio-call/:callId';
+  static const String enhancedProfileEdit = '/enhanced-profile-edit';
   
   // Events routes
   static const String eventDetails = '/events/:eventId';

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import '../../../core/utils/logger.dart';
 import '../../../data/models/user_model.dart';
 import '../../../data/models/match_model.dart';
@@ -9,7 +10,7 @@ import '../../blocs/matching/matching_bloc.dart';
 import '../../widgets/matching/smart_match_widget.dart';
 import '../../widgets/matching/compatibility_score_widget.dart';
 import '../../theme/pulse_colors.dart';
-import '../profile/profile_details_screen.dart';
+import '../../navigation/app_router.dart';
 
 /// Main AI-powered matching screen
 class AiMatchingScreen extends StatefulWidget {
@@ -603,18 +604,12 @@ class _AiMatchingScreenState extends State<AiMatchingScreen>
   void _navigateToProfile(MatchModel match) {
     if (match.userProfile == null) return;
 
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        fullscreenDialog: true, // Hide bottom navigation bar
-        builder: (context) => ProfileDetailsScreen(
-          profile: match.userProfile!,
-          isOwnProfile: false,
-          showStartConversation: true,
-          onLike: () => _handleMatchAction(match, 'like'),
-          onSuperLike: () => _handleMatchAction(match, 'super_like'),
-        ),
+    context.push(
+      AppRoutes.profileDetails.replaceFirst(
+        ':profileId',
+        match.userProfile!.id,
       ),
+      extra: match.userProfile,
     );
   }
 
