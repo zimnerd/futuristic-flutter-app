@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'core/storage/hive_storage_service.dart';
 import 'data/services/service_locator.dart';
 import 'presentation/blocs/auth/auth_bloc.dart';
+import 'presentation/blocs/auth/auth_state.dart';
 import 'presentation/blocs/matching/matching_bloc.dart';
 import 'presentation/blocs/messaging/messaging_bloc.dart';
 import 'presentation/blocs/profile/profile_bloc.dart';
@@ -18,7 +19,7 @@ import 'presentation/blocs/date_planning/date_planning_bloc.dart';
 import 'presentation/blocs/voice_message/voice_message_bloc.dart';
 import 'presentation/blocs/discovery/discovery_bloc.dart';
 import 'presentation/blocs/call/call_bloc.dart';
-import 'features/events/presentation/bloc/event_bloc.dart';
+import 'presentation/blocs/event/event_bloc.dart';
 
 /// Clean app setup with simple dependency injection
 class AppProviders extends StatelessWidget {
@@ -117,7 +118,17 @@ class AppProviders extends StatelessWidget {
         
         // Events BLoC
         BlocProvider<EventBloc>(
-          create: (context) => EventBloc(),
+          create: (context) {
+            // Get current user ID from AuthBloc
+            final authBloc = context.read<AuthBloc>();
+            String? currentUserId;
+
+            if (authBloc.state is AuthAuthenticated) {
+              currentUserId = (authBloc.state as AuthAuthenticated).user.id;
+            }
+
+            return EventBloc(currentUserId: currentUserId);
+          },
         ),
       ],
       child: child,

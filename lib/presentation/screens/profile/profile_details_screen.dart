@@ -10,22 +10,44 @@ import '../../../blocs/chat_bloc.dart';
 import '../../theme/pulse_colors.dart';
 import '../../widgets/common/pulse_button.dart';
 
+/// Context for profile viewing - determines which actions to show
+enum ProfileContext {
+  /// Discovery screen - show like/superlike/pass actions
+  discovery,
+
+  /// Matches screen - show chat/call/unmatch/report actions
+  matches,
+
+  /// General viewing - show minimal actions
+  general,
+}
+
 /// Comprehensive profile details screen with social media style layout
 class ProfileDetailsScreen extends StatefulWidget {
   final UserProfile profile;
   final bool isOwnProfile;
+  final ProfileContext context;
   final VoidCallback? onLike;
-  final VoidCallback? onMessage;
+  final VoidCallback? onDislike;
   final VoidCallback? onSuperLike;
+  final VoidCallback? onMessage;
+  final VoidCallback? onUnmatch;
+  final VoidCallback? onReport;
+  @Deprecated('Use context parameter instead')
   final bool showStartConversation;
 
   const ProfileDetailsScreen({
     super.key,
     required this.profile,
     this.isOwnProfile = false,
+    this.context = ProfileContext.general,
     this.onLike,
-    this.onMessage,
+    this.onDislike,
     this.onSuperLike,
+    this.onMessage,
+    this.onUnmatch,
+    this.onReport,
+    @Deprecated('Use context parameter instead')
     this.showStartConversation = false,
   });
 
@@ -36,8 +58,6 @@ class ProfileDetailsScreen extends StatefulWidget {
 class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
     with TickerProviderStateMixin {
   late PageController _pageController;
-  late AnimationController _likeAnimationController;
-  late Animation<double> _likeAnimation;
   
   int _currentPhotoIndex = 0;
 
@@ -45,19 +65,11 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
   void initState() {
     super.initState();
     _pageController = PageController();
-    _likeAnimationController = AnimationController(
-      duration: const Duration(milliseconds: 300),
-      vsync: this,
-    );
-    _likeAnimation = Tween<double>(begin: 1.0, end: 1.2).animate(
-      CurvedAnimation(parent: _likeAnimationController, curve: Curves.elasticOut),
-    );
   }
 
   @override
   void dispose() {
     _pageController.dispose();
-    _likeAnimationController.dispose();
     super.dispose();
   }
 
@@ -155,7 +167,11 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
                   ? SnackBarAction(
                       label: 'Like Profile',
                       textColor: Colors.white,
-                      onPressed: () => _onLikeTap(),
+                      onPressed: () {
+                        if (widget.onLike != null) {
+                          widget.onLike!();
+                        }
+                      },
                     )
                   : null,
             ),
@@ -168,13 +184,6 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
     Future.delayed(const Duration(seconds: 10), () {
       subscription.cancel();
     });
-  }
-
-  void _onLikeTap() {
-    _likeAnimationController.forward().then((_) {
-      _likeAnimationController.reverse();
-    });
-    widget.onLike?.call();
   }
 
   @override
@@ -227,11 +236,53 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
             icon: const Icon(Icons.edit),
           )
         else
-          IconButton(
-            onPressed: () {
-              // Show more options
-            },
+          PopupMenuButton<String>(
             icon: const Icon(Icons.more_vert),
+            onSelected: (value) {
+              switch (value) {
+                case 'share':
+                  _shareProfile();
+                  break;
+                case 'report':
+                  _reportProfile();
+                  break;
+                case 'block':
+                  _blockUser();
+                  break;
+              }
+            },
+            itemBuilder: (context) => [
+              const PopupMenuItem(
+                value: 'share',
+                child: Row(
+                  children: [
+                    Icon(Icons.share, size: 20),
+                    SizedBox(width: 12),
+                    Text('Share Profile'),
+                  ],
+                ),
+              ),
+              const PopupMenuItem(
+                value: 'report',
+                child: Row(
+                  children: [
+                    Icon(Icons.flag_outlined, size: 20, color: Colors.red),
+                    SizedBox(width: 12),
+                    Text('Report', style: TextStyle(color: Colors.red)),
+                  ],
+                ),
+              ),
+              const PopupMenuItem(
+                value: 'block',
+                child: Row(
+                  children: [
+                    Icon(Icons.block, size: 20, color: Colors.red),
+                    SizedBox(width: 12),
+                    Text('Block User', style: TextStyle(color: Colors.red)),
+                  ],
+                ),
+              ),
+            ],
           ),
       ],
       flexibleSpace: FlexibleSpaceBar(
@@ -500,42 +551,6 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
                   ],
                 ),
               ),
-              if (!widget.isOwnProfile)
-                AnimatedBuilder(
-                  animation: _likeAnimation,
-                  builder: (context, child) {
-                    return Transform.scale(
-                      scale: _likeAnimation.value,
-                      child: InkWell(
-                        onTap: _onLikeTap,
-                        borderRadius: BorderRadius.circular(30),
-                        child: Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [PulseColors.primary, PulseColors.secondary],
-                            ),
-                            shape: BoxShape.circle,
-                            boxShadow: [
-                              BoxShadow(
-                                color: PulseColors.primary.withValues(
-                                  alpha: 0.4,
-                                ),
-                                blurRadius: 16,
-                                offset: const Offset(0, 6),
-                              ),
-                            ],
-                          ),
-                          child: const Icon(
-                            Icons.favorite,
-                            color: Colors.white,
-                            size: 28,
-                          ),
-                        ),
-                      ),
-                    );
-                  },
-                ),
             ],
           ),
           const SizedBox(height: 20),
@@ -990,142 +1005,261 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
   }
 
   Widget _buildBottomActions() {
-    return widget.showStartConversation
-        ? Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(24),
-                topRight: Radius.circular(24),
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.1),
-                  blurRadius: 20,
-                  offset: const Offset(0, -4),
-                ),
-              ],
+    // Discovery context: Show like/superlike/pass actions
+    if (widget.context == ProfileContext.discovery) {
+      return Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(24),
+            topRight: Radius.circular(24),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.1),
+              blurRadius: 20,
+              offset: const Offset(0, -4),
             ),
-            padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
-            child: SafeArea(
-              top: false,
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.1),
-                      blurRadius: 10,
-                      offset: const Offset(0, -2),
-                    ),
-                  ],
+          ],
+        ),
+        padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
+        child: SafeArea(
+          top: false,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              // Pass/Dislike button
+              _buildActionButton(
+                icon: Icons.close,
+                label: 'Pass',
+                color: Colors.grey[400]!,
+                onPressed: () {
+                  if (widget.onDislike != null) {
+                    widget.onDislike!();
+                    // Auto-close after action
+                    if (mounted) {
+                      context.pop();
+                    }
+                  }
+                },
+              ),
+              const SizedBox(width: 16),
+              // Super Like button
+              _buildActionButton(
+                icon: Icons.star,
+                label: 'Super',
+                color: PulseColors.warning,
+                gradient: LinearGradient(
+                  colors: [PulseColors.warning, Colors.orange],
                 ),
-                padding: const EdgeInsets.all(16),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: PulseButton(
-                        text: '� Call',
-                        onPressed: () => _startVoiceCall(context),
-                        variant: PulseButtonVariant.secondary,
-                        icon: const Icon(Icons.phone, size: 18),
+                onPressed: () {
+                  if (widget.onSuperLike != null) {
+                    widget.onSuperLike!();
+                    // Auto-close after action
+                    if (mounted) {
+                      context.pop();
+                    }
+                  }
+                },
+                size: 72,
+              ),
+              const SizedBox(width: 16),
+              // Like button
+              _buildActionButton(
+                icon: Icons.favorite,
+                label: 'Like',
+                color: PulseColors.error,
+                onPressed: () {
+                  if (widget.onLike != null) {
+                    widget.onLike!();
+                    // Auto-close after action
+                    if (mounted) {
+                      context.pop();
+                    }
+                  }
+                },
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    // Matches context: Show chat/call/unmatch/report actions
+    if (widget.context == ProfileContext.matches) {
+      return Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(24),
+            topRight: Radius.circular(24),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.1),
+              blurRadius: 20,
+              offset: const Offset(0, -4),
+            ),
+          ],
+        ),
+        padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
+        child: SafeArea(
+          top: false,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Primary actions: Chat and Call
+              Row(
+                children: [
+                  Expanded(
+                    child: PulseButton(
+                      text: '💬 Chat',
+                      onPressed:
+                          widget.onMessage ?? () => _startConversation(context),
+                      icon: const Icon(Icons.chat_bubble_outline, size: 18),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: PulseButton(
+                      text: '� Call',
+                      onPressed: () => _startVoiceCall(context),
+                      variant: PulseButtonVariant.secondary,
+                      icon: const Icon(Icons.phone, size: 18),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              // Secondary actions: Unmatch and Report
+              Row(
+                children: [
+                  Expanded(
+                    child: TextButton.icon(
+                      onPressed: widget.onUnmatch,
+                      icon: const Icon(Icons.link_off, size: 18),
+                      label: const Text('Unmatch'),
+                      style: TextButton.styleFrom(
+                        foregroundColor: Colors.grey[600],
                       ),
                     ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: PulseButton(
-                        text: '💬 Chat',
-                        onPressed:
-                            widget.onMessage ??
-                            () => _startConversation(context),
-                        icon: const Icon(Icons.chat_bubble_outline, size: 18),
+                  ),
+                  Expanded(
+                    child: TextButton.icon(
+                      onPressed: widget.onReport,
+                      icon: const Icon(Icons.flag_outlined, size: 18),
+                      label: const Text('Report'),
+                      style: TextButton.styleFrom(
+                        foregroundColor: PulseColors.error,
                       ),
                     ),
-                  ],
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    // General/Legacy context: Show minimal actions (backward compatibility)
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(24),
+          topRight: Radius.circular(24),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.1),
+            blurRadius: 20,
+            offset: const Offset(0, -4),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
+      child: SafeArea(
+        top: false,
+        child: Row(
+          children: [
+            if (widget.onSuperLike != null)
+              Expanded(
+                child: PulseButton(
+                  text: '⭐ Super Like',
+                  onPressed: widget.onSuperLike,
+                  variant: PulseButtonVariant.secondary,
+                  icon: const Icon(Icons.star, size: 18),
+                ),
+              ),
+            if (widget.onSuperLike != null) const SizedBox(width: 12),
+            Expanded(
+              child: PulseButton(
+                text: '💬 Chat',
+                onPressed:
+                    widget.onMessage ?? () => _startConversation(context),
+                icon: const Icon(Icons.chat_bubble_outline, size: 18),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Builds a circular action button for discovery mode
+  Widget _buildActionButton({
+    required IconData icon,
+    required String label,
+    required Color color,
+    Gradient? gradient,
+    VoidCallback? onPressed,
+    double size = 64,
+  }) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: size,
+          height: size,
+          decoration: BoxDecoration(
+            gradient: gradient,
+            color: gradient == null ? color.withValues(alpha: 0.2) : null,
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: color.withValues(alpha: 0.3),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: onPressed,
+              customBorder: const CircleBorder(),
+              child: Center(
+                child: Icon(
+                  icon,
+                  color: gradient != null ? Colors.white : color,
+                  size: size * 0.45,
                 ),
               ),
             ),
-          )
-        : Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(24),
-                topRight: Radius.circular(24),
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.1),
-                  blurRadius: 20,
-                  offset: const Offset(0, -4),
-                ),
-              ],
-            ),
-            padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
-            child: SafeArea(
-              top: false,
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.1),
-                      blurRadius: 10,
-                      offset: const Offset(0, -2),
-                    ),
-                  ],
-                ),
-                padding: const EdgeInsets.all(16),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: PulseButton(
-                        text: '⭐ Super Like',
-                        onPressed: widget.onSuperLike,
-                        variant: PulseButtonVariant.secondary,
-                        icon: Container(
-                          padding: const EdgeInsets.all(2),
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [PulseColors.warning, Colors.orange],
-                            ),
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(
-                            Icons.star,
-                            size: 16,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: PulseButton(
-                        text: '📞 Call',
-                        onPressed: () => _startVoiceCall(context),
-                        variant: PulseButtonVariant.secondary,
-                        icon: const Icon(Icons.phone, size: 18),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      flex: 2,
-                      child: PulseButton(
-                        text: '💬 Chat',
-                        onPressed:
-                            widget.onMessage ??
-                            () => _startConversation(context),
-                        icon: const Icon(Icons.chat_bubble_outline, size: 18),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          );
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+            color: Colors.grey[700],
+          ),
+        ),
+      ],
+    );
   }
 
   Widget _buildPhotoModal() {
@@ -1169,6 +1303,72 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
             );
           },
         ),
+      ),
+    );
+  }
+
+  // Context menu actions
+  void _shareProfile() {
+    // TODO: Implement share functionality
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Share profile functionality coming soon')),
+    );
+  }
+
+  void _reportProfile() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Report Profile'),
+        content: const Text('Are you sure you want to report this profile?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              // TODO: Implement report functionality
+              ScaffoldMessenger.of(
+                context,
+              ).showSnackBar(const SnackBar(content: Text('Profile reported')));
+            },
+            child: const Text('Report', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _blockUser() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Block User'),
+        content: const Text(
+          'Are you sure you want to block this user? You won\'t see each other anymore.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              // TODO: Implement block functionality
+              ScaffoldMessenger.of(
+                context,
+              ).showSnackBar(const SnackBar(content: Text('User blocked')));
+              // Close profile after blocking
+              if (mounted) {
+                context.pop();
+              }
+            },
+            child: const Text('Block', style: TextStyle(color: Colors.red)),
+          ),
+        ],
       ),
     );
   }

@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../domain/entities/user_profile.dart';
 import '../../animations/pulse_animations.dart';
 import '../../navigation/app_router.dart';
+import '../../screens/profile/profile_details_screen.dart';
 import '../common/robust_network_image.dart';
 
 // Animation durations for consistent timing
@@ -205,11 +206,14 @@ class _SwipeCardState extends State<SwipeCard>
   /// Show full profile details using GoRouter navigation
   void _showProfileDetails() {
     context.push(
-      AppRoutes.profileDetails.replaceFirst(
-        ':profileId',
-        widget.user.id,
-      ),
-      extra: widget.user,
+      AppRoutes.profileDetails.replaceFirst(':profileId', widget.user.id),
+      extra: {
+        'profile': widget.user,
+        'context': ProfileContext.discovery,
+        'onLike': widget.onSwipeRight,
+        'onDislike': widget.onSwipeLeft,
+        'onSuperLike': widget.onSwipeUp,
+      },
     );
   }
 

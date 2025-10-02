@@ -66,24 +66,40 @@ class Event {
     this.maxAttendees,
   });
 
-  factory Event.fromJson(Map<String, dynamic> json) {
+  factory Event.fromJson(Map<String, dynamic> json, {String? currentUserId}) {
+    // Handle wrapped API response
+    final eventData = json['data'] ?? json;
+    
     // Handle attendees array - convert from the API format to EventAttendance
+    // Note: In listing view, attendees array is omitted for privacy (only count is sent)
     List<EventAttendance> attendeesList = [];
-    if (json['attendees'] is List) {
-      attendeesList = (json['attendees'] as List<dynamic>)
+    bool userIsAttending = false;
+
+    // Check if API provided explicit isUserAttending flag (from listing endpoint)
+    if (eventData['isUserAttending'] is bool) {
+      userIsAttending = eventData['isUserAttending'] as bool;
+    }
+
+    // If attendees array is present (from details endpoint), parse it
+    if (eventData['attendees'] is List) {
+      attendeesList = (eventData['attendees'] as List<dynamic>)
           .map((attendee) {
             if (attendee is Map<String, dynamic>) {
               final attendeeId = attendee['id'] as String? ?? '';
-              final eventId = json['id'] as String? ?? '';
+              final eventId = eventData['id'] as String? ?? '';
+
+              // Check if current user is in attendees list (details view)
+              if (currentUserId != null && attendeeId == currentUserId) {
+                userIsAttending = true;
+              }
 
               if (attendeeId.isNotEmpty && eventId.isNotEmpty) {
                 return EventAttendance(
                   id: attendeeId,
                   userId: attendeeId,
                   eventId: eventId,
-                  status:
-                      'attending', // Default status since API doesn't provide this
-                  timestamp: DateTime.now(), // Default timestamp
+                  status: 'attending',
+                  timestamp: DateTime.now(),
                   user: {
                     'id': attendeeId,
                     'firstName': attendee['firstName'] as String? ?? 'Unknown',
@@ -104,21 +120,21 @@ class Event {
     // Handle date parsing - API uses 'startTime'
     DateTime eventDate;
     try {
-      final startTimeStr = json['startTime'] as String?;
+      final startTimeStr = eventData['startTime'] as String?;
       if (startTimeStr != null && startTimeStr.isNotEmpty) {
         eventDate = DateTime.parse(startTimeStr);
       } else {
-        eventDate = DateTime.now(); // Fallback to current time
+        eventDate = DateTime.now();
       }
     } catch (e) {
-      eventDate = DateTime.now(); // Fallback to current time
+      eventDate = DateTime.now();
     }
 
     // Handle coordinates - provide default if missing
     EventCoordinates eventCoordinates;
-    if (json['coordinates'] != null) {
+    if (eventData['coordinates'] != null) {
       eventCoordinates = EventCoordinates.fromJson(
-        json['coordinates'] as Map<String, dynamic>,
+        eventData['coordinates'] as Map<String, dynamic>,
       );
     } else {
       // Default to Cape Town coordinates if missing
@@ -127,27 +143,29 @@ class Event {
 
     // Handle category - extract from tags array or use default
     String eventCategory = 'general';
-    if (json['tags'] is List && (json['tags'] as List).isNotEmpty) {
-      eventCategory = json['tags'][0] as String;
-    } else if (json['category'] is String) {
-      eventCategory = json['category'] as String;
+    if (eventData['tags'] is List && (eventData['tags'] as List).isNotEmpty) {
+      eventCategory = eventData['tags'][0] as String;
+    } else if (eventData['category'] is String) {
+      eventCategory = eventData['category'] as String;
     }
 
     return Event(
-      id: json['id'] as String? ?? '',
-      title: json['title'] as String? ?? 'Untitled Event',
-      description: json['description'] as String? ?? 'No description available',
-      location: json['location'] as String? ?? 'Location TBD',
+      id: eventData['id'] as String? ?? '',
+      title: eventData['title'] as String? ?? 'Untitled Event',
+      description:
+          eventData['description'] as String? ?? 'No description available',
+      location: eventData['location'] as String? ?? 'Location TBD',
       coordinates: eventCoordinates,
       date: eventDate,
-      image: json['image'] as String?,
+      image: eventData['image'] as String?,
       category: eventCategory,
-      createdBy: json['creatorId'] as String?, // Safe null handling
-      createdAt: eventDate, // Use startTime as createdAt fallback
+      createdBy: eventData['creatorId'] as String?,
+      createdAt: eventDate,
       attendees: attendeesList,
-      isAttending: false, // Default to false, will be determined by app logic
-      attendeeCount: json['currentAttendees'] as int? ?? attendeesList.length,
-      maxAttendees: json['maxAttendees'] as int?,
+      isAttending: userIsAttending,
+      attendeeCount:
+          eventData['currentAttendees'] as int? ?? attendeesList.length,
+      maxAttendees: eventData['maxAttendees'] as int?,
     );
   }
 

@@ -26,12 +26,20 @@ class EventCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Hide past events
+    if (event.date.isBefore(DateTime.now())) {
+      return const SizedBox.shrink();
+    }
+    
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       elevation: 4,
       shadowColor: PulseColors.primary.withValues(alpha: 0.1),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
+        side: event.isAttending
+            ? BorderSide(color: PulseColors.success, width: 2)
+            : BorderSide.none,
       ),
       child: InkWell(
         onTap: onTap,

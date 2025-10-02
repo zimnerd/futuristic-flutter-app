@@ -107,25 +107,50 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
   }
 
   Widget _buildEventDetails(BuildContext context, Event event) {
+    // Only show image if available
+    final bool hasImage = event.image != null && event.image!.isNotEmpty;
+    
     return CustomScrollView(
       slivers: [
-        // App bar with event image
-        SliverAppBar(
-          expandedHeight: 300,
-          pinned: true,
-          flexibleSpace: FlexibleSpaceBar(
-            background: RobustNetworkImage(
-              imageUrl: event.image,
-              width: double.infinity,
-              height: 300,
-              fit: BoxFit.cover,
+        // App bar with event image (only if image exists)
+        if (hasImage)
+          SliverAppBar(
+            expandedHeight: 300,
+            pinned: true,
+            flexibleSpace: FlexibleSpaceBar(
+              background: Stack(
+                fit: StackFit.expand,
+                children: [
+                  RobustNetworkImage(
+                    imageUrl: event.image,
+                    width: double.infinity,
+                    height: 300,
+                    fit: BoxFit.cover,
+                  ),
+                  // Gradient overlay for better text readability
+                  Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Colors.transparent,
+                          Colors.black.withOpacity(0.7),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-        ),
+          )
+        else
+          // Simple app bar without image
+          SliverAppBar(pinned: true, title: const Text('Event Details')),
         
         // Event content
         SliverPadding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(20),
           sliver: SliverList(
             delegate: SliverChildListDelegate([
               // Event title and basic info
@@ -155,106 +180,189 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
   }
 
   Widget _buildEventHeader(BuildContext context, Event event) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          event.title,
-          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-        ),
-        const SizedBox(height: 8),
-        Row(
-          children: [
-            Icon(
-              Icons.category_outlined,
-              size: 16,
-              color: Colors.grey[600],
-            ),
-            const SizedBox(width: 4),
-            Text(
-              event.category,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Colors.grey[600],
-                  ),
-            ),
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Theme.of(context).primaryColor.withOpacity(0.1),
+            Theme.of(context).primaryColor.withOpacity(0.05),
           ],
         ),
-      ],
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: Theme.of(context).primaryColor.withOpacity(0.2),
+          width: 1,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Category badge
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: Theme.of(context).primaryColor,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(
+                  Icons.category_outlined,
+                  size: 14,
+                  color: Colors.white,
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  event.category.toUpperCase(),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+          // Event title
+          Text(
+            event.title,
+            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+              fontWeight: FontWeight.bold,
+              height: 1.2,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
   Widget _buildDescription(BuildContext context, Event event) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'About',
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.grey[50],
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                Icons.description_outlined,
+                size: 20,
+                color: Theme.of(context).primaryColor,
               ),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          event.description,
-          style: Theme.of(context).textTheme.bodyMedium,
-        ),
-      ],
+              const SizedBox(width: 8),
+              Text(
+                'About',
+                style: Theme.of(
+                  context,
+                ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Text(
+            event.description,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              height: 1.6,
+              color: Colors.grey[800],
+            ),
+          ),
+        ],
+      ),
     );
   }
 
   Widget _buildEventInfo(BuildContext context, Event event) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Event Details',
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-        ),
-        const SizedBox(height: 16),
-        
-        // Date & Time
-        _buildInfoRow(
-          context,
-          Icons.schedule,
-          'Date & Time',
-          '${event.date.day}/${event.date.month}/${event.date.year} at ${event.date.hour}:${event.date.minute.toString().padLeft(2, '0')}',
-        ),
-        const SizedBox(height: 12),
-        
-        // Location
-        _buildInfoRow(
-          context,
-          Icons.location_on,
-          'Location',
-          event.location,
-        ),
-        const SizedBox(height: 12),
-        
-        // Attendee count
-        _buildInfoRow(
-          context,
-          Icons.people,
-          'Attendees',
-          '${event.attendeeCount} going',
-        ),
-      ],
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Event Details',
+            style: Theme.of(
+              context,
+            ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 20),
+
+          // Date & Time
+          _buildInfoRow(
+            context,
+            Icons.schedule,
+            'Date & Time',
+            '${event.date.day}/${event.date.month}/${event.date.year} at ${event.date.hour}:${event.date.minute.toString().padLeft(2, '0')}',
+            Theme.of(context).primaryColor,
+          ),
+          const SizedBox(height: 16),
+          const Divider(height: 1),
+          const SizedBox(height: 16),
+
+          // Location
+          _buildInfoRow(
+            context,
+            Icons.location_on,
+            'Location',
+            event.location,
+            Colors.red[400]!,
+          ),
+          const SizedBox(height: 16),
+          const Divider(height: 1),
+          const SizedBox(height: 16),
+
+          // Attendee count
+          _buildInfoRow(
+            context,
+            Icons.people,
+            'Attendees',
+            '${event.attendeeCount} going${event.maxAttendees != null ? ' / ${event.maxAttendees} max' : ''}',
+            Colors.green[400]!,
+          ),
+        ],
+      ),
     );
   }
 
-  Widget _buildInfoRow(BuildContext context, IconData icon, String label, String value) {
+  Widget _buildInfoRow(
+    BuildContext context,
+    IconData icon,
+    String label,
+    String value,
+    Color iconColor,
+  ) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(
-          icon,
-          size: 20,
-          color: Theme.of(context).primaryColor,
+        Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: iconColor.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Icon(icon,
+            size: 22, color: iconColor),
         ),
-        const SizedBox(width: 12),
+        const SizedBox(width: 16),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -263,13 +371,17 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                 label,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       color: Colors.grey[600],
-                      fontWeight: FontWeight.w500,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 12,
+                  letterSpacing: 0.5,
                     ),
               ),
-              const SizedBox(height: 2),
+              const SizedBox(height: 4),
               Text(
                 value,
-                style: Theme.of(context).textTheme.bodyMedium,
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w500),
               ),
             ],
           ),
@@ -279,63 +391,107 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
   }
 
   Widget _buildAttendeesSection(BuildContext context, Event event) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              'Going (${event.attendeeCount})',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-            ),
-            if (event.attendees.length > 5)
-              TextButton(
-                onPressed: () {
-                  _showAllAttendees(context, event);
-                },
-                child: const Text('See all'),
-              ),
-          ],
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Colors.purple[50]!, Colors.blue[50]!],
         ),
-        const SizedBox(height: 12),
-        
-        if (event.attendees.isEmpty)
-          Text(
-            'No attendees yet. Be the first to join!',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Colors.grey[600],
-                ),
-          )
-        else
-          SizedBox(
-            height: 60,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              itemCount: event.attendees.take(10).length,
-              itemBuilder: (context, index) {
-                final attendee = event.attendees[index];
-                return Padding(
-                  padding: const EdgeInsets.only(right: 8),
-                  child: AttendeeAvatar(
-                    attendance: attendee,
-                    size: 50,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  Icon(
+                    Icons.people,
+                    color: Theme.of(context).primaryColor,
+                    size: 24,
                   ),
-                );
-              },
-            ),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Going (${event.attendeeCount})',
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+              if (event.attendees.length > 5)
+                TextButton(
+                  onPressed: () {
+                    _showAllAttendees(context, event);
+                  },
+                  style: TextButton.styleFrom(
+                    foregroundColor: Theme.of(context).primaryColor,
+                  ),
+                  child: const Text('See all →'),
+                ),
+            ],
           ),
-      ],
+          const SizedBox(height: 16),
+
+          if (event.attendees.isEmpty)
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.7),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.person_add_outlined,
+                    color: Colors.grey[400],
+                    size: 32,
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      'No attendees yet. Be the first to join!',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: Colors.grey[600],
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            )
+          else
+            SizedBox(
+              height: 70,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: event.attendees.take(10).length,
+                itemBuilder: (context, index) {
+                  final attendee = event.attendees[index];
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 12),
+                    child: AttendeeAvatar(attendance: attendee,
+                      size: 60),
+                  );
+                },
+              ),
+            ),
+        ],
+      ),
     );
   }
 
   Widget _buildActionButtons(BuildContext context, Event event) {
     return Column(
       children: [
+        // Primary action button
         SizedBox(
           width: double.infinity,
+          height: 56,
           child: ElevatedButton(
             onPressed: event.isAttending
                 ? () => _leaveEvent(context, event)
@@ -347,34 +503,81 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
               foregroundColor: event.isAttending
                   ? Colors.grey[700]
                   : Colors.white,
-              padding: const EdgeInsets.symmetric(vertical: 16),
-            ),
-            child: Text(
-              event.isAttending ? 'Leave Event' : 'Join Event',
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
               ),
+              elevation: event.isAttending ? 0 : 2,
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  event.isAttending ? Icons.check_circle : Icons.add_circle,
+                  size: 22,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  event.isAttending ? 'Leave Event' : 'Join Event',
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              ],
             ),
           ),
         ),
         const SizedBox(height: 12),
         
+        // Secondary action buttons
         Row(
           children: [
             Expanded(
               child: OutlinedButton.icon(
                 onPressed: () => _shareEvent(context, event),
-                icon: const Icon(Icons.share),
-                label: const Text('Share'),
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  side: BorderSide(
+                    color: Theme.of(context).primaryColor.withOpacity(0.3),
+                  ),
+                ),
+                icon: Icon(
+                  Icons.share,
+                  size: 18,
+                  color: Theme.of(context).primaryColor,
+                ),
+                label: Text(
+                  'Share',
+                  style: TextStyle(
+                    color: Theme.of(context).primaryColor,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
               ),
             ),
             const SizedBox(width: 12),
             Expanded(
               child: OutlinedButton.icon(
                 onPressed: () => _reportEvent(context, event),
-                icon: const Icon(Icons.flag),
-                label: const Text('Report'),
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  side: BorderSide(color: Colors.red.withOpacity(0.3)),
+                ),
+                icon: const Icon(Icons.flag, size: 18, color: Colors.red),
+                label: const Text(
+                  'Report',
+                  style: TextStyle(
+                    color: Colors.red,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
               ),
             ),
           ],

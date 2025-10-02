@@ -348,7 +348,36 @@ class AppRouter {
         path: AppRoutes.profileDetails,
         name: 'profileDetails',
         builder: (context, state) {
-          final profile = state.extra as UserProfile?;
+            // Extract profile and context from extra data
+            final extraData = state.extra;
+            final UserProfile? profile;
+            final ProfileContext profileContext;
+            final VoidCallback? onLike;
+            final VoidCallback? onDislike;
+            final VoidCallback? onSuperLike;
+
+            if (extraData is Map<String, dynamic>) {
+              profile = extraData['profile'] as UserProfile?;
+              profileContext =
+                  extraData['context'] as ProfileContext? ??
+                  ProfileContext.general;
+              onLike = extraData['onLike'] as VoidCallback?;
+              onDislike = extraData['onDislike'] as VoidCallback?;
+              onSuperLike = extraData['onSuperLike'] as VoidCallback?;
+            } else if (extraData is UserProfile) {
+              // Backward compatibility
+              profile = extraData;
+              profileContext = ProfileContext.general;
+              onLike = null;
+              onDislike = null;
+              onSuperLike = null;
+            } else {
+              profile = null;
+              profileContext = ProfileContext.general;
+              onLike = null;
+              onDislike = null;
+              onSuperLike = null;
+            }
 
           if (profile == null) {
             // Navigate back if no profile provided
@@ -358,7 +387,14 @@ class AppRouter {
             );
           }
 
-          return ProfileDetailsScreen(profile: profile, isOwnProfile: false);
+            return ProfileDetailsScreen(
+              profile: profile,
+              isOwnProfile: false,
+              context: profileContext,
+              onLike: onLike,
+              onDislike: onDislike,
+              onSuperLike: onSuperLike,
+            );
         },
       ),
       GoRoute(

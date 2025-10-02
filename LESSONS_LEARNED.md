@@ -5,7 +5,424 @@ This document captures key learnings from building the **Flutter mobile dating a
 
 ---
 
-## 🎯 **LATEST UPDATE: Group Chat with Live Sessions Flutter Implementation (September 2025)**
+#### **🔐 API Privacy & Performance Optimizations**
+
+**Date**: October 2, 2025  
+**Context**: Event listing was exposing full attendee details (names, usernames) and not including event images
+
+**Problem**: Backend API returned different data structures for listing vs details:
+- Listing endpoint: Full attendee array (privacy issue), no image field
+- Details endpoint: Full attendee array + image field
+
+**Privacy Concerns**:
+- Exposing attendee names/usernames in listing = privacy leak
+- Users browsing events don't need to see who's attending
+- Only show attendee details when user explicitly opens event
+
+**Performance Issues**:
+- Loading full attendee objects for 20+ events = unnecessary database joins
+- Mobile app doesn't render attendee names in listing cards anyway
+- Network payload unnecessarily large
+
+**Solution - Optimized API Responses**:
+
+```typescript
+// Backend: events.service.ts - Listing endpoint
+async getEvents(userId: string, ...filters): Promise<any[]> {
+  const events = await this.prisma.event.findMany({
+    include: {
+      eventCategory: true,
+      _count: { select: { attendees: true } }, // Only count
+      attendees: {
+        where: { userId }, // Only check if CURRENT user is attending
+        select: { userId: true }, // Minimal data
+      },
+    },
+  });
+
+  return events.map((event) => ({
+    id: event.id,
+    title: event.title,
+    description: event.description,
+    startTime: event.date.toISOString(),
+    location: event.location,
+    image: event.image, // ✅ Include image for cards
+    currentAttendees: event._count.attendees, // ✅ Only count
+    isUserAttending: event.attendees.length > 0, // ✅ Boolean flag
+    // ❌ NO attendees array - privacy!
+  }));
+}
+
+// Backend: events.service.ts - Details endpoint
+async getEventById(eventId: string): Promise<any> {
+  const event = await this.prisma.event.findUnique({
+    include: {
+      eventCategory: true,
+      attendees: {
+        include: { user: { select: { id, firstName, lastName, username } } }
+      },
+    },
+  });
+
+  return {
+    ...event,
+    attendees: event.attendees.map((a) => a.user), // ✅ Full details OK here
+  };
+}
+```
+
+**Mobile: Handle Both Response Formats**:
+
+```dart
+// domain/entities/event.dart
+factory Event.fromJson(Map<String, dynamic> json, {String? currentUserId}) {
+  final eventData = json['data'] ?? json;
+  bool userIsAttending = false;
+  List<EventAttendance> attendeesList = [];
+
+  // Check if API provided explicit isUserAttending flag (listing)
+  if (eventData['isUserAttending'] is bool) {
+    userIsAttending = eventData['isUserAttending'] as bool;
+  }
+
+  // If attendees array present (details view), parse it
+  if (eventData['attendees'] is List) {
+    attendeesList = (eventData['attendees'] as List).map(...).toList();
+    
+    // Also check if current user in list (details view)
+    if (currentUserId != null) {
+      userIsAttending = attendeesList.any((a) => a.userId == currentUserId);
+    }
+  }
+
+  return Event(
+    image: eventData['image'] as String?, // ✅ Display actual event images
+    isAttending: userIsAttending, // ✅ Works for both endpoints
+    attendeeCount: eventData['currentAttendees'] as int?,
+    attendees: attendeesList, // Empty for listing, full for details
+  );
+}
+```
+
+**Key Benefits**:
+1. **Privacy**: User names not exposed in public listing
+2. **Performance**: 50-80% smaller payload (no attendee objects in listing)
+3. **UX**: Event images displayed in cards (not just category icons)
+4. **Accuracy**: `isUserAttending` flag works in both listing and details
+
+**API Response Comparison**:
+
+```json
+// ❌ BEFORE: Listing response (privacy leak, no image)
+{
+  "id": "event-123",
+  "title": "Book Club",
+  "attendees": [ // Privacy issue!
+    {"id": "user-1", "firstName": "John", "username": "john_doe"},
+    {"id": "user-2", "firstName": "Jane", "username": "jane_smith"}
+  ],
+  // ❌ No image field
+}
+
+// ✅ AFTER: Listing response (privacy-safe, includes image)
+{
+  "id": "event-123",
+  "title": "Book Club",
+  "image": "https://api.example.com/uploads/events/book-club.jpg", // ✅
+  "currentAttendees": 7, // ✅ Just count
+  "isUserAttending": true, // ✅ Boolean for current user only
+  // ✅ No attendee details
+}
+
+// ✅ Details response (full info when needed)
+{
+  "id": "event-123",
+  "title": "Book Club",
+  "image": "https://api.example.com/uploads/events/book-club.jpg",
+  "currentAttendees": 7,
+  "attendees": [ // ✅ OK to show here
+    {"id": "user-1", "firstName": "John", "username": "john_doe"},
+    {"id": "user-2", "firstName": "Jane", "username": "jane_smith"}
+  ]
+}
+```
+
+**Testing Checklist**:
+- [ ] Event cards display actual images (not category icons)
+- [ ] Joined events show green border + "JOINED" badge
+- [ ] Event listing doesn't expose other users' names
+- [ ] Event details page shows full attendee list
+- [ ] `isUserAttending` accurate in both views
+- [ ] Network payload reduced (check DevTools)
+
+---
+
+## 🎯 **PREVIOUS UPDATE: Event System API Mapping & State Preservation (January 2025)**
+
+### ✅ **Handling Wrapped API Responses in Entity.fromJson()**
+
+**Date**: January 31, 2025  
+**Context**: Backend returns events in wrapped format `{success: true, data: {event}}`, but entity fromJson was accessing fields directly
+
+#### **🐛 Problem: Entity Parsing Broken by API Wrapper**
+
+**Issue**: Backend standardized all responses with success/statusCode/message/data wrapper, but Event.fromJson() was still expecting flat structure:
+
+```dart
+// ❌ BEFORE: Assumes flat structure
+factory Event.fromJson(Map<String, dynamic> json) {
+  return Event(
+    id: json['id'],                    // null - no 'id' at top level
+    title: json['title'],              // null - no 'title' at top level
+    date: DateTime.parse(json['startTime']),  // crash - no 'startTime'
+    isAttending: false,                // always false - can't detect
+  );
+}
+```
+
+**Why This Failed**:
+- API returns: `{success: true, data: {id: "...", title: "...", startTime: "..."}}`
+- Code expects: `{id: "...", title: "...", startTime: "..."}`
+- Result: All fields null, date parsing crashes, isAttending always false
+
+#### **✅ Solution: Unwrap Data with Null Safety**
+
+```dart
+// ✅ AFTER: Handles both wrapped and flat structures
+factory Event.fromJson(Map<String, dynamic> json, {String? currentUserId}) {
+  // Unwrap data wrapper if present, fall back to original json
+  final eventData = json['data'] ?? json;
+  
+  // Now access fields from unwrapped data
+  return Event(
+    id: eventData['id'] as String,
+    title: eventData['title'] as String,
+    description: eventData['description'] as String?,
+    location: eventData['location'] as String,
+    date: DateTime.parse(eventData['startTime'] as String),  // From startTime!
+    attendeeCount: eventData['currentAttendees'] as int? ?? 0,  // Not attendees.length!
+    // ... rest of fields
+  );
+}
+```
+
+**Key Takeaways**:
+1. **Always unwrap API data first**: `final data = json['data'] ?? json`
+2. **Map backend field names correctly**: `startTime` → `date`, `currentAttendees` → `attendeeCount`
+3. **Make entities resilient**: Support both wrapped and flat structures for backward compatibility
+4. **Document API contracts**: When backend changes response format, update all entity fromJson methods
+
+#### **🔄 State Preservation Pattern for Navigation**
+
+**Problem**: Navigating to event details cleared the events list, so back navigation showed empty screen
+
+**Root Cause**:
+```dart
+// ❌ BEFORE: LoadEventDetails clears state
+Future<void> _onLoadEventDetails(...) async {
+  emit(const EventLoading());  // ❌ Clears EventsLoaded state!
+  
+  final event = await _eventService.getEventById(eventId);
+  emit(EventDetailsLoaded(event: event));
+}
+```
+
+**Result**: When user tapped event card:
+1. EventBloc emits `EventLoading` (clears `EventsLoaded` with events list)
+2. Navigation pushes details screen
+3. Details screen shows loading state
+4. EventBloc emits `EventDetailsLoaded`
+5. User taps back
+6. Events list screen sees `EventDetailsLoaded` (not `EventsLoaded`)
+7. Events list shows empty state 😞
+
+**Solution**: Don't emit loading states that clear previous data during navigation:
+
+```dart
+// ✅ AFTER: Preserve EventsLoaded state
+Future<void> _onLoadEventDetails(...) async {
+  // Don't emit EventLoading - preserve current events list state
+  
+  try {
+    final event = await _eventService.getEventById(
+      event.eventId,
+      currentUserId: _currentUserId,
+    );
+    
+    emit(EventDetailsLoaded(
+      event: event,
+      attendees: event.attendees,
+    ));
+  } catch (e) {
+    emit(EventError(message: e.toString()));
+  }
+}
+```
+
+**Key Principles**:
+1. **Preserve list state during navigation**: Don't clear `EventsLoaded` when loading details
+2. **Loading states for initial loads only**: Use `EventLoading` for first data fetch, not navigation
+3. **Details as overlay state**: `EventDetailsLoaded` can coexist with `EventsLoaded`
+4. **UI handles both states**: BlocBuilder shows list from `EventsLoaded`, details from `EventDetailsLoaded`
+
+#### **👤 User Context in Entity Parsing**
+
+**Problem**: Event cards didn't show if current user had joined - `isAttending` was always false
+
+**Why**: Entity fromJson had no way to know current user ID, couldn't check if user in attendees array
+
+**Solution**: Pass optional currentUserId parameter through entire data flow
+
+**Data Flow Pattern**:
+```dart
+// 1. Get userId from AuthBloc in app_providers.dart
+BlocProvider<EventBloc>(
+  create: (context) {
+    final authBloc = context.read<AuthBloc>();
+    String? userId;
+    
+    if (authBloc.state is AuthAuthenticated) {
+      userId = (authBloc.state as AuthAuthenticated).user.id;
+    }
+    
+    return EventBloc(currentUserId: userId);  // Pass to bloc
+  },
+)
+
+// 2. Store in EventBloc
+class EventBloc extends Bloc<EventEvent, EventState> {
+  String? _currentUserId;
+  
+  EventBloc({String? currentUserId}) : _currentUserId = currentUserId;
+}
+
+// 3. Pass to service methods
+final events = await _eventService.getEvents(
+  currentUserId: _currentUserId,
+);
+
+// 4. Pass to entity fromJson
+return eventsList
+  .map((json) => Event.fromJson(json, currentUserId: currentUserId))
+  .toList();
+
+// 5. Detect attendance in fromJson
+factory Event.fromJson(Map<String, dynamic> json, {String? currentUserId}) {
+  bool userIsAttending = false;
+  
+  if (eventData['attendees'] is List) {
+    for (var attendee in eventData['attendees']) {
+      if (currentUserId != null && attendee['id'] == currentUserId) {
+        userIsAttending = true;
+        break;
+      }
+    }
+  }
+  
+  return Event(
+    // ...
+    isAttending: userIsAttending,  // ✅ Accurate based on actual data
+  );
+}
+```
+
+**Key Benefits**:
+1. **Single source of truth**: AuthBloc owns user identity
+2. **Explicit parameter passing**: Clear data flow, easy to trace
+3. **Entity awareness**: Entities know user context without global state
+4. **Testable**: Can test with mock currentUserId in tests
+
+#### **🎨 Visual Indicators for User Context**
+
+**Pattern**: Use entity state to drive UI styling
+
+```dart
+// In EventCard widget
+@override
+Widget build(BuildContext context) {
+  // Hide past events at UI level
+  if (event.date.isBefore(DateTime.now())) {
+    return const SizedBox.shrink();
+  }
+  
+  return Card(
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(16),
+      // ✅ Add colored border for joined events
+      side: event.isAttending
+          ? BorderSide(color: PulseColors.success, width: 2)
+          : BorderSide.none,
+    ),
+    // ...
+  );
+}
+
+// Badge on event image
+if (event.isAttending)
+  Positioned(
+    top: 12,
+    right: 12,
+    child: Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: PulseColors.success,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.check_circle, size: 14, color: Colors.white),
+          SizedBox(width: 4),
+          Text('Attending', style: TextStyle(color: Colors.white)),
+        ],
+      ),
+    ),
+  ),
+
+// Action button shows different state
+Widget _buildActionButton() {
+  if (event.isAttending) {
+    return TextButton.icon(
+      onPressed: onLeave,
+      icon: Icon(Icons.check_circle, size: 16, color: PulseColors.success),
+      label: Text('Going', style: TextStyle(color: PulseColors.success)),
+      style: TextButton.styleFrom(
+        backgroundColor: PulseColors.success.withValues(alpha: 0.1),
+      ),
+    );
+  }
+  
+  return ElevatedButton.icon(
+    onPressed: onAttend,
+    icon: Icon(Icons.add, size: 16),
+    label: Text('Join'),
+  );
+}
+```
+
+**Design Principles**:
+1. **Multi-layered indicators**: Border + badge + button state = impossible to miss
+2. **Semantic colors**: Use success green for "joined", primary purple for "join now"
+3. **Filter at UI level**: Hide past events in widget build, not in bloc filtering
+4. **Consistent patterns**: Same indicator style across all event cards
+
+#### **🎓 Complete Event System Fix Checklist**
+
+When fixing entity/API mapping issues:
+
+- [ ] **Unwrap API response**: `eventData = json['data'] ?? json`
+- [ ] **Map all field names**: Check backend schema vs entity properties
+- [ ] **Add user context parameter**: Pass `currentUserId` through data flow
+- [ ] **Detect user-specific state**: Check if user in attendees/participants/etc
+- [ ] **Preserve navigation state**: Don't emit loading states during navigation
+- [ ] **Add visual indicators**: Borders, badges, button states for user context
+- [ ] **Filter at appropriate layer**: Hide past items at UI level
+- [ ] **Initialize with auth context**: Get userId from AuthBloc in providers
+- [ ] **Test both states**: Verify UI for joined vs not joined
+- [ ] **Document API contract**: Update entity comments with field mappings
+
+---
+
+## 🎯 **PREVIOUS UPDATE: Group Chat with Live Sessions Flutter Implementation (September 2025)**
 
 ### ✅ **BLoC Pattern for Complex Real-Time Features**
 

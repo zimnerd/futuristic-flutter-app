@@ -24,6 +24,7 @@ class EventService {
     String? category,
     int page = 1,
     int limit = 20,
+    String? currentUserId,
   }) async {
     try {
       final response = await _apiClient.getEvents(
@@ -60,7 +61,9 @@ class EventService {
           );
         }
 
-        return eventsList.map((json) => Event.fromJson(json)).toList();
+        return eventsList
+            .map((json) => Event.fromJson(json, currentUserId: currentUserId))
+            .toList();
       } else {
         final error = response.data;
         throw EventServiceException(
@@ -147,12 +150,12 @@ class EventService {
   }
 
   /// Get event by ID
-  Future<Event> getEventById(String eventId) async {
+  Future<Event> getEventById(String eventId, {String? currentUserId}) async {
     try {
       final response = await _apiClient.getEventById(eventId);
 
       if (response.statusCode == 200) {
-        return Event.fromJson(response.data);
+        return Event.fromJson(response.data, currentUserId: currentUserId);
       } else {
         final error = response.data;
         throw EventServiceException(

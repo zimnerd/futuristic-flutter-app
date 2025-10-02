@@ -11,6 +11,7 @@ import '../../widgets/common/loading_indicator.dart';
 import '../../widgets/common/error_message.dart';
 import '../../widgets/match/match_card.dart';
 import '../../navigation/app_router.dart';
+import '../profile/profile_details_screen.dart';
 
 /// Enhanced match view modes
 enum MatchViewMode { list, grid, slider }
@@ -976,7 +977,10 @@ class _MatchesScreenState extends State<MatchesScreen>
     if (mounted && match.userProfile != null) {
       context.push(
         AppRoutes.profileDetails.replaceFirst(':profileId', match.userProfile!.id),
-        extra: match.userProfile,
+        extra: {
+          'profile': match.userProfile!,
+          'context': ProfileContext.matches,
+        },
       );
     }
   }

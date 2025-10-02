@@ -12,6 +12,7 @@ import 'event_state.dart';
 class EventBloc extends Bloc<EventEvent, EventState> {
   final EventService _eventService;
   final LocationService? _locationService;
+  String? _currentUserId; // Store current user ID
 
   List<Event> _allEvents = [];
   String? _currentCategory;
@@ -27,8 +28,10 @@ class EventBloc extends Bloc<EventEvent, EventState> {
   EventBloc({
     EventService? eventService,
     LocationService? locationService,
+    String? currentUserId,
   })  : _eventService = eventService ?? EventService.instance,
       _locationService = locationService,
+       _currentUserId = currentUserId,
         super(const EventInitial()) {
     on<LoadEvents>(_onLoadEvents);
     on<LoadNearbyEvents>(_onLoadNearbyEvents);
@@ -51,6 +54,11 @@ class EventBloc extends Bloc<EventEvent, EventState> {
     on<ResetEventState>(_onResetEventState);
   }
 
+  /// Set the current user ID for proper isAttending detection
+  void setCurrentUserId(String userId) {
+    _currentUserId = userId;
+  }
+
   Future<void> _onLoadEvents(LoadEvents event, Emitter<EventState> emit) async {
     try {
       emit(const EventLoading());
@@ -60,6 +68,7 @@ class EventBloc extends Bloc<EventEvent, EventState> {
         longitude: event.longitude,
         radiusKm: event.radiusKm,
         category: event.category,
+        currentUserId: _currentUserId,
       );
 
       _allEvents = events;
@@ -176,10 +185,14 @@ class EventBloc extends Bloc<EventEvent, EventState> {
   Future<void> _onLoadEventDetails(
       LoadEventDetails event, Emitter<EventState> emit) async {
     try {
-      emit(const EventLoading());
+      // Don't emit EventLoading to preserve current events list state
+      
+      final eventDetails = await _eventService.getEventById(
+        event.eventId,
+        currentUserId: _currentUserId,
+      );
 
-      final eventDetails = await _eventService.getEventById(event.eventId);
-
+      // Emit EventDetailsLoaded while preserving previous list state
       emit(EventDetailsLoaded(
         event: eventDetails,
         attendees: eventDetails.attendees,
