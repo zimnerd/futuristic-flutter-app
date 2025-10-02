@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
+import 'package:line_icons/line_icons.dart';
 import '../../../core/theme/pulse_design_system.dart';
 
 /// Modern Main Navigation Wrapper with PulseLink Design
@@ -30,26 +31,26 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper>
 
   final List<NavigationItem> _navigationItems = [
     NavigationItem(
-      icon: Icons.explore_outlined,
-      activeIcon: Icons.explore,
+      icon: LineIcons.compass,
+      activeIcon: LineIcons.compass,
       label: 'Discover',
       route: '/home',
     ),
     NavigationItem(
-      icon: Icons.local_fire_department_outlined,
-      activeIcon: Icons.local_fire_department,
+      icon: LineIcons.fire,
+      activeIcon: LineIcons.fire,
       label: 'Sparks',
       route: '/matches',
     ),
     NavigationItem(
-      icon: Icons.calendar_today_outlined,
-      activeIcon: Icons.calendar_today,
+      icon: LineIcons.calendar,
+      activeIcon: LineIcons.calendar,
       label: 'Events',
       route: '/events',
     ),
     NavigationItem(
-      icon: Icons.chat_bubble_outline,
-      activeIcon: Icons.chat_bubble,
+      icon: LineIcons.comment,
+      activeIcon: LineIcons.comment,
       label: 'DMs',
       route: '/messages',
     ),
@@ -224,7 +225,7 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper>
               ),
             ],
           ),
-          child: Icon(Icons.menu_rounded, color: PulseColors.white, size: 28),
+          child: Icon(LineIcons.bars, color: PulseColors.white, size: 28),
         ),
       ),
     );
@@ -294,7 +295,7 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper>
                           ),
                         ),
                         child: Icon(
-                          Icons.apps_rounded,
+                          LineIcons.thLarge,
                           color: PulseColors.white,
                           size: 20,
                         ),
@@ -318,7 +319,7 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper>
                         child: IconButton(
                           onPressed: () => Navigator.of(context).pop(),
                           icon: Icon(
-                            Icons.close_rounded,
+                            LineIcons.times,
                             color: PulseColors.white,
                             size: 20,
                           ),
@@ -337,7 +338,7 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper>
                   child: Column(
                     children: [
                       _buildMenuTile(
-                        icon: Icons.person_outline_rounded,
+                        icon: LineIcons.user,
                         title: 'Profile',
                       subtitle: 'Edit your profile',
                       onTap: () {
@@ -346,7 +347,7 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper>
                       },
                     ),
                     _buildMenuTile(
-                      icon: Icons.settings_outlined,
+                        icon: LineIcons.cog,
                       title: 'Settings',
                       subtitle: 'App preferences',
                       onTap: () {
@@ -355,7 +356,7 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper>
                       },
                     ),
                     _buildMenuTile(
-                      icon: Icons.filter_list_rounded,
+                        icon: LineIcons.filter,
                       title: 'Filters',
                       subtitle: 'Discovery preferences',
                       onTap: () {
@@ -364,7 +365,7 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper>
                       },
                     ),
                     _buildMenuTile(
-                        icon: Icons.analytics_outlined,
+                        icon: LineIcons.pieChart,
                         title: 'Statistics',
                         subtitle: 'Your dating insights',
                         onTap: () {
@@ -373,7 +374,7 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper>
                         },
                       ),
                       _buildMenuTile(
-                      icon: Icons.psychology_outlined,
+                        icon: LineIcons.robot,
                       title: 'AI Companion',
                       subtitle: 'Your virtual dating coach',
                       onTap: () {
@@ -382,7 +383,7 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper>
                       },
                     ),
                     _buildMenuTile(
-                      icon: Icons.card_membership_outlined,
+                        icon: LineIcons.crown,
                       title: 'Premium',
                       subtitle: 'Unlock exclusive features',
                       onTap: () {
@@ -391,7 +392,7 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper>
                       },
                     ),
                     _buildMenuTile(
-                      icon: Icons.safety_check_outlined,
+                        icon: LineIcons.userShield,
                       title: 'Safety Center',
                       subtitle: 'Privacy and safety',
                       onTap: () {

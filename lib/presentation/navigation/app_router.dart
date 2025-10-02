@@ -540,14 +540,15 @@ class AppRouter {
           },
         ),
         GoRoute(
-          path: AppRoutes.videoCall,
-          name: 'videoCall',
+          path: AppRoutes.groupVideoCall,
+          name: 'groupVideoCall',
           builder: (context, state) {
-            final data = state.extra as Map<String, dynamic>;
+            final liveSessionId = state.pathParameters['liveSessionId'] ?? '';
+            final data = state.extra as Map<String, dynamic>?;
             return group_chat_video.VideoCallScreen(
-              liveSessionId: data['liveSessionId'] as String,
-              rtcToken: data['rtcToken'] as String,
-              session: data['session'],
+              liveSessionId: liveSessionId,
+              rtcToken: data?['rtcToken'] as String? ?? '',
+              session: data?['session'],
             );
           },
         ),
@@ -722,6 +723,7 @@ class AppRoutes {
   static const String profileDetails = '/profile-details/:profileId';
   static const String chat = '/chat/:conversationId';
   static const String videoCall = '/video-call/:callId';
+  static const String groupVideoCall = '/group-video-call/:liveSessionId';
   static const String audioCall = '/audio-call/:callId';
   static const String enhancedProfileEdit = '/enhanced-profile-edit';
   

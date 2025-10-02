@@ -60,13 +60,12 @@ class PulseColors {
 
 /// Typography configuration for Pulse Dating App
 class PulseTextStyles {
-  // Font families
-  static const String headingFont = 'SpaceGrotesk';
-  static const String bodyFont = 'Inter';
+  // Font families - Using Satoshi as the primary font
+  static const String primaryFont = 'Satoshi';
 
   // Display text styles (largest)
   static const TextStyle displayLarge = TextStyle(
-    fontFamily: headingFont,
+    fontFamily: primaryFont,
     fontSize: 57,
     fontWeight: FontWeight.w700,
     height: 1.12,
@@ -74,14 +73,14 @@ class PulseTextStyles {
   );
 
   static const TextStyle displayMedium = TextStyle(
-    fontFamily: headingFont,
+    fontFamily: primaryFont,
     fontSize: 45,
     fontWeight: FontWeight.w700,
     height: 1.16,
   );
 
   static const TextStyle displaySmall = TextStyle(
-    fontFamily: headingFont,
+    fontFamily: primaryFont,
     fontSize: 36,
     fontWeight: FontWeight.w600,
     height: 1.22,
@@ -89,21 +88,21 @@ class PulseTextStyles {
 
   // Headline text styles
   static const TextStyle headlineLarge = TextStyle(
-    fontFamily: headingFont,
+    fontFamily: primaryFont,
     fontSize: 32,
     fontWeight: FontWeight.w600,
     height: 1.25,
   );
 
   static const TextStyle headlineMedium = TextStyle(
-    fontFamily: headingFont,
+    fontFamily: primaryFont,
     fontSize: 28,
     fontWeight: FontWeight.w600,
     height: 1.29,
   );
 
   static const TextStyle headlineSmall = TextStyle(
-    fontFamily: headingFont,
+    fontFamily: primaryFont,
     fontSize: 24,
     fontWeight: FontWeight.w600,
     height: 1.33,
@@ -111,14 +110,14 @@ class PulseTextStyles {
 
   // Title text styles
   static const TextStyle titleLarge = TextStyle(
-    fontFamily: bodyFont,
+    fontFamily: primaryFont,
     fontSize: 22,
     fontWeight: FontWeight.w600,
     height: 1.27,
   );
 
   static const TextStyle titleMedium = TextStyle(
-    fontFamily: bodyFont,
+    fontFamily: primaryFont,
     fontSize: 16,
     fontWeight: FontWeight.w600,
     height: 1.50,
@@ -126,7 +125,7 @@ class PulseTextStyles {
   );
 
   static const TextStyle titleSmall = TextStyle(
-    fontFamily: bodyFont,
+    fontFamily: primaryFont,
     fontSize: 14,
     fontWeight: FontWeight.w600,
     height: 1.43,
@@ -135,7 +134,7 @@ class PulseTextStyles {
 
   // Body text styles
   static const TextStyle bodyLarge = TextStyle(
-    fontFamily: bodyFont,
+    fontFamily: primaryFont,
     fontSize: 16,
     fontWeight: FontWeight.w400,
     height: 1.50,
@@ -143,7 +142,7 @@ class PulseTextStyles {
   );
 
   static const TextStyle bodyMedium = TextStyle(
-    fontFamily: bodyFont,
+    fontFamily: primaryFont,
     fontSize: 14,
     fontWeight: FontWeight.w400,
     height: 1.43,
@@ -151,7 +150,7 @@ class PulseTextStyles {
   );
 
   static const TextStyle bodySmall = TextStyle(
-    fontFamily: bodyFont,
+    fontFamily: primaryFont,
     fontSize: 12,
     fontWeight: FontWeight.w400,
     height: 1.33,
@@ -160,7 +159,7 @@ class PulseTextStyles {
 
   // Label text styles
   static const TextStyle labelLarge = TextStyle(
-    fontFamily: bodyFont,
+    fontFamily: primaryFont,
     fontSize: 14,
     fontWeight: FontWeight.w500,
     height: 1.43,
@@ -168,7 +167,7 @@ class PulseTextStyles {
   );
 
   static const TextStyle labelMedium = TextStyle(
-    fontFamily: bodyFont,
+    fontFamily: primaryFont,
     fontSize: 12,
     fontWeight: FontWeight.w500,
     height: 1.33,
@@ -176,7 +175,7 @@ class PulseTextStyles {
   );
 
   static const TextStyle labelSmall = TextStyle(
-    fontFamily: bodyFont,
+    fontFamily: primaryFont,
     fontSize: 11,
     fontWeight: FontWeight.w500,
     height: 1.45,
