@@ -44,6 +44,9 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
         _controllers['company'] = TextEditingController(text: _formData['company'] ?? '');
         _controllers['school'] = TextEditingController(text: _formData['school'] ?? '');
         break;
+      case 'photos':
+        // Photos are handled separately with PhotoPickerWidget
+        break;
       case 'interests':
         // Interests are handled separately as a list
         break;
@@ -167,6 +170,8 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
     switch (widget.sectionType) {
       case 'basic_info':
         return _buildBasicInfoSection();
+      case 'photos':
+        return _buildPhotosSection();
       case 'work_education':
         return _buildWorkEducationSection();
       case 'interests':
@@ -232,6 +237,146 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
             return null;
           },
         ),
+      ],
+    );
+  }
+
+  Widget _buildPhotosSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Upload Your Photos',
+          style: PulseTextStyles.titleMedium.copyWith(
+            color: PulseColors.onSurface,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: PulseSpacing.sm),
+        Text(
+          'Add at least 2 photos. The first photo will be your main profile picture.',
+          style: PulseTextStyles.bodyMedium.copyWith(
+            color: PulseColors.onSurfaceVariant,
+          ),
+        ),
+        const SizedBox(height: PulseSpacing.lg),
+        Container(
+          height: 400,
+          padding: const EdgeInsets.all(PulseSpacing.md),
+          decoration: BoxDecoration(
+            color: PulseColors.surfaceVariant.withValues(alpha: 0.3),
+            borderRadius: BorderRadius.circular(PulseRadii.lg),
+            border: Border.all(
+              color: PulseColors.outline.withValues(alpha: 0.5),
+            ),
+          ),
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.photo_library_outlined,
+                  size: 64,
+                  color: PulseColors.onSurfaceVariant,
+                ),
+                const SizedBox(height: PulseSpacing.md),
+                Text(
+                  'Photo upload coming soon!',
+                  style: PulseTextStyles.titleMedium.copyWith(
+                    color: PulseColors.onSurfaceVariant,
+                  ),
+                ),
+                const SizedBox(height: PulseSpacing.sm),
+                Text(
+                  'You can currently view your photos, but upload functionality\\nwill be available in the next update.',
+                  textAlign: TextAlign.center,
+                  style: PulseTextStyles.bodyMedium.copyWith(
+                    color: PulseColors.onSurfaceVariant.withValues(alpha: 0.7),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: PulseSpacing.lg),
+        // Show current photos if available
+        if (_formData['photos'] != null &&
+            (_formData['photos'] as List).isNotEmpty) ...[
+          Text(
+            'Current Photos',
+            style: PulseTextStyles.titleMedium.copyWith(
+              color: PulseColors.onSurface,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: PulseSpacing.md),
+          GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 3,
+              crossAxisSpacing: PulseSpacing.sm,
+              mainAxisSpacing: PulseSpacing.sm,
+              childAspectRatio: 1,
+            ),
+            itemCount: (_formData['photos'] as List).length,
+            itemBuilder: (context, index) {
+              final photoUrl = (_formData['photos'] as List)[index];
+              return Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(PulseRadii.md),
+                  border: Border.all(
+                    color: index == 0
+                        ? PulseColors.primary
+                        : PulseColors.outline.withValues(alpha: 0.3),
+                    width: index == 0 ? 2 : 1,
+                  ),
+                ),
+                child: Stack(
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(PulseRadii.md - 1),
+                      child: Image.network(
+                        photoUrl,
+                        fit: BoxFit.cover,
+                        width: double.infinity,
+                        height: double.infinity,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Container(
+                            color: PulseColors.surfaceVariant,
+                            child: const Icon(Icons.broken_image),
+                          );
+                        },
+                      ),
+                    ),
+                    if (index == 0)
+                      Positioned(
+                        top: 4,
+                        left: 4,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: PulseColors.primary,
+                            borderRadius: BorderRadius.circular(PulseRadii.sm),
+                          ),
+                          child: Text(
+                            'Main',
+                            style: PulseTextStyles.labelSmall.copyWith(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              );
+            },
+          ),
+        ],
       ],
     );
   }
@@ -334,18 +479,50 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
   }
 
   Widget _buildPreferencesSection() {
+    // Convert API gender values to display values
+    String _convertGenderToDisplay(String? gender) {
+      switch (gender?.toUpperCase()) {
+        case 'MALE':
+          return 'Man';
+        case 'FEMALE':
+          return 'Woman';
+        case 'NON_BINARY':
+        case 'NON-BINARY':
+          return 'Non-binary';
+        default:
+          return 'Woman';
+      }
+    }
+
+    String _convertGenderToAPI(String display) {
+      switch (display) {
+        case 'Man':
+          return 'MALE';
+        case 'Woman':
+          return 'FEMALE';
+        case 'Non-binary':
+          return 'NON_BINARY';
+        default:
+          return 'OTHER';
+      }
+    }
+    
     return StatefulBuilder(
       builder: (context, setState) {
+        final currentGender = _convertGenderToDisplay(
+          _formData['gender']?.toString(),
+        );
+        
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildPreferenceDropdown(
               title: 'I am',
-              value: _formData['gender']?.toString() ?? 'Woman',
+              value: currentGender,
               options: ['Woman', 'Man', 'Non-binary', 'Other'],
               onChanged: (value) {
                 setState(() {
-                  _formData['gender'] = value;
+                  _formData['gender'] = _convertGenderToAPI(value!);
                 });
               },
             ),
@@ -505,6 +682,8 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
     switch (widget.sectionType) {
       case 'basic_info':
         return 'Basic Information';
+      case 'photos':
+        return 'Profile Photos';
       case 'work_education':
         return 'Work & Education';
       case 'interests':
@@ -520,6 +699,8 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
     switch (widget.sectionType) {
       case 'basic_info':
         return 'Update your name, age, and bio to help people get to know you better.';
+      case 'photos':
+        return 'Add up to 6 photos. Your first photo will be your main profile picture.';
       case 'work_education':
         return 'Share your professional and educational background.';
       case 'interests':
@@ -535,6 +716,8 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
     switch (widget.sectionType) {
       case 'basic_info':
         return Icons.person;
+      case 'photos':
+        return Icons.photo_library;
       case 'work_education':
         return Icons.work;
       case 'interests':

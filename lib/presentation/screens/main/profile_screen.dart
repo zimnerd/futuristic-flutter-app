@@ -14,25 +14,32 @@ class ProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
     return Scaffold(
+      backgroundColor: isDark
+          ? const Color(0xFF121212)
+          : const Color(0xFFF5F5F5),
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(
             children: [
               // Header
-              _buildHeader(context),
+              _buildHeader(context, isDark),
 
               // Profile info
-              _buildProfileInfo(),
+              _buildProfileInfo(isDark),
 
               // Settings sections
-              _buildSettingsSection(),
+              _buildSettingsSection(isDark),
 
               // Support section
-              _buildSupportSection(),
+              _buildSupportSection(isDark),
 
               // Logout
-              _buildLogoutSection(context),
+              _buildLogoutSection(context, isDark),
+
+              const SizedBox(height: PulseSpacing.xl),
             ],
           ),
         ),
@@ -40,14 +47,19 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildHeader(BuildContext context) {
+  Widget _buildHeader(BuildContext context, bool isDark) {
     return Container(
       padding: const EdgeInsets.all(PulseSpacing.lg),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [Colors.white, PulseColors.primary.withValues(alpha: 0.02)],
+          colors: isDark
+              ? [
+                  const Color(0xFF1E1E1E),
+                  PulseColors.primary.withValues(alpha: 0.1),
+                ]
+              : [Colors.white, PulseColors.primary.withValues(alpha: 0.02)],
         ),
       ),
       child: Row(
@@ -63,7 +75,7 @@ class ProfileScreen extends StatelessWidget {
             },
             icon: const Icon(Icons.arrow_back_ios_rounded, size: 20),
             style: IconButton.styleFrom(
-              foregroundColor: PulseColors.onSurface,
+              foregroundColor: isDark ? Colors.white : PulseColors.onSurface,
               padding: const EdgeInsets.all(8),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(PulseRadii.sm),
@@ -75,7 +87,7 @@ class ProfileScreen extends StatelessWidget {
           Text(
             'Profile',
             style: PulseTextStyles.headlineLarge.copyWith(
-              color: PulseColors.onSurface,
+              color: isDark ? Colors.white : PulseColors.onSurface,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -117,7 +129,7 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildProfileInfo() {
+  Widget _buildProfileInfo(bool isDark) {
     return Container(
       margin: const EdgeInsets.all(PulseSpacing.lg),
       padding: const EdgeInsets.all(PulseSpacing.xl),
@@ -125,7 +137,12 @@ class ProfileScreen extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [Colors.white, PulseColors.primary.withValues(alpha: 0.05)],
+          colors: isDark
+              ? [
+                  const Color(0xFF1E1E1E),
+                  PulseColors.primary.withValues(alpha: 0.15),
+                ]
+              : [Colors.white, PulseColors.primary.withValues(alpha: 0.05)],
         ),
         borderRadius: BorderRadius.circular(PulseRadii.xl),
         boxShadow: [
@@ -165,7 +182,7 @@ class ProfileScreen extends StatelessWidget {
           Text(
             'John Doe',
             style: PulseTextStyles.headlineMedium.copyWith(
-              color: PulseColors.onSurface,
+              color: isDark ? Colors.white : PulseColors.onSurface,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -173,7 +190,9 @@ class ProfileScreen extends StatelessWidget {
           Text(
             '25 years old • 2.5 km away',
             style: PulseTextStyles.bodyLarge.copyWith(
-              color: PulseColors.onSurface.withValues(alpha: 0.7),
+              color: isDark
+                  ? Colors.white.withValues(alpha: 0.7)
+                  : PulseColors.onSurface.withValues(alpha: 0.7),
             ),
           ),
           const SizedBox(height: PulseSpacing.xl),
@@ -182,10 +201,14 @@ class ProfileScreen extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(PulseSpacing.lg),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.7),
+              color: isDark
+                  ? Colors.white.withValues(alpha: 0.05)
+                  : Colors.white.withValues(alpha: 0.7),
               borderRadius: BorderRadius.circular(PulseRadii.lg),
               border: Border.all(
-                color: PulseColors.primary.withValues(alpha: 0.1),
+                color: isDark
+                    ? PulseColors.primary.withValues(alpha: 0.3)
+                    : PulseColors.primary.withValues(alpha: 0.1),
                 width: 1,
               ),
             ),
@@ -225,7 +248,7 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSettingsSection() {
+  Widget _buildSettingsSection(bool isDark) {
     return Padding(
       padding: const EdgeInsets.all(PulseSpacing.lg),
       child: Column(
@@ -234,20 +257,21 @@ class ProfileScreen extends StatelessWidget {
           Text(
             'Settings',
             style: PulseTextStyles.headlineSmall.copyWith(
-              color: PulseColors.onSurface,
+              color: isDark ? Colors.white : PulseColors.onSurface,
               fontWeight: FontWeight.bold,
             ),
           ),
           const SizedBox(height: PulseSpacing.md),
 
           _SettingsCard(
+            isDark: isDark,
             children: [
               _SettingsTile(
                 icon: Icons.person_outline,
                 title: 'Edit Profile',
                 subtitle: 'Update your photos and info',
                 onTap: (context) {
-                  context.go('/profile-creation');
+                  context.go('/profile-overview');
                 },
               ),
               _SettingsTile(
@@ -281,7 +305,7 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSupportSection() {
+  Widget _buildSupportSection(bool isDark) {
     return Padding(
       padding: const EdgeInsets.all(PulseSpacing.lg),
       child: Column(
@@ -290,13 +314,14 @@ class ProfileScreen extends StatelessWidget {
           Text(
             'Support',
             style: PulseTextStyles.headlineSmall.copyWith(
-              color: PulseColors.onSurface,
+              color: isDark ? Colors.white : PulseColors.onSurface,
               fontWeight: FontWeight.bold,
             ),
           ),
           const SizedBox(height: PulseSpacing.md),
 
           _SettingsCard(
+            isDark: isDark,
             children: [
               _SettingsTile(
                 icon: Icons.help_outline,
@@ -343,10 +368,11 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildLogoutSection(BuildContext context) {
+  Widget _buildLogoutSection(BuildContext context, bool isDark) {
     return Padding(
       padding: const EdgeInsets.all(PulseSpacing.lg),
       child: _SettingsCard(
+        isDark: isDark,
         children: [
           _SettingsTile(
             icon: Icons.logout,
@@ -421,19 +447,20 @@ class _StatItem extends StatelessWidget {
 }
 
 class _SettingsCard extends StatelessWidget {
-  const _SettingsCard({required this.children});
+  const _SettingsCard({required this.children, this.isDark = false});
 
   final List<Widget> children;
+  final bool isDark;
 
   @override
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: PulseColors.surface,
+        color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
         borderRadius: BorderRadius.circular(PulseRadii.lg),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.05),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -461,6 +488,8 @@ class _SettingsTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -479,7 +508,9 @@ class _SettingsTile extends StatelessWidget {
                     Text(
                       title,
                       style: PulseTextStyles.bodyLarge.copyWith(
-                        color: textColor ?? PulseColors.onSurface,
+                        color:
+                            textColor ??
+                            (isDark ? Colors.white : PulseColors.onSurface),
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -487,7 +518,9 @@ class _SettingsTile extends StatelessWidget {
                     Text(
                       subtitle,
                       style: PulseTextStyles.bodyMedium.copyWith(
-                        color: PulseColors.onSurfaceVariant,
+                        color: isDark
+                            ? Colors.white.withValues(alpha: 0.6)
+                            : PulseColors.onSurfaceVariant,
                       ),
                     ),
                   ],
@@ -495,7 +528,9 @@ class _SettingsTile extends StatelessWidget {
               ),
               Icon(
                 Icons.arrow_forward_ios,
-                color: PulseColors.onSurfaceVariant,
+                color: isDark
+                    ? Colors.white.withValues(alpha: 0.5)
+                    : PulseColors.onSurfaceVariant,
                 size: 16,
               ),
             ],

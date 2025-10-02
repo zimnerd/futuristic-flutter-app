@@ -800,6 +800,17 @@ class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
   }
 
   Future<bool> _handleBackButton() async {
+    // Check if user has an existing profile via ProfileBloc
+    final profileState = context.read<ProfileBloc>().state;
+    final hasExistingProfile = profileState.profile != null;
+
+    // If editing existing profile, just navigate back without confirmation
+    if (hasExistingProfile) {
+      context.go('/profile-overview');
+      return false; // Don't use Navigator.pop
+    }
+
+    // For new profile creation, show exit dialog
     final currentDraft = _getCurrentDraft();
     
     final shouldExit = await showDialog<bool>(
@@ -844,8 +855,16 @@ class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
     final draft = _getCurrentDraft();
     await _draftService.saveDraft(draft);
     if (mounted) {
-      // Navigate to home screen instead of just popping
-      context.go('/home');
+      // Check if user has existing profile
+      final profileState = context.read<ProfileBloc>().state;
+      final hasExistingProfile = profileState.profile != null;
+
+      // Navigate back to profile overview if editing, otherwise go home
+      if (hasExistingProfile) {
+        context.go('/profile-overview');
+      } else {
+        context.go('/home');
+      }
     }
   }
 

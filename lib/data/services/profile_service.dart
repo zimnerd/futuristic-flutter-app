@@ -58,10 +58,13 @@ class ProfileService {
       final response = await _apiClient.get('/users/me');
 
       if (response.statusCode == 200) {
-        final data = response.data as Map<String, dynamic>;
-        final profile = UserProfile.fromJson(data);
+        final responseData = response.data as Map<String, dynamic>;
+        final userData = responseData['data'] as Map<String, dynamic>;
+        
         _logger.i('✅ Current profile loaded successfully');
-        return _convertToEntity(profile);
+        
+        // Convert API user data to domain UserProfile entity
+        return _convertUserDataToEntity(userData);
       } else {
         _logger.w('⚠️ Failed to load current profile: ${response.statusCode}');
         throw UserException('Failed to fetch current profile');
@@ -73,6 +76,74 @@ class ProfileService {
       _logger.e('❌ Unexpected error fetching current profile: $e');
       throw UserException('Failed to fetch current profile');
     }
+  }
+  
+  /// Convert API user data to domain UserProfile entity
+  domain.UserProfile _convertUserDataToEntity(Map<String, dynamic> userData) {
+    // Extract photos from API response
+    final photosList = userData['photos'] as List<dynamic>?;
+    final photos =
+        photosList?.asMap().entries.map((entry) {
+          return domain.ProfilePhoto(
+            id: _uuid.v4(),
+            url: entry.value as String,
+            order: entry.key,
+            isVerified: userData['verified'] as bool? ?? false,
+          );
+        }).toList() ??
+        [];
+
+    // Calculate age from user data if available
+    int age = 25; // Default
+    if (userData['age'] != null) {
+      age = userData['age'] as int;
+    } else if (userData['dateOfBirth'] != null) {
+      final dob = DateTime.parse(userData['dateOfBirth'] as String);
+      age = DateTime.now().difference(dob).inDays ~/ 365;
+    }
+
+    // Extract name
+    final firstName = userData['firstName'] as String?;
+    final lastName = userData['lastName'] as String?;
+    final username = userData['username'] as String?;
+    final name = firstName != null && lastName != null
+        ? '$firstName $lastName'
+        : (username ?? 'Unknown');
+
+    // Parse location
+    final locationStr = userData['location'] as String?;
+    final location = _parseLocation(locationStr ?? '');
+
+    return domain.UserProfile(
+      id: userData['id'] as String? ?? '',
+      name: name,
+      age: age,
+      bio: userData['bio'] as String? ?? '',
+      photos: photos,
+      location: location,
+      isVerified: userData['verified'] as bool? ?? false,
+      verified: userData['verified'] as bool? ?? false,
+      interests:
+          (userData['interests'] as List<dynamic>?)?.cast<String>() ?? [],
+      gender: userData['gender'] as String?,
+      lastActiveAt: userData['lastActive'] != null
+          ? DateTime.parse(userData['lastActive'] as String)
+          : null,
+      isOnline: userData['isOnline'] as bool? ?? false,
+    );
+  }
+
+  /// Parse location string into UserLocation
+  domain.UserLocation _parseLocation(String locationStr) {
+    // Location format: "City, Country" or just "City"
+    final parts = locationStr.split(', ');
+    return domain.UserLocation(
+      latitude: 0.0, // Default coordinates
+      longitude: 0.0,
+      address: locationStr,
+      city: parts.isNotEmpty ? parts[0] : '',
+      country: parts.length > 1 ? parts[1] : '',
+    );
   }
 
   /// Helper method to get current user ID

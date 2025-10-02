@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../theme/pulse_colors.dart';
 import '../../../domain/entities/user_profile.dart';
 import '../../widgets/profile/profile_completion_widget.dart';
+import '../../blocs/profile/profile_bloc.dart';
+import '../../widgets/common/pulse_loading_widget.dart';
 
-/// Enhanced profile overview screen with section-based editing
+/// Enhanced profile overview screen with section-based editing and real user data
 class ProfileOverviewScreen extends StatefulWidget {
   const ProfileOverviewScreen({super.key});
 
@@ -14,101 +17,97 @@ class ProfileOverviewScreen extends StatefulWidget {
 }
 
 class _ProfileOverviewScreenState extends State<ProfileOverviewScreen> {
-  // Mock user data - in real app this would come from ProfileBloc
-  UserProfile? _userProfile;
-
   @override
   void initState() {
     super.initState();
-    // Initialize with mock data - replace with actual profile loading
-    _loadUserProfile();
-  }
-
-  void _loadUserProfile() {
-    // Mock profile data - in real app this would come from ProfileBloc
-    _userProfile = UserProfile(
-      id: 'user-123',
-      name: 'John Doe',
-      bio: 'Love traveling, coffee, and good conversations. Always up for an adventure!',
-      age: 28,
-      photos: [
-        ProfilePhoto(id: '1', url: 'https://example.com/photo1.jpg', order: 0),
-        ProfilePhoto(id: '2', url: 'https://example.com/photo2.jpg', order: 1),
-      ],
-      interests: ['Travel', 'Coffee', 'Photography', 'Hiking'],
-      location: UserLocation(
-        latitude: 37.7749,
-        longitude: -122.4194,
-        city: 'San Francisco',
-      ),
-      gender: 'Man',
-      job: 'Software Engineer',
-      company: 'Tech Corp',
-      school: 'Stanford University',
-      lookingFor: 'Women',
-      isOnline: true,
-      lastSeen: DateTime.now(),
-      verified: true,
-    );
+    // Load actual user profile from ProfileBloc
+    context.read<ProfileBloc>().add(LoadProfile());
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          'My Profile',
-          style: PulseTextStyles.titleLarge.copyWith(
-            color: PulseColors.onSurface,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.settings, color: PulseColors.onSurface),
-            onPressed: () {
-              // Navigate to settings
-            },
-            tooltip: 'Settings',
-          ),
-        ],
-      ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(PulseSpacing.lg),
-          child: Column(
-            children: [
-              _buildProfileHeader(),
-              const SizedBox(height: PulseSpacing.xl),
-              ProfileCompletionWidget(
-                profile: _userProfile,
-                onTapIncomplete: () {
-                  _navigateToFirstIncompleteSection();
-                },
+    return BlocBuilder<ProfileBloc, ProfileState>(
+      builder: (context, state) {
+        // Handle loading state
+        if (state.status == ProfileStatus.loading) {
+          return const Scaffold(body: Center(child: PulseLoadingWidget()));
+        }
+
+        // Handle error state
+        if (state.status == ProfileStatus.error) {
+          return Scaffold(
+            body: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.error_outline, size: 64, color: Colors.grey),
+                  const SizedBox(height: 16),
+                  Text(state.error ?? 'Failed to load profile'),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: () =>
+                        context.read<ProfileBloc>().add(LoadProfile()),
+                    child: const Text('Retry'),
+                  ),
+                ],
               ),
-              const SizedBox(height: PulseSpacing.xl),
-              _buildProfileSections(),
+            ),
+          );
+        }
+
+        final userProfile = state.profile;
+
+        return Scaffold(
+          appBar: AppBar(
+            title: Text(
+              'My Profile',
+              style: PulseTextStyles.titleLarge.copyWith(
+                color: PulseColors.onSurface,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back, color: PulseColors.onSurface),
+              onPressed: () => context.go('/profile'),
+            ),
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.settings, color: PulseColors.onSurface),
+                onPressed: () {
+                  context.go('/settings');
+                },
+                tooltip: 'Settings',
+              ),
             ],
           ),
-        ),
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          context.go('/profile-creation');
-        },
-        backgroundColor: PulseColors.primary,
-        foregroundColor: Colors.white,
-        icon: const Icon(Icons.edit),
-        label: const Text('Full Edit'),
-        tooltip: 'Edit entire profile',
-      ),
+          body: SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(PulseSpacing.lg),
+              child: Column(
+                children: [
+                  _buildProfileHeader(userProfile),
+                  const SizedBox(height: PulseSpacing.xl),
+                  ProfileCompletionWidget(
+                    profile: userProfile,
+                    onTapIncomplete: () {
+                      _navigateToFirstIncompleteSection(userProfile);
+                    },
+                  ),
+                  const SizedBox(height: PulseSpacing.xl),
+                  _buildProfileSections(userProfile),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 
-  Widget _buildProfileHeader() {
-    if (_userProfile == null) {
+  Widget _buildProfileHeader(UserProfile? userProfile) {
+    if (userProfile == null) {
       return const Center(child: CircularProgressIndicator());
     }
 
@@ -130,7 +129,7 @@ class _ProfileOverviewScreenState extends State<ProfileOverviewScreen> {
       ),
       child: Column(
         children: [
-          // Profile Image
+          // Profile Image - Show actual user photo
           Container(
             width: 100,
             height: 100,
@@ -149,10 +148,10 @@ class _ProfileOverviewScreenState extends State<ProfileOverviewScreen> {
                 ),
               ],
             ),
-            child: _userProfile!.photos.isNotEmpty
+            child: userProfile.photos.isNotEmpty
                 ? ClipOval(
                     child: Image.network(
-                      _userProfile!.photos.first.url,
+                      userProfile.photos.first.url,
                       fit: BoxFit.cover,
                       errorBuilder: (context, error, stackTrace) {
                         return const Icon(Icons.person, size: 50, color: Colors.white);
@@ -165,7 +164,7 @@ class _ProfileOverviewScreenState extends State<ProfileOverviewScreen> {
           
           // Name and Age
           Text(
-            '${_userProfile!.name}, ${_userProfile!.age}',
+            '${userProfile.name}, ${userProfile.age}',
             style: PulseTextStyles.headlineMedium.copyWith(
               color: PulseColors.onSurface,
               fontWeight: FontWeight.bold,
@@ -184,7 +183,7 @@ class _ProfileOverviewScreenState extends State<ProfileOverviewScreen> {
               ),
               const SizedBox(width: PulseSpacing.xs),
               Text(
-                _userProfile!.location.city ?? 'Unknown location',
+                userProfile.location.city ?? 'Unknown location',
                 style: PulseTextStyles.bodyMedium.copyWith(
                   color: PulseColors.onSurfaceVariant,
                 ),
@@ -193,7 +192,7 @@ class _ProfileOverviewScreenState extends State<ProfileOverviewScreen> {
           ),
           
           // Verification Badge
-          if (_userProfile!.verified) ...[
+          if (userProfile.verified) ...[
             const SizedBox(height: PulseSpacing.sm),
             Container(
               padding: const EdgeInsets.symmetric(
@@ -229,61 +228,72 @@ class _ProfileOverviewScreenState extends State<ProfileOverviewScreen> {
     );
   }
 
-  Widget _buildProfileSections() {
+  Widget _buildProfileSections(UserProfile? userProfile) {
     return Column(
       children: [
         _buildSection(
           title: 'Basic Information',
           icon: Icons.person,
+          userProfile: userProfile,
           items: [
-            _buildSectionItem('Name', _userProfile?.name ?? 'Not set'),
-            _buildSectionItem('Age', '${_userProfile?.age ?? 0} years old'),
-            _buildSectionItem('Bio', _userProfile?.bio ?? 'No bio added'),
+            _buildSectionItem('Name', userProfile?.name ?? 'Not set'),
+            _buildSectionItem('Age', '${userProfile?.age ?? 0} years old'),
+            _buildSectionItem('Bio', userProfile?.bio ?? 'No bio added'),
           ],
-          onEdit: () => _navigateToSectionEdit('basic_info'),
+          onEdit: () => _navigateToSectionEdit('basic_info', userProfile),
         ),
         const SizedBox(height: PulseSpacing.lg),
         
         _buildSection(
           title: 'Photos',
           icon: Icons.photo_library,
+          userProfile: userProfile,
           items: [
-            _buildPhotoGrid(),
+            _buildPhotoGrid(userProfile),
           ],
-          onEdit: () => _navigateToPhotoEdit(),
+          onEdit: () => _navigateToSectionEdit('photos', userProfile),
         ),
         const SizedBox(height: PulseSpacing.lg),
         
         _buildSection(
           title: 'Work & Education',
           icon: Icons.work,
+          userProfile: userProfile,
           items: [
-            _buildSectionItem('Job', _userProfile?.job ?? 'Not specified'),
-            _buildSectionItem('Company', _userProfile?.company ?? 'Not specified'),
-            _buildSectionItem('School', _userProfile?.school ?? 'Not specified'),
+            _buildSectionItem('Job', userProfile?.job ?? 'Not specified'),
+            _buildSectionItem(
+              'Company',
+              userProfile?.company ?? 'Not specified',
+            ),
+            _buildSectionItem('School', userProfile?.school ?? 'Not specified'),
           ],
-          onEdit: () => _navigateToSectionEdit('work_education'),
+          onEdit: () => _navigateToSectionEdit('work_education', userProfile),
         ),
         const SizedBox(height: PulseSpacing.lg),
         
         _buildSection(
           title: 'Interests',
           icon: Icons.favorite,
+          userProfile: userProfile,
           items: [
-            _buildInterestsDisplay(),
+            _buildInterestsDisplay(userProfile),
           ],
-          onEdit: () => _navigateToSectionEdit('interests'),
+          onEdit: () => _navigateToSectionEdit('interests', userProfile),
         ),
         const SizedBox(height: PulseSpacing.lg),
         
         _buildSection(
           title: 'Dating Preferences',
           icon: Icons.tune,
+          userProfile: userProfile,
           items: [
-            _buildSectionItem('I am', _userProfile?.gender ?? 'Not specified'),
-            _buildSectionItem('Looking for', _userProfile?.lookingFor ?? 'Not specified'),
+            _buildSectionItem('I am', userProfile?.gender ?? 'Not specified'),
+            _buildSectionItem(
+              'Looking for',
+              userProfile?.lookingFor ?? 'Not specified',
+            ),
           ],
-          onEdit: () => _navigateToSectionEdit('preferences'),
+          onEdit: () => _navigateToSectionEdit('preferences', userProfile),
         ),
       ],
     );
@@ -292,6 +302,7 @@ class _ProfileOverviewScreenState extends State<ProfileOverviewScreen> {
   Widget _buildSection({
     required String title,
     required IconData icon,
+    required UserProfile? userProfile,
     required List<Widget> items,
     required VoidCallback onEdit,
   }) {
@@ -390,8 +401,8 @@ class _ProfileOverviewScreenState extends State<ProfileOverviewScreen> {
     );
   }
 
-  Widget _buildPhotoGrid() {
-    final photos = _userProfile?.photos ?? [];
+  Widget _buildPhotoGrid(UserProfile? userProfile) {
+    final photos = userProfile?.photos ?? [];
     return SizedBox(
       height: 100,
       child: ListView.builder(
@@ -425,22 +436,25 @@ class _ProfileOverviewScreenState extends State<ProfileOverviewScreen> {
               ),
             );
           } else {
-            return Container(
-              width: 80,
-              height: 80,
-              margin: const EdgeInsets.only(right: PulseSpacing.sm),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(PulseRadii.md),
-                border: Border.all(
-                  color: PulseColors.outline,
-                  style: BorderStyle.solid,
+            return GestureDetector(
+              onTap: () => _navigateToSectionEdit('photos', userProfile),
+              child: Container(
+                width: 80,
+                height: 80,
+                margin: const EdgeInsets.only(right: PulseSpacing.sm),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(PulseRadii.md),
+                  border: Border.all(
+                    color: PulseColors.outline,
+                    style: BorderStyle.solid,
+                  ),
+                  color: PulseColors.surfaceVariant,
                 ),
-                color: PulseColors.surfaceVariant,
-              ),
-              child: const Icon(
-                Icons.add_a_photo,
-                color: PulseColors.onSurfaceVariant,
-                size: 32,
+                child: const Icon(
+                  Icons.add_a_photo,
+                  color: PulseColors.onSurfaceVariant,
+                  size: 32,
+                ),
               ),
             );
           }
@@ -449,8 +463,8 @@ class _ProfileOverviewScreenState extends State<ProfileOverviewScreen> {
     );
   }
 
-  Widget _buildInterestsDisplay() {
-    final interests = _userProfile?.interests ?? [];
+  Widget _buildInterestsDisplay(UserProfile? userProfile) {
+    final interests = userProfile?.interests ?? [];
     if (interests.isEmpty) {
       return Text(
         'No interests added',
@@ -488,130 +502,96 @@ class _ProfileOverviewScreenState extends State<ProfileOverviewScreen> {
     );
   }
 
-  void _navigateToSectionEdit(String sectionType) async {
+  void _navigateToSectionEdit(
+    String sectionType,
+    UserProfile? userProfile,
+  ) async {
     final result = await context.push(
       '/profile-section-edit',
       extra: {
         'sectionType': sectionType,
-        'initialData': _getSectionData(sectionType),
+        'initialData': _getSectionData(sectionType, userProfile),
       },
     );
 
-    if (result != null && result is Map<String, dynamic>) {
-      // Update the profile with new data
-      setState(() {
-        _updateProfileSection(sectionType, result);
-      });
+    if (result != null && mounted) {
+      // Reload profile after edit
+      context.read<ProfileBloc>().add(LoadProfile());
     }
   }
 
-  void _navigateToPhotoEdit() {
-    // Navigate to photo editing screen (could reuse profile creation photo step)
-    context.go('/profile-creation?step=0'); // Photo step
-  }
-
-  Map<String, dynamic> _getSectionData(String sectionType) {
-    if (_userProfile == null) return {};
+  Map<String, dynamic> _getSectionData(
+    String sectionType,
+    UserProfile? userProfile,
+  ) {
+    if (userProfile == null) return {};
 
     switch (sectionType) {
       case 'basic_info':
         return {
-          'name': _userProfile!.name,
-          'age': _userProfile!.age,
-          'bio': _userProfile!.bio,
+          'name': userProfile.name,
+          'age': userProfile.age,
+          'bio': userProfile.bio,
         };
       case 'work_education':
         return {
-          'job': _userProfile!.job,
-          'company': _userProfile!.company,
-          'school': _userProfile!.school,
+          'job': userProfile.job,
+          'company': userProfile.company,
+          'school': userProfile.school,
         };
       case 'interests':
         return {
-          'interests': _userProfile!.interests,
+          'interests': userProfile.interests,
         };
       case 'preferences':
         return {
-          'gender': _userProfile!.gender,
-          'lookingFor': _userProfile!.lookingFor,
+          'gender': userProfile.gender,
+          'lookingFor': userProfile.lookingFor,
         };
       default:
         return {};
     }
   }
 
-  void _updateProfileSection(String sectionType, Map<String, dynamic> newData) {
-    if (_userProfile == null) return;
-
-    switch (sectionType) {
-      case 'basic_info':
-        _userProfile = _userProfile!.copyWith(
-          name: newData['name'] ?? _userProfile!.name,
-          age: newData['age'] ?? _userProfile!.age,
-          bio: newData['bio'] ?? _userProfile!.bio,
-        );
-        break;
-      case 'work_education':
-        _userProfile = _userProfile!.copyWith(
-          job: newData['job'],
-          company: newData['company'],
-          school: newData['school'],
-        );
-        break;
-      case 'interests':
-        _userProfile = _userProfile!.copyWith(
-          interests: List<String>.from(newData['interests'] ?? []),
-        );
-        break;
-      case 'preferences':
-        _userProfile = _userProfile!.copyWith(
-          gender: newData['gender'],
-          lookingFor: newData['lookingFor'],
-        );
-        break;
-    }
-
-    // In a real app, you would also dispatch an event to ProfileBloc here
-    // context.read<ProfileBloc>().add(UpdateProfile(profile: _userProfile!));
-  }
-
-  void _navigateToFirstIncompleteSection() {
-    // Determine which section to navigate to first
-    if (_userProfile == null) return;
+  void _navigateToFirstIncompleteSection(UserProfile? userProfile) {
+    if (userProfile == null) return;
 
     // Basic info check
-    if (_userProfile!.name.isEmpty || _userProfile!.age <= 0 || _userProfile!.bio.isEmpty) {
-      context.go('/profile-edit/basic_info');
+    if (userProfile.name.isEmpty ||
+        userProfile.age <= 0 ||
+        userProfile.bio.isEmpty) {
+      _navigateToSectionEdit('basic_info', userProfile);
       return;
     }
 
     // Photos check
-    if (_userProfile!.photos.length < 2) {
-      context.go('/profile-creation'); // For photo upload
+    if (userProfile.photos.length < 2) {
+      _navigateToSectionEdit('photos', userProfile);
       return;
     }
 
     // Work & Education check
-    if ((_userProfile!.job?.isEmpty ?? true) && 
-        (_userProfile!.company?.isEmpty ?? true) && 
-        (_userProfile!.school?.isEmpty ?? true)) {
-      context.go('/profile-edit/work_education');
+    if ((userProfile.job?.isEmpty ?? true) &&
+        (userProfile.company?.isEmpty ?? true) &&
+        (userProfile.school?.isEmpty ?? true)) {
+      _navigateToSectionEdit('work_education', userProfile);
       return;
     }
 
     // Interests check
-    if (_userProfile!.interests.length < 3) {
-      context.go('/profile-edit/interests');
+    if (userProfile.interests.length < 3) {
+      _navigateToSectionEdit('interests', userProfile);
       return;
     }
 
     // Preferences check
-    if ((_userProfile!.gender?.isEmpty ?? true) || (_userProfile!.lookingFor?.isEmpty ?? true)) {
-      context.go('/profile-edit/preferences');
+    if ((userProfile.gender?.isEmpty ?? true) ||
+        (userProfile.lookingFor?.isEmpty ?? true)) {
+      _navigateToSectionEdit('preferences', userProfile);
       return;
     }
 
     // If all complete, go to basic info as fallback
-    context.go('/profile-edit/basic_info');
+    _navigateToSectionEdit('basic_info', userProfile);
   }
 }
