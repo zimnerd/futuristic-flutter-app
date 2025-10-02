@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+
+import '../../navigation/app_router.dart';
 import '../../blocs/date_planning/date_planning_bloc.dart';
 import '../../blocs/date_planning/date_planning_event.dart';
 import '../../blocs/date_planning/date_planning_state.dart';
@@ -7,8 +10,6 @@ import '../../widgets/common/pulse_loading_widget.dart';
 import '../../widgets/common/pulse_error_widget.dart';
 import '../../widgets/date_planning/date_plan_card.dart';
 import '../../widgets/date_planning/date_suggestion_card.dart';
-import 'create_date_plan_screen.dart';
-import 'date_plan_details_screen.dart';
 
 /// Main screen for date planning functionality
 class DatePlanningScreen extends StatefulWidget {
@@ -54,12 +55,7 @@ class _DatePlanningScreenState extends State<DatePlanningScreen>
         actions: [
           IconButton(
             icon: const Icon(Icons.add),
-            onPressed: () => Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const CreateDatePlanScreen(),
-              ),
-            ),
+            onPressed: () => context.push(AppRoutes.createDatePlan),
           ),
         ],
       ),
@@ -297,20 +293,16 @@ class _DatePlanningScreenState extends State<DatePlanningScreen>
   }
 
   void _viewDatePlan(Map<String, dynamic> plan) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => DatePlanDetailsScreen(datePlan: plan),
-      ),
+    context.push(
+      AppRoutes.datePlanDetails,
+      extra: plan,
     );
   }
 
   void _editDatePlan(Map<String, dynamic> plan) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => CreateDatePlanScreen(planToEdit: plan),
-      ),
+    context.push(
+      AppRoutes.createDatePlan,
+      extra: {'planToEdit': plan},
     );
   }
 
@@ -348,11 +340,9 @@ class _DatePlanningScreenState extends State<DatePlanningScreen>
   }
 
   void _createPlanFromSuggestion(Map<String, dynamic> suggestion) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => CreateDatePlanScreen(suggestion: suggestion),
-      ),
+    context.push(
+      AppRoutes.createDatePlan,
+      extra: {'suggestion': suggestion},
     );
   }
 

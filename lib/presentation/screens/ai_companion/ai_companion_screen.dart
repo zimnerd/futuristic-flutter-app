@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../navigation/app_router.dart';
 import '../../../data/models/ai_companion.dart';
 import '../../blocs/ai_companion/ai_companion_bloc.dart';
 import '../../blocs/ai_companion/ai_companion_event.dart';
@@ -10,7 +12,6 @@ import '../../widgets/common/pulse_error_widget.dart';
 import '../../widgets/ai_companion/companion_card_widget.dart';
 import '../../widgets/ai_companion/companion_creation_widget.dart';
 import '../../theme/pulse_colors.dart';
-import 'ai_companion_chat_screen.dart';
 
 /// Main screen for AI Companion functionality
 class AiCompanionScreen extends StatefulWidget {
@@ -323,11 +324,9 @@ class _AiCompanionScreenState extends State<AiCompanionScreen> {
   }
 
   void _navigateToChat(AICompanion companion) async {
-    await Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => AiCompanionChatScreen(companion: companion),
-      ),
+    await context.push(
+      AppRoutes.aiCompanionChat,
+      extra: companion,
     );
     
     // Refresh companions list when returning from chat

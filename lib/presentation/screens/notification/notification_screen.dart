@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 
+import '../../navigation/app_router.dart';
 import '../../../blocs/notification_bloc.dart';
 import '../../theme/pulse_colors.dart';
-import '../chat/chat_screen.dart';
 
 class NotificationScreen extends StatefulWidget {
   const NotificationScreen({super.key});
@@ -313,7 +314,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
     switch (notification.type.toLowerCase()) {
       case 'match':
         // Navigate to match screen
-        Navigator.pushNamed(context, '/matches');
+        context.push(AppRoutes.matches);
         break;
       case 'message':
         // Navigate to chat screen
@@ -321,32 +322,29 @@ class _NotificationScreenState extends State<NotificationScreen> {
             notification.data['conversationId'] != null &&
             notification.data['userId'] != null &&
             notification.data['userName'] != null) {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => ChatScreen(
-                conversationId: notification.data['conversationId'],
-                otherUserId: notification.data['userId'],
-                otherUserName: notification.data['userName'],
-                otherUserPhoto: notification.data['userPhoto'],
-              ),
-            ),
+          context.push(
+            '/chat/${notification.data['conversationId']}',
+            extra: {
+              'otherUserId': notification.data['userId'],
+              'otherUserName': notification.data['userName'],
+              'otherUserPhoto': notification.data['userPhoto'],
+            },
           );
         }
         break;
       case 'like':
         // Navigate to likes screen
-        Navigator.pushNamed(context, '/likes');
+        context.push('/likes');
         break;
       case 'view':
         // Navigate to profile views screen
-        Navigator.pushNamed(context, '/profile-views');
+        context.push('/profile-views');
         break;
       case 'call':
         // Handle call notification
         if (notification.data != null && notification.data['callId'] != null) {
           // Could show call history or rejoin call if still active
-          Navigator.pushNamed(context, '/call-history');
+          context.push('/call-history');
         }
         break;
       default:

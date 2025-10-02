@@ -26,7 +26,18 @@ import '../screens/ai_companion/ai_companion_screen.dart';
 import '../screens/speed_dating/speed_dating_screen.dart';
 import '../screens/live_streaming/live_streaming_screen.dart';
 import '../screens/date_planning/date_planning_screen.dart';
+import '../screens/date_planning/date_plan_details_screen.dart';
+import '../screens/date_planning/create_date_plan_screen.dart';
 import '../screens/voice_messages/voice_messages_screen.dart';
+import '../screens/speed_dating/speed_dating_room_screen.dart';
+import '../screens/speed_dating/speed_dating_event_details_screen.dart';
+import '../screens/live_streaming/start_stream_screen.dart';
+import '../screens/live_streaming/live_stream_viewer_screen.dart';
+import '../screens/live_streaming/live_stream_broadcaster_screen.dart';
+import '../screens/ai_companion/ai_companion_chat_screen.dart';
+import '../../../features/group_chat/presentation/screens/group_chat_screen.dart';
+import '../screens/group_chat/group_chat_settings_screen.dart';
+import '../screens/notification/notification_screen.dart';
 import '../screens/profile/profile_creation_screen.dart';
 import '../screens/profile/profile_overview_screen.dart';
 import '../screens/profile/profile_section_edit_screen.dart';
@@ -40,6 +51,8 @@ import '../screens/features/advanced_features_screen.dart';
 import '../screens/heat_map_screen.dart';
 import '../../../domain/entities/user_profile.dart';
 import '../../../data/models/user_model.dart';
+import '../../../data/models/ai_companion.dart';
+import '../../../features/group_chat/data/models.dart';
 import '../../../domain/entities/event.dart';
 // Events screens
 import '../screens/events/events_screen.dart';
@@ -402,6 +415,113 @@ class AppRouter {
           name: 'enhancedProfileEdit',
           builder: (context, state) => const EnhancedProfileEditScreen(),
         ),
+        
+        // Date Planning routes
+        GoRoute(
+          path: AppRoutes.datePlanDetails,
+          name: 'datePlanDetails',
+          builder: (context, state) {
+            final datePlan = state.extra as Map<String, dynamic>;
+            return DatePlanDetailsScreen(datePlan: datePlan);
+          },
+        ),
+        GoRoute(
+          path: AppRoutes.createDatePlan,
+          name: 'createDatePlan',
+          builder: (context, state) {
+            final extra = state.extra as Map<String, dynamic>?;
+            return CreateDatePlanScreen(
+              planToEdit: extra?['planToEdit'],
+              suggestion: extra?['suggestion'],
+            );
+          },
+        ),
+        
+        // Speed Dating routes
+        GoRoute(
+          path: AppRoutes.speedDatingRoom,
+          name: 'speedDatingRoom',
+          builder: (context, state) {
+            final extra = state.extra as Map<String, dynamic>;
+            return SpeedDatingRoomScreen(
+              session: extra['session'],
+              eventId: extra['eventId'] as String,
+            );
+          },
+        ),
+        GoRoute(
+          path: AppRoutes.speedDatingEventDetails,
+          name: 'speedDatingEventDetails',
+          builder: (context, state) {
+            final event = state.extra as Map<String, dynamic>;
+            return SpeedDatingEventDetailsScreen(event: event);
+          },
+        ),
+        
+        // Live Streaming routes
+        GoRoute(
+          path: AppRoutes.startStream,
+          name: 'startStream',
+          builder: (context, state) {
+            final streamToEdit = state.extra as Map<String, dynamic>?;
+            return StartStreamScreen(streamToEdit: streamToEdit);
+          },
+        ),
+        GoRoute(
+          path: AppRoutes.liveStreamViewer,
+          name: 'liveStreamViewer',
+          builder: (context, state) {
+            final stream = state.extra as Map<String, dynamic>;
+            return LiveStreamViewerScreen(stream: stream);
+          },
+        ),
+        GoRoute(
+          path: AppRoutes.liveStreamBroadcaster,
+          name: 'liveStreamBroadcaster',
+          builder: (context, state) {
+            final extra = state.extra as Map<String, dynamic>;
+            return LiveStreamBroadcasterScreen(
+              streamId: extra['streamId'] as String,
+              title: extra['title'] as String,
+              description: extra['description'] as String? ?? '',
+            );
+          },
+        ),
+        
+        // AI Companion routes
+        GoRoute(
+          path: AppRoutes.aiCompanionChat,
+          name: 'aiCompanionChat',
+          builder: (context, state) {
+            final companion = state.extra as AICompanion;
+            return AiCompanionChatScreen(companion: companion);
+          },
+        ),
+        
+        // Group Chat routes
+        GoRoute(
+          path: AppRoutes.groupChat,
+          name: 'groupChat',
+          builder: (context, state) {
+            final group = state.extra as GroupConversation;
+            return GroupChatScreen(group: group);
+          },
+        ),
+        GoRoute(
+          path: AppRoutes.groupChatSettings,
+          name: 'groupChatSettings',
+          builder: (context, state) {
+            final group = state.extra as GroupConversation;
+            return GroupChatSettingsScreen(group: group);
+          },
+        ),
+        
+        // Notifications route
+        GoRoute(
+          path: AppRoutes.notifications,
+          name: 'notifications',
+          builder: (context, state) => const NotificationScreen(),
+        ),
     ],
     errorBuilder: (context, state) => Scaffold(
       body: Center(
@@ -533,4 +653,27 @@ class AppRoutes {
   static const String eventDetails = '/events/:eventId';
   static const String createEvent = '/events/create';
   static const String eventCommunication = '/events/:eventId/communication';
+  
+  // Date planning routes
+  static const String datePlanDetails = '/date-plan-details';
+  static const String createDatePlan = '/create-date-plan';
+  
+  // Speed dating routes
+  static const String speedDatingRoom = '/speed-dating-room';
+  static const String speedDatingEventDetails = '/speed-dating-event-details';
+  
+  // Live streaming routes
+  static const String startStream = '/start-stream';
+  static const String liveStreamViewer = '/live-stream-viewer';
+  static const String liveStreamBroadcaster = '/live-stream-broadcaster';
+  
+  // AI Companion routes
+  static const String aiCompanionChat = '/ai-companion-chat';
+  
+  // Group chat routes
+  static const String groupChat = '/group-chat';
+  static const String groupChatSettings = '/group-chat-settings';
+  
+  // Notification route
+  static const String notifications = '/notifications';
 }

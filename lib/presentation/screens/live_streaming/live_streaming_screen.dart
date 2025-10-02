@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+
+import '../../navigation/app_router.dart';
 import '../../blocs/live_streaming/live_streaming_bloc.dart';
 import '../../blocs/live_streaming/live_streaming_event.dart';
 import '../../blocs/live_streaming/live_streaming_state.dart';
@@ -8,8 +11,6 @@ import '../../widgets/common/pulse_error_widget.dart';
 import '../../widgets/live_streaming/live_stream_card.dart';
 import '../../widgets/live_streaming/stream_category_filter.dart';
 import '../../theme/pulse_colors.dart';
-import 'start_stream_screen.dart';
-import 'live_stream_viewer_screen.dart';
 import '../../../data/services/service_locator.dart';
 
 /// Main screen for live streaming functionality
@@ -330,46 +331,35 @@ class _LiveStreamingScreenState extends State<LiveStreamingScreen>
   }
 
   void _startNewStream() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => const StartStreamScreen(),
-      ),
-    );
+    context.push(AppRoutes.startStream);
   }
 
   void _joinStream(Map<String, dynamic> stream) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => LiveStreamViewerScreen(stream: stream),
-      ),
+    context.push(
+      AppRoutes.liveStreamViewer,
+      extra: stream,
     );
   }
 
   void _viewStreamDetails(Map<String, dynamic> stream) {
     // Navigate to stream viewer screen to view/join the stream
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => LiveStreamViewerScreen(stream: stream),
-      ),
+    context.push(
+      AppRoutes.liveStreamViewer,
+      extra: stream,
     );
   }
 
-  void _editStream(Map<String, dynamic> stream) {
+  void _editStream(Map<String, dynamic> stream) async {
     // Navigate to edit stream screen
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => StartStreamScreen(streamToEdit: stream),
-      ),
-    ).then((result) {
-      if (result != null && mounted) {
-        // Refresh the streams list if stream was updated
-        context.read<LiveStreamingBloc>().add(const LoadLiveStreams());
-      }
-    });
+    final result = await context.push(
+      AppRoutes.startStream,
+      extra: stream,
+    );
+    
+    if (result != null && mounted) {
+      // Refresh the streams list if stream was updated
+      context.read<LiveStreamingBloc>().add(const LoadLiveStreams());
+    }
   }
 
   void _deleteStream(Map<String, dynamic> stream) {

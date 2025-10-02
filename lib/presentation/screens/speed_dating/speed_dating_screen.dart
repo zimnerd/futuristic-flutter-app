@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../navigation/app_router.dart';
 import '../../blocs/speed_dating/speed_dating_bloc.dart';
 import '../../blocs/speed_dating/speed_dating_event.dart';
 import '../../blocs/speed_dating/speed_dating_state.dart';
@@ -9,8 +11,6 @@ import '../../widgets/common/pulse_error_widget.dart';
 import '../../widgets/speed_dating/speed_dating_event_card.dart';
 import '../../widgets/speed_dating/active_session_widget.dart';
 import '../../theme/pulse_colors.dart';
-import 'speed_dating_room_screen.dart';
-import 'speed_dating_event_details_screen.dart';
 import '../../widgets/speed_dating/create_speed_dating_event_dialog.dart';
 
 /// Main screen for speed dating functionality
@@ -376,35 +376,29 @@ class _SpeedDatingScreenState extends State<SpeedDatingScreen>
   }
 
   void _enterSpeedDatingRoom(Map<String, dynamic> session) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => SpeedDatingRoomScreen(
-          session: session,
-          eventId: session['eventId'] ?? '',
-        ),
-      ),
+    context.push(
+      AppRoutes.speedDatingRoom,
+      extra: {
+        'session': session,
+        'eventId': session['eventId'] ?? '',
+      },
     );
   }
 
   void _viewEventDetails(Map<String, dynamic> event) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => SpeedDatingEventDetailsScreen(event: event),
-      ),
+    context.push(
+      AppRoutes.speedDatingEventDetails,
+      extra: event,
     );
   }
 
   void _viewSessionDetails(Map<String, dynamic> session) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => SpeedDatingRoomScreen(
-          session: session,
-          eventId: session['eventId'] ?? '',
-        ),
-      ),
+    context.push(
+      AppRoutes.speedDatingRoom,
+      extra: {
+        'session': session,
+        'eventId': session['eventId'] ?? '',
+      },
     );
   }
 

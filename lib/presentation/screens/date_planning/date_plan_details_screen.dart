@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import '../../navigation/app_router.dart';
 import '../../theme/pulse_colors.dart';
 import '../../blocs/date_planning/date_planning_bloc.dart';
 import '../../blocs/date_planning/date_planning_event.dart';
-import 'create_date_plan_screen.dart';
 
 /// Screen showing detailed view of a date plan
 class DatePlanDetailsScreen extends StatefulWidget {
@@ -226,11 +226,9 @@ class _DatePlanDetailsScreenState extends State<DatePlanDetailsScreen> {
   }
 
   void _editPlan() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => CreateDatePlanScreen(planToEdit: widget.datePlan),
-      ),
+    context.push(
+      AppRoutes.createDatePlan,
+      extra: {'planToEdit': widget.datePlan},
     );
   }
 

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import '../../navigation/app_router.dart';
 import '../../theme/pulse_colors.dart';
 import '../../../data/services/service_locator.dart';
-import 'live_stream_broadcaster_screen.dart';
 
 /// Screen for starting or editing a live stream
 class StartStreamScreen extends StatefulWidget {
@@ -244,18 +245,18 @@ class _StartStreamScreenState extends State<StartStreamScreen> {
             final streamId = result['data']?['id']?.toString() ?? 
                            result['id']?.toString() ?? 
                            '';
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                builder: (context) => LiveStreamBroadcasterScreen(
-                  streamId: streamId,
-                  title: title,
-                  description: description.isNotEmpty
+            if (mounted) {
+              context.pushReplacement(
+                AppRoutes.liveStreamBroadcaster,
+                extra: {
+                  'streamId': streamId,
+                  'title': title,
+                  'description': description.isNotEmpty
                       ? description
                       : 'Live streaming with PulseLink',
-                ),
-              ),
-            );
+                },
+              );
+            }
           }
         } else {
           if (mounted) {
