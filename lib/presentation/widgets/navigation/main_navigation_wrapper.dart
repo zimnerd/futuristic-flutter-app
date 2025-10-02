@@ -230,322 +230,238 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper>
   }
 
   Widget _buildBurgerMenu() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
     return Container(
-      margin: const EdgeInsets.all(PulseSpacing.lg),
+      margin: const EdgeInsets.all(16),
       constraints: BoxConstraints(
-        maxHeight:
-            MediaQuery.of(context).size.height *
-            0.7, // Limit height to prevent overflow
+        maxHeight: MediaQuery.of(context).size.height * 0.75,
       ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(PulseBorderRadius.xl),
-        child: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                PulseColors.surfaceLight,
-                PulseColors.surfaceLight.withValues(alpha: 0.98),
-              ],
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-            ),
-            borderRadius: BorderRadius.circular(PulseBorderRadius.xl),
-            boxShadow: [
-              BoxShadow(
-                color: PulseColors.primary.withValues(alpha: 0.1),
-                blurRadius: 30,
-                offset: const Offset(0, 10),
-              ),
-              BoxShadow(
-                color: PulseColors.grey800.withValues(alpha: 0.05),
-                blurRadius: 10,
-                offset: const Offset(0, 2),
-              ),
-            ],
+      decoration: BoxDecoration(
+        color: isDark ? PulseColors.surfaceDark : PulseColors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: PulseColors.black.withValues(alpha: 0.15),
+            blurRadius: 30,
+            offset: const Offset(0, 10),
           ),
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
+        ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Simple header
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [PulseColors.primary, PulseColors.accent],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(20),
+                topRight: Radius.circular(20),
+              ),
+            ),
+            child: Row(
               children: [
-                // Enhanced Header with gradient
-                Container(
-                  padding: const EdgeInsets.all(PulseSpacing.lg),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [PulseColors.primary, PulseColors.accent],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: const BorderRadius.only(
-                      topLeft: Radius.circular(PulseBorderRadius.xl),
-                      topRight: Radius.circular(PulseBorderRadius.xl),
-                    ),
-                  ),
-                  child: Row(
-                    children: [
-                      // Menu icon with background
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: PulseColors.white.withValues(alpha: 0.2),
-                          borderRadius: BorderRadius.circular(
-                            PulseBorderRadius.sm,
-                          ),
-                        ),
-                        child: Icon(
-                          LineIcons.thLarge,
-                          color: PulseColors.white,
-                          size: 20,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Text(
-                        'Menu',
-                        style: PulseTypography.h3.copyWith(
-                          color: PulseColors.white,
-                          fontWeight: FontWeight.w300,
-                          
-                        ),
-                      ),
-                      const Spacer(),
-                      Container(
-                        decoration: BoxDecoration(
-                          color: PulseColors.white.withValues(alpha: 0.2),
-                          borderRadius: BorderRadius.circular(
-                            PulseBorderRadius.sm,
-                          ),
-                        ),
-                        child: IconButton(
-                          onPressed: () => Navigator.of(context).pop(),
-                          icon: Icon(
-                            LineIcons.times,
-                            color: PulseColors.white,
-                            size: 20,
-                          ),
-                        ),
-                      ),
-                    ],
+                Icon(LineIcons.thLarge, color: PulseColors.white, size: 20),
+                const SizedBox(width: 12),
+                Text(
+                  'Menu',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w300,
                   ),
                 ),
-
-                // Enhanced Menu Items with optimized spacing
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: PulseSpacing.lg,
-                    vertical: PulseSpacing.sm, // Reduced vertical padding
+                const Spacer(),
+                IconButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  icon: const Icon(
+                    LineIcons.times,
+                    color: PulseColors.white,
+                    size: 20,
                   ),
-                  child: Column(
-                    children: [
-                      _buildMenuTile(
-                        icon: LineIcons.user,
-                        title: 'Profile',
-                      subtitle: 'Edit your profile',
-                      onTap: () {
-                        Navigator.of(context).pop();
-                        context.push('/profile');
-                      },
-                    ),
-                    _buildMenuTile(
-                        icon: LineIcons.cog,
-                      title: 'Settings',
-                      subtitle: 'App preferences',
-                      onTap: () {
-                        Navigator.of(context).pop();
-                        context.push('/settings');
-                      },
-                    ),
-                    _buildMenuTile(
-                        icon: LineIcons.filter,
-                      title: 'Filters',
-                      subtitle: 'Discovery preferences',
-                      onTap: () {
-                        Navigator.of(context).pop();
-                        context.push('/filters');
-                      },
-                    ),
-                    _buildMenuTile(
-                        icon: LineIcons.barChart,
-                        title: 'Statistics',
-                        subtitle: 'Your dating insights',
-                        onTap: () {
-                          Navigator.of(context).pop();
-                          context.push('/statistics');
-                        },
-                      ),
-                      _buildMenuTile(
-                        icon: LineIcons.robot,
-                      title: 'AI Companion',
-                      subtitle: 'Your virtual dating coach',
-                      onTap: () {
-                        Navigator.of(context).pop();
-                        context.push('/ai-companion');
-                      },
-                    ),
-                    _buildMenuTile(
-                        icon: LineIcons.crown,
-                      title: 'Premium',
-                      subtitle: 'Unlock exclusive features',
-                      onTap: () {
-                        Navigator.of(context).pop();
-                        context.push('/premium');
-                      },
-                    ),
-                    _buildMenuTile(
-                        icon: LineIcons.userShield,
-                      title: 'Safety Center',
-                      subtitle: 'Privacy and safety',
-                      onTap: () {
-                        Navigator.of(context).pop();
-                        context.push('/safety');
-                      },
-                    ),
-                      const SizedBox(height: PulseSpacing.sm),
-                      // Divider before logout
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 4),
-                        child: Divider(
-                          color: PulseColors.grey600.withValues(alpha: 0.3),
-                          thickness: 1,
-                        ),
-                      ),
-                      const SizedBox(height: PulseSpacing.xs),
-                      // Logout option
-                      _buildMenuTile(
-                        icon: LineIcons.alternateSignOut,
-                        title: 'Logout',
-                        subtitle: 'Sign out of your account',
-                        onTap: () {
-                          Navigator.of(context).pop();
-                          _showLogoutConfirmation();
-                        },
-                      ),
-                    ], // Close children array
-                  ), // Close Column
-                ), // Close Padding
-              ], // Close children array for main Column
-            ), // Close main Column
-          ), // Close SingleChildScrollView
-        ), // Close inner Container
-      ), // Close ClipRRect
-    ); // Close outer Container and return statement
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                ),
+              ],
+            ),
+          ),
+
+          // Menu items - full width with line dividers
+          Flexible(
+            child: SingleChildScrollView(
+              child: Column(
+                children: [
+                  _buildSimpleMenuTile(
+                    icon: LineIcons.user,
+                    title: 'Profile',
+                    subtitle: 'Edit your profile',
+                    onTap: () {
+                      Navigator.of(context).pop();
+                      context.push('/profile');
+                    },
+                    isDark: isDark,
+                  ),
+                  _buildDivider(),
+                  _buildSimpleMenuTile(
+                    icon: LineIcons.cog,
+                    title: 'Settings',
+                    subtitle: 'App preferences',
+                    onTap: () {
+                      Navigator.of(context).pop();
+                      context.push('/settings');
+                    },
+                    isDark: isDark,
+                  ),
+                  _buildDivider(),
+                  _buildSimpleMenuTile(
+                    icon: LineIcons.filter,
+                    title: 'Filters',
+                    subtitle: 'Discovery preferences',
+                    onTap: () {
+                      Navigator.of(context).pop();
+                      context.push('/filters');
+                    },
+                    isDark: isDark,
+                  ),
+                  _buildDivider(),
+                  _buildSimpleMenuTile(
+                    icon: LineIcons.barChart,
+                    title: 'Statistics',
+                    subtitle: 'Your dating insights',
+                    onTap: () {
+                      Navigator.of(context).pop();
+                      context.push('/statistics');
+                    },
+                    isDark: isDark,
+                  ),
+                  _buildDivider(),
+                  _buildSimpleMenuTile(
+                    icon: LineIcons.robot,
+                    title: 'AI Companion',
+                    subtitle: 'Your virtual dating coach',
+                    onTap: () {
+                      Navigator.of(context).pop();
+                      context.push('/ai-companion');
+                    },
+                    isDark: isDark,
+                  ),
+                  _buildDivider(),
+                  _buildSimpleMenuTile(
+                    icon: LineIcons.crown,
+                    title: 'Premium',
+                    subtitle: 'Unlock exclusive features',
+                    onTap: () {
+                      Navigator.of(context).pop();
+                      context.push('/premium');
+                    },
+                    isDark: isDark,
+                  ),
+                  _buildDivider(),
+                  _buildSimpleMenuTile(
+                    icon: LineIcons.userShield,
+                    title: 'Safety Center',
+                    subtitle: 'Privacy and safety',
+                    onTap: () {
+                      Navigator.of(context).pop();
+                      context.push('/safety');
+                    },
+                    isDark: isDark,
+                  ),
+                  _buildDivider(),
+                  _buildSimpleMenuTile(
+                    icon: LineIcons.alternateSignOut,
+                    title: 'Logout',
+                    subtitle: 'Sign out of your account',
+                    onTap: () {
+                      Navigator.of(context).pop();
+                      _showLogoutConfirmation();
+                    },
+                    isDark: isDark,
+                    isDestructive: true,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
-  Widget _buildMenuTile({
+  Widget _buildDivider() {
+    return Divider(
+      height: 1,
+      thickness: 0.5,
+      color: PulseColors.grey300.withValues(alpha: 0.3),
+      indent: 0,
+      endIndent: 0,
+    );
+  }
+
+  Widget _buildSimpleMenuTile({
     required IconData icon,
     required String title,
     required String subtitle,
     required VoidCallback onTap,
+    required bool isDark,
+    bool isDestructive = false,
   }) {
-    return Container(
-      margin: const EdgeInsets.symmetric(
-        vertical: 2,
-        horizontal: 4,
-      ), // Reduced margins
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Color(0xFF2C1810),
-            Color(0xFF3A1F15),
-          ], // Warmer brown-burgundy tones
-          stops: [0.0, 1.0],
-        ),
-        borderRadius: BorderRadius.circular(
-          PulseBorderRadius.md,
-        ), // Slightly smaller radius
-        border: Border.all(
-          color: PulseColors.primary.withValues(
-            alpha: 0.2,
-          ), // Warmer border using primary color
-          width: 1,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: PulseColors.primary.withValues(alpha: 0.1),
-            blurRadius: 6, // Reduced shadow
-            offset: const Offset(0, 1),
-          ),
-        ],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () {
-            HapticFeedback.lightImpact();
-            onTap();
-          },
-          borderRadius: BorderRadius.circular(PulseBorderRadius.md),
-          splashColor: PulseColors.primary.withValues(alpha: 0.1),
-          highlightColor: PulseColors.primary.withValues(alpha: 0.05),
-          child: Padding(
-            padding: const EdgeInsets.all(12), // Reduced padding from 16 to 12
-            child: Row(
-              children: [
-                Container(
-                  width: 40, // Reduced from 50 to 40
-                  height: 40, // Reduced from 50 to 40
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        PulseColors.primary.withValues(alpha: 0.2),
-                        PulseColors.primary.withValues(alpha: 0.1),
-                      ],
-                    ),
-                    borderRadius: BorderRadius.circular(PulseBorderRadius.sm),
-                    border: Border.all(
-                      color: PulseColors.primary.withValues(alpha: 0.3),
-                      width: 1,
-                    ),
-                  ),
-                  child: Icon(icon, color: PulseColors.primary,
-                    size: 20,
-                  ), // Reduced from 24 to 20
-                ),
-                const SizedBox(width: 12), // Reduced from 16 to 12
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        title,
-                        style: PulseTypography.bodyMedium.copyWith(
-                          // Changed from bodyLarge
-                          fontWeight: FontWeight.w300,
-                          
-                          color: Colors.white,
-                        ),
+    final textColor = isDestructive
+        ? PulseColors.reject
+        : (isDark ? PulseColors.white : PulseColors.grey900);
+    final iconColor = isDestructive ? PulseColors.reject : PulseColors.primary;
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () {
+          HapticFeedback.lightImpact();
+          onTap();
+        },
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+          child: Row(
+            children: [
+              Icon(icon, color: iconColor, size: 22),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: TextStyle(
+                        color: textColor,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w400,
                       ),
-                      // Removed the SizedBox to save space
-                      Text(
-                        subtitle,
-                        style: PulseTypography.bodySmall.copyWith(
-                          color: PulseColors.grey400,
-                          fontSize: 12, // Made slightly smaller
-                        ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      subtitle,
+                      style: TextStyle(
+                        color: isDark
+                            ? PulseColors.grey400
+                            : PulseColors.grey600,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w300,
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-                Container(
-                  width: 24, // Reduced from 32 to 24
-                  height: 24, // Reduced from 32 to 24
-                  decoration: BoxDecoration(
-                    color: Color(
-                      0xFF4A2B1A,
-                    ).withValues(alpha: 0.7), // Warmer background
-                    borderRadius: BorderRadius.circular(PulseBorderRadius.sm),
-                  ),
-                  child: const Icon(
-                    Icons.arrow_forward_ios_rounded,
-                    size: 12, // Reduced from 14 to 12
-                    color: PulseColors.grey400,
-                  ),
-                ),
-              ],
-            ),
+              ),
+              Icon(
+                Icons.arrow_forward_ios_rounded,
+                size: 14,
+                color: isDark ? PulseColors.grey500 : PulseColors.grey400,
+              ),
+            ],
           ),
         ),
       ),
