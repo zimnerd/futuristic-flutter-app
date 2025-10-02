@@ -370,12 +370,15 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     Emitter<AuthState> emit,
   ) async {
     try {
-      _logger.i('Sending OTP to: ${event.email}, type: ${event.type}');
+      _logger.i(
+        'Sending OTP to: ${event.email}, phone: ${event.phoneNumber}, type: ${event.type}',
+      );
       emit(const AuthLoading());
 
       final result = await _userRepository.sendOTP(
         email: event.email,
         phoneNumber: event.phoneNumber,
+        countryCode: event.countryCode,
         type: event.type,
         preferredMethod: event.preferredMethod,
       );

@@ -62,18 +62,169 @@ class _LoginScreenState extends State<LoginScreen> {
   void _handleLogin() {
     if (_formKey.currentState?.validate() == true) {
       if (_isPhoneMode) {
-        // Use the formatted phone number from PhoneInput widget
-        final phone = _formattedPhoneNumber.isNotEmpty ? _formattedPhoneNumber : _phoneController.text.trim();
-        context.read<AuthBloc>().add(
-          AuthSignInRequested(email: phone, password: 'temp'),
-        );
+        // Show confirmation dialog before sending OTP
+        _showPhoneConfirmationDialog();
       } else {
+        // Use regular email/password login
         final email = _emailController.text.trim();
         final password = _passwordController.text.trim();
         context.read<AuthBloc>().add(
           AuthSignInRequested(email: email, password: password),
         );
       }
+    }
+  }
+
+  /// Show confirmation dialog for phone number before sending OTP
+  Future<void> _showPhoneConfirmationDialog() async {
+    final phone = _formattedPhoneNumber.isNotEmpty
+        ? _formattedPhoneNumber
+        : _phoneController.text.trim();
+
+    // Format the display number with country code
+    String displayNumber = phone;
+    if (!phone.startsWith('+')) {
+      // Add + prefix if missing
+      displayNumber = '+$phone';
+    }
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: Row(
+            children: [
+              const Icon(
+                Icons.phone_android,
+                color: PulseColors.primary,
+                size: 28,
+              ),
+              const SizedBox(width: 12),
+              const Text(
+                'Confirm Phone Number',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+              ),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'We will send an OTP code to:',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: PulseColors.onSurfaceVariant,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: PulseColors.primary.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: PulseColors.primary.withValues(alpha: 0.3),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.verified_user,
+                      color: PulseColors.primary,
+                      size: 24,
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        displayNumber,
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: PulseColors.primary,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  const Icon(
+                    Icons.info_outline,
+                    size: 16,
+                    color: PulseColors.onSurfaceVariant,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'The OTP will be sent via WhatsApp',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: PulseColors.onSurfaceVariant.withValues(
+                          alpha: 0.8,
+                        ),
+                        fontStyle: FontStyle.italic,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text(
+                'Edit',
+                style: TextStyle(
+                  color: PulseColors.onSurfaceVariant,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: PulseColors.primary,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              child: const Text(
+                'Send OTP',
+                style: TextStyle(fontWeight: FontWeight.w600),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+
+    // If user confirmed, send the OTP
+    if (confirmed == true && mounted) {
+      // Remove '+' prefix from phone number for backend
+      final cleanPhone = phone.replaceAll('+', '');
+      
+      context.read<AuthBloc>().add(
+        AuthOTPSendRequested(
+          email: null, // No email for phone-only login
+          phoneNumber: cleanPhone,
+          countryCode: _selectedCountryCode,
+          type: 'login',
+          preferredMethod: 'whatsapp', // Use WhatsApp as preferred method
+        ),
+      );
     }
   }
 
@@ -119,6 +270,18 @@ class _LoginScreenState extends State<LoginScreen> {
 
           if (state is AuthAuthenticated) {
             context.go('/home');
+          } else if (state is AuthOTPSent) {
+            // Navigate to OTP verification screen
+            context.push(
+              '/otp-verify',
+              extra: {
+                'sessionId': state.sessionId,
+                'phoneNumber': _formattedPhoneNumber.isNotEmpty
+                    ? _formattedPhoneNumber
+                    : _phoneController.text.trim(),
+                'deliveryMethods': state.deliveryMethods,
+              },
+            );
           } else if (state is AuthError) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(

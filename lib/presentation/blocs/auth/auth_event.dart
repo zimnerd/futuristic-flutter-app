@@ -116,20 +116,28 @@ final class AuthPasswordResetRequested extends AuthEvent {
 /// Event triggered when OTP is requested
 final class AuthOTPSendRequested extends AuthEvent {
   const AuthOTPSendRequested({
-    required this.email,
+    this.email,
     required this.type,
     this.phoneNumber,
+    this.countryCode,
     this.preferredMethod,
   });
 
-  final String email;
+  final String? email;
   final String
   type; // 'login', 'registration', 'password_reset', 'phone_verification'
   final String? phoneNumber;
+  final String? countryCode;
   final String? preferredMethod; // 'email', 'whatsapp', 'both'
 
   @override
-  List<Object?> get props => [email, type, phoneNumber, preferredMethod];
+  List<Object?> get props => [
+    email,
+    type,
+    phoneNumber,
+    countryCode,
+    preferredMethod,
+  ];
 }
 
 /// Event triggered when OTP verification is requested

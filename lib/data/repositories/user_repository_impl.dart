@@ -204,17 +204,19 @@ class UserRepositoryImpl implements UserRepository {
 
   @override
   Future<Map<String, dynamic>> sendOTP({
-    required String email,
+    String? email,
     String? phoneNumber,
+    String? countryCode,
     required String type,
     String? preferredMethod,
   }) async {
     try {
-      _logger.i('Sending OTP to: $email, type: $type');
+      _logger.i('Sending OTP to: $email, phone: $phoneNumber, type: $type');
 
       final result = await _remoteDataSource.sendOTP(
         email: email,
         phoneNumber: phoneNumber,
+        countryCode: countryCode,
         type: type,
         preferredMethod: preferredMethod,
       );

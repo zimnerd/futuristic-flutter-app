@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../blocs/auth/auth_bloc.dart';
 import '../screens/auth/forgot_password_screen.dart';
 import '../screens/auth/login_screen.dart' as simple_login;
+import '../screens/auth/otp_verification_screen.dart';
 import '../screens/auth/register_screen.dart';
 import '../screens/main/home_screen.dart';
 import '../screens/main/matches_screen.dart';
@@ -98,6 +99,18 @@ class AppRouter {
         name: 'forgotPassword',
         builder: (context, state) => const ForgotPasswordScreen(),
       ),
+        GoRoute(
+          path: AppRoutes.otpVerify,
+          name: 'otpVerify',
+          builder: (context, state) {
+            final extra = state.extra as Map<String, dynamic>;
+            return OTPVerificationScreen(
+              sessionId: extra['sessionId'] as String,
+              phoneNumber: extra['phoneNumber'] as String,
+              deliveryMethods: extra['deliveryMethods'] as List<String>?,
+            );
+          },
+        ),
 
       // Main app routes with shell navigation
       ShellRoute(
@@ -376,7 +389,8 @@ class AppRouter {
         state.fullPath?.startsWith('/auth') == true ||
         state.fullPath == AppRoutes.login ||
         state.fullPath == AppRoutes.register ||
-        state.fullPath == AppRoutes.forgotPassword;
+        state.fullPath == AppRoutes.forgotPassword ||
+        state.fullPath == AppRoutes.otpVerify;
 
     final isWelcomeRoute =
         state.fullPath == AppRoutes.welcome ||
@@ -428,6 +442,7 @@ class AppRoutes {
   static const String login = '/login';
   static const String register = '/register';
   static const String forgotPassword = '/forgot-password';
+  static const String otpVerify = '/otp-verify';
   static const String home = '/home';
   static const String matches = '/matches';
   static const String messages = '/messages';

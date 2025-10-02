@@ -472,8 +472,9 @@ class UserRepositorySimple implements UserRepository {
   // OTP Authentication
   @override
   Future<Map<String, dynamic>> sendOTP({
-    required String email,
+    String? email,
     String? phoneNumber,
+    String? countryCode,
     required String type,
     String? preferredMethod,
   }) async {
@@ -483,6 +484,7 @@ class UserRepositorySimple implements UserRepository {
         data: {
           'email': email,
           if (phoneNumber != null) 'phoneNumber': phoneNumber,
+          if (countryCode != null) 'countryCode': countryCode,
           'type': type,
           if (preferredMethod != null) 'preferredMethod': preferredMethod,
         },

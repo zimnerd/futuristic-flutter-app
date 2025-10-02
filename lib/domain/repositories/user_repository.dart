@@ -28,8 +28,9 @@ abstract class UserRepository {
 
   // OTP Authentication
   Future<Map<String, dynamic>> sendOTP({
-    required String email,
+    String? email,
     String? phoneNumber,
+    String? countryCode,
     required String type,
     String? preferredMethod,
   });

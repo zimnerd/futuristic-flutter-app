@@ -33,8 +33,9 @@ abstract class UserRemoteDataSource {
 
   // OTP Authentication
   Future<Map<String, dynamic>> sendOTP({
-    required String email,
+    String? email,
     String? phoneNumber,
+    String? countryCode,
     required String type,
     String? preferredMethod,
   });
@@ -433,26 +434,44 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
 
   @override
   Future<Map<String, dynamic>> sendOTP({
-    required String email,
+    String? email,
     String? phoneNumber,
+    String? countryCode,
     required String type,
     String? preferredMethod,
   }) async {
     try {
-      _logger.i('Sending OTP to email: $email, type: $type');
+      _logger.i(
+        'Sending OTP to email: $email, phone: $phoneNumber, type: $type',
+      );
 
       final response = await _apiClient.sendOTP(
         email: email,
         phoneNumber: phoneNumber,
+        countryCode: countryCode,
         type: type,
         preferredMethod: preferredMethod,
       );
 
       if (response.statusCode == 200) {
+        final data = response.data['data'] ?? response.data;
+
+        // Parse deliveryMethods - backend returns a map like: {"whatsapp": {"sent": true}}
+        final deliveryMethodsMap =
+            data['deliveryMethods'] as Map<String, dynamic>?;
+        final deliveryMethods = <String>[];
+        if (deliveryMethodsMap != null) {
+          deliveryMethodsMap.forEach((method, details) {
+            if (details is Map && details['sent'] == true) {
+              deliveryMethods.add(method);
+            }
+          });
+        }
+        
         return {
-          'sessionId': response.data['sessionId'],
-          'deliveryMethods': response.data['deliveryMethods'],
-          'expiresAt': response.data['expiresAt'],
+          'sessionId': data['sessionId'],
+          'deliveryMethods': deliveryMethods,
+          'expiresAt': data['expiresAt'],
         };
       } else {
         throw ApiException('Failed to send OTP: ${response.statusMessage}');

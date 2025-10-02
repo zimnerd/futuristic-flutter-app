@@ -5,6 +5,7 @@ import 'package:hive/hive.dart';
 import '../../domain/repositories/user_repository.dart';
 import '../repositories/user_repository_simple.dart';
 import '../../domain/services/api_service.dart';
+import 'api_service_impl.dart';
 import 'matching_service.dart';
 import 'messaging_service.dart';
 import 'profile_service.dart';
@@ -41,6 +42,7 @@ class ServiceLocator {
 
   // Service instances
   late final ApiClient _apiClient;
+  late final ApiService _apiService;
   late final UserRepository _userRepository;
   late final MatchingService _matchingService;
   late final MessagingService _messagingService;
@@ -74,12 +76,15 @@ class ServiceLocator {
   void initialize([Box<String>? secureStorageBox]) {
     if (_isInitialized) return;
 
-    // Initialize API client
+    // Initialize API client (for advanced features)
     _apiClient = ApiClient.instance;
+    
+    // Initialize API service implementation (for repository pattern)
+    _apiService = ApiServiceImpl();
 
-    // Initialize UserRepository
+    // Initialize UserRepository with ApiService
     _userRepository = UserRepositorySimple(
-      apiService: _apiClient as ApiService,
+      apiService: _apiService,
     );
 
     // Initialize AuthService with provided secure storage box or try to get existing one

@@ -334,16 +334,18 @@ class ApiClient {
 
   /// Send OTP for verification
   Future<Response> sendOTP({
-    required String email,
+    String? email,
     String? phoneNumber,
+    String? countryCode,
     required String type,
     String? preferredMethod,
   }) async {
     return await _dio.post(
       ApiConstants.authSendOTP,
       data: {
-        'email': email,
+        if (email != null && email.isNotEmpty) 'email': email,
         if (phoneNumber != null) 'phoneNumber': phoneNumber,
+        if (countryCode != null) 'countryCode': countryCode,
         'type': type,
         if (preferredMethod != null) 'preferredMethod': preferredMethod,
       },
