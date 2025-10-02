@@ -501,9 +501,21 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
       if (response.statusCode == 200) {
         final responseData = response.data['data'] ?? response.data;
         final verified = responseData['verified'] ?? false;
+        final requiresRegistration =
+            responseData['requiresRegistration'] ?? false;
 
         if (verified) {
-          // Store tokens if verification successful
+          // Check if user needs to complete registration
+          if (requiresRegistration) {
+            _logger.i('OTP verified but user needs to complete registration');
+            return {
+              'verified': true,
+              'requiresRegistration': true,
+              'phoneNumber': responseData['phoneNumber'],
+            };
+          }
+
+          // Store tokens if verification successful and user exists
           final tokens = responseData['tokens'];
           if (tokens != null && tokens['accessToken'] != null) {
             _apiClient.setAuthToken(tokens['accessToken']);
@@ -532,6 +544,7 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
 
           return {
             'verified': true,
+            'requiresRegistration': false,
             'user': responseData['user'],
             'tokens': tokens,
           };

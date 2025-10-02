@@ -14,7 +14,9 @@ import '../../widgets/phone_input.dart';
 
 /// Enhanced registration screen for new users
 class RegisterScreen extends StatefulWidget {
-  const RegisterScreen({super.key});
+  final String? phoneNumber;
+
+  const RegisterScreen({super.key, this.phoneNumber});
 
   @override
   State<RegisterScreen> createState() => _RegisterScreenState();
@@ -38,6 +40,30 @@ class _RegisterScreenState extends State<RegisterScreen> {
     super.initState();
     // Initialize with location-based country detection
     _initializeCountryCode();
+    
+    // Pre-fill phone number if provided (from OTP verification)
+    if (widget.phoneNumber != null) {
+      final phone = widget.phoneNumber!;
+      // Extract country code and number
+      if (phone.startsWith('+')) {
+        // Parse the phone number
+        final phoneWithoutPlus = phone.substring(1);
+        // Common country codes
+        if (phoneWithoutPlus.startsWith('27')) {
+          _selectedCountryCode = '+27';
+          _phoneController.text = phoneWithoutPlus.substring(2);
+        } else if (phoneWithoutPlus.startsWith('1')) {
+          _selectedCountryCode = '+1';
+          _phoneController.text = phoneWithoutPlus.substring(1);
+        } else {
+          // Default: assume first 2-3 digits are country code
+          _phoneController.text = phoneWithoutPlus;
+        }
+      } else {
+        _phoneController.text = phone;
+      }
+      _currentPhone = phone;
+    }
   }
 
   @override

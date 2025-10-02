@@ -120,6 +120,22 @@ final class AuthOTPVerificationFailed extends AuthState {
   List<Object?> get props => [message, attemptsRemaining, sessionId];
 }
 
+/// State when OTP is verified but user needs to complete registration
+final class AuthOTPVerifiedRequiresRegistration extends AuthState {
+  const AuthOTPVerifiedRequiresRegistration({
+    required this.phoneNumber,
+    required this.sessionId,
+    this.message,
+  });
+
+  final String phoneNumber;
+  final String sessionId;
+  final String? message;
+
+  @override
+  List<Object?> get props => [phoneNumber, sessionId, message];
+}
+
 /// State when phone validation is in progress
 final class AuthPhoneValidating extends AuthState {
   const AuthPhoneValidating();

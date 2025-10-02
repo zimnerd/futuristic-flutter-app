@@ -127,6 +127,12 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
           if (state is AuthAuthenticated) {
             _logger.i('✅ OTP verification successful, navigating to home');
             context.go('/home');
+          } else if (state is AuthOTPVerifiedRequiresRegistration) {
+            _logger.i(
+              '✅ OTP verified, navigating to registration with phone: ${state.phoneNumber}',
+            );
+            // Navigate to registration screen with pre-filled phone number
+            context.go('/register', extra: {'phoneNumber': state.phoneNumber});
           } else if (state is AuthOTPSent) {
             // OTP resent successfully
             ScaffoldMessenger.of(context).showSnackBar(

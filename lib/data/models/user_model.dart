@@ -87,7 +87,9 @@ class UserModel {
       preferences: json['preferences'] != null 
           ? Map<String, dynamic>.from(json['preferences'])
           : null,
-      createdAt: DateTime.parse(json['createdAt']),
+      createdAt: json['createdAt'] != null
+          ? DateTime.parse(json['createdAt'])
+          : DateTime.now(), // Default to now if not provided
       updatedAt: json['updatedAt'] != null
           ? DateTime.parse(json['updatedAt'])
           : null,

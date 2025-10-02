@@ -92,7 +92,11 @@ class AppRouter {
       GoRoute(
         path: AppRoutes.register,
         name: 'register',
-        builder: (context, state) => const RegisterScreen(),
+          builder: (context, state) {
+            final extra = state.extra as Map<String, dynamic>?;
+            final phoneNumber = extra?['phoneNumber'] as String?;
+            return RegisterScreen(phoneNumber: phoneNumber);
+          },
       ),
       GoRoute(
         path: AppRoutes.forgotPassword,

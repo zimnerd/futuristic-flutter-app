@@ -420,18 +420,36 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       );
 
       if (result['verified'] == true) {
-        // Successful verification
-        final userData = result['user'];
-        if (userData != null) {
-          final user = UserModel.fromJson(userData);
-          emit(AuthAuthenticated(user: user));
-          _logger.i('OTP verification successful: ${user.username}');
-        } else {
+        // Check if user needs to complete registration
+        final requiresRegistration = result['requiresRegistration'] ?? false;
+
+        if (requiresRegistration) {
+          // OTP verified but user needs to register
+          final phoneNumber = result['phoneNumber'] ?? event.email;
           emit(
-            const AuthError(
-              message: 'Verification successful but user data not found',
+            AuthOTPVerifiedRequiresRegistration(
+              phoneNumber: phoneNumber,
+              sessionId: event.sessionId,
+              message: 'Please complete your registration',
             ),
           );
+          _logger.i(
+            'OTP verified, user needs to complete registration: $phoneNumber',
+          );
+        } else {
+          // Existing user - successful authentication
+          final userData = result['user'];
+          if (userData != null) {
+            final user = UserModel.fromJson(userData);
+            emit(AuthAuthenticated(user: user));
+            _logger.i('OTP verification successful: ${user.username}');
+          } else {
+            emit(
+              const AuthError(
+                message: 'Verification successful but user data not found',
+              ),
+            );
+          }
         }
       } else {
         // Failed verification
