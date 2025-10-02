@@ -365,7 +365,7 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper>
                       },
                     ),
                     _buildMenuTile(
-                        icon: LineIcons.pieChart,
+                        icon: LineIcons.barChart,
                         title: 'Statistics',
                         subtitle: 'Your dating insights',
                         onTap: () {
