@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import '../../data/models/subscription.dart';
 import '../../data/models/subscription_plan.dart';
 import '../../data/models/subscription_usage.dart';
@@ -594,7 +595,7 @@ class _SubscriptionManagementScreenState extends State<SubscriptionManagementScr
   }
 
   void _navigateToPaymentHistory() {
-    Navigator.pushNamed(context, '/payment-history');
+    context.push('/payment-history');
   }
 
   Future<bool> _showCancelConfirmationDialog() async {

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:pulse_dating_app/core/theme/app_colors.dart';
 import 'package:pulse_dating_app/data/models/premium.dart';
 
@@ -85,7 +86,7 @@ class _AiMatchingPreferencesState extends State<AiMatchingPreferences> {
             onPressed: () {
               Navigator.pop(context);
               // Navigate to premium upgrade screen
-              Navigator.pushNamed(context, '/premium-upgrade');
+              context.push('/premium-upgrade');
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primary,

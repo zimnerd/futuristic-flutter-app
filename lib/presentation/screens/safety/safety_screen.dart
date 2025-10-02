@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../data/models/safety.dart';
 import '../../blocs/safety/safety_bloc.dart';
@@ -43,7 +44,7 @@ class _SafetyScreenState extends State<SafetyScreen> {
           IconButton(
             icon: const Icon(Icons.settings, color: Colors.white),
             onPressed: () {
-              Navigator.pushNamed(context, '/safety-settings');
+              context.push('/safety-settings');
             },
           ),
         ],
@@ -170,7 +171,7 @@ class _SafetyScreenState extends State<SafetyScreen> {
                   icon: Icons.report,
                   title: 'Report User',
                   subtitle: 'Report inappropriate behavior',
-                  onTap: () => Navigator.pushNamed(context, '/report-user'),
+                  onTap: () => context.push('/report-user'),
                 ),
               ),
               const SizedBox(width: 12),
@@ -180,7 +181,7 @@ class _SafetyScreenState extends State<SafetyScreen> {
                   icon: Icons.block,
                   title: 'Block User',
                   subtitle: 'Block and hide from matches',
-                  onTap: () => Navigator.pushNamed(context, '/blocked-users'),
+                  onTap: () => context.push('/blocked-users'),
                 ),
               ),
             ],
@@ -194,7 +195,7 @@ class _SafetyScreenState extends State<SafetyScreen> {
                   icon: Icons.verified_user,
                   title: 'Verification',
                   subtitle: 'Verify your identity',
-                  onTap: () => Navigator.pushNamed(context, '/verification'),
+                  onTap: () => context.push('/verification'),
                 ),
               ),
               const SizedBox(width: 12),
@@ -204,7 +205,7 @@ class _SafetyScreenState extends State<SafetyScreen> {
                   icon: Icons.help,
                   title: 'Safety Tips',
                   subtitle: 'Learn safety best practices',
-                  onTap: () => Navigator.pushNamed(context, '/safety-tips'),
+                  onTap: () => context.push('/safety-tips'),
                 ),
               ),
             ],

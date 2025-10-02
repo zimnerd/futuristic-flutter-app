@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:get_it/get_it.dart';
 import '../../bloc/group_chat_bloc.dart';
 import '../../data/models.dart';
 import '../../data/group_chat_service.dart';
-import 'create_group_screen.dart';
-import 'group_chat_screen.dart';
-import 'video_call_screen.dart';
+import '../../../../presentation/navigation/app_router.dart';
 import '../../../../data/services/webrtc_service.dart';
 
 class GroupListScreen extends StatefulWidget {
@@ -223,17 +222,11 @@ class _GroupListScreenState extends State<GroupListScreen>
     );
   }
 
-  void _navigateToCreateGroup() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => const CreateGroupScreen(),
-      ),
-    ).then((result) {
-      if (result != null) {
-        _loadGroups();
-      }
-    });
+  void _navigateToCreateGroup() async {
+    final result = await context.push(AppRoutes.createGroup);
+    if (result != null && mounted) {
+      _loadGroups();
+    }
   }
 
   void _createLiveSession() {
@@ -505,12 +498,7 @@ class _GroupListScreenState extends State<GroupListScreen>
   }
 
   void _openGroupChat(GroupConversation group) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => GroupChatScreen(group: group),
-      ),
-    );
+    context.push(AppRoutes.groupChat, extra: group);
   }
 
   void _joinLiveSession(LiveSession session) async {
@@ -546,14 +534,13 @@ class _GroupListScreenState extends State<GroupListScreen>
       Navigator.of(context).pop();
 
       // Navigate to video call screen
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (context) => VideoCallScreen(
-            liveSessionId: session.id,
-            rtcToken: tokenData['token'] as String,
-            session: session,
-          ),
-        ),
+      context.push(
+        AppRoutes.videoCall,
+        extra: {
+          'liveSessionId': session.id,
+          'rtcToken': tokenData['token'] as String,
+          'session': session,
+        },
       );
 
       // Show success feedback

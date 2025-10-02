@@ -18,6 +18,12 @@ import '../screens/statistics_screen.dart';
 import '../screens/onboarding/onboarding_screen.dart';
 import '../screens/onboarding/modern_landing_screen.dart';
 import '../screens/subscription_management_screen.dart';
+import '../screens/payment/payment_methods_screen.dart';
+import '../../../presentation/payment/screens/saved_payment_methods_screen.dart';
+import '../../../presentation/payment/screens/add_payment_method_screen.dart';
+import '../../../screens/payment_history_screen.dart';
+import '../../../screens/payment_processing_screen.dart';
+import '../../../domain/entities/payment_entities.dart';
 // Advanced feature screens
 import '../screens/virtual_gifts/virtual_gifts_screen.dart';
 import '../screens/premium/premium_screen.dart';
@@ -36,6 +42,8 @@ import '../screens/live_streaming/live_stream_viewer_screen.dart';
 import '../screens/live_streaming/live_stream_broadcaster_screen.dart';
 import '../screens/ai_companion/ai_companion_chat_screen.dart';
 import '../../../features/group_chat/presentation/screens/group_chat_screen.dart';
+import '../../../features/group_chat/presentation/screens/create_group_screen.dart';
+import '../../../features/group_chat/presentation/screens/group_list_screen.dart';
 import '../../../features/group_chat/presentation/screens/video_call_screen.dart'
     as group_chat_video;
 import '../screens/group_chat/group_chat_settings_screen.dart';
@@ -502,6 +510,13 @@ class AppRouter {
 
         // Group Chat routes
         GoRoute(
+          path: AppRoutes.groupList,
+          name: 'groupList',
+          builder: (context, state) {
+            return const GroupListScreen();
+          },
+        ),
+        GoRoute(
           path: AppRoutes.groupChat,
           name: 'groupChat',
           builder: (context, state) {
@@ -515,6 +530,13 @@ class AppRouter {
           builder: (context, state) {
             final group = state.extra as GroupConversation;
             return GroupChatSettingsScreen(group: group);
+          },
+        ),
+        GoRoute(
+          path: AppRoutes.createGroup,
+          name: 'createGroup',
+          builder: (context, state) {
+            return const CreateGroupScreen();
           },
         ),
         GoRoute(
@@ -535,6 +557,46 @@ class AppRouter {
           path: AppRoutes.notifications,
           name: 'notifications',
           builder: (context, state) => const NotificationScreen(),
+        ),
+
+        // Payment routes
+        GoRoute(
+          path: AppRoutes.paymentMethods,
+          name: 'paymentMethods',
+          builder: (context, state) => const PaymentMethodsScreen(),
+        ),
+        GoRoute(
+          path: AppRoutes.savedPaymentMethods,
+          name: 'savedPaymentMethods',
+          builder: (context, state) => const SavedPaymentMethodsScreen(),
+        ),
+        GoRoute(
+          path: AppRoutes.addPaymentMethod,
+          name: 'addPaymentMethod',
+          builder: (context, state) => const AddPaymentMethodScreen(),
+        ),
+        GoRoute(
+          path: AppRoutes.paymentHistory,
+          name: 'paymentHistory',
+          builder: (context, state) => const PaymentHistoryScreen(),
+        ),
+        GoRoute(
+          path: AppRoutes.paymentProcessing,
+          name: 'paymentProcessing',
+          builder: (context, state) {
+            final extra = state.extra as Map<String, dynamic>?;
+            final amount = extra?['amount'] as double? ?? 0.0;
+            final typeString = extra?['type'] as String? ?? 'premium';
+            // Convert String to PaymentType enum
+            final paymentType = PaymentType.values.firstWhere(
+              (e) => e.name == typeString,
+              orElse: () => PaymentType.premium,
+            );
+            return PaymentProcessingScreen(
+              amount: amount,
+              paymentType: paymentType,
+            );
+          },
         ),
     ],
     errorBuilder: (context, state) => Scaffold(
@@ -685,9 +747,18 @@ class AppRoutes {
   static const String aiCompanionChat = '/ai-companion-chat';
 
   // Group chat routes
+  static const String groupList = '/group-list';
   static const String groupChat = '/group-chat';
   static const String groupChatSettings = '/group-chat-settings';
+  static const String createGroup = '/create-group';
 
   // Notification route
   static const String notifications = '/notifications';
+
+  // Payment routes
+  static const String paymentMethods = '/payment-methods';
+  static const String savedPaymentMethods = '/saved-payment-methods';
+  static const String addPaymentMethod = '/add-payment-method';
+  static const String paymentHistory = '/payment-history';
+  static const String paymentProcessing = '/payment-processing';
 }
