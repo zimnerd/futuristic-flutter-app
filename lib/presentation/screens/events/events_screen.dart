@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/utils/logger.dart';
 import '../../../domain/entities/event.dart';
 import '../../blocs/event/event_bloc.dart';
 import '../../blocs/event/event_event.dart';
@@ -28,7 +29,12 @@ class _EventsScreenState extends State<EventsScreen> {
   @override
   void initState() {
     super.initState();
-    _loadEvents();
+    
+    // Defer event loading until after build completes to ensure bloc context is available
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      AppLogger.info('📱 Events Screen: PostFrameCallback triggered');
+      _loadEvents();
+    });
   }
 
   @override
@@ -39,7 +45,19 @@ class _EventsScreenState extends State<EventsScreen> {
   }
 
   void _loadEvents() {
-    context.read<EventBloc>().add(const LoadEvents());
+    try {
+      AppLogger.info('📱 Events Screen: _loadEvents() called');
+      final bloc = context.read<EventBloc>();
+      AppLogger.info(
+        '📱 Events Screen: Got EventBloc, current state: ${bloc.state.runtimeType}',
+      );
+      AppLogger.info('📱 Events Screen: Dispatching LoadEvents...');
+      bloc.add(const LoadEvents());
+      AppLogger.info('📱 Events Screen: LoadEvents dispatched');
+    } catch (e, stackTrace) {
+      AppLogger.error('📱 Events Screen: ERROR in _loadEvents: $e');
+      AppLogger.error('📱 Stack trace: $stackTrace');
+    }
   }
 
   void _onCategorySelected(String? category) {
@@ -76,7 +94,10 @@ class _EventsScreenState extends State<EventsScreen> {
   }
 
   void _onRefreshCategories() {
+    AppLogger.info('📱 Events Screen: Refresh button tapped');
     context.read<EventBloc>().add(RefreshEventCategories());
+    // Also reload events, not just categories!
+    _loadEvents();
   }
 
   void _onShowFilters() {

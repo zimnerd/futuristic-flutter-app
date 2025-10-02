@@ -141,12 +141,22 @@ class Event {
       eventCoordinates = const EventCoordinates(lat: -33.9249, lng: 18.4241);
     }
 
-    // Handle category - extract from tags array or use default
+    // Handle category - prioritize category object's slug, fallback to tags
     String eventCategory = 'general';
-    if (eventData['tags'] is List && (eventData['tags'] as List).isNotEmpty) {
-      eventCategory = eventData['tags'][0] as String;
+    if (eventData['category'] is Map<String, dynamic>) {
+      // API returns category as object with id, name, slug, etc.
+      final categoryObj = eventData['category'] as Map<String, dynamic>;
+      eventCategory =
+          categoryObj['slug'] as String? ??
+          categoryObj['name'] as String? ??
+          'general';
     } else if (eventData['category'] is String) {
+      // Legacy: category as direct string
       eventCategory = eventData['category'] as String;
+    } else if (eventData['tags'] is List &&
+        (eventData['tags'] as List).isNotEmpty) {
+      // Fallback: extract from tags array
+      eventCategory = eventData['tags'][0] as String;
     }
 
     return Event(

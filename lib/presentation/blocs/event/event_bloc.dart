@@ -61,8 +61,12 @@ class EventBloc extends Bloc<EventEvent, EventState> {
 
   Future<void> _onLoadEvents(LoadEvents event, Emitter<EventState> emit) async {
     try {
+      AppLogger.info(
+        '🎯 LoadEvents triggered - lat: ${event.latitude}, lng: ${event.longitude}, category: ${event.category}, userId: $_currentUserId',
+      );
       emit(const EventLoading());
 
+      AppLogger.info('🌐 Calling _eventService.getEvents...');
       final events = await _eventService.getEvents(
         latitude: event.latitude,
         longitude: event.longitude,
@@ -71,10 +75,12 @@ class EventBloc extends Bloc<EventEvent, EventState> {
         currentUserId: _currentUserId,
       );
 
+      AppLogger.info('✅ Received ${events.length} events from API');
       _allEvents = events;
       _currentCategory = event.category;
 
       final filteredEvents = _applyFilters(events);
+      AppLogger.info('🔍 After filtering: ${filteredEvents.length} events');
 
       emit(EventsLoaded(
         events: events,
@@ -83,7 +89,7 @@ class EventBloc extends Bloc<EventEvent, EventState> {
         searchQuery: _searchQuery,
       ));
     } catch (e) {
-      AppLogger.error('Error loading events: $e');
+      AppLogger.error('❌ Error loading events: $e');
 
       String errorMessage;
       if (e is EventServiceException) {
