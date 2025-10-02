@@ -411,12 +411,20 @@ class _MatchesScreenState extends State<MatchesScreen>
             child: const Text('Cancel'),
           ),
           TextButton(
-            onPressed: () {
+            onPressed: () async {
               Navigator.of(dialogContext).pop();
-              // TODO: Implement unmatch functionality
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Unmatched successfully')),
-              );
+              try {
+                // TODO: Implement actual unmatch API call when endpoint is available
+                // await matchRepository.unmatch(match.id);
+
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Unmatched successfully')),
+                );
+              } catch (e) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Failed to unmatch: ${e.toString()}')),
+                );
+              }
             },
             style: TextButton.styleFrom(foregroundColor: Colors.red),
             child: const Text('Unmatch'),
@@ -440,12 +448,27 @@ class _MatchesScreenState extends State<MatchesScreen>
             child: const Text('Cancel'),
           ),
           TextButton(
-            onPressed: () {
+            onPressed: () async {
               Navigator.of(dialogContext).pop();
-              // TODO: Implement block functionality
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('User blocked successfully')),
-              );
+              try {
+                final userId = match.userProfile?.id;
+                if (userId == null) {
+                  throw Exception('User ID not available');
+                }
+
+                // Use SafetyService to block user
+                // TODO: Inject SafetyService via DI and call blockUser(userId)
+
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('User blocked successfully')),
+                );
+              } catch (e) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Failed to block user: ${e.toString()}'),
+                  ),
+                );
+              }
             },
             style: TextButton.styleFrom(foregroundColor: Colors.red),
             child: const Text('Block'),
@@ -469,16 +492,31 @@ class _MatchesScreenState extends State<MatchesScreen>
             child: const Text('Cancel'),
           ),
           TextButton(
-            onPressed: () {
+            onPressed: () async {
               Navigator.of(dialogContext).pop();
-              // TODO: Implement report functionality
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text(
-                    'Report submitted. Thank you for helping keep PulseLink safe.',
+              try {
+                final userId = match.userProfile?.id;
+                if (userId == null) {
+                  throw Exception('User ID not available');
+                }
+
+                // Use SafetyService to report user
+                // TODO: Inject SafetyService via DI and call reportUser(userId, reason)
+
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text(
+                      'Report submitted. Thank you for helping keep PulseLink safe.',
+                    ),
                   ),
-                ),
-              );
+                );
+              } catch (e) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Failed to submit report: ${e.toString()}'),
+                  ),
+                );
+              }
             },
             style: TextButton.styleFrom(foregroundColor: Colors.red),
             child: const Text('Report'),

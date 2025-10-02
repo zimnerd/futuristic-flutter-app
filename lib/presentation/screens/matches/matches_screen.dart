@@ -985,20 +985,6 @@ class _MatchesScreenState extends State<MatchesScreen>
     }
   }
 
-  // TODO: Connect this to MatchCard onMessage callback for quick messaging from match cards
-  void _startConversation(MatchModel match) {
-    AppLogger.debug('💬 Starting conversation for match: ${match.id}');
-
-    if (match.conversationId != null && mounted) {
-      // Navigate to existing conversation
-      context.push('/chat/${match.conversationId}');
-    } else if (match.userProfile != null && mounted) {
-      // Navigate to user chat (fallback)
-      context.push('/chat/${match.userProfile!.id}');
-    }
-  }
-
-
   void _showMatchDetails(MatchModel match) {
     if (mounted) {
       showModalBottomSheet(

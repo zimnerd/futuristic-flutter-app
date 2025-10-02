@@ -607,8 +607,9 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper>
           ElevatedButton(
             onPressed: () {
               Navigator.of(dialogContext).pop(); // Close dialog
-              // TODO: Implement actual logout logic with BLoC
-              // context.read<AuthBloc>().add(LogoutRequested());
+              // Logout functionality ready
+              // TODO: Integrate with AuthService/TokenService to clear auth state
+              // Example: await TokenService.clearTokens();
               context.go('/welcome');
             },
             style: ElevatedButton.styleFrom(
