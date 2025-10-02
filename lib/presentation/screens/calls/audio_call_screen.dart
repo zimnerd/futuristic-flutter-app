@@ -3,7 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import '../../../data/services/audio_call_service.dart';
+import '../../../data/services/conversation_service.dart';
+import '../../../data/services/messaging_service.dart';
+import '../../../core/network/api_client.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/utils/logger.dart';
 
 class AudioCallScreen extends StatefulWidget {
   final String callId;
@@ -13,6 +17,7 @@ class AudioCallScreen extends StatefulWidget {
   final String? channelName;
   final String? token;
   final bool isOutgoing;
+  final String? conversationId; // Optional, will be created if null
 
   const AudioCallScreen({
     super.key,
@@ -23,6 +28,7 @@ class AudioCallScreen extends StatefulWidget {
     this.channelName,
     this.token,
     this.isOutgoing = false,
+    this.conversationId,
   });
 
   @override
@@ -32,6 +38,11 @@ class AudioCallScreen extends StatefulWidget {
 class _AudioCallScreenState extends State<AudioCallScreen>
     with TickerProviderStateMixin {
   late AudioCallService _audioService;
+  final MessagingService _messagingService = MessagingService(
+    apiClient: ApiClient.instance,
+  );
+  final ConversationService _conversationService = ConversationService();
+  
   StreamSubscription<bool>? _callStateSubscription;
   StreamSubscription<bool>? _muteStateSubscription;
   StreamSubscription<bool>? _speakerStateSubscription;
@@ -46,6 +57,8 @@ class _AudioCallScreenState extends State<AudioCallScreen>
   bool _remoteUserJoined = false;
   Duration _callDuration = Duration.zero;
   QualityType _connectionQuality = QualityType.qualityUnknown;
+  String? _activeConversationId; // Track conversation for call message
+  DateTime? _callStartTime; // Track when call actually connected
 
   late AnimationController _pulseController;
   late Animation<double> _pulseAnimation;
@@ -54,6 +67,7 @@ class _AudioCallScreenState extends State<AudioCallScreen>
   void initState() {
     super.initState();
     _audioService = AudioCallService.instance;
+    _activeConversationId = widget.conversationId;
     _setupPulseAnimation();
     _setupStreamListeners();
     _initializeCall();
@@ -88,6 +102,8 @@ class _AudioCallScreenState extends State<AudioCallScreen>
       if (mounted) {
         setState(() {
           _remoteUserJoined = true;
+          // Track when call actually connects (remote user joins)
+          _callStartTime ??= DateTime.now();
         });
       }
     });
@@ -175,7 +191,44 @@ class _AudioCallScreenState extends State<AudioCallScreen>
   }
 
   Future<void> _endCall() async {
+    // Calculate call duration
+    final duration = _callDuration.inSeconds;
+    final connected = _remoteUserJoined && _callStartTime != null;
+
+    // Leave the call first
     await _audioService.leaveCall();
+    
+    // Create call message in conversation (WhatsApp-style)
+    try {
+      // Get or create conversation
+      String conversationId = _activeConversationId ?? '';
+      if (conversationId.isEmpty) {
+        final conversation = await _conversationService.createConversation(
+          participantId: widget.recipientId,
+        );
+        if (conversation != null) {
+          conversationId = conversation.id;
+        }
+      }
+
+      // Only create message if we have a valid conversation
+      if (conversationId.isNotEmpty) {
+        await _messagingService.createCallMessage(
+          conversationId: conversationId,
+          callType: 'audio', // TODO: Support video calls
+          duration: duration,
+          isIncoming: !widget.isOutgoing,
+          isMissed: !connected, // Missed if remote user never joined
+        );
+        AppLogger.info(
+          'Call message created: duration=${duration}s, connected=$connected',
+        );
+      }
+    } catch (e) {
+      // Don't block navigation if call message fails
+      AppLogger.error('Failed to create call message: $e');
+    }
+    
     if (mounted) {
       Navigator.of(context).pop();
     }

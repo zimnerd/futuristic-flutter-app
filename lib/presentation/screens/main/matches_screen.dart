@@ -333,6 +333,8 @@ class _MatchesScreenState extends State<MatchesScreen>
                 ? () {
                     Navigator.of(context).push(
                       MaterialPageRoute(
+                        fullscreenDialog:
+                            true, // Hide bottom navigation bar for call UI
                         builder: (context) => AudioCallScreen(
                           callId:
                               'call_${match.userProfile!.id}_${DateTime.now().millisecondsSinceEpoch}',
@@ -364,6 +366,8 @@ class _MatchesScreenState extends State<MatchesScreen>
                 Navigator.push(
                   context,
                   MaterialPageRoute(
+                    fullscreenDialog:
+                        true, // Hide bottom nav for full-screen experience
                     builder: (context) => ProfileDetailsScreen(
                       profile: match.userProfile!,
                       isOwnProfile: false,

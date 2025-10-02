@@ -976,6 +976,7 @@ class _MatchesScreenState extends State<MatchesScreen>
     if (mounted && match.userProfile != null) {
       Navigator.of(context).push(
         PageRouteBuilder(
+          fullscreenDialog: true, // Hide bottom navigation bar
           pageBuilder: (context, animation, secondaryAnimation) =>
               ProfileDetailsScreen(
                 profile: match.userProfile!,

@@ -204,6 +204,7 @@ enum MessageType {
   contact,
   file,
   system,
+  call, // WhatsApp-style call messages
 }
 
 /// Message status enumeration

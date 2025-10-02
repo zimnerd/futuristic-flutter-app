@@ -108,6 +108,31 @@ class MessagingService {
     }
   }
 
+  /// Create a call message entry (WhatsApp-style)
+  Future<Message> createCallMessage({
+    required String conversationId,
+    required String callType, // 'audio' or 'video'
+    required int duration, // in seconds
+    required bool isIncoming,
+    bool isMissed = false,
+  }) async {
+    try {
+      final response = await _apiClient.createCallMessage(
+        conversationId: conversationId,
+        callType: callType,
+        duration: duration,
+        isIncoming: isIncoming,
+        isMissed: isMissed,
+      );
+
+      final data = response.data as Map<String, dynamic>;
+      return _messageFromJson(data['data'] as Map<String, dynamic>);
+    } on DioException catch (e) {
+      AppLogger.error('MessagingService createCallMessage - Error: $e');
+      throw _handleDioError(e);
+    }
+  }
+
   /// Mark conversation as read
   Future<void> markConversationAsRead(String conversationId) async {
     try {
@@ -214,6 +239,8 @@ class MessagingService {
         return MessageType.location;
       case 'contact':
         return MessageType.contact;
+      case 'call':
+        return MessageType.call;
       default:
         return MessageType.text;
     }

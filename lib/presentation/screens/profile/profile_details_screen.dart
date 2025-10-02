@@ -84,6 +84,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
     // Navigate to audio call screen
     Navigator.of(context).push(
       MaterialPageRoute(
+        fullscreenDialog: true, // Hide bottom navigation bar for call UI
         builder: (context) => AudioCallScreen(
           callId:
               'call_${widget.profile.id}_${DateTime.now().millisecondsSinceEpoch}',
@@ -179,6 +180,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
+      extendBody: false, // Ensure bottom sheet isn't obscured
       body: CustomScrollView(
         slivers: [
           _buildSliverAppBar(),
@@ -221,6 +223,8 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
             onPressed: () {
               Navigator.of(context).push(
                 MaterialPageRoute(
+                  fullscreenDialog:
+                      true, // Hide bottom navigation bar for edit UI
                   builder: (context) => const EnhancedProfileEditScreen(),
                 ),
               );

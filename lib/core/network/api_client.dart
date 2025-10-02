@@ -629,6 +629,25 @@ class ApiClient {
     );
   }
 
+  /// Create a call message entry (WhatsApp-style)
+  Future<Response> createCallMessage({
+    required String conversationId,
+    required String callType, // 'audio' or 'video'
+    required int duration, // in seconds
+    required bool isIncoming,
+    bool isMissed = false,
+  }) async {
+    return await _dio.post(
+      '/api/v1/chat/conversations/$conversationId/call-message',
+      data: {
+        'callType': callType,
+        'duration': duration,
+        'isIncoming': isIncoming,
+        'isMissed': isMissed,
+      },
+    );
+  }
+
   /// Mark messages as read
   Future<Response> markMessagesAsRead({
     required String conversationId,

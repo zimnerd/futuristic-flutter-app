@@ -209,6 +209,7 @@ class _SwipeCardState extends State<SwipeCard>
   void _showProfileDetails() {
     Navigator.of(context).push(
       PageRouteBuilder(
+        fullscreenDialog: true, // Hide bottom navigation bar
         pageBuilder: (context, animation, secondaryAnimation) => ProfileDetailsScreen(
           profile: widget.user,
           isOwnProfile: false,

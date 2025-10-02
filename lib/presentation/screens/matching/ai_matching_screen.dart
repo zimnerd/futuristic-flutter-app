@@ -606,6 +606,7 @@ class _AiMatchingScreenState extends State<AiMatchingScreen>
     Navigator.push(
       context,
       MaterialPageRoute(
+        fullscreenDialog: true, // Hide bottom navigation bar
         builder: (context) => ProfileDetailsScreen(
           profile: match.userProfile!,
           isOwnProfile: false,

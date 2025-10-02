@@ -27,6 +27,7 @@ class ProfileNavigation {
   }) {
     return Navigator.of(context).push(
       MaterialPageRoute(
+        fullscreenDialog: true, // Hide bottom navigation bar
         builder: (context) => ProfileDetailsScreen(
           profile: profile,
           isOwnProfile: isOwnProfile,
