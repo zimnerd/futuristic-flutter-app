@@ -400,6 +400,26 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper>
                         context.push('/safety');
                       },
                     ),
+                      const SizedBox(height: PulseSpacing.sm),
+                      // Divider before logout
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 4),
+                        child: Divider(
+                          color: PulseColors.grey600.withValues(alpha: 0.3),
+                          thickness: 1,
+                        ),
+                      ),
+                      const SizedBox(height: PulseSpacing.xs),
+                      // Logout option
+                      _buildMenuTile(
+                        icon: LineIcons.alternateSignOut,
+                        title: 'Logout',
+                        subtitle: 'Sign out of your account',
+                        onTap: () {
+                          Navigator.of(context).pop();
+                          _showLogoutConfirmation();
+                        },
+                      ),
                     ], // Close children array
                   ), // Close Column
                 ), // Close Padding
@@ -528,6 +548,86 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper>
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  void _showLogoutConfirmation() {
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: PulseColors.surfaceLight,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(PulseBorderRadius.lg),
+        ),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: PulseColors.reject.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(PulseBorderRadius.sm),
+              ),
+              child: Icon(
+                LineIcons.exclamationTriangle,
+                color: PulseColors.reject,
+                size: 24,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Text(
+              'Logout',
+              style: PulseTypography.h3.copyWith(
+                color: PulseColors.grey900,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+        content: Text(
+          'Are you sure you want to logout? You\'ll need to sign in again to access your account.',
+          style: PulseTypography.bodyMedium.copyWith(
+            color: PulseColors.grey600,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            style: TextButton.styleFrom(
+              foregroundColor: PulseColors.grey600,
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+            ),
+            child: Text(
+              'Cancel',
+              style: PulseTypography.bodyMedium.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.of(dialogContext).pop(); // Close dialog
+              // TODO: Implement actual logout logic with BLoC
+              // context.read<AuthBloc>().add(LogoutRequested());
+              context.go('/welcome');
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: PulseColors.reject,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(PulseBorderRadius.sm),
+              ),
+            ),
+            child: Text(
+              'Logout',
+              style: PulseTypography.bodyMedium.copyWith(
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

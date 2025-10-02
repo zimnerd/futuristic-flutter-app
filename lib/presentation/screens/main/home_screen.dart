@@ -32,31 +32,29 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: BlocBuilder<UserBloc, UserState>(
-        builder: (context, state) {
-          return Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [PulseColors.surface, PulseColors.surfaceVariant],
-              ),
+    return BlocBuilder<UserBloc, UserState>(
+      builder: (context, state) {
+        return Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [PulseColors.surface, PulseColors.surfaceVariant],
             ),
-            child: SafeArea(
-              child: BlocProvider(
-                create: (context) => DiscoveryBloc(
-                  discoveryService: DiscoveryService(
-                    apiClient: ApiClient.instance,
-                  ),
-                  preferencesService: PreferencesService(ApiClient.instance),
-                )..add(const LoadDiscoverableUsers()),
-                child: const DiscoveryScreen(),
-              ),
+          ),
+          child: SafeArea(
+            child: BlocProvider(
+              create: (context) => DiscoveryBloc(
+                discoveryService: DiscoveryService(
+                  apiClient: ApiClient.instance,
+                ),
+                preferencesService: PreferencesService(ApiClient.instance),
+              )..add(const LoadDiscoverableUsers()),
+              child: const DiscoveryScreen(),
             ),
-          );
-        },
-      ),
+          ),
+        );
+      },
     );
   }
 }

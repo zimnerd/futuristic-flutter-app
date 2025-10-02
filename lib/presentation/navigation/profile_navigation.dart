@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import '../screens/profile/profile_details_screen.dart';
+import 'package:go_router/go_router.dart';
 import '../screens/profile/enhanced_profile_edit_screen.dart';
 import '../screens/profile/profile_edit_screen.dart';
 import '../../domain/entities/user_profile.dart';
+import 'app_router.dart';
 
 /// Navigation helper for profile-related screens
 class ProfileNavigation {
@@ -17,7 +18,7 @@ class ProfileNavigation {
   }
 
   /// Navigate to profile details screen
-  static Future<void> toProfileDetails(
+  static void toProfileDetails(
     BuildContext context,
     UserProfile profile, {
     bool isOwnProfile = false,
@@ -25,17 +26,10 @@ class ProfileNavigation {
     VoidCallback? onMessage,
     VoidCallback? onSuperLike,
   }) {
-    return Navigator.of(context).push(
-      MaterialPageRoute(
-        fullscreenDialog: true, // Hide bottom navigation bar
-        builder: (context) => ProfileDetailsScreen(
-          profile: profile,
-          isOwnProfile: isOwnProfile,
-          onLike: onLike,
-          onMessage: onMessage,
-          onSuperLike: onSuperLike,
-        ),
-      ),
+    // Use GoRouter for consistent navigation behavior
+    context.push(
+      AppRoutes.profileDetails.replaceFirst(':profileId', profile.id),
+      extra: profile,
     );
   }
 
@@ -165,7 +159,7 @@ extension ProfileNavigationExtension on BuildContext {
   Future<void> toProfileEdit() => ProfileNavigation.toProfileEdit(this);
 
   /// Navigate to profile details screen
-  Future<void> toProfileDetails(
+  void toProfileDetails(
     UserProfile profile, {
     bool isOwnProfile = false,
     VoidCallback? onLike,

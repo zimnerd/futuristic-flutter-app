@@ -52,6 +52,26 @@ class ProfileScreen extends StatelessWidget {
       ),
       child: Row(
         children: [
+          // Back button
+          IconButton(
+            onPressed: () {
+              if (context.canPop()) {
+                context.pop();
+              } else {
+                context.go('/home');
+              }
+            },
+            icon: const Icon(Icons.arrow_back_ios_rounded, size: 20),
+            style: IconButton.styleFrom(
+              foregroundColor: PulseColors.onSurface,
+              padding: const EdgeInsets.all(8),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(PulseRadii.sm),
+              ),
+            ),
+            tooltip: 'Back',
+          ),
+          const SizedBox(width: PulseSpacing.sm),
           Text(
             'Profile',
             style: PulseTextStyles.headlineLarge.copyWith(

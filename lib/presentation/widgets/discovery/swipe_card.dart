@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../domain/entities/user_profile.dart';
 import '../../animations/pulse_animations.dart';
-import '../../screens/profile/profile_details_screen.dart';
+import '../../navigation/app_router.dart';
 import '../common/robust_network_image.dart';
 
 // Animation durations for consistent timing
@@ -15,10 +16,6 @@ class _SwipeCardConstants {
   static const Duration enterDelayDuration = Duration(milliseconds: 100);
   static const Duration overlayDelayDuration = Duration(milliseconds: 200);
   static const Duration photoSwitchDuration = Duration(milliseconds: 300);
-  static const Duration routeTransitionDuration = Duration(milliseconds: 300);
-  static const Duration routeReverseTransitionDuration = Duration(
-    milliseconds: 250,
-  );
 
   // Scale animation values
   static const double scaleBegin = 0.8;
@@ -205,35 +202,14 @@ class _SwipeCardState extends State<SwipeCard>
     super.dispose();
   }
 
-  /// Show full profile details with swipe-down-to-dismiss
+  /// Show full profile details using GoRouter navigation
   void _showProfileDetails() {
-    Navigator.of(context).push(
-      PageRouteBuilder(
-        fullscreenDialog: true, // Hide bottom navigation bar
-        pageBuilder: (context, animation, secondaryAnimation) => ProfileDetailsScreen(
-          profile: widget.user,
-          isOwnProfile: false,
-          onLike: widget.onSwipeRight,
-          onSuperLike: widget.onSwipeUp,
-        ),
-        transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          const begin = Offset(0.0, 1.0);
-          const end = Offset.zero;
-          const curve = Curves.easeInOutCubic;
-
-          var tween = Tween(begin: begin, end: end).chain(
-            CurveTween(curve: curve),
-          );
-
-          return SlideTransition(
-            position: animation.drive(tween),
-            child: child,
-          );
-        },
-        transitionDuration: _SwipeCardConstants.routeTransitionDuration,
-        reverseTransitionDuration:
-            _SwipeCardConstants.routeReverseTransitionDuration,
+    context.push(
+      AppRoutes.profileDetails.replaceFirst(
+        ':profileId',
+        widget.user.id,
       ),
+      extra: widget.user,
     );
   }
 

@@ -10,7 +10,7 @@ import '../../../data/models/match_model.dart';
 import '../../widgets/common/loading_indicator.dart';
 import '../../widgets/common/error_message.dart';
 import '../../widgets/match/match_card.dart';
-import '../profile/profile_details_screen.dart';
+import '../../navigation/app_router.dart';
 
 /// Enhanced match view modes
 enum MatchViewMode { list, grid, slider }
@@ -974,41 +974,9 @@ class _MatchesScreenState extends State<MatchesScreen>
 
   void _showProfileModal(MatchModel match) {
     if (mounted && match.userProfile != null) {
-      Navigator.of(context).push(
-        PageRouteBuilder(
-          fullscreenDialog: true, // Hide bottom navigation bar
-          pageBuilder: (context, animation, secondaryAnimation) =>
-              ProfileDetailsScreen(
-                profile: match.userProfile!,
-                isOwnProfile: false,
-                onLike: () {
-                  // Optionally implement like action for matches
-                },
-                onMessage: () {
-                  Navigator.of(context).pop();
-                  _startConversation(match);
-                },
-                onSuperLike: null,
-                showStartConversation: true,
-              ),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            const begin = Offset(0.0, 1.0);
-            const end = Offset.zero;
-            const curve = Curves.easeInOutCubic;
-
-            var tween = Tween(
-              begin: begin,
-              end: end,
-            ).chain(CurveTween(curve: curve));
-
-            return SlideTransition(
-              position: animation.drive(tween),
-              child: child,
-            );
-          },
-          transitionDuration: Duration(milliseconds: 300),
-          reverseTransitionDuration: Duration(milliseconds: 250),
-        ),
+      context.push(
+        AppRoutes.profileDetails.replaceFirst(':profileId', match.userProfile!.id),
+        extra: match.userProfile,
       );
     }
   }
