@@ -39,7 +39,7 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
     switch (widget.sectionType) {
       case 'basic_info':
         _controllers['name'] = TextEditingController(text: _formData['name'] ?? '');
-        _controllers['age'] = TextEditingController(text: _formData['age']?.toString() ?? '');
+        // Age controller removed - now using dateOfBirth directly
         _controllers['bio'] = TextEditingController(text: _formData['bio'] ?? '');
         break;
       case 'work_education':
@@ -207,24 +207,7 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
           },
         ),
         const SizedBox(height: PulseSpacing.lg),
-        _buildTextField(
-          controller: _controllers['age']!,
-          label: 'Age',
-          hint: 'Enter your age',
-          icon: Icons.cake,
-          keyboardType: TextInputType.number,
-          isRequired: true,
-          validator: (value) {
-            if (value?.trim().isEmpty ?? true) {
-              return 'Age is required';
-            }
-            final age = int.tryParse(value!);
-            if (age == null || age < 18 || age > 100) {
-              return 'Please enter a valid age (18-100)';
-            }
-            return null;
-          },
-        ),
+        _buildDateOfBirthPicker(),
         const SizedBox(height: PulseSpacing.lg),
         _buildTextField(
           controller: _controllers['bio']!,
@@ -564,6 +547,253 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
     );
   }
 
+  Widget _buildDateOfBirthPicker() {
+    final DateTime? currentDob = _formData['dateOfBirth'] as DateTime?;
+    final int ageChangeCount = _formData['ageChangeCount'] as int? ?? 0;
+    final bool canChangeAge = ageChangeCount < 2;
+    final int remainingChanges = 2 - ageChangeCount;
+
+    // Calculate current age
+    int? currentAge;
+    if (currentDob != null) {
+      final now = DateTime.now();
+      currentAge = now.year - currentDob.year;
+      if (now.month < currentDob.month ||
+          (now.month == currentDob.month && now.day < currentDob.day)) {
+        currentAge--;
+      }
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Text(
+              'Date of Birth *',
+              style: PulseTextStyles.titleMedium.copyWith(
+                color: PulseColors.onSurface,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            if (currentAge != null && canChangeAge) ...[
+              const SizedBox(width: PulseSpacing.sm),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: PulseSpacing.sm,
+                  vertical: PulseSpacing.xs,
+                ),
+                decoration: BoxDecoration(
+                  color: PulseColors.primary.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(PulseRadii.sm),
+                ),
+                child: Text(
+                  'Age: $currentAge',
+                  style: PulseTextStyles.labelSmall.copyWith(
+                    color: PulseColors.primary,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ],
+        ),
+        const SizedBox(height: PulseSpacing.sm),
+
+        // DOB Picker Button
+        InkWell(
+          onTap: canChangeAge
+              ? () async {
+                  final DateTime now = DateTime.now();
+                  final DateTime eighteenYearsAgo = DateTime(
+                    now.year - 18,
+                    now.month,
+                    now.day,
+                  );
+                  final DateTime hundredYearsAgo = DateTime(now.year - 100);
+
+                  final DateTime? picked = await showDatePicker(
+                    context: context,
+                    initialDate: currentDob ?? eighteenYearsAgo,
+                    firstDate: hundredYearsAgo,
+                    lastDate: eighteenYearsAgo,
+                    helpText: 'Select Your Date of Birth',
+                    fieldLabelText: 'Date of Birth',
+                    builder: (context, child) {
+                      return Theme(
+                        data: Theme.of(context).copyWith(
+                          colorScheme: ColorScheme.light(
+                            primary: PulseColors.primary,
+                            onPrimary: Colors.white,
+                            surface: PulseColors.surface,
+                            onSurface: PulseColors.onSurface,
+                          ),
+                        ),
+                        child: child!,
+                      );
+                    },
+                  );
+
+                  if (picked != null) {
+                    // Calculate age from picked date
+                    final age = now.year - picked.year;
+                    final adjustedAge =
+                        (now.month < picked.month ||
+                            (now.month == picked.month && now.day < picked.day))
+                        ? age - 1
+                        : age;
+
+                    if (adjustedAge < 18) {
+                      if (!mounted) return;
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('You must be at least 18 years old'),
+                          backgroundColor: PulseColors.error,
+                        ),
+                      );
+                      return;
+                    }
+
+                    setState(() {
+                      _formData['dateOfBirth'] = picked;
+                      // Backend will calculate age and increment ageChangeCount
+                    });
+                  }
+                }
+              : null,
+          borderRadius: BorderRadius.circular(PulseRadii.md),
+          child: Container(
+            padding: const EdgeInsets.all(PulseSpacing.md),
+            decoration: BoxDecoration(
+              color: canChangeAge
+                  ? PulseColors.surfaceVariant.withValues(alpha: 0.5)
+                  : PulseColors.surfaceVariant.withValues(alpha: 0.3),
+              borderRadius: BorderRadius.circular(PulseRadii.md),
+              border: Border.all(
+                color: canChangeAge
+                    ? PulseColors.outline
+                    : PulseColors.outlineVariant,
+                width: 1,
+              ),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.cake_outlined,
+                  color: canChangeAge
+                      ? PulseColors.primary
+                      : PulseColors.onSurfaceVariant,
+                  size: 24,
+                ),
+                const SizedBox(width: PulseSpacing.md),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        currentDob != null
+                            ? '${currentDob.day}/${currentDob.month}/${currentDob.year}'
+                            : 'Select your date of birth',
+                        style: PulseTextStyles.bodyLarge.copyWith(
+                          color: currentDob != null
+                              ? PulseColors.onSurface
+                              : PulseColors.onSurfaceVariant,
+                          fontWeight: currentDob != null
+                              ? FontWeight.w500
+                              : FontWeight.normal,
+                        ),
+                      ),
+                      if (currentAge != null) ...[
+                        const SizedBox(height: PulseSpacing.xs),
+                        Text(
+                          '$currentAge years old',
+                          style: PulseTextStyles.bodySmall.copyWith(
+                            color: PulseColors.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+                Icon(
+                  Icons.calendar_today,
+                  color: canChangeAge
+                      ? PulseColors.primary
+                      : PulseColors.onSurfaceVariant,
+                  size: 20,
+                ),
+              ],
+            ),
+          ),
+        ),
+
+        // Age change limit warning
+        if (ageChangeCount > 0) ...[
+          const SizedBox(height: PulseSpacing.sm),
+          Container(
+            padding: const EdgeInsets.all(PulseSpacing.sm),
+            decoration: BoxDecoration(
+              color: canChangeAge
+                  ? Colors.amber.withValues(alpha: 0.1)
+                  : PulseColors.error.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(PulseRadii.sm),
+              border: Border.all(
+                color: canChangeAge ? Colors.amber : PulseColors.error,
+                width: 1,
+              ),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  canChangeAge ? Icons.info_outline : Icons.lock_outline,
+                  size: 16,
+                  color: canChangeAge ? Colors.amber[700] : PulseColors.error,
+                ),
+                const SizedBox(width: PulseSpacing.sm),
+                Expanded(
+                  child: Text(
+                    canChangeAge
+                        ? 'You can change your age $remainingChanges more time${remainingChanges > 1 ? 's' : ''}'
+                        : 'Age change limit reached. You cannot change your date of birth anymore.',
+                    style: PulseTextStyles.bodySmall.copyWith(
+                      color: canChangeAge
+                          ? Colors.amber[900]
+                          : PulseColors.error,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+
+        // First time DOB info
+        if (currentDob == null) ...[
+          const SizedBox(height: PulseSpacing.sm),
+          Row(
+            children: [
+              Icon(
+                Icons.info_outline,
+                size: 14,
+                color: PulseColors.onSurfaceVariant,
+              ),
+              const SizedBox(width: PulseSpacing.xs),
+              Expanded(
+                child: Text(
+                  'You can change your age up to 2 times after setting it',
+                  style: PulseTextStyles.bodySmall.copyWith(
+                    color: PulseColors.onSurfaceVariant,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ],
+    );
+  }
+
   Widget _buildTextField({
     required TextEditingController controller,
     required String label,
@@ -806,10 +1036,8 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
         _formData[entry.key] = entry.value.text.trim();
       }
 
-      // Convert age to int if it's in the form data
-      if (_formData.containsKey('age') && _formData['age'] is String) {
-        _formData['age'] = int.tryParse(_formData['age']) ?? 18;
-      }
+      // Note: dateOfBirth is already stored in _formData from the picker
+      // Backend will calculate age from dateOfBirth
 
       // Handle photo uploads if this is the photos section
       if (widget.sectionType == 'photos' &&

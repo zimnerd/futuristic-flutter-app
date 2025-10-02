@@ -633,6 +633,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         // Create updated profile with merged data (excluding photos - handled separately)
         final updatedProfile = userProfile.copyWith(
           name: formData['name'] as String?,
+          dateOfBirth: formData['dateOfBirth'] as DateTime?,
           bio: formData['bio'] as String?,
           job: formData['job'] as String?,
           company: formData['company'] as String?,
@@ -659,6 +660,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
         return {
           'name': userProfile.name,
           'age': userProfile.age,
+          'dateOfBirth': userProfile.dateOfBirth,
+          'ageChangeCount': userProfile.ageChangeCount,
           'bio': userProfile.bio,
         };
       case 'work_education':

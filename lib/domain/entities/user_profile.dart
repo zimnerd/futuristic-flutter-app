@@ -6,6 +6,8 @@ class UserProfile extends Equatable {
     required this.id,
     required this.name,
     required this.age,
+    this.dateOfBirth,
+    this.ageChangeCount = 0,
     required this.bio,
     required this.photos,
     required this.location,
@@ -32,6 +34,8 @@ class UserProfile extends Equatable {
   final String id;
   final String name;
   final int age;
+  final DateTime? dateOfBirth;
+  final int ageChangeCount;
   final String bio;
   final List<ProfilePhoto> photos;
   final UserLocation location;
@@ -100,6 +104,8 @@ class UserProfile extends Equatable {
     String? id,
     String? name,
     int? age,
+    DateTime? dateOfBirth,
+    int? ageChangeCount,
     String? bio,
     List<ProfilePhoto>? photos,
     UserLocation? location,
@@ -126,6 +132,8 @@ class UserProfile extends Equatable {
       id: id ?? this.id,
       name: name ?? this.name,
       age: age ?? this.age,
+      dateOfBirth: dateOfBirth ?? this.dateOfBirth,
+      ageChangeCount: ageChangeCount ?? this.ageChangeCount,
       bio: bio ?? this.bio,
       photos: photos ?? this.photos,
       location: location ?? this.location,
@@ -156,6 +164,10 @@ class UserProfile extends Equatable {
       id: json['id'] as String,
       name: json['name'] as String,
       age: json['age'] as int,
+      dateOfBirth: json['dateOfBirth'] != null
+          ? DateTime.parse(json['dateOfBirth'] as String)
+          : null,
+      ageChangeCount: json['ageChangeCount'] as int? ?? 0,
       bio: json['bio'] as String? ?? '',
       photos:
           (json['photos'] as List<dynamic>?)
@@ -196,6 +208,8 @@ class UserProfile extends Equatable {
       'id': id,
       'name': name,
       'age': age,
+      'dateOfBirth': dateOfBirth?.toIso8601String(),
+      'ageChangeCount': ageChangeCount,
       'bio': bio,
       'photos': photos.map((photo) => photo.toJson()).toList(),
       'location': location.toJson(),
@@ -225,6 +239,8 @@ class UserProfile extends Equatable {
         id,
         name,
         age,
+    dateOfBirth,
+    ageChangeCount,
         bio,
         photos,
         location,

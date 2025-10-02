@@ -94,13 +94,18 @@ class ProfileService {
         [];
 
     // Calculate age from user data if available
-    int age = 25; // Default
-    if (userData['age'] != null) {
+    int age = 18; // Default minimum age
+    DateTime? dateOfBirth;
+    
+    if (userData['dateOfBirth'] != null) {
+      dateOfBirth = DateTime.parse(userData['dateOfBirth'] as String);
+      age = DateTime.now().difference(dateOfBirth).inDays ~/ 365;
+    } else if (userData['age'] != null) {
       age = userData['age'] as int;
-    } else if (userData['dateOfBirth'] != null) {
-      final dob = DateTime.parse(userData['dateOfBirth'] as String);
-      age = DateTime.now().difference(dob).inDays ~/ 365;
     }
+
+    // Extract age change count
+    final ageChangeCount = userData['ageChangeCount'] as int? ?? 0;
 
     // Extract name
     final firstName = userData['firstName'] as String?;
@@ -118,6 +123,8 @@ class ProfileService {
       id: userData['id'] as String? ?? '',
       name: name,
       age: age,
+      dateOfBirth: dateOfBirth,
+      ageChangeCount: ageChangeCount,
       bio: userData['bio'] as String? ?? '',
       photos: photos,
       location: location,
@@ -194,15 +201,99 @@ class ProfileService {
 
   /// Update profile using a UserProfile object (wrapper for BLoC compatibility)
   Future<domain.UserProfile> updateProfile(domain.UserProfile profile) async {
-    final updatedProfile = await updateProfileWithDetails(
-      userId: profile.id,
-      bio: profile.bio,
-      interests: profile.interests,
-      dealBreakers: profile.lifestyle['dealBreakers'] as List<String>?,
-      preferences: _convertPreferences(profile.preferences),
-      location: _convertLocation(profile.location),
-    );
-    return _convertToEntity(updatedProfile);
+    _logger.i('🔄 Starting profile update for user: ${profile.id}');
+
+    try {
+      // Update basic user info (name, dateOfBirth, bio) via /users/me endpoint
+      await updateBasicUserInfo(
+        userId: profile.id,
+        name: profile.name,
+        dateOfBirth: profile.dateOfBirth,
+        bio: profile.bio,
+      );
+
+      // Update extended profile info if needed (interests, job, company, school, gender, lookingFor)
+      final hasExtendedData = profile.interests.isNotEmpty ||
+          profile.job != null ||
+          profile.company != null ||
+          profile.school != null ||
+          profile.gender != null ||
+          profile.lookingFor != null;
+
+      if (hasExtendedData) {
+        await updateProfileWithDetails(
+          userId: profile.id,
+          bio: profile.bio,
+          interests: profile.interests.isNotEmpty ? profile.interests : null,
+          dealBreakers: profile.lifestyle['dealBreakers'] as List<String>?,
+          preferences: profile.preferences.isNotEmpty 
+              ? _convertPreferences(profile.preferences) 
+              : null,
+          location: _convertLocation(profile.location),
+        );
+      }
+
+      // Fetch the updated profile from backend to get calculated age and other updates
+      _logger.i('📥 Fetching updated profile from backend');
+      final updatedProfile = await getCurrentProfile();
+      
+      _logger.i('✅ Profile update completed successfully');
+      return updatedProfile;
+    } catch (e) {
+      _logger.e('❌ Profile update failed: $e');
+      rethrow;
+    }
+  }
+
+  /// Update basic user information (name, date of birth, bio)
+  /// This calls the /users/me endpoint for User table fields
+  Future<void> updateBasicUserInfo({
+    required String userId,
+    String? name,
+    DateTime? dateOfBirth,
+    String? bio,
+  }) async {
+    try {
+      _logger.i('🔄 Updating basic user info for user: $userId');
+
+      final data = <String, dynamic>{};
+
+      // Split name into firstName and lastName if provided
+      if (name != null && name.isNotEmpty) {
+        final nameParts = name.trim().split(' ');
+        if (nameParts.isNotEmpty) {
+          data['firstName'] = nameParts.first;
+          if (nameParts.length > 1) {
+            data['lastName'] = nameParts.sublist(1).join(' ');
+          }
+        }
+      }
+
+      if (dateOfBirth != null)
+        data['dateOfBirth'] = dateOfBirth.toIso8601String();
+      if (bio != null && bio.isNotEmpty) data['bio'] = bio;
+
+      if (data.isEmpty) {
+        _logger.i('ℹ️ No basic user info to update');
+        return;
+      }
+
+      _logger.i('📤 Sending basic user info update: $data');
+      final response = await _apiClient.put('/users/me', data: data);
+
+      if (response.statusCode == 200) {
+        _logger.i('✅ Basic user info updated successfully');
+      } else {
+        throw NetworkException('Failed to update basic user info');
+      }
+    } on DioException catch (e) {
+      _logger.e('❌ Network error updating basic user info: ${e.message}');
+      _logger.e('Response data: ${e.response?.data}');
+      throw NetworkException('Failed to update basic user info: ${e.message}');
+    } catch (e) {
+      _logger.e('❌ Unexpected error updating basic user info: $e');
+      throw UserException('Failed to update basic user info');
+    }
   }
 
   /// Update existing user profile with individual parameters
@@ -519,25 +610,6 @@ class ProfileService {
   }
 
   /// Convert data model UserProfile to domain entity
-  domain.UserProfile _convertToEntity(UserProfile dataModel) {
-    // Simple conversion using available fields
-    return domain.UserProfile(
-      id: dataModel.id,
-      name: dataModel.userId, // Using userId as name for now
-      age: 25, // Default age for now
-      bio: dataModel.bio ?? '',
-      photos: [], // Empty photos list for now
-      location: domain.UserLocation(
-        latitude: dataModel.location?.latitude ?? 0.0,
-        longitude: dataModel.location?.longitude ?? 0.0,
-        address: dataModel.location?.city ?? '',
-        city: dataModel.location?.city ?? '',
-        country: dataModel.location?.country ?? '',
-      ),
-      interests: dataModel.interests,
-    );
-  }
-
   /// Convert domain preferences to data model preferences
   UserPreferences? _convertPreferences(Map<String, dynamic> preferences) {
     try {
