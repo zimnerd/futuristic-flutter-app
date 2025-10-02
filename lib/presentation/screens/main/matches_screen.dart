@@ -357,12 +357,14 @@ class _MatchesScreenState extends State<MatchesScreen>
                 : null,
             onMessage: () {
               if (match.userProfile != null) {
-                Navigator.pushNamed(
-                  context,
-                  '/conversation',
-                  arguments: {
-                    'user': match.userProfile,
-                    'conversationId': match.id,
+                context.push(
+                  '/chat/${match.id}',
+                  extra: {
+                    'otherUserId': match.userProfile!.id,
+                    'otherUserName': match.userProfile!.name,
+                    'otherUserPhoto': match.userProfile!.photos.isNotEmpty
+                        ? match.userProfile!.photos.first.url
+                        : null,
                   },
                 );
               }

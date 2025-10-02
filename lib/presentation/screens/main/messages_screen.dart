@@ -235,11 +235,9 @@ class _MessagesScreenState extends State<MessagesScreen> {
       AppLogger.debug(
         '🚀 Using existing conversation: ${match.conversationId}',
       );
-      Navigator.pushNamed(
-        context,
-        '/chat',
-        arguments: {
-          'conversationId': match.conversationId,
+      context.push(
+        '/chat/${match.conversationId}',
+        extra: {
           'otherUserId': match.userId,
           'otherUserName': match.name,
           'otherUserPhoto': match.avatarUrl,

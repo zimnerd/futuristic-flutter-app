@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
+import '../../navigation/app_router.dart';
 import '../../../core/di/service_locator.dart';
 import '../../../features/group_chat/data/models.dart';
-import '../../../features/group_chat/presentation/screens/group_chat_screen.dart';
-import '../../../features/group_chat/presentation/screens/video_call_screen.dart';
 import '../../../data/services/webrtc_service.dart';
 import '../../blocs/group_chat/group_chat_barrel.dart';
 import '../../theme/pulse_colors.dart';
@@ -1068,12 +1068,7 @@ class _GroupChatListScreenState extends State<GroupChatListScreen>
   void _navigateToGroupDetails(BuildContext context, dynamic group) {
     // Navigate to group chat screen (GroupChatDetailScreen is for settings/info)
     // Using the main group chat screen from features/group_chat
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => GroupChatScreen(group: group),
-      ),
-    );
+    context.push(AppRoutes.groupChat, extra: group);
   }
 
   void _navigateToSessionDetails(LiveSession session) async {
@@ -1086,15 +1081,13 @@ class _GroupChatListScreenState extends State<GroupChatListScreen>
       );
       
       if (!mounted) return;
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => VideoCallScreen(
-            liveSessionId: session.id,
-            rtcToken: tokenData['token'] as String,
-            session: session,
-          ),
-        ),
+      context.push(
+        AppRoutes.videoCall,
+        extra: {
+          'liveSessionId': session.id,
+          'rtcToken': tokenData['token'] as String,
+          'session': session,
+        },
       );
     } catch (e) {
       if (!mounted) return;

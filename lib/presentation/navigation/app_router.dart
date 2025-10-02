@@ -36,6 +36,8 @@ import '../screens/live_streaming/live_stream_viewer_screen.dart';
 import '../screens/live_streaming/live_stream_broadcaster_screen.dart';
 import '../screens/ai_companion/ai_companion_chat_screen.dart';
 import '../../../features/group_chat/presentation/screens/group_chat_screen.dart';
+import '../../../features/group_chat/presentation/screens/video_call_screen.dart'
+    as group_chat_video;
 import '../screens/group_chat/group_chat_settings_screen.dart';
 import '../screens/notification/notification_screen.dart';
 import '../screens/profile/profile_creation_screen.dart';
@@ -436,7 +438,7 @@ class AppRouter {
             );
           },
         ),
-        
+
         // Speed Dating routes
         GoRoute(
           path: AppRoutes.speedDatingRoom,
@@ -457,7 +459,7 @@ class AppRouter {
             return SpeedDatingEventDetailsScreen(event: event);
           },
         ),
-        
+
         // Live Streaming routes
         GoRoute(
           path: AppRoutes.startStream,
@@ -487,7 +489,7 @@ class AppRouter {
             );
           },
         ),
-        
+
         // AI Companion routes
         GoRoute(
           path: AppRoutes.aiCompanionChat,
@@ -497,7 +499,7 @@ class AppRouter {
             return AiCompanionChatScreen(companion: companion);
           },
         ),
-        
+
         // Group Chat routes
         GoRoute(
           path: AppRoutes.groupChat,
@@ -515,7 +517,19 @@ class AppRouter {
             return GroupChatSettingsScreen(group: group);
           },
         ),
-        
+        GoRoute(
+          path: AppRoutes.videoCall,
+          name: 'videoCall',
+          builder: (context, state) {
+            final data = state.extra as Map<String, dynamic>;
+            return group_chat_video.VideoCallScreen(
+              liveSessionId: data['liveSessionId'] as String,
+              rtcToken: data['rtcToken'] as String,
+              session: data['session'],
+            );
+          },
+        ),
+
         // Notifications route
         GoRoute(
           path: AppRoutes.notifications,
@@ -657,23 +671,23 @@ class AppRoutes {
   // Date planning routes
   static const String datePlanDetails = '/date-plan-details';
   static const String createDatePlan = '/create-date-plan';
-  
+
   // Speed dating routes
   static const String speedDatingRoom = '/speed-dating-room';
   static const String speedDatingEventDetails = '/speed-dating-event-details';
-  
+
   // Live streaming routes
   static const String startStream = '/start-stream';
   static const String liveStreamViewer = '/live-stream-viewer';
   static const String liveStreamBroadcaster = '/live-stream-broadcaster';
-  
+
   // AI Companion routes
   static const String aiCompanionChat = '/ai-companion-chat';
-  
+
   // Group chat routes
   static const String groupChat = '/group-chat';
   static const String groupChatSettings = '/group-chat-settings';
-  
+
   // Notification route
   static const String notifications = '/notifications';
 }
