@@ -58,7 +58,8 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
               backgroundColor: Colors.green,
             ),
           );
-          context.pop();
+          // Navigate to the newly created event details
+          context.go('/events/${state.event.id}');
         } else if (state is EventError) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(

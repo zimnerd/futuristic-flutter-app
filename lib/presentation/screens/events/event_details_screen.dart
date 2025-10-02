@@ -78,13 +78,24 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
             );
           }
 
-          if (state is EventsLoaded) {
-            final event = state.events.firstWhere(
-              (e) => e.id == widget.eventId,
-              orElse: () => throw StateError('Event not found'),
-            );
+          // Check for EventDetailsLoaded state (correct state for single event)
+          if (state is EventDetailsLoaded) {
+            return _buildEventDetails(context, state.event);
+          }
 
-            return _buildEventDetails(context, event);
+          // Fallback: Also check EventsLoaded in case navigation came from events list
+          if (state is EventsLoaded) {
+            try {
+              final event = state.events.firstWhere(
+                (e) => e.id == widget.eventId,
+              );
+              return _buildEventDetails(context, event);
+            } catch (e) {
+              // Event not in the loaded list, trigger load
+              return const Center(
+                child: CircularProgressIndicator(),
+              );
+            }
           }
 
           return const Center(
