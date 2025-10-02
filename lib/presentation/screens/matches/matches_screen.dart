@@ -981,6 +981,7 @@ class _MatchesScreenState extends State<MatchesScreen>
     }
   }
 
+  // TODO: Connect this to MatchCard onMessage callback for quick messaging from match cards
   void _startConversation(MatchModel match) {
     AppLogger.debug('💬 Starting conversation for match: ${match.id}');
 
