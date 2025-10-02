@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -515,8 +517,39 @@ class _ProfileOverviewScreenState extends State<ProfileOverviewScreen> {
     );
 
     if (result != null && mounted) {
-      // Reload profile after edit
-      context.read<ProfileBloc>().add(LoadProfile());
+      // Handle returned form data and update profile
+      final formData = result as Map<String, dynamic>;
+
+      // Handle photo uploads separately if present
+      if (formData.containsKey('newPhotos')) {
+        final newPhotos = formData['newPhotos'] as List<dynamic>?;
+        if (newPhotos != null && newPhotos.isNotEmpty) {
+          for (final photo in newPhotos) {
+            if (photo is File) {
+              context.read<ProfileBloc>().add(UploadPhoto(photoPath: photo.path));
+            } else if (photo is String) {
+              context.read<ProfileBloc>().add(UploadPhoto(photoPath: photo));
+            }
+          }
+        }
+      }
+
+      if (userProfile != null) {
+        // Create updated profile with merged data (excluding photos - handled separately)
+        final updatedProfile = userProfile.copyWith(
+          name: formData['name'] as String?,
+          bio: formData['bio'] as String?,
+          job: formData['job'] as String?,
+          company: formData['company'] as String?,
+          school: formData['school'] as String?,
+          gender: formData['gender'] as String?,
+          lookingFor: formData['lookingFor'] as String?,
+          interests: formData['interests'] as List<String>?,
+        );
+
+        // Dispatch UpdateProfile event to save changes
+        context.read<ProfileBloc>().add(UpdateProfile(profile: updatedProfile));
+      }
     }
   }
 

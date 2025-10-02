@@ -212,30 +212,50 @@ class _PhotoPickerWidgetState extends State<PhotoPickerWidget> {
   }
 
   void _showImageSourceDialog() {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    
     showModalBottomSheet(
       context: context,
+      backgroundColor: theme.bottomSheetTheme.backgroundColor ?? 
+        (isDark ? const Color(0xFF1E1E1E) : Colors.white),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
       builder: (context) => SafeArea(
         child: Wrap(
           children: [
             ListTile(
-              leading: const Icon(Icons.camera_alt),
-              title: const Text('Camera'),
+              leading: Icon(Icons.camera_alt, 
+                color: theme.iconTheme.color ?? (isDark ? Colors.white : Colors.black87)),
+              title: Text('Camera',
+                style: theme.textTheme.bodyLarge?.copyWith(
+                  color: theme.textTheme.bodyLarge?.color ?? (isDark ? Colors.white : Colors.black87),
+                )),
               onTap: () {
                 Navigator.pop(context);
                 _pickImage(ImageSource.camera);
               },
             ),
             ListTile(
-              leading: const Icon(Icons.photo_library),
-              title: const Text('Photo Library'),
+              leading: Icon(Icons.photo_library,
+                color: theme.iconTheme.color ?? (isDark ? Colors.white : Colors.black87)),
+              title: Text('Photo Library',
+                style: theme.textTheme.bodyLarge?.copyWith(
+                  color: theme.textTheme.bodyLarge?.color ?? (isDark ? Colors.white : Colors.black87),
+                )),
               onTap: () {
                 Navigator.pop(context);
                 _pickImage(ImageSource.gallery);
               },
             ),
             ListTile(
-              leading: const Icon(Icons.cancel),
-              title: const Text('Cancel'),
+              leading: Icon(Icons.cancel,
+                color: theme.colorScheme.error),
+              title: Text('Cancel',
+                style: theme.textTheme.bodyLarge?.copyWith(
+                  color: theme.colorScheme.error,
+                )),
               onTap: () => Navigator.pop(context),
             ),
           ],
@@ -245,31 +265,51 @@ class _PhotoPickerWidgetState extends State<PhotoPickerWidget> {
   }
 
   void _showPhotoOptions(int index) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    
     showModalBottomSheet(
       context: context,
+      backgroundColor: theme.bottomSheetTheme.backgroundColor ?? 
+        (isDark ? const Color(0xFF1E1E1E) : Colors.white),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
       builder: (context) => SafeArea(
         child: Wrap(
           children: [
             if (index > 0)
               ListTile(
-                leading: const Icon(Icons.star),
-                title: const Text('Make Primary'),
+                leading: Icon(Icons.star,
+                  color: theme.colorScheme.primary),
+                title: Text('Make Primary',
+                  style: theme.textTheme.bodyLarge?.copyWith(
+                    color: theme.textTheme.bodyLarge?.color ?? (isDark ? Colors.white : Colors.black87),
+                  )),
                 onTap: () {
                   Navigator.pop(context);
                   _makePrimary(index);
                 },
               ),
             ListTile(
-              leading: const Icon(Icons.delete),
-              title: const Text('Remove Photo'),
+              leading: Icon(Icons.delete,
+                color: theme.colorScheme.error),
+              title: Text('Remove Photo',
+                style: theme.textTheme.bodyLarge?.copyWith(
+                  color: theme.colorScheme.error,
+                )),
               onTap: () {
                 Navigator.pop(context);
                 _removePhoto(index);
               },
             ),
             ListTile(
-              leading: const Icon(Icons.cancel),
-              title: const Text('Cancel'),
+              leading: Icon(Icons.cancel,
+                color: theme.iconTheme.color ?? (isDark ? Colors.white70 : Colors.black54)),
+              title: Text('Cancel',
+                style: theme.textTheme.bodyLarge?.copyWith(
+                  color: theme.textTheme.bodyLarge?.color ?? (isDark ? Colors.white70 : Colors.black54),
+                )),
               onTap: () => Navigator.pop(context),
             ),
           ],

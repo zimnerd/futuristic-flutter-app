@@ -170,22 +170,7 @@ class ProfileCompletionWidget extends StatelessWidget {
         ),
         const SizedBox(height: PulseSpacing.sm),
         ...completion.missingSections.map((section) => _buildMissingSection(section)),
-        if (onTapIncomplete != null) ...[
-          const SizedBox(height: PulseSpacing.md),
-          SizedBox(
-            width: double.infinity,
-            child: OutlinedButton.icon(
-              onPressed: onTapIncomplete,
-              icon: const Icon(Icons.edit),
-              label: const Text('Complete Profile'),
-              style: OutlinedButton.styleFrom(
-                foregroundColor: PulseColors.warning,
-                side: BorderSide(color: PulseColors.warning),
-                padding: const EdgeInsets.all(PulseSpacing.md),
-              ),
-            ),
-          ),
-        ],
+        // Individual section cards above are already tappable - no need for redundant button
       ],
     );
   }

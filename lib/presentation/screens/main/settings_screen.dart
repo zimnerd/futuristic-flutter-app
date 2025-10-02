@@ -30,75 +30,91 @@ class SettingsScreen extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.all(PulseSpacing.lg),
         children: [
-          // Account Section
-          _buildSectionHeader('Account'),
-          _buildSettingsTile(
-            icon: Icons.person,
-            title: 'Edit Profile',
-            subtitle: 'Update your personal information',
-            onTap: () => context.go('/profile/edit'),
-          ),
-          _buildSettingsTile(
-            icon: Icons.photo_library,
-            title: 'Manage Photos',
-            subtitle: 'Add or remove profile photos',
-            onTap: () => context.go('/profile/photos'),
-          ),
-          _buildSettingsTile(
-            icon: Icons.lock,
-            title: 'Privacy & Security',
-            subtitle: 'Manage your privacy settings',
-            onTap: () => context.go('/settings/privacy'),
-          ),
-          const SizedBox(height: PulseSpacing.lg),
-
           // Preferences Section
           _buildSectionHeader('Preferences'),
-          _buildSettingsTile(
-            icon: Icons.tune,
-            title: 'Discovery Settings',
-            subtitle: 'Age range, distance, and more',
-            onTap: () => context.go('/settings/discovery'),
-          ),
           _buildSettingsTile(
             icon: Icons.notifications,
             title: 'Notifications',
             subtitle: 'Push notifications and email',
-            onTap: () => context.go('/settings/notifications'),
+            onTap: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Notifications settings coming soon!'),
+                ),
+              );
+            },
           ),
           _buildSettingsTile(
             icon: Icons.language,
             title: 'Language',
             subtitle: 'App language and region',
-            onTap: () => context.go('/settings/language'),
+            onTap: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Language settings coming soon!')),
+              );
+            },
           ),
           _buildSettingsTile(
-            icon: Icons.smart_toy,
+            icon: Icons.tune,
+            title: 'Discovery Settings',
+            subtitle: 'Age range, distance preferences',
+            onTap: () => context.go('/filters'),
+          ),
+          _buildSettingsTile(
+            icon: Icons.psychology,
             title: 'AI Features',
-            subtitle: 'Smart suggestions and AI assistance',
-            onTap: () => context.go('/settings/ai'),
+            subtitle: 'Manage AI-powered features',
+            onTap: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('AI Features settings coming soon!'),
+                ),
+              );
+            },
           ),
           const SizedBox(height: PulseSpacing.lg),
 
-          // App Section
-          _buildSectionHeader('App'),
+          // App & Support Section
+          _buildSectionHeader('App & Support'),
+          _buildSettingsTile(
+            icon: Icons.lock,
+            title: 'Privacy & Security',
+            subtitle: 'Manage your privacy settings',
+            onTap: () => context.go('/safety'),
+          ),
           _buildSettingsTile(
             icon: Icons.help,
             title: 'Help & Support',
             subtitle: 'FAQs and contact support',
-            onTap: () => context.go('/support'),
+            onTap: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Help & Support coming soon!')),
+              );
+            },
           ),
           _buildSettingsTile(
             icon: Icons.info,
             title: 'About',
             subtitle: 'Version ${AppConstants.appVersion}',
-            onTap: () => context.go('/about'),
+            onTap: () {
+              showAboutDialog(
+                context: context,
+                applicationName: AppConstants.appName,
+                applicationVersion: AppConstants.appVersion,
+                applicationLegalese:
+                    '© 2025 ${AppConstants.appName}. All rights reserved.',
+              );
+            },
           ),
           _buildSettingsTile(
             icon: Icons.description,
             title: 'Terms & Privacy',
             subtitle: 'Legal information',
-            onTap: () => context.go('/legal'),
+            onTap: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Terms & Privacy coming soon!')),
+              );
+            },
           ),
           const SizedBox(height: PulseSpacing.xl),
 

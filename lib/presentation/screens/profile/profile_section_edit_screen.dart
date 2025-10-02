@@ -1,8 +1,11 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../theme/pulse_colors.dart';
 import '../../widgets/common/pulse_button.dart';
+import '../../widgets/photo_picker_widget.dart';
 
 /// Profile section edit screen for editing individual profile sections
 class ProfileSectionEditScreen extends StatefulWidget {
@@ -242,72 +245,70 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
   }
 
   Widget _buildPhotosSection() {
+    // Initialize local photos list for new uploads
+    final List<File> localPhotos = _formData['newPhotos'] as List<File>? ?? [];
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Upload Your Photos',
-          style: PulseTextStyles.titleMedium.copyWith(
-            color: PulseColors.onSurface,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        const SizedBox(height: PulseSpacing.sm),
-        Text(
-          'Add at least 2 photos. The first photo will be your main profile picture.',
-          style: PulseTextStyles.bodyMedium.copyWith(
-            color: PulseColors.onSurfaceVariant,
-          ),
-        ),
-        const SizedBox(height: PulseSpacing.lg),
+        // Instructions
         Container(
-          height: 400,
           padding: const EdgeInsets.all(PulseSpacing.md),
           decoration: BoxDecoration(
-            color: PulseColors.surfaceVariant.withValues(alpha: 0.3),
-            borderRadius: BorderRadius.circular(PulseRadii.lg),
+            color: PulseColors.primaryContainer.withValues(alpha: 0.3),
+            borderRadius: BorderRadius.circular(PulseRadii.md),
             border: Border.all(
-              color: PulseColors.outline.withValues(alpha: 0.5),
+              color: PulseColors.primary.withValues(alpha: 0.2),
             ),
           ),
-          child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.photo_library_outlined,
-                  size: 64,
-                  color: PulseColors.onSurfaceVariant,
+          child: Row(
+            children: [
+              Icon(
+                Icons.photo_library, color: PulseColors.primary),
+              const SizedBox(width: PulseSpacing.sm),
+              Expanded(
+                child: Text(
+                  'Add up to 6 photos. Your first photo will be your main profile picture.',
+                  style: PulseTextStyles.bodyMedium,
                 ),
-                const SizedBox(height: PulseSpacing.md),
-                Text(
-                  'Photo upload coming soon!',
-                  style: PulseTextStyles.titleMedium.copyWith(
-                    color: PulseColors.onSurfaceVariant,
-                  ),
-                ),
-                const SizedBox(height: PulseSpacing.sm),
-                Text(
-                  'You can currently view your photos, but upload functionality\\nwill be available in the next update.',
-                  textAlign: TextAlign.center,
-                  style: PulseTextStyles.bodyMedium.copyWith(
-                    color: PulseColors.onSurfaceVariant.withValues(alpha: 0.7),
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
         const SizedBox(height: PulseSpacing.lg),
-        // Show current photos if available
+
+        // Photo picker widget
+        SizedBox(
+          height: 400,
+          child: PhotoPickerWidget(
+            selectedPhotos: localPhotos,
+            onPhotosChanged: (photos) {
+              setState(() {
+                _formData['newPhotos'] = photos;
+              });
+            },
+            maxPhotos: 6,
+          ),
+        ),
+        
+        // Current photos from API
         if (_formData['photos'] != null &&
             (_formData['photos'] as List).isNotEmpty) ...[
-          Text(
-            'Current Photos',
-            style: PulseTextStyles.titleMedium.copyWith(
-              color: PulseColors.onSurface,
-              fontWeight: FontWeight.w600,
-            ),
+          const SizedBox(height: PulseSpacing.xl),
+          const Divider(),
+          const SizedBox(height: PulseSpacing.lg),
+          Row(
+            children: [
+              Icon(Icons.cloud, size: 20, color: PulseColors.primary),
+              const SizedBox(width: PulseSpacing.xs),
+              Text(
+                'Current Photos (${(_formData['photos'] as List).length})',
+                style: PulseTextStyles.titleMedium.copyWith(
+                  color: PulseColors.onSurface,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: PulseSpacing.md),
           GridView.builder(
@@ -371,6 +372,26 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
                           ),
                         ),
                       ),
+                    // Delete button
+                    Positioned(
+                      top: 4,
+                      right: 4,
+                      child: GestureDetector(
+                        onTap: () => _deletePhoto(photoUrl),
+                        child: Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: BoxDecoration(
+                            color: Colors.red.withValues(alpha: 0.9),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.close,
+                            color: Colors.white,
+                            size: 16,
+                          ),
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               );
@@ -729,8 +750,57 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
     }
   }
 
-  void _saveSection() {
+  /// Delete a photo from current photos
+  void _deletePhoto(String photoUrl) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Photo'),
+        content: const Text('Are you sure you want to delete this photo?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              setState(() {
+                final photos = _formData['photos'] as List;
+                photos.remove(photoUrl);
+                _formData['photos'] = photos;
+              });
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: const Text(
+                    'Photo will be deleted when you save changes',
+                  ),
+                  backgroundColor: PulseColors.warning,
+                  behavior: SnackBarBehavior.floating,
+                ),
+              );
+            },
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _saveSection() async {
     if (_formKey.currentState?.validate() ?? false) {
+      // Show loading indicator for photo uploads
+      if (widget.sectionType == 'photos' &&
+          _formData.containsKey('newPhotos')) {
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) =>
+              const Center(child: CircularProgressIndicator()),
+        );
+      }
+      
       // Update form data from controllers
       for (final entry in _controllers.entries) {
         _formData[entry.key] = entry.value.text.trim();
@@ -739,6 +809,51 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
       // Convert age to int if it's in the form data
       if (_formData.containsKey('age') && _formData['age'] is String) {
         _formData['age'] = int.tryParse(_formData['age']) ?? 18;
+      }
+
+      // Handle photo uploads if this is the photos section
+      if (widget.sectionType == 'photos' &&
+          _formData.containsKey('newPhotos')) {
+        try {
+          final newPhotos = _formData['newPhotos'] as List<File>;
+          // final currentPhotos = _formData['photos'] as List? ?? [];
+
+          // Upload each new photo
+          for (int i = 0; i < newPhotos.length; i++) {
+            // TODO: Integrate with ProfileBloc for actual upload
+            // Get user ID from auth/profile bloc
+            // final userId = _formData['userId'] ?? 'current-user-id';
+
+            // In production, use ProfileBloc:
+            // context.read<ProfileBloc>().add(UploadPhoto(
+            //   userId: userId,
+            //   imagePath: newPhotos[i].path,
+            //   isPrimary: i == 0 && currentPhotos.isEmpty,
+            //   order: currentPhotos.length + i,
+            // ));
+
+            // For now, log the upload intent
+            debugPrint(
+              '📸 Would upload photo ${i + 1}/${newPhotos.length}: ${newPhotos[i].path}',
+            );
+          }
+
+          // Remove loading dialog
+          if (mounted) Navigator.pop(context);
+        } catch (e) {
+          // Remove loading dialog
+          if (mounted) Navigator.pop(context);
+
+          // Show error
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Failed to upload photos: $e'),
+              backgroundColor: Colors.red,
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+          return;
+        }
       }
 
       // Navigate back with the updated data
