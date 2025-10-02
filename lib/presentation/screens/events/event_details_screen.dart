@@ -164,10 +164,6 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
               _buildEventInfo(context, event),
               const SizedBox(height: 24),
               
-              // Attendees section
-              _buildAttendeesSection(context, event),
-              const SizedBox(height: 24),
-              
               // Action buttons
               _buildActionButtons(context, event),
               const SizedBox(height: 40),
@@ -482,112 +478,6 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
     );
   }
 
-  Widget _buildAttendeesSection(BuildContext context, Event event) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Colors.purple[50]!, Colors.blue[50]!],
-        ),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                children: [
-                  Icon(
-                    Icons.people,
-                    color: Theme.of(context).primaryColor,
-                    size: 24,
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    'Going (${event.attendeeCount})',
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
-              if (event.attendeeCount > 0)
-                TextButton(
-                  onPressed: () {
-                    _showAllAttendees(context, event);
-                  },
-                  style: TextButton.styleFrom(
-                    foregroundColor: Theme.of(context).primaryColor,
-                  ),
-                  child: const Text('View details →'),
-                ),
-            ],
-          ),
-          const SizedBox(height: 16),
-
-          if (event.attendeeCount == 0)
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.7),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.person_add_outlined,
-                    color: Colors.grey[400],
-                    size: 32,
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      'No attendees yet. Be the first to join!',
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Colors.grey[600],
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            )
-          else
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.7),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.people_outline,
-                    color: Theme.of(context).primaryColor,
-                    size: 32,
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      '${event.attendeeCount} ${event.attendeeCount == 1 ? 'person is' : 'people are'} attending this event',
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Colors.grey[800],
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildActionButtons(BuildContext context, Event event) {
     return Column(
       children: [
@@ -751,70 +641,6 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
         );
       }
     }
-  }
-
-  void _showAllAttendees(BuildContext context, Event event) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Attendees (${event.attendeeCount})'),
-          content: SizedBox(
-            width: double.maxFinite,
-            height: 400,
-            child: event.attendeeCount == 0
-                ? const Center(
-                    child: Padding(
-                      padding: EdgeInsets.all(20),
-                      child: Text(
-                        'No attendees yet. Be the first to join!',
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                  )
-                : Center(
-                    child: Padding(
-                      padding: const EdgeInsets.all(20),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.privacy_tip_outlined,
-                            size: 64,
-                            color: Colors.grey[400],
-                          ),
-                          const SizedBox(height: 16),
-                          Text(
-                            '${event.attendeeCount} ${event.attendeeCount == 1 ? 'person is' : 'people are'} attending',
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Attendee details are kept private for security',
-                            style: TextStyle(
-                              color: Colors.grey[600],
-                              fontSize: 14,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Close'),
-            ),
-          ],
-        );
-      },
-    );
   }
 
 }
