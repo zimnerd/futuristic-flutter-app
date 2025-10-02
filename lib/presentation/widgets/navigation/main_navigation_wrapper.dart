@@ -189,11 +189,15 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper>
               ),
               decoration: isActive
                   ? BoxDecoration(
-                      color: activeColor,
+                      color: activeColor.withValues(alpha: 0.01),
+                      border: Border.all(
+                        color: activeColor.withValues(alpha: 0.8),
+                        width: 1.5,
+                      ),
                       borderRadius: BorderRadius.circular(25),
                       boxShadow: [
                         BoxShadow(
-                          color: activeColor.withValues(alpha: 0.3),
+                          color: activeColor.withValues(alpha: 0.4),
                           blurRadius: 8,
                           offset: const Offset(0, 2),
                         ),
@@ -215,7 +219,7 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper>
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 14,
-                        fontWeight: FontWeight.w300,
+                        fontWeight: FontWeight.w500,
                         
                       ),
                     ),
