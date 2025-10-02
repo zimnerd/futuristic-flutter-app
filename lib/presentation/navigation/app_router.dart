@@ -748,7 +748,6 @@ class AppRoutes {
   static const String datePlanning = '/date-planning';
   static const String voiceMessages = '/voice-messages';
   static const String profileCreation = '/profile-creation';
-  static const String profileOverview = '/profile-overview';
   static const String profileSectionEdit = '/profile-section-edit';
   static const String profileDetails = '/profile-details/:profileId';
   static const String chat = '/chat/:conversationId';
