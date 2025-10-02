@@ -1,164 +1,148 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../blocs/auth/auth_bloc.dart';
-import '../../blocs/auth/auth_event.dart';
-import '../../navigation/app_router.dart';
 import '../../theme/pulse_colors.dart';
-import '../../widgets/common/common_widgets.dart';
+import '../../../domain/entities/user_profile.dart';
+import '../../widgets/profile/profile_completion_widget.dart';
+import '../../blocs/profile/profile_bloc.dart';
+import '../../widgets/common/pulse_loading_widget.dart';
 
-/// Enhanced profile screen with user settings
-class ProfileScreen extends StatelessWidget {
+/// Main profile screen - Landing page when user clicks profile from menu
+class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
   @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Load actual user profile from ProfileBloc
+    context.read<ProfileBloc>().add(LoadProfile());
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    
-    return Scaffold(
-      backgroundColor: isDark
-          ? const Color(0xFF121212)
-          : const Color(0xFFF5F5F5),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              // Header
-              _buildHeader(context, isDark),
+    return BlocBuilder<ProfileBloc, ProfileState>(
+      builder: (context, state) {
+        // Handle loading state
+        if (state.status == ProfileStatus.loading) {
+          return const Scaffold(body: Center(child: PulseLoadingWidget()));
+        }
 
-              // Profile info
-              _buildProfileInfo(isDark),
+        // Handle error state
+        if (state.status == ProfileStatus.error) {
+          return Scaffold(
+            body: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.error_outline, size: 64, color: Colors.grey),
+                  const SizedBox(height: 16),
+                  Text(state.error ?? 'Failed to load profile'),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: () =>
+                        context.read<ProfileBloc>().add(LoadProfile()),
+                    child: const Text('Retry'),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
 
-              // Settings sections
-              _buildSettingsSection(isDark),
+        final userProfile = state.profile;
 
-              // Support section
-              _buildSupportSection(isDark),
-
-              // Logout
-              _buildLogoutSection(context, isDark),
-
-              const SizedBox(height: PulseSpacing.xl),
+        return Scaffold(
+          appBar: AppBar(
+            title: Text(
+              'My Profile',
+              style: PulseTextStyles.titleLarge.copyWith(
+                color: PulseColors.onSurface,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back, color: PulseColors.onSurface),
+              onPressed: () {
+                if (context.canPop()) {
+                  context.pop();
+                } else {
+                  context.go('/home');
+                }
+              },
+            ),
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.settings, color: PulseColors.onSurface),
+                onPressed: () {
+                  context.go('/settings');
+                },
+                tooltip: 'Settings',
+              ),
             ],
           ),
-        ),
-      ),
+          body: SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(PulseSpacing.lg),
+              child: Column(
+                children: [
+                  _buildProfileHeader(userProfile),
+                  const SizedBox(height: PulseSpacing.md),
+                  _buildCompactStats(userProfile),
+                  const SizedBox(height: PulseSpacing.xl),
+                  ProfileCompletionWidget(
+                    profile: userProfile,
+                    onTapIncomplete: () {
+                      _navigateToFirstIncompleteSection(userProfile);
+                    },
+                  ),
+                  const SizedBox(height: PulseSpacing.xl),
+                  _buildProfileSections(userProfile),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 
-  Widget _buildHeader(BuildContext context, bool isDark) {
-    return Container(
-      padding: const EdgeInsets.all(PulseSpacing.lg),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: isDark
-              ? [
-                  const Color(0xFF1E1E1E),
-                  PulseColors.primary.withValues(alpha: 0.1),
-                ]
-              : [Colors.white, PulseColors.primary.withValues(alpha: 0.02)],
-        ),
-      ),
-      child: Row(
-        children: [
-          // Back button
-          IconButton(
-            onPressed: () {
-              if (context.canPop()) {
-                context.pop();
-              } else {
-                context.go('/home');
-              }
-            },
-            icon: const Icon(Icons.arrow_back_ios_rounded, size: 20),
-            style: IconButton.styleFrom(
-              foregroundColor: isDark ? Colors.white : PulseColors.onSurface,
-              padding: const EdgeInsets.all(8),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(PulseRadii.sm),
-              ),
-            ),
-            tooltip: 'Back',
-          ),
-          const SizedBox(width: PulseSpacing.sm),
-          Text(
-            'Profile',
-            style: PulseTextStyles.headlineLarge.copyWith(
-              color: isDark ? Colors.white : PulseColors.onSurface,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const Spacer(),
-          // Quick signout button
-          Container(
-            margin: const EdgeInsets.only(right: PulseSpacing.sm),
-            child: IconButton(
-              onPressed: () => _showLogoutDialog(context),
-              icon: const Icon(Icons.logout, size: 20),
-              style: IconButton.styleFrom(
-                backgroundColor: PulseColors.error.withValues(alpha: 0.1),
-                foregroundColor: PulseColors.error,
-                padding: const EdgeInsets.all(8),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(PulseRadii.sm),
-                ),
-              ),
-              tooltip: 'Quick Sign Out',
-            ),
-          ),
-          // Edit profile button
-          IconButton(
-            onPressed: () {
-              context.go('/profile-overview');
-            },
-            icon: const Icon(Icons.edit),
-            style: IconButton.styleFrom(
-              backgroundColor: PulseColors.primary.withValues(alpha: 0.1),
-              foregroundColor: PulseColors.primary,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(PulseRadii.sm),
-              ),
-            ),
-            tooltip: 'Edit Profile',
-          ),
-        ],
-      ),
-    );
-  }
+  Widget _buildProfileHeader(UserProfile? userProfile) {
+    if (userProfile == null) {
+      return const Center(child: CircularProgressIndicator());
+    }
 
-  Widget _buildProfileInfo(bool isDark) {
     return Container(
-      margin: const EdgeInsets.all(PulseSpacing.lg),
       padding: const EdgeInsets.all(PulseSpacing.xl),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: isDark
-              ? [
-                  const Color(0xFF1E1E1E),
-                  PulseColors.primary.withValues(alpha: 0.15),
-                ]
-              : [Colors.white, PulseColors.primary.withValues(alpha: 0.05)],
+          colors: [
+            PulseColors.primary.withValues(alpha: 0.1),
+            PulseColors.secondary.withValues(alpha: 0.1),
+          ],
         ),
         borderRadius: BorderRadius.circular(PulseRadii.xl),
-        boxShadow: [
-          BoxShadow(
-            color: PulseColors.primary.withValues(alpha: 0.08),
-            blurRadius: 24,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        border: Border.all(
+          color: PulseColors.primary.withValues(alpha: 0.2),
+        ),
       ),
       child: Column(
         children: [
-          // Avatar with improved design
+          // Profile Image - Show actual user photo
           Container(
-            width: 120,
-            height: 120,
+            width: 100,
+            height: 100,
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
@@ -169,374 +153,573 @@ class ProfileScreen extends StatelessWidget {
               boxShadow: [
                 BoxShadow(
                   color: PulseColors.primary.withValues(alpha: 0.3),
-                  blurRadius: 20,
-                  offset: const Offset(0, 8),
+                  blurRadius: 15,
+                  offset: const Offset(0, 5),
                 ),
               ],
             ),
-            child: const Icon(Icons.person, size: 64, color: Colors.white),
+            child: userProfile.photos.isNotEmpty
+                ? ClipOval(
+                    child: Image.network(
+                      userProfile.photos.first.url,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return const Icon(Icons.person, size: 50, color: Colors.white);
+                      },
+                    ),
+                  )
+                : const Icon(Icons.person, size: 50, color: Colors.white),
           ),
-          const SizedBox(height: PulseSpacing.lg),
-
-          // Name and info with better colors
+          const SizedBox(height: PulseSpacing.md),
+          
+          // Name and Age
           Text(
-            'John Doe',
+            '${userProfile.name}, ${userProfile.age}',
             style: PulseTextStyles.headlineMedium.copyWith(
-              color: isDark ? Colors.white : PulseColors.onSurface,
+              color: PulseColors.onSurface,
               fontWeight: FontWeight.bold,
             ),
           ),
           const SizedBox(height: PulseSpacing.sm),
-          Text(
-            '25 years old • 2.5 km away',
-            style: PulseTextStyles.bodyLarge.copyWith(
-              color: isDark
-                  ? Colors.white.withValues(alpha: 0.7)
-                  : PulseColors.onSurface.withValues(alpha: 0.7),
-            ),
-          ),
-          const SizedBox(height: PulseSpacing.xl),
-
-          // Enhanced stats with better visual hierarchy
-          Container(
-            padding: const EdgeInsets.all(PulseSpacing.lg),
-            decoration: BoxDecoration(
-              color: isDark
-                  ? Colors.white.withValues(alpha: 0.05)
-                  : Colors.white.withValues(alpha: 0.7),
-              borderRadius: BorderRadius.circular(PulseRadii.lg),
-              border: Border.all(
-                color: isDark
-                    ? PulseColors.primary.withValues(alpha: 0.3)
-                    : PulseColors.primary.withValues(alpha: 0.1),
-                width: 1,
-              ),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                _StatItem(
-                  value: '127',
-                  label: 'Matches',
-                  color: PulseColors.primary,
-                ),
-                Container(
-                  width: 1,
-                  height: 40,
-                  color: PulseColors.primary.withValues(alpha: 0.1),
-                ),
-                _StatItem(
-                  value: '89',
-                  label: 'Likes',
-                  color: PulseColors.success,
-                ),
-                Container(
-                  width: 1,
-                  height: 40,
-                  color: PulseColors.primary.withValues(alpha: 0.1),
-                ),
-                _StatItem(
-                  value: '23',
-                  label: 'Visits',
-                  color: PulseColors.secondary,
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSettingsSection(bool isDark) {
-    return Padding(
-      padding: const EdgeInsets.all(PulseSpacing.lg),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Settings',
-            style: PulseTextStyles.headlineSmall.copyWith(
-              color: isDark ? Colors.white : PulseColors.onSurface,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: PulseSpacing.md),
-
-          _SettingsCard(
-            isDark: isDark,
+          
+          // Location
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              _SettingsTile(
-                icon: Icons.person_outline,
-                title: 'Edit Profile',
-                subtitle: 'Update your photos and info',
-                onTap: (context) {
-                  context.go('/profile-overview');
-                },
+              Icon(
+                Icons.location_on,
+                size: 16,
+                color: PulseColors.onSurfaceVariant,
               ),
-              _SettingsTile(
-                icon: Icons.notifications,
-                title: 'Notifications',
-                subtitle: 'Manage your notification preferences',
-                onTap: (context) {
-                  context.go('/settings');
-                },
-              ),
-              _SettingsTile(
-                icon: Icons.location_on,
-                title: 'Location',
-                subtitle: 'Update your location settings',
-                onTap: (context) {
-                  context.go('/settings');
-                },
-              ),
-              _SettingsTile(
-                icon: Icons.security,
-                title: 'Privacy & Security',
-                subtitle: 'Control your privacy settings',
-                onTap: (context) {
-                  context.go('/safety');
-                },
+              const SizedBox(width: PulseSpacing.xs),
+              Text(
+                userProfile.location.city ?? 'Unknown location',
+                style: PulseTextStyles.bodyMedium.copyWith(
+                  color: PulseColors.onSurfaceVariant,
+                ),
               ),
             ],
           ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSupportSection(bool isDark) {
-    return Padding(
-      padding: const EdgeInsets.all(PulseSpacing.lg),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Support',
-            style: PulseTextStyles.headlineSmall.copyWith(
-              color: isDark ? Colors.white : PulseColors.onSurface,
-              fontWeight: FontWeight.bold,
+          
+          // Verification Badge
+          if (userProfile.verified) ...[
+            const SizedBox(height: PulseSpacing.sm),
+            Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: PulseSpacing.sm,
+                vertical: PulseSpacing.xs,
+              ),
+              decoration: BoxDecoration(
+                color: PulseColors.success,
+                borderRadius: BorderRadius.circular(PulseRadii.sm),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(
+                    Icons.verified,
+                    size: 16,
+                    color: Colors.white,
+                  ),
+                  const SizedBox(width: PulseSpacing.xs),
+                  Text(
+                    'Verified',
+                    style: PulseTextStyles.labelSmall.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-          const SizedBox(height: PulseSpacing.md),
-
-          _SettingsCard(
-            isDark: isDark,
-            children: [
-              _SettingsTile(
-                icon: Icons.help_outline,
-                title: 'Help Center',
-                subtitle: 'Get help and support',
-                onTap: (context) {
-                  // Navigate to help center - placeholder for now
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Help Center coming soon!')),
-                  );
-                },
-              ),
-              _SettingsTile(
-                icon: Icons.feedback_outlined,
-                title: 'Feedback',
-                subtitle: 'Share your thoughts with us',
-                onTap: (context) {
-                  // Navigate to feedback - placeholder for now
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Feedback form coming soon!')),
-                  );
-                },
-              ),
-              _SettingsTile(
-                icon: Icons.info_outline,
-                title: 'About',
-                subtitle: 'App version and info',
-                onTap: (context) {
-                  showAboutDialog(
-                    context: context,
-                    applicationName: 'PulseLink',
-                    applicationVersion: '1.0.0',
-                    applicationIcon: const FlutterLogo(size: 64),
-                    children: const [
-                      Text('A modern dating app connecting hearts worldwide.'),
-                    ],
-                  );
-                },
-              ),
-            ],
-          ),
+          ],
         ],
       ),
     );
   }
 
-  Widget _buildLogoutSection(BuildContext context, bool isDark) {
-    return Padding(
-      padding: const EdgeInsets.all(PulseSpacing.lg),
-      child: _SettingsCard(
-        isDark: isDark,
-        children: [
-          _SettingsTile(
-            icon: Icons.logout,
-            title: 'Sign Out',
-            subtitle: 'Sign out of your account',
-            textColor: PulseColors.error,
-            onTap: (context) => _showLogoutDialog(context),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showLogoutDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Sign Out'),
-        content: const Text('Are you sure you want to sign out?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
-          ),
-          PulseButton(
-            text: 'Sign Out',
-            onPressed: () {
-              Navigator.of(context).pop();
-              context.read<AuthBloc>().add(const AuthSignOutRequested());
-              context.go(AppRoutes.welcome);
-            },
-            variant: PulseButtonVariant.secondary,
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _StatItem extends StatelessWidget {
-  const _StatItem({
-    required this.value,
-    required this.label,
-    required this.color,
-  });
-
-  final String value;
-  final String label;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
+  Widget _buildCompactStats(UserProfile? userProfile) {
+    return Row(
       children: [
-        Text(
-          value,
-          style: PulseTextStyles.headlineMedium.copyWith(
-            color: color,
-            fontWeight: FontWeight.bold,
+        Expanded(
+          child: _buildStatCard(
+            icon: Icons.favorite_rounded,
+            value: '127', // TODO: Get from userProfile when available
+            label: 'Matches',
+            colors: [const Color(0xFFFF6B9D), const Color(0xFFC738BD)],
           ),
         ),
-        const SizedBox(height: PulseSpacing.xs),
-        Text(
-          label,
-          style: PulseTextStyles.bodyMedium.copyWith(
-            color: PulseColors.onSurfaceVariant,
+        const SizedBox(width: PulseSpacing.sm),
+        Expanded(
+          child: _buildStatCard(
+            icon: Icons.thumb_up_rounded,
+            value: '89', // TODO: Get from userProfile when available
+            label: 'Likes',
+            colors: [const Color(0xFF00D4AA), const Color(0xFF00E0C1)],
+          ),
+        ),
+        const SizedBox(width: PulseSpacing.sm),
+        Expanded(
+          child: _buildStatCard(
+            icon: Icons.visibility_rounded,
+            value: '23', // TODO: Get from userProfile when available
+            label: 'Visits',
+            colors: [const Color(0xFF6E3BFF), const Color(0xFF9D6CFF)],
           ),
         ),
       ],
     );
   }
-}
 
-class _SettingsCard extends StatelessWidget {
-  const _SettingsCard({required this.children, this.isDark = false});
-
-  final List<Widget> children;
-  final bool isDark;
-
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildStatCard({
+    required IconData icon,
+    required String value,
+    required String label,
+    required List<Color> colors,
+  }) {
     return Container(
+      padding: const EdgeInsets.all(PulseSpacing.md),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+        color: Colors.white,
         borderRadius: BorderRadius.circular(PulseRadii.lg),
+        border: Border.all(
+          color: PulseColors.outline.withValues(alpha: 0.3),
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.05),
+            color: colors[0].withValues(alpha: 0.15),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: colors,
+              ),
+              borderRadius: BorderRadius.circular(PulseRadii.md),
+            ),
+            child: Icon(icon, color: Colors.white, size: 20),
+          ),
+          const SizedBox(height: PulseSpacing.xs),
+          Text(
+            value,
+            style: PulseTextStyles.titleLarge.copyWith(
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          Text(
+            label,
+            style: PulseTextStyles.labelSmall.copyWith(
+              color: PulseColors.onSurfaceVariant,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildProfileSections(UserProfile? userProfile) {
+    return Column(
+      children: [
+        _buildSection(
+          title: 'Basic Information',
+          icon: Icons.person,
+          userProfile: userProfile,
+          items: [
+            _buildSectionItem('Name', userProfile?.name ?? 'Not set'),
+            _buildSectionItem('Age', '${userProfile?.age ?? 0} years old'),
+            _buildSectionItem('Bio', userProfile?.bio ?? 'No bio added'),
+          ],
+          onEdit: () => _navigateToSectionEdit('basic_info', userProfile),
+        ),
+        const SizedBox(height: PulseSpacing.lg),
+        
+        _buildSection(
+          title: 'Photos',
+          icon: Icons.photo_library,
+          userProfile: userProfile,
+          items: [
+            _buildPhotoGrid(userProfile),
+          ],
+          onEdit: () => _navigateToSectionEdit('photos', userProfile),
+        ),
+        const SizedBox(height: PulseSpacing.lg),
+        
+        _buildSection(
+          title: 'Work & Education',
+          icon: Icons.work,
+          userProfile: userProfile,
+          items: [
+            _buildSectionItem('Job', userProfile?.job ?? 'Not specified'),
+            _buildSectionItem(
+              'Company',
+              userProfile?.company ?? 'Not specified',
+            ),
+            _buildSectionItem('School', userProfile?.school ?? 'Not specified'),
+          ],
+          onEdit: () => _navigateToSectionEdit('work_education', userProfile),
+        ),
+        const SizedBox(height: PulseSpacing.lg),
+        
+        _buildSection(
+          title: 'Interests',
+          icon: Icons.favorite,
+          userProfile: userProfile,
+          items: [
+            _buildInterestsDisplay(userProfile),
+          ],
+          onEdit: () => _navigateToSectionEdit('interests', userProfile),
+        ),
+        const SizedBox(height: PulseSpacing.lg),
+        
+        _buildSection(
+          title: 'Dating Preferences',
+          icon: Icons.tune,
+          userProfile: userProfile,
+          items: [
+            _buildSectionItem('I am', userProfile?.gender ?? 'Not specified'),
+            _buildSectionItem(
+              'Looking for',
+              userProfile?.lookingFor ?? 'Not specified',
+            ),
+          ],
+          onEdit: () => _navigateToSectionEdit('preferences', userProfile),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSection({
+    required String title,
+    required IconData icon,
+    required UserProfile? userProfile,
+    required List<Widget> items,
+    required VoidCallback onEdit,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(PulseSpacing.lg),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(PulseRadii.lg),
+        border: Border.all(
+          color: PulseColors.outline.withValues(alpha: 0.5),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
         ],
       ),
-      child: Column(children: children),
-    );
-  }
-}
-
-class _SettingsTile extends StatelessWidget {
-  const _SettingsTile({
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-    required this.onTap,
-    this.textColor,
-  });
-
-  final IconData icon;
-  final String title;
-  final String subtitle;
-  final void Function(BuildContext) onTap;
-  final Color? textColor;
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: () => onTap(context),
-        borderRadius: BorderRadius.circular(PulseRadii.lg),
-        child: Padding(
-          padding: const EdgeInsets.all(PulseSpacing.lg),
-          child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
             children: [
-              Icon(icon, color: textColor ?? PulseColors.primary, size: 24),
-              const SizedBox(width: PulseSpacing.lg),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: PulseTextStyles.bodyLarge.copyWith(
-                        color:
-                            textColor ??
-                            (isDark ? Colors.white : PulseColors.onSurface),
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: PulseSpacing.xs),
-                    Text(
-                      subtitle,
-                      style: PulseTextStyles.bodyMedium.copyWith(
-                        color: isDark
-                            ? Colors.white.withValues(alpha: 0.6)
-                            : PulseColors.onSurfaceVariant,
-                      ),
-                    ),
-                  ],
+              Container(
+                padding: const EdgeInsets.all(PulseSpacing.sm),
+                decoration: BoxDecoration(
+                  color: PulseColors.primary.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(PulseRadii.md),
+                ),
+                child: Icon(
+                  icon,
+                  color: PulseColors.primary,
+                  size: 20,
                 ),
               ),
-              Icon(
-                Icons.arrow_forward_ios,
-                color: isDark
-                    ? Colors.white.withValues(alpha: 0.5)
-                    : PulseColors.onSurfaceVariant,
-                size: 16,
+              const SizedBox(width: PulseSpacing.md),
+              Expanded(
+                child: Text(
+                  title,
+                  style: PulseTextStyles.titleLarge.copyWith(
+                    color: PulseColors.onSurface,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              IconButton(
+                onPressed: onEdit,
+                icon: const Icon(Icons.edit, size: 20),
+                style: IconButton.styleFrom(
+                  backgroundColor: PulseColors.primary.withValues(alpha: 0.1),
+                  foregroundColor: PulseColors.primary,
+                  padding: const EdgeInsets.all(PulseSpacing.sm),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(PulseRadii.sm),
+                  ),
+                ),
+                tooltip: 'Edit $title',
               ),
             ],
           ),
-        ),
+          const SizedBox(height: PulseSpacing.md),
+          ...items,
+        ],
       ),
     );
+  }
+
+  Widget _buildSectionItem(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: PulseSpacing.sm),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 80,
+            child: Text(
+              label,
+              style: PulseTextStyles.bodyMedium.copyWith(
+                color: PulseColors.onSurfaceVariant,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+          const SizedBox(width: PulseSpacing.md),
+          Expanded(
+            child: Text(
+              value,
+              style: PulseTextStyles.bodyMedium.copyWith(
+                color: PulseColors.onSurface,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPhotoGrid(UserProfile? userProfile) {
+    final photos = userProfile?.photos ?? [];
+    return SizedBox(
+      height: 100,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        itemCount: photos.length + 1, // +1 for add photo button
+        itemBuilder: (context, index) {
+          if (index < photos.length) {
+            return Container(
+              width: 80,
+              height: 80,
+              margin: const EdgeInsets.only(right: PulseSpacing.sm),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(PulseRadii.md),
+                border: Border.all(
+                  color: PulseColors.primary.withValues(alpha: 0.3),
+                  width: 2,
+                ),
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(PulseRadii.md - 2),
+                child: Image.network(
+                  photos[index].url,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Container(
+                      color: PulseColors.surfaceVariant,
+                      child: const Icon(Icons.image, color: PulseColors.onSurfaceVariant),
+                    );
+                  },
+                ),
+              ),
+            );
+          } else {
+            return GestureDetector(
+              onTap: () => _navigateToSectionEdit('photos', userProfile),
+              child: Container(
+                width: 80,
+                height: 80,
+                margin: const EdgeInsets.only(right: PulseSpacing.sm),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(PulseRadii.md),
+                  border: Border.all(
+                    color: PulseColors.outline,
+                    style: BorderStyle.solid,
+                  ),
+                  color: PulseColors.surfaceVariant,
+                ),
+                child: const Icon(
+                  Icons.add_a_photo,
+                  color: PulseColors.onSurfaceVariant,
+                  size: 32,
+                ),
+              ),
+            );
+          }
+        },
+      ),
+    );
+  }
+
+  Widget _buildInterestsDisplay(UserProfile? userProfile) {
+    final interests = userProfile?.interests ?? [];
+    if (interests.isEmpty) {
+      return Text(
+        'No interests added',
+        style: PulseTextStyles.bodyMedium.copyWith(
+          color: PulseColors.onSurfaceVariant,
+        ),
+      );
+    }
+
+    return Wrap(
+      spacing: PulseSpacing.sm,
+      runSpacing: PulseSpacing.xs,
+      children: interests.map((interest) {
+        return Container(
+          padding: const EdgeInsets.symmetric(
+            horizontal: PulseSpacing.sm,
+            vertical: PulseSpacing.xs,
+          ),
+          decoration: BoxDecoration(
+            color: PulseColors.primary.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(PulseRadii.sm),
+            border: Border.all(
+              color: PulseColors.primary.withValues(alpha: 0.3),
+            ),
+          ),
+          child: Text(
+            interest,
+            style: PulseTextStyles.bodySmall.copyWith(
+              color: PulseColors.primary,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  void _navigateToSectionEdit(
+    String sectionType,
+    UserProfile? userProfile,
+  ) async {
+    final result = await context.push(
+      '/profile-section-edit',
+      extra: {
+        'sectionType': sectionType,
+        'initialData': _getSectionData(sectionType, userProfile),
+      },
+    );
+
+    if (result != null && mounted) {
+      // Handle returned form data and update profile
+      final formData = result as Map<String, dynamic>;
+
+      // Handle photo uploads separately if present
+      if (formData.containsKey('newPhotos')) {
+        final newPhotos = formData['newPhotos'] as List<dynamic>?;
+        if (newPhotos != null && newPhotos.isNotEmpty) {
+          for (final photo in newPhotos) {
+            if (photo is File) {
+              context.read<ProfileBloc>().add(UploadPhoto(photoPath: photo.path));
+            } else if (photo is String) {
+              context.read<ProfileBloc>().add(UploadPhoto(photoPath: photo));
+            }
+          }
+        }
+      }
+
+      if (userProfile != null) {
+        // Create updated profile with merged data (excluding photos - handled separately)
+        final updatedProfile = userProfile.copyWith(
+          name: formData['name'] as String?,
+          bio: formData['bio'] as String?,
+          job: formData['job'] as String?,
+          company: formData['company'] as String?,
+          school: formData['school'] as String?,
+          gender: formData['gender'] as String?,
+          lookingFor: formData['lookingFor'] as String?,
+          interests: formData['interests'] as List<String>?,
+        );
+
+        // Dispatch UpdateProfile event to save changes
+        context.read<ProfileBloc>().add(UpdateProfile(profile: updatedProfile));
+      }
+    }
+  }
+
+  Map<String, dynamic> _getSectionData(
+    String sectionType,
+    UserProfile? userProfile,
+  ) {
+    if (userProfile == null) return {};
+
+    switch (sectionType) {
+      case 'basic_info':
+        return {
+          'name': userProfile.name,
+          'age': userProfile.age,
+          'bio': userProfile.bio,
+        };
+      case 'work_education':
+        return {
+          'job': userProfile.job,
+          'company': userProfile.company,
+          'school': userProfile.school,
+        };
+      case 'interests':
+        return {
+          'interests': userProfile.interests,
+        };
+      case 'preferences':
+        return {
+          'gender': userProfile.gender,
+          'lookingFor': userProfile.lookingFor,
+        };
+      default:
+        return {};
+    }
+  }
+
+  void _navigateToFirstIncompleteSection(UserProfile? userProfile) {
+    if (userProfile == null) return;
+
+    // Basic info check
+    if (userProfile.name.isEmpty ||
+        userProfile.age <= 0 ||
+        userProfile.bio.isEmpty) {
+      _navigateToSectionEdit('basic_info', userProfile);
+      return;
+    }
+
+    // Photos check
+    if (userProfile.photos.length < 2) {
+      _navigateToSectionEdit('photos', userProfile);
+      return;
+    }
+
+    // Work & Education check
+    if ((userProfile.job?.isEmpty ?? true) &&
+        (userProfile.company?.isEmpty ?? true) &&
+        (userProfile.school?.isEmpty ?? true)) {
+      _navigateToSectionEdit('work_education', userProfile);
+      return;
+    }
+
+    // Interests check
+    if (userProfile.interests.length < 3) {
+      _navigateToSectionEdit('interests', userProfile);
+      return;
+    }
+
+    // Preferences check
+    if ((userProfile.gender?.isEmpty ?? true) ||
+        (userProfile.lookingFor?.isEmpty ?? true)) {
+      _navigateToSectionEdit('preferences', userProfile);
+      return;
+    }
+
+    // If all complete, go to basic info as fallback
+    _navigateToSectionEdit('basic_info', userProfile);
   }
 }

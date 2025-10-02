@@ -806,7 +806,7 @@ class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
 
     // If editing existing profile, just navigate back without confirmation
     if (hasExistingProfile) {
-      context.go('/profile-overview');
+      context.go('/profile');
       return false; // Don't use Navigator.pop
     }
 
@@ -861,7 +861,7 @@ class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
 
       // Navigate back to profile overview if editing, otherwise go home
       if (hasExistingProfile) {
-        context.go('/profile-overview');
+        context.go('/profile');
       } else {
         context.go('/home');
       }

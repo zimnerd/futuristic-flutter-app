@@ -49,7 +49,6 @@ import '../../../features/group_chat/presentation/screens/video_call_screen.dart
 import '../screens/group_chat/group_chat_settings_screen.dart';
 import '../screens/notification/notification_screen.dart';
 import '../screens/profile/profile_creation_screen.dart';
-import '../screens/profile/profile_overview_screen.dart';
 import '../screens/profile/profile_section_edit_screen.dart';
 import '../screens/profile/profile_details_screen.dart';
 import '../screens/profile/enhanced_profile_edit_screen.dart';
@@ -324,11 +323,6 @@ class AppRouter {
         path: AppRoutes.profileCreation,
         name: 'profileCreation',
         builder: (context, state) => const ProfileCreationScreen(),
-      ),
-      GoRoute(
-        path: AppRoutes.profileOverview,
-        name: 'profileOverview',
-        builder: (context, state) => const ProfileOverviewScreen(),
       ),
       GoRoute(
         path: AppRoutes.profileSectionEdit,
