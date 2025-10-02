@@ -6,11 +6,13 @@ import '../../../core/theme/pulse_design_system.dart';
 
 /// Modern Main Navigation Wrapper with PulseLink Design
 /// 
-/// Inspired by fitness app tab design with:
-/// - Curved, elevated bottom navigation
+/// Clean, minimal navigation bar with:
+/// - 5 horizontal tabs (Home, Search, Recent, Messages, Profile)
+/// - Purple pill styling for active tab with label text
 /// - Smooth animations and haptic feedback
-/// - PulseLink brand colors and theming
-/// - Burger menu integration
+/// - Dark/light mode support
+/// - Active tab shows icon + label, inactive shows icon only
+/// - Profile tab opens menu modal
 /// - StatefulShellRoute integration for tab state preservation
 class MainNavigationWrapper extends StatefulWidget {
   final StatefulNavigationShell navigationShell;
@@ -27,32 +29,37 @@ class MainNavigationWrapper extends StatefulWidget {
 class _MainNavigationWrapperState extends State<MainNavigationWrapper>
     with TickerProviderStateMixin {
   late AnimationController _animationController;
-  late AnimationController _fabController;
 
   final List<NavigationItem> _navigationItems = [
     NavigationItem(
-      icon: LineIcons.compass,
+      icon: LineIcons.compassAlt,
       activeIcon: LineIcons.compass,
       label: 'Discover',
       route: '/home',
     ),
     NavigationItem(
-      icon: LineIcons.fire,
-      activeIcon: LineIcons.fire,
+      icon: LineIcons.heartbeat,
+      activeIcon: LineIcons.heartAlt,
       label: 'Sparks',
       route: '/matches',
     ),
     NavigationItem(
-      icon: LineIcons.calendar,
-      activeIcon: LineIcons.calendar,
+      icon: LineIcons.calendarCheck,
+      activeIcon: LineIcons.calendarAlt,
       label: 'Events',
       route: '/events',
     ),
     NavigationItem(
       icon: LineIcons.comment,
-      activeIcon: LineIcons.comment,
-      label: 'DMs',
+      activeIcon: LineIcons.commentDotsAlt,
+      label: 'Messages',
       route: '/messages',
+    ),
+    NavigationItem(
+      icon: LineIcons.user,
+      activeIcon: LineIcons.userAlt,
+      label: 'Profile',
+      route: '/profile',
     ),
   ];
 
@@ -63,17 +70,11 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper>
       duration: const Duration(milliseconds: 150),
       vsync: this,
     );
-    _fabController = AnimationController(
-      duration: const Duration(milliseconds: 300),
-      vsync: this,
-    );
-    _fabController.forward();
   }
 
   @override
   void dispose() {
     _animationController.dispose();
-    _fabController.dispose();
     super.dispose();
   }
 
@@ -88,6 +89,12 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper>
       _animationController.reverse();
     });
 
+    // Handle profile tab specially - show menu options
+    if (index == 4) {
+      _showProfileMenu();
+      return;
+    }
+
     // Use navigationShell.goBranch for tab switching (preserves state)
     widget.navigationShell.goBranch(
       index,
@@ -95,12 +102,8 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper>
     );
   }
 
-  void _onBurgerMenuTapped() {
+  void _showProfileMenu() {
     HapticFeedback.mediumImpact();
-    _showBurgerMenu();
-  }
-
-  void _showBurgerMenu() {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -119,28 +122,22 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper>
   }
 
   Widget _buildCurvedBottomBar() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
     return Container(
-      margin: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+      margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(40),
+        borderRadius: BorderRadius.circular(30),
         child: Container(
-          height: 80,
+          height: 70,
           decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              // Use gradient instead of solid color
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                Color(0xFF2C1810),
-                Color(0xFF3A1F15),
-              ], // Warmer brown-burgundy
-            ),
-            borderRadius: BorderRadius.circular(40),
+            color: isDark
+                ? const Color(0xFF1C1C1E)
+                : const Color(0xFF2C1810).withValues(alpha: 0.95),
+            borderRadius: BorderRadius.circular(30),
             boxShadow: [
               BoxShadow(
-                color: Color(
-                  0xFF2C1810,
-                ).withValues(alpha: 0.4), // Match the gradient
+                color: Colors.black.withValues(alpha: isDark ? 0.5 : 0.3),
                 blurRadius: 20,
                 offset: const Offset(0, 8),
               ),
@@ -149,11 +146,11 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper>
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              _buildCurvedNavItem(_navigationItems[0], 0),
-              _buildCurvedNavItem(_navigationItems[1], 1),
-              _buildCentralBurgerButton(),
-              _buildCurvedNavItem(_navigationItems[2], 2),
-              _buildCurvedNavItem(_navigationItems[3], 3),
+              _buildModernNavItem(_navigationItems[0], 0),
+              _buildModernNavItem(_navigationItems[1], 1),
+              _buildModernNavItem(_navigationItems[2], 2),
+              _buildModernNavItem(_navigationItems[3], 3),
+              _buildModernNavItem(_navigationItems[4], 4),
             ],
           ),
         ),
@@ -161,8 +158,13 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper>
     );
   }
 
-  Widget _buildCurvedNavItem(NavigationItem item, int index) {
+  Widget _buildModernNavItem(NavigationItem item, int index) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final isActive = index == widget.navigationShell.currentIndex;
+    
+    // Use theme colors for active state
+    final activeColor = PulseColors.primary;
+    final inactiveColor = isDark ? PulseColors.grey500 : PulseColors.grey400;
     
     return AnimatedBuilder(
       animation: _animationController,
@@ -170,64 +172,60 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper>
         final scale =
             index == widget.navigationShell.currentIndex &&
                 _animationController.isAnimating
-            ? 1.0 - (_animationController.value * 0.1)
+            ? 1.0 - (_animationController.value * 0.05)
             : 1.0;
 
         return Transform.scale(
           scale: scale,
           child: InkWell(
             onTap: () => _onItemTapped(index),
-            borderRadius: BorderRadius.circular(20),
-            child: Container(
-              width: 50,
-              height: 50,
+            borderRadius: BorderRadius.circular(25),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeInOut,
+              padding: EdgeInsets.symmetric(
+                horizontal: isActive ? 16 : 12,
+                vertical: 10,
+              ),
               decoration: isActive
                   ? BoxDecoration(
-                      color: PulseColors.primary,
-                      borderRadius: BorderRadius.circular(16),
+                      color: activeColor,
+                      borderRadius: BorderRadius.circular(25),
+                      boxShadow: [
+                        BoxShadow(
+                          color: activeColor.withValues(alpha: 0.3),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
                     )
                   : null,
-              child: Icon(
-                isActive ? item.activeIcon : item.icon,
-                color: isActive ? PulseColors.white : PulseColors.grey400,
-                size: 24,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    isActive ? item.activeIcon : item.icon,
+                    color: isActive ? Colors.white : inactiveColor,
+                    size: 24,
+                  ),
+                  if (isActive) ...[
+                    const SizedBox(width: 8),
+                    Text(
+                      item.label,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w300,
+                        fontFamily: 'Satoshi',
+                      ),
+                    ),
+                  ],
+                ],
               ),
             ),
           ),
         );
       },
-    );
-  }
-
-  Widget _buildCentralBurgerButton() {
-    return ScaleTransition(
-      scale: _fabController,
-      child: GestureDetector(
-        onTap: _onBurgerMenuTapped,
-        child: Container(
-          width: 56,
-          height: 56,
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              // Add gradient to match the theme
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [PulseColors.primary, PulseColors.accent],
-            ),
-            borderRadius: BorderRadius.circular(28),
-            boxShadow: [
-              BoxShadow(
-                color: PulseColors.primary.withValues(
-                  alpha: 0.3,
-                ), // Match primary color
-                blurRadius: 12,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: Icon(LineIcons.bars, color: PulseColors.white, size: 28),
-        ),
-      ),
     );
   }
 
@@ -305,7 +303,8 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper>
                         'Menu',
                         style: PulseTypography.h3.copyWith(
                           color: PulseColors.white,
-                          fontWeight: FontWeight.w600,
+                          fontWeight: FontWeight.w300,
+                          fontFamily: 'Satoshi',
                         ),
                       ),
                       const Spacer(),
@@ -514,7 +513,8 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper>
                         title,
                         style: PulseTypography.bodyMedium.copyWith(
                           // Changed from bodyLarge
-                          fontWeight: FontWeight.w600,
+                          fontWeight: FontWeight.w300,
+                          fontFamily: 'Satoshi',
                           color: Colors.white,
                         ),
                       ),
@@ -579,7 +579,8 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper>
               'Logout',
               style: PulseTypography.h3.copyWith(
                 color: PulseColors.grey900,
-                fontWeight: FontWeight.w600,
+                fontWeight: FontWeight.w300,
+                fontFamily: 'Satoshi',
               ),
             ),
           ],
@@ -600,7 +601,8 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper>
             child: Text(
               'Cancel',
               style: PulseTypography.bodyMedium.copyWith(
-                fontWeight: FontWeight.w600,
+                fontWeight: FontWeight.w300,
+                fontFamily: 'Satoshi',
               ),
             ),
           ),
@@ -623,7 +625,8 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper>
             child: Text(
               'Logout',
               style: PulseTypography.bodyMedium.copyWith(
-                fontWeight: FontWeight.w600,
+                fontWeight: FontWeight.w300,
+                fontFamily: 'Satoshi',
                 color: Colors.white,
               ),
             ),
