@@ -3,9 +3,9 @@ import 'package:flutter/services.dart';
 
 import 'pulse_colors.dart';
 
-/// Typography styles using Satoshi font
+/// Typography styles using Poppins font
 class PulseTextStyles {
-  static const String fontFamily = 'Satoshi';
+  static const String fontFamily = 'Poppins';
   
   static const TextStyle displayLarge = TextStyle(
     fontFamily: fontFamily,

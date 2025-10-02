@@ -60,8 +60,8 @@ class PulseColors {
 
 /// Typography configuration for Pulse Dating App
 class PulseTextStyles {
-  // Font families - Using Satoshi as the primary font
-  static const String primaryFont = 'Satoshi';
+  // Font families - Using Poppins as the primary font
+  static const String primaryFont = 'Poppins';
 
   // Display text styles (largest)
   static const TextStyle displayLarge = TextStyle(

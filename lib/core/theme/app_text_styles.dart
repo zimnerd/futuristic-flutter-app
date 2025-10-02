@@ -4,8 +4,8 @@ import 'app_colors.dart';
 /// App text styles following the PulseLink design system
 class AppTextStyles {
   // Base font family
-  static const String _fontFamily = 'Inter';
-  static const String _headingFontFamily = 'Space Grotesk';
+  static const String _fontFamily = 'Poppins';
+  static const String _headingFontFamily = 'Poppins';
   
   // Display Styles (Largest)
   static const TextStyle display1 = TextStyle(
