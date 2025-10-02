@@ -573,6 +573,11 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
                               swipeDirection: _convertToWidgetSwipeDirection(
                                 _currentSwipeDirection,
                               ),
+                            // Pass swipe handlers for profile detail page buttons
+                            onSwipeLeft: () => _executeSwipe(SwipeAction.left),
+                            onSwipeRight: () =>
+                                _executeSwipe(SwipeAction.right),
+                            onSwipeUp: () => _executeSwipe(SwipeAction.up),
                             ),
                           ),
                         ),

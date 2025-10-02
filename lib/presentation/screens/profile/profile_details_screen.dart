@@ -225,7 +225,8 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
       expandedHeight: 400,
       pinned: true,
       backgroundColor: Colors.white,
-      foregroundColor: Colors.black87,
+      // Make icons always visible with white color against dark overlay
+      foregroundColor: Colors.white,
       elevation: 0,
       actions: [
         if (widget.isOwnProfile)
@@ -307,6 +308,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
 
     return Stack(
       children: [
+        // Photo carousel
         PageView.builder(
           controller: _pageController,
           onPageChanged: (index) {
@@ -325,6 +327,24 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
               ),
             );
           },
+        ),
+
+        // Dark gradient overlay for icon visibility (top-down fade)
+        Positioned.fill(
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.center,
+                colors: [
+                  Colors.black.withValues(alpha: 0.6),
+                  Colors.black.withValues(alpha: 0.3),
+                  Colors.transparent,
+                ],
+                stops: const [0.0, 0.3, 0.6],
+              ),
+            ),
+          ),
         ),
 
         // Photo indicators
