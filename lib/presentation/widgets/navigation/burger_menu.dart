@@ -312,6 +312,13 @@ class _BurgerMenuState extends State<BurgerMenu>
         subtitle: 'Your virtual assistant',
         route: '/ai-companion',
       ),
+      _MenuItem(
+        icon: Icons.logout,
+        title: 'Sign Out',
+        subtitle: 'Sign out of your account',
+        route: 'SIGN_OUT', // Special route for sign out action
+        isDestructive: true,
+      ),
     ];
 
     return ListView.builder(
@@ -331,18 +338,29 @@ class _BurgerMenuState extends State<BurgerMenu>
         color: Colors.transparent,
         child: InkWell(
           borderRadius: BorderRadius.circular(16),
-          onTap: () => _navigateAndClose(item.route),
+          onTap: () async {
+            // Handle sign out specially
+            if (item.route == 'SIGN_OUT') {
+              await _handleSignOut();
+            } else {
+              _navigateAndClose(item.route);
+            }
+          },
           child: Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: item.isHighlighted
                   ? PulseColors.primary.withValues(alpha: 0.1)
+                  : item.isDestructive
+                  ? PulseColors.reject.withValues(alpha: 0.05)
                   : PulseColors.grey50,
               borderRadius: BorderRadius.circular(16),
               border: item.isHighlighted
                   ? Border.all(
                       color: PulseColors.primary.withValues(alpha: 0.3),
                     )
+                  : item.isDestructive
+                  ? Border.all(color: PulseColors.reject.withValues(alpha: 0.2))
                   : null,
             ),
             child: Row(
@@ -353,6 +371,8 @@ class _BurgerMenuState extends State<BurgerMenu>
                   decoration: BoxDecoration(
                     color: item.isHighlighted
                         ? PulseColors.primary.withValues(alpha: 0.2)
+                        : item.isDestructive
+                        ? PulseColors.reject.withValues(alpha: 0.1)
                         : PulseColors.white,
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -360,6 +380,8 @@ class _BurgerMenuState extends State<BurgerMenu>
                     item.icon,
                     color: item.isHighlighted
                         ? PulseColors.primary
+                        : item.isDestructive
+                        ? PulseColors.reject
                         : PulseColors.grey600,
                     size: 22,
                   ),
@@ -375,6 +397,8 @@ class _BurgerMenuState extends State<BurgerMenu>
                         style: PulseTypography.bodyLarge.copyWith(
                           color: item.isHighlighted
                               ? PulseColors.primary
+                              : item.isDestructive
+                              ? PulseColors.reject
                               : PulseColors.grey800,
                           fontWeight: FontWeight.w600,
                         ),
@@ -384,7 +408,9 @@ class _BurgerMenuState extends State<BurgerMenu>
                         Text(
                           item.subtitle!,
                           style: PulseTypography.bodySmall.copyWith(
-                            color: PulseColors.grey600,
+                            color: item.isDestructive
+                                ? PulseColors.reject.withValues(alpha: 0.7)
+                                : PulseColors.grey600,
                           ),
                         ),
                       ],
@@ -394,7 +420,9 @@ class _BurgerMenuState extends State<BurgerMenu>
                 
                 Icon(
                   Icons.arrow_forward_ios,
-                  color: PulseColors.grey500,
+                  color: item.isDestructive
+                      ? PulseColors.reject.withValues(alpha: 0.5)
+                      : PulseColors.grey500,
                   size: 14,
                 ),
               ],
@@ -405,84 +433,67 @@ class _BurgerMenuState extends State<BurgerMenu>
     );
   }
 
+  Future<void> _handleSignOut() async {
+    final shouldSignOut = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+        final titleColor = isDarkMode
+            ? PulseColors.grey100
+            : PulseColors.grey900;
+        final contentColor = isDarkMode
+            ? PulseColors.grey300
+            : PulseColors.grey700;
+
+        return AlertDialog(
+          title: Text(
+            'Sign Out',
+            style: PulseTypography.h4.copyWith(color: titleColor),
+          ),
+          content: Text(
+            'Are you sure you want to sign out?',
+            style: PulseTypography.bodyMedium.copyWith(color: contentColor),
+          ),
+          actions: [
+            // Outlined Cancel button
+            OutlinedButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              style: OutlinedButton.styleFrom(
+                side: BorderSide(
+                  color: isDarkMode ? PulseColors.grey600 : PulseColors.grey300,
+                ),
+                foregroundColor: contentColor,
+              ),
+              child: const Text('Cancel'),
+            ),
+            // Filled destructive Sign Out button
+            ElevatedButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: PulseColors.reject,
+                foregroundColor: PulseColors.white,
+              ),
+              child: const Text('Sign Out'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (shouldSignOut == true && mounted) {
+      // Trigger sign out event
+      context.read<AuthBloc>().add(const AuthSignOutRequested());
+      _closeMenu();
+    }
+  }
+
   Widget _buildMenuFooter() {
     return Container(
       padding: const EdgeInsets.all(20),
-      child: Column(
-        children: [
-          // App version
-          Text(
-            'PulseLink v1.0.0',
-            style: PulseTypography.bodySmall.copyWith(
-              color: PulseColors.grey500,
-            ),
-          ),
-          const SizedBox(height: 8),
-          
-          // Sign out button
-          Material(
-            color: Colors.transparent,
-            child: InkWell(
-              borderRadius: BorderRadius.circular(12),
-              onTap: () async {
-                // Show confirmation dialog
-                final shouldSignOut = await showDialog<bool>(
-                  context: context,
-                  builder: (context) => AlertDialog(
-                    title: const Text('Sign Out'),
-                    content: const Text('Are you sure you want to sign out?'),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.of(context).pop(false),
-                        child: const Text('Cancel'),
-                      ),
-                      TextButton(
-                        onPressed: () => Navigator.of(context).pop(true),
-                        child: const Text('Sign Out'),
-                      ),
-                    ],
-                  ),
-                );
-
-                if (shouldSignOut == true && mounted) {
-                  // Trigger sign out event
-                  context.read<AuthBloc>().add(const AuthSignOutRequested());
-                  _closeMenu();
-                }
-              },
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 8,
-                ),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: PulseColors.reject.withValues(alpha: 0.3),
-                  ),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.logout,
-                      color: PulseColors.reject,
-                      size: 16,
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      'Sign Out',
-                      style: PulseTypography.bodyMedium.copyWith(
-                        color: PulseColors.reject,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ],
+      child: Text(
+        'PulseLink v1.0.0',
+        style: PulseTypography.bodySmall.copyWith(color: PulseColors.grey500),
+        textAlign: TextAlign.center,
       ),
     );
   }
@@ -495,6 +506,7 @@ class _MenuItem {
   final String? subtitle;
   final String route;
   final bool isHighlighted;
+  final bool isDestructive;
 
   const _MenuItem({
     required this.icon,
@@ -502,5 +514,6 @@ class _MenuItem {
     this.subtitle,
     required this.route,
     this.isHighlighted = false,
+    this.isDestructive = false,
   });
 }

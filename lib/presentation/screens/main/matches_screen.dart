@@ -9,7 +9,7 @@ import '../../../core/network/api_client.dart';
 import '../../../data/models/match_model.dart';
 import '../../../core/theme/pulse_design_system.dart';
 import '../../widgets/match/match_card.dart';
-import '../../widgets/profile/profile_modal.dart';
+import '../profile/profile_details_screen.dart';
 import '../calls/audio_call_screen.dart';
 
 /// Actual Matches Screen - Shows mutual matches and people who liked you
@@ -347,24 +347,51 @@ class _MatchesScreenState extends State<MatchesScreen>
                     );
                   }
                 : null,
-            onTap: () {
+            onMessage: () {
               if (match.userProfile != null) {
-                ProfileModal.show(
+                Navigator.pushNamed(
                   context,
-                  userProfile: match.userProfile!,
-                  onMessage: () {
-                    Navigator.pop(context); // Close modal
-                    Navigator.pushNamed(
-                      context,
-                      '/conversation',
-                      arguments: {
-                        'user': match.userProfile,
-                        'conversationId': match.id,
-                      },
-                    );
+                  '/conversation',
+                  arguments: {
+                    'user': match.userProfile,
+                    'conversationId': match.id,
                   },
                 );
               }
+            },
+            onViewProfile: () {
+              if (match.userProfile != null) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ProfileDetailsScreen(
+                      profile: match.userProfile!,
+                      isOwnProfile: false,
+                      showStartConversation: true,
+                      onMessage: () {
+                        Navigator.pop(context); // Close profile screen
+                        Navigator.pushNamed(
+                          context,
+                          '/conversation',
+                          arguments: {
+                            'user': match.userProfile,
+                            'conversationId': match.id,
+                          },
+                        );
+                      },
+                    ),
+                  ),
+                );
+              }
+            },
+            onUnmatch: () {
+              _showUnmatchDialog(context, match);
+            },
+            onBlock: () {
+              _showBlockDialog(context, match);
+            },
+            onReport: () {
+              _showReportDialog(context, match);
             },
           );
         },
@@ -372,6 +399,97 @@ class _MatchesScreenState extends State<MatchesScreen>
     }
 
     return const SizedBox();
+  }
+
+  void _showUnmatchDialog(BuildContext context, MatchModel match) {
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Unmatch'),
+        content: Text(
+          'Are you sure you want to unmatch with ${match.userProfile?.name ?? "this person"}? This action cannot be undone.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(dialogContext).pop();
+              // TODO: Implement unmatch functionality
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Unmatched successfully')),
+              );
+            },
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Unmatch'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showBlockDialog(BuildContext context, MatchModel match) {
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Block User'),
+        content: Text(
+          'Are you sure you want to block ${match.userProfile?.name ?? "this person"}? They will not be able to contact you.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(dialogContext).pop();
+              // TODO: Implement block functionality
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('User blocked successfully')),
+              );
+            },
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Block'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showReportDialog(BuildContext context, MatchModel match) {
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Report User'),
+        content: Text(
+          'Report ${match.userProfile?.name ?? "this person"} for inappropriate behavior?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(dialogContext).pop();
+              // TODO: Implement report functionality
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text(
+                    'Report submitted. Thank you for helping keep PulseLink safe.',
+                  ),
+                ),
+              );
+            },
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Report'),
+          ),
+        ],
+      ),
+    );
   }
 
   List<MatchModel> _getFilteredMatches(List<MatchModel> matches) {

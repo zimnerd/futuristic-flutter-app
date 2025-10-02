@@ -15,6 +15,10 @@ class MatchCard extends StatelessWidget {
     this.onReject,
     this.onUnmatch,
     this.onCall,
+    this.onMessage,
+    this.onViewProfile,
+    this.onBlock,
+    this.onReport,
     this.showStatus = true,
   });
 
@@ -25,6 +29,10 @@ class MatchCard extends StatelessWidget {
   final VoidCallback? onReject;
   final VoidCallback? onUnmatch;
   final VoidCallback? onCall;
+  final VoidCallback? onMessage;
+  final VoidCallback? onViewProfile;
+  final VoidCallback? onBlock;
+  final VoidCallback? onReport;
   final bool showStatus;
 
 
@@ -38,147 +46,226 @@ class MatchCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
       ),
       child: InkWell(
-        onTap: onTap,
+        onTap: onTap ?? onViewProfile,
         borderRadius: BorderRadius.circular(16),
         child: Padding(
           padding: const EdgeInsets.all(16),
-          child: Column(
+          child: Row(
             children: [
-              Row(
-                children: [
-                  // User profile photo
-                  _buildUserPhoto(),
-                  const SizedBox(width: 16),
-                  
-                  // User details
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+              // User profile photo
+              _buildUserPhoto(),
+              const SizedBox(width: 16),
+
+              // User details
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      _getUserDisplayName(),
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      _getUserDetails(),
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 4),
+                    Row(
                       children: [
+                        if (match.compatibilityScore > 0) ...[
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.green.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              '${(match.compatibilityScore * 100).round()}% match',
+                              style: const TextStyle(
+                                color: Colors.green,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                        ],
+                        if (_getUserLocation().isNotEmpty)
+                          Expanded(
+                            child: Text(
+                              _getUserLocation(),
+                              style: TextStyle(
+                                color: Colors.grey[500],
+                                fontSize: 12,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    // Match date
+                    Row(
+                      children: [
+                        Icon(Icons.favorite, size: 12, color: Colors.grey[400]),
+                        const SizedBox(width: 4),
                         Text(
-                          _getUserDisplayName(),
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                fontWeight: FontWeight.bold,
-                              ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          _getUserDetails(),
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                color: Colors.grey[600],
-                              ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        const SizedBox(height: 4),
-                        Row(
-                          children: [
-                            if (match.compatibilityScore > 0) ...[
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 6,
-                                  vertical: 2,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: Colors.green.withValues(alpha: 0.1),
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Text(
-                                  '${(match.compatibilityScore * 100).round()}% match',
-                                  style: const TextStyle(
-                                    color: Colors.green,
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                            ],
-                            if (_getUserLocation().isNotEmpty)
-                              Expanded(
-                                child: Text(
-                                  _getUserLocation(),
-                                  style: TextStyle(
-                                    color: Colors.grey[500],
-                                    fontSize: 12,
-                                  ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                          ],
+                          _getMatchTimeText(),
+                          style: TextStyle(
+                            color: Colors.grey[500],
+                            fontSize: 11,
+                            fontStyle: FontStyle.italic,
+                          ),
                         ),
                       ],
                     ),
+                  ],
+                ),
+              ),
+
+              // Status indicator (conditionally shown)
+              if (showStatus)
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
                   ),
-                  
-                  // Status indicator (conditionally shown)
-                  if (showStatus)
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 4,
+                  margin: const EdgeInsets.only(right: 8),
+                  decoration: BoxDecoration(
+                    color: _getStatusColor(match.status).withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    match.status.toUpperCase(),
+                    style: TextStyle(
+                      color: _getStatusColor(match.status),
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              
+              // Context menu button (vertical ellipsis)
+              PopupMenuButton<String>(
+                icon: Icon(Icons.more_vert, color: Colors.grey[600]),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                offset: const Offset(0, 40),
+                onSelected: (value) {
+                  switch (value) {
+                    case 'call':
+                      onCall?.call();
+                      break;
+                    case 'message':
+                      onMessage?.call();
+                      break;
+                    case 'view_profile':
+                      onViewProfile?.call();
+                      break;
+                    case 'unmatch':
+                      onUnmatch?.call();
+                      break;
+                    case 'block':
+                      onBlock?.call();
+                      break;
+                    case 'report':
+                      onReport?.call();
+                      break;
+                  }
+                },
+                itemBuilder: (context) => [
+                  if (onCall != null)
+                    const PopupMenuItem<String>(
+                      value: 'call',
+                      child: Row(
+                        children: [
+                          Icon(Icons.phone, size: 20, color: Color(0xFF6E3BFF)),
+                          SizedBox(width: 12),
+                          Text('Call'),
+                        ],
                       ),
-                      decoration: BoxDecoration(
-                        color: _getStatusColor(
-                          match.status,
-                        ).withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(12),
+                    ),
+                  if (onMessage != null)
+                    const PopupMenuItem<String>(
+                      value: 'message',
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.message,
+                            size: 20,
+                            color: Color(0xFF00C2FF),
+                          ),
+                          SizedBox(width: 12),
+                          Text('Message'),
+                        ],
                       ),
-                      child: Text(
-                        match.status.toUpperCase(),
-                        style: TextStyle(
-                          color: _getStatusColor(match.status),
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                        ),
+                    ),
+                  if (onViewProfile != null)
+                    const PopupMenuItem<String>(
+                      value: 'view_profile',
+                      child: Row(
+                        children: [
+                          Icon(Icons.person, size: 20, color: Colors.grey),
+                          SizedBox(width: 12),
+                          Text('View Profile'),
+                        ],
+                      ),
+                    ),
+                  if (onUnmatch != null) ...[
+                    const PopupMenuDivider(),
+                    const PopupMenuItem<String>(
+                      value: 'unmatch',
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.heart_broken,
+                            size: 20,
+                            color: Colors.orange,
+                          ),
+                          SizedBox(width: 12),
+                          Text('Unmatch'),
+                        ],
+                      ),
+                    ),
+                  ],
+                  if (onBlock != null)
+                    const PopupMenuItem<String>(
+                      value: 'block',
+                      child: Row(
+                        children: [
+                          Icon(Icons.block, size: 20, color: Colors.red),
+                          SizedBox(width: 12),
+                          Text('Block'),
+                        ],
+                      ),
+                    ),
+                  if (onReport != null)
+                    const PopupMenuItem<String>(
+                      value: 'report',
+                      child: Row(
+                        children: [
+                          Icon(Icons.flag, size: 20, color: Colors.red),
+                          SizedBox(width: 12),
+                          Text('Report'),
+                        ],
                       ),
                     ),
                 ],
               ),
-              
-              // Action buttons
-              if (onAccept != null ||
-                  onReject != null ||
-                  onUnmatch != null ||
-                  onCall != null) ...[
-                const SizedBox(height: 16),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    if (onCall != null)
-                      _ActionButton(
-                        onPressed: onCall!,
-                        icon: Icons.phone,
-                        label: 'Call',
-                        color: const Color(0xFF6E3BFF),
-                      ),
-                    if (onAccept != null)
-                      _ActionButton(
-                        onPressed: onAccept!,
-                        icon: Icons.check,
-                        label: 'Accept',
-                        color: Colors.green,
-                      ),
-                    if (onReject != null)
-                      _ActionButton(
-                        onPressed: onReject!,
-                        icon: Icons.close,
-                        label: 'Reject',
-                        color: Colors.red,
-                      ),
-                    if (onUnmatch != null)
-                      _ActionButton(
-                        onPressed: onUnmatch!,
-                        icon: Icons.heart_broken,
-                        label: 'Unmatch',
-                        color: Colors.orange,
-                      ),
-                  ],
-                ),
-              ],
             ],
           ),
         ),
@@ -293,6 +380,31 @@ class MatchCard extends StatelessWidget {
     return '';
   }
 
+  /// Get formatted match time text
+  String _getMatchTimeText() {
+    final matchTime = match.matchedAt ?? match.createdAt;
+    final now = DateTime.now();
+    final diff = now.difference(matchTime);
+
+    if (diff.inMinutes < 1) {
+      return 'Matched just now';
+    } else if (diff.inMinutes < 60) {
+      return 'Matched ${diff.inMinutes}m ago';
+    } else if (diff.inHours < 24) {
+      return 'Matched ${diff.inHours}h ago';
+    } else if (diff.inDays == 1) {
+      return 'Matched yesterday';
+    } else if (diff.inDays < 7) {
+      return 'Matched ${diff.inDays} days ago';
+    } else if (diff.inDays < 30) {
+      final weeks = (diff.inDays / 7).floor();
+      return 'Matched ${weeks} ${weeks == 1 ? 'week' : 'weeks'} ago';
+    } else {
+      final months = (diff.inDays / 30).floor();
+      return 'Matched ${months} ${months == 1 ? 'month' : 'months'} ago';
+    }
+  }
+
   String _getStatusText(String status) {
     switch (status.toLowerCase()) {
       case 'matched':
@@ -321,37 +433,5 @@ class MatchCard extends StatelessWidget {
       default:
         return Colors.blue;
     }
-  }
-}
-
-class _ActionButton extends StatelessWidget {
-  const _ActionButton({
-    required this.onPressed,
-    required this.icon,
-    required this.label,
-    required this.color,
-  });
-
-  final VoidCallback onPressed;
-  final IconData icon;
-  final String label;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    return ElevatedButton.icon(
-      onPressed: onPressed,
-      icon: Icon(icon, size: 16),
-      label: Text(label),
-      style: ElevatedButton.styleFrom(
-        backgroundColor: color,
-        foregroundColor: Colors.white,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
-        elevation: 0,
-      ),
-    );
   }
 }
