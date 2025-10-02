@@ -358,9 +358,16 @@ class ApiClient {
     required String code,
     required String email,
   }) async {
+    // Determine if email is actually a phone number
+    final isPhone = email.startsWith('+') || RegExp(r'^\d+$').hasMatch(email);
+    
     return await _dio.post(
       ApiConstants.authVerifyOTP,
-      data: {'sessionId': sessionId, 'code': code, 'email': email},
+      data: {
+        'sessionId': sessionId,
+        'code': code,
+        if (isPhone) 'phoneNumber': email else 'email': email,
+      },
     );
   }
 
