@@ -72,77 +72,77 @@ class PulseColors {
 
 /// Typography system
 class PulseTypography {
-  static const String fontFamily = 'Inter';
-  static const String headingFontFamily = 'SpaceGrotesk';
+  static const String fontFamily = 'Poppins';
+  static const String headingFontFamily = 'Poppins';
   
   // Text styles
   static const TextStyle h1 = TextStyle(
     fontFamily: headingFontFamily,
     fontSize: 32,
-    fontWeight: FontWeight.bold,
+    fontWeight: FontWeight.w400,
     height: 1.2,
   );
   
   static const TextStyle h2 = TextStyle(
     fontFamily: headingFontFamily,
     fontSize: 28,
-    fontWeight: FontWeight.bold,
+    fontWeight: FontWeight.w400,
     height: 1.3,
   );
   
   static const TextStyle h3 = TextStyle(
     fontFamily: headingFontFamily,
     fontSize: 24,
-    fontWeight: FontWeight.w600,
+    fontWeight: FontWeight.w400,
     height: 1.3,
   );
   
   static const TextStyle h4 = TextStyle(
     fontFamily: headingFontFamily,
     fontSize: 20,
-    fontWeight: FontWeight.w600,
+    fontWeight: FontWeight.w400,
     height: 1.4,
   );
   
   static const TextStyle bodyLarge = TextStyle(
     fontFamily: fontFamily,
     fontSize: 16,
-    fontWeight: FontWeight.normal,
+    fontWeight: FontWeight.w300,
     height: 1.5,
   );
   
   static const TextStyle bodyMedium = TextStyle(
     fontFamily: fontFamily,
     fontSize: 14,
-    fontWeight: FontWeight.normal,
+    fontWeight: FontWeight.w300,
     height: 1.5,
   );
   
   static const TextStyle bodySmall = TextStyle(
     fontFamily: fontFamily,
     fontSize: 12,
-    fontWeight: FontWeight.normal,
+    fontWeight: FontWeight.w300,
     height: 1.4,
   );
   
   static const TextStyle labelLarge = TextStyle(
     fontFamily: fontFamily,
     fontSize: 14,
-    fontWeight: FontWeight.w500,
+    fontWeight: FontWeight.w400,
     height: 1.4,
   );
   
   static const TextStyle labelMedium = TextStyle(
     fontFamily: fontFamily,
     fontSize: 12,
-    fontWeight: FontWeight.w500,
+    fontWeight: FontWeight.w400,
     height: 1.3,
   );
   
   static const TextStyle labelSmall = TextStyle(
     fontFamily: fontFamily,
     fontSize: 10,
-    fontWeight: FontWeight.w500,
+    fontWeight: FontWeight.w400,
     height: 1.2,
   );
 }

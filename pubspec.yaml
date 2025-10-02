@@ -30,6 +30,9 @@ dependencies:
   # Navigation
   go_router: ^16.2.1
 
+  # Fonts
+  google_fonts: ^6.2.1
+
   # Location
   geolocator: ^14.0.1
 
@@ -115,11 +118,8 @@ flutter:
   assets:
     - assets/
   
-  # Fonts
-  fonts:
-    - family: Satoshi
-      fonts:
-        - asset: assets/Satoshi.ttf
+  # Fonts - Using Google Fonts package for Poppins
+  # No manual font files needed - google_fonts package handles it automatically
 
 # Flutter Launcher Icons configuration
 flutter_launcher_icons:

@@ -215,8 +215,8 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper>
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 14,
-                        fontWeight: FontWeight.w300,
-                        fontFamily: 'Satoshi',
+                        fontWeight: FontWeight.w100,
+                        
                       ),
                     ),
                   ],
@@ -303,8 +303,8 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper>
                         'Menu',
                         style: PulseTypography.h3.copyWith(
                           color: PulseColors.white,
-                          fontWeight: FontWeight.w300,
-                          fontFamily: 'Satoshi',
+                          fontWeight: FontWeight.w100,
+                          
                         ),
                       ),
                       const Spacer(),
@@ -513,8 +513,8 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper>
                         title,
                         style: PulseTypography.bodyMedium.copyWith(
                           // Changed from bodyLarge
-                          fontWeight: FontWeight.w300,
-                          fontFamily: 'Satoshi',
+                          fontWeight: FontWeight.w100,
+                          
                           color: Colors.white,
                         ),
                       ),
@@ -579,8 +579,8 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper>
               'Logout',
               style: PulseTypography.h3.copyWith(
                 color: PulseColors.grey900,
-                fontWeight: FontWeight.w300,
-                fontFamily: 'Satoshi',
+                fontWeight: FontWeight.w100,
+                
               ),
             ),
           ],
@@ -601,8 +601,8 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper>
             child: Text(
               'Cancel',
               style: PulseTypography.bodyMedium.copyWith(
-                fontWeight: FontWeight.w300,
-                fontFamily: 'Satoshi',
+                fontWeight: FontWeight.w100,
+                
               ),
             ),
           ),
@@ -625,8 +625,8 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper>
             child: Text(
               'Logout',
               style: PulseTypography.bodyMedium.copyWith(
-                fontWeight: FontWeight.w300,
-                fontFamily: 'Satoshi',
+                fontWeight: FontWeight.w100,
+                
                 color: Colors.white,
               ),
             ),
