@@ -269,8 +269,10 @@ class ProfileService {
         }
       }
 
-      if (dateOfBirth != null)
-        data['dateOfBirth'] = dateOfBirth.toIso8601String();
+      if (dateOfBirth != null) {
+        // Convert to UTC and ensure proper ISO-8601 format with timezone (Z)
+        data['dateOfBirth'] = dateOfBirth.toUtc().toIso8601String();
+      }
       if (bio != null && bio.isNotEmpty) data['bio'] = bio;
 
       if (data.isEmpty) {
