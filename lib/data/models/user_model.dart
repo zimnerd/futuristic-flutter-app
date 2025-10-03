@@ -61,9 +61,15 @@ class UserModel {
       firstName: json['firstName'],
       lastName: json['lastName'],
       bio: json['bio'],
-      interests: json['interests'] != null 
-          ? List<String>.from(json['interests'])
-          : [],
+      interests: (json['interests'] as List?)?.map((item) {
+        // Handle new nested structure: {id, interest: {id, name}}
+        if (item is String) return item; // Backward compatibility
+        if (item is Map<String, dynamic>) {
+          // Extract interest.name from nested structure
+          return item['interest']?['name'] as String? ?? '';
+        }
+        return item.toString();
+      }).where((name) => name.isNotEmpty).toList().cast<String>() ?? [],
       age: json['age'],
       gender: json['gender'],
       photos: json['photos'] != null 

@@ -5,6 +5,57 @@ This document captures key learnings from building the **Flutter mobile dating a
 
 ---
 
+## 📸 **Photo Upload & Profile Integration (October 3, 2025)**
+
+**Context**: Implemented end-to-end photo upload flow with temp storage, confirmation, and profile linking.
+
+**Problem**: Photos uploaded successfully but didn't persist after app restart. Root cause: Missing backend endpoint to link Media records to User.photos[] array.
+
+**Solution - Three-Step Flow**:
+1. **Temp Upload**: Instant UI preview (PhotoManagerService.uploadTempPhoto)
+2. **Confirmation**: Move to permanent storage (PhotoManagerService.savePhotos)
+3. **Profile Sync**: Link to user profile (ProfileService.syncPhotos) ← **NEW STEP!**
+
+**Key Implementation**:
+```dart
+// ProfileBloc._onUpdateProfile - Added photo sync step (lines 86-108)
+final photoResult = await _photoManager.savePhotos(tempPhotoIds: _tempPhotoIds);
+
+if (photoResult.confirmResult.confirmed.isNotEmpty) {
+  final confirmedMediaIds = photoResult.confirmResult.confirmed;
+  final photosToSync = event.profile.photos
+      .where((photo) => confirmedMediaIds.contains(photo.id))
+      .map((photo) => ProfilePhotoSync(
+            mediaId: photo.id,
+            description: photo.description,
+            order: photo.order,
+            isMain: photo.order == 0,
+          ))
+      .toList();
+
+  // NEW: Sync with backend to create Photo records
+  final syncedPhotos = await _profileService.syncPhotos(photos: photosToSync);
+}
+```
+
+**Backend Endpoint**: `PUT /users/me/photos` (validates ownership + creates Photo records)
+
+**Learnings**: 
+- Backend integration required for photo persistence (mobile can't just upload and assume linking)
+- Three-stage lifecycle prevents orphaned files: temp → confirm → link
+- Photo-Profile linking needs explicit API call after confirmation step
+- Replace strategy (delete old + create new) simpler than update for ordered arrays
+
+**Files Changed**:
+- `mobile/lib/presentation/blocs/profile/profile_bloc.dart` - Added sync step
+- `mobile/lib/data/services/profile_service.dart` - Added syncPhotos() method
+- `backend/src/users/users.controller.ts` - Added PUT /users/me/photos endpoint
+- `backend/src/users/users.service.ts` - Added syncUserPhotos() method
+
+**Documentation**: See `docs/PHOTO_UPLOAD_IMPLEMENTATION_COMPLETE.md` for full flow and troubleshooting guide.
+
+---
+
 ## � **Profile Update Field Mapping (October 3, 2025)**
 
 **Context**: Fixed critical profile update failures caused by field name mismatches between mobile domain models and backend Prisma schema.

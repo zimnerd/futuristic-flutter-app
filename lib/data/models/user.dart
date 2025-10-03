@@ -68,7 +68,15 @@ class User extends Equatable {
       age: json['age'] as int?,
       gender: json['gender'] as String?,
       location: json['location'] as String?,
-      interests: (json['interests'] as List?)?.cast<String>() ?? [],
+      interests: (json['interests'] as List?)?.map((item) {
+        // Handle new nested structure: {id, interest: {id, name}}
+        if (item is String) return item; // Backward compatibility
+        if (item is Map<String, dynamic>) {
+          // Extract interest.name from nested structure
+          return item['interest']?['name'] as String? ?? '';
+        }
+        return item.toString();
+      }).where((name) => name.isNotEmpty).toList() ?? [],
       photos: (json['photos'] as List?)?.map((photo) => photo).toList() ?? [],
       isOnline: json['isOnline'] as bool? ?? false,
       lastSeen: json['lastSeen'] != null

@@ -48,6 +48,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
       emit(state.copyWith(
         status: ProfileStatus.loaded,
         profile: profile,
+        updateStatus: ProfileStatus.initial, // Reset update status on profile reload
       ));
     } catch (e) {
       emit(state.copyWith(

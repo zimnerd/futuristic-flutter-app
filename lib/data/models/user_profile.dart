@@ -40,7 +40,7 @@ class UserProfile {
       gender: user.gender,
       location: user.location,
       interests: user.interests,
-      photos: user.photos,
+      photos: user.photos.whereType<String>().toList(),
       preferences: user.preferences,
       personality: user.metadata != null ? ProfilePersonality.fromJson(user.metadata!) : null,
       lifestyle: user.metadata?['lifestyle'] != null ? List<String>.from(user.metadata!['lifestyle']) : [],
@@ -73,7 +73,15 @@ class UserProfile {
       age: json['age'],
       gender: json['gender'],
       location: json['location'],
-      interests: json['interests'] != null ? List<String>.from(json['interests']) : [],
+      interests: (json['interests'] as List?)?.map((item) {
+        // Handle new nested structure: {id, interest: {id, name}}
+        if (item is String) return item; // Backward compatibility
+        if (item is Map<String, dynamic>) {
+          // Extract interest.name from nested structure
+          return item['interest']?['name'] as String? ?? '';
+        }
+        return item.toString();
+      }).where((name) => name.isNotEmpty).toList() ?? [],
       photos: json['photos'] != null ? List<String>.from(json['photos']) : [],
       preferences: json['preferences'],
       personality: json['personality'] != null ? ProfilePersonality.fromJson(json['personality']) : null,

@@ -175,7 +175,14 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
   }
 
   void _saveProfile() {
-    if (_formKey.currentState?.validate() ?? false) {
+    // Only validate form if we're on page 0 (Basic Info) which has the form
+    // For other pages, skip validation since they don't use the form
+    bool isValid = true;
+    if (_currentPageIndex == 0) {
+      isValid = _formKey.currentState?.validate() ?? false;
+    }
+    
+    if (isValid) {
       final updatedProfile = UserProfile(
         id: _currentProfile?.id ?? 'current_user_id',
         name: _nameController.text.trim(),
@@ -491,13 +498,19 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
           }
           
           if (state.updateStatus == ProfileStatus.success) {
+            // Show success message
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
                 content: Text('Profile updated successfully!'),
                 backgroundColor: PulseColors.success,
               ),
             );
+            // Navigate back and reload profile to reset state
             Navigator.of(context).pop();
+            // Reload profile on the previous screen to clear success status
+            Future.delayed(const Duration(milliseconds: 100), () {
+              context.read<ProfileBloc>().add(LoadProfile());
+            });
           }
           if (state.updateStatus == ProfileStatus.error) {
             ScaffoldMessenger.of(context).showSnackBar(
