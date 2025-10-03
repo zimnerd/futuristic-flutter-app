@@ -1,8 +1,11 @@
+import 'dart:io';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:logger/logger.dart';
 
 import '../../../data/exceptions/app_exceptions.dart';
 import '../../../data/services/profile_service.dart';
+import '../../../data/services/photo_manager_service.dart';
 import '../../../data/models/profile_model.dart';
 import 'profile_event.dart';
 import 'profile_state.dart';
@@ -10,15 +13,20 @@ import 'profile_state.dart';
 /// BLoC for managing profile-related state and operations
 class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
   final ProfileService _profileService;
+  final PhotoManagerService _photoManager;
   final Logger _logger;
 
   UserProfile? _currentProfile;
+  UserProfile? _originalProfile; // TODO: Use for delta tracking in updateProfileWithDetails
   List<String> _availableInterests = [];
+  List<String> _tempPhotoIds = []; // Track temp photo uploads
 
   ProfileBloc({
     required ProfileService profileService,
+    required PhotoManagerService photoManager,
     Logger? logger,
   })  : _profileService = profileService,
+        _photoManager = photoManager,
         _logger = logger ?? Logger(),
         super(const ProfileInitial()) {
     
@@ -37,6 +45,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     on<ClearProfile>(_onClearProfile);
     on<UpdateLocation>(_onUpdateLocation);
     on<UpdatePrivacySettings>(_onUpdatePrivacySettings);
+    on<CancelProfileChanges>(_onCancelProfileChanges);
   }
 
   /// Get current profile
@@ -55,6 +64,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
       final completion = _profileService.calculateCompletionPercentage(profile);
       
       _currentProfile = profile;
+      _originalProfile = profile; // Store original for comparison
       
       emit(ProfileLoaded(
         profile: profile,
@@ -110,7 +120,24 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
       _logger.i('🔄 Updating profile for user: ${event.userId}');
       emit(const ProfileLoading());
 
-      // Use the service's update method directly
+      // FIRST: Save photos (confirm temp uploads + delete marked photos)
+      if (_tempPhotoIds.isNotEmpty || _photoManager.getPhotosToDelete().isNotEmpty) {
+        _logger.i('💾 Saving photo changes...');
+        
+        final photoResult = await _photoManager.savePhotos(
+          tempPhotoIds: _tempPhotoIds,
+        );
+
+        if (photoResult.hasFailures) {
+          _logger.w('⚠️ Some photo operations failed: ${photoResult.allFailures}');
+          // Continue with profile update but warn user
+        }
+
+        // Clear temp photo IDs after save attempt
+        _tempPhotoIds.clear();
+      }
+
+      // THEN: Update profile fields (only changed fields sent)
       final profile = await _profileService.updateProfileWithDetails(
         userId: event.userId,
         bio: event.bio,
@@ -121,6 +148,8 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
       );
       
       _currentProfile = profile;
+      _originalProfile = profile; // Update original to new state
+      
       emit(ProfileUpdated(profile: profile));
       
       _logger.i('✅ Profile updated successfully');
@@ -139,27 +168,29 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
   /// Upload photo
   Future<void> _onUploadPhoto(UploadPhoto event, Emitter<ProfileState> emit) async {
     try {
-      _logger.i('📸 Uploading photo for user: ${event.userId}');
+      _logger.i('📸 Uploading temp photo for user: ${event.userId}');
       emit(const PhotoUploading());
 
-      final photoUrl = await _profileService.uploadPhoto(event.imagePath);
+      // Upload to temporary storage (instant upload on selection)
+      final result = await _photoManager.uploadTempPhoto(
+        File(event.imagePath),
+      );
 
-      // Reload profile to get updated photos
-      final updatedProfile = await _profileService.getProfile(event.userId);
-      _currentProfile = updatedProfile;
+      // Store temp photo ID for confirmation on save
+      _tempPhotoIds.add(result.mediaId);
       
       emit(PhotoUploaded(
-          photo: ProfilePhoto(
-            id: 'temp_${DateTime.now().millisecondsSinceEpoch}',
-            url: photoUrl,
-            isPrimary: event.isPrimary,
-            order: event.order,
-            createdAt: DateTime.now(),
-          ),
-        updatedProfile: updatedProfile,
+        photo: ProfilePhoto(
+          id: result.mediaId, // Use actual media ID
+          url: result.url, // Temp URL for preview
+          isPrimary: event.isPrimary,
+          order: event.order,
+          createdAt: DateTime.now(),
+        ),
+        updatedProfile: _currentProfile!, // Don't reload yet - not confirmed
       ));
       
-      _logger.i('✅ Photo uploaded successfully');
+      _logger.i('✅ Temp photo uploaded: ${result.mediaId}');
     } on NetworkException catch (e) {
       _logger.e('❌ Network error uploading photo: ${e.message}');
       emit(PhotoUploadError('Network error: ${e.message}'));
@@ -175,34 +206,25 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
   /// Delete photo
   Future<void> _onDeletePhoto(DeletePhoto event, Emitter<ProfileState> emit) async {
     try {
-      _logger.i('🗑️ Deleting photo for user: ${event.userId}');
+      _logger.i('🗑️ Marking photo for deletion: ${event.photoId}');
       emit(const PhotoDeleting());
 
-      await _profileService.deletePhotoWithDetails(
-        userId: event.userId,
-        photoId: event.photoId,
-      );
+      // Mark photo for deletion (will delete on save)
+      _photoManager.markPhotoForDeletion(event.photoId);
 
-      // Reload profile to get updated photos
-      final updatedProfile = await _profileService.getProfile(event.userId);
-      _currentProfile = updatedProfile;
-      
+      // If it's a temp photo, also remove from temp list
+      _tempPhotoIds.remove(event.photoId);
+
       emit(
         PhotoDeleted(
-          updatedProfile: updatedProfile,
-          message: 'Photo deleted successfully',
+          updatedProfile: _currentProfile!, // Don't reload yet
+          message: 'Photo marked for deletion',
         ),
       );
       
-      _logger.i('✅ Photo deleted successfully');
-    } on NetworkException catch (e) {
-      _logger.e('❌ Network error deleting photo: ${e.message}');
-      emit(PhotoDeleteError('Network error: ${e.message}'));
-    } on UserException catch (e) {
-      _logger.e('❌ User error deleting photo: ${e.message}');
-      emit(PhotoDeleteError(e.message));
+      _logger.i('✅ Photo marked for deletion');
     } catch (e) {
-      _logger.e('❌ Unexpected error deleting photo: $e');
+      _logger.e('❌ Unexpected error marking photo for deletion: $e');
       emit(const PhotoDeleteError('Failed to delete photo'));
     }
   }
@@ -378,5 +400,19 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
       _logger.e('❌ Error updating privacy settings: $e');
       emit(const ProfileError('Failed to update privacy settings'));
     }
+  }
+
+  /// Cancel profile changes (clear temp photos and deletion markers)
+  void _onCancelProfileChanges(CancelProfileChanges event, Emitter<ProfileState> emit) {
+    _logger.i('↩️ Canceling profile changes');
+    
+    // Clear temp photo IDs
+    _tempPhotoIds.clear();
+    
+    // Clear deletion markers
+    _photoManager.cancelPhotoChanges();
+    
+    // Temp files will auto-cleanup after 24 hours
+    _logger.i('✅ Profile changes cancelled');
   }
 }

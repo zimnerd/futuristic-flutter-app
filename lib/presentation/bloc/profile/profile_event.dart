@@ -217,3 +217,8 @@ class UpdatePrivacySettings extends ProfileEvent {
   @override
   List<Object?> get props => [userId, showAge, showDistance, showOnlineStatus];
 }
+
+/// Cancel profile changes (clear temp photos and deletion markers)
+class CancelProfileChanges extends ProfileEvent {
+  const CancelProfileChanges();
+}

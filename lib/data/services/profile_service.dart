@@ -201,11 +201,145 @@ class ProfileService {
 
   /// Update profile using a UserProfile object (wrapper for BLoC compatibility)
   /// 
-  /// NOTE: Currently sends all fields from the profile object, even unchanged ones.
-  /// The backend handles this gracefully (e.g., DOB counter only increments if value changes).
-  /// Future optimization: Track changed fields in UI and only send delta.
-  Future<domain.UserProfile> updateProfile(domain.UserProfile profile) async {
+  /// NOTE: This method now tracks changed fields and only sends what actually changed.
+  /// The backend will only update fields that are provided (not null/undefined).
+  Future<domain.UserProfile> updateProfile(
+    domain.UserProfile profile, {
+    domain.UserProfile? originalProfile,
+  }) async {
     _logger.i('🔄 Starting profile update for user: ${profile.id}');
+
+    try {
+      // Build map of only changed fields
+      final changedBasicFields = <String, dynamic>{};
+      final changedExtendedFields = <String, dynamic>{};
+
+      // Check basic user info changes (name, dateOfBirth, bio)
+      if (originalProfile != null) {
+        // Check name change
+        if (profile.name != originalProfile.name && profile.name.isNotEmpty) {
+          final nameParts = profile.name.trim().split(' ');
+          if (nameParts.isNotEmpty) {
+            changedBasicFields['firstName'] = nameParts.first;
+            if (nameParts.length > 1) {
+              changedBasicFields['lastName'] = nameParts.sublist(1).join(' ');
+            }
+          }
+        }
+
+        // Check DOB change (compare date values only)
+        if (profile.dateOfBirth != null &&
+            originalProfile.dateOfBirth != null &&
+            !_isSameDate(profile.dateOfBirth, originalProfile.dateOfBirth)) {
+          final year = profile.dateOfBirth!.year.toString().padLeft(4, '0');
+          final month = profile.dateOfBirth!.month.toString().padLeft(2, '0');
+          final day = profile.dateOfBirth!.day.toString().padLeft(2, '0');
+          changedBasicFields['dateOfBirth'] = '$year-$month-$day';
+        } else if (profile.dateOfBirth != null &&
+            originalProfile.dateOfBirth == null) {
+          // First time setting DOB
+          final year = profile.dateOfBirth!.year.toString().padLeft(4, '0');
+          final month = profile.dateOfBirth!.month.toString().padLeft(2, '0');
+          final day = profile.dateOfBirth!.day.toString().padLeft(2, '0');
+          changedBasicFields['dateOfBirth'] = '$year-$month-$day';
+        }
+
+        // Check bio change
+        if (profile.bio != originalProfile.bio) {
+          changedBasicFields['bio'] = profile.bio;
+        }
+
+        // Check extended fields
+        if (!_areListsEqual(profile.interests, originalProfile.interests)) {
+          changedExtendedFields['interests'] = profile.interests;
+        }
+        if (profile.job != originalProfile.job) {
+          changedExtendedFields['job'] = profile.job;
+        }
+        if (profile.company != originalProfile.company) {
+          changedExtendedFields['company'] = profile.company;
+        }
+        if (profile.school != originalProfile.school) {
+          changedExtendedFields['school'] = profile.school;
+        }
+        if (profile.gender != originalProfile.gender) {
+          changedExtendedFields['gender'] = profile.gender;
+        }
+        if (profile.lookingFor != originalProfile.lookingFor) {
+          changedExtendedFields['lookingFor'] = profile.lookingFor;
+        }
+      } else {
+        // No original profile - send all fields (backward compatibility)
+        _logger.w('⚠️ No original profile provided - sending all fields');
+        return _updateProfileLegacy(profile);
+      }
+
+      // Update basic user info if any changed
+      if (changedBasicFields.isNotEmpty) {
+        _logger.i(
+          '📤 Sending basic user info update: ${changedBasicFields.keys}',
+        );
+        final response = await _apiClient.put(
+          '/users/me',
+          data: changedBasicFields,
+        );
+        if (response.statusCode != 200) {
+          throw NetworkException('Failed to update basic user info');
+        }
+      } else {
+        _logger.i('ℹ️ No basic user info changed');
+      }
+
+      // Update extended profile info if any changed
+      if (changedExtendedFields.isNotEmpty) {
+        _logger.i(
+          '📤 Sending extended profile update: ${changedExtendedFields.keys}',
+        );
+        final response = await _apiClient.put(
+          '/users/me/profile',
+          data: changedExtendedFields,
+        );
+        if (response.statusCode != 200) {
+          throw NetworkException('Failed to update extended profile');
+        }
+      } else {
+        _logger.i('ℹ️ No extended profile fields changed');
+      }
+
+      // Fetch the updated profile from backend to get calculated age and other updates
+      _logger.i('📥 Fetching updated profile from backend');
+      final updatedProfile = await getCurrentProfile();
+
+      _logger.i('✅ Profile update completed successfully');
+      return updatedProfile;
+    } catch (e) {
+      _logger.e('❌ Profile update failed: $e');
+      rethrow;
+    }
+  }
+
+  /// Helper to check if two dates are the same (ignore time component)
+  bool _isSameDate(DateTime? date1, DateTime? date2) {
+    if (date1 == null || date2 == null) return false;
+    return date1.year == date2.year &&
+        date1.month == date2.month &&
+        date1.day == date2.day;
+  }
+
+  /// Helper to check if two lists are equal
+  bool _areListsEqual(List<dynamic> list1, List<dynamic> list2) {
+    if (list1.length != list2.length) return false;
+    for (int i = 0; i < list1.length; i++) {
+      if (list1[i] != list2[i]) return false;
+    }
+    return true;
+  }
+
+  /// Legacy update method that sends all fields (for backward compatibility)
+  Future<domain.UserProfile> _updateProfileLegacy(
+    domain.UserProfile profile,
+  ) async {
+    _logger.i('🔄 Using legacy profile update (all fields)');
 
     try {
       // Update basic user info (name, dateOfBirth, bio) via /users/me endpoint
