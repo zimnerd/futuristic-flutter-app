@@ -27,15 +27,16 @@ class TempMediaUploadService {
 
   /// Upload image to temporary storage
   /// Returns MediaUploadResult with mediaId for later confirmation
+  /// 
+  /// Note: isPrimary and order are NOT supported for temp uploads
+  /// These properties are set during confirmation when moved to permanent storage
   Future<MediaUploadResult> uploadTemp({
     required File imageFile,
-    required String type, // 'IMAGE', 'VIDEO', etc.
-    required String category, // 'PROFILE', 'EVENT', etc.
+    required String type, // 'image', 'video', 'audio', 'document' (lowercase)
+    required String category, // 'profile_photo', 'verification_photo', etc. (snake_case)
     String? title,
     String? description,
     List<String>? tags,
-    bool isPrimary = false,
-    int order = 0,
   }) async {
     try {
       _logger.i('📤 Uploading temp image: ${imageFile.path}');
@@ -54,8 +55,8 @@ class TempMediaUploadService {
         if (title != null) 'title': title,
         if (description != null) 'description': description,
         if (tags != null) 'tags': tags.join(','),
-        'isPrimary': isPrimary,
-        'order': order,
+        // Note: isPrimary and order are NOT sent for temp uploads
+        // Backend validates temp uploads with strict schema
       });
 
       final response = await _apiClient.post(
@@ -207,10 +208,7 @@ class TempMediaUploadService {
     _logger.i('📤 Uploading ${imageFiles.length} images in parallel');
 
     final results = await Future.wait(
-      imageFiles.asMap().entries.map((entry) {
-        final index = entry.key;
-        final file = entry.value;
-        
+      imageFiles.map((file) {
         return uploadTemp(
           imageFile: file,
           type: type,
@@ -218,7 +216,7 @@ class TempMediaUploadService {
           title: title,
           description: description,
           tags: tags,
-          order: index,
+          // Note: order handled during confirmation, not temp upload
         );
       }),
     );

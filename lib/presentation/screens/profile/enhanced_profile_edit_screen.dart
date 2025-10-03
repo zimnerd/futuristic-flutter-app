@@ -50,6 +50,10 @@ class _EnhancedProfileEditScreenState extends State<EnhancedProfileEditScreen>
 
   UserProfile? _currentProfile;
   int _currentPageIndex = 0;
+  
+  // Temp upload tracking for PhotoManagerService integration
+  final List<String> _tempPhotoUrls = [];
+  final Set<String> _photosMarkedForDeletion = {};
 
   @override
   void initState() {
@@ -82,6 +86,35 @@ class _EnhancedProfileEditScreenState extends State<EnhancedProfileEditScreen>
     _selectedGender = profile.gender ?? 'Woman';
     _photos = List.from(profile.photos);
     _currentProfile = profile;
+  }
+
+  /// Handle adding new photo via BLoC event
+  void _handleAddPhoto(String photoPath) {
+    // Dispatch UploadPhoto event - PhotoManagerService will upload to temp storage
+    context.read<ProfileBloc>().add(UploadPhoto(photoPath: photoPath));
+  }
+
+  /// Handle deleting photo via BLoC event
+  void _handleDeletePhoto(ProfilePhoto photo) {
+    final photoUrl = photo.url;
+    
+    // Check if this is a temp photo (not yet saved)
+    if (_tempPhotoUrls.contains(photoUrl)) {
+      // Remove from temp list and local photos
+      setState(() {
+        _tempPhotoUrls.remove(photoUrl);
+        _photos.removeWhere((p) => p.url == photoUrl);
+      });
+      // Temp photos don't need deletion event, they'll auto-cleanup
+    } else {
+      // Mark existing photo for deletion
+      setState(() {
+        _photosMarkedForDeletion.add(photoUrl);
+        _photos.removeWhere((p) => p.url == photoUrl);
+      });
+      // Dispatch DeletePhoto event for backend tracking
+      context.read<ProfileBloc>().add(DeletePhoto(photoUrl: photoUrl));
+    }
   }
 
   void _saveProfile() {
@@ -257,6 +290,39 @@ class _EnhancedProfileEditScreenState extends State<EnhancedProfileEditScreen>
           if (state.status == ProfileStatus.loaded && state.profile != null) {
             _populateFields(state.profile!);
           }
+          
+          // Handle photo upload success/error
+          if (state.uploadStatus == ProfileStatus.success) {
+            if (state.profile != null && state.profile!.photos.isNotEmpty) {
+              final latestPhotoUrl = state.profile!.photos.last.url;
+              if (!_photos.any((p) => p.url == latestPhotoUrl)) {
+                setState(() {
+                  _tempPhotoUrls.add(latestPhotoUrl);
+                  _photos.add(ProfilePhoto(
+                    id: DateTime.now().millisecondsSinceEpoch.toString(),
+                    url: latestPhotoUrl,
+                    order: _photos.length,
+                  ));
+                });
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Photo uploaded (preview)'),
+                    backgroundColor: PulseColors.success,
+                    duration: Duration(seconds: 2),
+                  ),
+                );
+              }
+            }
+          } else if (state.uploadStatus == ProfileStatus.error) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Failed to upload photo: ${state.error ?? "Unknown error"}'),
+                backgroundColor: PulseColors.error,
+                duration: const Duration(seconds: 3),
+              ),
+            );
+          }
+          
           if (state.updateStatus == ProfileStatus.success) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
@@ -418,17 +484,89 @@ class _EnhancedProfileEditScreenState extends State<EnhancedProfileEditScreen>
   }
 
   Widget _buildPhotosPage() {
+    final hasPendingChanges = _tempPhotoUrls.isNotEmpty || _photosMarkedForDeletion.isNotEmpty;
+    
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
-      child: EnhancedPhotoGrid(
-        photos: _photos,
-        onPhotosChanged: (photos) {
-          setState(() {
-            _photos = photos;
-          });
-        },
-        maxPhotos: 6,
-        isEditing: true,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Pending changes indicator
+          if (hasPendingChanges)
+            Container(
+              margin: const EdgeInsets.only(bottom: 16),
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.orange.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.orange, width: 1),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      const Icon(
+                        Icons.info_outline,
+                        size: 18,
+                        color: Colors.orange,
+                      ),
+                      const SizedBox(width: 8),
+                      const Text(
+                        'Pending Changes',
+                        style: TextStyle(
+                          color: Colors.orange,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                  if (_tempPhotoUrls.isNotEmpty) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      '\u2022 ${_tempPhotoUrls.length} new photo(s) to upload',
+                      style: const TextStyle(
+                        color: Colors.orange,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                  if (_photosMarkedForDeletion.isNotEmpty) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      '\u2022 ${_photosMarkedForDeletion.length} photo(s) to delete',
+                      style: const TextStyle(
+                        color: Colors.orange,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 4),
+                  const Text(
+                    'Click Save to confirm all changes',
+                    style: TextStyle(
+                      color: Colors.orange,
+                      fontSize: 11,
+                      fontStyle: FontStyle.italic,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          
+          // Photo grid
+          EnhancedPhotoGrid(
+            photos: _photos,
+            onPhotosChanged: (photos) {
+              setState(() {
+                _photos = photos;
+              });
+            },
+            maxPhotos: 6,
+            isEditing: true,
+          ),
+        ],
       ),
     );
   }

@@ -33,9 +33,11 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
   bool _hasPopulatedFields = false;
   
   // Delta tracking and temp upload state
-  UserProfile? _originalProfile; // Store original for comparison
-  Set<String> _tempPhotoUrls = {}; // Track temp uploads for visual indicator
-  Set<String> _photosMarkedForDeletion = {}; // Track deletions
+  UserProfile?
+  _originalProfile; // Store original for comparison (future delta tracking)
+  final List<String> _tempPhotoUrls =
+      []; // Track temp uploads for visual indicator
+  final Set<String> _photosMarkedForDeletion = {}; // Track deletions
 
   /// Gets the current user ID from the AuthBloc state
   String? get _currentUserId {
@@ -73,7 +75,35 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
     _schoolController.text = profile.school ?? '';
     _selectedInterests = List.from(profile.interests);
     _selectedGender = profile.gender ?? '';
+    _selectedPreference = profile.lookingFor ?? 'Men';
     _photos = profile.photos.map((photo) => photo.url).toList();
+  }
+
+  /// Handle adding new photo via BLoC event
+  void _handleAddPhoto(String photoPath) {
+    // Dispatch UploadPhoto event - PhotoManagerService will upload to temp storage
+    context.read<ProfileBloc>().add(UploadPhoto(photoPath: photoPath));
+  }
+
+  /// Handle deleting photo via BLoC event
+  void _handleDeletePhoto(String photoUrl) {
+    // Check if this is a temp photo (not yet saved)
+    if (_tempPhotoUrls.contains(photoUrl)) {
+      // Remove from temp list and local photos
+      setState(() {
+        _tempPhotoUrls.remove(photoUrl);
+        _photos.remove(photoUrl);
+      });
+      // Temp photos don't need deletion event, they'll auto-cleanup
+    } else {
+      // Mark existing photo for deletion
+      setState(() {
+        _photosMarkedForDeletion.add(photoUrl);
+        _photos.remove(photoUrl);
+      });
+      // Dispatch DeletePhoto event for backend tracking
+      context.read<ProfileBloc>().add(DeletePhoto(photoUrl: photoUrl));
+    }
   }
 
   void _saveProfile() {
@@ -190,13 +220,34 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
         listener: (context, state) {
           // Listen for photo upload events to track temp photos
           if (state.uploadStatus == ProfileStatus.success) {
-            // Photo uploaded to temp - mark for visual indicator
+            // Photo uploaded to temp - add to preview list
             if (state.profile != null && state.profile!.photos.isNotEmpty) {
               final latestPhotoUrl = state.profile!.photos.last.url;
-              setState(() {
-                _tempPhotoUrls.add(latestPhotoUrl);
-              });
+              // Only add if not already in the list (avoid duplicates)
+              if (!_photos.contains(latestPhotoUrl)) {
+                setState(() {
+                  _tempPhotoUrls.add(latestPhotoUrl);
+                  _photos.add(latestPhotoUrl);
+                });
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Photo uploaded (preview)'),
+                    backgroundColor: PulseColors.success,
+                    duration: Duration(seconds: 2),
+                  ),
+                );
+              }
             }
+          } else if (state.uploadStatus == ProfileStatus.error) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  'Failed to upload photo: ${state.error ?? "Unknown error"}',
+                ),
+                backgroundColor: Colors.red,
+                duration: const Duration(seconds: 3),
+              ),
+            );
           }
         },
         builder: (context, state) {
@@ -306,54 +357,81 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
   /// Build photo grid with temp upload tracking
   /// Note: Temp photos are tracked internally and will be confirmed on save
   Widget _buildPhotoGridWithTempTracking() {
+    final hasPendingChanges =
+        _tempPhotoUrls.isNotEmpty || _photosMarkedForDeletion.isNotEmpty;
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (_tempPhotoUrls.isNotEmpty)
+        if (hasPendingChanges)
           Padding(
             padding: const EdgeInsets.only(bottom: 12),
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.orange.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(4),
-                    border: Border.all(color: Colors.orange, width: 1),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
+            child: Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.orange.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.orange, width: 1),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
                     children: [
                       const Icon(
                         Icons.info_outline,
-                        size: 16,
+                        size: 18,
                         color: Colors.orange,
                       ),
-                      const SizedBox(width: 4),
-                      Text(
-                        '${_tempPhotoUrls.length} new photo(s) will be saved',
-                        style: const TextStyle(
+                      const SizedBox(width: 8),
+                      const Text(
+                        'Pending Changes',
+                        style: TextStyle(
                           color: Colors.orange,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ],
                   ),
-                ),
-              ],
+                  if (_tempPhotoUrls.isNotEmpty) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      '• ${_tempPhotoUrls.length} new photo(s) to upload',
+                      style: const TextStyle(
+                        color: Colors.orange,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                  if (_photosMarkedForDeletion.isNotEmpty) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      '• ${_photosMarkedForDeletion.length} photo(s) to delete',
+                      style: const TextStyle(
+                        color: Colors.orange,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 4),
+                  const Text(
+                    'Click Save to confirm changes',
+                    style: TextStyle(
+                      color: Colors.orange,
+                      fontSize: 11,
+                      fontStyle: FontStyle.italic,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
-        PhotoGrid(
+        _PhotoGridWithTempIndicators(
           photos: _photos,
-          onPhotosChanged: (photos) {
-            setState(() {
-              _photos = photos;
-            });
-          },
+          tempPhotoUrls: _tempPhotoUrls,
+          onAddPhoto: _handleAddPhoto,
+          onDeletePhoto: _handleDeletePhoto,
           maxPhotos: 6,
         ),
       ],
@@ -385,6 +463,49 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// Custom PhotoGrid wrapper that integrates with BLoC events
+class _PhotoGridWithTempIndicators extends StatelessWidget {
+  final List<String> photos;
+  final List<String> tempPhotoUrls;
+  final Function(String) onAddPhoto;
+  final Function(String) onDeletePhoto;
+  final int maxPhotos;
+
+  const _PhotoGridWithTempIndicators({
+    required this.photos,
+    required this.tempPhotoUrls,
+    required this.onAddPhoto,
+    required this.onDeletePhoto,
+    this.maxPhotos = 6,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return PhotoGrid(
+      photos: photos,
+      onPhotosChanged: (updatedPhotos) {
+        // Handle photo changes - determine if it's an add or delete
+        if (updatedPhotos.length > photos.length) {
+          // Photo added - get the new photo path
+          final newPhoto = updatedPhotos.last;
+          onAddPhoto(newPhoto);
+        } else if (updatedPhotos.length < photos.length) {
+          // Photo deleted - find which one was removed
+          final deletedPhoto = photos.firstWhere(
+            (photo) => !updatedPhotos.contains(photo),
+            orElse: () => '',
+          );
+          if (deletedPhoto.isNotEmpty) {
+            onDeletePhoto(deletedPhoto);
+          }
+        }
+        // Note: Reordering is handled internally by PhotoGrid
+      },
+      maxPhotos: maxPhotos,
     );
   }
 }

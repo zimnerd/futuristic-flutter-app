@@ -48,8 +48,8 @@ class PhotoManagerService {
       
       final result = await _uploadService.uploadTemp(
         imageFile: imageFile,
-        type: 'IMAGE',
-        category: 'PROFILE',
+        type: 'image', // lowercase as per backend validation
+        category: 'profile_photo', // snake_case as per backend validation
         title: 'Profile Photo',
       );
 
