@@ -66,17 +66,26 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
   }
 
   void _populateFields(UserProfile profile) {
-    _originalProfile = profile; // Store for delta tracking
-    _nameController.text = profile.name;
-    _bioController.text = profile.bio;
-    _ageController.text = profile.age.toString();
-    _jobController.text = profile.job ?? '';
-    _companyController.text = profile.company ?? '';
-    _schoolController.text = profile.school ?? '';
-    _selectedInterests = List.from(profile.interests);
-    _selectedGender = profile.gender ?? '';
-    _selectedPreference = profile.lookingFor ?? 'Men';
-    _photos = profile.photos.map((photo) => photo.url).toList();
+    setState(() {
+      _nameController.text = profile.name;
+      _bioController.text = profile.bio;
+      _ageController.text = profile.age.toString();
+      _jobController.text = profile.job ?? '';
+      _companyController.text = profile.company ?? '';
+      _schoolController.text = profile.school ?? '';
+      _selectedGender = profile.gender ?? '';
+      _selectedPreference =
+          _selectedPreference; // Keep current value or from preferences
+      _selectedInterests = List<String>.from(profile.interests);
+      _photos = profile.photos.map((photo) => photo.url).toList();
+      
+      // Debug logging
+      debugPrint('🔍 Profile loaded with ${profile.photos.length} photos');
+      debugPrint('🔍 _photos list length: ${_photos.length}');
+      if (_photos.isNotEmpty) {
+        debugPrint('🔍 First photo URL: ${_photos.first}');
+      }
+    });
   }
 
   /// Handle adding new photo via BLoC event
@@ -251,6 +260,10 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
           }
         },
         builder: (context, state) {
+          debugPrint(
+            '🔍 ProfileEditScreen builder - status: ${state.status}, profile: ${state.profile != null ? "loaded" : "null"}, hasPopulatedFields: $_hasPopulatedFields',
+          );
+          
           if (state.status == ProfileStatus.loading) {
             return const Center(
               child: CircularProgressIndicator(
@@ -485,6 +498,13 @@ class _PhotoGridWithTempIndicators extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    debugPrint(
+      '🔍 _PhotoGridWithTempIndicators building with ${photos.length} photos',
+    );
+    if (photos.isNotEmpty) {
+      debugPrint('🔍 First photo in wrapper: ${photos.first}');
+    }
+    
     return PhotoGrid(
       photos: photos,
       onPhotosChanged: (updatedPhotos) {

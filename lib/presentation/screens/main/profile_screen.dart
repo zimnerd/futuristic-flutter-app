@@ -670,6 +670,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
           'company': userProfile.company,
           'school': userProfile.school,
         };
+      case 'photos':
+        return {
+          'photos': userProfile.photos
+              .map(
+                (photo) => {
+                  'id': photo.id,
+                  'url': photo.url,
+                  'description': photo.description,
+                  'order': photo.order,
+                  'isMain': photo.isVerified,
+                },
+              )
+              .toList(),
+        };
       case 'interests':
         return {
           'interests': userProfile.interests,

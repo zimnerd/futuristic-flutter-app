@@ -267,10 +267,12 @@ class UserProfile extends Equatable {
 
 /// Profile photo entity
 class ProfilePhoto extends Equatable {
-  const ProfilePhoto({
+  const ProfilePhoto({  
     required this.id,
     required this.url,
     required this.order,
+    this.description,
+    this.isMain = false,
     this.isVerified = false,
     this.uploadedAt,
   });
@@ -278,6 +280,8 @@ class ProfilePhoto extends Equatable {
   final String id;
   final String url;
   final int order;
+  final String? description;
+  final bool isMain;
   final bool isVerified;
   final DateTime? uploadedAt;
 
@@ -285,6 +289,8 @@ class ProfilePhoto extends Equatable {
     String? id,
     String? url,
     int? order,
+    String? description,
+    bool? isMain,
     bool? isVerified,
     DateTime? uploadedAt,
   }) {
@@ -292,6 +298,8 @@ class ProfilePhoto extends Equatable {
       id: id ?? this.id,
       url: url ?? this.url,
       order: order ?? this.order,
+      description: description ?? this.description,
+      isMain: isMain ?? this.isMain,
       isVerified: isVerified ?? this.isVerified,
       uploadedAt: uploadedAt ?? this.uploadedAt,
     );
@@ -303,10 +311,14 @@ class ProfilePhoto extends Equatable {
       id: json['id'] as String,
       url: json['url'] as String,
       order: json['order'] as int,
+      description: json['description'] as String?,
+      isMain: json['isMain'] as bool? ?? false,
       isVerified: json['isVerified'] as bool? ?? false,
       uploadedAt: json['uploadedAt'] != null
           ? DateTime.parse(json['uploadedAt'] as String)
-          : null,
+          : json['createdAt'] != null
+          ? DateTime.parse(json['createdAt'] as String)
+              : null,
     );
   }
 
@@ -316,13 +328,23 @@ class ProfilePhoto extends Equatable {
       'id': id,
       'url': url,
       'order': order,
+      'description': description,
+      'isMain': isMain,
       'isVerified': isVerified,
       'uploadedAt': uploadedAt?.toIso8601String(),
     };
   }
 
   @override
-  List<Object?> get props => [id, url, order, isVerified, uploadedAt];
+  List<Object?> get props => [
+    id,
+    url,
+    order,
+    description,
+    isMain,
+    isVerified,
+    uploadedAt,
+  ];
 }
 
 /// User location entity

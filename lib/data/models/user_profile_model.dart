@@ -29,7 +29,22 @@ class UserProfileModel extends UserProfile {
       age: json['age'] as int,
       bio: json['bio'] as String? ?? '',
       photos: (json['photos'] as List<dynamic>?)
-          ?.map((photo) => ProfilePhotoModel.fromJson(photo as Map<String, dynamic>))
+          ?.map((photo) {
+            // Handle both string URLs (old format) and photo objects (new format)
+            if (photo is String) {
+              // Backend returning simple URL string - create photo object
+              return ProfilePhotoModel(
+                id: photo.hashCode.toString(), // Generate temp ID from URL hash
+                url: photo,
+                order: 0,
+                isVerified: false,
+              );
+            } else if (photo is Map<String, dynamic>) {
+              // Backend returning proper photo object with description
+              return ProfilePhotoModel.fromJson(photo);
+            }
+            throw Exception('Invalid photo format: $photo');
+          })
           .toList() ?? [],
       location: UserLocationModel.fromJson(json['location'] as Map<String, dynamic>),
       isVerified: json['isVerified'] as bool? ?? false,
@@ -129,6 +144,8 @@ class ProfilePhotoModel extends ProfilePhoto {
     required super.id,
     required super.url,
     required super.order,
+    super.description,
+    super.isMain = false,
     super.isVerified = false,
     super.uploadedAt,
   });
@@ -138,9 +155,13 @@ class ProfilePhotoModel extends ProfilePhoto {
       id: json['id'] as String,
       url: json['url'] as String,
       order: json['order'] as int,
+      description: json['description'] as String?,
+      isMain: json['isMain'] as bool? ?? false,
       isVerified: json['isVerified'] as bool? ?? false,
       uploadedAt: json['uploadedAt'] != null 
           ? DateTime.parse(json['uploadedAt'] as String)
+          : json['createdAt'] != null
+          ? DateTime.parse(json['createdAt'] as String)
           : null,
     );
   }
@@ -151,6 +172,8 @@ class ProfilePhotoModel extends ProfilePhoto {
       'id': id,
       'url': url,
       'order': order,
+      'description': description,
+      'isMain': isMain,
       'isVerified': isVerified,
       'uploadedAt': uploadedAt?.toIso8601String(),
     };
@@ -161,6 +184,8 @@ class ProfilePhotoModel extends ProfilePhoto {
       id: entity.id,
       url: entity.url,
       order: entity.order,
+      description: entity.description,
+      isMain: entity.isMain,
       isVerified: entity.isVerified,
       uploadedAt: entity.uploadedAt,
     );

@@ -2,10 +2,11 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 import '../../theme/pulse_colors.dart';
 import '../../widgets/common/pulse_button.dart';
-import '../../widgets/photo_picker_widget.dart';
 
 /// Profile section edit screen for editing individual profile sections
 class ProfileSectionEditScreen extends StatefulWidget {
@@ -228,8 +229,15 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
   }
 
   Widget _buildPhotosSection() {
-    // Initialize local photos list for new uploads
-    final List<File> localPhotos = _formData['newPhotos'] as List<File>? ?? [];
+    // Get existing photos from API (ProfilePhoto objects with URLs)
+    final List<dynamic> existingPhotos =
+        _formData['photos'] as List<dynamic>? ?? [];
+
+    // Get new photos selected by user (File objects)
+    final List<File> newPhotos = _formData['newPhotos'] as List<File>? ?? [];
+
+    // Total photo count
+    final int totalPhotos = existingPhotos.length + newPhotos.length;
     
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -246,12 +254,11 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
           ),
           child: Row(
             children: [
-              Icon(
-                Icons.photo_library, color: PulseColors.primary),
+              Icon(Icons.photo_library, color: PulseColors.primary),
               const SizedBox(width: PulseSpacing.sm),
               Expanded(
                 child: Text(
-                  'Add up to 6 photos. Your first photo will be your main profile picture.',
+                  'Add up to 6 photos ($totalPhotos/6). Your first photo will be your main profile picture.',
                   style: PulseTextStyles.bodyMedium,
                 ),
               ),
@@ -260,128 +267,428 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
         ),
         const SizedBox(height: PulseSpacing.lg),
 
-        // Photo picker widget
-        SizedBox(
-          height: 400,
-          child: PhotoPickerWidget(
-            selectedPhotos: localPhotos,
-            onPhotosChanged: (photos) {
-              setState(() {
-                _formData['newPhotos'] = photos;
-              });
-            },
-            maxPhotos: 6,
+        // Combined photo grid (existing + new photos)
+        GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 3,
+            crossAxisSpacing: PulseSpacing.sm,
+            mainAxisSpacing: PulseSpacing.sm,
+            childAspectRatio: 1,
           ),
+          itemCount: 6, // Always show 6 slots
+          itemBuilder: (context, index) {
+            // Check if this slot has an existing photo
+            if (index < existingPhotos.length) {
+              return _buildExistingPhotoCard(existingPhotos[index], index);
+            }
+            // Check if this slot has a new photo
+            else if (index < existingPhotos.length + newPhotos.length) {
+              final newPhotoIndex = index - existingPhotos.length;
+              return _buildNewPhotoCard(
+                newPhotos[newPhotoIndex],
+                index,
+                newPhotoIndex,
+              );
+            }
+            // Empty slot - show add button
+            else {
+              return _buildAddPhotoButton();
+            }
+          },
         ),
-        
-        // Current photos from API
-        if (_formData['photos'] != null &&
-            (_formData['photos'] as List).isNotEmpty) ...[
-          const SizedBox(height: PulseSpacing.xl),
-          const Divider(),
-          const SizedBox(height: PulseSpacing.lg),
-          Row(
-            children: [
-              Icon(Icons.cloud, size: 20, color: PulseColors.primary),
-              const SizedBox(width: PulseSpacing.xs),
-              Text(
-                'Current Photos (${(_formData['photos'] as List).length})',
-                style: PulseTextStyles.titleMedium.copyWith(
-                  color: PulseColors.onSurface,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: PulseSpacing.md),
-          GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 3,
-              crossAxisSpacing: PulseSpacing.sm,
-              mainAxisSpacing: PulseSpacing.sm,
-              childAspectRatio: 1,
+      ],
+    );
+  }
+
+  Widget _buildExistingPhotoCard(dynamic photo, int displayIndex) {
+    final String photoUrl = photo is Map
+        ? (photo['url'] ?? photo['photo_url'] ?? '')
+        : photo.toString();
+    final String? description = photo is Map ? photo['description'] : null;
+    final bool isMain = photo is Map
+        ? (photo['isMain'] ?? photo['isPrimary'] ?? displayIndex == 0)
+        : displayIndex == 0;
+
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(PulseRadii.md),
+        border: Border.all(
+          color: isMain
+              ? PulseColors.primary
+              : PulseColors.outline.withValues(alpha: 0.3),
+          width: isMain ? 2 : 1,
+        ),
+      ),
+      child: Stack(
+        children: [
+          // Photo image
+          ClipRRect(
+            borderRadius: BorderRadius.circular(PulseRadii.md - 1),
+            child: Image.network(
+              photoUrl,
+              fit: BoxFit.cover,
+              width: double.infinity,
+              height: double.infinity,
+              loadingBuilder: (context, child, loadingProgress) {
+                if (loadingProgress == null) return child;
+                return Container(
+                  color: PulseColors.surfaceVariant,
+                  child: Center(
+                    child: CircularProgressIndicator(
+                      value: loadingProgress.expectedTotalBytes != null
+                          ? loadingProgress.cumulativeBytesLoaded /
+                                loadingProgress.expectedTotalBytes!
+                          : null,
+                    ),
+                  ),
+                );
+              },
+              errorBuilder: (context, error, stackTrace) {
+                debugPrint('❌ Failed to load image: $photoUrl');
+                debugPrint('Error: $error');
+                return Container(
+                  color: PulseColors.surfaceVariant,
+                  child: const Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.broken_image, size: 32),
+                      SizedBox(height: 4),
+                      Text('Failed', style: TextStyle(fontSize: 10)),
+                    ],
+                  ),
+                );
+              },
             ),
-            itemCount: (_formData['photos'] as List).length,
-            itemBuilder: (context, index) {
-              final photoUrl = (_formData['photos'] as List)[index];
-              return Container(
+          ),
+          
+          // Main badge
+          if (isMain)
+            Positioned(
+              top: 4,
+              left: 4,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(PulseRadii.md),
-                  border: Border.all(
-                    color: index == 0
-                        ? PulseColors.primary
-                        : PulseColors.outline.withValues(alpha: 0.3),
-                    width: index == 0 ? 2 : 1,
+                  color: PulseColors.primary,
+                  borderRadius: BorderRadius.circular(PulseRadii.sm),
+                ),
+                child: Text(
+                  'Main',
+                  style: PulseTextStyles.labelSmall.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
-                child: Stack(
-                  children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(PulseRadii.md - 1),
-                      child: Image.network(
-                        photoUrl,
-                        fit: BoxFit.cover,
-                        width: double.infinity,
-                        height: double.infinity,
-                        errorBuilder: (context, error, stackTrace) {
-                          return Container(
-                            color: PulseColors.surfaceVariant,
-                            child: const Icon(Icons.broken_image),
-                          );
-                        },
-                      ),
-                    ),
-                    if (index == 0)
-                      Positioned(
-                        top: 4,
-                        left: 4,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 6,
-                            vertical: 2,
-                          ),
-                          decoration: BoxDecoration(
-                            color: PulseColors.primary,
-                            borderRadius: BorderRadius.circular(PulseRadii.sm),
-                          ),
-                          child: Text(
-                            'Main',
-                            style: PulseTextStyles.labelSmall.copyWith(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ),
-                    // Delete button
-                    Positioned(
-                      top: 4,
-                      right: 4,
-                      child: GestureDetector(
-                        onTap: () => _deletePhoto(photoUrl),
-                        child: Container(
-                          padding: const EdgeInsets.all(4),
-                          decoration: BoxDecoration(
-                            color: Colors.red.withValues(alpha: 0.9),
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(
-                            Icons.close,
-                            color: Colors.white,
-                            size: 16,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
+              ),
+            ),
+          
+          // Info icon for description
+          if (description != null && description.isNotEmpty)
+            Positioned(
+              top: 4,
+              right: isMain ? 36 : 4,
+              child: GestureDetector(
+                onTap: () => _showPhotoDescription(description),
+                child: Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.6),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.info_outline,
+                    size: 16,
+                    color: Colors.white,
+                  ),
                 ),
-              );
-            },
+              ),
+            ),
+          
+          // Delete button
+          Positioned(
+            top: 4,
+            right: 4,
+            child: GestureDetector(
+              onTap: () =>
+                  _showDeletePhotoDialog(displayIndex, isExisting: true),
+              child: Container(
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  color: PulseColors.error.withValues(alpha: 0.9),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.close, size: 16, color: Colors.white),
+              ),
+            ),
           ),
         ],
-      ],
+      ),
+    );
+  }
+
+  Widget _buildNewPhotoCard(File photo, int displayIndex, int newPhotoIndex) {
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(PulseRadii.md),
+        border: Border.all(
+          color: PulseColors.secondary.withValues(alpha: 0.5),
+          width: 2,
+        ),
+      ),
+      child: Stack(
+        children: [
+          // Photo image
+          ClipRRect(
+            borderRadius: BorderRadius.circular(PulseRadii.md - 1),
+            child: Image.file(
+              photo,
+              fit: BoxFit.cover,
+              width: double.infinity,
+              height: double.infinity,
+            ),
+          ),
+
+          // New badge
+          Positioned(
+            top: 4,
+            left: 4,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              decoration: BoxDecoration(
+                color: PulseColors.secondary,
+                borderRadius: BorderRadius.circular(PulseRadii.sm),
+              ),
+              child: Text(
+                'New',
+                style: PulseTextStyles.labelSmall.copyWith(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ),
+
+          // Delete button
+          Positioned(
+            top: 4,
+            right: 4,
+            child: GestureDetector(
+              onTap: () {
+                final List<File> newPhotos =
+                    _formData['newPhotos'] as List<File>? ?? [];
+                setState(() {
+                  newPhotos.removeAt(newPhotoIndex);
+                  _formData['newPhotos'] = newPhotos;
+                });
+              },
+              child: Container(
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  color: PulseColors.error.withValues(alpha: 0.9),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.close, size: 16, color: Colors.white),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAddPhotoButton() {
+    return GestureDetector(
+      onTap: _showPhotoSourceDialog,
+      child: Container(
+        decoration: BoxDecoration(
+          color: PulseColors.surfaceVariant.withValues(alpha: 0.3),
+          borderRadius: BorderRadius.circular(PulseRadii.md),
+          border: Border.all(
+            color: PulseColors.outline.withValues(alpha: 0.3),
+            style: BorderStyle.solid,
+          ),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.add_photo_alternate_outlined,
+              size: 32,
+              color: PulseColors.onSurfaceVariant,
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'Add Photo',
+              style: PulseTextStyles.labelSmall.copyWith(
+                color: PulseColors.onSurfaceVariant,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showPhotoDescription(String description) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Photo Description'),
+        content: Text(description),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showDeletePhotoDialog(int index, {required bool isExisting}) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Photo'),
+        content: const Text('Are you sure you want to delete this photo?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              setState(() {
+                if (isExisting) {
+                  final List<dynamic> existingPhotos =
+                      _formData['photos'] as List<dynamic>? ?? [];
+                  existingPhotos.removeAt(index);
+                  _formData['photos'] = existingPhotos;
+                  // Mark for deletion on backend
+                  _formData['deletedPhotoIds'] = [
+                    ...(_formData['deletedPhotoIds'] as List? ?? []),
+                    // Store the photo ID if available
+                  ];
+                }
+              });
+            },
+            style: TextButton.styleFrom(foregroundColor: PulseColors.error),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showPhotoSourceDialog() async {
+    await showModalBottomSheet(
+      context: context,
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.photo_library),
+              title: const Text('Choose from gallery'),
+              onTap: () {
+                Navigator.pop(context);
+                _pickImage(ImageSource.gallery);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.camera_alt),
+              title: const Text('Take a photo'),
+              onTap: () {
+                Navigator.pop(context);
+                _pickImage(ImageSource.camera);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _pickImage(ImageSource source) async {
+    try {
+      // Check permissions
+      if (source == ImageSource.camera) {
+        final cameraStatus = await Permission.camera.request();
+        if (cameraStatus.isDenied) {
+          _showPermissionDialog('Camera');
+          return;
+        }
+      } else {
+        final photosStatus = await Permission.photos.request();
+        if (photosStatus.isDenied) {
+          _showPermissionDialog('Photos');
+          return;
+        }
+      }
+
+      final ImagePicker picker = ImagePicker();
+      final XFile? image = await picker.pickImage(
+        source: source,
+        maxWidth: 1080,
+        maxHeight: 1080,
+        imageQuality: 80,
+      );
+
+      if (image != null) {
+        final File file = File(image.path);
+        setState(() {
+          final List<File> newPhotos =
+              _formData['newPhotos'] as List<File>? ?? [];
+          newPhotos.add(file);
+          _formData['newPhotos'] = newPhotos;
+        });
+      }
+    } catch (e) {
+      _showErrorDialog('Failed to pick image: $e');
+    }
+  }
+
+  void _showPermissionDialog(String permission) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('$permission Permission Required'),
+        content: Text(
+          'Please grant $permission permission in Settings to add photos.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              openAppSettings();
+            },
+            child: const Text('Open Settings'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showErrorDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Error'),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
     );
   }
 
@@ -981,43 +1288,6 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
   }
 
   /// Delete a photo from current photos
-  void _deletePhoto(String photoUrl) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Delete Photo'),
-        content: const Text('Are you sure you want to delete this photo?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              setState(() {
-                final photos = _formData['photos'] as List;
-                photos.remove(photoUrl);
-                _formData['photos'] = photos;
-              });
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: const Text(
-                    'Photo will be deleted when you save changes',
-                  ),
-                  backgroundColor: PulseColors.warning,
-                  behavior: SnackBarBehavior.floating,
-                ),
-              );
-            },
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Delete'),
-          ),
-        ],
-      ),
-    );
-  }
-
   void _saveSection() async {
     if (_formKey.currentState?.validate() ?? false) {
       // Show loading indicator for photo uploads

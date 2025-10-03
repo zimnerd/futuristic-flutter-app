@@ -183,6 +183,11 @@ class PhotoGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    debugPrint('🔍 PhotoGrid building with ${photos.length} photos');
+    if (photos.isNotEmpty) {
+      debugPrint('🔍 First photo in grid: ${photos.first}');
+    }
+    
     return ReorderableGridView.count(
       crossAxisCount: 3,
       mainAxisSpacing: 8,
