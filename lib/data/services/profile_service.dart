@@ -83,13 +83,31 @@ class ProfileService {
     // Extract photos from API response
     final photosList = userData['photos'] as List<dynamic>?;
     final photos =
-        photosList?.asMap().entries.map((entry) {
-          return domain.ProfilePhoto(
-            id: _uuid.v4(),
-            url: entry.value as String,
-            order: entry.key,
-            isVerified: userData['verified'] as bool? ?? false,
-          );
+        photosList?.map((photo) {
+          // Handle both string URL format (legacy) and Photo object format (new)
+          if (photo is String) {
+            return domain.ProfilePhoto(
+              id: _uuid.v4(),
+              url: photo,
+              order: 0,
+              isVerified: userData['verified'] as bool? ?? false,
+            );
+          } else if (photo is Map<String, dynamic>) {
+            return domain.ProfilePhoto(
+              id: photo['id'] as String? ?? _uuid.v4(),
+              url: photo['url'] as String,
+              order: photo['order'] as int? ?? 0,
+              isVerified:
+                  photo['isVerified'] as bool? ??
+                  (userData['verified'] as bool? ?? false),
+              uploadedAt: photo['createdAt'] != null
+                  ? DateTime.parse(photo['createdAt'] as String)
+                  : null,
+              description: photo['description'] as String?,
+            );
+          } else {
+            throw Exception('Invalid photo format: $photo');
+          }
         }).toList() ??
         [];
 
@@ -249,24 +267,32 @@ class ProfileService {
           changedBasicFields['bio'] = profile.bio;
         }
 
-        // Check extended fields
+        // Check interests change (User model field, goes to /users/me)
         if (!_areListsEqual(profile.interests, originalProfile.interests)) {
-          changedExtendedFields['interests'] = profile.interests;
+          changedBasicFields['interests'] = profile.interests;
         }
-        if (profile.job != originalProfile.job) {
-          changedExtendedFields['job'] = profile.job;
+
+        // Check extended profile fields (Profile model fields, go to /users/me/profile)
+        // Map mobile fields to backend Prisma schema fields:
+        // - job → occupation (backend field name)
+        // - school → education (backend field name)
+        // - company → not in schema (store in occupation if needed)
+        if (profile.job != originalProfile.job && profile.job != null) {
+          changedExtendedFields['occupation'] = profile.job;
         }
-        if (profile.company != originalProfile.company) {
-          changedExtendedFields['company'] = profile.company;
+        if (profile.school != originalProfile.school &&
+            profile.school != null) {
+          changedExtendedFields['education'] = profile.school;
         }
-        if (profile.school != originalProfile.school) {
-          changedExtendedFields['school'] = profile.school;
-        }
-        if (profile.gender != originalProfile.gender) {
-          changedExtendedFields['gender'] = profile.gender;
-        }
-        if (profile.lookingFor != originalProfile.lookingFor) {
-          changedExtendedFields['lookingFor'] = profile.lookingFor;
+        // Note: 'company' field not in backend Profile schema - combining with occupation if present
+        if (profile.company != originalProfile.company &&
+            profile.company != null) {
+          // Optionally combine company with occupation: "Job Title at Company"
+          final occupation = profile.job ?? '';
+          if (occupation.isNotEmpty) {
+            changedExtendedFields['occupation'] =
+                '$occupation at ${profile.company}';
+          }
         }
       } else {
         // No original profile - send all fields (backward compatibility)
@@ -342,35 +368,67 @@ class ProfileService {
     _logger.i('🔄 Using legacy profile update (all fields)');
 
     try {
-      // Update basic user info (name, dateOfBirth, bio) via /users/me endpoint
-      await updateBasicUserInfo(
-        userId: profile.id,
-        name: profile.name,
-        dateOfBirth: profile.dateOfBirth,
-        bio: profile.bio,
-      );
+      // Update basic user info (name, dateOfBirth, bio, interests) via /users/me endpoint
+      // Note: interests is a User model field, not Profile model field
+      final basicData = <String, dynamic>{};
 
-      // Update extended profile info if needed (interests, job, company, school, gender, lookingFor)
-      // NOTE: bio and location are handled by /users/me endpoint above, not by /users/me/profile
-      final hasExtendedData = profile.interests.isNotEmpty ||
-          profile.job != null ||
-          profile.company != null ||
-          profile.school != null ||
-          profile.gender != null ||
-          profile.lookingFor != null;
+      // Split name into firstName and lastName
+      if (profile.name.isNotEmpty) {
+        final nameParts = profile.name.trim().split(' ');
+        if (nameParts.isNotEmpty) {
+          basicData['firstName'] = nameParts.first;
+          if (nameParts.length > 1) {
+            basicData['lastName'] = nameParts.sublist(1).join(' ');
+          }
+        }
+      }
 
-      if (hasExtendedData) {
-        await updateProfileWithDetails(
-          userId: profile.id,
-          bio: null, // Don't send bio here - already handled by /users/me
-          interests: profile.interests.isNotEmpty ? profile.interests : null,
-          dealBreakers: profile.lifestyle['dealBreakers'] as List<String>?,
-          preferences: profile.preferences.isNotEmpty 
-              ? _convertPreferences(profile.preferences) 
-              : null,
-          location:
-              null, // Don't send location here - already handled by /users/me
+      if (profile.dateOfBirth != null) {
+        final year = profile.dateOfBirth!.year.toString().padLeft(4, '0');
+        final month = profile.dateOfBirth!.month.toString().padLeft(2, '0');
+        final day = profile.dateOfBirth!.day.toString().padLeft(2, '0');
+        basicData['dateOfBirth'] = '$year-$month-$day';
+      }
+
+      if (profile.bio.isNotEmpty) {
+        basicData['bio'] = profile.bio;
+      }
+
+      if (profile.interests.isNotEmpty) {
+        basicData['interests'] = profile.interests;
+      }
+
+      if (basicData.isNotEmpty) {
+        final response = await _apiClient.put('/users/me', data: basicData);
+        if (response.statusCode != 200) {
+          throw NetworkException('Failed to update basic user info');
+        }
+      }
+
+      // Update extended profile info if needed (occupation, education from job/school)
+      // Map legacy fields: job → occupation, school → education
+      final extendedData = <String, dynamic>{};
+
+      if (profile.job != null && profile.job!.isNotEmpty) {
+        if (profile.company != null && profile.company!.isNotEmpty) {
+          extendedData['occupation'] = '${profile.job} at ${profile.company}';
+        } else {
+          extendedData['occupation'] = profile.job;
+        }
+      }
+      
+      if (profile.school != null && profile.school!.isNotEmpty) {
+        extendedData['education'] = profile.school;
+      }
+      
+      if (extendedData.isNotEmpty) {
+        final response = await _apiClient.put(
+          '/users/me/profile',
+          data: extendedData,
         );
+        if (response.statusCode != 200) {
+          throw NetworkException('Failed to update extended profile');
+        }
       }
 
       // Fetch the updated profile from backend to get calculated age and other updates

@@ -10,7 +10,8 @@ class UserModel {
   final List<String> interests;
   final int? age;
   final String? gender;
-  final List<String> photos;
+  final List<dynamic>
+  photos; // Changed to dynamic to handle both string URLs and Photo objects
   final String? location;
   final Map<String, dynamic>? coordinates;
   final bool premium;
@@ -66,7 +67,7 @@ class UserModel {
       age: json['age'],
       gender: json['gender'],
       photos: json['photos'] != null 
-          ? List<String>.from(json['photos'])
+          ? (json['photos'] is List ? List<dynamic>.from(json['photos']) : [])
           : [],
       location: json['location'],
       coordinates: json['coordinates'] != null 

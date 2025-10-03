@@ -15,7 +15,8 @@ class User extends Equatable {
   final String? gender; // Added from API spec
   final String? location;
   final List<String> interests;
-  final List<String> photos; // Added from API spec (array of photo URLs)
+  final List<dynamic>
+  photos; // Changed to dynamic to handle both string URLs and Photo objects
   final bool isOnline;
   final DateTime? lastSeen;
   final bool isVerified;
@@ -68,7 +69,7 @@ class User extends Equatable {
       gender: json['gender'] as String?,
       location: json['location'] as String?,
       interests: (json['interests'] as List?)?.cast<String>() ?? [],
-      photos: (json['photos'] as List?)?.cast<String>() ?? [],
+      photos: (json['photos'] as List?)?.map((photo) => photo).toList() ?? [],
       isOnline: json['isOnline'] as bool? ?? false,
       lastSeen: json['lastSeen'] != null
           ? DateTime.parse(json['lastSeen'] as String)

@@ -5,7 +5,96 @@ This document captures key learnings from building the **Flutter mobile dating a
 
 ---
 
-## 📸 **Photo Management & Temp Uploads (October 3, 2025)**
+## � **Profile Update Field Mapping (October 3, 2025)**
+
+**Context**: Fixed critical profile update failures caused by field name mismatches between mobile domain models and backend Prisma schema.
+
+**Problem**:
+- Backend DTO (`UpdateProfileDto`) accepted `job`, `company`, `school` fields
+- But backend Prisma Profile schema only has `occupation`, `education` fields
+- DTO validation passed ✅, but Prisma create/update failed ❌ with "Unknown argument `job`"
+- Mobile was sending `interests` to `/users/me/profile`, but it's a User model field
+- Mobile domain entity had both sets of fields (legacy + correct)
+
+**Root Cause**: **Validation Layer Inconsistency**
+```typescript
+// Backend DTO - ACCEPTS these (line 161-171)
+export class UpdateProfileDto {
+  job?: string;      // ❌ Not in Prisma schema
+  company?: string;  // ❌ Not in Prisma schema
+  school?: string;   // ❌ Not in Prisma schema
+  education?: string;  // ✅ In schema
+  occupation?: string; // ✅ In schema
+}
+
+// Backend Prisma Schema - ONLY has these
+model Profile {
+  education         String?
+  occupation        String?
+  // NO job, company, or school!
+}
+```
+
+**Solution**: Updated `ProfileService.updateProfile()` to properly map fields:
+
+1. **Field Mapping** (lines 270-290):
+   ```dart
+   // OLD (wrong)
+   if (profile.job != originalProfile.job) {
+     changedExtendedFields['job'] = profile.job; // ❌ Invalid
+   }
+   
+   // NEW (correct)
+   if (profile.job != originalProfile.job && profile.job != null) {
+     changedExtendedFields['occupation'] = profile.job; // ✅ Maps to schema
+   }
+   if (profile.school != originalProfile.school && profile.school != null) {
+     changedExtendedFields['education'] = profile.school; // ✅ Maps to schema
+   }
+   // Combine company with occupation: "Job Title at Company"
+   if (profile.company != null) {
+     final occupation = profile.job ?? '';
+     if (occupation.isNotEmpty) {
+       changedExtendedFields['occupation'] = '$occupation at ${profile.company}';
+     }
+   }
+   ```
+
+2. **Model Separation** - Moved `interests` to User model endpoint:
+   ```dart
+   // interests is User model field → goes to /users/me
+   if (!_areListsEqual(profile.interests, originalProfile.interests)) {
+     changedBasicFields['interests'] = profile.interests; // ✅ Correct endpoint
+   }
+   
+   // occupation/education are Profile model fields → go to /users/me/profile
+   if (profile.job != null) {
+     changedExtendedFields['occupation'] = profile.job; // ✅ Correct endpoint
+   }
+   ```
+
+3. **Legacy Method Fix** (lines 367-417):
+   - Updated to directly use API client instead of helper methods
+   - Properly separates User fields vs Profile fields
+   - Applies same field mapping logic
+
+**Key Learnings**:
+- ✅ **Backend DTOs can lie** - Just because DTO accepts a field doesn't mean Prisma schema has it
+- ✅ **Two validation layers** - Class-validator (DTO) passes, but Prisma validation fails
+- ✅ **Field mapping is critical** - Legacy field names must be mapped to actual schema fields
+- ✅ **Model boundaries matter** - User fields go to `/users/me`, Profile fields go to `/users/me/profile`
+- ✅ **Test with real backend** - Type safety doesn't catch API contract mismatches
+
+**Prevention**:
+- Always verify backend Prisma schema when adding profile fields
+- Keep domain entity field names aligned with backend schema
+- Add integration tests for profile updates
+- Document field mappings in service layer
+- Consider using code generation for API clients (OpenAPI/Swagger)
+
+---
+
+## �📸 **Photo Management & Temp Uploads (October 3, 2025)**
 
 **Context**: Implemented comprehensive temporary upload system for profile photos to improve UX and prevent orphaned uploads.
 
