@@ -65,6 +65,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
       emit(state.copyWith(updateStatus: ProfileStatus.loading));
       
       // STEP 1: Save photos (confirm temps + delete marked) before profile update
+      List<String> confirmedMediaIds = [];
       if (_tempPhotoIds.isNotEmpty ||
           _photoManager.getPhotosToDelete().isNotEmpty) {
         _logger.i('💾 Saving photos before profile update...');
@@ -78,10 +79,58 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
           );
         }
 
+        // Collect confirmed media IDs for syncing
+        confirmedMediaIds = photoResult.confirmResult.confirmed;
         _tempPhotoIds.clear();
       }
 
-      // STEP 2: Update profile with delta tracking
+      // STEP 2: Sync confirmed photos with profile (link Media to User.photos)
+      if (confirmedMediaIds.isNotEmpty && event.profile.photos.isNotEmpty) {
+        _logger.i('🔗 Syncing ${confirmedMediaIds.length} photos with profile...');
+        try {
+          // Map profile photos to sync format
+          final photosToSync = event.profile.photos
+              .where((photo) => confirmedMediaIds.contains(photo.id))
+              .map((photo) => ProfilePhotoSync(
+                    mediaId: photo.id,
+                    description: photo.description,
+                    order: photo.order,
+                    isMain: photo.isMain,
+                  ))
+              .toList();
+
+          if (photosToSync.isNotEmpty) {
+            final syncedPhotos = await _profileService.syncPhotos(
+              photos: photosToSync,
+            );
+            
+            _logger.i('✅ Photos synced successfully: ${syncedPhotos.length}');
+            
+            // Update profile with synced photo data (may have server-side changes)
+            final updatedProfile = event.profile.copyWith(
+              photos: syncedPhotos,
+            );
+            
+            // Use synced profile for update
+            final finalProfile = await _profileService.updateProfile(
+              updatedProfile,
+              originalProfile: _originalProfile,
+            );
+            _originalProfile = finalProfile;
+            
+            emit(state.copyWith(
+              updateStatus: ProfileStatus.success,
+              profile: finalProfile,
+            ));
+            return;
+          }
+        } catch (syncError) {
+          _logger.e('❌ Photo sync failed: $syncError');
+          // Continue with profile update even if sync fails
+        }
+      }
+
+      // STEP 3: Update profile with delta tracking
       final updatedProfile = await _profileService.updateProfile(
         event.profile,
         originalProfile: _originalProfile,

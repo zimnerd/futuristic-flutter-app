@@ -895,6 +895,56 @@ class ProfileService {
     return (score / maxScore * 100).round();
   }
 
+  /// Sync confirmed photos with user profile
+  /// Call this after confirming temporary uploads to link photos to profile
+  Future<List<domain.ProfilePhoto>> syncPhotos({
+    required List<ProfilePhotoSync> photos,
+  }) async {
+    try {
+      _logger.i('📸 Syncing ${photos.length} photos with profile');
+
+      final response = await _apiClient.put(
+        '/users/me/photos',
+        data: {
+          'photos': photos
+              .map((p) => {
+                    'mediaId': p.mediaId,
+                    'description': p.description,
+                    'order': p.order,
+                    'isMain': p.isMain,
+                  })
+              .toList(),
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final responseData = response.data as Map<String, dynamic>;
+        final photosData = responseData['data'] as List<dynamic>;
+
+        _logger.i('✅ Photos synced successfully');
+
+        return photosData
+            .map((p) => domain.ProfilePhoto(
+                  id: p['id'] as String,
+                  url: p['url'] as String,
+                  order: p['order'] as int? ?? 0,
+                  isVerified: p['isVerified'] as bool? ?? false,
+                  description: p['description'] as String?,
+                ))
+            .toList();
+      } else {
+        _logger.w('⚠️ Failed to sync photos: ${response.statusCode}');
+        throw NetworkException('Failed to sync photos');
+      }
+    } on DioException catch (e) {
+      _logger.e('❌ Network error syncing photos: ${e.message}');
+      throw NetworkException('Failed to sync photos: ${e.message}');
+    } catch (e) {
+      _logger.e('❌ Unexpected error syncing photos: $e');
+      throw UserException('Failed to sync photos');
+    }
+  }
+
   /// Compress image for upload
   Future<File> _compressImage(File file) async {
     try {
@@ -984,6 +1034,31 @@ class PhotoOrder {
     return {
       'photoId': photoId,
       'order': order,
+    };
+  }
+}
+
+/// Helper class for syncing photos with user profile
+/// Used when linking confirmed media uploads to profile photos
+class ProfilePhotoSync {
+  final String mediaId;
+  final String? description;
+  final int order;
+  final bool isMain;
+
+  ProfilePhotoSync({
+    required this.mediaId,
+    this.description,
+    required this.order,
+    this.isMain = false,
+  });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'mediaId': mediaId,
+      'description': description,
+      'order': order,
+      'isMain': isMain,
     };
   }
 }
