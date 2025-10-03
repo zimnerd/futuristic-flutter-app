@@ -5,6 +5,230 @@ This document captures key learnings from building the **Flutter mobile dating a
 
 ---
 
+## 📸 **Photo Management & Temp Uploads (October 3, 2025)**
+
+**Context**: Implemented comprehensive temporary upload system for profile photos to improve UX and prevent orphaned uploads.
+
+**Problem**:
+- Photos were uploaded directly to permanent storage on selection
+- No preview before committing changes
+- No ability to cancel photo changes
+- Orphaned uploads if user cancelled profile editing
+- Delete operations failed if files already missing from disk
+
+**Solution**: Created layered photo management architecture:
+
+1. **TempMediaUploadService** (`data/services/temp_media_upload_service.dart`)
+   - Low-level service for temp upload API calls
+   - Handles upload temp, confirm, delete operations
+   - Returns structured results with success/failure tracking
+
+2. **PhotoManagerService** (`data/services/photo_manager_service.dart`)
+   - High-level service wrapping TempMediaUploadService
+   - Profile-specific photo lifecycle management
+   - Tracks photos marked for deletion internally
+   - Combined operations (confirm + delete in one call)
+
+3. **ProfileBloc Integration** (`presentation/bloc/profile/profile_bloc.dart`)
+   - Injected PhotoManagerService
+   - Tracks temp photo IDs in state (`List<String> _tempPhotoIds`)
+   - Upload handler uses `uploadTempPhoto()` for instant preview
+   - Delete handler uses `markPhotoForDeletion()` for deferred deletion
+   - Update handler calls `savePhotos()` before profile update
+   - Cancel handler clears all pending changes
+
+**Temp Upload Lifecycle**:
+```dart
+// 1. User picks photo → Upload to temp immediately
+final result = await photoManager.uploadTempPhoto(imageFile);
+_tempPhotoIds.add(result.mediaId);
+// Show preview with temp URL
+
+// 2. User removes existing photo → Mark for deletion
+photoManager.markPhotoForDeletion(existingPhotoId);
+// Hide from UI
+
+// 3. User saves profile → Confirm temps + delete marked
+final saveResult = await photoManager.savePhotos(tempPhotoIds: _tempPhotoIds);
+_tempPhotoIds.clear();
+
+// 4. User cancels → Clear all pending changes
+photoManager.cancelPhotoChanges();
+_tempPhotoIds.clear();
+// Temp files auto-cleanup after 24 hours
+```
+
+**Key Takeaways**:
+- ✅ Use temp uploads for any user-uploaded content that can be cancelled
+- ✅ Track temp IDs in BLoC state for confirmation on save
+- ✅ Provide visual indicators for temp content (borders, badges)
+- ✅ Clear temp IDs after successful confirmation
+- ✅ Let backend auto-cleanup handle orphaned temp files
+- ❌ DON'T upload directly to permanent storage on selection
+- ❌ DON'T forget to clear temp IDs after save
+- ❌ DON'T block save if some photo operations fail (log and continue)
+
+**Related Files**:
+- `data/services/temp_media_upload_service.dart` - Base temp upload API
+- `data/services/photo_manager_service.dart` - Profile photo management
+- `presentation/bloc/profile/profile_bloc.dart` - State management integration
+- `presentation/screens/profile/INTEGRATION_EXAMPLE.dart` - Complete UI example
+- `docs/TEMP_MEDIA_UPLOAD_GUIDE.md` - API documentation
+- `docs/PROFILE_UPDATES_IMPLEMENTATION.md` - Implementation guide
+
+---
+
+## 🔄 **Delta Updates & Changed Field Tracking (October 3, 2025)**
+
+**Context**: Implemented field-level change tracking to only send modified fields to backend, fixing issues with unnecessary database updates.
+
+**Problem**:
+- Mobile sent entire profile object on every update
+- Backend received all fields including nulls/unchanged values
+- Database counters (like DOB counter) incremented even when field unchanged
+- Unnecessary API bandwidth and database writes
+
+**Solution**: Compare original vs current profile and only send delta.
+
+**Mobile Implementation** (`profile_service.dart`):
+```dart
+Future<UserProfile> updateProfile(
+  UserProfile profile, {
+  UserProfile? originalProfile, // Compare against this
+}) async {
+  final changedBasicFields = <String, dynamic>{};
+  final changedExtendedFields = <String, dynamic>{};
+  
+  if (originalProfile != null) {
+    // Compare name
+    if (profile.name != originalProfile.name) {
+      changedBasicFields['firstName'] = ...;
+    }
+    
+    // Compare DOB (date only, ignore time)
+    if (!_isSameDate(profile.dateOfBirth, originalProfile.dateOfBirth)) {
+      changedBasicFields['dateOfBirth'] = ...;
+    }
+    
+    // Compare lists with deep equality
+    if (!_areListsEqual(profile.interests, originalProfile.interests)) {
+      changedExtendedFields['interests'] = ...;
+    }
+  }
+  
+  // Only send PUT requests if fields changed
+  if (changedBasicFields.isNotEmpty) {
+    await _apiClient.put('/users/me', data: changedBasicFields);
+  }
+  if (changedExtendedFields.isNotEmpty) {
+    await _apiClient.put('/users/me/profile', data: changedExtendedFields);
+  }
+}
+```
+
+**Helper Methods**:
+```dart
+bool _isSameDate(DateTime? date1, DateTime? date2) {
+  if (date1 == null || date2 == null) return false;
+  return date1.year == date2.year &&
+         date1.month == date2.month &&
+         date1.day == date2.day;
+}
+
+bool _areListsEqual(List<dynamic> list1, List<dynamic> list2) {
+  if (list1.length != list2.length) return false;
+  for (int i = 0; i < list1.length; i++) {
+    if (list1[i] != list2[i]) return false;
+  }
+  return true;
+}
+```
+
+**Key Takeaways**:
+- ✅ Always track and pass originalProfile for comparison
+- ✅ Use helper methods for complex comparisons (dates, lists, objects)
+- ✅ Log which field groups are being updated for debugging
+- ✅ Skip API calls if no fields changed
+- ❌ DON'T compare DateTime objects with `==` if only date matters
+- ❌ DON'T assume simple `==` works for lists and complex objects
+- ❌ DON'T send updates when nothing changed (wastes resources)
+
+**Related Files**:
+- `data/services/profile_service.dart` - Delta comparison logic
+- `backend/src/users/users.service.ts` - Backend field filtering
+- `docs/PROFILE_UPDATES_IMPLEMENTATION.md` - Full implementation guide
+
+---
+
+## 🛡️ **Graceful Error Handling for Delete Operations (October 3, 2025)**
+
+**Context**: Improved delete operations to handle missing files gracefully instead of throwing errors.
+
+**Problem**:
+- Delete operations threw errors if file already deleted from disk
+- Users couldn't clean up broken photo references
+- Operations would fail completely on missing files
+
+**Solution**: Use result objects and continue on individual failures.
+
+**Result Object Pattern**:
+```dart
+class DeleteMediaResult {
+  final List<String> deleted;
+  final List<String> failed;
+  
+  bool get allDeleted => failed.isEmpty;
+  bool get hasFailures => failed.isNotEmpty;
+}
+
+Future<DeleteMediaResult> deleteMedia(List<String> mediaIds) async {
+  final deleted = <String>[];
+  final failed = <String>[];
+  
+  for (final id in mediaIds) {
+    try {
+      await _deleteOne(id);
+      deleted.add(id);
+    } catch (e) {
+      _logger.w('Failed to delete $id: $e');
+      failed.add(id);
+      // Continue with remaining deletions
+    }
+  }
+  
+  return DeleteMediaResult(deleted: deleted, failed: failed);
+}
+```
+
+**Handling Partial Failures**:
+```dart
+final result = await photoManager.deleteMarkedPhotos();
+
+if (result.hasFailures) {
+  _logger.w('Some photos failed to delete: ${result.failed}');
+  // Show warning but don't block save
+} else {
+  _logger.i('All photos deleted successfully');
+}
+```
+
+**Key Takeaways**:
+- ✅ Return result objects with success/failure tracking
+- ✅ Continue processing on individual failures
+- ✅ Log warnings for failures but don't throw
+- ✅ Consider operation successful if desired state achieved (file gone = success)
+- ✅ Make operations idempotent when possible
+- ❌ DON'T throw exceptions on missing files (already deleted = success)
+- ❌ DON'T stop entire operation on first failure
+- ❌ DON'T block user actions because of cleanup failures
+
+**Related Files**:
+- `data/services/temp_media_upload_service.dart` - Result objects pattern
+- `data/services/photo_manager_service.dart` - Partial failure handling
+- `backend/src/media/media.service.ts` - Graceful backend deletion
+
+---
+
 #### **🔐 API Privacy & Performance Optimizations**
 
 **Date**: October 2, 2025  

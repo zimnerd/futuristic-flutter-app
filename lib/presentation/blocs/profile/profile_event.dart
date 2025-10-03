@@ -37,3 +37,7 @@ class DeletePhoto extends ProfileEvent {
   @override
   List<Object> get props => [photoUrl];
 }
+
+class CancelProfileChanges extends ProfileEvent {
+  const CancelProfileChanges();
+}

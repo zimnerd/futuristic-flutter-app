@@ -31,6 +31,11 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
   String _selectedPreference = 'Men';
   List<String> _photos = [];
   bool _hasPopulatedFields = false;
+  
+  // Delta tracking and temp upload state
+  UserProfile? _originalProfile; // Store original for comparison
+  Set<String> _tempPhotoUrls = {}; // Track temp uploads for visual indicator
+  Set<String> _photosMarkedForDeletion = {}; // Track deletions
 
   /// Gets the current user ID from the AuthBloc state
   String? get _currentUserId {
@@ -59,6 +64,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
   }
 
   void _populateFields(UserProfile profile) {
+    _originalProfile = profile; // Store for delta tracking
     _nameController.text = profile.name;
     _bioController.text = profile.bio;
     _ageController.text = profile.age.toString();
@@ -111,7 +117,17 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.close, color: Colors.black87),
-          onPressed: () => Navigator.of(context).pop(),
+          onPressed: () {
+            // Check if there are pending changes
+            final hasPendingChanges =
+                _tempPhotoUrls.isNotEmpty ||
+                _photosMarkedForDeletion.isNotEmpty;
+            if (hasPendingChanges) {
+              _showCancelConfirmation();
+            } else {
+              Navigator.of(context).pop();
+            }
+          },
         ),
         title: const Text(
           'Edit Profile',
@@ -170,7 +186,19 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
           ),
         ],
       ),
-      body: BlocBuilder<ProfileBloc, ProfileState>(
+      body: BlocConsumer<ProfileBloc, ProfileState>(
+        listener: (context, state) {
+          // Listen for photo upload events to track temp photos
+          if (state.uploadStatus == ProfileStatus.success) {
+            // Photo uploaded to temp - mark for visual indicator
+            if (state.profile != null && state.profile!.photos.isNotEmpty) {
+              final latestPhotoUrl = state.profile!.photos.last.url;
+              setState(() {
+                _tempPhotoUrls.add(latestPhotoUrl);
+              });
+            }
+          }
+        },
         builder: (context, state) {
           if (state.status == ProfileStatus.loading) {
             return const Center(
@@ -270,12 +298,94 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
           ),
         ),
         const SizedBox(height: 16),
+        _buildPhotoGridWithTempTracking(),
+      ],
+    );
+  }
+
+  /// Build photo grid with temp upload tracking
+  /// Note: Temp photos are tracked internally and will be confirmed on save
+  Widget _buildPhotoGridWithTempTracking() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (_tempPhotoUrls.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.orange.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(4),
+                    border: Border.all(color: Colors.orange, width: 1),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(
+                        Icons.info_outline,
+                        size: 16,
+                        color: Colors.orange,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        '${_tempPhotoUrls.length} new photo(s) will be saved',
+                        style: const TextStyle(
+                          color: Colors.orange,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
         PhotoGrid(
           photos: _photos,
-          onPhotosChanged: (photos) => setState(() => _photos = photos),
+          onPhotosChanged: (photos) {
+            setState(() {
+              _photos = photos;
+            });
+          },
           maxPhotos: 6,
         ),
       ],
     );
   }
+
+  /// Show confirmation dialog before cancelling
+  void _showCancelConfirmation() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Discard Changes?'),
+        content: const Text(
+          'You have unsaved changes. Are you sure you want to discard them?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Keep Editing'),
+          ),
+          TextButton(
+            onPressed: () {
+              // Cancel profile changes (clears temp photos)
+              context.read<ProfileBloc>().add(const CancelProfileChanges());
+              Navigator.pop(context); // Close dialog
+              Navigator.pop(context); // Close edit screen
+            },
+            child: const Text('Discard', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+  }
 }
+

@@ -59,7 +59,10 @@ class AppProviders extends StatelessWidget {
         ),
         BlocProvider<ProfileBloc>(
           create: (context) =>
-              ProfileBloc(profileService: serviceLocator.profileService),
+              ProfileBloc(
+            profileService: serviceLocator.profileService,
+            photoManager: serviceLocator.photoManagerService,
+          ),
         ),
         BlocProvider<FilterBLoC>(
           create: (context) => FilterBLoC(serviceLocator.preferencesService),

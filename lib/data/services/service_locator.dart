@@ -33,6 +33,8 @@ import 'auto_reply_service.dart';
 import 'ai_chat_assistant_service.dart';
 import '../../services/media_upload_service.dart';
 import '../../services/firebase_notification_service.dart';
+import 'temp_media_upload_service.dart';
+import 'photo_manager_service.dart';
 
 /// Simple service locator without external dependencies
 class ServiceLocator {
@@ -69,6 +71,8 @@ class ServiceLocator {
   late final AiChatAssistantService _aiChatAssistantService;
   late final MediaUploadService _mediaUploadService;
   late final FirebaseNotificationService _firebaseNotificationService;
+  late final TempMediaUploadService _tempMediaUploadService;
+  late final PhotoManagerService _photoManagerService;
 
   bool _isInitialized = false;
 
@@ -129,6 +133,12 @@ class ServiceLocator {
       httpClient: _apiClient.dio,
     );
     _firebaseNotificationService = FirebaseNotificationService.instance;
+
+    // Initialize temp media and photo management services
+    _tempMediaUploadService = TempMediaUploadService(_apiClient.dio);
+    _photoManagerService = PhotoManagerService(
+      uploadService: _tempMediaUploadService,
+    );
 
     // Initialize SubscriptionService
     _subscriptionService = SubscriptionService(
@@ -296,6 +306,18 @@ class ServiceLocator {
   FirebaseNotificationService get firebaseNotificationService {
     if (!_isInitialized) initialize();
     return _firebaseNotificationService;
+  }
+
+  /// Get TempMediaUploadService instance
+  TempMediaUploadService get tempMediaUploadService {
+    if (!_isInitialized) initialize();
+    return _tempMediaUploadService;
+  }
+
+  /// Get PhotoManagerService instance
+  PhotoManagerService get photoManagerService {
+    if (!_isInitialized) initialize();
+    return _photoManagerService;
   }
 
   /// Legacy getter for backward compatibility
