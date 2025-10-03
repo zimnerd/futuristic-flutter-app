@@ -294,6 +294,73 @@ class ProfileService {
                 '$occupation at ${profile.company}';
           }
         }
+
+        // Check new profile fields changes
+        if (profile.lifestyleChoice != originalProfile.lifestyleChoice &&
+            profile.lifestyleChoice != null) {
+          changedExtendedFields['lifestyle'] = profile.lifestyleChoice;
+        }
+        if (!_areListsEqual(
+              profile.relationshipGoals,
+              originalProfile.relationshipGoals,
+            ) &&
+            profile.relationshipGoals.isNotEmpty) {
+          changedExtendedFields['relationshipGoals'] =
+              profile.relationshipGoals;
+        }
+        if (profile.height != originalProfile.height &&
+            profile.height != null) {
+          changedExtendedFields['height'] = profile.height;
+        }
+        if (profile.religion != originalProfile.religion &&
+            profile.religion != null) {
+          changedExtendedFields['religion'] = profile.religion;
+        }
+        if (profile.politics != originalProfile.politics &&
+            profile.politics != null) {
+          changedExtendedFields['politics'] = profile.politics;
+        }
+        if (profile.drinking != originalProfile.drinking &&
+            profile.drinking != null) {
+          changedExtendedFields['drinking'] = profile.drinking;
+        }
+        if (profile.smoking != originalProfile.smoking &&
+            profile.smoking != null) {
+          changedExtendedFields['smoking'] = profile.smoking;
+        }
+        if (profile.drugs != originalProfile.drugs && profile.drugs != null) {
+          changedExtendedFields['drugs'] = profile.drugs;
+        }
+        if (profile.children != originalProfile.children &&
+            profile.children != null) {
+          changedExtendedFields['children'] = profile.children;
+        }
+        if (!_areListsEqual(profile.languages, originalProfile.languages) &&
+            profile.languages.isNotEmpty) {
+          changedExtendedFields['languages'] = profile.languages;
+        }
+        if (!_areListsEqual(
+              profile.personalityTraits,
+              originalProfile.personalityTraits,
+            ) &&
+            profile.personalityTraits.isNotEmpty) {
+          changedExtendedFields['personalityTraits'] =
+              profile.personalityTraits;
+        }
+        if (!_areListsEqual(
+              profile.promptQuestions,
+              originalProfile.promptQuestions,
+            ) &&
+            profile.promptQuestions.isNotEmpty) {
+          changedExtendedFields['promptQuestions'] = profile.promptQuestions;
+        }
+        if (!_areListsEqual(
+              profile.promptAnswers,
+              originalProfile.promptAnswers,
+            ) &&
+            profile.promptAnswers.isNotEmpty) {
+          changedExtendedFields['promptAnswers'] = profile.promptAnswers;
+        }
       } else {
         // No original profile - send all fields (backward compatibility)
         _logger.w('⚠️ No original profile provided - sending all fields');
@@ -419,6 +486,48 @@ class ProfileService {
       
       if (profile.school != null && profile.school!.isNotEmpty) {
         extendedData['education'] = profile.school;
+      }
+
+      // Add new profile fields if they exist
+      if (profile.lifestyleChoice != null &&
+          profile.lifestyleChoice!.isNotEmpty) {
+        extendedData['lifestyle'] = profile.lifestyleChoice;
+      }
+      if (profile.relationshipGoals.isNotEmpty) {
+        extendedData['relationshipGoals'] = profile.relationshipGoals;
+      }
+      if (profile.height != null) {
+        extendedData['height'] = profile.height;
+      }
+      if (profile.religion != null && profile.religion!.isNotEmpty) {
+        extendedData['religion'] = profile.religion;
+      }
+      if (profile.politics != null && profile.politics!.isNotEmpty) {
+        extendedData['politics'] = profile.politics;
+      }
+      if (profile.drinking != null && profile.drinking!.isNotEmpty) {
+        extendedData['drinking'] = profile.drinking;
+      }
+      if (profile.smoking != null && profile.smoking!.isNotEmpty) {
+        extendedData['smoking'] = profile.smoking;
+      }
+      if (profile.drugs != null && profile.drugs!.isNotEmpty) {
+        extendedData['drugs'] = profile.drugs;
+      }
+      if (profile.children != null && profile.children!.isNotEmpty) {
+        extendedData['children'] = profile.children;
+      }
+      if (profile.languages.isNotEmpty) {
+        extendedData['languages'] = profile.languages;
+      }
+      if (profile.personalityTraits.isNotEmpty) {
+        extendedData['personalityTraits'] = profile.personalityTraits;
+      }
+      if (profile.promptQuestions.isNotEmpty) {
+        extendedData['promptQuestions'] = profile.promptQuestions;
+      }
+      if (profile.promptAnswers.isNotEmpty) {
+        extendedData['promptAnswers'] = profile.promptAnswers;
       }
       
       if (extendedData.isNotEmpty) {

@@ -29,6 +29,19 @@ class UserProfile extends Equatable {
     this.isOnline = false,
     this.lastSeen,
     this.verified = false,
+    // New profile fields from Prisma schema
+    this.lifestyleChoice,
+    this.relationshipGoals = const [],
+    this.religion,
+    this.politics,
+    this.drinking,
+    this.smoking,
+    this.drugs,
+    this.children,
+    this.languages = const [],
+    this.personalityTraits = const [],
+    this.promptQuestions = const [],
+    this.promptAnswers = const [],
   });
 
   final String id;
@@ -57,6 +70,21 @@ class UserProfile extends Equatable {
   final bool isOnline;
   final DateTime? lastSeen;
   final bool verified;
+
+  // New profile fields from Prisma schema
+  final String?
+  lifestyleChoice; // Single choice: active, relaxed, adventurous, etc.
+  final List<String> relationshipGoals; // dating, fun, companionship, etc.
+  final String? religion;
+  final String? politics;
+  final String? drinking; // never, occasionally, regularly, prefer-not-to-say
+  final String? smoking;
+  final String? drugs;
+  final String? children; // don't have/want, have/want more, etc.
+  final List<String> languages;
+  final List<String> personalityTraits;
+  final List<String> promptQuestions;
+  final List<String> promptAnswers;
 
   /// Get primary photo URL
   String get primaryPhotoUrl {
@@ -127,6 +155,19 @@ class UserProfile extends Equatable {
     bool? isOnline,
     DateTime? lastSeen,
     bool? verified,
+    // New profile fields
+    String? lifestyleChoice,
+    List<String>? relationshipGoals,
+    String? religion,
+    String? politics,
+    String? drinking,
+    String? smoking,
+    String? drugs,
+    String? children,
+    List<String>? languages,
+    List<String>? personalityTraits,
+    List<String>? promptQuestions,
+    List<String>? promptAnswers,
   }) {
     return UserProfile(
       id: id ?? this.id,
@@ -155,6 +196,19 @@ class UserProfile extends Equatable {
       isOnline: isOnline ?? this.isOnline,
       lastSeen: lastSeen ?? this.lastSeen,
       verified: verified ?? this.verified,
+      // New profile fields
+      lifestyleChoice: lifestyleChoice ?? this.lifestyleChoice,
+      relationshipGoals: relationshipGoals ?? this.relationshipGoals,
+      religion: religion ?? this.religion,
+      politics: politics ?? this.politics,
+      drinking: drinking ?? this.drinking,
+      smoking: smoking ?? this.smoking,
+      drugs: drugs ?? this.drugs,
+      children: children ?? this.children,
+      languages: languages ?? this.languages,
+      personalityTraits: personalityTraits ?? this.personalityTraits,
+      promptQuestions: promptQuestions ?? this.promptQuestions,
+      promptAnswers: promptAnswers ?? this.promptAnswers,
     );
   }
 
@@ -199,6 +253,23 @@ class UserProfile extends Equatable {
           ? DateTime.parse(json['lastSeen'] as String)
           : null,
       verified: json['verified'] as bool? ?? false,
+      // New profile fields
+      lifestyleChoice: json['lifestyleChoice'] as String?,
+      relationshipGoals:
+          (json['relationshipGoals'] as List<dynamic>?)?.cast<String>() ?? [],
+      religion: json['religion'] as String?,
+      politics: json['politics'] as String?,
+      drinking: json['drinking'] as String?,
+      smoking: json['smoking'] as String?,
+      drugs: json['drugs'] as String?,
+      children: json['children'] as String?,
+      languages: (json['languages'] as List<dynamic>?)?.cast<String>() ?? [],
+      personalityTraits:
+          (json['personalityTraits'] as List<dynamic>?)?.cast<String>() ?? [],
+      promptQuestions:
+          (json['promptQuestions'] as List<dynamic>?)?.cast<String>() ?? [],
+      promptAnswers:
+          (json['promptAnswers'] as List<dynamic>?)?.cast<String>() ?? [],
     );
   }
 
@@ -231,6 +302,19 @@ class UserProfile extends Equatable {
       'isOnline': isOnline,
       'lastSeen': lastSeen?.toIso8601String(),
       'verified': verified,
+      // New profile fields
+      'lifestyleChoice': lifestyleChoice,
+      'relationshipGoals': relationshipGoals,
+      'religion': religion,
+      'politics': politics,
+      'drinking': drinking,
+      'smoking': smoking,
+      'drugs': drugs,
+      'children': children,
+      'languages': languages,
+      'personalityTraits': personalityTraits,
+      'promptQuestions': promptQuestions,
+      'promptAnswers': promptAnswers,
     };
   }
 
@@ -262,6 +346,19 @@ class UserProfile extends Equatable {
     isOnline,
     lastSeen,
     verified,
+    // New profile fields
+    lifestyleChoice,
+    relationshipGoals,
+    religion,
+    politics,
+    drinking,
+    smoking,
+    drugs,
+    children,
+    languages,
+    personalityTraits,
+    promptQuestions,
+    promptAnswers,
       ];
 }
 
