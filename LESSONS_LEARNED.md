@@ -5,6 +5,87 @@ This document captures key learnings from building the **Flutter mobile dating a
 
 ---
 
+## 🎨 **Theme-Aware UI Colors & Backend Field Mapping (October 3, 2025)**
+
+**Context**: Fixed visibility issues in profile edit sections where white text on white background made content invisible in light mode.
+
+**Problem 1 - Incomplete Theme Fixes**: Initial fix only addressed section headings but missed child selection items (relationship goals, languages, etc.). User correctly pointed out "visibility improved but only for heading not for child items/selections".
+
+**Root Cause**: Hardcoded `Colors.white` and `Colors.white.withOpacity()` throughout selection items, not just headings. Pattern needed to be applied to:
+- Container backgrounds
+- Border colors  
+- Icon colors
+- Text colors
+- Disabled state colors
+
+**Solution - Complete Theme Awareness**:
+```dart
+// At top of build method - define all color variables
+final isDark = Theme.of(context).brightness == Brightness.dark;
+final containerColor = isDark 
+    ? Colors.white.withOpacity(0.05) 
+    : Colors.grey.shade50;
+final borderColor = isDark 
+    ? Colors.white.withOpacity(0.1) 
+    : Colors.grey.withOpacity(0.3);
+final textColor = Theme.of(context).textTheme.bodyLarge?.color ?? 
+    (isDark ? Colors.white : Colors.black87);
+
+// Apply to ALL UI elements, including child items
+decoration: BoxDecoration(
+  color: isSelected
+      ? PulseColors.secondary.withOpacity(0.2)
+      : isDisabled
+          ? (isDark ? Colors.white.withOpacity(0.02) : Colors.grey.shade100)
+          : containerColor,
+  border: Border.all(color: isSelected ? PulseColors.secondary : borderColor),
+),
+child: Text(
+  label,
+  style: TextStyle(
+    color: isSelected ? PulseColors.secondary : textColor,
+  ),
+),
+```
+
+**Problem 2 - Backend Field Mismatch**: Jobs saved successfully (200 OK) but didn't display because of field name mismatch between mobile and backend.
+
+**Root Cause**:
+- Backend Prisma schema: `occupation` (string), `education` (string)  
+- Mobile UserProfile entity: `job`, `company`, `school` (separate fields)
+- Service layer mapped on save: `job → occupation`, `school → education`
+- But parsing layer didn't map on load: `occupation → job`, `education → school`
+
+**Solution - Bidirectional Field Mapping**:
+1. **UserModel Fields**: Added `job`, `company`, `occupation`, `education` to UserModel
+2. **Save Mapping** (already existed):
+   ```dart
+   changedExtendedFields['occupation'] = profile.job;
+   changedExtendedFields['education'] = profile.school;
+   ```
+3. **Load Mapping** (ADDED):
+   ```dart
+   occupation: userData['profile']?['occupation'] ?? userData['occupation'],
+   job: userData['profile']?['occupation'] ?? userData['occupation'],
+   school: userData['profile']?['education'] ?? userData['education'],
+   ```
+
+**Learnings**:
+- **When fixing theme colors, check ALL child elements, not just headings** - users will correctly call out incomplete fixes
+- **Always implement bidirectional mapping** for backend/mobile field differences (save AND load)
+- **Hardcoded colors = visibility bugs** - use Theme system consistently throughout entire widget tree
+- **Test in both light AND dark modes** to catch hardcoded color issues
+- **User feedback is valuable** - "You are not being competent at this" = incomplete fix, need to address root cause thoroughly
+
+**Files Changed**:
+- `mobile/lib/presentation/widgets/profile/profile_relationship_goals_section.dart` - Fixed all child item colors
+- `mobile/lib/presentation/widgets/profile/profile_languages_section.dart` - Fixed all child item colors  
+- `mobile/lib/presentation/screens/profile/profile_edit_screen.dart` - Fixed form field label colors
+- `mobile/lib/data/models/user_model.dart` - Added occupation/education fields
+- `mobile/lib/data/services/profile_service.dart` - Added load-time field mapping
+
+---
+
 ## 📸 **Photo Upload & Profile Integration (October 3, 2025)**
 
 **Context**: Implemented end-to-end photo upload flow with temp storage, confirmation, and profile linking.

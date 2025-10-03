@@ -53,12 +53,25 @@ class ProfileLifestyleChoicesSection extends StatelessWidget {
   };
 
   Widget _buildChoiceSelector({
+    required BuildContext context,
     required String label,
     required String category,
     required String? value,
     required Function(String?) onChanged,
     required List<String> options,
   }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor =
+        Theme.of(context).textTheme.bodyLarge?.color ??
+        (isDark ? Colors.white : Colors.black87);
+    final subtitleColor = textColor.withValues(alpha: 0.7);
+    final containerColor = isDark
+        ? Colors.white.withValues(alpha: 0.05)
+        : Colors.grey.shade50; // Light grey for better contrast
+    final borderColor = isDark
+        ? Colors.white.withValues(alpha: 0.1)
+        : Colors.grey.withValues(alpha: 0.3);
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -67,7 +80,7 @@ class ProfileLifestyleChoicesSection extends StatelessWidget {
             Icon(
               categoryIcons[category],
               size: 18,
-              color: PulseColors.warning.withOpacity(0.8),
+              color: PulseColors.warning.withValues(alpha: 0.8),
             ),
             const SizedBox(width: 8),
             Text(
@@ -75,7 +88,7 @@ class ProfileLifestyleChoicesSection extends StatelessWidget {
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
-                color: Colors.white.withOpacity(0.9),
+                color: textColor,
               ),
             ),
           ],
@@ -97,13 +110,13 @@ class ProfileLifestyleChoicesSection extends StatelessWidget {
                 ),
                 decoration: BoxDecoration(
                   color: isSelected
-                      ? PulseColors.warning.withOpacity(0.2)
-                      : Colors.white.withOpacity(0.05),
+                      ? PulseColors.warning.withValues(alpha: 0.2)
+                      : containerColor,
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
                     color: isSelected
                         ? PulseColors.warning
-                        : Colors.white.withOpacity(0.1),
+                        : borderColor,
                     width: isSelected ? 1.5 : 1,
                   ),
                 ),
@@ -113,8 +126,7 @@ class ProfileLifestyleChoicesSection extends StatelessWidget {
                     fontSize: 13,
                     fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
                     color: isSelected
-                        ? Colors.white
-                        : Colors.white.withOpacity(0.7),
+                        ? PulseColors.warning : subtitleColor,
                   ),
                 ),
               ),
@@ -127,13 +139,25 @@ class ProfileLifestyleChoicesSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor =
+        Theme.of(context).textTheme.bodyLarge?.color ??
+        (isDark ? Colors.white : Colors.black87);
+    final subtitleColor = textColor.withValues(alpha: 0.6);
+    final containerColor = isDark
+        ? Colors.white.withValues(alpha: 0.05)
+        : Colors.grey.shade50; // Light grey background for better contrast
+    final borderColor = isDark
+        ? Colors.white.withValues(alpha: 0.1)
+        : Colors.grey.withValues(alpha: 0.3);
+    
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: containerColor,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: Colors.white.withOpacity(0.1),
+          color: borderColor,
           width: 1,
         ),
       ),
@@ -146,7 +170,7 @@ class ProfileLifestyleChoicesSection extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: PulseColors.warning.withOpacity(0.2),
+                  color: PulseColors.warning.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: const Icon(
@@ -162,10 +186,10 @@ class ProfileLifestyleChoicesSection extends StatelessWidget {
                   children: [
                     Text(
                       title,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                        color: textColor,
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -173,7 +197,7 @@ class ProfileLifestyleChoicesSection extends StatelessWidget {
                       subtitle,
                       style: TextStyle(
                         fontSize: 14,
-                        color: Colors.white.withOpacity(0.6),
+                        color: subtitleColor,
                       ),
                     ),
                   ],
@@ -185,6 +209,7 @@ class ProfileLifestyleChoicesSection extends StatelessWidget {
 
           // Drinking
           _buildChoiceSelector(
+            context: context,
             label: 'Drinking',
             category: 'drinking',
             value: drinking,
@@ -195,6 +220,7 @@ class ProfileLifestyleChoicesSection extends StatelessWidget {
 
           // Smoking
           _buildChoiceSelector(
+            context: context,
             label: 'Smoking',
             category: 'smoking',
             value: smoking,
@@ -205,6 +231,7 @@ class ProfileLifestyleChoicesSection extends StatelessWidget {
 
           // Drugs
           _buildChoiceSelector(
+            context: context,
             label: 'Drugs',
             category: 'drugs',
             value: drugs,
@@ -215,6 +242,7 @@ class ProfileLifestyleChoicesSection extends StatelessWidget {
 
           // Children
           _buildChoiceSelector(
+            context: context,
             label: 'Children',
             category: 'children',
             value: children,
@@ -227,7 +255,7 @@ class ProfileLifestyleChoicesSection extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: PulseColors.warning.withOpacity(0.1),
+              color: PulseColors.warning.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Row(
@@ -243,7 +271,7 @@ class ProfileLifestyleChoicesSection extends StatelessWidget {
                     'Being honest helps find compatible matches',
                     style: TextStyle(
                       fontSize: 12,
-                      color: Colors.white.withOpacity(0.7),
+                      color: Colors.white.withValues(alpha: 0.7),
                     ),
                   ),
                 ),

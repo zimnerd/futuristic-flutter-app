@@ -76,13 +76,24 @@ class ProfileRelationshipGoalsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final containerColor = isDark
+        ? Colors.white.withValues(alpha: 0.05)
+        : Colors.grey.shade50;
+    final borderColor = isDark
+        ? Colors.white.withValues(alpha: 0.1)
+        : Colors.grey.withValues(alpha: 0.3);
+    final textColor =
+        Theme.of(context).textTheme.bodyLarge?.color ??
+        (isDark ? Colors.white : Colors.black87);
+    
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: containerColor,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: Colors.white.withOpacity(0.1),
+          color: borderColor,
           width: 1,
         ),
       ),
@@ -95,7 +106,7 @@ class ProfileRelationshipGoalsSection extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: PulseColors.secondary.withOpacity(0.2),
+                  color: PulseColors.secondary.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: const Icon(
@@ -113,10 +124,10 @@ class ProfileRelationshipGoalsSection extends StatelessWidget {
                       children: [
                         Text(
                           title,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
-                            color: Colors.white,
+                            color: textColor,
                           ),
                         ),
                         if (maxSelections != null) ...[
@@ -127,7 +138,7 @@ class ProfileRelationshipGoalsSection extends StatelessWidget {
                               vertical: 2,
                             ),
                             decoration: BoxDecoration(
-                              color: PulseColors.secondary.withOpacity(0.2),
+                              color: PulseColors.secondary.withValues(alpha: 0.2),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Text(
@@ -147,7 +158,7 @@ class ProfileRelationshipGoalsSection extends StatelessWidget {
                       subtitle,
                       style: TextStyle(
                         fontSize: 14,
-                        color: Colors.white.withOpacity(0.6),
+                        color: textColor.withValues(alpha: 0.6),
                       ),
                     ),
                   ],
@@ -179,17 +190,23 @@ class ProfileRelationshipGoalsSection extends StatelessWidget {
                   ),
                   decoration: BoxDecoration(
                     color: isSelected
-                        ? PulseColors.secondary.withOpacity(0.2)
+                        ? PulseColors.secondary.withValues(alpha: 0.2)
                         : isDisabled
-                            ? Colors.white.withOpacity(0.02)
-                            : Colors.white.withOpacity(0.05),
+                        ? (isDark
+                              ? Colors.white.withValues(alpha: 0.02)
+                              : Colors.grey.shade100)
+                        : (isDark
+                              ? Colors.white.withValues(alpha: 0.05)
+                              : Colors.grey.shade50),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
                       color: isSelected
                           ? PulseColors.secondary
                           : isDisabled
-                              ? Colors.white.withOpacity(0.05)
-                              : Colors.white.withOpacity(0.1),
+                          ? (isDark
+                                ? Colors.white.withValues(alpha: 0.05)
+                                : Colors.grey.shade200)
+                          : borderColor,
                       width: isSelected ? 2 : 1,
                     ),
                   ),
@@ -201,8 +218,8 @@ class ProfileRelationshipGoalsSection extends StatelessWidget {
                         color: isSelected
                             ? PulseColors.secondary
                             : isDisabled
-                                ? Colors.white.withOpacity(0.3)
-                                : Colors.white.withOpacity(0.7),
+                                ? textColor.withValues(alpha: 0.3)
+                                : textColor.withValues(alpha: 0.7),
                         size: 20,
                       ),
                       const SizedBox(width: 8),
@@ -215,10 +232,10 @@ class ProfileRelationshipGoalsSection extends StatelessWidget {
                               fontSize: 14,
                               fontWeight: FontWeight.w600,
                               color: isSelected
-                                  ? Colors.white
+                                  ? (isDark ? Colors.white : Colors.black87)
                                   : isDisabled
-                                      ? Colors.white.withOpacity(0.4)
-                                      : Colors.white.withOpacity(0.8),
+                                      ? textColor.withValues(alpha: 0.4)
+                                      : textColor,
                             ),
                           ),
                           Text(
@@ -226,10 +243,10 @@ class ProfileRelationshipGoalsSection extends StatelessWidget {
                             style: TextStyle(
                               fontSize: 12,
                               color: isSelected
-                                  ? Colors.white.withOpacity(0.7)
+                                  ? textColor.withValues(alpha: 0.7)
                                   : isDisabled
-                                      ? Colors.white.withOpacity(0.3)
-                                      : Colors.white.withOpacity(0.5),
+                                      ? textColor.withValues(alpha: 0.3)
+                                      : textColor.withValues(alpha: 0.6),
                             ),
                           ),
                         ],
@@ -255,7 +272,7 @@ class ProfileRelationshipGoalsSection extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: PulseColors.secondary.withOpacity(0.1),
+                color: PulseColors.secondary.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Row(
@@ -273,7 +290,7 @@ class ProfileRelationshipGoalsSection extends StatelessWidget {
                           : 'Being clear about your goals helps find the right match',
                       style: TextStyle(
                         fontSize: 12,
-                        color: Colors.white.withOpacity(0.7),
+                        color: textColor.withValues(alpha: 0.7),
                       ),
                     ),
                   ),

@@ -62,13 +62,13 @@ class ProfileLifestyleSection extends StatelessWidget {
     final textColor =
         Theme.of(context).textTheme.bodyLarge?.color ??
         (isDark ? Colors.white : Colors.black87);
-    final subtitleColor = textColor.withOpacity(0.6);
+    final subtitleColor = textColor.withValues(alpha: 0.6);
     final containerColor = isDark
-        ? Colors.white.withOpacity(0.05)
-        : Colors.grey.withOpacity(0.05);
+        ? Colors.white.withValues(alpha: 0.05)
+        : Colors.grey.withValues(alpha: 0.05);
     final borderColor = isDark
-        ? Colors.white.withOpacity(0.1)
-        : Colors.grey.withOpacity(0.2);
+        ? Colors.white.withValues(alpha: 0.1)
+        : Colors.grey.withValues(alpha: 0.2);
     
     return Container(
       padding: const EdgeInsets.all(20),
@@ -89,7 +89,7 @@ class ProfileLifestyleSection extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: PulseColors.primary.withOpacity(0.2),
+                  color: PulseColors.primary.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: const Icon(
@@ -146,7 +146,7 @@ class ProfileLifestyleSection extends StatelessWidget {
                   ),
                   decoration: BoxDecoration(
                     color: isSelected
-                        ? PulseColors.primary.withOpacity(0.2)
+                        ? PulseColors.primary.withValues(alpha: 0.2)
                         : containerColor,
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
@@ -163,7 +163,7 @@ class ProfileLifestyleSection extends StatelessWidget {
                         option['icon'] as IconData,
                         color: isSelected
                             ? PulseColors.primary
-                            : textColor.withOpacity(0.7),
+                            : textColor.withValues(alpha: 0.7),
                         size: 20,
                       ),
                       const SizedBox(width: 8),
@@ -177,7 +177,7 @@ class ProfileLifestyleSection extends StatelessWidget {
                               fontWeight: FontWeight.w600,
                               color: isSelected
                                   ? textColor
-                                  : textColor.withOpacity(0.8),
+                                  : textColor.withValues(alpha: 0.8),
                             ),
                           ),
                           Text(
@@ -186,7 +186,7 @@ class ProfileLifestyleSection extends StatelessWidget {
                               fontSize: 12,
                               color: isSelected
                                   ? subtitleColor
-                                  : subtitleColor.withOpacity(0.8),
+                                  : subtitleColor.withValues(alpha: 0.8),
                             ),
                           ),
                         ],
@@ -204,7 +204,7 @@ class ProfileLifestyleSection extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: PulseColors.primary.withOpacity(0.1),
+                color: PulseColors.primary.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Row(

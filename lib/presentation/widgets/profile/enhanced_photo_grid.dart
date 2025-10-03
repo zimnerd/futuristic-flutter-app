@@ -9,6 +9,9 @@ import '../../../domain/entities/user_profile.dart';
 class EnhancedPhotoGrid extends StatefulWidget {
   final List<ProfilePhoto> photos;
   final Function(List<ProfilePhoto>) onPhotosChanged;
+  final Function(File)?
+  onPhotoUpload; // Callback to upload photo to temp storage
+  final Function(ProfilePhoto)? onPhotoDelete; // Callback to delete photo
   final int maxPhotos;
   final bool isEditing;
 
@@ -16,6 +19,8 @@ class EnhancedPhotoGrid extends StatefulWidget {
     super.key,
     required this.photos,
     required this.onPhotosChanged,
+    this.onPhotoUpload,
+    this.onPhotoDelete,
     this.maxPhotos = 6,
     this.isEditing = true,
   });
@@ -27,6 +32,7 @@ class EnhancedPhotoGrid extends StatefulWidget {
 class _EnhancedPhotoGridState extends State<EnhancedPhotoGrid> {
   final ImagePicker _picker = ImagePicker();
   List<ProfilePhoto> _photos = [];
+  bool _isUploading = false;
 
   @override
   void initState() {
@@ -57,31 +63,63 @@ class _EnhancedPhotoGridState extends State<EnhancedPhotoGrid> {
       );
 
       if (image != null) {
-        final newPhoto = ProfilePhoto(
-          id: DateTime.now().millisecondsSinceEpoch.toString(),
-          url: image.path, // Temporary local path
-          order: _photos.length,
-        );
+        final imageFile = File(image.path);
 
-        setState(() {
-          _photos.add(newPhoto);
-        });
-        widget.onPhotosChanged(_photos);
+        // If upload callback provided, trigger upload to temp storage
+        if (widget.onPhotoUpload != null) {
+          setState(() {
+            _isUploading = true;
+          });
+
+          try {
+            // Call parent to upload via BLoC (will return photo with mediaId)
+            await widget.onPhotoUpload!(imageFile);
+            // BLoC will update photos list via onPhotosChanged
+          } catch (uploadError) {
+            _showErrorDialog('Failed to upload photo: $uploadError');
+          } finally {
+            if (mounted) {
+              setState(() {
+                _isUploading = false;
+              });
+            }
+          }
+        } else {
+          // Fallback: just add local file path (old behavior)
+          final newPhoto = ProfilePhoto(
+            id: DateTime.now().millisecondsSinceEpoch.toString(),
+            url: image.path,
+            order: _photos.length,
+          );
+          setState(() {
+            _photos.add(newPhoto);
+          });
+          widget.onPhotosChanged(_photos);
+        }
       }
     } catch (e) {
-      _showErrorDialog('Failed to add photo: $e');
+      _showErrorDialog('Failed to select photo: $e');
     }
   }
 
   void _deletePhoto(int index) {
-    setState(() {
-      _photos.removeAt(index);
-      // Update order for remaining photos
-      for (int i = 0; i < _photos.length; i++) {
-        _photos[i] = _photos[i].copyWith(order: i);
-      }
-    });
-    widget.onPhotosChanged(_photos);
+    final photoToDelete = _photos[index];
+
+    // If delete callback provided, trigger proper deletion via BLoC
+    if (widget.onPhotoDelete != null) {
+      widget.onPhotoDelete!(photoToDelete);
+      // BLoC will update photos list via onPhotosChanged
+    } else {
+      // Fallback: just remove locally (old behavior)
+      setState(() {
+        _photos.removeAt(index);
+        // Update order for remaining photos
+        for (int i = 0; i < _photos.length; i++) {
+          _photos[i] = _photos[i].copyWith(order: i);
+        }
+      });
+      widget.onPhotosChanged(_photos);
+    }
   }
 
   void _setAsPrimary(int index) {
@@ -305,44 +343,64 @@ class _EnhancedPhotoGridState extends State<EnhancedPhotoGrid> {
   Widget _buildAddPhotoCard({Key? key}) {
     return InkWell(
       key: key,
-      onTap: _addPhoto,
+      onTap: _isUploading ? null : _addPhoto, // Disable during upload
       borderRadius: BorderRadius.circular(12),
       child: Container(
         decoration: BoxDecoration(
           color: Colors.grey[100],
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: Colors.grey[300]!,
+            color: _isUploading ? PulseColors.primary : Colors.grey[300]!,
             width: 2,
             style: BorderStyle.solid,
           ),
         ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: PulseColors.primary.withValues(alpha: 0.1),
-                shape: BoxShape.circle,
+        child: _isUploading
+            ? Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      PulseColors.primary,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    'Uploading...',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.grey[700],
+                    ),
+                  ),
+                ],
+              )
+            : Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: PulseColors.primary.withValues(alpha: 0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.add_a_photo,
+                      color: PulseColors.primary,
+                      size: 24,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    'Add Photo',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.grey[700],
+                    ),
+                  ),
+                ],
               ),
-              child: Icon(
-                Icons.add_a_photo,
-                color: PulseColors.primary,
-                size: 24,
-              ),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              'Add Photo',
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-                color: Colors.grey[700],
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }

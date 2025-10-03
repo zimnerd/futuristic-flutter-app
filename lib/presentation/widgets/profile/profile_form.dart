@@ -40,9 +40,9 @@ class ProfileForm extends StatelessWidget {
       children: [
         _buildBasicInfoSection(),
         const SizedBox(height: 24),
-        _buildAboutSection(),
+        _buildAboutSection(context),
         const SizedBox(height: 24),
-        _buildWorkEducationSection(),
+        _buildWorkEducationSection(context),
         const SizedBox(height: 24),
         _buildPreferencesSection(),
         const SizedBox(height: 24),
@@ -55,13 +55,18 @@ class ProfileForm extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Basic Information',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-            color: Colors.black87,
-          ),
+        Builder(
+          builder: (context) {
+            final isDark = Theme.of(context).brightness == Brightness.dark;
+            return Text(
+              'Basic Information',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: isDark ? Colors.white : Colors.black87,
+              ),
+            );
+          },
         ),
         const SizedBox(height: 16),
         _buildTextField(
@@ -112,16 +117,19 @@ class ProfileForm extends StatelessWidget {
     );
   }
 
-  Widget _buildAboutSection() {
+  Widget _buildAboutSection(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final headingColor = isDark ? Colors.white : Colors.black87;
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'About Me',
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.w600,
-            color: Colors.black87,
+            color: headingColor,
           ),
         ),
         const SizedBox(height: 16),
@@ -136,16 +144,19 @@ class ProfileForm extends StatelessWidget {
     );
   }
 
-  Widget _buildWorkEducationSection() {
+  Widget _buildWorkEducationSection(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final headingColor = isDark ? Colors.white : Colors.black87;
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'Work & Education',
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.w600,
-            color: Colors.black87,
+            color: headingColor,
           ),
         ),
         const SizedBox(height: 16),
@@ -171,25 +182,32 @@ class ProfileForm extends StatelessWidget {
   }
 
   Widget _buildPreferencesSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Dating Preferences',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-            color: Colors.black87,
-          ),
-        ),
-        const SizedBox(height: 16),
-        _buildDropdown<String>(
-          label: 'Looking for',
-          value: selectedPreference,
-          items: ['Men', 'Women', 'Everyone'],
-          onChanged: onPreferenceChanged,
-        ),
-      ],
+    return Builder(
+      builder: (context) {
+        final isDark = Theme.of(context).brightness == Brightness.dark;
+        final headingColor = isDark ? Colors.white : Colors.black87;
+        
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Dating Preferences',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: headingColor,
+              ),
+            ),
+            const SizedBox(height: 16),
+            _buildDropdown<String>(
+              label: 'Looking for',
+              value: selectedPreference,
+              items: ['Men', 'Women', 'Everyone'],
+              onChanged: onPreferenceChanged,
+            ),
+          ],
+        );
+      },
     );
   }
 

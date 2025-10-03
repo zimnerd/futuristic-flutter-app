@@ -1,5 +1,9 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
+import 'package:logger/logger.dart';
 
 import '../../blocs/profile/profile_bloc.dart';
 import '../../theme/pulse_colors.dart';
@@ -15,6 +19,9 @@ import '../../widgets/profile/profile_physical_attributes_section.dart';
 import '../../widgets/profile/profile_lifestyle_choices_section.dart';
 import '../../widgets/profile/profile_languages_section.dart';
 import '../../../domain/entities/user_profile.dart';
+
+// Logger instance for debugging
+final logger = Logger();
 
 /// Main profile editing screen with tabbed interface
 class ProfileEditScreen extends StatefulWidget {
@@ -146,9 +153,12 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
   }
 
   /// Handle adding new photo via BLoC event
-  void _handleAddPhoto(String photoPath) {
+  Future<void> _handleAddPhoto(File photoFile) async {
+    logger.i('📸 User selected photo: ${photoFile.path}');
+    logger.i('📤 Dispatching UploadPhoto event to BLoC');
     // Dispatch UploadPhoto event - PhotoManagerService will upload to temp storage
-    context.read<ProfileBloc>().add(UploadPhoto(photoPath: photoPath));
+    context.read<ProfileBloc>().add(UploadPhoto(photoPath: photoFile.path));
+    logger.i('✅ UploadPhoto event dispatched, waiting for BLoC response');
   }
 
   /// Handle deleting photo via BLoC event
@@ -367,7 +377,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
               color: Colors.white,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
+                  color: Colors.black.withValues(alpha: 0.05),
                   blurRadius: 4,
                   offset: const Offset(0, 2),
                 ),
@@ -397,13 +407,13 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
                     gradient: LinearGradient(
                       colors: [
                         PulseColors.primary,
-                        PulseColors.primary.withOpacity(0.8),
+                        PulseColors.primary.withValues(alpha: 0.8),
                       ],
                     ),
                     borderRadius: BorderRadius.circular(12),
                     boxShadow: [
                       BoxShadow(
-                        color: PulseColors.primary.withOpacity(0.3),
+                        color: PulseColors.primary.withValues(alpha: 0.3),
                         blurRadius: 8,
                         offset: const Offset(0, 2),
                       ),
@@ -468,19 +478,18 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
           // Handle photo upload success/error
           if (state.uploadStatus == ProfileStatus.success) {
             if (state.profile != null && state.profile!.photos.isNotEmpty) {
-              final latestPhotoUrl = state.profile!.photos.last.url;
-              if (!_photos.any((p) => p.url == latestPhotoUrl)) {
+              // Get the last uploaded photo from BLoC (has proper mediaId and temp URL)
+              final uploadedPhoto = state.profile!.photos.last;
+              if (!_photos.any((p) => p.id == uploadedPhoto.id)) {
                 setState(() {
-                  _tempPhotoUrls.add(latestPhotoUrl);
-                  _photos.add(ProfilePhoto(
-                    id: DateTime.now().millisecondsSinceEpoch.toString(),
-                    url: latestPhotoUrl,
-                    order: _photos.length,
-                  ));
+                  _tempPhotoUrls.add(uploadedPhoto.url);
+                  _photos.add(
+                    uploadedPhoto,
+                  ); // Use BLoC photo directly (has mediaId)
                 });
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
-                    content: Text('Photo uploaded (preview)'),
+                    content: Text('Photo uploaded successfully!'),
                     backgroundColor: PulseColors.success,
                     duration: Duration(seconds: 2),
                   ),
@@ -498,6 +507,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
           }
           
           if (state.updateStatus == ProfileStatus.success) {
+            logger.i('🎯 Profile update successful, navigating to /profile');
             // Show success message
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
@@ -505,10 +515,13 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
                 backgroundColor: PulseColors.success,
               ),
             );
-            // Navigate back and reload profile to reset state
-            Navigator.of(context).pop();
-            // Reload profile on the previous screen to clear success status
+            // Navigate explicitly to profile screen (not discover page)
+            logger.i('🚀 Executing context.go("/profile")');
+            context.go('/profile');
+            logger.i('✅ Navigation command sent');
+            // Reload profile to refresh display with new data
             Future.delayed(const Duration(milliseconds: 100), () {
+              logger.i('🔄 Reloading profile after navigation');
               context.read<ProfileBloc>().add(LoadProfile());
             });
           }
@@ -788,7 +801,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
               margin: const EdgeInsets.only(bottom: 16),
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.orange.withOpacity(0.1),
+                color: Colors.orange.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(color: Colors.orange, width: 1),
               ),
@@ -854,6 +867,8 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
                 _photos = photos;
               });
             },
+            onPhotoUpload: _handleAddPhoto,
+            onPhotoDelete: _handleDeletePhoto,
             maxPhotos: 6,
             isEditing: true,
           ),
@@ -1013,15 +1028,17 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
     TextInputType? keyboardType,
     String? Function(String?)? validator,
   }) {
+    final textColor =
+        Theme.of(context).textTheme.bodyLarge?.color ?? Colors.black87;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           label,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w600,
-            color: Colors.black87,
+            color: textColor,
           ),
         ),
         const SizedBox(height: 8),

@@ -163,12 +163,19 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
 
       _logger.i('📸 Temp photo uploaded: ${result.mediaId}');
       
+      // Build full URL from relative path
+      final fullUrl = result.url.startsWith('http')
+          ? result.url
+          : 'http://localhost:3000${result.url}';
+
+      _logger.i('🔗 Full photo URL: $fullUrl');
+      
       // Add to profile for preview (not confirmed yet)
       if (state.profile != null) {
         final updatedPhotos = List<ProfilePhoto>.from(state.profile!.photos)
           ..add(ProfilePhoto(
               id: result.mediaId,
-              url: result.url, // Temp URL for preview
+              url: fullUrl, // Full URL for preview
             order: state.profile!.photos.length,
           ));
         

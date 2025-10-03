@@ -82,7 +82,21 @@ class UserProfile {
         }
         return item.toString();
       }).where((name) => name.isNotEmpty).toList() ?? [],
-      photos: json['photos'] != null ? List<String>.from(json['photos']) : [],
+      photos:
+          (json['photos'] as List?)
+              ?.map((photo) {
+                // Handle new nested structure: {id, url, ...}
+                if (photo is String)
+                  return photo; // Backward compatibility with URLs
+                if (photo is Map<String, dynamic>) {
+                  // Extract url from photo object
+                  return photo['url'] as String? ?? '';
+                }
+                return photo.toString();
+              })
+              .where((url) => url.isNotEmpty)
+              .toList() ??
+          [],
       preferences: json['preferences'],
       personality: json['personality'] != null ? ProfilePersonality.fromJson(json['personality']) : null,
       lifestyle: json['lifestyle'] != null ? List<String>.from(json['lifestyle']) : [],

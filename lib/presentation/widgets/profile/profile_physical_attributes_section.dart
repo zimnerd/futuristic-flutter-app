@@ -60,10 +60,10 @@ class ProfilePhysicalAttributesSection extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: Colors.white.withOpacity(0.1),
+          color: Colors.white.withValues(alpha: 0.1),
           width: 1,
         ),
       ),
@@ -76,7 +76,7 @@ class ProfilePhysicalAttributesSection extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: PulseColors.success.withOpacity(0.2),
+                  color: PulseColors.success.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: const Icon(
@@ -103,7 +103,7 @@ class ProfilePhysicalAttributesSection extends StatelessWidget {
                       subtitle,
                       style: TextStyle(
                         fontSize: 14,
-                        color: Colors.white.withOpacity(0.6),
+                        color: Colors.white.withValues(alpha: 0.6),
                       ),
                     ),
                   ],
@@ -125,7 +125,7 @@ class ProfilePhysicalAttributesSection extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
-                      color: Colors.white.withOpacity(0.9),
+                      color: Colors.white.withValues(alpha: 0.9),
                     ),
                   ),
                   if (height != null)
@@ -135,7 +135,7 @@ class ProfilePhysicalAttributesSection extends StatelessWidget {
                         vertical: 4,
                       ),
                       decoration: BoxDecoration(
-                        color: PulseColors.success.withOpacity(0.2),
+                        color: PulseColors.success.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(
@@ -153,9 +153,9 @@ class ProfilePhysicalAttributesSection extends StatelessWidget {
               SliderTheme(
                 data: SliderTheme.of(context).copyWith(
                   activeTrackColor: PulseColors.success,
-                  inactiveTrackColor: Colors.white.withOpacity(0.1),
+                  inactiveTrackColor: Colors.white.withValues(alpha: 0.1),
                   thumbColor: PulseColors.success,
-                  overlayColor: PulseColors.success.withOpacity(0.2),
+                  overlayColor: PulseColors.success.withValues(alpha: 0.2),
                   trackHeight: 4,
                   thumbShape: const RoundSliderThumbShape(
                     enabledThumbRadius: 8,
@@ -182,19 +182,19 @@ class ProfilePhysicalAttributesSection extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
-                  color: Colors.white.withOpacity(0.9),
+                  color: Colors.white.withValues(alpha: 0.9),
                 ),
               ),
               const SizedBox(height: 8),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.05),
+                  color: Colors.white.withValues(alpha: 0.05),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
                     color: religion != null
-                        ? PulseColors.success.withOpacity(0.5)
-                        : Colors.white.withOpacity(0.1),
+                        ? PulseColors.success.withValues(alpha: 0.5)
+                        : Colors.white.withValues(alpha: 0.1),
                     width: 1,
                   ),
                 ),
@@ -205,7 +205,7 @@ class ProfilePhysicalAttributesSection extends StatelessWidget {
                     hint: Text(
                       'Select your religion',
                       style: TextStyle(
-                        color: Colors.white.withOpacity(0.5),
+                        color: Colors.white.withValues(alpha: 0.5),
                         fontSize: 14,
                       ),
                     ),
@@ -216,7 +216,7 @@ class ProfilePhysicalAttributesSection extends StatelessWidget {
                     ),
                     icon: Icon(
                       Icons.arrow_drop_down,
-                      color: Colors.white.withOpacity(0.7),
+                      color: Colors.white.withValues(alpha: 0.7),
                     ),
                     items: [
                       const DropdownMenuItem<String>(
@@ -253,19 +253,19 @@ class ProfilePhysicalAttributesSection extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
-                  color: Colors.white.withOpacity(0.9),
+                  color: Colors.white.withValues(alpha: 0.9),
                 ),
               ),
               const SizedBox(height: 8),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.05),
+                  color: Colors.white.withValues(alpha: 0.05),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
                     color: politics != null
-                        ? PulseColors.success.withOpacity(0.5)
-                        : Colors.white.withOpacity(0.1),
+                        ? PulseColors.success.withValues(alpha: 0.5)
+                        : Colors.white.withValues(alpha: 0.1),
                     width: 1,
                   ),
                 ),
@@ -276,7 +276,7 @@ class ProfilePhysicalAttributesSection extends StatelessWidget {
                     hint: Text(
                       'Select your political views',
                       style: TextStyle(
-                        color: Colors.white.withOpacity(0.5),
+                        color: Colors.white.withValues(alpha: 0.5),
                         fontSize: 14,
                       ),
                     ),
@@ -287,7 +287,7 @@ class ProfilePhysicalAttributesSection extends StatelessWidget {
                     ),
                     icon: Icon(
                       Icons.arrow_drop_down,
-                      color: Colors.white.withOpacity(0.7),
+                      color: Colors.white.withValues(alpha: 0.7),
                     ),
                     items: [
                       const DropdownMenuItem<String>(
@@ -319,7 +319,7 @@ class ProfilePhysicalAttributesSection extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: PulseColors.success.withOpacity(0.1),
+              color: PulseColors.success.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Row(
@@ -327,7 +327,7 @@ class ProfilePhysicalAttributesSection extends StatelessWidget {
                 Icon(
                   Icons.lock_outline,
                   size: 16,
-                  color: Colors.white.withOpacity(0.7),
+                  color: Colors.white.withValues(alpha: 0.7),
                 ),
                 const SizedBox(width: 8),
                 Expanded(
@@ -335,7 +335,7 @@ class ProfilePhysicalAttributesSection extends StatelessWidget {
                     'This information is optional and helps find compatible matches',
                     style: TextStyle(
                       fontSize: 12,
-                      color: Colors.white.withOpacity(0.7),
+                      color: Colors.white.withValues(alpha: 0.7),
                     ),
                   ),
                 ),

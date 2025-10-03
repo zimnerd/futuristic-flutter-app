@@ -129,8 +129,32 @@ class AiUserProfileData extends Equatable {
       name: json['name'],
       age: json['age'],
       bio: json['bio'],
-      interests: List<String>.from(json['interests'] ?? []),
-      photos: List<String>.from(json['photos'] ?? []),
+      interests:
+          (json['interests'] as List?)
+              ?.map((item) {
+                // Handle new nested structure: {id, interest: {id, name}}
+                if (item is String) return item; // Backward compatibility
+                if (item is Map<String, dynamic>) {
+                  return item['interest']?['name'] as String? ?? '';
+                }
+                return item.toString();
+              })
+              .where((name) => name.isNotEmpty)
+              .toList() ??
+          [],
+      photos:
+          (json['photos'] as List?)
+              ?.map((photo) {
+                // Handle new nested structure: {id, url, ...}
+                if (photo is String) return photo; // Backward compatibility
+                if (photo is Map<String, dynamic>) {
+                  return photo['url'] as String? ?? '';
+                }
+                return photo.toString();
+              })
+              .where((url) => url.isNotEmpty)
+              .toList() ??
+          [],
       preferences: json['preferences'],
       personality: json['personality'],
     );

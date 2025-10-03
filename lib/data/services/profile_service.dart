@@ -137,6 +137,23 @@ class ProfileService {
     final locationStr = userData['location'] as String?;
     final location = _parseLocation(locationStr ?? '');
 
+    // Extract interests with nested structure support
+    final interestsList = userData['interests'] as List<dynamic>?;
+    final interests =
+        interestsList
+            ?.map((item) {
+              // Handle string format (legacy)
+              if (item is String) return item;
+              // Handle nested object format (new API structure)
+              if (item is Map<String, dynamic>) {
+                return item['interest']?['name'] as String? ?? '';
+              }
+              return item.toString();
+            })
+            .where((name) => name.isNotEmpty)
+            .toList() ??
+        [];
+
     return domain.UserProfile(
       id: userData['id'] as String? ?? '',
       name: name,
@@ -148,13 +165,25 @@ class ProfileService {
       location: location,
       isVerified: userData['verified'] as bool? ?? false,
       verified: userData['verified'] as bool? ?? false,
-      interests:
-          (userData['interests'] as List<dynamic>?)?.cast<String>() ?? [],
+      interests: interests,
       gender: userData['gender'] as String?,
       lastActiveAt: userData['lastActive'] != null
           ? DateTime.parse(userData['lastActive'] as String)
           : null,
       isOnline: userData['isOnline'] as bool? ?? false,
+      // Extract extended profile fields from nested profile object or root level
+      occupation:
+          userData['profile']?['occupation'] as String? ??
+          userData['occupation'] as String?,
+      job:
+          userData['profile']?['occupation'] as String? ??
+          userData['occupation'] as String?,
+      company:
+          userData['profile']?['company'] as String? ??
+          userData['company'] as String?,
+      school:
+          userData['profile']?['education'] as String? ??
+          userData['education'] as String?,
     );
   }
 
@@ -277,16 +306,30 @@ class ProfileService {
         // - job → occupation (backend field name)
         // - school → education (backend field name)
         // - company → not in schema (store in occupation if needed)
+        _logger.d(
+          '🔍 Checking job field: "${profile.job}" vs "${originalProfile.job}"',
+        );
         if (profile.job != originalProfile.job && profile.job != null) {
+          _logger.i('✅ Job changed, adding to changedExtendedFields');
           changedExtendedFields['occupation'] = profile.job;
         }
+        
+        _logger.d(
+          '🔍 Checking school field: "${profile.school}" vs "${originalProfile.school}"',
+        );
         if (profile.school != originalProfile.school &&
             profile.school != null) {
+          _logger.i('✅ School changed, adding to changedExtendedFields');
           changedExtendedFields['education'] = profile.school;
         }
+        
+        _logger.d(
+          '🔍 Checking company field: "${profile.company}" vs "${originalProfile.company}"',
+        );
         // Note: 'company' field not in backend Profile schema - combining with occupation if present
         if (profile.company != originalProfile.company &&
             profile.company != null) {
+          _logger.i('✅ Company changed, combining with occupation');
           // Optionally combine company with occupation: "Job Title at Company"
           final occupation = profile.job ?? '';
           if (occupation.isNotEmpty) {
@@ -388,6 +431,7 @@ class ProfileService {
         _logger.i(
           '📤 Sending extended profile update: ${changedExtendedFields.keys}',
         );
+        _logger.d('📋 Extended fields data: $changedExtendedFields');
         final response = await _apiClient.put(
           '/users/me/profile',
           data: changedExtendedFields,
@@ -395,6 +439,7 @@ class ProfileService {
         if (response.statusCode != 200) {
           throw NetworkException('Failed to update extended profile');
         }
+        _logger.i('✅ Extended profile update response: ${response.statusCode}');
       } else {
         _logger.i('ℹ️ No extended profile fields changed');
       }

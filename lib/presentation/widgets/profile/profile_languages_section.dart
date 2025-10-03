@@ -59,13 +59,24 @@ class ProfileLanguagesSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final containerColor = isDark
+        ? Colors.white.withValues(alpha: 0.05)
+        : Colors.grey.shade50;
+    final borderColor = isDark
+        ? Colors.white.withValues(alpha: 0.1)
+        : Colors.grey.withValues(alpha: 0.3);
+    final textColor =
+        Theme.of(context).textTheme.bodyLarge?.color ??
+        (isDark ? Colors.white : Colors.black87);
+    
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: containerColor,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: Colors.white.withOpacity(0.1),
+          color: borderColor,
           width: 1,
         ),
       ),
@@ -78,7 +89,7 @@ class ProfileLanguagesSection extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: PulseColors.secondary.withOpacity(0.2),
+                  color: PulseColors.secondary.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: const Icon(
@@ -96,10 +107,10 @@ class ProfileLanguagesSection extends StatelessWidget {
                       children: [
                         Text(
                           title,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
-                            color: Colors.white,
+                            color: textColor,
                           ),
                         ),
                         if (selectedLanguages.isNotEmpty) ...[
@@ -110,7 +121,7 @@ class ProfileLanguagesSection extends StatelessWidget {
                               vertical: 2,
                             ),
                             decoration: BoxDecoration(
-                              color: PulseColors.secondary.withOpacity(0.2),
+                              color: PulseColors.secondary.withValues(alpha: 0.2),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Text(
@@ -132,7 +143,7 @@ class ProfileLanguagesSection extends StatelessWidget {
                       subtitle,
                       style: TextStyle(
                         fontSize: 14,
-                        color: Colors.white.withOpacity(0.6),
+                        color: textColor.withValues(alpha: 0.6),
                       ),
                     ),
                   ],
@@ -166,17 +177,23 @@ class ProfileLanguagesSection extends StatelessWidget {
                   ),
                   decoration: BoxDecoration(
                     color: isSelected
-                        ? PulseColors.secondary.withOpacity(0.2)
+                        ? PulseColors.secondary.withValues(alpha: 0.2)
                         : isDisabled
-                            ? Colors.white.withOpacity(0.02)
-                            : Colors.white.withOpacity(0.05),
+                        ? (isDark
+                              ? Colors.white.withValues(alpha: 0.02)
+                              : Colors.grey.shade100)
+                        : (isDark
+                              ? Colors.white.withValues(alpha: 0.05)
+                              : Colors.grey.shade50),
                     borderRadius: BorderRadius.circular(10),
                     border: Border.all(
                       color: isSelected
                           ? PulseColors.secondary
                           : isDisabled
-                              ? Colors.white.withOpacity(0.05)
-                              : Colors.white.withOpacity(0.1),
+                          ? (isDark
+                                ? Colors.white.withValues(alpha: 0.05)
+                                : Colors.grey.shade200)
+                          : borderColor,
                       width: isSelected ? 1.5 : 1,
                     ),
                   ),
@@ -188,8 +205,8 @@ class ProfileLanguagesSection extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 16,
                           color: isDisabled
-                              ? Colors.white.withOpacity(0.3)
-                              : Colors.white,
+                              ? textColor.withValues(alpha: 0.3)
+                              : textColor,
                         ),
                       ),
                       const SizedBox(width: 6),
@@ -199,10 +216,10 @@ class ProfileLanguagesSection extends StatelessWidget {
                           fontSize: 13,
                           fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
                           color: isSelected
-                              ? Colors.white
+                              ? textColor
                               : isDisabled
-                                  ? Colors.white.withOpacity(0.4)
-                                  : Colors.white.withOpacity(0.8),
+                              ? textColor.withValues(alpha: 0.4)
+                              : textColor.withValues(alpha: 0.8),
                         ),
                       ),
                       if (isSelected) ...[
@@ -226,7 +243,7 @@ class ProfileLanguagesSection extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: PulseColors.secondary.withOpacity(0.1),
+                color: PulseColors.secondary.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Row(
@@ -244,7 +261,7 @@ class ProfileLanguagesSection extends StatelessWidget {
                           : 'Speaking multiple languages expands your potential matches',
                       style: TextStyle(
                         fontSize: 12,
-                        color: Colors.white.withOpacity(0.7),
+                        color: Colors.white.withValues(alpha: 0.7),
                       ),
                     ),
                   ),

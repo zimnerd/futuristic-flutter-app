@@ -134,7 +134,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                         end: Alignment.bottomCenter,
                         colors: [
                           Colors.transparent,
-                          Colors.black.withOpacity(0.7),
+                          Colors.black.withValues(alpha: 0.7),
                         ],
                       ),
                     ),
@@ -182,13 +182,13 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            Theme.of(context).primaryColor.withOpacity(0.1),
-            Theme.of(context).primaryColor.withOpacity(0.05),
+            Theme.of(context).primaryColor.withValues(alpha: 0.1),
+            Theme.of(context).primaryColor.withValues(alpha: 0.05),
           ],
         ),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: Theme.of(context).primaryColor.withOpacity(0.2),
+          color: Theme.of(context).primaryColor.withValues(alpha: 0.2),
           width: 1,
         ),
       ),
@@ -333,7 +333,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -420,7 +420,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
         Container(
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
-            color: iconColor.withOpacity(0.1),
+            color: iconColor.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(10),
           ),
           child: Icon(icon,
@@ -535,7 +535,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                     borderRadius: BorderRadius.circular(16),
                   ),
                   side: BorderSide(
-                    color: Theme.of(context).primaryColor.withOpacity(0.3),
+                    color: Theme.of(context).primaryColor.withValues(alpha: 0.3),
                   ),
                 ),
                 icon: Icon(
@@ -561,7 +561,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
                   ),
-                  side: BorderSide(color: Colors.red.withOpacity(0.3)),
+                  side: BorderSide(color: Colors.red.withValues(alpha: 0.3)),
                 ),
                 icon: const Icon(Icons.flag, size: 18, color: Colors.red),
                 label: const Text(

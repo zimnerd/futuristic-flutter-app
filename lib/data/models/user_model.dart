@@ -7,6 +7,10 @@ class UserModel {
   final String? firstName;
   final String? lastName;
   final String? bio;
+  final String? job;
+  final String? company;
+  final String? occupation;
+  final String? education;
   final List<String> interests;
   final int? age;
   final String? gender;
@@ -33,6 +37,10 @@ class UserModel {
     this.firstName,
     this.lastName,
     this.bio,
+    this.job,
+    this.company,
+    this.occupation,
+    this.education,
     this.interests = const [],
     this.age,
     this.gender,
@@ -61,6 +69,10 @@ class UserModel {
       firstName: json['firstName'],
       lastName: json['lastName'],
       bio: json['bio'],
+      job: json['job'],
+      company: json['company'],
+      occupation: json['occupation'],
+      education: json['education'],
       interests: (json['interests'] as List?)?.map((item) {
         // Handle new nested structure: {id, interest: {id, name}}
         if (item is String) return item; // Backward compatibility
@@ -111,6 +123,10 @@ class UserModel {
       'firstName': firstName,
       'lastName': lastName,
       'bio': bio,
+      'job': job,
+      'company': company,
+      'occupation': occupation,
+      'education': education,
       'interests': interests,
       'age': age,
       'gender': gender,
@@ -138,6 +154,10 @@ class UserModel {
     String? firstName,
     String? lastName,
     String? bio,
+    String? job,
+    String? company,
+    String? occupation,
+    String? education,
     List<String>? interests,
     int? age,
     String? gender,
@@ -163,6 +183,10 @@ class UserModel {
       firstName: firstName ?? this.firstName,
       lastName: lastName ?? this.lastName,
       bio: bio ?? this.bio,
+      job: job ?? this.job,
+      company: company ?? this.company,
+      occupation: occupation ?? this.occupation,
+      education: education ?? this.education,
       interests: interests ?? this.interests,
       age: age ?? this.age,
       gender: gender ?? this.gender,
