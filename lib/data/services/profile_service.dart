@@ -200,6 +200,10 @@ class ProfileService {
   }
 
   /// Update profile using a UserProfile object (wrapper for BLoC compatibility)
+  /// 
+  /// NOTE: Currently sends all fields from the profile object, even unchanged ones.
+  /// The backend handles this gracefully (e.g., DOB counter only increments if value changes).
+  /// Future optimization: Track changed fields in UI and only send delta.
   Future<domain.UserProfile> updateProfile(domain.UserProfile profile) async {
     _logger.i('🔄 Starting profile update for user: ${profile.id}');
 
@@ -213,6 +217,7 @@ class ProfileService {
       );
 
       // Update extended profile info if needed (interests, job, company, school, gender, lookingFor)
+      // NOTE: bio and location are handled by /users/me endpoint above, not by /users/me/profile
       final hasExtendedData = profile.interests.isNotEmpty ||
           profile.job != null ||
           profile.company != null ||
@@ -223,13 +228,14 @@ class ProfileService {
       if (hasExtendedData) {
         await updateProfileWithDetails(
           userId: profile.id,
-          bio: profile.bio,
+          bio: null, // Don't send bio here - already handled by /users/me
           interests: profile.interests.isNotEmpty ? profile.interests : null,
           dealBreakers: profile.lifestyle['dealBreakers'] as List<String>?,
           preferences: profile.preferences.isNotEmpty 
               ? _convertPreferences(profile.preferences) 
               : null,
-          location: _convertLocation(profile.location),
+          location:
+              null, // Don't send location here - already handled by /users/me
         );
       }
 
@@ -270,8 +276,12 @@ class ProfileService {
       }
 
       if (dateOfBirth != null) {
-        // Convert to UTC and ensure proper ISO-8601 format with timezone (Z)
-        data['dateOfBirth'] = dateOfBirth.toUtc().toIso8601String();
+        // Convert to date-only format (YYYY-MM-DD) without time component
+        // This prevents time zone issues and matches backend expectations
+        final year = dateOfBirth.year.toString().padLeft(4, '0');
+        final month = dateOfBirth.month.toString().padLeft(2, '0');
+        final day = dateOfBirth.day.toString().padLeft(2, '0');
+        data['dateOfBirth'] = '$year-$month-$day';
       }
       if (bio != null && bio.isNotEmpty) data['bio'] = bio;
 
@@ -320,7 +330,7 @@ class ProfileService {
       final response = await _apiClient.put('/users/me/profile', data: data);
       
       if (response.statusCode == 200) {
-        final profile = UserProfile.fromJson(response.data['profile']);
+        final profile = UserProfile.fromJson(response.data['data']);
         _logger.i('✅ Profile updated successfully');
         return profile;
       } else {
