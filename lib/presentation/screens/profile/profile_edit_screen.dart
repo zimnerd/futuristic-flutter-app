@@ -9,17 +9,22 @@ import '../../widgets/profile/profile_completion_card.dart';
 import '../../widgets/profile/profile_privacy_settings.dart';
 import '../../widgets/profile/profile_preview.dart';
 import '../../widgets/profile/interests_selector.dart';
+import '../../widgets/profile/profile_lifestyle_section.dart';
+import '../../widgets/profile/profile_relationship_goals_section.dart';
+import '../../widgets/profile/profile_physical_attributes_section.dart';
+import '../../widgets/profile/profile_lifestyle_choices_section.dart';
+import '../../widgets/profile/profile_languages_section.dart';
 import '../../../domain/entities/user_profile.dart';
 
-/// Enhanced profile editing screen with all new features
-class EnhancedProfileEditScreen extends StatefulWidget {
-  const EnhancedProfileEditScreen({super.key});
+/// Main profile editing screen with tabbed interface
+class ProfileEditScreen extends StatefulWidget {
+  const ProfileEditScreen({super.key});
 
   @override
-  State<EnhancedProfileEditScreen> createState() => _EnhancedProfileEditScreenState();
+  State<ProfileEditScreen> createState() => _ProfileEditScreenState();
 }
 
-class _EnhancedProfileEditScreenState extends State<EnhancedProfileEditScreen>
+class _ProfileEditScreenState extends State<ProfileEditScreen>
     with TickerProviderStateMixin {
   late TabController _tabController;
   final _formKey = GlobalKey<FormState>();
@@ -28,12 +33,12 @@ class _EnhancedProfileEditScreenState extends State<EnhancedProfileEditScreen>
   // Form controllers
   final _nameController = TextEditingController();
   final _bioController = TextEditingController();
-  final _ageController = TextEditingController();
   final _jobController = TextEditingController();
   final _companyController = TextEditingController();
   final _schoolController = TextEditingController();
 
   // Profile data
+  DateTime? _dateOfBirth;
   List<String> _selectedInterests = [];
   String _selectedGender = 'Woman';
   String _selectedPreference = 'Men';
@@ -50,15 +55,31 @@ class _EnhancedProfileEditScreenState extends State<EnhancedProfileEditScreen>
 
   UserProfile? _currentProfile;
   int _currentPageIndex = 0;
+  bool _isProfileCompletionExpanded = false; // Collapsed by default
+
+  // Track dirty fields for delta updates
+  final Set<String> _dirtyFields = {};
   
   // Temp upload tracking for PhotoManagerService integration
   final List<String> _tempPhotoUrls = [];
   final Set<String> _photosMarkedForDeletion = {};
 
+  // New profile fields state
+  String? _selectedLifestyle;
+  List<String> _selectedRelationshipGoals = [];
+  int? _selectedHeight; // No default - use real data or leave empty
+  String? _selectedReligion;
+  String? _selectedPolitics;
+  String? _selectedDrinking;
+  String? _selectedSmoking;
+  String? _selectedDrugs;
+  String? _selectedChildren;
+  List<String> _selectedLanguages = [];
+
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 4, vsync: this);
+    _tabController = TabController(length: 5, vsync: this);
     context.read<ProfileBloc>().add(LoadProfile());
   }
 
@@ -68,7 +89,6 @@ class _EnhancedProfileEditScreenState extends State<EnhancedProfileEditScreen>
     _pageController.dispose();
     _nameController.dispose();
     _bioController.dispose();
-    _ageController.dispose();
     _jobController.dispose();
     _companyController.dispose();
     _schoolController.dispose();
@@ -78,14 +98,51 @@ class _EnhancedProfileEditScreenState extends State<EnhancedProfileEditScreen>
   void _populateFields(UserProfile profile) {
     _nameController.text = profile.name;
     _bioController.text = profile.bio;
-    _ageController.text = profile.age.toString();
+    _dateOfBirth = profile.dateOfBirth;
     _jobController.text = profile.job ?? '';
     _companyController.text = profile.company ?? '';
     _schoolController.text = profile.school ?? '';
     _selectedInterests = List.from(profile.interests);
-    _selectedGender = profile.gender ?? 'Woman';
+    
+    // Normalize gender from backend format (MALE/FEMALE) to UI format (Man/Woman)
+    _selectedGender = _normalizeGender(profile.gender) ?? 'Woman';
     _photos = List.from(profile.photos);
+    
+    // Populate new profile fields
+    _selectedLifestyle = profile.lifestyleChoice;
+    _selectedRelationshipGoals = List.from(profile.relationshipGoals);
+    _selectedHeight = profile.height; // Use real data only
+    _selectedReligion = profile.religion;
+    _selectedPolitics = profile.politics;
+    _selectedDrinking = profile.drinking;
+    _selectedSmoking = profile.smoking;
+    _selectedDrugs = profile.drugs;
+    _selectedChildren = profile.children;
+    _selectedLanguages = List.from(profile.languages);
+    
     _currentProfile = profile;
+  }
+  
+  /// Normalize gender from backend format to UI format
+  String? _normalizeGender(String? backendGender) {
+    if (backendGender == null) return null;
+
+    switch (backendGender.toUpperCase()) {
+      case 'MALE':
+      case 'MAN':
+        return 'Man';
+      case 'FEMALE':
+      case 'WOMAN':
+        return 'Woman';
+      case 'NON-BINARY':
+      case 'NON_BINARY':
+      case 'NONBINARY':
+        return 'Non-binary';
+      case 'OTHER':
+        return 'Other';
+      default:
+        return backendGender; // Return as-is if already in correct format
+    }
   }
 
   /// Handle adding new photo via BLoC event
@@ -123,7 +180,11 @@ class _EnhancedProfileEditScreenState extends State<EnhancedProfileEditScreen>
         id: _currentProfile?.id ?? 'current_user_id',
         name: _nameController.text.trim(),
         bio: _bioController.text.trim(),
-        age: int.tryParse(_ageController.text) ?? 18,
+        age: _calculateAge(
+          _dateOfBirth ??
+              DateTime.now().subtract(const Duration(days: 365 * 25)),
+        ),
+        dateOfBirth: _dateOfBirth,
         photos: _photos,
         interests: _selectedInterests,
         location: _currentProfile?.location ?? UserLocation(
@@ -131,7 +192,7 @@ class _EnhancedProfileEditScreenState extends State<EnhancedProfileEditScreen>
           longitude: 0.0,
           city: 'Current City',
         ),
-        gender: _selectedGender,
+        gender: _convertGenderToBackendFormat(_selectedGender),
         job: _jobController.text.trim(),
         company: _companyController.text.trim(),
         school: _schoolController.text.trim(),
@@ -139,10 +200,50 @@ class _EnhancedProfileEditScreenState extends State<EnhancedProfileEditScreen>
         isOnline: true,
         lastSeen: DateTime.now(),
         verified: _currentProfile?.verified ?? false,
+        // New lifestyle fields
+        lifestyleChoice: _selectedLifestyle,
+        relationshipGoals: _selectedRelationshipGoals,
+        height: _selectedHeight,
+        religion: _selectedReligion,
+        politics: _selectedPolitics,
+        drinking: _selectedDrinking,
+        smoking: _selectedSmoking,
+        drugs: _selectedDrugs,
+        children: _selectedChildren,
+        languages: _selectedLanguages,
       );
 
       context.read<ProfileBloc>().add(UpdateProfile(profile: updatedProfile));
     }
+  }
+  
+  /// Convert UI gender format back to backend format
+  String? _convertGenderToBackendFormat(String? uiGender) {
+    if (uiGender == null) return null;
+
+    switch (uiGender) {
+      case 'Man':
+        return 'MALE';
+      case 'Woman':
+        return 'FEMALE';
+      case 'Non-binary':
+        return 'NON_BINARY';
+      case 'Other':
+        return 'OTHER';
+      default:
+        return uiGender; // Return as-is if unknown format
+    }
+  }
+
+  /// Calculate age from date of birth
+  int _calculateAge(DateTime dateOfBirth) {
+    final now = DateTime.now();
+    int age = now.year - dateOfBirth.year;
+    if (now.month < dateOfBirth.month ||
+        (now.month == dateOfBirth.month && now.day < dateOfBirth.day)) {
+      age--;
+    }
+    return age;
   }
 
   void _showPreview() {
@@ -164,7 +265,10 @@ class _EnhancedProfileEditScreenState extends State<EnhancedProfileEditScreen>
       id: _currentProfile?.id ?? 'preview',
       name: _nameController.text.trim().isEmpty ? 'Your Name' : _nameController.text.trim(),
       bio: _bioController.text.trim().isEmpty ? 'Your bio will appear here...' : _bioController.text.trim(),
-      age: int.tryParse(_ageController.text) ?? 25,
+      age: _calculateAge(
+        _dateOfBirth ?? DateTime.now().subtract(const Duration(days: 365 * 25)),
+      ),
+      dateOfBirth: _dateOfBirth,
       photos: _photos.isEmpty ? [
         ProfilePhoto(
           id: 'placeholder',
@@ -186,11 +290,22 @@ class _EnhancedProfileEditScreenState extends State<EnhancedProfileEditScreen>
       isOnline: true,
       lastSeen: DateTime.now(),
       verified: _currentProfile?.verified ?? false,
+      // New lifestyle fields
+      lifestyleChoice: _selectedLifestyle,
+      relationshipGoals: _selectedRelationshipGoals,
+      height: _selectedHeight,
+      religion: _selectedReligion,
+      politics: _selectedPolitics,
+      drinking: _selectedDrinking,
+      smoking: _selectedSmoking,
+      drugs: _selectedDrugs,
+      children: _selectedChildren,
+      languages: _selectedLanguages,
     );
   }
 
   void _nextPage() {
-    if (_currentPageIndex < 3) {
+    if (_currentPageIndex < 4) {
       _pageController.nextPage(
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
@@ -227,60 +342,112 @@ class _EnhancedProfileEditScreenState extends State<EnhancedProfileEditScreen>
           ),
         ),
         actions: [
-          TextButton(
-            onPressed: _showPreview,
-            child: Text(
-              'Preview',
-              style: TextStyle(
-                color: PulseColors.primary,
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-              ),
+          IconButton(
+            icon: Icon(
+              Icons.visibility_outlined,
+              color: PulseColors.primary,
+              size: 28,
             ),
+            onPressed: _showPreview,
+            tooltip: 'Preview Profile',
           ),
         ],
         bottom: PreferredSize(
-          preferredSize: const Size(double.infinity, 70),
+          preferredSize: const Size(double.infinity, 65),
           child: Container(
-            color: Colors.white,
-            child: TabBar(
-              controller: _tabController,
-              onTap: (index) {
-                _pageController.animateToPage(
-                  index,
-                  duration: const Duration(milliseconds: 300),
-                  curve: Curves.easeInOut,
-                );
-              },
-              indicator: BoxDecoration(
-                color: PulseColors.primary,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              indicatorSize: TabBarIndicatorSize.tab,
-              labelColor: Colors.white,
-              unselectedLabelColor: Colors.grey[600],
-              labelStyle: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-              ),
-              tabs: const [
-                Tab(
-                  icon: Icon(Icons.info, size: 18),
-                  text: 'Basic Info',
-                ),
-                Tab(
-                  icon: Icon(Icons.photo_camera, size: 18),
-                  text: 'Photos',
-                ),
-                Tab(
-                  icon: Icon(Icons.favorite, size: 18),
-                  text: 'Interests',
-                ),
-                Tab(
-                  icon: Icon(Icons.privacy_tip, size: 18),
-                  text: 'Privacy',
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
                 ),
               ],
+            ),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                // Calculate responsive sizing
+                final screenWidth = constraints.maxWidth;
+                final tabWidth = screenWidth / 5;
+                final fontSize = tabWidth < 65
+                    ? 9.0
+                    : (tabWidth < 75 ? 10.0 : 11.0);
+                final iconSize = tabWidth < 65 ? 18.0 : 20.0;
+
+                return TabBar(
+                  controller: _tabController,
+                  isScrollable: false, // Fill width
+                  onTap: (index) {
+                    _pageController.animateToPage(
+                      index,
+                      duration: const Duration(milliseconds: 300),
+                      curve: Curves.easeInOut,
+                    );
+                  },
+                  indicator: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        PulseColors.primary,
+                        PulseColors.primary.withOpacity(0.8),
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: PulseColors.primary.withOpacity(0.3),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  indicatorSize: TabBarIndicatorSize.tab,
+                  indicatorPadding: const EdgeInsets.symmetric(
+                    horizontal: 2,
+                    vertical: 4,
+                  ),
+                  labelColor: Colors.white,
+                  unselectedLabelColor: Colors.grey[600],
+                  labelStyle: TextStyle(
+                    fontSize: fontSize,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: -0.3,
+                  ),
+                  unselectedLabelStyle: TextStyle(
+                    fontSize: fontSize,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  labelPadding: EdgeInsets.zero,
+                  tabs: [
+                    Tab(
+                      icon: Icon(Icons.info_outline, size: iconSize),
+                      iconMargin: const EdgeInsets.only(bottom: 2),
+                      text: 'Basic',
+                    ),
+                    Tab(
+                      icon: Icon(Icons.photo_camera_outlined, size: iconSize),
+                      iconMargin: const EdgeInsets.only(bottom: 2),
+                      text: 'Photos',
+                    ),
+                    Tab(
+                      icon: Icon(Icons.favorite_outline, size: iconSize),
+                      iconMargin: const EdgeInsets.only(bottom: 2),
+                      text: 'Interests',
+                    ),
+                    Tab(
+                      icon: Icon(Icons.spa_outlined, size: iconSize),
+                      iconMargin: const EdgeInsets.only(bottom: 2),
+                      text: 'Lifestyle',
+                    ),
+                    Tab(
+                      icon: Icon(Icons.lock_outline, size: iconSize),
+                      iconMargin: const EdgeInsets.only(bottom: 2),
+                      text: 'Privacy',
+                    ),
+                  ],
+                );
+              },
             ),
           ),
         ),
@@ -350,11 +517,58 @@ class _EnhancedProfileEditScreenState extends State<EnhancedProfileEditScreen>
 
           return Column(
             children: [
-              // Profile completion card
+              // Profile completion card (collapsible)
               if (_currentProfile != null)
-                ProfileCompletionCard(
-                  profile: _buildPreviewProfile(),
-                  onTapIncomplete: () => _tabController.animateTo(0),
+                Container(
+                  color: Colors.white,
+                  child: Column(
+                    children: [
+                      InkWell(
+                        onTap: () {
+                          setState(() {
+                            _isProfileCompletionExpanded =
+                                !_isProfileCompletionExpanded;
+                          });
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 12,
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(
+                                Icons.trending_up,
+                                color: PulseColors.primary,
+                                size: 20,
+                              ),
+                              const SizedBox(width: 8),
+                              const Text(
+                                'Complete Your Profile',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: PulseColors.primary,
+                                ),
+                              ),
+                              const Spacer(),
+                              Icon(
+                                _isProfileCompletionExpanded
+                                    ? Icons.expand_less
+                                    : Icons.expand_more,
+                                color: PulseColors.primary,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      if (_isProfileCompletionExpanded)
+                        ProfileCompletionCard(
+                          profile: _buildPreviewProfile(),
+                          onTapIncomplete: () => _tabController.animateTo(0),
+                        ),
+                    ],
+                  ),
                 ),
 
               // Page content
@@ -371,6 +585,7 @@ class _EnhancedProfileEditScreenState extends State<EnhancedProfileEditScreen>
                     _buildBasicInfoPage(),
                     _buildPhotosPage(),
                     _buildInterestsPage(),
+                    _buildLifestylePage(),
                     _buildPrivacyPage(),
                   ],
                 ),
@@ -390,12 +605,14 @@ class _EnhancedProfileEditScreenState extends State<EnhancedProfileEditScreen>
                           variant: PulseButtonVariant.secondary,
                         ),
                       ),
-                    if (_currentPageIndex > 0 && _currentPageIndex < 3)
+                    if (_currentPageIndex > 0 && _currentPageIndex < 4)
                       const SizedBox(width: 12),
                     Expanded(
                       child: PulseButton(
-                        text: _currentPageIndex == 3 ? 'Save Profile' : 'Next',
-                        onPressed: _currentPageIndex == 3 ? _saveProfile : _nextPage,
+                        text: _currentPageIndex == 4 ? 'Save Profile' : 'Next',
+                        onPressed: _currentPageIndex == 4
+                            ? _saveProfile
+                            : _nextPage,
                         isLoading: state.updateStatus == ProfileStatus.loading,
                       ),
                     ),
@@ -424,18 +641,79 @@ class _EnhancedProfileEditScreenState extends State<EnhancedProfileEditScreen>
               validator: (value) => value?.isEmpty == true ? 'Name is required' : null,
             ),
             const SizedBox(height: 20),
-            _buildFormField(
-              'Age',
-              _ageController,
-              'Enter your age',
-              keyboardType: TextInputType.number,
-              validator: (value) {
-                final age = int.tryParse(value ?? '');
-                if (age == null || age < 18 || age > 100) {
-                  return 'Please enter a valid age (18-100)';
+            // Date of Birth Picker
+            InkWell(
+              onTap: () async {
+                final DateTime? picked = await showDatePicker(
+                  context: context,
+                  initialDate:
+                      _dateOfBirth ??
+                      DateTime.now().subtract(const Duration(days: 365 * 25)),
+                  firstDate: DateTime(1920),
+                  lastDate: DateTime.now().subtract(
+                    const Duration(days: 365 * 18),
+                  ), // Must be 18+
+                  builder: (context, child) {
+                    return Theme(
+                      data: Theme.of(context).copyWith(
+                        colorScheme: ColorScheme.light(
+                          primary: PulseColors.primary,
+                          onPrimary: Colors.white,
+                          onSurface: Colors.black,
+                        ),
+                      ),
+                      child: child!,
+                    );
+                  },
+                );
+                if (picked != null) {
+                  setState(() {
+                    _dateOfBirth = picked;
+                  });
                 }
-                return null;
               },
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 16,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.grey[300]!),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Date of Birth',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey[600],
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          _dateOfBirth != null
+                              ? '${_dateOfBirth!.day}/${_dateOfBirth!.month}/${_dateOfBirth!.year} (Age: ${_calculateAge(_dateOfBirth!)})'
+                              : 'Select your date of birth',
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: _dateOfBirth != null
+                                ? Colors.black87
+                                : Colors.grey[400],
+                          ),
+                        ),
+                      ],
+                    ),
+                    Icon(Icons.calendar_today, color: PulseColors.primary),
+                  ],
+                ),
+              ),
             ),
             const SizedBox(height: 20),
             _buildFormField(
@@ -583,6 +861,118 @@ class _EnhancedProfileEditScreenState extends State<EnhancedProfileEditScreen>
         },
         maxInterests: 10,
         minInterests: 3,
+      ),
+    );
+  }
+
+  Widget _buildLifestylePage() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Tell us more about yourself',
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'This helps us match you with compatible people',
+            style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+          ),
+          const SizedBox(height: 24),
+
+          // Lifestyle Section
+          ProfileLifestyleSection(
+            selectedLifestyle: _selectedLifestyle,
+            onChanged: (value) {
+              setState(() {
+                _selectedLifestyle = value;
+              });
+            },
+          ),
+          const SizedBox(height: 20),
+
+          // Relationship Goals Section
+          ProfileRelationshipGoalsSection(
+            selectedGoals: _selectedRelationshipGoals,
+            onChanged: (goals) {
+              setState(() {
+                _selectedRelationshipGoals = goals;
+              });
+            },
+            maxSelections: 3,
+          ),
+          const SizedBox(height: 20),
+
+          // Physical Attributes Section
+          ProfilePhysicalAttributesSection(
+            height: _selectedHeight,
+            religion: _selectedReligion,
+            politics: _selectedPolitics,
+            onHeightChanged: (height) {
+              setState(() {
+                _selectedHeight = height; // Use selected value only
+              });
+            },
+            onReligionChanged: (religion) {
+              setState(() {
+                _selectedReligion = religion;
+              });
+            },
+            onPoliticsChanged: (politics) {
+              setState(() {
+                _selectedPolitics = politics;
+              });
+            },
+          ),
+          const SizedBox(height: 20),
+
+          // Lifestyle Choices Section
+          ProfileLifestyleChoicesSection(
+            drinking: _selectedDrinking,
+            smoking: _selectedSmoking,
+            drugs: _selectedDrugs,
+            children: _selectedChildren,
+            onDrinkingChanged: (value) {
+              setState(() {
+                _selectedDrinking = value;
+              });
+            },
+            onSmokingChanged: (value) {
+              setState(() {
+                _selectedSmoking = value;
+              });
+            },
+            onDrugsChanged: (value) {
+              setState(() {
+                _selectedDrugs = value;
+              });
+            },
+            onChildrenChanged: (value) {
+              setState(() {
+                _selectedChildren = value;
+              });
+            },
+          ),
+          const SizedBox(height: 20),
+
+          // Languages Section
+          ProfileLanguagesSection(
+            selectedLanguages: _selectedLanguages,
+            onChanged: (languages) {
+              setState(() {
+                _selectedLanguages = languages;
+              });
+            },
+            maxSelections: 5,
+          ),
+          const SizedBox(height: 20),
+        ],
       ),
     );
   }

@@ -51,7 +51,7 @@ import '../screens/notification/notification_screen.dart';
 import '../screens/profile/profile_creation_screen.dart';
 import '../screens/profile/profile_section_edit_screen.dart';
 import '../screens/profile/profile_details_screen.dart';
-import '../screens/profile/enhanced_profile_edit_screen.dart';
+import '../screens/profile/profile_edit_screen.dart';
 import '../screens/chat/chat_screen.dart';
 import '../screens/call/video_call_screen.dart';
 import '../screens/call/audio_call_screen.dart';
@@ -451,9 +451,9 @@ class AppRouter {
           },
         ),
         GoRoute(
-          path: AppRoutes.enhancedProfileEdit,
-          name: 'enhancedProfileEdit',
-          builder: (context, state) => const EnhancedProfileEditScreen(),
+          path: AppRoutes.profileEdit,
+          name: 'profileEdit',
+          builder: (context, state) => const ProfileEditScreen(),
         ),
         
         // Date Planning routes
@@ -750,11 +750,11 @@ class AppRoutes {
   static const String profileCreation = '/profile-creation';
   static const String profileSectionEdit = '/profile-section-edit';
   static const String profileDetails = '/profile-details/:profileId';
+  static const String profileEdit = '/profile-edit';
   static const String chat = '/chat/:conversationId';
   static const String videoCall = '/video-call/:callId';
   static const String groupVideoCall = '/group-video-call/:liveSessionId';
   static const String audioCall = '/audio-call/:callId';
-  static const String enhancedProfileEdit = '/enhanced-profile-edit';
   
   // Events routes
   static const String eventDetails = '/events/:eventId';

@@ -80,15 +80,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 }
               },
             ),
-            actions: [
-              IconButton(
-                icon: const Icon(Icons.settings, color: PulseColors.onSurface),
-                onPressed: () {
-                  context.go('/settings');
-                },
-                tooltip: 'Settings',
-              ),
-            ],
           ),
           body: SafeArea(
             child: SingleChildScrollView(
@@ -233,6 +224,31 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             ),
           ],
+          
+          // Edit Profile Button
+          const SizedBox(height: PulseSpacing.md),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: () {
+                context.push('/profile-edit');
+              },
+              icon: const Icon(Icons.edit, size: 20),
+              label: const Text('Edit Profile'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: PulseColors.primary,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: PulseSpacing.lg,
+                  vertical: PulseSpacing.md,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(PulseRadii.md),
+                ),
+                elevation: 2,
+              ),
+            ),
+          ),
         ],
       ),
     );

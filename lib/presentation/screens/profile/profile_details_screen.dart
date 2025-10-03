@@ -232,7 +232,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
         if (widget.isOwnProfile)
           IconButton(
             onPressed: () {
-              context.push('/enhanced-profile-edit');
+              context.push('/profile-edit');
             },
             icon: const Icon(Icons.edit),
           )

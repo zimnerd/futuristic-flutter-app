@@ -1,17 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../screens/profile/enhanced_profile_edit_screen.dart';
 import '../screens/profile/profile_edit_screen.dart';
 import '../../domain/entities/user_profile.dart';
 import 'app_router.dart';
 
 /// Navigation helper for profile-related screens
 class ProfileNavigation {
-  /// Navigate to the enhanced profile edit screen
+  /// Navigate to the profile edit screen
   static Future<void> toProfileEdit(BuildContext context) {
     return Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (context) => const EnhancedProfileEditScreen(),
+        builder: (context) => const ProfileEditScreen(),
         fullscreenDialog: true,
       ),
     );
