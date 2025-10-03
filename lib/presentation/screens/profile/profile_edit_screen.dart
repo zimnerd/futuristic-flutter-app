@@ -2,23 +2,30 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../blocs/profile/profile_bloc.dart';
-import '../../blocs/auth/auth_bloc.dart';
-import '../../blocs/auth/auth_state.dart';
 import '../../theme/pulse_colors.dart';
 import '../../widgets/common/pulse_button.dart';
-import '../../widgets/profile/photo_grid.dart';
-import '../../widgets/profile/profile_form.dart';
+import '../../widgets/profile/enhanced_photo_grid.dart';
+import '../../widgets/profile/profile_completion_card.dart';
+import '../../widgets/profile/profile_privacy_settings.dart';
+import '../../widgets/profile/profile_preview.dart';
+import '../../widgets/profile/interests_selector.dart';
 import '../../../domain/entities/user_profile.dart';
 
-class ProfileEditScreen extends StatefulWidget {
-  const ProfileEditScreen({super.key});
+/// Enhanced profile editing screen with all new features
+class EnhancedProfileEditScreen extends StatefulWidget {
+  const EnhancedProfileEditScreen({super.key});
 
   @override
-  State<ProfileEditScreen> createState() => _ProfileEditScreenState();
+  State<EnhancedProfileEditScreen> createState() => _EnhancedProfileEditScreenState();
 }
 
-class _ProfileEditScreenState extends State<ProfileEditScreen> {
+class _EnhancedProfileEditScreenState extends State<EnhancedProfileEditScreen>
+    with TickerProviderStateMixin {
+  late TabController _tabController;
   final _formKey = GlobalKey<FormState>();
+  final _pageController = PageController();
+
+  // Form controllers
   final _nameController = TextEditingController();
   final _bioController = TextEditingController();
   final _ageController = TextEditingController();
@@ -26,36 +33,39 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
   final _companyController = TextEditingController();
   final _schoolController = TextEditingController();
 
+  // Profile data
   List<String> _selectedInterests = [];
   String _selectedGender = 'Woman';
   String _selectedPreference = 'Men';
-  List<String> _photos = [];
-  bool _hasPopulatedFields = false;
-  
-  // Delta tracking and temp upload state
-  UserProfile?
-  _originalProfile; // Store original for comparison (future delta tracking)
-  final List<String> _tempPhotoUrls =
-      []; // Track temp uploads for visual indicator
-  final Set<String> _photosMarkedForDeletion = {}; // Track deletions
+  List<ProfilePhoto> _photos = [];
+  Map<String, bool> _privacySettings = Map.from({
+    'showDistance': true,
+    'showAge': true,
+    'showLastActive': true,
+    'showOnlineStatus': true,
+    'discoverable': true,
+    'readReceipts': true,
+    'showVerification': true,
+  });
 
-  /// Gets the current user ID from the AuthBloc state
-  String? get _currentUserId {
-    final authState = context.read<AuthBloc>().state;
-    if (authState is AuthAuthenticated) {
-      return authState.user.id;
-    }
-    return null;
-  }
+  UserProfile? _currentProfile;
+  int _currentPageIndex = 0;
+  
+  // Temp upload tracking for PhotoManagerService integration
+  final List<String> _tempPhotoUrls = [];
+  final Set<String> _photosMarkedForDeletion = {};
 
   @override
   void initState() {
     super.initState();
+    _tabController = TabController(length: 4, vsync: this);
     context.read<ProfileBloc>().add(LoadProfile());
   }
 
   @override
   void dispose() {
+    _tabController.dispose();
+    _pageController.dispose();
     _nameController.dispose();
     _bioController.dispose();
     _ageController.dispose();
@@ -66,26 +76,16 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
   }
 
   void _populateFields(UserProfile profile) {
-    setState(() {
-      _nameController.text = profile.name;
-      _bioController.text = profile.bio;
-      _ageController.text = profile.age.toString();
-      _jobController.text = profile.job ?? '';
-      _companyController.text = profile.company ?? '';
-      _schoolController.text = profile.school ?? '';
-      _selectedGender = profile.gender ?? '';
-      _selectedPreference =
-          _selectedPreference; // Keep current value or from preferences
-      _selectedInterests = List<String>.from(profile.interests);
-      _photos = profile.photos.map((photo) => photo.url).toList();
-      
-      // Debug logging
-      debugPrint('🔍 Profile loaded with ${profile.photos.length} photos');
-      debugPrint('🔍 _photos list length: ${_photos.length}');
-      if (_photos.isNotEmpty) {
-        debugPrint('🔍 First photo URL: ${_photos.first}');
-      }
-    });
+    _nameController.text = profile.name;
+    _bioController.text = profile.bio;
+    _ageController.text = profile.age.toString();
+    _jobController.text = profile.job ?? '';
+    _companyController.text = profile.company ?? '';
+    _schoolController.text = profile.school ?? '';
+    _selectedInterests = List.from(profile.interests);
+    _selectedGender = profile.gender ?? 'Woman';
+    _photos = List.from(profile.photos);
+    _currentProfile = profile;
   }
 
   /// Handle adding new photo via BLoC event
@@ -95,20 +95,22 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
   }
 
   /// Handle deleting photo via BLoC event
-  void _handleDeletePhoto(String photoUrl) {
+  void _handleDeletePhoto(ProfilePhoto photo) {
+    final photoUrl = photo.url;
+    
     // Check if this is a temp photo (not yet saved)
     if (_tempPhotoUrls.contains(photoUrl)) {
       // Remove from temp list and local photos
       setState(() {
         _tempPhotoUrls.remove(photoUrl);
-        _photos.remove(photoUrl);
+        _photos.removeWhere((p) => p.url == photoUrl);
       });
       // Temp photos don't need deletion event, they'll auto-cleanup
     } else {
       // Mark existing photo for deletion
       setState(() {
         _photosMarkedForDeletion.add(photoUrl);
-        _photos.remove(photoUrl);
+        _photos.removeWhere((p) => p.url == photoUrl);
       });
       // Dispatch DeletePhoto event for backend tracking
       context.read<ProfileBloc>().add(DeletePhoto(photoUrl: photoUrl));
@@ -118,17 +120,13 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
   void _saveProfile() {
     if (_formKey.currentState?.validate() ?? false) {
       final updatedProfile = UserProfile(
-        id: _currentUserId ?? 'fallback-user-id',
+        id: _currentProfile?.id ?? 'current_user_id',
         name: _nameController.text.trim(),
         bio: _bioController.text.trim(),
         age: int.tryParse(_ageController.text) ?? 18,
-        photos: _photos.map((url) => ProfilePhoto(
-          id: DateTime.now().millisecondsSinceEpoch.toString(),
-          url: url,
-          order: _photos.indexOf(url),
-        )).toList(),
+        photos: _photos,
         interests: _selectedInterests,
-        location: UserLocation(
+        location: _currentProfile?.location ?? UserLocation(
           latitude: 0.0,
           longitude: 0.0,
           city: 'Current City',
@@ -140,33 +138,85 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
         lookingFor: _selectedPreference,
         isOnline: true,
         lastSeen: DateTime.now(),
-        verified: false,
+        verified: _currentProfile?.verified ?? false,
       );
 
       context.read<ProfileBloc>().add(UpdateProfile(profile: updatedProfile));
     }
   }
 
+  void _showPreview() {
+    if (_currentProfile != null) {
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => ProfilePreview(
+            profile: _buildPreviewProfile(),
+            onClose: () => Navigator.of(context).pop(),
+          ),
+          fullscreenDialog: true,
+        ),
+      );
+    }
+  }
+
+  UserProfile _buildPreviewProfile() {
+    return UserProfile(
+      id: _currentProfile?.id ?? 'preview',
+      name: _nameController.text.trim().isEmpty ? 'Your Name' : _nameController.text.trim(),
+      bio: _bioController.text.trim().isEmpty ? 'Your bio will appear here...' : _bioController.text.trim(),
+      age: int.tryParse(_ageController.text) ?? 25,
+      photos: _photos.isEmpty ? [
+        ProfilePhoto(
+          id: 'placeholder',
+          url: 'https://via.placeholder.com/400x600/6E3BFF/FFFFFF?text=Add+Photo',
+          order: 0,
+        )
+      ] : _photos,
+      interests: _selectedInterests,
+      location: _currentProfile?.location ?? UserLocation(
+        latitude: 0.0,
+        longitude: 0.0,
+        city: 'Current City',
+      ),
+      gender: _selectedGender,
+      job: _jobController.text.trim(),
+      company: _companyController.text.trim(),
+      school: _schoolController.text.trim(),
+      lookingFor: _selectedPreference,
+      isOnline: true,
+      lastSeen: DateTime.now(),
+      verified: _currentProfile?.verified ?? false,
+    );
+  }
+
+  void _nextPage() {
+    if (_currentPageIndex < 3) {
+      _pageController.nextPage(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    }
+  }
+
+  void _previousPage() {
+    if (_currentPageIndex > 0) {
+      _pageController.previousPage(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Colors.grey[50],
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.close, color: Colors.black87),
-          onPressed: () {
-            // Check if there are pending changes
-            final hasPendingChanges =
-                _tempPhotoUrls.isNotEmpty ||
-                _photosMarkedForDeletion.isNotEmpty;
-            if (hasPendingChanges) {
-              _showCancelConfirmation();
-            } else {
-              Navigator.of(context).pop();
-            }
-          },
+          onPressed: () => Navigator.of(context).pop(),
         ),
         title: const Text(
           'Edit Profile',
@@ -177,66 +227,82 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
           ),
         ),
         actions: [
-          BlocConsumer<ProfileBloc, ProfileState>(
-            listener: (context, state) {
-              if (state.updateStatus == ProfileStatus.success) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Profile updated successfully!'),
-                    backgroundColor: PulseColors.success,
-                  ),
-                );
-                Navigator.of(context).pop();
-              } else if (state.updateStatus == ProfileStatus.error) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(state.error ?? 'Failed to update profile'),
-                    backgroundColor: Colors.red,
-                  ),
-                );
-              }
-            },
-            builder: (context, state) {
-              return TextButton(
-                onPressed: state.updateStatus == ProfileStatus.loading
-                    ? null
-                    : _saveProfile,
-                child: state.updateStatus == ProfileStatus.loading
-                    ? const SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                            PulseColors.primary,
-                          ),
-                        ),
-                      )
-                    : const Text(
-                        'Save',
-                        style: TextStyle(
-                          color: PulseColors.primary,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-              );
-            },
+          TextButton(
+            onPressed: _showPreview,
+            child: Text(
+              'Preview',
+              style: TextStyle(
+                color: PulseColors.primary,
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ),
         ],
+        bottom: PreferredSize(
+          preferredSize: const Size(double.infinity, 70),
+          child: Container(
+            color: Colors.white,
+            child: TabBar(
+              controller: _tabController,
+              onTap: (index) {
+                _pageController.animateToPage(
+                  index,
+                  duration: const Duration(milliseconds: 300),
+                  curve: Curves.easeInOut,
+                );
+              },
+              indicator: BoxDecoration(
+                color: PulseColors.primary,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              indicatorSize: TabBarIndicatorSize.tab,
+              labelColor: Colors.white,
+              unselectedLabelColor: Colors.grey[600],
+              labelStyle: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
+              tabs: const [
+                Tab(
+                  icon: Icon(Icons.info, size: 18),
+                  text: 'Basic Info',
+                ),
+                Tab(
+                  icon: Icon(Icons.photo_camera, size: 18),
+                  text: 'Photos',
+                ),
+                Tab(
+                  icon: Icon(Icons.favorite, size: 18),
+                  text: 'Interests',
+                ),
+                Tab(
+                  icon: Icon(Icons.privacy_tip, size: 18),
+                  text: 'Privacy',
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
       body: BlocConsumer<ProfileBloc, ProfileState>(
         listener: (context, state) {
-          // Listen for photo upload events to track temp photos
+          if (state.status == ProfileStatus.loaded && state.profile != null) {
+            _populateFields(state.profile!);
+          }
+          
+          // Handle photo upload success/error
           if (state.uploadStatus == ProfileStatus.success) {
-            // Photo uploaded to temp - add to preview list
             if (state.profile != null && state.profile!.photos.isNotEmpty) {
               final latestPhotoUrl = state.profile!.photos.last.url;
-              // Only add if not already in the list (avoid duplicates)
-              if (!_photos.contains(latestPhotoUrl)) {
+              if (!_photos.any((p) => p.url == latestPhotoUrl)) {
                 setState(() {
                   _tempPhotoUrls.add(latestPhotoUrl);
-                  _photos.add(latestPhotoUrl);
+                  _photos.add(ProfilePhoto(
+                    id: DateTime.now().millisecondsSinceEpoch.toString(),
+                    url: latestPhotoUrl,
+                    order: _photos.length,
+                  ));
                 });
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
@@ -250,136 +316,185 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
           } else if (state.uploadStatus == ProfileStatus.error) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text(
-                  'Failed to upload photo: ${state.error ?? "Unknown error"}',
-                ),
-                backgroundColor: Colors.red,
+                content: Text('Failed to upload photo: ${state.error ?? "Unknown error"}'),
+                backgroundColor: PulseColors.error,
                 duration: const Duration(seconds: 3),
+              ),
+            );
+          }
+          
+          if (state.updateStatus == ProfileStatus.success) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Profile updated successfully!'),
+                backgroundColor: PulseColors.success,
+              ),
+            );
+            Navigator.of(context).pop();
+          }
+          if (state.updateStatus == ProfileStatus.error) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(state.error ?? 'Failed to update profile'),
+                backgroundColor: PulseColors.error,
               ),
             );
           }
         },
         builder: (context, state) {
-          debugPrint(
-            '🔍 ProfileEditScreen builder - status: ${state.status}, profile: ${state.profile != null ? "loaded" : "null"}, hasPopulatedFields: $_hasPopulatedFields',
-          );
-          
           if (state.status == ProfileStatus.loading) {
             return const Center(
-              child: CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(PulseColors.primary),
-              ),
+              child: CircularProgressIndicator(),
             );
           }
 
-          if (state.status == ProfileStatus.error) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(
-                    Icons.error_outline,
-                    color: Colors.grey,
-                    size: 64,
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    state.error ?? 'Failed to load profile',
-                    style: const TextStyle(color: Colors.grey),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 16),
-                  PulseButton(
-                    text: 'Retry',
-                    onPressed: () {
-                      context.read<ProfileBloc>().add(LoadProfile());
-                    },
-                  ),
-                ],
-              ),
-            );
-          }
+          return Column(
+            children: [
+              // Profile completion card
+              if (_currentProfile != null)
+                ProfileCompletionCard(
+                  profile: _buildPreviewProfile(),
+                  onTapIncomplete: () => _tabController.animateTo(0),
+                ),
 
-          if (state.profile != null && !_hasPopulatedFields) {
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              _populateFields(state.profile!);
-              setState(() {
-                _hasPopulatedFields = true;
-              });
-            });
-          }
-
-          return SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildPhotosSection(),
-                  const SizedBox(height: 24),
-                  ProfileForm(
-                    nameController: _nameController,
-                    bioController: _bioController,
-                    ageController: _ageController,
-                    jobController: _jobController,
-                    companyController: _companyController,
-                    schoolController: _schoolController,
-                    selectedGender: _selectedGender,
-                    selectedPreference: _selectedPreference,
-                    selectedInterests: _selectedInterests,
-                    onGenderChanged: (value) => setState(() => _selectedGender = value),
-                    onPreferenceChanged: (value) => setState(() => _selectedPreference = value),
-                    onInterestsChanged: (interests) => setState(() => _selectedInterests = interests),
-                  ),
-                ],
+              // Page content
+              Expanded(
+                child: PageView(
+                  controller: _pageController,
+                  onPageChanged: (index) {
+                    setState(() {
+                      _currentPageIndex = index;
+                    });
+                    _tabController.animateTo(index);
+                  },
+                  children: [
+                    _buildBasicInfoPage(),
+                    _buildPhotosPage(),
+                    _buildInterestsPage(),
+                    _buildPrivacyPage(),
+                  ],
+                ),
               ),
-            ),
+
+              // Bottom navigation
+              Container(
+                color: Colors.white,
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  children: [
+                    if (_currentPageIndex > 0)
+                      Expanded(
+                        child: PulseButton(
+                          text: 'Previous',
+                          onPressed: _previousPage,
+                          variant: PulseButtonVariant.secondary,
+                        ),
+                      ),
+                    if (_currentPageIndex > 0 && _currentPageIndex < 3)
+                      const SizedBox(width: 12),
+                    Expanded(
+                      child: PulseButton(
+                        text: _currentPageIndex == 3 ? 'Save Profile' : 'Next',
+                        onPressed: _currentPageIndex == 3 ? _saveProfile : _nextPage,
+                        isLoading: state.updateStatus == ProfileStatus.loading,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           );
         },
       ),
     );
   }
 
-  Widget _buildPhotosSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Photos',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-            color: Colors.black87,
-          ),
+  Widget _buildBasicInfoPage() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Form(
+        key: _formKey,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildFormField(
+              'Name',
+              _nameController,
+              'Enter your name',
+              validator: (value) => value?.isEmpty == true ? 'Name is required' : null,
+            ),
+            const SizedBox(height: 20),
+            _buildFormField(
+              'Age',
+              _ageController,
+              'Enter your age',
+              keyboardType: TextInputType.number,
+              validator: (value) {
+                final age = int.tryParse(value ?? '');
+                if (age == null || age < 18 || age > 100) {
+                  return 'Please enter a valid age (18-100)';
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: 20),
+            _buildFormField(
+              'Bio',
+              _bioController,
+              'Tell people about yourself...',
+              maxLines: 4,
+              maxLength: 500,
+            ),
+            const SizedBox(height: 20),
+            _buildFormField(
+              'Job Title',
+              _jobController,
+              'What do you do?',
+            ),
+            const SizedBox(height: 20),
+            _buildFormField(
+              'Company',
+              _companyController,
+              'Where do you work?',
+            ),
+            const SizedBox(height: 20),
+            _buildFormField(
+              'Education',
+              _schoolController,
+              'Where did you study?',
+            ),
+            const SizedBox(height: 20),
+            _buildDropdownField(
+              'Gender',
+              _selectedGender,
+              ['Woman', 'Man', 'Non-binary', 'Other'],
+              (value) => setState(() => _selectedGender = value!),
+            ),
+            const SizedBox(height: 20),
+            _buildDropdownField(
+              'Looking For',
+              _selectedPreference,
+              ['Men', 'Women', 'Everyone'],
+              (value) => setState(() => _selectedPreference = value!),
+            ),
+          ],
         ),
-        const SizedBox(height: 8),
-        const Text(
-          'Add up to 6 photos. The first photo will be your main profile picture.',
-          style: TextStyle(
-            fontSize: 14,
-            color: Colors.grey,
-          ),
-        ),
-        const SizedBox(height: 16),
-        _buildPhotoGridWithTempTracking(),
-      ],
+      ),
     );
   }
 
-  /// Build photo grid with temp upload tracking
-  /// Note: Temp photos are tracked internally and will be confirmed on save
-  Widget _buildPhotoGridWithTempTracking() {
-    final hasPendingChanges =
-        _tempPhotoUrls.isNotEmpty || _photosMarkedForDeletion.isNotEmpty;
+  Widget _buildPhotosPage() {
+    final hasPendingChanges = _tempPhotoUrls.isNotEmpty || _photosMarkedForDeletion.isNotEmpty;
     
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        if (hasPendingChanges)
-          Padding(
-            padding: const EdgeInsets.only(bottom: 12),
-            child: Container(
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Pending changes indicator
+          if (hasPendingChanges)
+            Container(
+              margin: const EdgeInsets.only(bottom: 16),
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
                 color: Colors.orange.withOpacity(0.1),
@@ -410,7 +525,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                   if (_tempPhotoUrls.isNotEmpty) ...[
                     const SizedBox(height: 4),
                     Text(
-                      '• ${_tempPhotoUrls.length} new photo(s) to upload',
+                      '\u2022 ${_tempPhotoUrls.length} new photo(s) to upload',
                       style: const TextStyle(
                         color: Colors.orange,
                         fontSize: 12,
@@ -420,7 +535,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                   if (_photosMarkedForDeletion.isNotEmpty) ...[
                     const SizedBox(height: 4),
                     Text(
-                      '• ${_photosMarkedForDeletion.length} photo(s) to delete',
+                      '\u2022 ${_photosMarkedForDeletion.length} photo(s) to delete',
                       style: const TextStyle(
                         color: Colors.orange,
                         fontSize: 12,
@@ -429,7 +544,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                   ],
                   const SizedBox(height: 4),
                   const Text(
-                    'Click Save to confirm changes',
+                    'Click Save to confirm all changes',
                     style: TextStyle(
                       color: Colors.orange,
                       fontSize: 11,
@@ -439,94 +554,160 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                 ],
               ),
             ),
-          ),
-        _PhotoGridWithTempIndicators(
-          photos: _photos,
-          tempPhotoUrls: _tempPhotoUrls,
-          onAddPhoto: _handleAddPhoto,
-          onDeletePhoto: _handleDeletePhoto,
-          maxPhotos: 6,
-        ),
-      ],
-    );
-  }
-
-  /// Show confirmation dialog before cancelling
-  void _showCancelConfirmation() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Discard Changes?'),
-        content: const Text(
-          'You have unsaved changes. Are you sure you want to discard them?',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Keep Editing'),
-          ),
-          TextButton(
-            onPressed: () {
-              // Cancel profile changes (clears temp photos)
-              context.read<ProfileBloc>().add(const CancelProfileChanges());
-              Navigator.pop(context); // Close dialog
-              Navigator.pop(context); // Close edit screen
+          
+          // Photo grid
+          EnhancedPhotoGrid(
+            photos: _photos,
+            onPhotosChanged: (photos) {
+              setState(() {
+                _photos = photos;
+              });
             },
-            child: const Text('Discard', style: TextStyle(color: Colors.red)),
+            maxPhotos: 6,
+            isEditing: true,
           ),
         ],
       ),
     );
   }
-}
 
-/// Custom PhotoGrid wrapper that integrates with BLoC events
-class _PhotoGridWithTempIndicators extends StatelessWidget {
-  final List<String> photos;
-  final List<String> tempPhotoUrls;
-  final Function(String) onAddPhoto;
-  final Function(String) onDeletePhoto;
-  final int maxPhotos;
-
-  const _PhotoGridWithTempIndicators({
-    required this.photos,
-    required this.tempPhotoUrls,
-    required this.onAddPhoto,
-    required this.onDeletePhoto,
-    this.maxPhotos = 6,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    debugPrint(
-      '🔍 _PhotoGridWithTempIndicators building with ${photos.length} photos',
+  Widget _buildInterestsPage() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: InterestsSelector(
+        selectedInterests: _selectedInterests,
+        onInterestsChanged: (interests) {
+          setState(() {
+            _selectedInterests = interests;
+          });
+        },
+        maxInterests: 10,
+        minInterests: 3,
+      ),
     );
-    if (photos.isNotEmpty) {
-      debugPrint('🔍 First photo in wrapper: ${photos.first}');
-    }
-    
-    return PhotoGrid(
-      photos: photos,
-      onPhotosChanged: (updatedPhotos) {
-        // Handle photo changes - determine if it's an add or delete
-        if (updatedPhotos.length > photos.length) {
-          // Photo added - get the new photo path
-          final newPhoto = updatedPhotos.last;
-          onAddPhoto(newPhoto);
-        } else if (updatedPhotos.length < photos.length) {
-          // Photo deleted - find which one was removed
-          final deletedPhoto = photos.firstWhere(
-            (photo) => !updatedPhotos.contains(photo),
-            orElse: () => '',
-          );
-          if (deletedPhoto.isNotEmpty) {
-            onDeletePhoto(deletedPhoto);
-          }
-        }
-        // Note: Reordering is handled internally by PhotoGrid
-      },
-      maxPhotos: maxPhotos,
+  }
+
+  Widget _buildPrivacyPage() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: ProfilePrivacySettings(
+        privacySettings: _privacySettings,
+        onSettingsChanged: (settings) {
+          setState(() {
+            _privacySettings = settings;
+          });
+        },
+      ),
+    );
+  }
+
+  Widget _buildFormField(
+    String label,
+    TextEditingController controller,
+    String hintText, {
+    int maxLines = 1,
+    int? maxLength,
+    TextInputType? keyboardType,
+    String? Function(String?)? validator,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            color: Colors.black87,
+          ),
+        ),
+        const SizedBox(height: 8),
+        TextFormField(
+          controller: controller,
+          maxLines: maxLines,
+          maxLength: maxLength,
+          keyboardType: keyboardType,
+          validator: validator,
+          decoration: InputDecoration(
+            hintText: hintText,
+            hintStyle: TextStyle(color: Colors.grey[500]),
+            filled: true,
+            fillColor: Colors.white,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: Colors.grey[300]!),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: Colors.grey[300]!),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: PulseColors.primary, width: 2),
+            ),
+            errorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: PulseColors.error, width: 2),
+            ),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 12,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDropdownField(
+    String label,
+    String value,
+    List<String> options,
+    void Function(String?) onChanged,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            color: Colors.black87,
+          ),
+        ),
+        const SizedBox(height: 8),
+        DropdownButtonFormField<String>(
+          initialValue: value,
+          onChanged: onChanged,
+          decoration: InputDecoration(
+            filled: true,
+            fillColor: Colors.white,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: Colors.grey[300]!),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: Colors.grey[300]!),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: PulseColors.primary, width: 2),
+            ),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 12,
+            ),
+          ),
+          items: options.map((option) {
+            return DropdownMenuItem(
+              value: option,
+              child: Text(option),
+            );
+          }).toList(),
+        ),
+      ],
     );
   }
 }
-
