@@ -293,6 +293,18 @@ class _EventsScreenState extends State<EventsScreen>
                       }
                     });
                     return _buildLoadingState();
+                  } else if (state is EventCategoriesLoaded) {
+                    // 🔧 FIX: Handle EventCategoriesLoaded - categories refreshed
+                    // Trigger reload to get back to EventsLoaded state
+                    AppLogger.info(
+                      '📱 BlocBuilder: EventCategoriesLoaded detected, triggering reload',
+                    );
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      if (mounted) {
+                        _loadEvents();
+                      }
+                    });
+                    return _buildLoadingState();
                   } else if (state is EventError) {
                     return _buildErrorState(state);
                   } else {

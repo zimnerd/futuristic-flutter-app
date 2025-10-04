@@ -15,7 +15,9 @@ This document captures key learnings from building the **Flutter mobile dating a
 - User pressed back → **Events list showed empty "No events yet" state** ❌
 - Reload button did nothing ❌
 
-**Root Cause - Shared BLoC State Between List and Details**:
+**Root Causes - Multiple State Management Issues**:
+
+**Issue #1 - Shared BLoC State Between List and Details**:
 ```dart
 // ❌ BEFORE: EventDetailsScreen changed global EventBloc state
 EventDetailsScreen.initState() {
@@ -27,6 +29,30 @@ emit(EventDetailsLoaded(event: details, attendees: attendees));
 
 // EventsScreen BlocBuilder didn't recognize EventDetailsLoaded
 if (state is EventsLoaded) {  // ❌ FALSE - state is EventDetailsLoaded!
+  return _buildEventsLoaded(state);
+} else {
+  return _buildEmptyState();  // ❌ Showed empty state!
+}
+```
+
+**Issue #2 - Reload Button Emitting Wrong State**:
+```dart
+// ❌ RELOAD FLOW BUG
+// User presses reload button
+_onRefreshCategories() {
+  context.read<EventBloc>().add(RefreshEventCategories());  // 1️⃣
+  _loadEvents();  // 2️⃣ Dispatches LoadEvents
+}
+
+// RefreshEventCategories emits EventCategoriesLoaded
+_onLoadEventCategories() {
+  emit(EventLoading());
+  final categories = await _eventService.getEventCategories();
+  emit(EventCategoriesLoaded(categories));  // ❌ Wrong state!
+}
+
+// BlocBuilder doesn't handle EventCategoriesLoaded
+if (state is EventsLoaded) {  // ❌ FALSE - state is EventCategoriesLoaded!
   return _buildEventsLoaded(state);
 } else {
   return _buildEmptyState();  // ❌ Showed empty state!
@@ -108,6 +134,12 @@ BlocBuilder<EventBloc, EventState>(
         if (mounted) _loadEvents();
       });
       return _buildLoadingState();
+    } else if (state is EventCategoriesLoaded) {
+      // ✅ FIX #2: Auto-reload when categories refresh (reload button)
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _loadEvents();
+      });
+      return _buildLoadingState();
     }
   },
 )
@@ -117,9 +149,27 @@ BlocBuilder<EventBloc, EventState>(
 - ❌ **Don't share BLoC state between list and detail views** - Creates navigation conflicts
 - ✅ **Preserve list state during navigation** - Users expect data to persist
 - ✅ **Cache details separately from state** - Allows independent data without state changes
-- ✅ **Handle ALL state types in BlocBuilder** - Missing states cause unexpected UI
+- ✅ **Handle ALL state types in BlocBuilder** - Missing `EventCategoriesLoaded` caused reload bug
+- ✅ **Test multi-step operations** - Reload button dispatched two events, second one was missed
 - ✅ **Add comprehensive logging** - State transitions are hard to debug without logs
 - ✅ **Test navigation flows thoroughly** - Navigation bugs are subtle and hard to catch
+
+**Common Gotcha - BlocBuilder Fallthrough:**
+```dart
+// ❌ BAD: Missing state handler causes empty UI
+if (state is StateA) { return widgetA(); }
+else if (state is StateB) { return widgetB(); }
+else { return emptyWidget(); }  // ← StateC falls through here!
+
+// ✅ GOOD: Handle ALL states explicitly
+if (state is StateA) { return widgetA(); }
+else if (state is StateB) { return widgetB(); }
+else if (state is StateC) { return widgetC(); }  // ← Added!
+else { 
+  AppLogger.warning('Unhandled state: ${state.runtimeType}');
+  return emptyWidget();
+}
+```
 
 **State Flow After Fix:**
 ```
