@@ -8,7 +8,12 @@ abstract class ProfileEvent extends Equatable {
 }
 
 class LoadProfile extends ProfileEvent {
-  const LoadProfile();
+  final bool forceRefresh;
+
+  const LoadProfile({this.forceRefresh = false});
+
+  @override
+  List<Object?> get props => [forceRefresh];
 }
 
 class UpdateProfile extends ProfileEvent {
@@ -36,6 +41,24 @@ class DeletePhoto extends ProfileEvent {
 
   @override
   List<Object> get props => [photoUrl];
+}
+
+class RetryPhotoUpload extends ProfileEvent {
+  final String tempId; // Temporary ID of failed upload
+
+  const RetryPhotoUpload({required this.tempId});
+
+  @override
+  List<Object> get props => [tempId];
+}
+
+class ClearUploadProgress extends ProfileEvent {
+  final String tempId; // Clear specific upload progress (success/failed)
+
+  const ClearUploadProgress({required this.tempId});
+
+  @override
+  List<Object> get props => [tempId];
 }
 
 class CancelProfileChanges extends ProfileEvent {

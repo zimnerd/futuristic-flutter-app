@@ -28,6 +28,8 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     on<UploadPhoto>(_onUploadPhoto);
     on<UploadMultiplePhotos>(_onUploadMultiplePhotos);
     on<DeletePhoto>(_onDeletePhoto);
+    on<RetryPhotoUpload>(_onRetryPhotoUpload);
+    on<ClearUploadProgress>(_onClearUploadProgress);
     on<CancelProfileChanges>(_onCancelProfileChanges);
     on<UpdatePrivacySettings>(_onUpdatePrivacySettings);
   }
@@ -37,6 +39,17 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     Emitter<ProfileState> emit,
   ) async {
     try {
+      // Check if we have cached data and it's not stale (unless force refresh)
+      if (!event.forceRefresh && state.profile != null && !state.isCacheStale) {
+        _logger.d(
+          '✅ Using cached profile (age: ${DateTime.now().difference(state.lastFetchTime!).inMinutes} min)',
+        );
+        return; // Use cached data, don't fetch
+      }
+
+      _logger.i(
+        '🔄 Fetching profile from server (force: ${event.forceRefresh}, stale: ${state.isCacheStale})',
+      );
       emit(state.copyWith(status: ProfileStatus.loading));
       
       final profile = await _profileService.getCurrentProfile();
@@ -45,6 +58,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
       emit(state.copyWith(
         status: ProfileStatus.loaded,
         profile: profile,
+          lastFetchTime: DateTime.now(), // Mark cache time
         updateStatus: ProfileStatus.initial, // Reset update status on profile reload
       ));
     } catch (e) {
@@ -74,10 +88,12 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
 
       _logger.i('✅ Profile updated successfully');
 
+      // Use the returned profile data and update cache timestamp
       emit(
         state.copyWith(
           updateStatus: ProfileStatus.success,
           profile: updatedProfile,
+          lastFetchTime: DateTime.now(), // Update cache time with fresh data
         ),
       );
     } catch (e) {
@@ -95,9 +111,28 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     UploadPhoto event,
     Emitter<ProfileState> emit,
   ) async {
+    final tempId =
+        'temp_${event.photoPath.split('/').last}_${DateTime.now().millisecondsSinceEpoch}';
+    
     try {
       _logger.i('📸 Uploading photo directly to permanent storage...');
-      emit(state.copyWith(uploadStatus: ProfileStatus.loading));
+      
+      // Add to uploading map with uploading state
+      final newUploadingPhotos = Map<String, PhotoUploadProgress>.from(
+        state.uploadingPhotos,
+      );
+      newUploadingPhotos[tempId] = PhotoUploadProgress(
+        tempId: tempId,
+        localPath: event.photoPath,
+        state: PhotoUploadState.uploading,
+      );
+
+      emit(
+        state.copyWith(
+          uploadStatus: ProfileStatus.loading,
+          uploadingPhotos: newUploadingPhotos,
+        ),
+      );
 
       // Upload directly to permanent storage (returns URL)
       final photoUrl = await _profileService.uploadPhoto(event.photoPath);
@@ -117,19 +152,52 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
 
         final updatedProfile = state.profile!.copyWith(photos: updatedPhotos);
 
+        // Update uploading state to success
+        final successUploadingPhotos = Map<String, PhotoUploadProgress>.from(
+          state.uploadingPhotos,
+        );
+        successUploadingPhotos[tempId] = PhotoUploadProgress(
+          tempId: tempId,
+          localPath: event.photoPath,
+          state: PhotoUploadState.success,
+        );
+
         emit(
           state.copyWith(
             uploadStatus: ProfileStatus.success,
             profile: updatedProfile,
+            uploadingPhotos: successUploadingPhotos,
+            lastFetchTime: DateTime.now(),
           ),
         );
+
+        // Auto-clear success state after 3 seconds
+        await Future.delayed(const Duration(seconds: 3));
+        final clearedUploadingPhotos = Map<String, PhotoUploadProgress>.from(
+          state.uploadingPhotos,
+        );
+        clearedUploadingPhotos.remove(tempId);
+        emit(state.copyWith(uploadingPhotos: clearedUploadingPhotos));
       }
     } catch (e) {
       _logger.e('❌ Photo upload failed: $e');
+      
+      // Update uploading state to failed
+      final failedUploadingPhotos = Map<String, PhotoUploadProgress>.from(
+        state.uploadingPhotos,
+      );
+      failedUploadingPhotos[tempId] = PhotoUploadProgress(
+        tempId: tempId,
+        localPath: event.photoPath,
+        state: PhotoUploadState.failed,
+        error: e.toString(),
+      );
+      
       emit(
         state.copyWith(
           uploadStatus: ProfileStatus.error,
           error: 'Failed to upload photo: ${e.toString()}',
+          uploadingPhotos: failedUploadingPhotos,
         ),
       );
     }
@@ -223,6 +291,43 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
         error: 'Failed to delete photo: ${e.toString()}',
       ));
     }
+  }
+
+  Future<void> _onRetryPhotoUpload(
+    RetryPhotoUpload event,
+    Emitter<ProfileState> emit,
+  ) async {
+    // Get the failed upload progress
+    final failedUpload = state.uploadingPhotos[event.tempId];
+    if (failedUpload == null) {
+      _logger.w('⚠️ No failed upload found for tempId: ${event.tempId}');
+      return;
+    }
+
+    _logger.i('🔄 Retrying photo upload: ${failedUpload.localPath}');
+
+    // Trigger new upload with the same local path
+    add(UploadPhoto(photoPath: failedUpload.localPath));
+
+    // Clear the failed upload from map
+    final clearedUploadingPhotos = Map<String, PhotoUploadProgress>.from(
+      state.uploadingPhotos,
+    );
+    clearedUploadingPhotos.remove(event.tempId);
+    emit(state.copyWith(uploadingPhotos: clearedUploadingPhotos));
+  }
+
+  Future<void> _onClearUploadProgress(
+    ClearUploadProgress event,
+    Emitter<ProfileState> emit,
+  ) async {
+    _logger.d('🧹 Clearing upload progress for: ${event.tempId}');
+
+    final clearedUploadingPhotos = Map<String, PhotoUploadProgress>.from(
+      state.uploadingPhotos,
+    );
+    clearedUploadingPhotos.remove(event.tempId);
+    emit(state.copyWith(uploadingPhotos: clearedUploadingPhotos));
   }
 
   /// Cancel all pending profile changes

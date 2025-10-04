@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 
 import '../../theme/pulse_colors.dart';
 import '../../../domain/entities/user_profile.dart';
+import '../../blocs/profile/profile_bloc.dart';
 
 /// Enhanced photo grid widget with drag-to-reorder and advanced management
 class EnhancedPhotoGrid extends StatefulWidget {
@@ -12,6 +14,9 @@ class EnhancedPhotoGrid extends StatefulWidget {
   final Function(File)?
   onPhotoUpload; // Callback to upload photo to temp storage
   final Function(ProfilePhoto)? onPhotoDelete; // Callback to delete photo
+  final Function(String)? onRetryUpload; // Callback to retry failed upload
+  final Map<String, PhotoUploadProgress>?
+  uploadingPhotos; // Upload progress tracking
   final int maxPhotos;
   final bool isEditing;
 
@@ -21,6 +26,8 @@ class EnhancedPhotoGrid extends StatefulWidget {
     required this.onPhotosChanged,
     this.onPhotoUpload,
     this.onPhotoDelete,
+    this.onRetryUpload,
+    this.uploadingPhotos,
     this.maxPhotos = 6,
     this.isEditing = true,
   });
@@ -229,7 +236,10 @@ class _EnhancedPhotoGridState extends State<EnhancedPhotoGrid> {
           ReorderableGridView(
             physics: const NeverScrollableScrollPhysics(),
             shrinkWrap: true,
-            itemCount: _photos.length + (_photos.length < widget.maxPhotos ? 1 : 0),
+            itemCount:
+                _photos.length +
+                (widget.uploadingPhotos?.length ?? 0) +
+                (_photos.length < widget.maxPhotos ? 1 : 0),
             onReorder: _reorderPhotos,
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 3,
@@ -238,11 +248,21 @@ class _EnhancedPhotoGridState extends State<EnhancedPhotoGrid> {
               childAspectRatio: 0.75,
             ),
             children: [
+              // Existing photos
               ..._photos.asMap().entries.map((entry) {
                 final index = entry.key;
                 final photo = entry.value;
                 return _buildPhotoCard(photo, index, key: ValueKey(photo.id));
               }),
+              // Uploading photos
+              if (widget.uploadingPhotos != null)
+                ...widget.uploadingPhotos!.entries.map((entry) {
+                  return _buildUploadingPhotoCard(
+                    entry.value,
+                    key: ValueKey(entry.key),
+                  );
+                }),
+              // Add button
               if (_photos.length < widget.maxPhotos)
                 _buildAddPhotoCard(key: const ValueKey('add_photo')),
             ],
@@ -441,6 +461,171 @@ class _EnhancedPhotoGridState extends State<EnhancedPhotoGrid> {
               ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildUploadingPhotoCard(PhotoUploadProgress progress, {Key? key}) {
+    final isUploading = progress.state == PhotoUploadState.uploading;
+    final isSuccess = progress.state == PhotoUploadState.success;
+    final isFailed = progress.state == PhotoUploadState.failed;
+
+    return Container(
+      key: key,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Stack(
+        children: [
+          // Photo with opacity overlay
+          ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: Container(
+              width: double.infinity,
+              height: double.infinity,
+              color: Colors.grey[200],
+              child: Opacity(
+                opacity: isUploading ? 0.4 : 1.0,
+                child: Image.file(
+                  File(progress.localPath),
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
+                    return _buildErrorPlaceholder();
+                  },
+                ),
+              ),
+            ),
+          ),
+
+          // Uploading indicator (center)
+          if (isUploading)
+            Center(
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: 0.7),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    CircularProgressIndicator(
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      strokeWidth: 3,
+                    ),
+                    SizedBox(height: 8),
+                    Text(
+                      'Uploading...',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+          // Success checkmark (center)
+          if (isSuccess)
+            Center(
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: PulseColors.success.withValues(alpha: 0.9),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(
+                  Icons.check_circle,
+                  color: Colors.white,
+                  size: 48,
+                ),
+              ),
+            ),
+
+          // Failed overlay with retry button (center)
+          if (isFailed)
+            Center(
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: 0.7),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(
+                      Icons.error_outline,
+                      color: PulseColors.error,
+                      size: 32,
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Upload Failed',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // Retry button
+                        ElevatedButton.icon(
+                          onPressed: () {
+                            if (widget.onRetryUpload != null) {
+                              widget.onRetryUpload!(progress.tempId);
+                            }
+                          },
+                          icon: const Icon(Icons.refresh, size: 16),
+                          label: const Text('Retry'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: PulseColors.primary,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 6,
+                            ),
+                            minimumSize: Size.zero,
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        // Remove button
+                        IconButton(
+                          onPressed: () {
+                            // Clear this failed upload from state
+                            if (widget.onRetryUpload != null) {
+                              // Signal to clear progress (parent handles via ClearUploadProgress event)
+                              context.read<ProfileBloc>().add(
+                                ClearUploadProgress(tempId: progress.tempId),
+                              );
+                            }
+                          },
+                          icon: const Icon(Icons.close, size: 20),
+                          color: Colors.white,
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
+                          visualDensity: VisualDensity.compact,
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }

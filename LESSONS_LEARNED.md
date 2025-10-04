@@ -5,7 +5,272 @@ This document captures key learnings from building the **Flutter mobile dating a
 
 ---
 
-## 🖼️ **Photo Grid UX Enhancements (January 2025)**
+## � **Photo Upload Progress Tracking (October 2025)**
+
+**Context**: Multi-select photo upload was implemented but lacked proper visual feedback. Users couldn't see upload progress, success states, or retry failed uploads.
+
+**Problem - "No authenticated user found" Error on Multi-Upload**:
+When users selected multiple photos simultaneously, all uploads were triggered at once but some failed with authentication errors. No visual feedback showed which photos were uploading, successful, or failed.
+
+**Root Cause**:
+1. **No individual photo tracking**: All uploads shared a single `uploadStatus` state, so you couldn't tell which specific photo failed
+2. **No visual feedback**: Photos appeared instantly with no loading states or error indicators
+3. **No retry mechanism**: Failed uploads were lost forever with no way to retry
+4. **Race conditions**: Concurrent uploads could interfere with each other's auth state
+
+**Solution - Individual Photo Upload Progress Tracking**:
+
+### **1. Enhanced ProfileState with Upload Tracking**
+```dart
+// mobile/lib/presentation/blocs/profile/profile_state.dart
+
+/// Upload state for individual photos
+enum PhotoUploadState {
+  uploading,  // Currently uploading (show spinner)
+  success,    // Successfully uploaded (show checkmark)
+  failed,     // Upload failed (show error + retry button)
+}
+
+/// Track individual photo upload progress
+class PhotoUploadProgress {
+  final String tempId;           // Unique temporary ID
+  final String localPath;        // Local file path for retry
+  final PhotoUploadState state;  // Current upload state
+  final String? error;           // Error message if failed
+
+  const PhotoUploadProgress({
+    required this.tempId,
+    required this.localPath,
+    required this.state,
+    this.error,
+  });
+}
+
+class ProfileState extends Equatable {
+  final Map<String, PhotoUploadProgress> uploadingPhotos; // Track each upload
+  
+  const ProfileState({
+    this.uploadingPhotos = const {},
+    // ... other fields
+  });
+}
+```
+
+### **2. Enhanced UploadPhoto Event Handler**
+```dart
+// mobile/lib/presentation/blocs/profile/profile_bloc.dart
+
+Future<void> _onUploadPhoto(UploadPhoto event, Emitter<ProfileState> emit) async {
+  // Generate unique temp ID for tracking
+  final tempId = 'temp_${event.photoPath.split('/').last}_${DateTime.now().millisecondsSinceEpoch}';
+  
+  try {
+    // 1. Add to uploading map with "uploading" state
+    final newUploadingPhotos = Map<String, PhotoUploadProgress>.from(state.uploadingPhotos);
+    newUploadingPhotos[tempId] = PhotoUploadProgress(
+      tempId: tempId,
+      localPath: event.photoPath,
+      state: PhotoUploadState.uploading,
+    );
+    emit(state.copyWith(uploadingPhotos: newUploadingPhotos));
+
+    // 2. Upload to server
+    final photoUrl = await _profileService.uploadPhoto(event.photoPath);
+
+    // 3. Update state to "success"
+    final successUploadingPhotos = Map<String, PhotoUploadProgress>.from(state.uploadingPhotos);
+    successUploadingPhotos[tempId] = PhotoUploadProgress(
+      tempId: tempId,
+      localPath: event.photoPath,
+      state: PhotoUploadState.success,
+    );
+    emit(state.copyWith(
+      uploadStatus: ProfileStatus.success,
+      profile: updatedProfile,
+      uploadingPhotos: successUploadingPhotos,
+    ));
+
+    // 4. Auto-clear success state after 3 seconds
+    await Future.delayed(const Duration(seconds: 3));
+    final clearedUploadingPhotos = Map<String, PhotoUploadProgress>.from(state.uploadingPhotos);
+    clearedUploadingPhotos.remove(tempId);
+    emit(state.copyWith(uploadingPhotos: clearedUploadingPhotos));
+    
+  } catch (e) {
+    // Update state to "failed" with error message
+    final failedUploadingPhotos = Map<String, PhotoUploadProgress>.from(state.uploadingPhotos);
+    failedUploadingPhotos[tempId] = PhotoUploadProgress(
+      tempId: tempId,
+      localPath: event.photoPath,
+      state: PhotoUploadState.failed,
+      error: e.toString(),
+    );
+    emit(state.copyWith(uploadingPhotos: failedUploadingPhotos));
+  }
+}
+```
+
+### **3. Retry Failed Uploads**
+```dart
+// mobile/lib/presentation/blocs/profile/profile_event.dart
+class RetryPhotoUpload extends ProfileEvent {
+  final String tempId;
+  const RetryPhotoUpload({required this.tempId});
+}
+
+class ClearUploadProgress extends ProfileEvent {
+  final String tempId;
+  const ClearUploadProgress({required this.tempId});
+}
+
+// mobile/lib/presentation/blocs/profile/profile_bloc.dart
+Future<void> _onRetryPhotoUpload(RetryPhotoUpload event, Emitter<ProfileState> emit) async {
+  final failedUpload = state.uploadingPhotos[event.tempId];
+  if (failedUpload == null) return;
+
+  // Trigger new upload with saved local path
+  add(UploadPhoto(photoPath: failedUpload.localPath));
+
+  // Clear the failed upload from map
+  final clearedUploadingPhotos = Map<String, PhotoUploadProgress>.from(state.uploadingPhotos);
+  clearedUploadingPhotos.remove(event.tempId);
+  emit(state.copyWith(uploadingPhotos: clearedUploadingPhotos));
+}
+```
+
+### **4. Visual Feedback in EnhancedPhotoGrid**
+```dart
+// mobile/lib/presentation/widgets/profile/enhanced_photo_grid.dart
+
+Widget _buildUploadingPhotoCard(PhotoUploadProgress progress, {Key? key}) {
+  final isUploading = progress.state == PhotoUploadState.uploading;
+  final isSuccess = progress.state == PhotoUploadState.success;
+  final isFailed = progress.state == PhotoUploadState.failed;
+
+  return Stack(
+    children: [
+      // Photo with low opacity when uploading
+      Opacity(
+        opacity: isUploading ? 0.4 : 1.0,
+        child: Image.file(File(progress.localPath), fit: BoxFit.cover),
+      ),
+
+      // Uploading indicator
+      if (isUploading)
+        Center(
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.black.withValues(alpha: 0.7),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                ),
+                SizedBox(height: 8),
+                Text('Uploading...', style: TextStyle(color: Colors.white)),
+              ],
+            ),
+          ),
+        ),
+
+      // Success checkmark (auto-disappears after 3 seconds)
+      if (isSuccess)
+        Center(
+          child: Container(
+            decoration: BoxDecoration(
+              color: PulseColors.success.withValues(alpha: 0.9),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Icon(Icons.check_circle, color: Colors.white, size: 48),
+          ),
+        ),
+
+      // Failed overlay with retry button
+      if (isFailed)
+        Center(
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.black.withValues(alpha: 0.7),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.error_outline, color: PulseColors.error, size: 32),
+                const Text('Upload Failed', style: TextStyle(color: Colors.white)),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    ElevatedButton.icon(
+                      onPressed: () => widget.onRetryUpload!(progress.tempId),
+                      icon: const Icon(Icons.refresh),
+                      label: const Text('Retry'),
+                    ),
+                    IconButton(
+                      onPressed: () => context.read<ProfileBloc>().add(
+                        ClearUploadProgress(tempId: progress.tempId),
+                      ),
+                      icon: const Icon(Icons.close),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+    ],
+  );
+}
+```
+
+### **5. Pass Upload Progress to Widget**
+```dart
+// mobile/lib/presentation/screens/profile/profile_edit_screen.dart
+
+Widget _buildPhotosPage() {
+  return BlocBuilder<ProfileBloc, ProfileState>(
+    builder: (context, state) {
+      return EnhancedPhotoGrid(
+        photos: _photos,
+        onPhotosChanged: (photos) => setState(() => _photos = photos),
+        onPhotoUpload: _handleAddPhoto,
+        onPhotoDelete: _handleDeletePhoto,
+        onRetryUpload: (tempId) {
+          context.read<ProfileBloc>().add(RetryPhotoUpload(tempId: tempId));
+        },
+        uploadingPhotos: state.uploadingPhotos, // Pass progress map
+        maxPhotos: 6,
+        isEditing: true,
+      );
+    },
+  );
+}
+```
+
+**Key Benefits**:
+1. ✅ **Individual Tracking**: Each photo has its own upload state (uploading/success/failed)
+2. ✅ **Visual Feedback**: Users see exactly which photos are uploading, succeeded, or failed
+3. ✅ **Retry Mechanism**: Failed uploads show retry button with original local path preserved
+4. ✅ **Auto-Clear Success**: Success checkmarks automatically disappear after 3 seconds
+5. ✅ **Remove Failed**: Users can dismiss failed uploads with X button
+6. ✅ **No Race Conditions**: Each upload tracked independently with unique temp ID
+7. ✅ **Better UX**: Low opacity during upload, clear checkmark on success, error indicator on failure
+
+**Critical Patterns**:
+- **Always generate unique tempId**: Use timestamp + filename to avoid collisions
+- **Preserve local path**: Store original file path in PhotoUploadProgress for retry
+- **Auto-clear success states**: Don't clutter UI with old checkmarks (3-second timeout)
+- **Map-based tracking**: Use `Map<String, PhotoUploadProgress>` for O(1) lookups
+- **Immutable state updates**: Always create new map copy when updating uploadingPhotos
+- **BlocBuilder for progress**: Wrap grid in BlocBuilder to reactively update UI on state changes
+
+---
+
+## �🖼️ **Photo Grid UX Enhancements (January 2025)**
 
 **Context**: Implemented modern photo management UX features: drag-to-reorder, full-screen viewer with swipe, photo details popover, and description editing capabilities.
 

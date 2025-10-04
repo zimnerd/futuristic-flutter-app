@@ -22,8 +22,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   void initState() {
     super.initState();
-    // Load actual user profile from ProfileBloc
-    context.read<ProfileBloc>().add(LoadProfile());
+    // Load actual user profile from ProfileBloc (use cache if available)
+    context.read<ProfileBloc>().add(const LoadProfile());
   }
 
   @override
@@ -48,7 +48,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   const SizedBox(height: 16),
                   ElevatedButton(
                     onPressed: () =>
-                        context.read<ProfileBloc>().add(LoadProfile()),
+                        context.read<ProfileBloc>().add(const LoadProfile(forceRefresh: true)),
                     child: const Text('Retry'),
                   ),
                 ],

@@ -89,7 +89,8 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
   void initState() {
     super.initState();
     _tabController = TabController(length: 5, vsync: this);
-    context.read<ProfileBloc>().add(LoadProfile());
+    // Use cached profile if available (no force refresh)
+    context.read<ProfileBloc>().add(const LoadProfile());
   }
 
   @override
@@ -887,11 +888,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
                 logger.i('🚀 Executing context.go("/profile")');
                 context.go('/profile');
                 logger.i('✅ Navigation command sent');
-                // Reset updateStatus to prevent toast re-trigger on re-entry
-                Future.delayed(const Duration(milliseconds: 300), () {
-                  logger.i('🔄 Reloading profile and resetting updateStatus');
-                  context.read<ProfileBloc>().add(LoadProfile());
-                });
+                // No need to reload profile - UpdateProfile already returns fresh data
                 _isFinalSave = false; // Reset flag
               }
             } else {
@@ -1181,18 +1178,28 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
         children: [
           // Photos auto-upload immediately - no pending changes banner needed
           
-          // Photo grid
-          EnhancedPhotoGrid(
-            photos: _photos,
-            onPhotosChanged: (photos) {
-              setState(() {
-                _photos = photos;
-              });
+          // Photo grid with BLoC state for upload progress
+          BlocBuilder<ProfileBloc, ProfileState>(
+            builder: (context, state) {
+              return EnhancedPhotoGrid(
+                photos: _photos,
+                onPhotosChanged: (photos) {
+                  setState(() {
+                    _photos = photos;
+                  });
+                },
+                onPhotoUpload: _handleAddPhoto,
+                onPhotoDelete: _handleDeletePhoto,
+                onRetryUpload: (tempId) {
+                  context.read<ProfileBloc>().add(
+                    RetryPhotoUpload(tempId: tempId),
+                  );
+                },
+                uploadingPhotos: state.uploadingPhotos,
+                maxPhotos: 6,
+                isEditing: true,
+              );
             },
-            onPhotoUpload: _handleAddPhoto,
-            onPhotoDelete: _handleDeletePhoto,
-            maxPhotos: 6,
-            isEditing: true,
           ),
         ],
       ),
