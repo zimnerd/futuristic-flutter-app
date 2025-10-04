@@ -113,6 +113,8 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
     
     // Normalize gender from backend format (MALE/FEMALE) to UI format (Man/Woman)
     _selectedGender = _normalizeGender(profile.gender) ?? 'Woman';
+    _selectedPreference =
+        profile.lookingFor ?? 'Men'; // ← Fix: Populate preference
     _photos = List.from(profile.photos);
     
     // Populate new profile fields
@@ -477,24 +479,38 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
           
           // Handle photo upload success/error
           if (state.uploadStatus == ProfileStatus.success) {
+            logger.i('📸 Upload status SUCCESS detected');
+            logger.i('📊 Current _photos count: ${_photos.length}');
+            logger.i(
+              '📊 BLoC profile photos count: ${state.profile?.photos.length ?? 0}',
+            );
+            
             if (state.profile != null && state.profile!.photos.isNotEmpty) {
-              // Get the last uploaded photo from BLoC (has proper mediaId and temp URL)
-              final uploadedPhoto = state.profile!.photos.last;
-              if (!_photos.any((p) => p.id == uploadedPhoto.id)) {
-                setState(() {
-                  _tempPhotoUrls.add(uploadedPhoto.url);
-                  _photos.add(
-                    uploadedPhoto,
-                  ); // Use BLoC photo directly (has mediaId)
-                });
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Photo uploaded successfully!'),
-                    backgroundColor: PulseColors.success,
-                    duration: Duration(seconds: 2),
-                  ),
+              logger.i('🔄 Syncing _photos with BLoC state photos');
+
+              // Sync _photos with BLoC state (includes the new upload)
+              setState(() {
+                _photos = List.from(state.profile!.photos);
+                // Add temp URL to tracking list
+                final latestPhoto = state.profile!.photos.last;
+                if (!_tempPhotoUrls.contains(latestPhoto.url)) {
+                  _tempPhotoUrls.add(latestPhoto.url);
+                }
+                logger.i('✅ Photos synced: ${_photos.length} photos total');
+                logger.i(
+                  '🆕 Latest photo: id=${latestPhoto.id}, url=${latestPhoto.url}',
                 );
-              }
+              });
+              
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Photo uploaded successfully!'),
+                  backgroundColor: PulseColors.success,
+                  duration: Duration(seconds: 2),
+                ),
+              );
+            } else {
+              logger.e('❌ No profile or no photos in BLoC state');
             }
           } else if (state.uploadStatus == ProfileStatus.error) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -519,9 +535,9 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
             logger.i('🚀 Executing context.go("/profile")');
             context.go('/profile');
             logger.i('✅ Navigation command sent');
-            // Reload profile to refresh display with new data
-            Future.delayed(const Duration(milliseconds: 100), () {
-              logger.i('🔄 Reloading profile after navigation');
+            // Reset updateStatus to prevent toast re-trigger on re-entry
+            Future.delayed(const Duration(milliseconds: 300), () {
+              logger.i('🔄 Reloading profile and resetting updateStatus');
               context.read<ProfileBloc>().add(LoadProfile());
             });
           }

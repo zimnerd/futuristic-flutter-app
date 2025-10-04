@@ -43,8 +43,23 @@ class _EnhancedPhotoGridState extends State<EnhancedPhotoGrid> {
   @override
   void didUpdateWidget(EnhancedPhotoGrid oldWidget) {
     super.didUpdateWidget(oldWidget);
+    print('🔄 EnhancedPhotoGrid.didUpdateWidget called');
+    print('📊 Old photos count: ${oldWidget.photos.length}');
+    print('📊 New photos count: ${widget.photos.length}');
+    
     if (oldWidget.photos != widget.photos) {
+      print('✅ Photos changed, updating internal _photos list');
       _photos = List.from(widget.photos);
+      print('📊 Internal _photos count after update: ${_photos.length}');
+
+      // Log each photo URL
+      for (var i = 0; i < _photos.length; i++) {
+        print(
+          '📸 Photo $i: id=${_photos[i].id}, url=${_photos[i].url}, isLocal=${_photos[i].isLocal}',
+        );
+      }
+    } else {
+      print('⚠️ Photos unchanged, skipping update');
     }
   }
 

@@ -219,53 +219,58 @@ class ProfileForm extends StatelessWidget {
       'Beach', 'Mountains', 'Concerts', 'Museums', 'Theatre', 'Yoga',
     ];
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Interests',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-            color: Colors.black87,
-          ),
-        ),
-        const SizedBox(height: 8),
-        const Text(
-          'Select up to 10 interests',
-          style: TextStyle(
-            fontSize: 14,
-            color: Colors.grey,
-          ),
-        ),
-        const SizedBox(height: 16),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: availableInterests.map((interest) {
-            final isSelected = selectedInterests.contains(interest);
-            return FilterChip(
-              label: Text(interest),
-              selected: isSelected,
-              onSelected: (selected) {
-                if (selected && selectedInterests.length < 10) {
-                  onInterestsChanged([...selectedInterests, interest]);
-                } else if (!selected) {
-                  onInterestsChanged(
-                    selectedInterests.where((i) => i != interest).toList(),
-                  );
-                }
-              },
-              selectedColor: PulseColors.primary.withValues(alpha: 0.2),
-              checkmarkColor: PulseColors.primary,
-              backgroundColor: Colors.grey[100],
-              labelStyle: TextStyle(
-                color: isSelected ? PulseColors.primary : Colors.black87,
+    return Builder(
+      builder: (context) {
+        final isDark = Theme.of(context).brightness == Brightness.dark;
+        final headingColor = isDark ? Colors.white : Colors.black87;
+        
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Interests',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: headingColor,
               ),
-            );
-          }).toList(),
-        ),
-      ],
+            ),
+            const SizedBox(height: 16),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: availableInterests.map((interest) {
+                final isSelected = selectedInterests.contains(interest);
+                return FilterChip(
+                  label: Text(interest),
+                  selected: isSelected,
+                  onSelected: (selected) {
+                    final newInterests = [...selectedInterests];
+                    if (selected) {
+                      newInterests.add(interest);
+                    } else {
+                      newInterests.remove(interest);
+                    }
+                    onInterestsChanged(newInterests);
+                  },
+                  backgroundColor:
+                      Theme.of(context).brightness == Brightness.dark
+                      ? Colors.grey.shade800
+                      : Colors.grey.shade100,
+                  selectedColor: PulseColors.primary,
+                  labelStyle: TextStyle(
+                    color: isSelected
+                        ? Colors.white
+                        : (Theme.of(context).brightness == Brightness.dark
+                              ? Colors.white70
+                              : Colors.black87),
+                  ),
+                );
+              }).toList(),
+            ),
+          ],
+        );
+      },
     );
   }
 

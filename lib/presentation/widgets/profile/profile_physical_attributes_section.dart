@@ -57,13 +57,25 @@ class ProfilePhysicalAttributesSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Theme-aware colors (matching Languages section pattern)
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final containerColor = isDark
+        ? Colors.white.withValues(alpha: 0.05)
+        : Colors.grey.shade50;
+    final borderColor = isDark
+        ? Colors.white.withValues(alpha: 0.1)
+        : Colors.grey.withValues(alpha: 0.3);
+    final textColor =
+        Theme.of(context).textTheme.bodyLarge?.color ??
+        (isDark ? Colors.white : Colors.black87);
+    
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.05),
+        color: containerColor,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: Colors.white.withValues(alpha: 0.1),
+          color: borderColor,
           width: 1,
         ),
       ),
@@ -92,10 +104,10 @@ class ProfilePhysicalAttributesSection extends StatelessWidget {
                   children: [
                     Text(
                       title,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                        color: textColor,
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -103,7 +115,7 @@ class ProfilePhysicalAttributesSection extends StatelessWidget {
                       subtitle,
                       style: TextStyle(
                         fontSize: 14,
-                        color: Colors.white.withValues(alpha: 0.6),
+                        color: textColor.withValues(alpha: 0.6),
                       ),
                     ),
                   ],
@@ -125,7 +137,7 @@ class ProfilePhysicalAttributesSection extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
-                      color: Colors.white.withValues(alpha: 0.9),
+                      color: textColor.withValues(alpha: 0.9),
                     ),
                   ),
                   if (height != null)
@@ -153,7 +165,7 @@ class ProfilePhysicalAttributesSection extends StatelessWidget {
               SliderTheme(
                 data: SliderTheme.of(context).copyWith(
                   activeTrackColor: PulseColors.success,
-                  inactiveTrackColor: Colors.white.withValues(alpha: 0.1),
+                  inactiveTrackColor: textColor.withValues(alpha: 0.1),
                   thumbColor: PulseColors.success,
                   overlayColor: PulseColors.success.withValues(alpha: 0.2),
                   trackHeight: 4,
@@ -182,19 +194,21 @@ class ProfilePhysicalAttributesSection extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
-                  color: Colors.white.withValues(alpha: 0.9),
+                  color: textColor.withValues(alpha: 0.9),
                 ),
               ),
               const SizedBox(height: 8),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.05),
+                  color: isDark
+                      ? Colors.white.withValues(alpha: 0.05)
+                      : Colors.black.withValues(alpha: 0.03),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
                     color: religion != null
                         ? PulseColors.success.withValues(alpha: 0.5)
-                        : Colors.white.withValues(alpha: 0.1),
+                        : borderColor,
                     width: 1,
                   ),
                 ),
@@ -205,27 +219,28 @@ class ProfilePhysicalAttributesSection extends StatelessWidget {
                     hint: Text(
                       'Select your religion',
                       style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.5),
+                        color: textColor.withValues(alpha: 0.5),
                         fontSize: 14,
                       ),
                     ),
-                    dropdownColor: const Color(0xFF1A1F3A),
-                    style: const TextStyle(
-                      color: Colors.white,
+                    dropdownColor: isDark
+                        ? const Color(0xFF1A1F3A)
+                        : Colors.white,
+                    style: TextStyle(color: textColor,
                       fontSize: 14,
                     ),
                     icon: Icon(
                       Icons.arrow_drop_down,
-                      color: Colors.white.withValues(alpha: 0.7),
+                      color: textColor.withValues(alpha: 0.7),
                     ),
                     items: [
-                      const DropdownMenuItem<String>(
+                      DropdownMenuItem<String>(
                         value: null,
                         child: Text(
                           'Select your religion',
                           style: TextStyle(
                             fontStyle: FontStyle.italic,
-                            color: Colors.white54,
+                            color: textColor.withValues(alpha: 0.5),
                           ),
                         ),
                       ),
@@ -253,19 +268,21 @@ class ProfilePhysicalAttributesSection extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
-                  color: Colors.white.withValues(alpha: 0.9),
+                  color: textColor.withValues(alpha: 0.9),
                 ),
               ),
               const SizedBox(height: 8),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.05),
+                  color: isDark
+                      ? Colors.white.withValues(alpha: 0.05)
+                      : Colors.black.withValues(alpha: 0.03),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
                     color: politics != null
                         ? PulseColors.success.withValues(alpha: 0.5)
-                        : Colors.white.withValues(alpha: 0.1),
+                        : borderColor,
                     width: 1,
                   ),
                 ),
@@ -276,27 +293,28 @@ class ProfilePhysicalAttributesSection extends StatelessWidget {
                     hint: Text(
                       'Select your political views',
                       style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.5),
+                        color: textColor.withValues(alpha: 0.5),
                         fontSize: 14,
                       ),
                     ),
-                    dropdownColor: const Color(0xFF1A1F3A),
-                    style: const TextStyle(
-                      color: Colors.white,
+                    dropdownColor: isDark
+                        ? const Color(0xFF1A1F3A)
+                        : Colors.white,
+                    style: TextStyle(color: textColor,
                       fontSize: 14,
                     ),
                     icon: Icon(
                       Icons.arrow_drop_down,
-                      color: Colors.white.withValues(alpha: 0.7),
+                      color: textColor.withValues(alpha: 0.7),
                     ),
                     items: [
-                      const DropdownMenuItem<String>(
+                      DropdownMenuItem<String>(
                         value: null,
                         child: Text(
                           'Select your political views',
                           style: TextStyle(
                             fontStyle: FontStyle.italic,
-                            color: Colors.white54,
+                            color: textColor.withValues(alpha: 0.5),
                           ),
                         ),
                       ),
@@ -327,7 +345,7 @@ class ProfilePhysicalAttributesSection extends StatelessWidget {
                 Icon(
                   Icons.lock_outline,
                   size: 16,
-                  color: Colors.white.withValues(alpha: 0.7),
+                  color: textColor.withValues(alpha: 0.7),
                 ),
                 const SizedBox(width: 8),
                 Expanded(
@@ -335,7 +353,7 @@ class ProfilePhysicalAttributesSection extends StatelessWidget {
                     'This information is optional and helps find compatible matches',
                     style: TextStyle(
                       fontSize: 12,
-                      color: Colors.white.withValues(alpha: 0.7),
+                      color: textColor.withValues(alpha: 0.7),
                     ),
                   ),
                 ),
