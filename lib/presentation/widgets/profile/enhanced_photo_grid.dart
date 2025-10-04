@@ -70,25 +70,37 @@ class _EnhancedPhotoGridState extends State<EnhancedPhotoGrid> {
     }
 
     try {
-      final XFile? image = await _picker.pickImage(
-        source: ImageSource.gallery,
+      // Support multi-select up to remaining photo slots
+      final int remainingSlots = widget.maxPhotos - _photos.length;
+
+      final List<XFile> images = await _picker.pickMultiImage(
         maxWidth: 1080,
         maxHeight: 1080,
         imageQuality: 85,
       );
 
-      if (image != null) {
-        final imageFile = File(image.path);
+      if (images.isNotEmpty) {
+        // Limit to remaining slots
+        final imagesToUpload = images.take(remainingSlots).toList();
 
-        // If upload callback provided, trigger upload to temp storage
+        if (images.length > remainingSlots) {
+          _showErrorDialog(
+            'Only $remainingSlots photo(s) can be added. ${images.length - remainingSlots} photo(s) were not uploaded.',
+          );
+        }
+
+        // If upload callback provided, trigger direct upload
         if (widget.onPhotoUpload != null) {
           setState(() {
             _isUploading = true;
           });
 
           try {
-            // Call parent to upload via BLoC (will return photo with mediaId)
-            await widget.onPhotoUpload!(imageFile);
+            // Upload each photo directly to permanent storage
+            for (final image in imagesToUpload) {
+              final imageFile = File(image.path);
+              await widget.onPhotoUpload!(imageFile);
+            }
             // BLoC will update photos list via onPhotosChanged
           } catch (uploadError) {
             _showErrorDialog('Failed to upload photo: $uploadError');
@@ -100,15 +112,17 @@ class _EnhancedPhotoGridState extends State<EnhancedPhotoGrid> {
             }
           }
         } else {
-          // Fallback: just add local file path (old behavior)
-          final newPhoto = ProfilePhoto(
-            id: DateTime.now().millisecondsSinceEpoch.toString(),
-            url: image.path,
-            order: _photos.length,
-          );
-          setState(() {
-            _photos.add(newPhoto);
-          });
+          // Fallback: Add all selected images locally (old behavior)
+          for (final selectedImage in imagesToUpload) {
+            final newPhoto = ProfilePhoto(
+              id: DateTime.now().millisecondsSinceEpoch.toString(),
+              url: selectedImage.path,
+              order: _photos.length,
+            );
+            setState(() {
+              _photos.add(newPhoto);
+            });
+          }
           widget.onPhotosChanged(_photos);
         }
       }

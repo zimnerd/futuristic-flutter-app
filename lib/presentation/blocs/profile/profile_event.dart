@@ -50,3 +50,13 @@ class UpdatePrivacySettings extends ProfileEvent {
   @override
   List<Object> get props => [settings];
 }
+
+/// Multiple Photo Upload event (direct to permanent storage)
+class UploadMultiplePhotos extends ProfileEvent {
+  final List<String> photoPaths;
+
+  const UploadMultiplePhotos({required this.photoPaths});
+
+  @override
+  List<Object> get props => [photoPaths];
+}

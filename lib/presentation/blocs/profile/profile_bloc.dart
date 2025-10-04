@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:logger/logger.dart';
@@ -16,21 +14,15 @@ enum ProfileStatus { initial, loading, loaded, error, success }
 class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
   final ProfileService _profileService;
   final PhotoManagerService _photoManager;
-  final Logger _logger;
-  UserProfile? _originalProfile; // For delta tracking
-  List<String> _tempPhotoIds = []; // Track temp uploads
+  final Logger _logger = Logger();
+  UserProfile? _originalProfile;
 
-  ProfileBloc({
-    required ProfileService profileService,
-    required PhotoManagerService photoManager,
-    Logger? logger,
-  }) : _profileService = profileService,
-       _photoManager = photoManager,
-       _logger = logger ?? Logger(),
-        super(const ProfileState()) {
+  ProfileBloc(this._profileService, this._photoManager)
+    : super(const ProfileState()) {
     on<LoadProfile>(_onLoadProfile);
     on<UpdateProfile>(_onUpdateProfile);
     on<UploadPhoto>(_onUploadPhoto);
+    on<UploadMultiplePhotos>(_onUploadMultiplePhotos);
     on<DeletePhoto>(_onDeletePhoto);
     on<CancelProfileChanges>(_onCancelProfileChanges);
     on<UpdatePrivacySettings>(_onUpdatePrivacySettings);
@@ -64,90 +56,34 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     Emitter<ProfileState> emit,
   ) async {
     try {
+      _logger.i('� Updating profile...');
       emit(state.copyWith(updateStatus: ProfileStatus.loading));
-      
-      // STEP 1: Save photos (confirm temps + delete marked) before profile update
-      List<String> confirmedMediaIds = [];
-      if (_tempPhotoIds.isNotEmpty ||
-          _photoManager.getPhotosToDelete().isNotEmpty) {
-        _logger.i('💾 Saving photos before profile update...');
-        final photoResult = await _photoManager.savePhotos(
-          tempPhotoIds: _tempPhotoIds,
-        );
 
-        if (photoResult.hasFailures) {
-          _logger.w(
-            '⚠️ Some photo operations failed: ${photoResult.allFailures}',
-          );
-        }
-
-        // Collect confirmed media IDs for syncing
-        confirmedMediaIds = photoResult.confirmResult.confirmed;
-        _tempPhotoIds.clear();
-      }
-
-      // STEP 2: Sync confirmed photos with profile (link Media to User.photos)
-      if (confirmedMediaIds.isNotEmpty && event.profile.photos.isNotEmpty) {
-        _logger.i('🔗 Syncing ${confirmedMediaIds.length} photos with profile...');
-        try {
-          // Map profile photos to sync format
-          final photosToSync = event.profile.photos
-              .where((photo) => confirmedMediaIds.contains(photo.id))
-              .map((photo) => ProfilePhotoSync(
-                    mediaId: photo.id,
-                    description: photo.description,
-                    order: photo.order,
-                    isMain: photo.isMain,
-                  ))
-              .toList();
-
-          if (photosToSync.isNotEmpty) {
-            final syncedPhotos = await _profileService.syncPhotos(
-              photos: photosToSync,
-            );
-            
-            _logger.i('✅ Photos synced successfully: ${syncedPhotos.length}');
-            
-            // Update profile with synced photo data (may have server-side changes)
-            final updatedProfile = event.profile.copyWith(
-              photos: syncedPhotos,
-            );
-            
-            // Use synced profile for update
-            final finalProfile = await _profileService.updateProfile(
-              updatedProfile,
-              originalProfile: _originalProfile,
-            );
-            _originalProfile = finalProfile;
-            
-            emit(state.copyWith(
-              updateStatus: ProfileStatus.success,
-              profile: finalProfile,
-            ));
-            return;
-          }
-        } catch (syncError) {
-          _logger.e('❌ Photo sync failed: $syncError');
-          // Continue with profile update even if sync fails
-        }
-      }
-
-      // STEP 3: Update profile with delta tracking
+      // Photos are already uploaded directly to permanent storage
+      // Just update profile data without photo sync
+      _logger.i('📝 Updating profile data...');
       final updatedProfile = await _profileService.updateProfile(
         event.profile,
         originalProfile: _originalProfile,
       );
-      _originalProfile = updatedProfile; // Update for next edit
-      
-      emit(state.copyWith(
-        updateStatus: ProfileStatus.success,
-        profile: updatedProfile,
-      ));
+      _originalProfile = updatedProfile;
+
+      _logger.i('✅ Profile updated successfully');
+
+      emit(
+        state.copyWith(
+          updateStatus: ProfileStatus.success,
+          profile: updatedProfile,
+        ),
+      );
     } catch (e) {
-      emit(state.copyWith(
-        updateStatus: ProfileStatus.error,
-        error: 'Failed to update profile: ${e.toString()}',
-      ));
+      _logger.e('❌ Profile update failed: $e');
+      emit(
+        state.copyWith(
+          updateStatus: ProfileStatus.error,
+          error: 'Failed to update profile: ${e.toString()}',
+        ),
+      );
     }
   }
 
@@ -156,42 +92,99 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     Emitter<ProfileState> emit,
   ) async {
     try {
+      _logger.i('📸 Uploading photo directly to permanent storage...');
       emit(state.copyWith(uploadStatus: ProfileStatus.loading));
-      
-      // Upload to temp storage for instant preview
-      final result = await _photoManager.uploadTempPhoto(File(event.photoPath));
-      _tempPhotoIds.add(result.mediaId);
 
-      _logger.i('📸 Temp photo uploaded: ${result.mediaId}');
-      
-      // Build full URL from relative path
-      final fullUrl = result.url.startsWith('http')
-          ? result.url
-          : 'http://localhost:3000${result.url}';
+      // Upload directly to permanent storage (returns URL)
+      final photoUrl = await _profileService.uploadPhoto(event.photoPath);
 
-      _logger.i('🔗 Full photo URL: $fullUrl');
-      
-      // Add to profile for preview (not confirmed yet)
+      _logger.i('✅ Photo uploaded permanently: $photoUrl');
+
+      // Add to profile
       if (state.profile != null) {
         final updatedPhotos = List<ProfilePhoto>.from(state.profile!.photos)
-          ..add(ProfilePhoto(
-              id: result.mediaId,
-              url: fullUrl, // Full URL for preview
-            order: state.profile!.photos.length,
-          ));
-        
+          ..add(
+            ProfilePhoto(
+              id: photoUrl.split('/').last, // Use filename as temp ID
+              url: photoUrl,
+              order: state.profile!.photos.length,
+            ),
+          );
+
         final updatedProfile = state.profile!.copyWith(photos: updatedPhotos);
-        
-        emit(state.copyWith(
-          uploadStatus: ProfileStatus.success,
-          profile: updatedProfile,
-        ));
+
+        emit(
+          state.copyWith(
+            uploadStatus: ProfileStatus.success,
+            profile: updatedProfile,
+          ),
+        );
       }
     } catch (e) {
-      emit(state.copyWith(
-        uploadStatus: ProfileStatus.error,
-        error: 'Failed to upload photo: ${e.toString()}',
-      ));
+      _logger.e('❌ Photo upload failed: $e');
+      emit(
+        state.copyWith(
+          uploadStatus: ProfileStatus.error,
+          error: 'Failed to upload photo: ${e.toString()}',
+        ),
+      );
+    }
+  }
+
+  /// Upload multiple photos directly to permanent storage
+  Future<void> _onUploadMultiplePhotos(
+    UploadMultiplePhotos event,
+    Emitter<ProfileState> emit,
+  ) async {
+    try {
+      _logger.i(
+        '📸 Uploading ${event.photoPaths.length} photos directly to permanent storage...',
+      );
+      emit(state.copyWith(uploadStatus: ProfileStatus.loading));
+
+      final newPhotos = <ProfilePhoto>[];
+      final startOrder = state.profile?.photos.length ?? 0;
+      
+      // Upload each photo directly to permanent storage
+      for (int i = 0; i < event.photoPaths.length; i++) {
+        final photoUrl = await _profileService.uploadPhoto(event.photoPaths[i]);
+        
+        newPhotos.add(
+          ProfilePhoto(
+            id: photoUrl.split('/').last, // Use filename as temp ID
+            url: photoUrl,
+            order: startOrder + i,
+          ),
+        );
+        
+        _logger.i(
+          '✅ Photo ${i + 1}/${event.photoPaths.length} uploaded: $photoUrl',
+        );
+      }
+
+      // Add all photos to profile
+      if (state.profile != null) {
+        final updatedPhotos = List<ProfilePhoto>.from(state.profile!.photos)
+          ..addAll(newPhotos);
+
+        final updatedProfile = state.profile!.copyWith(photos: updatedPhotos);
+
+        _logger.i('✅ All ${newPhotos.length} photos uploaded successfully');
+        emit(
+          state.copyWith(
+            uploadStatus: ProfileStatus.success,
+            profile: updatedProfile,
+          ),
+        );
+      }
+    } catch (e) {
+      _logger.e('❌ Multiple photo upload failed: $e');
+      emit(
+        state.copyWith(
+          uploadStatus: ProfileStatus.error,
+          error: 'Failed to upload photos: ${e.toString()}',
+        ),
+      );
     }
   }
 
@@ -202,7 +195,6 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     try {
       // Mark for deletion (deferred until save)
       _photoManager.markPhotoForDeletion(event.photoUrl);
-      _tempPhotoIds.remove(event.photoUrl); // Remove from temp list if present
 
       _logger.i('🗑️ Photo marked for deletion: ${event.photoUrl}');
       
@@ -235,7 +227,6 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     Emitter<ProfileState> emit,
   ) {
     _logger.i('🚫 Cancelling profile changes');
-    _tempPhotoIds.clear();
     _photoManager.cancelPhotoChanges();
   }
 

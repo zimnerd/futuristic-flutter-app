@@ -860,25 +860,40 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
             // Only navigate away on final save, not section saves
             if (_isFinalSave) {
               logger.i(
-                '🎯 Final profile save successful, navigating to /profile',
+                '🎯 Final profile save successful',
               );
-              // Show success message
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Profile saved successfully!'),
-                  backgroundColor: PulseColors.success,
-                ),
-              );
-              // Navigate explicitly to profile screen (not discover page)
-              logger.i('🚀 Executing context.go("/profile")');
-              context.go('/profile');
-              logger.i('✅ Navigation command sent');
-              // Reset updateStatus to prevent toast re-trigger on re-entry
-              Future.delayed(const Duration(milliseconds: 300), () {
-                logger.i('🔄 Reloading profile and resetting updateStatus');
-                context.read<ProfileBloc>().add(LoadProfile());
-              });
-              _isFinalSave = false; // Reset flag
+              
+              // Privacy tab (index 4) - show success, refresh, but DON'T navigate
+              if (_currentPageIndex == 4) {
+                logger.i('🔒 Privacy settings saved - staying on tab');
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Privacy settings saved successfully!'),
+                    backgroundColor: PulseColors.success,
+                    duration: Duration(seconds: 2),
+                  ),
+                );
+                // Refresh profile but stay on this tab
+                _isFinalSave = false;
+              } else {
+                // Other tabs - show success and navigate to profile
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Profile saved successfully!'),
+                    backgroundColor: PulseColors.success,
+                  ),
+                );
+                // Navigate explicitly to profile screen (not discover page)
+                logger.i('🚀 Executing context.go("/profile")');
+                context.go('/profile');
+                logger.i('✅ Navigation command sent');
+                // Reset updateStatus to prevent toast re-trigger on re-entry
+                Future.delayed(const Duration(milliseconds: 300), () {
+                  logger.i('🔄 Reloading profile and resetting updateStatus');
+                  context.read<ProfileBloc>().add(LoadProfile());
+                });
+                _isFinalSave = false; // Reset flag
+              }
             } else {
               // Section save successful - just show subtle feedback
               // Only show if not initial load
@@ -1007,7 +1022,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
                     Expanded(
                       child: PulseButton(
                         text: _currentPageIndex == 4
-                            ? 'Save and Close'
+                            ? 'Continue'
                             : 'Save & Continue',
                         onPressed: _currentPageIndex == 4
                             ? _saveProfile
