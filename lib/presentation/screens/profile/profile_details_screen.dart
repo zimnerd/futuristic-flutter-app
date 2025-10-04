@@ -202,9 +202,21 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
                 const SizedBox(height: 20),
                 _buildAboutSection(),
                 const SizedBox(height: 20),
+                _buildPhysicalAttributesSection(),
+                const SizedBox(height: 20),
+                _buildLifestyleSection(),
+                const SizedBox(height: 20),
+                _buildRelationshipGoalsSection(),
+                const SizedBox(height: 20),
                 _buildDetailsSection(),
                 const SizedBox(height: 20),
                 _buildInterestsSection(),
+                const SizedBox(height: 20),
+                _buildLanguagesSection(),
+                const SizedBox(height: 20),
+                _buildPersonalityTraitsSection(),
+                const SizedBox(height: 20),
+                _buildPromptQuestionsSection(),
                 const SizedBox(height: 20),
                 if (widget.profile.photos.length > 1) ...[
                   _buildPhotosGrid(),
@@ -347,6 +359,205 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
           ),
         ),
 
+        // Bottom gradient overlay with profile info
+        Positioned(
+          bottom: 0,
+          left: 0,
+          right: 0,
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Colors.transparent,
+                  Colors.black.withValues(alpha: 0.7),
+                  Colors.black.withValues(alpha: 0.9),
+                ],
+                stops: const [0.0, 0.5, 1.0],
+              ),
+            ),
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Name and verification badge
+                Row(
+                  children: [
+                    Flexible(
+                      child: Text(
+                        widget.profile.name,
+                        style: const TextStyle(
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                          shadows: [
+                            Shadow(
+                              color: Colors.black45,
+                              offset: Offset(0, 1),
+                              blurRadius: 3,
+                            ),
+                          ],
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    if (_shouldShowAge())
+                      Text(
+                        ', ${widget.profile.age}',
+                        style: const TextStyle(
+                          fontSize: 28,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.white,
+                          shadows: [
+                            Shadow(
+                              color: Colors.black45,
+                              offset: Offset(0, 1),
+                              blurRadius: 3,
+                            ),
+                          ],
+                        ),
+                      ),
+                    const SizedBox(width: 8),
+                    if (widget.profile.verified)
+                      Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              PulseColors.primary,
+                              PulseColors.secondary,
+                            ],
+                          ),
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: PulseColors.primary.withValues(alpha: 0.5),
+                              blurRadius: 8,
+                              spreadRadius: 2,
+                            ),
+                          ],
+                        ),
+                        child: const Icon(
+                          Icons.verified,
+                          color: Colors.white,
+                          size: 20,
+                        ),
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                // Location with distance
+                if (_shouldShowDistance())
+                  Row(
+                    children: [
+                      const Icon(
+                        Icons.location_on,
+                        color: Colors.white,
+                        size: 16,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        '2 km away',
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: Colors.white,
+                          shadows: [
+                            Shadow(
+                              color: Colors.black45,
+                              offset: Offset(0, 1),
+                              blurRadius: 2,
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      if (_shouldShowOnlineStatus() &&
+                          widget.profile.isOnline) ...[
+                        Container(
+                          width: 8,
+                          height: 8,
+                          decoration: const BoxDecoration(
+                            color: PulseColors.success,
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: PulseColors.success,
+                                blurRadius: 8,
+                                spreadRadius: 2,
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        const Text(
+                          'Online now',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.white,
+                            shadows: [
+                              Shadow(
+                                color: Colors.black45,
+                                offset: Offset(0, 1),
+                                blurRadius: 2,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                const SizedBox(height: 8),
+                // Bio preview
+                if (widget.profile.bio != null && widget.profile.bio.isNotEmpty)
+                  Text(
+                    widget.profile.bio.length > 100
+                        ? '${widget.profile.bio.substring(0, 100)}...'
+                        : widget.profile.bio,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      color: Colors.white,
+                      height: 1.3,
+                      shadows: [
+                        Shadow(
+                          color: Colors.black45,
+                          offset: Offset(0, 1),
+                          blurRadius: 2,
+                        ),
+                      ],
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                const SizedBox(height: 12),
+                // Badges row (occupation, social media, etc)
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    // Occupation badge
+                    if (widget.profile.occupation != null)
+                      _buildBadgePill(
+                        icon: Icons.work_outline,
+                        label: widget.profile.occupation!,
+                      ),
+                    // Education badge
+                    if (widget.profile.education != null)
+                      _buildBadgePill(
+                        icon: Icons.school_outlined,
+                        label: widget.profile.education!,
+                      ),
+                    // Add social media badges if available
+                    // These would come from profile data - placeholder for now
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+
         // Photo indicators
         if (widget.profile.photos.length > 1)
           Positioned(
@@ -474,6 +685,50 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
     );
   }
 
+  /// Builds a badge pill for displaying profile attributes (occupation, education, etc.)
+  Widget _buildBadgePill({required IconData icon, required String label}) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.2),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.3),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.2),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: Colors.white, size: 14),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: Colors.white,
+              shadows: [
+                Shadow(
+                  color: Colors.black45,
+                  offset: Offset(0, 1),
+                  blurRadius: 2,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildProfileHeader() {
     return Container(
       margin: const EdgeInsets.all(16),
@@ -547,27 +802,28 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
                       ],
                     ),
                     const SizedBox(height: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        color: PulseColors.primary.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: PulseColors.primary.withValues(alpha: 0.2),
-                          width: 1,
+                    if (_shouldShowAge())
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: PulseColors.primary.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: PulseColors.primary.withValues(alpha: 0.2),
+                            width: 1,
+                          ),
+                        ),
+                        child: Text(
+                          '${widget.profile.age} years old',
+                          style: PulseTextStyles.labelMedium.copyWith(
+                            color: PulseColors.primary,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ),
-                      child: Text(
-                        '${widget.profile.age} years old',
-                        style: PulseTextStyles.labelMedium.copyWith(
-                          color: PulseColors.primary,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
                   ],
                 ),
               ),
@@ -614,17 +870,19 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  '2 km away',
-                  style: PulseTextStyles.bodyMedium.copyWith(
-                    color: Colors.black87,
-                    fontWeight: FontWeight.w600,
+                if (_shouldShowDistance())
+                  Text(
+                    '2 km away',
+                    style: PulseTextStyles.bodyMedium.copyWith(
+                      color: Colors.black87,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 4),
+                if (_shouldShowDistance()) const SizedBox(height: 4),
                 Row(
                   children: [
-                    if (widget.profile.isOnline) ...[
+                    if (_shouldShowOnlineStatus() &&
+                        widget.profile.isOnline) ...[
                       Container(
                         width: 8,
                         height: 8,
@@ -634,8 +892,9 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
                         ),
                       ),
                       const SizedBox(width: 6),
-                      Text(
-                        'Online now',
+                      if (_shouldShowOnlineStatus())
+                        Text(
+                          'Online now',
                         style: PulseTextStyles.labelSmall.copyWith(
                           color: PulseColors.success,
                           fontWeight: FontWeight.w600,
@@ -1019,6 +1278,601 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
               );
             },
           ),
+        ],
+      ),
+    );
+  }
+
+  // Privacy helper methods
+  bool _shouldShowAge() => widget.profile.showAge ?? true;
+  bool _shouldShowDistance() => widget.profile.showDistance ?? true;
+  bool _shouldShowOnlineStatus() => widget.profile.showOnlineStatus ?? true;
+  bool _shouldShowLastActive() => widget.profile.showLastActive ?? true;
+
+  String _formatHeight(int cm) {
+    final feet = cm ~/ 30.48;
+    final inches = ((cm % 30.48) / 2.54).round();
+    return '$cm cm (${feet}\'${inches}\")';
+  }
+
+  Widget _buildPhysicalAttributesSection() {
+    final hasData =
+        widget.profile.height != null ||
+        widget.profile.religion != null ||
+        widget.profile.politics != null ||
+        widget.profile.zodiacSign != null;
+
+    if (!hasData) return const SizedBox.shrink();
+
+    final details = <Widget>[];
+
+    if (widget.profile.height != null) {
+      details.add(
+        _buildDetailItem(
+          Icons.height,
+          'Height',
+          _formatHeight(widget.profile.height!),
+        ),
+      );
+    }
+
+    if (widget.profile.religion != null) {
+      details.add(
+        _buildDetailItem(
+          Icons.church_outlined,
+          'Religion',
+          widget.profile.religion!,
+        ),
+      );
+    }
+
+    if (widget.profile.politics != null) {
+      details.add(
+        _buildDetailItem(
+          Icons.how_to_vote_outlined,
+          'Political Views',
+          widget.profile.politics!,
+        ),
+      );
+    }
+
+    if (widget.profile.zodiacSign != null) {
+      details.add(
+        _buildDetailItem(
+          Icons.star_outline,
+          'Zodiac Sign',
+          widget.profile.zodiacSign!,
+        ),
+      );
+    }
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Colors.white, PulseColors.secondary.withValues(alpha: 0.02)],
+        ),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: PulseColors.secondary.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  Icons.person_outline,
+                  color: PulseColors.secondary,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Text(
+                'Physical & Beliefs',
+                style: PulseTextStyles.titleLarge.copyWith(
+                  color: Colors.black87,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          ...details,
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLifestyleSection() {
+    final hasData =
+        widget.profile.lifestyleChoice != null ||
+        widget.profile.drinking != null ||
+        widget.profile.smoking != null ||
+        widget.profile.exercise != null ||
+        widget.profile.drugs != null ||
+        widget.profile.children != null;
+
+    if (!hasData) return const SizedBox.shrink();
+
+    final details = <Widget>[];
+
+    if (widget.profile.lifestyleChoice != null) {
+      details.add(
+        _buildDetailItem(
+          Icons.wb_sunny_outlined,
+          'Lifestyle',
+          widget.profile.lifestyleChoice!,
+        ),
+      );
+    }
+
+    if (widget.profile.drinking != null) {
+      details.add(
+        _buildDetailItem(
+          Icons.local_bar_outlined,
+          'Drinking',
+          widget.profile.drinking!,
+        ),
+      );
+    }
+
+    if (widget.profile.smoking != null) {
+      details.add(
+        _buildDetailItem(
+          Icons.smoking_rooms_outlined,
+          'Smoking',
+          widget.profile.smoking!,
+        ),
+      );
+    }
+
+    if (widget.profile.exercise != null) {
+      details.add(
+        _buildDetailItem(
+          Icons.fitness_center_outlined,
+          'Exercise',
+          widget.profile.exercise!,
+        ),
+      );
+    }
+
+    if (widget.profile.drugs != null) {
+      details.add(
+        _buildDetailItem(
+          Icons.warning_amber_outlined,
+          'Drugs',
+          widget.profile.drugs!,
+        ),
+      );
+    }
+
+    if (widget.profile.children != null) {
+      details.add(
+        _buildDetailItem(
+          Icons.child_care_outlined,
+          'Children',
+          widget.profile.children!,
+        ),
+      );
+    }
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Colors.white, PulseColors.success.withValues(alpha: 0.02)],
+        ),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: PulseColors.success.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  Icons.spa_outlined,
+                  color: PulseColors.success,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Text(
+                'Lifestyle Choices',
+                style: PulseTextStyles.titleLarge.copyWith(
+                  color: Colors.black87,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          ...details,
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRelationshipGoalsSection() {
+    if (widget.profile.relationshipGoals.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Colors.white, PulseColors.secondary.withValues(alpha: 0.02)],
+        ),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: PulseColors.secondary.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  Icons.favorite_outline,
+                  color: PulseColors.secondary,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Text(
+                'Looking For',
+                style: PulseTextStyles.titleLarge.copyWith(
+                  color: Colors.black87,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          Wrap(
+            spacing: 12,
+            runSpacing: 12,
+            children: widget.profile.relationshipGoals.map((goal) {
+              return Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 12,
+                ),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      PulseColors.secondary.withValues(alpha: 0.1),
+                      PulseColors.secondary.withValues(alpha: 0.1),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(
+                    color: PulseColors.secondary.withValues(alpha: 0.3),
+                    width: 1,
+                  ),
+                ),
+                child: Text(
+                  goal,
+                  style: PulseTextStyles.bodyMedium.copyWith(
+                    color: PulseColors.secondary,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLanguagesSection() {
+    if (widget.profile.languages.isEmpty) return const SizedBox.shrink();
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Colors.white, PulseColors.primary.withValues(alpha: 0.02)],
+        ),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: PulseColors.primary.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  Icons.language,
+                  color: PulseColors.primary,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Text(
+                'Languages',
+                style: PulseTextStyles.titleLarge.copyWith(
+                  color: Colors.black87,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          Wrap(
+            spacing: 12,
+            runSpacing: 12,
+            children: widget.profile.languages.map((language) {
+              return Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 12,
+                ),
+                decoration: BoxDecoration(
+                  color: PulseColors.primary.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(
+                    color: PulseColors.primary.withValues(alpha: 0.2),
+                    width: 1,
+                  ),
+                ),
+                child: Text(
+                  language,
+                  style: PulseTextStyles.bodyMedium.copyWith(
+                    color: PulseColors.primary,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPersonalityTraitsSection() {
+    if (widget.profile.personalityTraits.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Colors.white, PulseColors.secondary.withValues(alpha: 0.02)],
+        ),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: PulseColors.secondary.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  Icons.psychology_outlined,
+                  color: PulseColors.secondary,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Text(
+                'Personality',
+                style: PulseTextStyles.titleLarge.copyWith(
+                  color: Colors.black87,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          Wrap(
+            spacing: 12,
+            runSpacing: 12,
+            children: widget.profile.personalityTraits.map((trait) {
+              return Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 12,
+                ),
+                decoration: BoxDecoration(
+                  color: PulseColors.secondary.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(
+                    color: PulseColors.secondary.withValues(alpha: 0.2),
+                    width: 1,
+                  ),
+                ),
+                child: Text(
+                  trait,
+                  style: PulseTextStyles.bodyMedium.copyWith(
+                    color: PulseColors.secondary,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPromptQuestionsSection() {
+    if (widget.profile.promptQuestions.isEmpty ||
+        widget.profile.promptAnswers.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    final prompts = <Widget>[];
+    final count =
+        widget.profile.promptQuestions.length <
+            widget.profile.promptAnswers.length
+        ? widget.profile.promptQuestions.length
+        : widget.profile.promptAnswers.length;
+
+    for (var i = 0; i < count; i++) {
+      prompts.add(
+        Container(
+          margin: const EdgeInsets.only(bottom: 16),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: Colors.grey.withValues(alpha: 0.1),
+              width: 1,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.03),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                widget.profile.promptQuestions[i],
+                style: PulseTextStyles.labelLarge.copyWith(
+                  color: PulseColors.primary,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                widget.profile.promptAnswers[i],
+                style: PulseTextStyles.bodyLarge.copyWith(
+                  color: Colors.black87,
+                  height: 1.5,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Colors.white, PulseColors.success.withValues(alpha: 0.02)],
+        ),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: PulseColors.success.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  Icons.chat_bubble_outline,
+                  color: PulseColors.success,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Text(
+                'My Vibe',
+                style: PulseTextStyles.titleLarge.copyWith(
+                  color: Colors.black87,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          ...prompts,
         ],
       ),
     );

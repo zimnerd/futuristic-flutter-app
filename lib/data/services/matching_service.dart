@@ -194,13 +194,32 @@ class MatchingService {
       'photos':
           (user['photos'] as List<dynamic>?)
               ?.map(
-                (photo) => {
-                  'id': photo.hashCode.toString(),
-                  'url': photo as String,
-                  'order': 0,
-                  'isVerified': false,
+                (photo) {
+                  // Handle both string URLs (legacy) and photo objects (new format)
+                  if (photo is String) {
+                    return {
+                      'id': photo.hashCode.toString(),
+                      'url': photo,
+                      'order': 0,
+                      'isMain': false,
+                      'isVerified': false,
+                    };
+                  } else if (photo is Map<String, dynamic>) {
+                    return {
+                      'id': photo['id'] ?? photo.hashCode.toString(),
+                      'url': photo['url'] ?? '',
+                      'order': photo['order'] ?? 0,
+                      'description': photo['description'],
+                      'isMain': photo['isMain'] ?? false,
+                      'isVerified': photo['isVerified'] ?? false,
+                      'uploadedAt': photo['createdAt'] ?? photo['uploadedAt'],
+                    };
+                  }
+                  return null;
                 },
               )
+              .where((photo) => photo != null)
+              .cast<Map<String, dynamic>>()
               .toList() ??
           [],
       'location': user['coordinates'] != null
@@ -239,6 +258,8 @@ class MatchingService {
       id: json['id'] as String,
       url: json['url'] as String,
       order: json['order'] as int,
+      description: json['description'] as String?,
+      isMain: json['isMain'] as bool? ?? false,
       isVerified: json['isVerified'] as bool? ?? false,
       uploadedAt: json['uploadedAt'] != null
           ? DateTime.parse(json['uploadedAt'] as String)
@@ -270,13 +291,32 @@ class MatchingService {
       'photos':
           (user['photos'] as List<dynamic>?)
               ?.map(
-                (photo) => {
-                  'id': photo.hashCode.toString(),
-                  'url': photo as String,
-                  'order': 0,
-                  'isVerified': false,
+                (photo) {
+                  // Handle both string URLs (legacy) and photo objects (new format)
+                  if (photo is String) {
+                    return {
+                      'id': photo.hashCode.toString(),
+                      'url': photo,
+                      'order': 0,
+                      'isMain': false,
+                      'isVerified': false,
+                    };
+                  } else if (photo is Map<String, dynamic>) {
+                    return {
+                      'id': photo['id'] ?? photo.hashCode.toString(),
+                      'url': photo['url'] ?? '',
+                      'order': photo['order'] ?? 0,
+                      'description': photo['description'],
+                      'isMain': photo['isMain'] ?? false,
+                      'isVerified': photo['isVerified'] ?? false,
+                      'uploadedAt': photo['createdAt'] ?? photo['uploadedAt'],
+                    };
+                  }
+                  return null;
                 },
               )
+              .where((photo) => photo != null)
+              .cast<Map<String, dynamic>>()
               .toList() ??
           [],
       'location': user['coordinates'] != null

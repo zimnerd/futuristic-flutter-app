@@ -11,7 +11,6 @@ import '../../widgets/common/pulse_button.dart';
 import '../../widgets/profile/enhanced_photo_grid.dart';
 import '../../widgets/profile/profile_completion_card.dart';
 import '../../widgets/profile/profile_privacy_settings.dart';
-import '../../widgets/profile/profile_preview.dart';
 import '../../widgets/profile/interests_selector.dart';
 import '../../widgets/profile/profile_lifestyle_section.dart';
 import '../../widgets/profile/profile_relationship_goals_section.dart';
@@ -19,6 +18,7 @@ import '../../widgets/profile/profile_physical_attributes_section.dart';
 import '../../widgets/profile/profile_lifestyle_choices_section.dart';
 import '../../widgets/profile/profile_languages_section.dart';
 import '../../../domain/entities/user_profile.dart';
+import './profile_details_screen.dart';
 
 // Logger instance for debugging
 final logger = Logger();
@@ -408,9 +408,10 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
     if (_currentProfile != null) {
       Navigator.of(context).push(
         MaterialPageRoute(
-          builder: (context) => ProfilePreview(
+          builder: (context) => ProfileDetailsScreen(
             profile: _buildPreviewProfile(),
-            onClose: () => Navigator.of(context).pop(),
+            isOwnProfile: true,
+            context: ProfileContext.general,
           ),
           fullscreenDialog: true,
         ),
