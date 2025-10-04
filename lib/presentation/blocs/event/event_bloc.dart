@@ -24,6 +24,14 @@ class EventBloc extends Bloc<EventEvent, EventState> {
   bool? _hasAvailableSpots;
   LocationCoordinates?
   _userLocation; // Cache user location for distance filtering
+  
+  // 🔧 FIX: Cache event details without changing state
+  Event? _currentEventDetails;
+  List<EventAttendance>? _currentEventAttendees;
+  
+  // Public getters for cached event details
+  Event? get currentEventDetails => _currentEventDetails;
+  List<EventAttendance>? get currentEventAttendees => _currentEventAttendees;
 
   EventBloc({
     EventService? eventService,
@@ -57,6 +65,22 @@ class EventBloc extends Bloc<EventEvent, EventState> {
   /// Set the current user ID for proper isAttending detection
   void setCurrentUserId(String userId) {
     _currentUserId = userId;
+  }
+  
+  /// 🔧 FIX: Clear cached event details (e.g., when user logs out)
+  void clearCachedEventDetails() {
+    _currentEventDetails = null;
+    _currentEventAttendees = null;
+    AppLogger.info('📱 EventBloc: Cached event details cleared');
+  }
+  
+  @override
+  void onTransition(Transition<EventEvent, EventState> transition) {
+    super.onTransition(transition);
+    AppLogger.info('📱 EventBloc State Transition:');
+    AppLogger.info('   Event: ${transition.event.runtimeType}');
+    AppLogger.info('   From: ${transition.currentState.runtimeType}');
+    AppLogger.info('   To: ${transition.nextState.runtimeType}');
   }
 
   Future<void> _onLoadEvents(LoadEvents event, Emitter<EventState> emit) async {
@@ -191,19 +215,25 @@ class EventBloc extends Bloc<EventEvent, EventState> {
   Future<void> _onLoadEventDetails(
       LoadEventDetails event, Emitter<EventState> emit) async {
     try {
-      // Don't emit EventLoading to preserve current events list state
+      AppLogger.info('📱 EventBloc: Loading event details for ${event.eventId}');
       
       final eventDetails = await _eventService.getEventById(
         event.eventId,
         currentUserId: _currentUserId,
       );
 
-      // Emit EventDetailsLoaded while preserving previous list state
-      emit(EventDetailsLoaded(
-        event: eventDetails,
-        attendees: eventDetails.attendees,
-      ));
+      // 🔧 FIX: Cache details internally WITHOUT emitting state change
+      // This preserves the EventsLoaded state so the list doesn't disappear
+      _currentEventDetails = eventDetails;
+      _currentEventAttendees = eventDetails.attendees;
+      
+      AppLogger.info('📱 EventBloc: Event details cached for ${event.eventId}');
+      AppLogger.info('📱 EventBloc: Current state preserved: ${state.runtimeType}');
+      
+      // ✅ DON'T emit EventDetailsLoaded - this keeps EventsLoaded active!
+      // EventDetailsScreen will access via currentEventDetails getter
     } catch (e) {
+      AppLogger.error('📱 EventBloc: Error loading event details: $e');
       emit(EventError(message: e.toString()));
     }
   }

@@ -5,6 +5,294 @@ This document captures key learnings from building the **Flutter mobile dating a
 
 ---
 
+## � **Events List Navigation Bug (October 2025)**
+
+**Context**: Events list was disappearing when users navigated to event details and returned. Reload button also stopped working.
+
+**Problem - State Management During Navigation**:
+- Events list showed 6 events ✅
+- User tapped on event → Details loaded ✅
+- User pressed back → **Events list showed empty "No events yet" state** ❌
+- Reload button did nothing ❌
+
+**Root Cause - Shared BLoC State Between List and Details**:
+```dart
+// ❌ BEFORE: EventDetailsScreen changed global EventBloc state
+EventDetailsScreen.initState() {
+  context.read<EventBloc>().add(LoadEventDetails(eventId));
+}
+
+// EventBloc emitted EventDetailsLoaded, replacing EventsLoaded
+emit(EventDetailsLoaded(event: details, attendees: attendees));
+
+// EventsScreen BlocBuilder didn't recognize EventDetailsLoaded
+if (state is EventsLoaded) {  // ❌ FALSE - state is EventDetailsLoaded!
+  return _buildEventsLoaded(state);
+} else {
+  return _buildEmptyState();  // ❌ Showed empty state!
+}
+```
+
+**Solution - Cache Event Details Without Changing State**:
+
+### **1. EventBloc Internal Cache**
+```dart
+// mobile/lib/presentation/blocs/event/event_bloc.dart
+
+// Add internal storage
+Event? _currentEventDetails;
+List<EventAttendance>? _currentEventAttendees;
+
+// Public getters
+Event? get currentEventDetails => _currentEventDetails;
+List<EventAttendance>? get currentEventAttendees => _currentEventAttendees;
+
+// Modified _onLoadEventDetails to cache WITHOUT emitting state
+Future<void> _onLoadEventDetails(LoadEventDetails event, Emitter emit) async {
+  final eventDetails = await _eventService.getEventById(event.eventId);
+  
+  // ✅ Cache internally WITHOUT state change
+  _currentEventDetails = eventDetails;
+  _currentEventAttendees = eventDetails.attendees;
+  
+  // ✅ DON'T emit EventDetailsLoaded - preserves EventsLoaded!
+  AppLogger.info('Event details cached, state preserved: ${state.runtimeType}');
+}
+```
+
+### **2. EventDetailsScreen Reads from Cache**
+```dart
+// mobile/lib/presentation/screens/events/event_details_screen.dart
+
+BlocBuilder<EventBloc, EventState>(
+  builder: (context, state) {
+    // ✅ Read from cache instead of state
+    final bloc = context.read<EventBloc>();
+    final cachedDetails = bloc.currentEventDetails;
+    
+    if (cachedDetails != null && cachedDetails.id == widget.eventId) {
+      return _buildEventDetails(context, cachedDetails);
+    }
+    
+    // Fallback to EventsLoaded state if needed
+    if (state is EventsLoaded) {
+      final event = state.events.firstWhere((e) => e.id == widget.eventId);
+      return _buildEventDetails(context, event);
+    }
+  },
+)
+```
+
+### **3. EventsScreen Handles All States**
+```dart
+// mobile/lib/presentation/screens/events/events_screen.dart
+
+// ✅ Fixed reload logic
+void _loadEventsIfNeeded() {
+  if (currentState is EventInitial ||
+      currentState is EventError ||
+      currentState is EventDetailsLoaded ||  // ← Added this!
+      (currentState is EventsLoaded && currentState.events.isEmpty)) {
+    _loadEvents();
+  }
+}
+
+// ✅ Enhanced BlocBuilder
+BlocBuilder<EventBloc, EventState>(
+  builder: (context, state) {
+    if (state is EventsLoaded) {
+      return _buildEventsLoaded(state);
+    } else if (state is EventDetailsLoaded) {
+      // Auto-reload when returning from details
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _loadEvents();
+      });
+      return _buildLoadingState();
+    }
+  },
+)
+```
+
+**Key Learnings:**
+- ❌ **Don't share BLoC state between list and detail views** - Creates navigation conflicts
+- ✅ **Preserve list state during navigation** - Users expect data to persist
+- ✅ **Cache details separately from state** - Allows independent data without state changes
+- ✅ **Handle ALL state types in BlocBuilder** - Missing states cause unexpected UI
+- ✅ **Add comprehensive logging** - State transitions are hard to debug without logs
+- ✅ **Test navigation flows thoroughly** - Navigation bugs are subtle and hard to catch
+
+**State Flow After Fix:**
+```
+EventsScreen (EventsLoaded: 6 events)
+    ↓ User taps event
+EventDetailsScreen requests LoadEventDetails
+    ↓
+EventBloc caches details internally (state stays EventsLoaded!)
+    ↓
+EventDetailsScreen reads from cache
+    ↓ User presses back
+EventsScreen still shows EventsLoaded with 6 events ✅
+```
+
+**Benefits:**
+- ✅ Events list persists during navigation
+- ✅ Reload button works correctly
+- ✅ Filters and search preserved
+- ✅ No unnecessary API calls
+- ✅ Better performance
+
+**Testing Checklist:**
+- [x] Load events → Shows 6 events
+- [x] Tap event → Details load
+- [x] Press back → Events still visible (not empty!)
+- [x] Tap reload → Events refresh
+- [x] Filter + navigate + back → Filter persists
+
+---
+
+## �📍 **Location Tracking & Matching System (October 2025)**
+
+**Context**: Dating apps require accurate, real-time location tracking to show nearby matches. Location must update automatically while preserving battery life and user privacy.
+
+**Problem - No Active Location Tracking**:
+- Location was requested on-demand but never tracked continuously
+- Backend didn't know user's current position for matching
+- Distance to matches wasn't displayed
+- No sorting by nearest users first
+
+**Solution - Comprehensive Location-Based Matching**:
+
+### **1. Automatic Location Tracking After Login**
+```dart
+// mobile/lib/core/services/location_tracking_initializer.dart
+
+class LocationTrackingInitializer {
+  // Singleton pattern for app-wide access
+  static final LocationTrackingInitializer _instance = LocationTrackingInitializer._internal();
+  factory LocationTrackingInitializer() => _instance;
+  
+  Future<bool> initialize() async {
+    // 1. Request permissions gracefully
+    final permissionStatus = await _locationService.requestPermissions();
+    
+    // 2. Get immediate location
+    final currentLocation = await _locationService.getCurrentLocationCoordinates();
+    await _locationService.updateLocation(currentLocation); // Update backend
+    
+    // 3. Start continuous tracking with 1km threshold
+    await _locationService.startLocationTracking(
+      accuracy: LocationAccuracyLevel.medium, // Balance accuracy vs battery
+    );
+  }
+}
+
+// mobile/lib/presentation/widgets/auto_login_wrapper.dart
+
+BlocListener<AuthBloc, AuthState>(
+  listener: (context, state) async {
+    if (state is AuthAuthenticated) {
+      // Start tracking IMMEDIATELY after login
+      await _locationTracker.initialize();
+      AppLogger.info('✅ 📍 Location tracking started (1km threshold)');
+    } else if (state is AuthUnauthenticated) {
+      // Stop tracking on logout
+      await _locationTracker.stop();
+    }
+  },
+)
+```
+
+### **2. Dating App Best Practices Implemented**
+```dart
+// core/services/location_service.dart
+
+// ✅ 1km Update Threshold (Battery Optimization)
+static const double _updateThresholdKm = 1.0;
+
+// ✅ Smart Update Interval
+static const Duration _maxUpdateInterval = Duration(hours: 1); // Force update after 1hr
+static const Duration _minUpdateInterval = Duration(minutes: 5); // Min time between updates
+
+// ✅ Distance-Based Updates
+bool _shouldUpdateLocation(LocationCoordinates oldLocation, LocationCoordinates newLocation) {
+  final distance = Geolocator.distanceBetween(
+    oldLocation.latitude, oldLocation.longitude,
+    newLocation.latitude, newLocation.longitude,
+  ) / 1000; // Convert to km
+  
+  return distance >= _updateThresholdKm; // Only update if moved >1km
+}
+```
+
+### **3. Permission Handling (iOS/Android)**
+```xml
+<!-- mobile/android/app/src/main/AndroidManifest.xml -->
+<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+```
+
+```xml
+<!-- mobile/ios/Runner/Info.plist -->
+<key>NSLocationWhenInUseUsageDescription</key>
+<string>PulseLink needs access to your location to show people nearby</string>
+
+<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+<string>PulseLink needs access to your location to show people nearby</string>
+```
+
+### **4. Backend Integration**
+```dart
+// Automatic location updates sent to backend
+Future<void> _sendLocationUpdate(LocationUpdateRequest request) async {
+  await apiService.put('/users/location', data: request.toJson());
+}
+
+// Backend endpoint (already implemented):
+// PUT /api/v1/users/location
+// Body: { latitude, longitude, accuracy, timestamp }
+// Response: { message: "Location updated successfully", coordinates: {...} }
+```
+
+### **5. Distance Display in Profiles**
+```dart
+// domain/entities/user_profile.dart
+
+class UserProfile extends Equatable {
+  final double? distanceKm; // Distance to current user
+  
+  // Display format: "2.5 km away" or "< 1 km away"
+  String get distanceDisplay {
+    if (distanceKm == null) return '';
+    if (distanceKm! < 1) return '< 1 km away';
+    return '${distanceKm!.toStringAsFixed(1)} km away';
+  }
+}
+```
+
+**Key Learnings:**
+- ✅ **Start tracking IMMEDIATELY after login** - Don't wait for user to open discovery screen
+- ✅ **1km threshold is dating app standard** - Balances accuracy, battery, and privacy
+- ✅ **Update backend automatically** - Don't require manual "Update Location" buttons
+- ✅ **Handle permissions gracefully** - Show rationale, allow app usage without location
+- ✅ **Continue in background** - Track location even when app is backgrounded
+- ⚠️ **Respect user privacy** - Backend uses approximate coordinates (100m precision)
+
+**Next Steps:**
+1. ✅ Location tracking infrastructure complete
+2. 🔜 Verify backend returns profiles sorted by distance (nearest first)
+3. 🔜 Add distance badge to discovery/match profile cards
+4. 🔜 Implement local distance calculation fallback if backend doesn't provide it
+5. 🔜 Add "Update Location" button in settings for manual refresh
+
+**Testing Checklist:**
+- [ ] Login → Check logs for "📍 Location tracking initialized successfully"
+- [ ] Move >1km → Verify backend receives update (check logs for PUT /users/location)
+- [ ] Logout → Verify tracking stops ("📍 Location tracking stopped")
+- [ ] Deny location permission → App still works (graceful degradation)
+- [ ] Check discovery/matches show distance to each profile
+
+---
+
 ## � **Photo Upload Progress Tracking (October 2025)**
 
 **Context**: Multi-select photo upload was implemented but lacked proper visual feedback. Users couldn't see upload progress, success states, or retry failed uploads.

@@ -34,6 +34,15 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
     return Scaffold(
       body: BlocBuilder<EventBloc, EventState>(
         builder: (context, state) {
+          // 🔧 FIX: Read from cached event details instead of state
+          final bloc = context.read<EventBloc>();
+          final cachedDetails = bloc.currentEventDetails;
+          
+          // If we have cached details for this event, show them
+          if (cachedDetails != null && cachedDetails.id == widget.eventId) {
+            return _buildEventDetails(context, cachedDetails);
+          }
+          
           if (state is EventLoading) {
             return const Center(
               child: CircularProgressIndicator(),
@@ -77,12 +86,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
             );
           }
 
-          // Check for EventDetailsLoaded state (correct state for single event)
-          if (state is EventDetailsLoaded) {
-            return _buildEventDetails(context, state.event);
-          }
-
-          // Fallback: Also check EventsLoaded in case navigation came from events list
+          // Fallback: Try to find in EventsLoaded state
           if (state is EventsLoaded) {
             try {
               final event = state.events.firstWhere(
@@ -90,15 +94,21 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
               );
               return _buildEventDetails(context, event);
             } catch (e) {
-              // Event not in the loaded list, trigger load
+              // Event not in the loaded list, show loading
               return const Center(
                 child: CircularProgressIndicator(),
               );
             }
           }
+          
+          // For EventDetailsLoaded state (legacy), also check it
+          if (state is EventDetailsLoaded && state.event.id == widget.eventId) {
+            return _buildEventDetails(context, state.event);
+          }
 
+          // Still loading or not found
           return const Center(
-            child: Text('Event not found'),
+            child: CircularProgressIndicator(),
           );
         },
       ),

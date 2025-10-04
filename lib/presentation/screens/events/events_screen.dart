@@ -19,29 +19,71 @@ class EventsScreen extends StatefulWidget {
   State<EventsScreen> createState() => _EventsScreenState();
 }
 
-class _EventsScreenState extends State<EventsScreen> {
+class _EventsScreenState extends State<EventsScreen>
+    with WidgetsBindingObserver {
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   String? _selectedCategory;
   final bool _showJoinedOnly = false;
   String? _joiningEventId;
+  bool _shouldRefreshOnReturn = false;
 
   @override
   void initState() {
     super.initState();
     
+    // Add observer to detect when app comes to foreground
+    WidgetsBinding.instance.addObserver(this);
+    
     // Defer event loading until after build completes to ensure bloc context is available
     WidgetsBinding.instance.addPostFrameCallback((_) {
       AppLogger.info('📱 Events Screen: PostFrameCallback triggered');
-      _loadEvents();
+      _loadEventsIfNeeded();
     });
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _searchController.dispose();
     _scrollController.dispose();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // Reload events when app comes to foreground
+    if (state == AppLifecycleState.resumed && mounted) {
+      AppLogger.info(
+        '📱 Events Screen: App resumed, checking if reload needed',
+      );
+      _loadEventsIfNeeded();
+    }
+  }
+
+  void _loadEventsIfNeeded() {
+    try {
+      final bloc = context.read<EventBloc>();
+      final currentState = bloc.state;
+
+      AppLogger.info(
+        '📱 Events Screen: _loadEventsIfNeeded() - Current state: ${currentState.runtimeType}',
+      );
+
+      // 🔧 FIX: Also reload if state is EventDetailsLoaded (user just viewed event details)
+      if (currentState is EventInitial ||
+          currentState is EventError ||
+          currentState is EventDetailsLoaded ||  // ← Added this!
+          (currentState is EventsLoaded && currentState.events.isEmpty)) {
+        AppLogger.info('📱 Events Screen: Loading events...');
+        _loadEvents();
+      } else {
+        AppLogger.info('📱 Events Screen: Events already loaded, skipping');
+      }
+    } catch (e, stackTrace) {
+      AppLogger.error('📱 Events Screen: ERROR in _loadEventsIfNeeded: $e');
+      AppLogger.error('📱 Stack trace: $stackTrace');
+    }
   }
 
   void _loadEvents() {
@@ -61,6 +103,9 @@ class _EventsScreenState extends State<EventsScreen> {
   }
 
   void _onCategorySelected(String? category) {
+    AppLogger.info(
+      '📱 _onCategorySelected: category=$category, previous=$_selectedCategory',
+    );
     setState(() {
       _selectedCategory = category;
     });
@@ -71,8 +116,16 @@ class _EventsScreenState extends State<EventsScreen> {
     context.read<EventBloc>().add(SearchEvents(query));
   }
 
-  void _onEventTap(Event event) {
-    context.push('/events/${event.id}');
+  void _onEventTap(Event event) async {
+    // Navigate to event details and wait for return
+    await context.push('/events/${event.id}');
+
+    // Check if we should refresh after navigation
+    if (_shouldRefreshOnReturn && mounted) {
+      AppLogger.info('📱 Events Screen: Refreshing after return from details');
+      _loadEvents();
+      _shouldRefreshOnReturn = false;
+    }
   }
 
   void _onAttendEvent(Event event) {
@@ -113,23 +166,23 @@ class _EventsScreenState extends State<EventsScreen> {
   Widget build(BuildContext context) {
     return BlocListener<EventBloc, EventState>(
       listener: (context, state) {
-        if (state is EventAttendanceUpdated ||
-            state is EventsLoaded ||
-            state is EventError) {
+        AppLogger.info(
+          '📱 Events Screen BlocListener: state = ${state.runtimeType}',
+        );
+
+        // Handle attendance updates - mark that we should refresh on return
+        if (state is EventAttendanceUpdated) {
+          AppLogger.info(
+            '📱 Events Screen: Attendance updated, setting refresh flag',
+          );
+          _shouldRefreshOnReturn = true;
+          
           if (_joiningEventId != null) {
             setState(() {
               _joiningEventId = null;
             });
           }
-        }
-        if (state is EventError) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(state.message),
-              backgroundColor: PulseColors.error,
-            ),
-          );
-        } else if (state is EventAttendanceUpdated) {
+          
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(
@@ -140,18 +193,41 @@ class _EventsScreenState extends State<EventsScreen> {
               backgroundColor: state.isAttending
                   ? PulseColors.success
                   : PulseColors.onSurfaceVariant,
+              duration: const Duration(seconds: 2),
             ),
           );
-        } else if (state is EventError) {
+        }
+
+        // Clear joining state when events are loaded
+        if (state is EventsLoaded) {
+          AppLogger.info('📱 Events Screen: EventsLoaded received');
+          if (_joiningEventId != null) {
+            setState(() {
+              _joiningEventId = null;
+            });
+          }
+        }
+
+        // Handle errors
+        if (state is EventError) {
+          AppLogger.error('📱 Events Screen: Error - ${state.message}');
+          if (_joiningEventId != null) {
+            setState(() {
+              _joiningEventId = null;
+            });
+          }
+          
           String errorMessage = state.message;
           if (errorMessage.contains('Already attending') ||
               errorMessage.contains('already attending')) {
             errorMessage = 'You have already joined this event!';
           }
+          
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(errorMessage),
-              backgroundColor: PulseColors.warning,
+              backgroundColor: PulseColors.error,
+              duration: const Duration(seconds: 3),
             ),
           );
         }
@@ -191,15 +267,36 @@ class _EventsScreenState extends State<EventsScreen> {
             Expanded(
               child: BlocBuilder<EventBloc, EventState>(
                 builder: (context, state) {
+                  AppLogger.info(
+                    '📱 BlocBuilder rebuilding - State: ${state.runtimeType}',
+                  );
+
+                  if (state is EventsLoaded) {
+                    AppLogger.info(
+                      '📱 BlocBuilder: EventsLoaded - events: ${state.events.length}, filtered: ${state.filteredEvents.length}',
+                    );
+                  }
+                  
                   if (state is EventLoading) {
                     return _buildLoadingState();
                   } else if (state is EventsLoaded) {
                     return _buildEventsLoaded(state);
                   } else if (state is EventRefreshing) {
                     return _buildRefreshingState(state);
+                  } else if (state is EventDetailsLoaded) {
+                    // 🔧 FIX: Handle EventDetailsLoaded - user just viewed event details
+                    // Trigger reload to get back to EventsLoaded state
+                    AppLogger.info('📱 BlocBuilder: EventDetailsLoaded detected, triggering reload');
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      if (mounted) {
+                        _loadEvents();
+                      }
+                    });
+                    return _buildLoadingState();
                   } else if (state is EventError) {
                     return _buildErrorState(state);
                   } else {
+                    AppLogger.info('📱 BlocBuilder: Showing empty state');
                     return _buildEmptyState();
                   }
                 },
@@ -270,7 +367,7 @@ class _EventsScreenState extends State<EventsScreen> {
                 Icons.refresh,
                 color: PulseColors.primary,
               ),
-              tooltip: 'Refresh categories',
+              tooltip: 'Refresh events',
             ),
           ),
           
@@ -317,12 +414,21 @@ class _EventsScreenState extends State<EventsScreen> {
   }
 
   Widget _buildEventsLoaded(EventsLoaded state) {
+    AppLogger.info(
+      '📱 _buildEventsLoaded called - events: ${state.events.length}, filteredEvents: ${state.filteredEvents.length}',
+    );
+    
     // Apply joined filter if enabled
     final eventsToShow = _showJoinedOnly
         ? state.filteredEvents.where((e) => e.isAttending).toList()
         : state.filteredEvents;
 
+    AppLogger.info(
+      '📱 _buildEventsLoaded - eventsToShow after join filter: ${eventsToShow.length}, _showJoinedOnly: $_showJoinedOnly',
+    );
+
     if (eventsToShow.isEmpty) {
+      AppLogger.info('📱 _buildEventsLoaded - Showing empty filtered state');
       return _buildEmptyFilteredState();
     }
 

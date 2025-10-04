@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:logger/logger.dart';
 
 import '../../core/services/auto_login_service.dart';
+import '../../core/services/location_tracking_initializer.dart';
 import '../../data/services/global_auth_handler.dart';
 import '../blocs/auth/auth_bloc.dart';
 import '../blocs/auth/auth_state.dart';
@@ -23,6 +24,8 @@ class AutoLoginWrapper extends StatefulWidget {
 
 class _AutoLoginWrapperState extends State<AutoLoginWrapper> {
   final Logger _logger = Logger();
+  final LocationTrackingInitializer _locationTracker =
+      LocationTrackingInitializer();
   bool _autoLoginAttempted = false;
 
   @override
@@ -63,15 +66,32 @@ class _AutoLoginWrapperState extends State<AutoLoginWrapper> {
   @override
   Widget build(BuildContext context) {
     return BlocListener<AuthBloc, AuthState>(
-      listener: (context, state) {
+      listener: (context, state) async {
         // Listen for auth state changes to provide feedback
         if (state is AuthAuthenticated) {
           final user = AutoLoginService.defaultUser;
           if (user != null) {
             _logger.i('✅ 🤖 Auto-login successful for ${user.name}');
           }
+          
+          // Initialize location tracking after successful authentication
+          _logger.i(
+            '📍 Initializing location tracking after successful login...',
+          );
+          final locationInitialized = await _locationTracker.initialize();
+          if (locationInitialized) {
+            _logger.i('✅ 📍 Location tracking started (1km threshold)');
+          } else {
+            _logger.w(
+              '⚠️ 📍 Location tracking failed to start - user may have denied permission',
+            );
+          }
         } else if (state is AuthError) {
           _logger.w('❌ 🤖 Auto-login failed: ${state.message}');
+        } else if (state is AuthUnauthenticated) {
+          // Stop location tracking on logout
+          _logger.i('📍 Stopping location tracking after logout...');
+          await _locationTracker.stop();
         }
       },
       child: widget.child,
