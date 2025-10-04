@@ -33,6 +33,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     on<UploadPhoto>(_onUploadPhoto);
     on<DeletePhoto>(_onDeletePhoto);
     on<CancelProfileChanges>(_onCancelProfileChanges);
+    on<UpdatePrivacySettings>(_onUpdatePrivacySettings);
   }
 
   Future<void> _onLoadProfile(
@@ -236,5 +237,37 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     _logger.i('🚫 Cancelling profile changes');
     _tempPhotoIds.clear();
     _photoManager.cancelPhotoChanges();
+  }
+
+  /// Update privacy settings only (separate from full profile update)
+  Future<void> _onUpdatePrivacySettings(
+    UpdatePrivacySettings event,
+    Emitter<ProfileState> emit,
+  ) async {
+    try {
+      _logger.i('🔒 Updating privacy settings via dedicated endpoint');
+      emit(state.copyWith(updateStatus: ProfileStatus.loading));
+      
+      // Call dedicated privacy update method
+      await _profileService.updatePrivacySettings(event.settings);
+      
+      // Reload profile to get updated privacy settings
+      final profile = await _profileService.getCurrentProfile();
+      
+      emit(state.copyWith(
+        status: ProfileStatus.success,
+        profile: profile,
+        updateStatus: ProfileStatus.success,
+      ));
+      
+      _logger.i('✅ Privacy settings updated successfully');
+    } catch (e) {
+      _logger.e('❌ Error updating privacy settings: $e');
+      emit(state.copyWith(
+        status: ProfileStatus.error,
+        error: 'Failed to update privacy settings: ${e.toString()}',
+        updateStatus: ProfileStatus.error,
+      ));
+    }
   }
 }

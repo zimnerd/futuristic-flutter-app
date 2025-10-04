@@ -711,6 +711,47 @@ class ProfileService {
     }
   }
 
+  /// Update privacy settings only (dedicated endpoint)
+  ///
+  /// Uses the backend's dedicated privacy endpoint instead of sending the full profile.
+  /// This prevents validation errors for unrelated fields and improves performance.
+  Future<void> updatePrivacySettings(Map<String, bool> settings) async {
+    try {
+      _logger.i('🔒 Updating privacy settings: $settings');
+
+      // Map mobile settings to backend PrivacySettingsDto format
+      final data = <String, dynamic>{
+        if (settings['showAge'] != null) 'showAge': settings['showAge'],
+        if (settings['showDistance'] != null)
+          'showDistance': settings['showDistance'],
+        if (settings['showLastActive'] != null)
+          'showLastActive': settings['showLastActive'],
+        if (settings['showOnlineStatus'] != null)
+          'showOnlineStatus': settings['showOnlineStatus'],
+        if (settings['readReceipts'] != null)
+          'readReceipts': settings['readReceipts'],
+        // Note: 'discoverable' is in DiscoverySettingsDto, handled separately
+        // Note: 'showVerification' not in backend DTO, may need separate handling
+      };
+
+      _logger.i('📤 Sending privacy update to /users/me/privacy: $data');
+      final response = await _apiClient.post('/users/me/privacy', data: data);
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        _logger.i('✅ Privacy settings updated successfully');
+      } else {
+        throw NetworkException('Failed to update privacy settings');
+      }
+    } on DioException catch (e) {
+      _logger.e('❌ Network error updating privacy settings: ${e.message}');
+      _logger.e('Response data: ${e.response?.data}');
+      throw NetworkException('Failed to update privacy settings: ${e.message}');
+    } catch (e) {
+      _logger.e('❌ Unexpected error updating privacy settings: $e');
+      throw UserException('Failed to update privacy settings');
+    }
+  }
+
   /// Update existing user profile with individual parameters
   Future<UserProfile> updateProfileWithDetails({
     required String userId,

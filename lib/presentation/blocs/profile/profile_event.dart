@@ -41,3 +41,12 @@ class DeletePhoto extends ProfileEvent {
 class CancelProfileChanges extends ProfileEvent {
   const CancelProfileChanges();
 }
+
+class UpdatePrivacySettings extends ProfileEvent {
+  final Map<String, bool> settings;
+
+  const UpdatePrivacySettings({required this.settings});
+
+  @override
+  List<Object> get props => [settings];
+}

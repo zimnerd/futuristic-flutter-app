@@ -268,7 +268,10 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
         job: _jobController.text.trim(),
         company: _companyController.text.trim(),
         school: _schoolController.text.trim(),
-        lookingFor: _selectedPreference,
+        // lookingFor should be the primary relationship goal, not gender preference
+        lookingFor: _selectedRelationshipGoals.isNotEmpty 
+            ? _selectedRelationshipGoals.first 
+            : null,
         isOnline: true,
         lastSeen: DateTime.now(),
         verified: _currentProfile?.verified ?? false,
@@ -368,7 +371,10 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
       job: _jobController.text.trim(),
       company: _companyController.text.trim(),
       school: _schoolController.text.trim(),
-      lookingFor: _selectedPreference,
+      // lookingFor should be the primary relationship goal, not gender preference
+      lookingFor: _selectedRelationshipGoals.isNotEmpty 
+          ? _selectedRelationshipGoals.first 
+          : null,
       isOnline: true,
       lastSeen: DateTime.now(),
       verified: _currentProfile?.verified ?? false,
@@ -660,9 +666,11 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
       logger.i('  $key: $value');
     });
 
-    // Privacy settings are saved as part of the full profile
-    // For now, just trigger a full profile save
-    _saveProfile();
+    // Use dedicated privacy settings update event
+    // This only updates privacy fields, not the entire profile
+    context.read<ProfileBloc>().add(UpdatePrivacySettings(
+      settings: _privacySettings,
+    ));
   }
 
   @override

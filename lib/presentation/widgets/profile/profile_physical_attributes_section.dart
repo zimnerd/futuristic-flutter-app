@@ -157,7 +157,7 @@ class ProfilePhysicalAttributesSection extends StatelessWidget {
           ),
           const SizedBox(height: 24),
 
-          // Height Slider
+          // Height Slider with Input
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -172,28 +172,34 @@ class ProfilePhysicalAttributesSection extends StatelessWidget {
                       color: textColor.withValues(alpha: 0.9),
                     ),
                   ),
-                  if (height != null)
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: PulseColors.success.withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Text(
-                        _formatHeight(height!),
-                        style: const TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: PulseColors.success,
-                        ),
+                  // Always show formatted height value
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: height != null
+                          ? PulseColors.success.withValues(alpha: 0.2)
+                          : textColor.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      height != null ? _formatHeight(height!) : 'Not set',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: height != null
+                            ? PulseColors.success
+                            : textColor.withValues(alpha: 0.6),
                       ),
                     ),
+                  ),
                 ],
               ),
               const SizedBox(height: 12),
+              
+              // Slider
               SliderTheme(
                 data: SliderTheme.of(context).copyWith(
                   activeTrackColor: PulseColors.success,
@@ -210,8 +216,70 @@ class ProfilePhysicalAttributesSection extends StatelessWidget {
                   min: 120,
                   max: 220,
                   divisions: 100,
+                  label: height != null ? _formatHeight(height!) : '170 cm',
                   onChanged: (value) => onHeightChanged(value.toInt()),
                 ),
+              ),
+              
+              // Direct input field
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Expanded(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      decoration: BoxDecoration(
+                        color: isDark
+                            ? Colors.white.withValues(alpha: 0.05)
+                            : Colors.black.withValues(alpha: 0.03),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: height != null
+                              ? PulseColors.success.withValues(alpha: 0.5)
+                              : borderColor,
+                          width: 1,
+                        ),
+                      ),
+                      child: TextField(
+                        keyboardType: TextInputType.number,
+                        decoration: InputDecoration(
+                          hintText: 'Enter height in cm (120-220)',
+                          hintStyle: TextStyle(
+                            color: textColor.withValues(alpha: 0.4),
+                            fontSize: 14,
+                          ),
+                          border: InputBorder.none,
+                          suffixText: 'cm',
+                          suffixStyle: TextStyle(
+                            color: textColor.withValues(alpha: 0.6),
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: textColor.withValues(alpha: 0.9),
+                        ),
+                        controller:
+                            TextEditingController(
+                                text: height?.toString() ?? '',
+                              )
+                              ..selection = TextSelection.fromPosition(
+                                TextPosition(
+                                  offset: height?.toString().length ?? 0,
+                                ),
+                              ),
+                        onChanged: (value) {
+                          final numValue = int.tryParse(value);
+                          if (numValue != null &&
+                              numValue >= 120 &&
+                              numValue <= 220) {
+                            onHeightChanged(numValue);
+                          }
+                        },
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
