@@ -349,14 +349,15 @@ class ProfileService {
           );
         }
 
+        // @deprecated lookingFor field - Use relationshipGoals instead
         // Check lookingFor change (Profile model field, goes to /users/me/profile)
-        if (profile.lookingFor != originalProfile.lookingFor &&
-            profile.lookingFor != null) {
-          changedExtendedFields['lookingFor'] = profile.lookingFor;
-          _logger.i(
-            '✅ LookingFor changed: ${originalProfile.lookingFor} → ${profile.lookingFor}',
-          );
-        }
+        // if (profile.lookingFor != originalProfile.lookingFor &&
+        //     profile.lookingFor != null) {
+        //   changedExtendedFields['lookingFor'] = profile.lookingFor;
+        //   _logger.i(
+        //     '✅ LookingFor changed: ${originalProfile.lookingFor} → ${profile.lookingFor}',
+        //   );
+        // }
 
         // Check interests change (User model field, goes to /users/me)
         if (!_areListsEqual(profile.interests, originalProfile.interests)) {

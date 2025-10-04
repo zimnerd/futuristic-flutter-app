@@ -202,20 +202,14 @@ class UpdateLocation extends ProfileEvent {
 
 /// Privacy settings events
 class UpdatePrivacySettings extends ProfileEvent {
-  final String userId;
-  final bool showAge;
-  final bool showDistance;
-  final bool showOnlineStatus;
+  final Map<String, bool> settings;
 
   const UpdatePrivacySettings({
-    required this.userId,
-    required this.showAge,
-    required this.showDistance,
-    required this.showOnlineStatus,
+    required this.settings,
   });
 
   @override
-  List<Object?> get props => [userId, showAge, showDistance, showOnlineStatus];
+  List<Object?> get props => [settings];
 }
 
 /// Cancel profile changes (clear temp photos and deletion markers)

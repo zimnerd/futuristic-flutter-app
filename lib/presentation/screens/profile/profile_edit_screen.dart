@@ -66,9 +66,6 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
   bool _isFinalSave =
       false; // Track if this is the final save (not a section save)
 
-  // Track dirty fields for delta updates
-  final Set<String> _dirtyFields = {};
-  
   // Temp upload tracking for PhotoManagerService integration
   final List<String> _tempPhotoUrls = [];
   final Set<String> _photosMarkedForDeletion = {};
@@ -268,10 +265,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
         job: _jobController.text.trim(),
         company: _companyController.text.trim(),
         school: _schoolController.text.trim(),
-        // lookingFor should be the primary relationship goal, not gender preference
-        lookingFor: _selectedRelationshipGoals.isNotEmpty 
-            ? _selectedRelationshipGoals.first 
-            : null,
+        // lookingFor removed - relationshipGoals now handles this
         isOnline: true,
         lastSeen: DateTime.now(),
         verified: _currentProfile?.verified ?? false,
@@ -371,10 +365,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
       job: _jobController.text.trim(),
       company: _companyController.text.trim(),
       school: _schoolController.text.trim(),
-      // lookingFor should be the primary relationship goal, not gender preference
-      lookingFor: _selectedRelationshipGoals.isNotEmpty 
-          ? _selectedRelationshipGoals.first 
-          : null,
+      // lookingFor removed - use relationshipGoals array instead
       isOnline: true,
       lastSeen: DateTime.now(),
       verified: _currentProfile?.verified ?? false,
@@ -478,6 +469,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
                 ? ['MEN', 'WOMEN']
                 : [_selectedPreference!.toUpperCase()])
           : null,
+      // lookingFor removed - relationshipGoals handles relationship type preferences
       // Send backend field names
       occupation: _jobController.text.trim(),
       education: _schoolController.text.trim(),
@@ -629,7 +621,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
       job: _currentProfile?.job,
       company: _currentProfile?.company,
       school: _currentProfile?.school,
-      lookingFor: _currentProfile?.lookingFor,
+      // lookingFor removed - use relationshipGoals instead
       isOnline: true,
       lastSeen: DateTime.now(),
       verified: _currentProfile?.verified ?? false,
@@ -660,17 +652,22 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
   }
 
   /// Save Privacy section (Page 4)
+  /// This is the FINAL tab - only submits privacy data, then closes editor
   void _savePrivacySection() {
-    logger.i('🔒 Saving Privacy Settings:');
+    logger.i('🔒 Saving Privacy Settings (Final Tab):');
     _privacySettings.forEach((key, value) {
       logger.i('  $key: $value');
     });
 
-    // Use dedicated privacy settings update event
-    // This only updates privacy fields, not the entire profile
+    // IMPORTANT: Privacy tab ONLY submits privacy settings
+    // Does NOT send entire profile - uses dedicated /users/me/privacy endpoint
+    // This is the final step that closes the profile editor
     context.read<ProfileBloc>().add(UpdatePrivacySettings(
       settings: _privacySettings,
     ));
+    
+    // Mark as final save for navigation after success
+    _isFinalSave = true;
   }
 
   @override
@@ -1010,7 +1007,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
                     Expanded(
                       child: PulseButton(
                         text: _currentPageIndex == 4
-                            ? 'Save Profile'
+                            ? 'Save and Close'
                             : 'Save & Continue',
                         onPressed: _currentPageIndex == 4
                             ? _saveProfile

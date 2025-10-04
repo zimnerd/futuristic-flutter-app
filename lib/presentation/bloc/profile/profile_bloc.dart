@@ -389,16 +389,17 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
   /// Update privacy settings
   Future<void> _onUpdatePrivacySettings(UpdatePrivacySettings event, Emitter<ProfileState> emit) async {
     try {
-      _logger.i('🔒 Updating privacy settings for user: ${event.userId}');
+      _logger.i('🔒 Updating privacy settings: ${event.settings}');
       
-      // This would typically involve updating user settings
-      // For now, we'll emit a success state
+      // Call the profile service to save privacy settings to backend
+      await _profileService.updatePrivacySettings(event.settings);
+      
       emit(const PrivacySettingsUpdated());
       
       _logger.i('✅ Privacy settings updated successfully');
     } catch (e) {
       _logger.e('❌ Error updating privacy settings: $e');
-      emit(const ProfileError('Failed to update privacy settings'));
+      emit(ProfileError('Failed to update privacy settings: ${e.toString()}'));
     }
   }
 

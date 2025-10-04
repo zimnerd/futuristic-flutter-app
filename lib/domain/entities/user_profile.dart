@@ -69,7 +69,10 @@ class UserProfile extends Equatable {
   final String? job;
   final String? company;
   final String? school;
-  final String? lookingFor;
+  @Deprecated(
+    'Use relationshipGoals instead. lookingFor is no longer sent to backend.',
+  )
+  final String? lookingFor; // DEPRECATED - kept for backward compatibility only
   final bool isOnline;
   final DateTime? lastSeen;
   final bool verified;
@@ -77,7 +80,8 @@ class UserProfile extends Equatable {
   // New profile fields from Prisma schema
   final String?
   lifestyleChoice; // Single choice: active, relaxed, adventurous, etc.
-  final List<String> relationshipGoals; // dating, fun, companionship, etc.
+  final List<String>
+  relationshipGoals; // Replaces lookingFor - dating, fun, companionship, etc.
   final String? religion;
   final String? politics;
   final String? drinking; // never, occasionally, regularly, prefer-not-to-say
