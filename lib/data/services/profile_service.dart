@@ -198,6 +198,7 @@ class ProfileService {
       politics: userData['profile']?['politics'] as String?,
       drinking: userData['profile']?['drinking'] as String?,
       smoking: userData['profile']?['smoking'] as String?,
+      exercise: userData['profile']?['exercise'] as String?,
       drugs: userData['profile']?['drugs'] as String?,
       children: userData['profile']?['children'] as String?,
       lifestyleChoice: userData['profile']?['lifestyle'] as String?,
@@ -216,6 +217,10 @@ class ProfileService {
       promptAnswers: userData['profile']?['promptAnswers'] != null
           ? List<String>.from(userData['profile']['promptAnswers'])
           : [],
+      // Privacy settings from User model (root level, not nested in profile)
+      showAge: userData['showAge'] as bool?,
+      showDistance: userData['showDistance'] as bool?,
+      showLastActive: userData['showLastActive'] as bool?,
     );
   }
 
@@ -429,6 +434,10 @@ class ProfileService {
             profile.smoking != null) {
           changedExtendedFields['smoking'] = profile.smoking;
         }
+        if (profile.exercise != originalProfile.exercise &&
+            profile.exercise != null) {
+          changedExtendedFields['exercise'] = profile.exercise;
+        }
         if (profile.drugs != originalProfile.drugs && profile.drugs != null) {
           changedExtendedFields['drugs'] = profile.drugs;
         }
@@ -614,6 +623,9 @@ class ProfileService {
       if (profile.smoking != null && profile.smoking!.isNotEmpty) {
         extendedData['smoking'] = profile.smoking;
       }
+      if (profile.exercise != null && profile.exercise!.isNotEmpty) {
+        extendedData['exercise'] = profile.exercise;
+      }
       if (profile.drugs != null && profile.drugs!.isNotEmpty) {
         extendedData['drugs'] = profile.drugs;
       }
@@ -716,11 +728,12 @@ class ProfileService {
   ///
   /// Uses the backend's dedicated privacy endpoint instead of sending the full profile.
   /// This prevents validation errors for unrelated fields and improves performance.
-  Future<void> updatePrivacySettings(Map<String, bool> settings) async {
+  Future<void> updatePrivacySettings(Map<String, dynamic> settings) async {
     try {
       _logger.i('🔒 Updating privacy settings: $settings');
 
       // Map mobile settings to backend PrivacySettingsDto format
+      // Backend expects all 8 privacy fields that match the Prisma schema
       final data = <String, dynamic>{
         if (settings['showAge'] != null) 'showAge': settings['showAge'],
         if (settings['showDistance'] != null)
@@ -729,10 +742,14 @@ class ProfileService {
           'showLastActive': settings['showLastActive'],
         if (settings['showOnlineStatus'] != null)
           'showOnlineStatus': settings['showOnlineStatus'],
+        if (settings['incognitoMode'] != null)
+          'incognitoMode': settings['incognitoMode'],
         if (settings['readReceipts'] != null)
           'readReceipts': settings['readReceipts'],
-        // Note: 'discoverable' is in DiscoverySettingsDto, handled separately
-        // Note: 'showVerification' not in backend DTO, may need separate handling
+        if (settings['whoCanMessageMe'] != null)
+          'whoCanMessageMe': settings['whoCanMessageMe'],
+        if (settings['whoCanSeeMyProfile'] != null)
+          'whoCanSeeMyProfile': settings['whoCanSeeMyProfile'],
       };
 
       _logger.i('📤 Sending privacy update to /users/me/privacy: $data');

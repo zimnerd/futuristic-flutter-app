@@ -3,8 +3,8 @@ import '../../theme/pulse_colors.dart';
 
 /// Widget for managing profile privacy settings
 class ProfilePrivacySettings extends StatefulWidget {
-  final Map<String, bool> privacySettings;
-  final Function(Map<String, bool>) onSettingsChanged;
+  final Map<String, dynamic> privacySettings;
+  final Function(Map<String, dynamic>) onSettingsChanged;
 
   const ProfilePrivacySettings({
     super.key,
@@ -17,7 +17,7 @@ class ProfilePrivacySettings extends StatefulWidget {
 }
 
 class _ProfilePrivacySettingsState extends State<ProfilePrivacySettings> {
-  late Map<String, bool> _settings;
+  late Map<String, dynamic> _settings;
 
   @override
   void initState() {
@@ -25,7 +25,7 @@ class _ProfilePrivacySettingsState extends State<ProfilePrivacySettings> {
     _settings = Map.from(widget.privacySettings);
   }
 
-  void _updateSetting(String key, bool value) {
+  void _updateSetting(String key, dynamic value) {
     setState(() {
       _settings[key] = value;
     });
@@ -128,11 +128,11 @@ class _ProfilePrivacySettingsState extends State<ProfilePrivacySettings> {
           ),
           
           _buildPrivacyOption(
-            'Discovery Mode',
-            'Appear in discovery for other users',
-            Icons.visibility,
-            'discoverable',
-            subtitle: 'Turn off to stop appearing in swipe deck',
+            'Incognito Mode',
+            'Browse privately and hide from discovery',
+            Icons.visibility_off,
+            'incognitoMode',
+            subtitle: 'Turn on to stop appearing in swipe deck',
             isWarning: true,
           ),
           
@@ -144,12 +144,36 @@ class _ProfilePrivacySettingsState extends State<ProfilePrivacySettings> {
             subtitle: 'Others can see if you\'ve read their messages',
           ),
           
-          _buildPrivacyOption(
-            'Profile Verification',
-            'Show verification badge on profile',
-            Icons.verified,
-            'showVerification',
-            subtitle: 'Display verification status if verified',
+          Divider(color: Colors.grey[200], height: 1),
+          
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: Text(
+              'Message & Profile Visibility',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: Colors.black87,
+              ),
+            ),
+          ),
+          
+          _buildDropdownOption(
+            'Who Can Message Me',
+            'Control who can send you messages',
+            Icons.message,
+            'whoCanMessageMe',
+            ['everyone', 'matches', 'none'],
+            subtitle: 'Set message restrictions',
+          ),
+          
+          _buildDropdownOption(
+            'Who Can See My Profile',
+            'Control profile visibility',
+            Icons.person,
+            'whoCanSeeMyProfile',
+            ['everyone', 'matches', 'none'],
+            subtitle: 'Set profile visibility restrictions',
           ),
           
           const SizedBox(height: 16),
@@ -224,18 +248,123 @@ class _ProfilePrivacySettingsState extends State<ProfilePrivacySettings> {
       ),
     );
   }
+  
+  Widget _buildDropdownOption(
+    String title,
+    String description,
+    IconData icon,
+    String settingKey,
+    List<String> options, {
+    String? subtitle,
+  }) {
+    final currentValue = _settings[settingKey] as String? ?? options.first;
+    
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.grey.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(
+                  icon,
+                  color: Colors.grey[600],
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    if (subtitle != null) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        subtitle,
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.grey.withValues(alpha: 0.05),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.grey[300]!),
+            ),
+            child: DropdownButtonFormField<String>(
+              value: currentValue,
+              decoration: const InputDecoration(
+                border: InputBorder.none,
+                contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              ),
+              dropdownColor: Colors.white,
+              isExpanded: true,
+              items: options.map((option) {
+                return DropdownMenuItem(
+                  value: option,
+                  child: Text(
+                    _formatOptionText(option),
+                    style: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.black87,
+                    ),
+                  ),
+                );
+              }).toList(),
+              onChanged: (value) {
+                if (value != null) {
+                  _updateSetting(settingKey, value);
+                }
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+  
+  String _formatOptionText(String option) {
+    // Capitalize first letter of each word
+    return option.split('_').map((word) => 
+      word[0].toUpperCase() + word.substring(1)
+    ).join(' ');
+  }
 }
 
 /// Data class for default privacy settings
 class DefaultPrivacySettings {
-  static const Map<String, bool> defaults = {
+  static const Map<String, dynamic> defaults = {
     'showDistance': true,
     'showAge': true,
     'showLastActive': true,
     'showOnlineStatus': true,
-    'discoverable': true,
+    'incognitoMode': false,
     'readReceipts': true,
-    'showVerification': true,
+    'whoCanMessageMe': 'everyone',
+    'whoCanSeeMyProfile': 'everyone',
   };
 
   static const Map<String, String> descriptions = {
@@ -243,8 +372,9 @@ class DefaultPrivacySettings {
     'showAge': 'Controls whether your age appears on your profile',
     'showLastActive': 'Controls whether others can see when you were last online',
     'showOnlineStatus': 'Controls whether others can see if you\'re currently online',
-    'discoverable': 'Controls whether you appear in the discovery feed for other users',
+    'incognitoMode': 'Controls whether you appear in the discovery feed for other users',
     'readReceipts': 'Controls whether others can see if you\'ve read their messages',
-    'showVerification': 'Controls whether your verification badge is displayed',
+    'whoCanMessageMe': 'Controls who can send you messages',
+    'whoCanSeeMyProfile': 'Controls who can view your full profile',
   };
 }

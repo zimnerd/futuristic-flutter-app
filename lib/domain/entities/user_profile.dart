@@ -37,18 +37,22 @@ class UserProfile extends Equatable {
     this.politics,
     this.drinking,
     this.smoking,
+    this.exercise,
     this.drugs,
     this.children,
     this.languages = const [],
     this.personalityTraits = const [],
     this.promptQuestions = const [],
     this.promptAnswers = const [],
-    // Privacy settings from backend User model
+    // Privacy settings from backend User model (all 8 fields)
     this.showAge,
     this.showDistance,
     this.showLastActive,
     this.showOnlineStatus,
+    this.incognitoMode,
     this.readReceipts,
+    this.whoCanMessageMe,
+    this.whoCanSeeMyProfile,
   });
 
   final String id;
@@ -92,6 +96,7 @@ class UserProfile extends Equatable {
   final String? politics;
   final String? drinking; // never, occasionally, regularly, prefer-not-to-say
   final String? smoking;
+  final String? exercise; // never, rarely, sometimes, regularly, daily
   final String? drugs;
   final String? children; // don't have/want, have/want more, etc.
   final List<String> languages;
@@ -99,12 +104,15 @@ class UserProfile extends Equatable {
   final List<String> promptQuestions;
   final List<String> promptAnswers;
 
-  // Privacy settings from backend User model
+  // Privacy settings from backend User model (all 8 fields)
   final bool? showAge;
   final bool? showDistance;
   final bool? showLastActive;
   final bool? showOnlineStatus;
+  final bool? incognitoMode;
   final bool? readReceipts;
+  final String? whoCanMessageMe;
+  final String? whoCanSeeMyProfile;
 
   /// Get primary photo URL
   String get primaryPhotoUrl {
@@ -183,18 +191,22 @@ class UserProfile extends Equatable {
     String? politics,
     String? drinking,
     String? smoking,
+    String? exercise,
     String? drugs,
     String? children,
     List<String>? languages,
     List<String>? personalityTraits,
     List<String>? promptQuestions,
     List<String>? promptAnswers,
-    // Privacy settings
+    // Privacy settings (all 8 fields)
     bool? showAge,
     bool? showDistance,
     bool? showLastActive,
     bool? showOnlineStatus,
+    bool? incognitoMode,
     bool? readReceipts,
+    String? whoCanMessageMe,
+    String? whoCanSeeMyProfile,
   }) {
     return UserProfile(
       id: id ?? this.id,
@@ -231,12 +243,22 @@ class UserProfile extends Equatable {
       politics: politics ?? this.politics,
       drinking: drinking ?? this.drinking,
       smoking: smoking ?? this.smoking,
+      exercise: exercise ?? this.exercise,
       drugs: drugs ?? this.drugs,
       children: children ?? this.children,
       languages: languages ?? this.languages,
       personalityTraits: personalityTraits ?? this.personalityTraits,
       promptQuestions: promptQuestions ?? this.promptQuestions,
       promptAnswers: promptAnswers ?? this.promptAnswers,
+      // Privacy settings (all 8 fields)
+      showAge: showAge ?? this.showAge,
+      showDistance: showDistance ?? this.showDistance,
+      showLastActive: showLastActive ?? this.showLastActive,
+      showOnlineStatus: showOnlineStatus ?? this.showOnlineStatus,
+      incognitoMode: incognitoMode ?? this.incognitoMode,
+      readReceipts: readReceipts ?? this.readReceipts,
+      whoCanMessageMe: whoCanMessageMe ?? this.whoCanMessageMe,
+      whoCanSeeMyProfile: whoCanSeeMyProfile ?? this.whoCanSeeMyProfile,
     );
   }
 
@@ -290,6 +312,7 @@ class UserProfile extends Equatable {
       politics: json['politics'] as String?,
       drinking: json['drinking'] as String?,
       smoking: json['smoking'] as String?,
+      exercise: json['exercise'] as String?,
       drugs: json['drugs'] as String?,
       children: json['children'] as String?,
       languages: (json['languages'] as List<dynamic>?)?.cast<String>() ?? [],
@@ -299,6 +322,15 @@ class UserProfile extends Equatable {
           (json['promptQuestions'] as List<dynamic>?)?.cast<String>() ?? [],
       promptAnswers:
           (json['promptAnswers'] as List<dynamic>?)?.cast<String>() ?? [],
+      // Privacy settings (all 8 fields from backend)
+      showAge: json['showAge'] as bool?,
+      showDistance: json['showDistance'] as bool?,
+      showLastActive: json['showLastActive'] as bool?,
+      showOnlineStatus: json['showOnlineStatus'] as bool?,
+      incognitoMode: json['incognitoMode'] as bool?,
+      readReceipts: json['readReceipts'] as bool?,
+      whoCanMessageMe: json['whoCanMessageMe'] as String?,
+      whoCanSeeMyProfile: json['whoCanSeeMyProfile'] as String?,
     );
   }
 
@@ -339,12 +371,22 @@ class UserProfile extends Equatable {
       'politics': politics,
       'drinking': drinking,
       'smoking': smoking,
+      'exercise': exercise,
       'drugs': drugs,
       'children': children,
       'languages': languages,
       'personalityTraits': personalityTraits,
       'promptQuestions': promptQuestions,
       'promptAnswers': promptAnswers,
+      // Privacy settings (all 8 fields)
+      'showAge': showAge,
+      'showDistance': showDistance,
+      'showLastActive': showLastActive,
+      'showOnlineStatus': showOnlineStatus,
+      'incognitoMode': incognitoMode,
+      'readReceipts': readReceipts,
+      'whoCanMessageMe': whoCanMessageMe,
+      'whoCanSeeMyProfile': whoCanSeeMyProfile,
     };
   }
 
@@ -384,18 +426,22 @@ class UserProfile extends Equatable {
     politics,
     drinking,
     smoking,
+    exercise,
     drugs,
     children,
     languages,
     personalityTraits,
     promptQuestions,
     promptAnswers,
-    // Privacy settings
+    // Privacy settings (all 8 fields)
     showAge,
     showDistance,
     showLastActive,
     showOnlineStatus,
+    incognitoMode,
     readReceipts,
+    whoCanMessageMe,
+    whoCanSeeMyProfile,
       ];
 }
 

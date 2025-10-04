@@ -50,14 +50,15 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
   String _selectedGender = 'Woman';
   String? _selectedPreference;
   List<ProfilePhoto> _photos = [];
-  Map<String, bool> _privacySettings = Map.from({
+  Map<String, dynamic> _privacySettings = Map.from({
     'showDistance': true,
     'showAge': true,
     'showLastActive': true,
     'showOnlineStatus': true,
-    'discoverable': true,
+    'incognitoMode': false,
     'readReceipts': true,
-    'showVerification': true,
+    'whoCanMessageMe': 'everyone', // 'everyone', 'matches', 'none'
+    'whoCanSeeMyProfile': 'everyone', // 'everyone', 'matches', 'none'
   });
 
   UserProfile? _currentProfile;
@@ -81,6 +82,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
   String? _selectedPolitics;
   String? _selectedDrinking;
   String? _selectedSmoking;
+  String? _selectedExercise;
   String? _selectedDrugs;
   String? _selectedChildren;
   List<String> _selectedLanguages = [];
@@ -144,44 +146,34 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
     _selectedPolitics = ProfilePhysicalAttributesSection.mapPoliticsFromBackend(
       profile.politics,
     );
-    _selectedDrinking = ProfileLifestyleChoicesSection.mapFrequencyFromBackend(
+    _selectedDrinking = ProfileLifestyleChoicesSection.mapDrinkingFromBackend(
       profile.drinking,
     );
-    _selectedSmoking = ProfileLifestyleChoicesSection.mapFrequencyFromBackend(
+    _selectedSmoking = ProfileLifestyleChoicesSection.mapSmokingFromBackend(
       profile.smoking,
     );
-    _selectedDrugs = ProfileLifestyleChoicesSection.mapFrequencyFromBackend(
-      profile.drugs,
+    _selectedExercise = ProfileLifestyleChoicesSection.mapExerciseFromBackend(
+      profile.exercise,
     );
+    _selectedDrugs =
+        profile.drugs ?? 'Prefer not to say'; // No backend enum yet
     _selectedChildren = ProfileLifestyleChoicesSection.mapChildrenFromBackend(
       profile.children,
     );
     
     _selectedLanguages = List.from(profile.languages);
     
-    // CRITICAL: Populate privacy settings from profile
-    logger.i('🔒 Populating privacy settings from profile...');
-    logger.i('   Profile has showAge: ${profile.showAge}');
-    logger.i('   Profile has showDistance: ${profile.showDistance}');
-    logger.i('   Profile has showLastActive: ${profile.showLastActive}');
-    logger.i('   Profile has showOnlineStatus: ${profile.showOnlineStatus}');
-    logger.i('   Profile has readReceipts: ${profile.readReceipts}');
-    
-    // Update _privacySettings map with values from profile
+    // Populate privacy settings from profile - all 8 backend fields
     _privacySettings = {
       'showAge': profile.showAge ?? true,
       'showDistance': profile.showDistance ?? true,
       'showLastActive': profile.showLastActive ?? false,
       'showOnlineStatus': profile.showOnlineStatus ?? false,
+      'incognitoMode': profile.incognitoMode ?? false,
       'readReceipts': profile.readReceipts ?? true,
-      'discoverable': true, // Not in UserProfile yet
-      'showVerification': true, // Not in UserProfile yet
+      'whoCanMessageMe': profile.whoCanMessageMe ?? 'everyone',
+      'whoCanSeeMyProfile': profile.whoCanSeeMyProfile ?? 'everyone',
     };
-    
-    logger.i('✅ Privacy settings populated:');
-    _privacySettings.forEach((key, value) {
-      logger.i('   - $key: $value');
-    });
     
     _currentProfile = profile;
   }
@@ -314,15 +306,16 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
         politics: ProfilePhysicalAttributesSection.mapPoliticsToBackend(
           _selectedPolitics,
         ),
-        drinking: ProfileLifestyleChoicesSection.mapFrequencyToBackend(
+        drinking: ProfileLifestyleChoicesSection.mapDrinkingToBackend(
           _selectedDrinking,
         ),
-        smoking: ProfileLifestyleChoicesSection.mapFrequencyToBackend(
+        smoking: ProfileLifestyleChoicesSection.mapSmokingToBackend(
           _selectedSmoking,
         ),
-        drugs: ProfileLifestyleChoicesSection.mapFrequencyToBackend(
-          _selectedDrugs,
+        exercise: ProfileLifestyleChoicesSection.mapExerciseToBackend(
+          _selectedExercise,
         ),
+        drugs: _selectedDrugs, // Keep as-is, no mapping needed
         children: ProfileLifestyleChoicesSection.mapChildrenToBackend(
           _selectedChildren,
         ),
@@ -664,13 +657,15 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
       '  Politics: $_selectedPolitics → ${ProfilePhysicalAttributesSection.mapPoliticsToBackend(_selectedPolitics)}',
     );
     logger.i(
-      '  Drinking: $_selectedDrinking → ${ProfileLifestyleChoicesSection.mapFrequencyToBackend(_selectedDrinking)}',
+      '  Drinking: $_selectedDrinking → ${ProfileLifestyleChoicesSection.mapDrinkingToBackend(_selectedDrinking)}',
     );
     logger.i(
-      '  Smoking: $_selectedSmoking → ${ProfileLifestyleChoicesSection.mapFrequencyToBackend(_selectedSmoking)}',
+      '  Smoking: $_selectedSmoking → ${ProfileLifestyleChoicesSection.mapSmokingToBackend(_selectedSmoking)}',
     );
     logger.i(
-      '  Drugs: $_selectedDrugs → ${ProfileLifestyleChoicesSection.mapFrequencyToBackend(_selectedDrugs)}',
+      '  Exercise: $_selectedExercise → ${ProfileLifestyleChoicesSection.mapExerciseToBackend(_selectedExercise)}',
+    );
+    logger.i('  Drugs: $_selectedDrugs',
     );
     logger.i(
       '  Children: $_selectedChildren → ${ProfileLifestyleChoicesSection.mapChildrenToBackend(_selectedChildren)}',
@@ -704,15 +699,16 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
       politics: ProfilePhysicalAttributesSection.mapPoliticsToBackend(
         _selectedPolitics,
       ),
-      drinking: ProfileLifestyleChoicesSection.mapFrequencyToBackend(
+      drinking: ProfileLifestyleChoicesSection.mapDrinkingToBackend(
         _selectedDrinking,
       ),
-      smoking: ProfileLifestyleChoicesSection.mapFrequencyToBackend(
+      smoking: ProfileLifestyleChoicesSection.mapSmokingToBackend(
         _selectedSmoking,
       ),
-      drugs: ProfileLifestyleChoicesSection.mapFrequencyToBackend(
-        _selectedDrugs,
+      exercise: ProfileLifestyleChoicesSection.mapExerciseToBackend(
+        _selectedExercise,
       ),
+      drugs: _selectedDrugs, // Keep as-is, no mapping needed
       children: ProfileLifestyleChoicesSection.mapChildrenToBackend(
         _selectedChildren,
       ),
@@ -1402,6 +1398,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
           ProfileLifestyleChoicesSection(
             drinking: _selectedDrinking,
             smoking: _selectedSmoking,
+            exercise: _selectedExercise,
             drugs: _selectedDrugs,
             children: _selectedChildren,
             onDrinkingChanged: (value) {
@@ -1412,6 +1409,11 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
             onSmokingChanged: (value) {
               setState(() {
                 _selectedSmoking = value;
+              });
+            },
+            onExerciseChanged: (value) {
+              setState(() {
+                _selectedExercise = value;
               });
             },
             onDrugsChanged: (value) {

@@ -66,7 +66,7 @@ class CancelProfileChanges extends ProfileEvent {
 }
 
 class UpdatePrivacySettings extends ProfileEvent {
-  final Map<String, bool> settings;
+  final Map<String, dynamic> settings;
 
   const UpdatePrivacySettings({required this.settings});
 

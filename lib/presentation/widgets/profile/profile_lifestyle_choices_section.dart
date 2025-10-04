@@ -2,14 +2,17 @@ import 'package:flutter/material.dart';
 import '../../theme/pulse_colors.dart';
 
 /// Lifestyle choices section for user profile
-/// Maps to Profile.drinking, Profile.smoking, Profile.drugs, Profile.children fields
+/// Maps to User.drinkingHabit, User.smokingHabit, User.exerciseHabit fields (backend enums)
+/// and Profile.drugs, Profile.children fields
 class ProfileLifestyleChoicesSection extends StatelessWidget {
   final String? drinking;
   final String? smoking;
+  final String? exercise;
   final String? drugs;
   final String? children;
   final Function(String?) onDrinkingChanged;
   final Function(String?) onSmokingChanged;
+  final Function(String?) onExerciseChanged;
   final Function(String?) onDrugsChanged;
   final Function(String?) onChildrenChanged;
   final String title;
@@ -19,21 +22,40 @@ class ProfileLifestyleChoicesSection extends StatelessWidget {
     super.key,
     required this.drinking,
     required this.smoking,
+    required this.exercise,
     required this.drugs,
     required this.children,
     required this.onDrinkingChanged,
     required this.onSmokingChanged,
+    required this.onExerciseChanged,
     required this.onDrugsChanged,
     required this.onChildrenChanged,
     this.title = 'Lifestyle Choices',
     this.subtitle = 'Share your lifestyle preferences',
   });
 
-  static const List<String> frequencyOptions = [
+  static const List<String> drinkingOptions = [
     'Never',
-    'Occasionally',
+    'Rarely',
+    'Socially',
     'Regularly',
     'Prefer not to say',
+  ];
+
+  static const List<String> smokingOptions = [
+    'Never',
+    'Socially',
+    'Regularly',
+    'Trying to quit',
+    'Prefer not to say',
+  ];
+
+  static const List<String> exerciseOptions = [
+    'Never',
+    'Rarely',
+    'Sometimes',
+    'Regularly',
+    'Daily',
   ];
 
   static const List<String> childrenOptions = [
@@ -46,19 +68,57 @@ class ProfileLifestyleChoicesSection extends StatelessWidget {
   ];
 
   // Map UI labels to backend enum values
-  static String? mapFrequencyToBackend(String? value) {
+  static String? mapDrinkingToBackend(String? value) {
     if (value == null) return null;
     switch (value) {
       case 'Never':
-        return 'never';
-      case 'Occasionally':
-        return 'occasionally';
+        return 'NEVER';
+      case 'Rarely':
+        return 'RARELY';
+      case 'Socially':
+        return 'SOCIALLY';
       case 'Regularly':
-        return 'regularly';
+        return 'REGULARLY';
       case 'Prefer not to say':
-        return 'prefer-not-to-say';
+        return 'PREFER_NOT_TO_SAY';
       default:
-        return value.toLowerCase();
+        return value.toUpperCase();
+    }
+  }
+
+  static String? mapSmokingToBackend(String? value) {
+    if (value == null) return null;
+    switch (value) {
+      case 'Never':
+        return 'NEVER';
+      case 'Socially':
+        return 'SOCIALLY';
+      case 'Regularly':
+        return 'REGULARLY';
+      case 'Trying to quit':
+        return 'TRYING_TO_QUIT';
+      case 'Prefer not to say':
+        return 'PREFER_NOT_TO_SAY';
+      default:
+        return value.toUpperCase();
+    }
+  }
+
+  static String? mapExerciseToBackend(String? value) {
+    if (value == null) return null;
+    switch (value) {
+      case 'Never':
+        return 'NEVER';
+      case 'Rarely':
+        return 'RARELY';
+      case 'Sometimes':
+        return 'SOMETIMES';
+      case 'Regularly':
+        return 'REGULARLY';
+      case 'Daily':
+        return 'DAILY';
+      default:
+        return value.toUpperCase();
     }
   }
 
@@ -83,17 +143,55 @@ class ProfileLifestyleChoicesSection extends StatelessWidget {
   }
 
   // Map backend values to UI labels
-  static String? mapFrequencyFromBackend(String? value) {
+  static String? mapDrinkingFromBackend(String? value) {
     if (value == null) return null;
     switch (value) {
-      case 'never':
+      case 'NEVER':
         return 'Never';
-      case 'occasionally':
-        return 'Occasionally';
-      case 'regularly':
+      case 'RARELY':
+        return 'Rarely';
+      case 'SOCIALLY':
+        return 'Socially';
+      case 'REGULARLY':
         return 'Regularly';
-      case 'prefer-not-to-say':
+      case 'PREFER_NOT_TO_SAY':
         return 'Prefer not to say';
+      default:
+        return value;
+    }
+  }
+
+  static String? mapSmokingFromBackend(String? value) {
+    if (value == null) return null;
+    switch (value) {
+      case 'NEVER':
+        return 'Never';
+      case 'SOCIALLY':
+        return 'Socially';
+      case 'REGULARLY':
+        return 'Regularly';
+      case 'TRYING_TO_QUIT':
+        return 'Trying to quit';
+      case 'PREFER_NOT_TO_SAY':
+        return 'Prefer not to say';
+      default:
+        return value;
+    }
+  }
+
+  static String? mapExerciseFromBackend(String? value) {
+    if (value == null) return null;
+    switch (value) {
+      case 'NEVER':
+        return 'Never';
+      case 'RARELY':
+        return 'Rarely';
+      case 'SOMETIMES':
+        return 'Sometimes';
+      case 'REGULARLY':
+        return 'Regularly';
+      case 'DAILY':
+        return 'Daily';
       default:
         return value;
     }
@@ -120,6 +218,7 @@ class ProfileLifestyleChoicesSection extends StatelessWidget {
   static const Map<String, IconData> categoryIcons = {
     'drinking': Icons.local_bar_outlined,
     'smoking': Icons.smoking_rooms_outlined,
+    'exercise': Icons.fitness_center_outlined,
     'drugs': Icons.healing_outlined,
     'children': Icons.child_care_outlined,
   };
@@ -286,7 +385,7 @@ class ProfileLifestyleChoicesSection extends StatelessWidget {
             category: 'drinking',
             value: drinking,
             onChanged: onDrinkingChanged,
-            options: frequencyOptions,
+            options: drinkingOptions,
           ),
           const SizedBox(height: 20),
 
@@ -297,7 +396,18 @@ class ProfileLifestyleChoicesSection extends StatelessWidget {
             category: 'smoking',
             value: smoking,
             onChanged: onSmokingChanged,
-            options: frequencyOptions,
+            options: smokingOptions,
+          ),
+          const SizedBox(height: 20),
+
+          // Exercise
+          _buildChoiceSelector(
+            context: context,
+            label: 'Exercise',
+            category: 'exercise',
+            value: exercise,
+            onChanged: onExerciseChanged,
+            options: exerciseOptions,
           ),
           const SizedBox(height: 20),
 
@@ -308,7 +418,7 @@ class ProfileLifestyleChoicesSection extends StatelessWidget {
             category: 'drugs',
             value: drugs,
             onChanged: onDrugsChanged,
-            options: frequencyOptions,
+            options: drinkingOptions, // Reuse drinking options for drugs
           ),
           const SizedBox(height: 20),
 
