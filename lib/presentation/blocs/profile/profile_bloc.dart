@@ -39,21 +39,55 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     Emitter<ProfileState> emit,
   ) async {
     try {
-      // Check if we have cached data and it's not stale (unless force refresh)
-      if (!event.forceRefresh && state.profile != null && !state.isCacheStale) {
+      // Check if we have valid cached data that's not stale (unless force refresh)
+      // Must have: profile data, valid lastFetchTime, and cache not stale
+      final hasValidCache =
+          state.profile != null &&
+          state.lastFetchTime != null &&
+          !state.isCacheStale;
+
+      if (!event.forceRefresh && hasValidCache) {
         _logger.d(
           '✅ Using cached profile (age: ${DateTime.now().difference(state.lastFetchTime!).inMinutes} min)',
         );
-        return; // Use cached data, don't fetch
+        _logger.d('📊 Cached profile data:');
+        _logger.d('   - ID: ${state.profile?.id}');
+        _logger.d('   - Name: ${state.profile?.name}');
+        _logger.d(
+          '   - Bio: ${state.profile?.bio.substring(0, state.profile!.bio.length > 50 ? 50 : state.profile!.bio.length)}...',
+        );
+        _logger.d('   - Photos: ${state.profile?.photos.length ?? 0}');
+        _logger.d(
+          '   - Job: ${state.profile?.job ?? state.profile?.occupation}',
+        );
+        _logger.d('   - Status: ${state.status}');
+
+        // Force state change by emitting loading first, then loaded
+        // This ensures BlocConsumer listener fires even with cached data
+        _logger.d('🔄 Forcing state change to trigger listener');
+        if (state.status == ProfileStatus.loaded) {
+          // Briefly emit loading to force state change
+          emit(state.copyWith(status: ProfileStatus.loading));
+          _logger.d('   - Emitted: ProfileStatus.loading');
+        }
+        // Then emit loaded state to trigger UI update
+        emit(state.copyWith(status: ProfileStatus.loaded));
+        _logger.d('   - Emitted: ProfileStatus.loaded');
+        return;
       }
 
       _logger.i(
-        '🔄 Fetching profile from server (force: ${event.forceRefresh}, stale: ${state.isCacheStale})',
+        '🔄 Fetching profile from server (force: ${event.forceRefresh}, hasCache: ${state.profile != null}, stale: ${state.isCacheStale})',
       );
       emit(state.copyWith(status: ProfileStatus.loading));
       
       final profile = await _profileService.getCurrentProfile();
       _originalProfile = profile; // Store for delta tracking
+      
+      _logger.i('📊 Profile fetched from server:');
+      _logger.i('   - ID: ${profile.id}');
+      _logger.i('   - Name: ${profile.name}');
+      _logger.i('   - Photos: ${profile.photos.length}');
       
       emit(state.copyWith(
         status: ProfileStatus.loaded,
@@ -62,6 +96,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
         updateStatus: ProfileStatus.initial, // Reset update status on profile reload
       ));
     } catch (e) {
+      _logger.e('❌ Failed to load profile: $e');
       emit(state.copyWith(
         status: ProfileStatus.error,
         error: 'Failed to load profile: ${e.toString()}',
@@ -345,24 +380,36 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     Emitter<ProfileState> emit,
   ) async {
     try {
-      _logger.i('🔒 Updating privacy settings via dedicated endpoint');
+      _logger.i('🔒 UpdatePrivacySettings event received');
+      _logger.i('   - Settings: ${event.settings}');
+      _logger.i('   - Settings keys: ${event.settings.keys.toList()}');
+      _logger.i('   - Settings empty? ${event.settings.isEmpty}');
+      
       emit(state.copyWith(updateStatus: ProfileStatus.loading));
+      _logger.i('   - Emitted loading status');
       
       // Call dedicated privacy update method
+      _logger.i('🌐 Calling ProfileService.updatePrivacySettings...');
       await _profileService.updatePrivacySettings(event.settings);
+      _logger.i('✅ ProfileService.updatePrivacySettings completed');
       
       // Reload profile to get updated privacy settings
+      _logger.i('🔄 Reloading profile from server...');
       final profile = await _profileService.getCurrentProfile();
+      _logger.i('✅ Profile reloaded successfully');
       
       emit(state.copyWith(
         status: ProfileStatus.success,
         profile: profile,
         updateStatus: ProfileStatus.success,
+          lastFetchTime: DateTime.now(), // Update cache time
       ));
+      _logger.i('✅ Emitted success status');
       
       _logger.i('✅ Privacy settings updated successfully');
     } catch (e) {
       _logger.e('❌ Error updating privacy settings: $e');
+      _logger.e('   - Stack trace: ${StackTrace.current}');
       emit(state.copyWith(
         status: ProfileStatus.error,
         error: 'Failed to update privacy settings: ${e.toString()}',

@@ -95,6 +95,17 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
 
   @override
   void dispose() {
+    // Clear any failed upload progress when user exits
+    final profileBloc = context.read<ProfileBloc>();
+    final state = profileBloc.state;
+
+    // Remove all failed upload progress entries
+    state.uploadingPhotos.forEach((tempId, progress) {
+      if (progress.state == PhotoUploadState.failed) {
+        profileBloc.add(ClearUploadProgress(tempId: tempId));
+      }
+    });
+    
     _tabController.dispose();
     _pageController.dispose();
     _nameController.dispose();
@@ -106,6 +117,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
   }
 
   void _populateFields(UserProfile profile) {
+    logger.i('🔄 _populateFields() called');
     _nameController.text = profile.name;
     _bioController.text = profile.bio;
     _dateOfBirth = profile.dateOfBirth;
@@ -146,6 +158,30 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
     );
     
     _selectedLanguages = List.from(profile.languages);
+    
+    // CRITICAL: Populate privacy settings from profile
+    logger.i('🔒 Populating privacy settings from profile...');
+    logger.i('   Profile has showAge: ${profile.showAge}');
+    logger.i('   Profile has showDistance: ${profile.showDistance}');
+    logger.i('   Profile has showLastActive: ${profile.showLastActive}');
+    logger.i('   Profile has showOnlineStatus: ${profile.showOnlineStatus}');
+    logger.i('   Profile has readReceipts: ${profile.readReceipts}');
+    
+    // Update _privacySettings map with values from profile
+    _privacySettings = {
+      'showAge': profile.showAge ?? true,
+      'showDistance': profile.showDistance ?? true,
+      'showLastActive': profile.showLastActive ?? false,
+      'showOnlineStatus': profile.showOnlineStatus ?? false,
+      'readReceipts': profile.readReceipts ?? true,
+      'discoverable': true, // Not in UserProfile yet
+      'showVerification': true, // Not in UserProfile yet
+    };
+    
+    logger.i('✅ Privacy settings populated:');
+    _privacySettings.forEach((key, value) {
+      logger.i('   - $key: $value');
+    });
     
     _currentProfile = profile;
   }
@@ -326,6 +362,32 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
     return age;
   }
 
+  /// Force reload profile from server, skipping cache
+  Future<void> _forceReloadProfile() async {
+    logger.i('🔄 Force reload triggered - fetching fresh profile from server');
+
+    // Dispatch LoadProfile event with forceRefresh=true to bypass cache
+    context.read<ProfileBloc>().add(const LoadProfile(forceRefresh: true));
+
+    // Show a subtle loading indicator
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Refreshing profile...'),
+        duration: Duration(seconds: 1),
+        backgroundColor: PulseColors.primary,
+      ),
+    );
+  }
+
+  /// Wrap a page with pull-to-refresh functionality
+  Widget _buildRefreshablePage(Widget child) {
+    return RefreshIndicator(
+      onRefresh: _forceReloadProfile,
+      color: PulseColors.primary,
+      child: child,
+    );
+  }
+
   void _showPreview() {
     if (_currentProfile != null) {
       Navigator.of(context).push(
@@ -407,24 +469,32 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
 
   /// Save current section based on page index
   void _saveCurrentSection() {
+    logger.i('💾💾💾 _saveCurrentSection() CALLED 💾💾💾');
     logger.i('💾 Saving section: $_currentPageIndex');
 
     switch (_currentPageIndex) {
       case 0:
+        logger.i('   → Calling _saveBasicInfoSection()');
         _saveBasicInfoSection();
         break;
       case 1:
+        logger.i('   → Calling _savePhotosSection()');
         _savePhotosSection();
         break;
       case 2:
+        logger.i('   → Calling _saveInterestsSection()');
         _saveInterestsSection();
         break;
       case 3:
+        logger.i('   → Calling _saveLifestyleSection()');
         _saveLifestyleSection();
         break;
       case 4:
+        logger.i('   → Calling _savePrivacySection()');
         _savePrivacySection();
         break;
+      default:
+        logger.w('   ⚠️ Unknown page index: $_currentPageIndex');
     }
   }
 
@@ -655,17 +725,26 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
   /// Save Privacy section (Page 4)
   /// This is the FINAL tab - only submits privacy data, then closes editor
   void _savePrivacySection() {
+    logger.i('🔒🔒🔒 _savePrivacySection() CALLED 🔒🔒🔒');
     logger.i('🔒 Saving Privacy Settings (Final Tab):');
+    logger.i('   - _privacySettings map: $_privacySettings');
+    logger.i('   - _privacySettings keys: ${_privacySettings.keys.toList()}');
+    logger.i('   - _privacySettings empty? ${_privacySettings.isEmpty}');
+    
     _privacySettings.forEach((key, value) {
       logger.i('  $key: $value');
     });
 
+    logger.i('🚀 About to dispatch UpdatePrivacySettings event...');
+    
     // IMPORTANT: Privacy tab ONLY submits privacy settings
     // Does NOT send entire profile - uses dedicated /users/me/privacy endpoint
     // This is the final step that closes the profile editor
     context.read<ProfileBloc>().add(UpdatePrivacySettings(
       settings: _privacySettings,
     ));
+    
+    logger.i('✅ UpdatePrivacySettings event dispatched');
     
     // Mark as final save for navigation after success
     _isFinalSave = true;
@@ -803,8 +882,26 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
       ),
       body: BlocConsumer<ProfileBloc, ProfileState>(
         listener: (context, state) {
+          logger.d('🔔 BLoC Listener triggered:');
+          logger.d('   - Status: ${state.status}');
+          logger.d('   - Has profile: ${state.profile != null}');
+          logger.d('   - Profile ID: ${state.profile?.id}');
+          logger.d('   - Profile name: ${state.profile?.name}');
+          logger.d('   - _currentProfile: ${_currentProfile?.name ?? "null"}');
+          
           if (state.status == ProfileStatus.loaded && state.profile != null) {
-            _populateFields(state.profile!);
+            logger.i(
+              '📝 Calling _populateFields with profile: ${state.profile!.name}',
+            );
+            // Wrap in setState to trigger UI rebuild for all populated fields (especially DOB)
+            setState(() {
+              _currentProfile = state.profile;
+              _populateFields(state.profile!);
+            });
+            logger.i(
+              '✅ _populateFields completed, _currentProfile: ${_currentProfile?.name}',
+            );
+            logger.i('📅 DOB after populate: $_dateOfBirth');
           }
           
           // Handle photo upload success/error
@@ -918,12 +1015,24 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
           }
         },
         builder: (context, state) {
+          logger.d('🏗️ Builder called:');
+          logger.d('   - Status: ${state.status}');
+          logger.d('   - Has profile: ${state.profile != null}');
+          logger.d(
+            '   - _currentProfile: ${_currentProfile != null ? _currentProfile!.name : "null"}',
+          );
+          
           if (state.status == ProfileStatus.loading) {
+            logger.d('⏳ Showing loading indicator');
             return const Center(
               child: CircularProgressIndicator(),
             );
           }
 
+          logger.d(
+            '🎨 Building profile UI, _currentProfile is: ${_currentProfile != null ? "NOT NULL" : "NULL"}',
+          );
+          
           return Column(
             children: [
               // Profile completion card (collapsible)
@@ -991,11 +1100,11 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
                     _tabController.animateTo(index);
                   },
                   children: [
-                    _buildBasicInfoPage(),
-                    _buildPhotosPage(),
-                    _buildInterestsPage(),
-                    _buildLifestylePage(),
-                    _buildPrivacyPage(),
+                    _buildRefreshablePage(_buildBasicInfoPage()),
+                    _buildRefreshablePage(_buildPhotosPage()),
+                    _buildRefreshablePage(_buildInterestsPage()),
+                    _buildRefreshablePage(_buildLifestylePage()),
+                    _buildRefreshablePage(_buildPrivacyPage()),
                   ],
                 ),
               ),
@@ -1020,7 +1129,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
                       child: PulseButton(
                         text: 'Continue',
                         onPressed: _currentPageIndex == 4
-                            ? _saveProfile
+                            ? _saveCurrentSection // ✅ FIX: Call _saveCurrentSection for Privacy tab
                             : _nextPage,
                         isLoading: state.updateStatus == ProfileStatus.loading,
                       ),

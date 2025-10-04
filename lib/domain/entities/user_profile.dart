@@ -43,6 +43,12 @@ class UserProfile extends Equatable {
     this.personalityTraits = const [],
     this.promptQuestions = const [],
     this.promptAnswers = const [],
+    // Privacy settings from backend User model
+    this.showAge,
+    this.showDistance,
+    this.showLastActive,
+    this.showOnlineStatus,
+    this.readReceipts,
   });
 
   final String id;
@@ -92,6 +98,13 @@ class UserProfile extends Equatable {
   final List<String> personalityTraits;
   final List<String> promptQuestions;
   final List<String> promptAnswers;
+
+  // Privacy settings from backend User model
+  final bool? showAge;
+  final bool? showDistance;
+  final bool? showLastActive;
+  final bool? showOnlineStatus;
+  final bool? readReceipts;
 
   /// Get primary photo URL
   String get primaryPhotoUrl {
@@ -176,6 +189,12 @@ class UserProfile extends Equatable {
     List<String>? personalityTraits,
     List<String>? promptQuestions,
     List<String>? promptAnswers,
+    // Privacy settings
+    bool? showAge,
+    bool? showDistance,
+    bool? showLastActive,
+    bool? showOnlineStatus,
+    bool? readReceipts,
   }) {
     return UserProfile(
       id: id ?? this.id,
@@ -371,6 +390,12 @@ class UserProfile extends Equatable {
     personalityTraits,
     promptQuestions,
     promptAnswers,
+    // Privacy settings
+    showAge,
+    showDistance,
+    showLastActive,
+    showOnlineStatus,
+    readReceipts,
       ];
 }
 

@@ -72,7 +72,11 @@ class ProfileState extends Equatable {
     );
   }
   
+  /// Check if we have valid profile data
+  bool get hasValidProfile => profile != null && profile!.id.isNotEmpty;
+  
   /// Check if cached profile is stale (older than 5 minutes)
+  /// Returns true if no lastFetchTime (never fetched) or cache is expired
   bool get isCacheStale {
     if (lastFetchTime == null) return true;
     return DateTime.now().difference(lastFetchTime!).inMinutes >= 5;

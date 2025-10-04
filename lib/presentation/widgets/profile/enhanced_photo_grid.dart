@@ -578,11 +578,12 @@ class _EnhancedPhotoGridState extends State<EnhancedPhotoGrid> {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        // Retry button
-                        ElevatedButton.icon(
+                    Flexible(
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          // Retry button
+                          ElevatedButton.icon(
                           onPressed: () {
                             if (widget.onRetryUpload != null) {
                               widget.onRetryUpload!(progress.tempId);
@@ -620,6 +621,7 @@ class _EnhancedPhotoGridState extends State<EnhancedPhotoGrid> {
                           visualDensity: VisualDensity.compact,
                         ),
                       ],
+                      ),
                     ),
                   ],
                 ),
