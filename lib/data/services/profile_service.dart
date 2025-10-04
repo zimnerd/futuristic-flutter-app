@@ -337,6 +337,18 @@ class ProfileService {
           );
         }
 
+        // Check showMe change (User model field, goes to /users/me)
+        if (!_areListsEqual(
+              profile.showMe ?? [],
+              originalProfile.showMe ?? [],
+            ) &&
+            profile.showMe != null) {
+          changedBasicFields['showMe'] = profile.showMe;
+          _logger.i(
+            '✅ ShowMe (gender preference) changed: ${originalProfile.showMe} → ${profile.showMe}',
+          );
+        }
+
         // Check lookingFor change (Profile model field, goes to /users/me/profile)
         if (profile.lookingFor != originalProfile.lookingFor &&
             profile.lookingFor != null) {

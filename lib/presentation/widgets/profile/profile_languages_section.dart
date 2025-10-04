@@ -261,7 +261,7 @@ class ProfileLanguagesSection extends StatelessWidget {
                           : 'Speaking multiple languages expands your potential matches',
                       style: TextStyle(
                         fontSize: 12,
-                        color: Colors.white.withValues(alpha: 0.7),
+                        color: PulseColors.secondary,
                       ),
                     ),
                   ),

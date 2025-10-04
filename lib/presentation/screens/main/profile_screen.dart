@@ -402,8 +402,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           items: [
             _buildSectionItem('I am', userProfile?.gender ?? 'Not specified'),
             _buildSectionItem(
-              'Looking for',
-              userProfile?.lookingFor ?? 'Not specified',
+              'Show me', _formatShowMe(userProfile?.showMe),
             ),
           ],
           onEdit: () => _navigateToSectionEdit('preferences', userProfile),
@@ -512,6 +511,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ],
       ),
     );
+  }
+
+  String _formatShowMe(List<String>? showMeArray) {
+    if (showMeArray == null || showMeArray.isEmpty) {
+      return 'Not specified';
+    }
+
+    final upperArray = showMeArray.map((s) => s.toUpperCase()).toList();
+
+    if (upperArray.contains('MEN') && upperArray.contains('WOMEN')) {
+      return 'Everyone';
+    }
+    if (upperArray.contains('MEN')) return 'Men';
+    if (upperArray.contains('WOMEN')) return 'Women';
+
+    return 'Not specified';
   }
 
   Widget _buildPhotoGrid(UserProfile? userProfile) {

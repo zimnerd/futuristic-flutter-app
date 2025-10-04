@@ -244,113 +244,142 @@ class _EnhancedPhotoGridState extends State<EnhancedPhotoGrid> {
   }
 
   Widget _buildPhotoCard(ProfilePhoto photo, int index, {Key? key}) {
-    return Container(
-      key: key,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.1),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Stack(
-        children: [
-          // Photo
-          ClipRRect(
-            borderRadius: BorderRadius.circular(12),
-            child: Container(
-              width: double.infinity,
-              height: double.infinity,
-              color: Colors.grey[200],
-              child: photo.isLocal
-                  ? Image.file(
-                      File(photo.url),
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return _buildErrorPlaceholder();
-                      },
-                    )
-                  : Image.network(
-                      photo.url,
-                      fit: BoxFit.cover,
-                      loadingBuilder: (context, child, loadingProgress) {
-                        if (loadingProgress == null) return child;
-                        return _buildLoadingPlaceholder();
-                      },
-                      errorBuilder: (context, error, stackTrace) {
-                        return _buildErrorPlaceholder();
-                      },
-                    ),
+    return GestureDetector(
+      onTap: () => _showPhotoViewer(index),
+      child: Container(
+        key: key,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.1),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
             ),
-          ),
-
-          // Primary badge
-          if (index == 0)
-            Positioned(
-              top: 8,
-              left: 8,
+          ],
+        ),
+        child: Stack(
+          children: [
+            // Photo
+            ClipRRect(
+              borderRadius: BorderRadius.circular(12),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: PulseColors.primary,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Text(
-                  'PRIMARY',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 10,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
+                width: double.infinity,
+                height: double.infinity,
+                color: Colors.grey[200],
+                child: photo.isLocal
+                    ? Image.file(
+                        File(photo.url),
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return _buildErrorPlaceholder();
+                        },
+                      )
+                    : Image.network(
+                        photo.url,
+                        fit: BoxFit.cover,
+                        loadingBuilder: (context, child, loadingProgress) {
+                          if (loadingProgress == null) return child;
+                          return _buildLoadingPlaceholder();
+                        },
+                        errorBuilder: (context, error, stackTrace) {
+                          return _buildErrorPlaceholder();
+                        },
+                      ),
               ),
             ),
 
-          // Action buttons (only in editing mode)
-          if (widget.isEditing)
-            Positioned(
-              top: 8,
-              right: 8,
-              child: Column(
-                children: [
-                  _buildActionButton(
-                    icon: Icons.close,
-                    onTap: () => _deletePhoto(index),
-                    backgroundColor: Colors.red,
+            // Primary badge
+            if (index == 0)
+              Positioned(
+                top: 8,
+                left: 8,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: PulseColors.primary,
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                  const SizedBox(height: 8),
-                  if (index != 0)
-                    _buildActionButton(
-                      icon: Icons.star,
-                      onTap: () => _setAsPrimary(index),
-                      backgroundColor: PulseColors.primary,
+                  child: const Text(
+                    'PRIMARY',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 10,
+                      fontWeight: FontWeight.w600,
                     ),
-                ],
+                  ),
+                ),
               ),
-            ),
 
-          // Drag handle (only in editing mode)
-          if (widget.isEditing)
+            // Action buttons (only in editing mode)
+            if (widget.isEditing)
+              Positioned(
+                top: 8,
+                right: 8,
+                child: Column(
+                  children: [
+                    _buildActionButton(
+                      icon: Icons.close,
+                      onTap: () => _deletePhoto(index),
+                      backgroundColor: Colors.red,
+                    ),
+                    const SizedBox(height: 8),
+                    if (index != 0)
+                      _buildActionButton(
+                        icon: Icons.star,
+                        onTap: () => _setAsPrimary(index),
+                        backgroundColor: PulseColors.primary,
+                      ),
+                  ],
+                ),
+              ),
+
+            // Info icon for metadata (bottom left)
             Positioned(
               bottom: 8,
-              right: 8,
-              child: Container(
-                padding: const EdgeInsets.all(4),
-                decoration: BoxDecoration(
-                  color: Colors.black.withValues(alpha: 0.6),
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: const Icon(
-                  Icons.drag_handle,
-                  color: Colors.white,
-                  size: 16,
+              left: 8,
+              child: GestureDetector(
+                onTap: () => _showPhotoDetails(photo, index),
+                child: Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.6),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.info_outline,
+                    color: Colors.white,
+                    size: 16,
+                  ),
                 ),
               ),
             ),
-        ],
+
+            // Drag handle (only in editing mode)
+            if (widget.isEditing)
+              Positioned(
+                bottom: 8,
+                right: 8,
+                child: GestureDetector(
+                  onLongPressStart: (_) {
+                    // Visual feedback that drag is ready
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.6),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: const Icon(
+                      Icons.drag_handle,
+                      color: Colors.white,
+                      size: 16,
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }
@@ -516,9 +545,439 @@ class _EnhancedPhotoGridState extends State<EnhancedPhotoGrid> {
       ),
     );
   }
+
+  void _showPhotoViewer(int initialIndex) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => _PhotoViewerScreen(
+          photos: _photos,
+          initialIndex: initialIndex,
+          onDescriptionChanged: (index, description) {
+            setState(() {
+              _photos[index] = _photos[index].copyWith(description: description);
+            });
+            widget.onPhotosChanged(_photos);
+          },
+        ),
+      ),
+    );
+  }
+
+  void _showPhotoDetails(ProfilePhoto photo, int index) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => _PhotoDetailsSheet(
+        photo: photo,
+        index: index,
+        totalPhotos: _photos.length,
+        onDescriptionChanged: (description) {
+          setState(() {
+            _photos[index] = _photos[index].copyWith(description: description);
+          });
+          widget.onPhotosChanged(_photos);
+        },
+      ),
+    );
+  }
 }
 
-// Simple implementation of ReorderableGridView
+// Full-Screen Photo Viewer
+class _PhotoViewerScreen extends StatefulWidget {
+  final List<ProfilePhoto> photos;
+  final int initialIndex;
+  final Function(int index, String description)? onDescriptionChanged;
+
+  const _PhotoViewerScreen({
+    required this.photos,
+    required this.initialIndex,
+    this.onDescriptionChanged,
+  });
+
+  @override
+  State<_PhotoViewerScreen> createState() => _PhotoViewerScreenState();
+}
+
+class _PhotoViewerScreenState extends State<_PhotoViewerScreen> {
+  late PageController _pageController;
+  late TextEditingController _descriptionController;
+  int _currentIndex = 0;
+  bool _showDescription = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentIndex = widget.initialIndex;
+    _pageController = PageController(initialPage: _currentIndex);
+    _descriptionController = TextEditingController(
+      text: widget.photos[_currentIndex].description ?? '',
+    );
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    _descriptionController.dispose();
+    super.dispose();
+  }
+
+  void _onPageChanged(int index) {
+    setState(() {
+      _currentIndex = index;
+      _descriptionController.text = widget.photos[index].description ?? '';
+    });
+  }
+
+  void _saveDescription() {
+    final description = _descriptionController.text.trim();
+    if (description != widget.photos[_currentIndex].description) {
+      widget.onDescriptionChanged?.call(_currentIndex, description);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      body: Stack(
+        children: [
+          // Photo PageView
+          PageView.builder(
+            controller: _pageController,
+            onPageChanged: _onPageChanged,
+            itemCount: widget.photos.length,
+            itemBuilder: (context, index) {
+              return GestureDetector(
+                onTap: () => setState(() => _showDescription = !_showDescription),
+                child: InteractiveViewer(
+                  minScale: 1.0,
+                  maxScale: 4.0,
+                  child: Center(
+                    child: Image.network(
+                      widget.photos[index].url,
+                      fit: BoxFit.contain,
+                      loadingBuilder: (context, child, loadingProgress) {
+                        if (loadingProgress == null) return child;
+                        return const Center(child: CircularProgressIndicator());
+                      },
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+
+          // Top bar with close button and counter
+          if (!_showDescription)
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              child: SafeArea(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.black.withValues(alpha: 0.6),
+                        Colors.transparent,
+                      ],
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.close, color: Colors.white, size: 28),
+                        onPressed: () => Navigator.pop(context),
+                      ),
+                      const Spacer(),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withValues(alpha: 0.6),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          '${_currentIndex + 1} / ${widget.photos.length}',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+
+          // Bottom description editor
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 300),
+              transform: Matrix4.translationValues(
+                0,
+                _showDescription ? 0 : 200,
+                0,
+              ),
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.transparent,
+                      Colors.black.withValues(alpha: 0.9),
+                    ],
+                  ),
+                ),
+                child: SafeArea(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Row(
+                        children: [
+                          const Text(
+                            'Add Description',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const Spacer(),
+                          IconButton(
+                            icon: const Icon(Icons.close, color: Colors.white),
+                            onPressed: () => setState(() => _showDescription = false),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      TextField(
+                        controller: _descriptionController,
+                        style: const TextStyle(color: Colors.white),
+                        maxLines: 3,
+                        decoration: InputDecoration(
+                          hintText: 'Add a caption...',
+                          hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.5)),
+                          filled: true,
+                          fillColor: Colors.white.withValues(alpha: 0.1),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
+                        onChanged: (_) => _saveDescription(),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// Photo Details Bottom Sheet
+class _PhotoDetailsSheet extends StatefulWidget {
+  final ProfilePhoto photo;
+  final int index;
+  final int totalPhotos;
+  final Function(String) onDescriptionChanged;
+
+  const _PhotoDetailsSheet({
+    required this.photo,
+    required this.index,
+    required this.totalPhotos,
+    required this.onDescriptionChanged,
+  });
+
+  @override
+  State<_PhotoDetailsSheet> createState() => _PhotoDetailsSheetState();
+}
+
+class _PhotoDetailsSheetState extends State<_PhotoDetailsSheet> {
+  late TextEditingController _descriptionController;
+
+  @override
+  void initState() {
+    super.initState();
+    _descriptionController = TextEditingController(
+      text: widget.photo.description ?? '',
+    );
+  }
+
+  @override
+  void dispose() {
+    _descriptionController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      child: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header
+              Row(
+                children: [
+                  Text(
+                    'Photo ${widget.index + 1} Details',
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const Spacer(),
+                  IconButton(
+                    icon: const Icon(Icons.close),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+
+              // Photo preview
+              ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: Image.network(
+                  widget.photo.url,
+                  height: 200,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                ),
+              ),
+              const SizedBox(height: 20),
+
+              // Metadata
+              _buildInfoRow('Position', '${widget.index + 1} of ${widget.totalPhotos}'),
+              _buildInfoRow('Status', widget.photo.isVerified ? 'Verified ✓' : 'Pending'),
+              if (widget.photo.uploadedAt != null)
+                _buildInfoRow(
+                  'Uploaded',
+                  _formatDate(widget.photo.uploadedAt!),
+                ),
+              const SizedBox(height: 20),
+
+              // Description editor
+              const Text(
+                'Description',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 8),
+              TextField(
+                controller: _descriptionController,
+                decoration: InputDecoration(
+                  hintText: 'Add a caption or description...',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  filled: true,
+                  fillColor: Colors.grey[50],
+                ),
+                maxLines: 3,
+                onChanged: widget.onDescriptionChanged,
+              ),
+              const SizedBox(height: 20),
+
+              // Done button
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(context),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: PulseColors.primary,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text(
+                    'Done',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInfoRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 100,
+            child: Text(
+              '$label:',
+              style: TextStyle(
+                fontWeight: FontWeight.w600,
+                color: Colors.grey[700],
+              ),
+            ),
+          ),
+          Expanded(
+            child: Text(
+              value,
+              style: const TextStyle(color: Colors.black87),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _formatDate(DateTime date) {
+    final now = DateTime.now();
+    final difference = now.difference(date);
+
+    if (difference.inDays == 0) {
+      return 'Today';
+    } else if (difference.inDays == 1) {
+      return 'Yesterday';
+    } else if (difference.inDays < 7) {
+      return '${difference.inDays} days ago';
+    } else {
+      return '${date.month}/${date.day}/${date.year}';
+    }
+  }
+}
+
+// Reorderable Grid View with drag-to-reorder support
 class ReorderableGridView extends StatefulWidget {
   final int itemCount;
   final ReorderCallback onReorder;
@@ -542,14 +1001,84 @@ class ReorderableGridView extends StatefulWidget {
 }
 
 class _ReorderableGridViewState extends State<ReorderableGridView> {
+  int? _draggingIndex;
+  int? _hoveredIndex;
+
   @override
   Widget build(BuildContext context) {
-    // For now, use a regular GridView - can be enhanced with proper reordering
-    return GridView(
+    return GridView.builder(
       physics: widget.physics,
       shrinkWrap: widget.shrinkWrap,
       gridDelegate: widget.gridDelegate,
-      children: widget.children,
+      itemCount: widget.itemCount,
+      itemBuilder: (context, index) {
+        final child = widget.children[index];
+        
+        return LongPressDraggable<int>(
+          data: index,
+          feedback: Transform.scale(
+            scale: 1.1,
+            child: Opacity(
+              opacity: 0.8,
+              child: Material(
+                elevation: 8,
+                borderRadius: BorderRadius.circular(12),
+                child: SizedBox(
+                  width: 120,
+                  height: 160,
+                  child: child,
+                ),
+              ),
+            ),
+          ),
+          childWhenDragging: Opacity(
+            opacity: 0.3,
+            child: child,
+          ),
+          onDragStarted: () {
+            setState(() => _draggingIndex = index);
+          },
+          onDragEnd: (_) {
+            setState(() {
+              _draggingIndex = null;
+              _hoveredIndex = null;
+            });
+          },
+          child: DragTarget<int>(
+            onWillAcceptWithDetails: (details) {
+              setState(() => _hoveredIndex = index);
+              return true;
+            },
+            onLeave: (_) {
+              setState(() => _hoveredIndex = null);
+            },
+            onAcceptWithDetails: (details) {
+              final fromIndex = details.data;
+              if (fromIndex != index) {
+                widget.onReorder(fromIndex, index);
+              }
+              setState(() {
+                _hoveredIndex = null;
+                _draggingIndex = null;
+              });
+            },
+            builder: (context, candidateData, rejectedData) {
+              final isHovered = _hoveredIndex == index && _draggingIndex != index;
+              
+              return AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  border: isHovered
+                      ? Border.all(color: PulseColors.primary, width: 2)
+                      : null,
+                ),
+                child: child,
+              );
+            },
+          ),
+        );
+      },
     );
   }
 }

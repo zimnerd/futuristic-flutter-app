@@ -213,7 +213,13 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
         
         final updatedProfile = state.profile!.copyWith(photos: updatedPhotos);
         
-        emit(state.copyWith(profile: updatedProfile));
+        // Reset updateStatus to prevent stale "saved successfully" message
+        emit(
+          state.copyWith(
+            profile: updatedProfile,
+            updateStatus: ProfileStatus.initial,
+          ),
+        );
       }
     } catch (e) {
       emit(state.copyWith(

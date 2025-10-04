@@ -5,6 +5,226 @@ This document captures key learnings from building the **Flutter mobile dating a
 
 ---
 
+## 🖼️ **Photo Grid UX Enhancements (January 2025)**
+
+**Context**: Implemented modern photo management UX features: drag-to-reorder, full-screen viewer with swipe, photo details popover, and description editing capabilities.
+
+**Problem 1 - Non-Functional Reordering**: Despite visible drag handle icon, photos couldn't be reordered. The `ReorderableGridView` widget was just a stub wrapper around regular `GridView`.
+
+**Solution - Implemented LongPressDraggable**:
+```dart
+// mobile/lib/presentation/widgets/profile/enhanced_photo_grid.dart
+class _ReorderableGridViewState extends State<ReorderableGridView> {
+  int? _draggingIndex;
+  int? _hoveredIndex;
+
+  @override
+  Widget build(BuildContext context) {
+    return GridView.builder(
+      // ...
+      itemBuilder: (context, index) {
+        return LongPressDraggable<int>(
+          data: index,
+          feedback: Transform.scale(scale: 1.1, child: /* elevated copy */),
+          childWhenDragging: Opacity(opacity: 0.3, child: child),
+          child: DragTarget<int>(
+            onAcceptWithDetails: (details) {
+              if (details.data != index) {
+                widget.onReorder(details.data, index);
+              }
+            },
+            builder: (context, candidateData, rejectedData) {
+              final isHovered = _hoveredIndex == index;
+              return AnimatedContainer(
+                border: isHovered ? Border.all(color: primary, width: 2) : null,
+                child: child,
+              );
+            },
+          ),
+        );
+      },
+    );
+  }
+}
+```
+
+**Key Learning**: Stub implementations should be clearly marked as TODO and should not have names that imply functionality. Users expect `ReorderableGridView` to actually support reordering.
+
+**Problem 2 - No Full-Screen Photo Viewer**: Users couldn't tap photos to view full-screen with zoom/swipe navigation.
+
+**Solution - Added PhotoViewerScreen**:
+```dart
+// Tap handler on photo card
+Widget _buildPhotoCard(ProfilePhoto photo, int index) {
+  return GestureDetector(
+    onTap: () => _showPhotoViewer(index),
+    child: /* photo card content */,
+  );
+}
+
+// Full-screen viewer with swipe
+class _PhotoViewerScreen extends StatefulWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      body: Stack([
+        PageView.builder(
+          controller: _pageController,
+          onPageChanged: _onPageChanged,
+          itemBuilder: (context, index) {
+            return InteractiveViewer(
+              minScale: 1.0,
+              maxScale: 4.0,
+              child: Image.network(photos[index].url),
+            );
+          },
+        ),
+        // Photo counter (1/6)
+        // Description editor at bottom
+      ]),
+    );
+  }
+}
+```
+
+**Key Learning**: Use `InteractiveViewer` for pinch-to-zoom. It's built-in and works well for image viewing without external packages.
+
+**Problem 3 - No Photo Metadata Display**: Users had no way to see photo details (upload date, position, verification status, description).
+
+**Solution - Added PhotoDetailsSheet**:
+```dart
+void _showPhotoDetails(ProfilePhoto photo, int index) {
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    builder: (context) => _PhotoDetailsSheet(
+      photo: photo,
+      index: index,
+      totalPhotos: _photos.length,
+      onDescriptionChanged: (description) {
+        setState(() {
+          _photos[index] = _photos[index].copyWith(description: description);
+        });
+        widget.onPhotosChanged(_photos);
+      },
+    ),
+  );
+}
+```
+
+**Key Learning**: Modal bottom sheets with `isScrollControlled: true` provide better UX for form inputs than dialogs. Set `backgroundColor: Colors.transparent` to allow custom rounded corners.
+
+**Problem 4 - Description Field Unused**: `ProfilePhoto` model had `description` field but no UI to display or edit it.
+
+**Solution - Dual Description Editors**:
+- **Full-screen viewer**: TextField at bottom with gradient overlay
+- **Details sheet**: Dedicated description field with metadata
+- Both save immediately via `onDescriptionChanged` callback
+
+```dart
+TextField(
+  controller: _descriptionController,
+  decoration: InputDecoration(
+    hintText: 'Add a caption...',
+    filled: true,
+    fillColor: Colors.white.withValues(alpha: 0.1),
+    border: OutlineInputBorder(borderSide: BorderSide.none),
+  ),
+  maxLines: 3,
+  onChanged: (_) => _saveDescription(),
+)
+```
+
+**Key Learning**: Provide multiple entry points for the same action. Users expect to edit descriptions both in full-screen viewer and in details popover.
+
+**Visual Feedback Best Practices**:
+- **Drag feedback**: Scale up (1.1x) with elevation and slight opacity (0.8)
+- **Dragging state**: Show original position at 0.3 opacity
+- **Drop target**: Show purple border on hovered item
+- **Gradient overlays**: Use for dark backgrounds to ensure text readability
+
+**Performance Considerations**:
+- Use `AnimatedContainer` for smooth border transitions during drag
+- Dispose controllers in `dispose()` to prevent memory leaks
+- Use `InteractiveViewer` instead of heavy photo_view packages
+- Load images with `loadingBuilder` for better UX
+
+**Testing Checklist**:
+- ✅ Long-press photo to start drag
+- ✅ Visual feedback during drag (scaling, opacity)
+- ✅ Drop on another photo to reorder
+- ✅ Tap photo to open full-screen viewer
+- ✅ Swipe between photos in viewer
+- ✅ Pinch to zoom in/out
+- ✅ Tap info icon for photo details
+- ✅ Edit description in both viewer and details
+- ✅ Description saves persist after navigation
+- ✅ All actions work without backend changes
+
+---
+
+## 🖼️ **Photo URL Management & State Reset (October 4, 2025)**
+
+**Context**: Fixed two critical issues: (1) Photos not rendering due to relative URLs, (2) "Section saved successfully" message appearing after photo deletion.
+
+**Problem 1 - Relative Photo URLs**: Backend returned relative URLs (`/uploads/...`) which `NetworkImage` widget cannot render. Error: "Invalid argument(s): No host specified in URI file:///uploads/...".
+
+**Root Cause**: Backend storage used relative paths for flexibility. Mobile app copied URLs directly without converting to absolute URLs.
+
+**Solution - Backend Returns Full URLs**:
+```typescript
+// backend/src/media/media.service.ts - All upload methods now return full URLs
+private async uploadToLocalStorage(file: Express.Multer.File, userId?: string): Promise<string> {
+  // ... file writing logic ...
+  
+  const relativePath = userId
+    ? `${userId}/media/${dateStr}/${filename}`
+    : `system/media/${dateStr}/${filename}`;
+  
+  // Return FULL URL, not relative path
+  const baseUrl = process.env.API_BASE_URL || 'https://apilink.pulsetek.co.za';
+  return `${baseUrl}/api/v1/uploads/${relativePath}`;
+}
+```
+
+**Problem 2 - Stale Success Message**: After deleting a photo, UI showed "✅ Section 1 saved successfully" message inappropriately.
+
+**Root Cause**: `_onDeletePhoto` in profile_bloc.dart emitted state with updated profile but didn't reset `updateStatus` field. Previous `ProfileStatus.success` from save operation persisted, triggering BlocListener.
+
+**Solution - Reset updateStatus**:
+```dart
+// mobile/lib/presentation/blocs/profile/profile_bloc.dart
+Future<void> _onDeletePhoto(DeletePhoto event, Emitter<ProfileState> emit) async {
+  try {
+    _photoManager.markPhotoForDeletion(event.photoUrl);
+    
+    if (state.profile != null) {
+      final updatedPhotos = state.profile!.photos
+          .where((photo) => photo.url != event.photoUrl)
+          .toList();
+      
+      final updatedProfile = state.profile!.copyWith(photos: updatedPhotos);
+      
+      // CRITICAL: Reset updateStatus to prevent stale success message
+      emit(state.copyWith(
+        profile: updatedProfile,
+        updateStatus: ProfileStatus.initial,  // <-- Reset here
+      ));
+    }
+  } catch (e) { ... }
+}
+```
+
+**Key Learnings**:
+1. **Backend Responsibility**: Store full URLs in database for mobile compatibility - NetworkImage requires absolute URLs
+2. **State Management**: Always reset status fields when performing non-save operations to prevent stale UI messages
+3. **Migration**: Use scripts to update existing database records when changing URL format
+4. **Testing**: Check both photo rendering AND UX messaging when modifying photo management
+
+---
+
 ## 🎨 **Theme-Aware UI Colors & Backend Field Mapping (October 3, 2025)**
 
 **Context**: Fixed visibility issues in profile edit sections where white text on white background made content invisible in light mode.
