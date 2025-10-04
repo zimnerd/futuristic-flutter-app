@@ -167,6 +167,11 @@ class ProfileService {
       verified: userData['verified'] as bool? ?? false,
       interests: interests,
       gender: userData['gender'] as String?,
+      showMe: (userData['showMe'] as List<dynamic>?)
+          ?.cast<String>(), // Gender preferences for matching
+      lookingFor: userData['lookingFor'] != null
+          ? (userData['lookingFor'] as List<dynamic>?)?.join(', ')
+          : null, // Dating preference from User table
       lastActiveAt: userData['lastActive'] != null
           ? DateTime.parse(userData['lastActive'] as String)
           : null,
@@ -175,6 +180,9 @@ class ProfileService {
       occupation:
           userData['profile']?['occupation'] as String? ??
           userData['occupation'] as String?,
+      education:
+          userData['profile']?['education'] as String? ??
+          userData['education'] as String?,
       job:
           userData['profile']?['occupation'] as String? ??
           userData['occupation'] as String?,
@@ -184,6 +192,30 @@ class ProfileService {
       school:
           userData['profile']?['education'] as String? ??
           userData['education'] as String?,
+      // Extract all other profile fields from nested profile object
+      height: userData['profile']?['height'] as int?,
+      religion: userData['profile']?['religion'] as String?,
+      politics: userData['profile']?['politics'] as String?,
+      drinking: userData['profile']?['drinking'] as String?,
+      smoking: userData['profile']?['smoking'] as String?,
+      drugs: userData['profile']?['drugs'] as String?,
+      children: userData['profile']?['children'] as String?,
+      lifestyleChoice: userData['profile']?['lifestyle'] as String?,
+      relationshipGoals: userData['profile']?['relationshipGoals'] != null
+          ? List<String>.from(userData['profile']['relationshipGoals'])
+          : [],
+      languages: userData['profile']?['languages'] != null
+          ? List<String>.from(userData['profile']['languages'])
+          : [],
+      personalityTraits: userData['profile']?['personalityTraits'] != null
+          ? List<String>.from(userData['profile']['personalityTraits'])
+          : [],
+      promptQuestions: userData['profile']?['promptQuestions'] != null
+          ? List<String>.from(userData['profile']['promptQuestions'])
+          : [],
+      promptAnswers: userData['profile']?['promptAnswers'] != null
+          ? List<String>.from(userData['profile']['promptAnswers'])
+          : [],
     );
   }
 
@@ -296,6 +328,24 @@ class ProfileService {
           changedBasicFields['bio'] = profile.bio;
         }
 
+        // Check gender change (User model field, goes to /users/me)
+        if (profile.gender != originalProfile.gender &&
+            profile.gender != null) {
+          changedBasicFields['gender'] = profile.gender;
+          _logger.i(
+            '✅ Gender changed: ${originalProfile.gender} → ${profile.gender}',
+          );
+        }
+
+        // Check lookingFor change (Profile model field, goes to /users/me/profile)
+        if (profile.lookingFor != originalProfile.lookingFor &&
+            profile.lookingFor != null) {
+          changedExtendedFields['lookingFor'] = profile.lookingFor;
+          _logger.i(
+            '✅ LookingFor changed: ${originalProfile.lookingFor} → ${profile.lookingFor}',
+          );
+        }
+
         // Check interests change (User model field, goes to /users/me)
         if (!_areListsEqual(profile.interests, originalProfile.interests)) {
           changedBasicFields['interests'] = profile.interests;
@@ -326,16 +376,11 @@ class ProfileService {
         _logger.d(
           '🔍 Checking company field: "${profile.company}" vs "${originalProfile.company}"',
         );
-        // Note: 'company' field not in backend Profile schema - combining with occupation if present
+        // Keep company separate (will be stored in 'company' field if backend supports it)
         if (profile.company != originalProfile.company &&
             profile.company != null) {
-          _logger.i('✅ Company changed, combining with occupation');
-          // Optionally combine company with occupation: "Job Title at Company"
-          final occupation = profile.job ?? '';
-          if (occupation.isNotEmpty) {
-            changedExtendedFields['occupation'] =
-                '$occupation at ${profile.company}';
-          }
+          _logger.i('✅ Company changed, adding to changedExtendedFields');
+          changedExtendedFields['company'] = profile.company;
         }
 
         // Check new profile fields changes

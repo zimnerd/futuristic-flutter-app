@@ -45,6 +45,78 @@ class ProfileLifestyleChoicesSection extends StatelessWidget {
     'Prefer not to say',
   ];
 
+  // Map UI labels to backend enum values
+  static String? mapFrequencyToBackend(String? value) {
+    if (value == null) return null;
+    switch (value) {
+      case 'Never':
+        return 'never';
+      case 'Occasionally':
+        return 'occasionally';
+      case 'Regularly':
+        return 'regularly';
+      case 'Prefer not to say':
+        return 'prefer-not-to-say';
+      default:
+        return value.toLowerCase();
+    }
+  }
+
+  static String? mapChildrenToBackend(String? value) {
+    if (value == null) return null;
+    switch (value) {
+      case 'Don\'t have, don\'t want':
+        return 'doesnt-want';
+      case 'Don\'t have, want someday':
+        return 'wants';
+      case 'Don\'t have, not sure':
+        return 'open-to';
+      case 'Have, want more':
+        return 'has';
+      case 'Have, don\'t want more':
+        return 'has';
+      case 'Prefer not to say':
+        return 'prefer-not-to-say';
+      default:
+        return value.toLowerCase();
+    }
+  }
+
+  // Map backend values to UI labels
+  static String? mapFrequencyFromBackend(String? value) {
+    if (value == null) return null;
+    switch (value) {
+      case 'never':
+        return 'Never';
+      case 'occasionally':
+        return 'Occasionally';
+      case 'regularly':
+        return 'Regularly';
+      case 'prefer-not-to-say':
+        return 'Prefer not to say';
+      default:
+        return value;
+    }
+  }
+
+  static String? mapChildrenFromBackend(String? value) {
+    if (value == null) return null;
+    switch (value) {
+      case 'doesnt-want':
+        return 'Don\'t have, don\'t want';
+      case 'wants':
+        return 'Don\'t have, want someday';
+      case 'open-to':
+        return 'Don\'t have, not sure';
+      case 'has':
+        return 'Have, want more';
+      case 'prefer-not-to-say':
+        return 'Prefer not to say';
+      default:
+        return value;
+    }
+  }
+
   static const Map<String, IconData> categoryIcons = {
     'drinking': Icons.local_bar_outlined,
     'smoking': Icons.smoking_rooms_outlined,

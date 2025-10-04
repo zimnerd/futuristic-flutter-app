@@ -22,6 +22,7 @@ class UserProfile extends Equatable {
     this.lastActiveAt,
     this.distanceKm,
     this.gender,
+    this.showMe,
     this.job,
     this.company,
     this.school,
@@ -63,6 +64,8 @@ class UserProfile extends Equatable {
   final DateTime? lastActiveAt;
   final double? distanceKm;
   final String? gender;
+  final List<String>?
+  showMe; // Gender preferences for matching: ['MEN', 'WOMEN'], ['MEN'], or ['WOMEN']
   final String? job;
   final String? company;
   final String? school;
@@ -148,6 +151,7 @@ class UserProfile extends Equatable {
     DateTime? lastActiveAt,
     double? distanceKm,
     String? gender,
+    List<String>? showMe,
     String? job,
     String? company,
     String? school,
@@ -189,6 +193,7 @@ class UserProfile extends Equatable {
       lastActiveAt: lastActiveAt ?? this.lastActiveAt,
       distanceKm: distanceKm ?? this.distanceKm,
       gender: gender ?? this.gender,
+      showMe: showMe ?? this.showMe,
       job: job ?? this.job,
       company: company ?? this.company,
       school: school ?? this.school,
@@ -244,6 +249,7 @@ class UserProfile extends Equatable {
           : null,
       distanceKm: json['distanceKm'] as double?,
       gender: json['gender'] as String?,
+      showMe: (json['showMe'] as List<dynamic>?)?.cast<String>(),
       job: json['job'] as String?,
       company: json['company'] as String?,
       school: json['school'] as String?,
@@ -295,6 +301,7 @@ class UserProfile extends Equatable {
       'lastActiveAt': lastActiveAt?.toIso8601String(),
       'distanceKm': distanceKm,
       'gender': gender,
+      'showMe': showMe,
       'job': job,
       'company': company,
       'school': school,
@@ -339,6 +346,7 @@ class UserProfile extends Equatable {
         lastActiveAt,
         distanceKm,
     gender,
+    showMe,
     job,
     company,
     school,

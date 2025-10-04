@@ -48,7 +48,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
   DateTime? _dateOfBirth;
   List<String> _selectedInterests = [];
   String _selectedGender = 'Woman';
-  String _selectedPreference = 'Men';
+  String? _selectedPreference;
   List<ProfilePhoto> _photos = [];
   Map<String, bool> _privacySettings = Map.from({
     'showDistance': true,
@@ -63,6 +63,8 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
   UserProfile? _currentProfile;
   int _currentPageIndex = 0;
   bool _isProfileCompletionExpanded = false; // Collapsed by default
+  bool _isFinalSave =
+      false; // Track if this is the final save (not a section save)
 
   // Track dirty fields for delta updates
   final Set<String> _dirtyFields = {};
@@ -70,6 +72,9 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
   // Temp upload tracking for PhotoManagerService integration
   final List<String> _tempPhotoUrls = [];
   final Set<String> _photosMarkedForDeletion = {};
+  
+  // Flag to track if we've shown initial toast (prevent toasts on page load)
+  bool _hasShownInitialToast = false;
 
   // New profile fields state
   String? _selectedLifestyle;
@@ -106,27 +111,42 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
     _nameController.text = profile.name;
     _bioController.text = profile.bio;
     _dateOfBirth = profile.dateOfBirth;
-    _jobController.text = profile.job ?? '';
-    _companyController.text = profile.company ?? '';
-    _schoolController.text = profile.school ?? '';
+    // Load from backend fields (occupation/education) with fallback to old fields
+    _jobController.text = profile.occupation ?? profile.job ?? '';
+    _companyController.text =
+        profile.company ?? ''; // Company not in backend schema
+    _schoolController.text = profile.education ?? profile.school ?? '';
     _selectedInterests = List.from(profile.interests);
     
     // Normalize gender from backend format (MALE/FEMALE) to UI format (Man/Woman)
     _selectedGender = _normalizeGender(profile.gender) ?? 'Woman';
-    _selectedPreference =
-        profile.lookingFor ?? 'Men'; // ← Fix: Populate preference
+    // Load gender preference from showMe array (e.g., ['MEN'] -> 'Men')
+    _selectedPreference = _normalizeShowMe(profile.showMe);
     _photos = List.from(profile.photos);
     
-    // Populate new profile fields
+    // Populate new profile fields with enum mapping
     _selectedLifestyle = profile.lifestyleChoice;
     _selectedRelationshipGoals = List.from(profile.relationshipGoals);
     _selectedHeight = profile.height; // Use real data only
     _selectedReligion = profile.religion;
-    _selectedPolitics = profile.politics;
-    _selectedDrinking = profile.drinking;
-    _selectedSmoking = profile.smoking;
-    _selectedDrugs = profile.drugs;
-    _selectedChildren = profile.children;
+    
+    // Map backend enum values to UI labels
+    _selectedPolitics = ProfilePhysicalAttributesSection.mapPoliticsFromBackend(
+      profile.politics,
+    );
+    _selectedDrinking = ProfileLifestyleChoicesSection.mapFrequencyFromBackend(
+      profile.drinking,
+    );
+    _selectedSmoking = ProfileLifestyleChoicesSection.mapFrequencyFromBackend(
+      profile.smoking,
+    );
+    _selectedDrugs = ProfileLifestyleChoicesSection.mapFrequencyFromBackend(
+      profile.drugs,
+    );
+    _selectedChildren = ProfileLifestyleChoicesSection.mapChildrenFromBackend(
+      profile.children,
+    );
+    
     _selectedLanguages = List.from(profile.languages);
     
     _currentProfile = profile;
@@ -152,6 +172,32 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
       default:
         return backendGender; // Return as-is if already in correct format
     }
+  }
+
+  /// Normalize showMe from backend array to UI format
+  /// Backend sends ['MEN'], ['WOMEN'], or ['MEN', 'WOMEN']
+  /// UI uses: 'Men', 'Women', or 'Everyone'
+  String? _normalizeShowMe(List<String>? showMeArray) {
+    if (showMeArray == null || showMeArray.isEmpty) return null;
+
+    // Convert array to uppercase for comparison
+    final upperArray = showMeArray.map((s) => s.toUpperCase()).toList();
+
+    // Check if both MEN and WOMEN are selected
+    if (upperArray.contains('MEN') && upperArray.contains('WOMEN')) {
+      return 'Everyone';
+    }
+
+    // Check for single gender preference
+    if (upperArray.contains('MEN')) {
+      return 'Men';
+    }
+    if (upperArray.contains('WOMEN')) {
+      return 'Women';
+    }
+
+    // Default to null if unrecognized
+    return null;
   }
 
   /// Handle adding new photo via BLoC event
@@ -187,6 +233,9 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
   }
 
   void _saveProfile() {
+    // Mark as final save to trigger navigation
+    _isFinalSave = true;
+    
     // Only validate form if we're on page 0 (Basic Info) which has the form
     // For other pages, skip validation since they don't use the form
     bool isValid = true;
@@ -212,6 +261,10 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
           city: 'Current City',
         ),
         gender: _convertGenderToBackendFormat(_selectedGender),
+        // Send backend field names
+        occupation: _jobController.text.trim(),
+        education: _schoolController.text.trim(),
+        // Legacy fields for compatibility
         job: _jobController.text.trim(),
         company: _companyController.text.trim(),
         school: _schoolController.text.trim(),
@@ -219,16 +272,26 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
         isOnline: true,
         lastSeen: DateTime.now(),
         verified: _currentProfile?.verified ?? false,
-        // New lifestyle fields
+        // New lifestyle fields - map UI values to backend enum format
         lifestyleChoice: _selectedLifestyle,
         relationshipGoals: _selectedRelationshipGoals,
         height: _selectedHeight,
         religion: _selectedReligion,
-        politics: _selectedPolitics,
-        drinking: _selectedDrinking,
-        smoking: _selectedSmoking,
-        drugs: _selectedDrugs,
-        children: _selectedChildren,
+        politics: ProfilePhysicalAttributesSection.mapPoliticsToBackend(
+          _selectedPolitics,
+        ),
+        drinking: ProfileLifestyleChoicesSection.mapFrequencyToBackend(
+          _selectedDrinking,
+        ),
+        smoking: ProfileLifestyleChoicesSection.mapFrequencyToBackend(
+          _selectedSmoking,
+        ),
+        drugs: ProfileLifestyleChoicesSection.mapFrequencyToBackend(
+          _selectedDrugs,
+        ),
+        children: ProfileLifestyleChoicesSection.mapChildrenToBackend(
+          _selectedChildren,
+        ),
         languages: _selectedLanguages,
       );
 
@@ -325,6 +388,9 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
 
   void _nextPage() {
     if (_currentPageIndex < 4) {
+      // Save current section before moving to next
+      _saveCurrentSection();
+      
       _pageController.nextPage(
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
@@ -339,6 +405,264 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
         curve: Curves.easeInOut,
       );
     }
+  }
+
+  /// Save current section based on page index
+  void _saveCurrentSection() {
+    logger.i('💾 Saving section: $_currentPageIndex');
+
+    switch (_currentPageIndex) {
+      case 0:
+        _saveBasicInfoSection();
+        break;
+      case 1:
+        _savePhotosSection();
+        break;
+      case 2:
+        _saveInterestsSection();
+        break;
+      case 3:
+        _saveLifestyleSection();
+        break;
+      case 4:
+        _savePrivacySection();
+        break;
+    }
+  }
+
+  /// Save Basic Info section (Page 0)
+  void _saveBasicInfoSection() {
+    // Validate form
+    if (!(_formKey.currentState?.validate() ?? false)) {
+      logger.w('⚠️ Basic info validation failed');
+      return;
+    }
+
+    logger.i('📝 Saving Basic Info:');
+    logger.i('  Name: ${_nameController.text.trim()}');
+    logger.i(
+      '  Bio: ${_bioController.text.trim().substring(0, _bioController.text.trim().length > 30 ? 30 : _bioController.text.trim().length)}...',
+    );
+    logger.i(
+      '  Gender: $_selectedGender → ${_convertGenderToBackendFormat(_selectedGender)}',
+    );
+    logger.i('  Show me: $_selectedPreference');
+    logger.i('  Occupation (Job): ${_jobController.text.trim()}');
+    logger.i('  Company: ${_companyController.text.trim()}');
+    logger.i('  Education (School): ${_schoolController.text.trim()}');
+
+    final updatedProfile = UserProfile(
+      id: _currentProfile?.id ?? 'current_user_id',
+      name: _nameController.text.trim(),
+      bio: _bioController.text.trim(),
+      age: _calculateAge(
+        _dateOfBirth ?? DateTime.now().subtract(const Duration(days: 365 * 25)),
+      ),
+      dateOfBirth: _dateOfBirth,
+      photos: _currentProfile?.photos ?? [],
+      interests: _currentProfile?.interests ?? [],
+      location:
+          _currentProfile?.location ??
+          UserLocation(latitude: 0.0, longitude: 0.0, city: 'Current City'),
+      gender: _convertGenderToBackendFormat(_selectedGender),
+      // Gender preference for matching goes to showMe field (array)
+      // Convert UI format to backend array: Men -> ['MEN'], Women -> ['WOMEN'], Everyone -> ['MEN', 'WOMEN']
+      showMe: _selectedPreference != null
+          ? (_selectedPreference == 'Everyone'
+                ? ['MEN', 'WOMEN']
+                : [_selectedPreference!.toUpperCase()])
+          : null,
+      // Send backend field names
+      occupation: _jobController.text.trim(),
+      education: _schoolController.text.trim(),
+      // Legacy fields for compatibility
+      job: _jobController.text.trim(),
+      company: _companyController.text.trim(),
+      school: _schoolController.text.trim(),
+      isOnline: true,
+      lastSeen: DateTime.now(),
+      verified: _currentProfile?.verified ?? false,
+      // Keep existing lifestyle data
+      lifestyleChoice: _currentProfile?.lifestyleChoice,
+      relationshipGoals: _currentProfile?.relationshipGoals ?? [],
+      height: _currentProfile?.height,
+      religion: _currentProfile?.religion,
+      politics: _currentProfile?.politics,
+      drinking: _currentProfile?.drinking,
+      smoking: _currentProfile?.smoking,
+      drugs: _currentProfile?.drugs,
+      children: _currentProfile?.children,
+      languages: _currentProfile?.languages ?? [],
+    );
+
+    context.read<ProfileBloc>().add(UpdateProfile(profile: updatedProfile));
+  }
+
+  /// Save Photos section (Page 1)
+  void _savePhotosSection() {
+    logger.i('📸 Saving Photos:');
+    logger.i('  Total photos: ${_photos.length}');
+    for (var i = 0; i < _photos.length; i++) {
+      logger.i(
+        '  Photo $i: ${_photos[i].url.substring(_photos[i].url.length > 50 ? _photos[i].url.length - 50 : 0)}',
+      );
+    }
+
+    final updatedProfile = UserProfile(
+      id: _currentProfile?.id ?? 'current_user_id',
+      name: _currentProfile?.name ?? _nameController.text.trim(),
+      bio: _currentProfile?.bio ?? _bioController.text.trim(),
+      age: _currentProfile?.age ?? 25,
+      dateOfBirth: _currentProfile?.dateOfBirth,
+      photos: _photos,
+      interests: _currentProfile?.interests ?? [],
+      location:
+          _currentProfile?.location ??
+          UserLocation(latitude: 0.0, longitude: 0.0, city: 'Current City'),
+      gender: _currentProfile?.gender,
+      job: _currentProfile?.job,
+      company: _currentProfile?.company,
+      school: _currentProfile?.school,
+      lookingFor: _currentProfile?.lookingFor,
+      isOnline: true,
+      lastSeen: DateTime.now(),
+      verified: _currentProfile?.verified ?? false,
+      // Keep existing lifestyle data
+      lifestyleChoice: _currentProfile?.lifestyleChoice,
+      relationshipGoals: _currentProfile?.relationshipGoals ?? [],
+      height: _currentProfile?.height,
+      religion: _currentProfile?.religion,
+      politics: _currentProfile?.politics,
+      drinking: _currentProfile?.drinking,
+      smoking: _currentProfile?.smoking,
+      drugs: _currentProfile?.drugs,
+      children: _currentProfile?.children,
+      languages: _currentProfile?.languages ?? [],
+    );
+
+    context.read<ProfileBloc>().add(UpdateProfile(profile: updatedProfile));
+  }
+
+  /// Save Interests section (Page 2)
+  void _saveInterestsSection() {
+    logger.i('❤️ Saving Interests:');
+    logger.i('  Total interests: ${_selectedInterests.length}');
+    logger.i('  Interests: ${_selectedInterests.join(", ")}');
+
+    final updatedProfile = UserProfile(
+      id: _currentProfile?.id ?? 'current_user_id',
+      name: _currentProfile?.name ?? _nameController.text.trim(),
+      bio: _currentProfile?.bio ?? _bioController.text.trim(),
+      age: _currentProfile?.age ?? 25,
+      dateOfBirth: _currentProfile?.dateOfBirth,
+      photos: _currentProfile?.photos ?? [],
+      interests: _selectedInterests,
+      location:
+          _currentProfile?.location ??
+          UserLocation(latitude: 0.0, longitude: 0.0, city: 'Current City'),
+      gender: _currentProfile?.gender,
+      job: _currentProfile?.job,
+      company: _currentProfile?.company,
+      school: _currentProfile?.school,
+      lookingFor: _currentProfile?.lookingFor,
+      isOnline: true,
+      lastSeen: DateTime.now(),
+      verified: _currentProfile?.verified ?? false,
+      // Keep existing lifestyle data
+      lifestyleChoice: _currentProfile?.lifestyleChoice,
+      relationshipGoals: _currentProfile?.relationshipGoals ?? [],
+      height: _currentProfile?.height,
+      religion: _currentProfile?.religion,
+      politics: _currentProfile?.politics,
+      drinking: _currentProfile?.drinking,
+      smoking: _currentProfile?.smoking,
+      drugs: _currentProfile?.drugs,
+      children: _currentProfile?.children,
+      languages: _currentProfile?.languages ?? [],
+    );
+
+    context.read<ProfileBloc>().add(UpdateProfile(profile: updatedProfile));
+  }
+
+  /// Save Lifestyle section (Page 3)
+  void _saveLifestyleSection() {
+    logger.i('🌟 Saving Lifestyle:');
+    logger.i('  Lifestyle choice: $_selectedLifestyle');
+    logger.i('  Relationship goals: ${_selectedRelationshipGoals.join(", ")}');
+    logger.i('  Height: $_selectedHeight');
+    logger.i('  Religion: $_selectedReligion');
+    logger.i(
+      '  Politics: $_selectedPolitics → ${ProfilePhysicalAttributesSection.mapPoliticsToBackend(_selectedPolitics)}',
+    );
+    logger.i(
+      '  Drinking: $_selectedDrinking → ${ProfileLifestyleChoicesSection.mapFrequencyToBackend(_selectedDrinking)}',
+    );
+    logger.i(
+      '  Smoking: $_selectedSmoking → ${ProfileLifestyleChoicesSection.mapFrequencyToBackend(_selectedSmoking)}',
+    );
+    logger.i(
+      '  Drugs: $_selectedDrugs → ${ProfileLifestyleChoicesSection.mapFrequencyToBackend(_selectedDrugs)}',
+    );
+    logger.i(
+      '  Children: $_selectedChildren → ${ProfileLifestyleChoicesSection.mapChildrenToBackend(_selectedChildren)}',
+    );
+    logger.i('  Languages: ${_selectedLanguages.join(", ")}');
+
+    final updatedProfile = UserProfile(
+      id: _currentProfile?.id ?? 'current_user_id',
+      name: _currentProfile?.name ?? _nameController.text.trim(),
+      bio: _currentProfile?.bio ?? _bioController.text.trim(),
+      age: _currentProfile?.age ?? 25,
+      dateOfBirth: _currentProfile?.dateOfBirth,
+      photos: _currentProfile?.photos ?? [],
+      interests: _currentProfile?.interests ?? [],
+      location:
+          _currentProfile?.location ??
+          UserLocation(latitude: 0.0, longitude: 0.0, city: 'Current City'),
+      gender: _currentProfile?.gender,
+      job: _currentProfile?.job,
+      company: _currentProfile?.company,
+      school: _currentProfile?.school,
+      lookingFor: _currentProfile?.lookingFor,
+      isOnline: true,
+      lastSeen: DateTime.now(),
+      verified: _currentProfile?.verified ?? false,
+      // Save lifestyle fields with enum mapping
+      lifestyleChoice: _selectedLifestyle,
+      relationshipGoals: _selectedRelationshipGoals,
+      height: _selectedHeight,
+      religion: _selectedReligion,
+      politics: ProfilePhysicalAttributesSection.mapPoliticsToBackend(
+        _selectedPolitics,
+      ),
+      drinking: ProfileLifestyleChoicesSection.mapFrequencyToBackend(
+        _selectedDrinking,
+      ),
+      smoking: ProfileLifestyleChoicesSection.mapFrequencyToBackend(
+        _selectedSmoking,
+      ),
+      drugs: ProfileLifestyleChoicesSection.mapFrequencyToBackend(
+        _selectedDrugs,
+      ),
+      children: ProfileLifestyleChoicesSection.mapChildrenToBackend(
+        _selectedChildren,
+      ),
+      languages: _selectedLanguages,
+    );
+
+    context.read<ProfileBloc>().add(UpdateProfile(profile: updatedProfile));
+  }
+
+  /// Save Privacy section (Page 4)
+  void _savePrivacySection() {
+    logger.i('🔒 Saving Privacy Settings:');
+    _privacySettings.forEach((key, value) {
+      logger.i('  $key: $value');
+    });
+
+    // Privacy settings are saved as part of the full profile
+    // For now, just trigger a full profile save
+    _saveProfile();
   }
 
   @override
@@ -488,6 +812,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
             if (state.profile != null && state.profile!.photos.isNotEmpty) {
               logger.i('🔄 Syncing _photos with BLoC state photos');
 
+              final previousPhotoCount = _photos.length;
               // Sync _photos with BLoC state (includes the new upload)
               setState(() {
                 _photos = List.from(state.profile!.photos);
@@ -502,13 +827,17 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
                 );
               });
               
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Photo uploaded successfully!'),
-                  backgroundColor: PulseColors.success,
-                  duration: Duration(seconds: 2),
-                ),
-              );
+              // Only show toast if photos actually changed (not on initial load)
+              if (_hasShownInitialToast &&
+                  _photos.length > previousPhotoCount) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Photo uploaded successfully!'),
+                    backgroundColor: PulseColors.success,
+                    duration: Duration(seconds: 2),
+                  ),
+                );
+              }
             } else {
               logger.e('❌ No profile or no photos in BLoC state');
             }
@@ -523,23 +852,44 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
           }
           
           if (state.updateStatus == ProfileStatus.success) {
-            logger.i('🎯 Profile update successful, navigating to /profile');
-            // Show success message
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Profile updated successfully!'),
-                backgroundColor: PulseColors.success,
-              ),
-            );
-            // Navigate explicitly to profile screen (not discover page)
-            logger.i('🚀 Executing context.go("/profile")');
-            context.go('/profile');
-            logger.i('✅ Navigation command sent');
-            // Reset updateStatus to prevent toast re-trigger on re-entry
-            Future.delayed(const Duration(milliseconds: 300), () {
-              logger.i('🔄 Reloading profile and resetting updateStatus');
-              context.read<ProfileBloc>().add(LoadProfile());
-            });
+            // Only navigate away on final save, not section saves
+            if (_isFinalSave) {
+              logger.i(
+                '🎯 Final profile save successful, navigating to /profile',
+              );
+              // Show success message
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Profile saved successfully!'),
+                  backgroundColor: PulseColors.success,
+                ),
+              );
+              // Navigate explicitly to profile screen (not discover page)
+              logger.i('🚀 Executing context.go("/profile")');
+              context.go('/profile');
+              logger.i('✅ Navigation command sent');
+              // Reset updateStatus to prevent toast re-trigger on re-entry
+              Future.delayed(const Duration(milliseconds: 300), () {
+                logger.i('🔄 Reloading profile and resetting updateStatus');
+                context.read<ProfileBloc>().add(LoadProfile());
+              });
+              _isFinalSave = false; // Reset flag
+            } else {
+              // Section save successful - just show subtle feedback
+              // Only show if not initial load
+              if (_hasShownInitialToast) {
+                logger.i('✅ Section $_currentPageIndex saved successfully');
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Section saved!'),
+                    backgroundColor: PulseColors.success,
+                    duration: const Duration(seconds: 1),
+                  ),
+                );
+              }
+            }
+            // Mark that we've now shown the initial toast (or that we're past initial load)
+            _hasShownInitialToast = true;
           }
           if (state.updateStatus == ProfileStatus.error) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -651,7 +1001,9 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
                       const SizedBox(width: 12),
                     Expanded(
                       child: PulseButton(
-                        text: _currentPageIndex == 4 ? 'Save Profile' : 'Next',
+                        text: _currentPageIndex == 4
+                            ? 'Save Profile'
+                            : 'Save & Continue',
                         onPressed: _currentPageIndex == 4
                             ? _saveProfile
                             : _nextPage,
@@ -792,10 +1144,10 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
             ),
             const SizedBox(height: 20),
             _buildDropdownField(
-              'Looking For',
+              'Show me',
               _selectedPreference,
               ['Men', 'Women', 'Everyone'],
-              (value) => setState(() => _selectedPreference = value!),
+              (value) => setState(() => _selectedPreference = value),
             ),
           ],
         ),
@@ -1097,7 +1449,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
 
   Widget _buildDropdownField(
     String label,
-    String value,
+    String? value,
     List<String> options,
     void Function(String?) onChanged,
   ) {
@@ -1114,11 +1466,12 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
         ),
         const SizedBox(height: 8),
         DropdownButtonFormField<String>(
-          initialValue: value,
+          value: value,
           onChanged: onChanged,
           decoration: InputDecoration(
             filled: true,
             fillColor: Colors.white,
+            hintText: value == null ? 'Select an option' : null,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(color: Colors.grey[300]!),

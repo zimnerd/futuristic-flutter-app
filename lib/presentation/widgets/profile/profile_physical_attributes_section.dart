@@ -44,10 +44,42 @@ class ProfilePhysicalAttributesSection extends StatelessWidget {
     'Liberal',
     'Moderate',
     'Conservative',
-    'Not Political',
-    'Other',
     'Prefer not to say',
   ];
+
+  // Map UI labels to backend enum values
+  static String? mapPoliticsToBackend(String? value) {
+    if (value == null) return null;
+    switch (value) {
+      case 'Liberal':
+        return 'liberal';
+      case 'Moderate':
+        return 'moderate';
+      case 'Conservative':
+        return 'conservative';
+      case 'Prefer not to say':
+        return 'prefer-not-to-say';
+      default:
+        return value.toLowerCase();
+    }
+  }
+
+  // Map backend values to UI labels
+  static String? mapPoliticsFromBackend(String? value) {
+    if (value == null) return null;
+    switch (value) {
+      case 'liberal':
+        return 'Liberal';
+      case 'moderate':
+        return 'Moderate';
+      case 'conservative':
+        return 'Conservative';
+      case 'prefer-not-to-say':
+        return 'Prefer not to say';
+      default:
+        return value;
+    }
+  }
 
   String _formatHeight(int cm) {
     final feet = cm ~/ 30.48;
