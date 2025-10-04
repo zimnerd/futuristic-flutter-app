@@ -33,6 +33,8 @@ class _EnhancedPhotoGridState extends State<EnhancedPhotoGrid> {
   final ImagePicker _picker = ImagePicker();
   List<ProfilePhoto> _photos = [];
   bool _isUploading = false;
+  Map<String, bool> _uploadingPhotos = {}; // Track individual photo uploads
+  Map<String, bool> _uploadedPhotos = {}; // Track completed uploads
 
   @override
   void initState() {
@@ -43,23 +45,9 @@ class _EnhancedPhotoGridState extends State<EnhancedPhotoGrid> {
   @override
   void didUpdateWidget(EnhancedPhotoGrid oldWidget) {
     super.didUpdateWidget(oldWidget);
-    print('🔄 EnhancedPhotoGrid.didUpdateWidget called');
-    print('📊 Old photos count: ${oldWidget.photos.length}');
-    print('📊 New photos count: ${widget.photos.length}');
     
     if (oldWidget.photos != widget.photos) {
-      print('✅ Photos changed, updating internal _photos list');
       _photos = List.from(widget.photos);
-      print('📊 Internal _photos count after update: ${_photos.length}');
-
-      // Log each photo URL
-      for (var i = 0; i < _photos.length; i++) {
-        print(
-          '📸 Photo $i: id=${_photos[i].id}, url=${_photos[i].url}, isLocal=${_photos[i].isLocal}',
-        );
-      }
-    } else {
-      print('⚠️ Photos unchanged, skipping update');
     }
   }
 
@@ -96,10 +84,30 @@ class _EnhancedPhotoGridState extends State<EnhancedPhotoGrid> {
           });
 
           try {
-            // Upload each photo directly to permanent storage
+            // Upload each photo directly to permanent storage with progress tracking
             for (final image in imagesToUpload) {
+              final tempId = 'temp_${image.path.split('/').last}';
+
+              setState(() {
+                _uploadingPhotos[tempId] = true;
+              });
+              
               final imageFile = File(image.path);
               await widget.onPhotoUpload!(imageFile);
+              
+              setState(() {
+                _uploadingPhotos.remove(tempId);
+                _uploadedPhotos[tempId] = true;
+              });
+
+              // Clear uploaded status after 2 seconds
+              Future.delayed(const Duration(seconds: 2), () {
+                if (mounted) {
+                  setState(() {
+                    _uploadedPhotos.remove(tempId);
+                  });
+                }
+              });
             }
             // BLoC will update photos list via onPhotosChanged
           } catch (uploadError) {
@@ -108,6 +116,7 @@ class _EnhancedPhotoGridState extends State<EnhancedPhotoGrid> {
             if (mounted) {
               setState(() {
                 _isUploading = false;
+                _uploadingPhotos.clear();
               });
             }
           }
@@ -320,6 +329,44 @@ class _EnhancedPhotoGridState extends State<EnhancedPhotoGrid> {
                       color: Colors.white,
                       fontSize: 10,
                       fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+
+            // Upload progress overlay
+            if (_uploadingPhotos.containsKey(
+              'temp_${photo.url.split('/').last}',
+            ))
+              Positioned.fill(
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.5),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Center(
+                    child: CircularProgressIndicator(
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    ),
+                  ),
+                ),
+              ),
+
+            // Upload success overlay
+            if (_uploadedPhotos.containsKey(
+              'temp_${photo.url.split('/').last}',
+            ))
+              Positioned.fill(
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.green.withValues(alpha: 0.3),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Center(
+                    child: Icon(
+                      Icons.check_circle,
+                      color: Colors.white,
+                      size: 48,
                     ),
                   ),
                 ),

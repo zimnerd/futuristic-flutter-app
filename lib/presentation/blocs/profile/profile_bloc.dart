@@ -17,8 +17,12 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
   final Logger _logger = Logger();
   UserProfile? _originalProfile;
 
-  ProfileBloc(this._profileService, this._photoManager)
-    : super(const ProfileState()) {
+  ProfileBloc({
+    required ProfileService profileService,
+    required PhotoManagerService photoManager,
+  }) : _profileService = profileService,
+       _photoManager = photoManager,
+        super(const ProfileState()) {
     on<LoadProfile>(_onLoadProfile);
     on<UpdateProfile>(_onUpdateProfile);
     on<UploadPhoto>(_onUploadPhoto);

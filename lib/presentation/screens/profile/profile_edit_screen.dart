@@ -1021,9 +1021,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
                       const SizedBox(width: 12),
                     Expanded(
                       child: PulseButton(
-                        text: _currentPageIndex == 4
-                            ? 'Continue'
-                            : 'Save & Continue',
+                        text: 'Continue',
                         onPressed: _currentPageIndex == 4
                             ? _saveProfile
                             : _nextPage,
@@ -1176,76 +1174,12 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
   }
 
   Widget _buildPhotosPage() {
-    final hasPendingChanges = _tempPhotoUrls.isNotEmpty || _photosMarkedForDeletion.isNotEmpty;
-    
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Pending changes indicator
-          if (hasPendingChanges)
-            Container(
-              margin: const EdgeInsets.only(bottom: 16),
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.orange.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.orange, width: 1),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      const Icon(
-                        Icons.info_outline,
-                        size: 18,
-                        color: Colors.orange,
-                      ),
-                      const SizedBox(width: 8),
-                      const Text(
-                        'Pending Changes',
-                        style: TextStyle(
-                          color: Colors.orange,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ),
-                  if (_tempPhotoUrls.isNotEmpty) ...[
-                    const SizedBox(height: 4),
-                    Text(
-                      '\u2022 ${_tempPhotoUrls.length} new photo(s) to upload',
-                      style: const TextStyle(
-                        color: Colors.orange,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ],
-                  if (_photosMarkedForDeletion.isNotEmpty) ...[
-                    const SizedBox(height: 4),
-                    Text(
-                      '\u2022 ${_photosMarkedForDeletion.length} photo(s) to delete',
-                      style: const TextStyle(
-                        color: Colors.orange,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ],
-                  const SizedBox(height: 4),
-                  const Text(
-                    'Click Save to confirm all changes',
-                    style: TextStyle(
-                      color: Colors.orange,
-                      fontSize: 11,
-                      fontStyle: FontStyle.italic,
-                    ),
-                  ),
-                ],
-              ),
-            ),
+          // Photos auto-upload immediately - no pending changes banner needed
           
           // Photo grid
           EnhancedPhotoGrid(
