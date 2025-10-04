@@ -223,63 +223,59 @@ class ProfilePhysicalAttributesSection extends StatelessWidget {
               
               // Direct input field
               const SizedBox(height: 8),
-              Row(
-                children: [
-                  Expanded(
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      decoration: BoxDecoration(
-                        color: isDark
-                            ? Colors.white.withValues(alpha: 0.05)
-                            : Colors.black.withValues(alpha: 0.03),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: height != null
-                              ? PulseColors.success.withValues(alpha: 0.5)
-                              : borderColor,
-                          width: 1,
-                        ),
-                      ),
-                      child: TextField(
-                        keyboardType: TextInputType.number,
-                        decoration: InputDecoration(
-                          hintText: 'Enter height in cm (120-220)',
-                          hintStyle: TextStyle(
-                            color: textColor.withValues(alpha: 0.4),
-                            fontSize: 14,
-                          ),
-                          border: InputBorder.none,
-                          suffixText: 'cm',
-                          suffixStyle: TextStyle(
-                            color: textColor.withValues(alpha: 0.6),
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: textColor.withValues(alpha: 0.9),
-                        ),
-                        controller:
-                            TextEditingController(
-                                text: height?.toString() ?? '',
-                              )
-                              ..selection = TextSelection.fromPosition(
-                                TextPosition(
-                                  offset: height?.toString().length ?? 0,
-                                ),
-                              ),
-                        onChanged: (value) {
-                          final numValue = int.tryParse(value);
-                          if (numValue != null &&
-                              numValue >= 120 &&
-                              numValue <= 220) {
-                            onHeightChanged(numValue);
-                          }
-                        },
-                      ),
+              Container(
+                decoration: BoxDecoration(
+                  color: isDark
+                      ? Colors.white.withValues(alpha: 0.05)
+                      : Colors.black.withValues(alpha: 0.03),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: height != null
+                        ? PulseColors.success.withValues(alpha: 0.5)
+                        : borderColor,
+                    width: 1,
+                  ),
+                ),
+                child: TextFormField(
+                  key: ValueKey(height), // Rebuild when height changes
+                  initialValue: height?.toString() ?? '',
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(
+                    hintText: 'Enter height in cm (120-220)',
+                    hintStyle: TextStyle(
+                      color: textColor.withValues(alpha: 0.4),
+                      fontSize: 14,
+                    ),
+                    border: InputBorder.none,
+                    enabledBorder: InputBorder.none,
+                    focusedBorder: InputBorder.none,
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 14,
+                    ),
+                    suffixText: 'cm',
+                    suffixStyle: TextStyle(
+                      color: textColor.withValues(alpha: 0.6),
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
-                ],
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: textColor.withValues(alpha: 0.9),
+                  ),
+                  onChanged: (value) {
+                    if (value.isEmpty) {
+                      onHeightChanged(null);
+                      return;
+                    }
+                    final numValue = int.tryParse(value);
+                    if (numValue != null &&
+                        numValue >= 120 &&
+                        numValue <= 220) {
+                      onHeightChanged(numValue);
+                    }
+                  },
+                ),
               ),
             ],
           ),
@@ -453,7 +449,7 @@ class ProfilePhysicalAttributesSection extends StatelessWidget {
                     'This information is optional and helps find compatible matches',
                     style: TextStyle(
                       fontSize: 12,
-                      color: textColor.withValues(alpha: 0.7),
+                      color: PulseColors.success,
                     ),
                   ),
                 ),

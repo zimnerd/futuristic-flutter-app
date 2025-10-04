@@ -220,7 +220,7 @@ class ProfileLifestyleSection extends StatelessWidget {
                       'This helps us match you with compatible people',
                       style: TextStyle(
                         fontSize: 12,
-                        color: subtitleColor,
+                        color: PulseColors.primary,
                       ),
                     ),
                   ),

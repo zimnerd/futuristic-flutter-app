@@ -453,7 +453,7 @@ class ProfileLifestyleChoicesSection extends StatelessWidget {
                     'Being honest helps find compatible matches',
                     style: TextStyle(
                       fontSize: 12,
-                      color: Colors.white.withValues(alpha: 0.7),
+                      color: PulseColors.warning,
                     ),
                   ),
                 ),

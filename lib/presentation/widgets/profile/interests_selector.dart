@@ -275,7 +275,7 @@ class _InterestsSelectorState extends State<InterestsSelector>
                   'Your interests help us find better matches and show you to people with similar hobbies.',
                   style: TextStyle(
                     fontSize: 13,
-                    color: Colors.grey[700],
+                    color: PulseColors.primary,
                   ),
                 ),
               ),

@@ -331,7 +331,12 @@ class UserProfile extends Equatable {
       readReceipts: json['readReceipts'] as bool?,
       whoCanMessageMe: json['whoCanMessageMe'] as String?,
       whoCanSeeMyProfile: json['whoCanSeeMyProfile'] as String?,
-    );
+    ).._logReadReceipts('fromJson');
+  }
+
+  /// Log readReceipts value for debugging
+  void _logReadReceipts(String source) {
+    print('🔍 [UserProfile.$source] readReceipts = $readReceipts');
   }
 
   /// Convert UserProfile to JSON

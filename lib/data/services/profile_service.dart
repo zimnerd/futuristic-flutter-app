@@ -35,6 +35,10 @@ class ProfileService {
       final response = await _apiClient.get('/users/$userId');
       
       if (response.statusCode == 200) {
+        _logger.i('🔍 [API Response] Raw response data: ${response.data}');
+        _logger.i(
+          '🔍 [API Response] readReceipts in raw response: ${response.data['profile']?['readReceipts']}',
+        );
         final profile = UserProfile.fromJson(response.data['profile']);
         _logger.i('✅ Profile fetched successfully');
         return profile;
@@ -62,9 +66,34 @@ class ProfileService {
         final userData = responseData['data'] as Map<String, dynamic>;
         
         _logger.i('✅ Current profile loaded successfully');
+        _logger.i(
+          '🔍 [API Response] readReceipts in userData: ${userData['readReceipts']}',
+        );
+        _logger.i('🔍 [API Response] All 8 privacy fields in userData:');
+        _logger.i('   - showAge: ${userData['showAge']}');
+        _logger.i('   - showDistance: ${userData['showDistance']}');
+        _logger.i('   - showLastActive: ${userData['showLastActive']}');
+        _logger.i('   - showOnlineStatus: ${userData['showOnlineStatus']}');
+        _logger.i('   - incognitoMode: ${userData['incognitoMode']}');
+        _logger.i('   - readReceipts: ${userData['readReceipts']}');
+        _logger.i('   - whoCanMessageMe: ${userData['whoCanMessageMe']}');
+        _logger.i('   - whoCanSeeMyProfile: ${userData['whoCanSeeMyProfile']}');
         
         // Convert API user data to domain UserProfile entity
-        return _convertUserDataToEntity(userData);
+        final profile = _convertUserDataToEntity(userData);
+        _logger.i(
+          '🔍 [After conversion] profile.readReceipts = ${profile.readReceipts}',
+        );
+        _logger.i('🔍 [After conversion] All 8 privacy fields in profile:');
+        _logger.i('   - showAge: ${profile.showAge}');
+        _logger.i('   - showDistance: ${profile.showDistance}');
+        _logger.i('   - showLastActive: ${profile.showLastActive}');
+        _logger.i('   - showOnlineStatus: ${profile.showOnlineStatus}');
+        _logger.i('   - incognitoMode: ${profile.incognitoMode}');
+        _logger.i('   - readReceipts: ${profile.readReceipts}');
+        _logger.i('   - whoCanMessageMe: ${profile.whoCanMessageMe}');
+        _logger.i('   - whoCanSeeMyProfile: ${profile.whoCanSeeMyProfile}');
+        return profile;
       } else {
         _logger.w('⚠️ Failed to load current profile: ${response.statusCode}');
         throw UserException('Failed to fetch current profile');
@@ -217,10 +246,15 @@ class ProfileService {
       promptAnswers: userData['profile']?['promptAnswers'] != null
           ? List<String>.from(userData['profile']['promptAnswers'])
           : [],
-      // Privacy settings from User model (root level, not nested in profile)
+      // Privacy settings from User model (root level, not nested in profile) - ALL 8 FIELDS
       showAge: userData['showAge'] as bool?,
       showDistance: userData['showDistance'] as bool?,
       showLastActive: userData['showLastActive'] as bool?,
+      showOnlineStatus: userData['showOnlineStatus'] as bool?,
+      incognitoMode: userData['incognitoMode'] as bool?,
+      readReceipts: userData['readReceipts'] as bool?,
+      whoCanMessageMe: userData['whoCanMessageMe'] as String?,
+      whoCanSeeMyProfile: userData['whoCanSeeMyProfile'] as String?,
     );
   }
 
@@ -753,10 +787,16 @@ class ProfileService {
       };
 
       _logger.i('📤 Sending privacy update to /users/me/privacy: $data');
+      _logger.i(
+        '🔍 [API Request] readReceipts value being sent: ${data['readReceipts']}',
+      );
       final response = await _apiClient.post('/users/me/privacy', data: data);
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         _logger.i('✅ Privacy settings updated successfully');
+        _logger.i(
+          '🔍 [API Response] readReceipts in response: ${response.data?['readReceipts']}',
+        );
       } else {
         throw NetworkException('Failed to update privacy settings');
       }
@@ -809,11 +849,9 @@ class ProfileService {
 
   /// Upload photo by path (wrapper for BLoC compatibility)
   Future<String> uploadPhoto(String photoPath) async {
-    // Get the current user ID from auth service
-    final currentUserId = await _getCurrentUserId();
+    // No need to get userId - backend extracts it from auth token
     final file = File(photoPath);
     final photo = await uploadPhotoWithDetails(
-      userId: currentUserId,
       imageFile: file,
     );
     return photo.url;
@@ -821,25 +859,26 @@ class ProfileService {
 
   /// Upload profile photo with compression (original method)
   Future<ProfilePhoto> uploadPhotoWithDetails({
-    required String userId,
     required File imageFile,
     bool isPrimary = false,
     int order = 0,
   }) async {
     try {
-      _logger.i('📸 Uploading photo for user: $userId');
+      _logger.i('📸 Uploading photo (auth from token)');
       
       // Compress image before uploading
       final compressedImage = await _compressImage(imageFile);
       
-      // Create multipart form data
+      // Create multipart form data matching backend UploadMediaDto
+      // Required: 'file' (the actual file), 'type', 'category'
+      // Note: isPrimary and order are NOT part of media upload - handle separately
       final formData = FormData.fromMap({
-        'photo': await MultipartFile.fromFile(
+        'file': await MultipartFile.fromFile(
           compressedImage.path,
           filename: 'photo_${_uuid.v4()}.jpg',
         ),
-        'isPrimary': isPrimary,
-        'order': order,
+        'type': 'image', // MediaType enum: image, video, audio, document
+        'category': 'profile_photo', // MediaCategory enum: profile_photo, verification_photo, chat_message, ar_asset, event_photo, story
       });
       
       final response = await _apiClient.post(
@@ -848,8 +887,22 @@ class ProfileService {
       );
       
       if (response.statusCode == 201) {
-        final photo = ProfilePhoto.fromJson(response.data['photo']);
-        _logger.i('✅ Photo uploaded successfully');
+        // Backend returns MediaResponseDto in data.data or just data
+        final mediaData = response.data['data'] ?? response.data;
+        _logger.i('✅ Photo uploaded successfully: ${mediaData['url']}');
+        
+        // Convert MediaResponseDto to ProfilePhoto (from profile_model.dart)
+        // Backend MediaResponseDto: { id, userId, url, mimeType, fileSize, createdAt, ... }
+        // ProfilePhoto model: { id, url, isPrimary, isVerified, order, createdAt }
+        final photo = ProfilePhoto(
+          id: mediaData['id'] as String,
+          url: mediaData['url'] as String,
+          isPrimary: isPrimary,
+          isVerified: false,
+          order: order,
+          createdAt: DateTime.parse(mediaData['createdAt'] as String),
+        );
+        
         return photo;
       } else {
         throw NetworkException('Failed to upload photo');
@@ -865,22 +918,19 @@ class ProfileService {
 
   /// Delete photo by URL (wrapper for BLoC compatibility)
   Future<void> deletePhoto(String photoUrl) async {
-    // Extract photo ID from URL and get current user ID
-    final currentUserId = await _getCurrentUserId();
+    // Extract photo ID from URL - backend gets userId from auth token
     final photoId = photoUrl.split('/').last.split('.').first;
     return deletePhotoWithDetails(
-      userId: currentUserId,
       photoId: photoId,
     );
   }
 
   /// Delete profile photo (original method)
   Future<void> deletePhotoWithDetails({
-    required String userId,
     required String photoId,
   }) async {
     try {
-      _logger.i('🗑️ Deleting photo: $photoId for user: $userId');
+      _logger.i('🗑️ Deleting photo: $photoId (auth from token)');
       
       final response = await _apiClient.delete(
         '/media/files/$photoId',
@@ -902,11 +952,10 @@ class ProfileService {
 
   /// Reorder profile photos
   Future<void> reorderPhotos({
-    required String userId,
     required List<PhotoOrder> photoOrders,
   }) async {
     try {
-      _logger.i('🔀 Reordering photos for user: $userId');
+      _logger.i('🔀 Reordering photos (auth from token)');
       
       final data = {
         'photoOrders': photoOrders.map((order) => order.toJson()).toList(),

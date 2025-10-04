@@ -23,6 +23,38 @@ class _ProfilePrivacySettingsState extends State<ProfilePrivacySettings> {
   void initState() {
     super.initState();
     _settings = Map.from(widget.privacySettings);
+    print(
+      '🔍 [ProfilePrivacySettings.initState] readReceipts from widget: ${widget.privacySettings['readReceipts']}',
+    );
+    print(
+      '🔍 [ProfilePrivacySettings.initState] readReceipts in _settings: ${_settings['readReceipts']}',
+    );
+  }
+
+  @override
+  void didUpdateWidget(ProfilePrivacySettings oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    print(
+      '🔍 [ProfilePrivacySettings.didUpdateWidget] OLD readReceipts: ${oldWidget.privacySettings['readReceipts']}',
+    );
+    print(
+      '🔍 [ProfilePrivacySettings.didUpdateWidget] NEW readReceipts: ${widget.privacySettings['readReceipts']}',
+    );
+    if (widget.privacySettings != oldWidget.privacySettings) {
+      print(
+        '🔍 [ProfilePrivacySettings.didUpdateWidget] Settings changed, updating _settings',
+      );
+      setState(() {
+        _settings = Map.from(widget.privacySettings);
+        print(
+          '🔍 [ProfilePrivacySettings.didUpdateWidget] readReceipts in _settings after update: ${_settings['readReceipts']}',
+        );
+      });
+    } else {
+      print(
+        '🔍 [ProfilePrivacySettings.didUpdateWidget] Settings unchanged, skipping update',
+      );
+    }
   }
 
   void _updateSetting(String key, dynamic value) {

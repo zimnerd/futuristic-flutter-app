@@ -290,7 +290,7 @@ class ProfileRelationshipGoalsSection extends StatelessWidget {
                           : 'Being clear about your goals helps find the right match',
                       style: TextStyle(
                         fontSize: 12,
-                        color: textColor.withValues(alpha: 0.7),
+                        color: PulseColors.secondary,
                       ),
                     ),
                   ),

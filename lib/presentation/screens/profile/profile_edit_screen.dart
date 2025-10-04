@@ -164,6 +164,22 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
     _selectedLanguages = List.from(profile.languages);
     
     // Populate privacy settings from profile - all 8 backend fields
+    logger.i(
+      '🔍🔍🔍 CRITICAL DEBUG - BEFORE POPULATING PRIVACY SETTINGS 🔍🔍🔍',
+    );
+    logger.i('  profile.readReceipts = ${profile.readReceipts}');
+    logger.i('  profile.readReceipts == null? ${profile.readReceipts == null}');
+    logger.i(
+      '  profile.readReceipts type: ${profile.readReceipts.runtimeType}',
+    );
+    logger.i('  profile.showAge = ${profile.showAge}');
+    logger.i('  profile.showDistance = ${profile.showDistance}');
+    logger.i('  profile.showLastActive = ${profile.showLastActive}');
+    logger.i('  profile.showOnlineStatus = ${profile.showOnlineStatus}');
+    logger.i('  profile.incognitoMode = ${profile.incognitoMode}');
+    logger.i('  profile.whoCanMessageMe = ${profile.whoCanMessageMe}');
+    logger.i('  profile.whoCanSeeMyProfile = ${profile.whoCanSeeMyProfile}');
+    
     _privacySettings = {
       'showAge': profile.showAge ?? true,
       'showDistance': profile.showDistance ?? true,
@@ -174,6 +190,13 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
       'whoCanMessageMe': profile.whoCanMessageMe ?? 'everyone',
       'whoCanSeeMyProfile': profile.whoCanSeeMyProfile ?? 'everyone',
     };
+    
+    logger.i(
+      '🔍 [_populateFields] readReceipts from profile: ${profile.readReceipts}',
+    );
+    logger.i(
+      '🔍 [_populateFields] readReceipts in _privacySettings: ${_privacySettings['readReceipts']}',
+    );
     
     _currentProfile = profile;
   }
