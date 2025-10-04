@@ -239,7 +239,6 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
         PhotoOrder(photoId: entry.value, order: entry.key)).toList();
 
       await _profileService.reorderPhotos(
-        userId: event.userId,
         photoOrders: photoOrders,
       );
 
