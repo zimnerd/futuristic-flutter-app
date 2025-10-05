@@ -7,6 +7,7 @@ import '../../../features/group_chat/data/models.dart';
 import '../../../data/services/webrtc_service.dart';
 import '../../blocs/group_chat/group_chat_barrel.dart';
 import '../../theme/pulse_colors.dart';
+import '../../widgets/common/keyboard_dismissible_scaffold.dart';
 
 /// Screen for browsing and managing group chats
 /// Features: My Groups, Live Sessions, Create Group/Session
@@ -42,7 +43,7 @@ class _GroupChatListScreenState extends State<GroupChatListScreen>
       create: (context) => sl<GroupChatBloc>()
         ..add(const LoadActiveLiveSessions())
         ..add(const InitializeGroupChatWebSocket()),
-      child: Scaffold(
+      child: KeyboardDismissibleScaffold(
         backgroundColor: Colors.grey[50],
         appBar: _buildAppBar(),
         body: Column(

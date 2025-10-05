@@ -9,6 +9,7 @@ import '../../blocs/auth/auth_state.dart';
 import '../../navigation/app_router.dart';
 import '../../theme/pulse_colors.dart';
 import '../../widgets/common/common_widgets.dart';
+import '../../widgets/common/keyboard_dismissible_scaffold.dart';
 import '../../widgets/error_widgets.dart';
 import '../../widgets/phone_input.dart';
 
@@ -153,7 +154,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return KeyboardDismissibleScaffold(
       body: BlocListener<AuthBloc, AuthState>(
         listener: (context, state) {
           setState(() {
@@ -338,6 +339,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               ],
                             ),
                             const SizedBox(height: PulseSpacing.xl),
+                            
+                            // Extra space for keyboard
+                            const SizedBox(height: 80),
 
                             // Register button
                             PulseButton(

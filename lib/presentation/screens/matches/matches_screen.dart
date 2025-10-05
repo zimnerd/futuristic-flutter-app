@@ -11,6 +11,7 @@ import '../../widgets/common/loading_indicator.dart';
 import '../../widgets/common/error_message.dart';
 import '../../widgets/match/match_card.dart';
 import '../../navigation/app_router.dart';
+import '../../widgets/common/keyboard_dismissible_scaffold.dart';
 import '../profile/profile_details_screen.dart';
 
 /// Enhanced match view modes
@@ -453,7 +454,7 @@ class _MatchesScreenState extends State<MatchesScreen>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return KeyboardDismissibleScaffold(
       appBar: _isSearchActive ? _buildSearchAppBar() : _buildMainAppBar(),
       body: TabBarView(
         controller: _tabController,

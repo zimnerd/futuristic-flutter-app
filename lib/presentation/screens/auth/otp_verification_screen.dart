@@ -7,6 +7,7 @@ import '../../blocs/auth/auth_bloc.dart';
 import '../../blocs/auth/auth_event.dart';
 import '../../blocs/auth/auth_state.dart';
 import '../../theme/pulse_colors.dart';
+import '../../widgets/common/keyboard_dismissible_scaffold.dart';
 
 /// Screen for verifying OTP code sent via WhatsApp/SMS
 class OTPVerificationScreen extends StatefulWidget {
@@ -109,7 +110,7 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return KeyboardDismissibleScaffold(
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
@@ -243,6 +244,9 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
                         ),
                       ),
                       const SizedBox(height: 32),
+                      
+                      // Extra space for keyboard
+                      const SizedBox(height: 80),
 
                       // Verify button
                       ElevatedButton(

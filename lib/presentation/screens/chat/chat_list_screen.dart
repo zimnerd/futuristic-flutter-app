@@ -7,6 +7,7 @@ import '../../../blocs/chat_bloc.dart';
 import '../../../presentation/blocs/auth/auth_bloc.dart';
 import '../../../presentation/blocs/auth/auth_state.dart';
 import '../../theme/pulse_colors.dart';
+import '../../widgets/common/keyboard_dismissible_scaffold.dart';
 import 'chat_screen.dart';
 
 class ChatListScreen extends StatefulWidget {
@@ -74,7 +75,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return KeyboardDismissibleScaffold(
       backgroundColor: Colors.white,
       appBar: _isSearchActive ? _buildSearchAppBar() : _buildMainAppBar(),
       body: Column(

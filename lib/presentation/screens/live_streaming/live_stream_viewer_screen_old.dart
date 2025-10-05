@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../data/services/service_locator.dart';
 import '../../theme/pulse_colors.dart';
+import '../../widgets/common/keyboard_dismissible_scaffold.dart';
 
 /// Screen for viewing a live stream
 class LiveStreamViewerScreen extends StatefulWidget {
@@ -30,7 +31,7 @@ class _LiveStreamViewerScreenState extends State<LiveStreamViewerScreen> {
     final String title = widget.stream['title'] ?? 'Live Stream';
     final String streamerName = widget.stream['streamerName'] ?? 'Unknown';
 
-    return Scaffold(
+    return KeyboardDismissibleScaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
         backgroundColor: Colors.transparent,

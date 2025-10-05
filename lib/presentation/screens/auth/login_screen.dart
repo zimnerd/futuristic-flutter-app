@@ -7,6 +7,7 @@ import '../../blocs/auth/auth_bloc.dart';
 import '../../blocs/auth/auth_event.dart';
 import '../../blocs/auth/auth_state.dart';
 import '../../theme/pulse_colors.dart';
+import '../../widgets/common/keyboard_dismissible_scaffold.dart';
 import '../../widgets/developer_auto_login_fab.dart';
 import '../../widgets/phone_input.dart';
 
@@ -260,7 +261,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return KeyboardDismissibleScaffold(
       floatingActionButton: const DeveloperAutoLoginFAB(),
       body: BlocListener<AuthBloc, AuthState>(
         listener: (context, state) {
@@ -414,6 +415,9 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ],
                       const SizedBox(height: 32),
+                      
+                      // Extra space for keyboard
+                      const SizedBox(height: 80),
                       
                       // Login button
                       ElevatedButton(

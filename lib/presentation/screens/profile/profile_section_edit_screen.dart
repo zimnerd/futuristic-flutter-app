@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 import '../../theme/pulse_colors.dart';
+import '../../widgets/common/keyboard_dismissible_scaffold.dart';
 import '../../widgets/common/pulse_button.dart';
 
 /// Profile section edit screen for editing individual profile sections
@@ -70,7 +71,7 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return KeyboardDismissibleScaffold(
       appBar: AppBar(
         title: Text(
           _getSectionTitle(),

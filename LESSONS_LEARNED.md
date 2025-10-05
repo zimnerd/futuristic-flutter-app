@@ -5,6 +5,347 @@ This document captures key learnings from building the **Flutter mobile dating a
 
 ---
 
+## ⌨️ **iOS Keyboard Handling & Scrollable Content (October 2025)**
+
+**Status**: ✅ **MIGRATION COMPLETE** - All 23 screens with keyboard input successfully migrated (100%)  
+**Completion Date**: October 5, 2025  
+**See**: `docs/KEYBOARD_MIGRATION_COMPLETE.md` for full migration report
+
+**Context**: Users reported inability to scroll to action buttons when iOS keyboard appears, with no way to dismiss keyboard. This is a critical UX issue that affects all screens with input fields and bottom buttons.
+
+**Problem - Keyboard Obscures Content**:
+- iOS keyboard appears and covers bottom content (action buttons, form fields)
+- No way to scroll down to see obscured content
+- No way to dismiss keyboard by tapping outside input fields
+- Users stuck with keyboard open, unable to complete forms
+- Common issue on login, registration, profile edit, and messaging screens
+
+**Why This Happens**:
+1. **Default Flutter behavior**: Scaffold doesn't resize for keyboard unless explicitly configured
+2. **No tap-to-dismiss**: Flutter doesn't automatically dismiss keyboard on tap outside
+3. **Fixed layouts**: Column/Stack layouts don't automatically scroll when keyboard appears
+4. **iOS keyboard size**: Takes up ~50% of screen space on most devices
+
+### **Solution - Global Keyboard Handling Pattern**
+
+**Created**: `KeyboardDismissibleScaffold` widget for app-wide consistent keyboard behavior.
+
+#### **1. KeyboardDismissibleScaffold - Drop-in Replacement**
+```dart
+// File: mobile/lib/presentation/widgets/common/keyboard_dismissible_scaffold.dart
+
+// ✅ Use instead of regular Scaffold
+KeyboardDismissibleScaffold(
+  appBar: AppBar(title: Text('Edit Profile')),
+  body: SingleChildScrollView(  // ← CRITICAL: Make content scrollable
+    child: Column(
+      children: [
+        TextField(controller: _nameController),
+        TextField(controller: _emailController),
+        // More form fields...
+        SizedBox(height: 80), // ← Extra padding for keyboard
+        ElevatedButton(
+          onPressed: _save,
+          child: Text('Save Changes'),
+        ),
+      ],
+    ),
+  ),
+  resizeToAvoidBottomInset: true,    // ← Default: Resize for keyboard
+  enableDismissOnTap: true,           // ← Default: Tap to dismiss
+)
+```
+
+**Key Features**:
+- ✅ **Automatic resize**: `resizeToAvoidBottomInset: true` (default)
+- ✅ **Tap-to-dismiss**: Tapping outside input fields dismisses keyboard
+- ✅ **Scrollable content**: Works with `SingleChildScrollView`, `ListView`, etc.
+- ✅ **Drop-in replacement**: Same API as regular `Scaffold`
+- ✅ **Configurable**: Can disable tap-dismiss or resize behavior per screen
+
+#### **2. Critical Pattern: Always Use ScrollView with Input Fields**
+```dart
+// ❌ WRONG - Content will be obscured by keyboard
+Scaffold(
+  body: Column(
+    children: [
+      TextField(...),  // Will be hidden when keyboard appears
+      Spacer(),
+      ElevatedButton(...),  // Cannot scroll to this!
+    ],
+  ),
+)
+
+// ✅ CORRECT - Content scrollable when keyboard shows
+KeyboardDismissibleScaffold(
+  body: SingleChildScrollView(
+    padding: EdgeInsets.all(16),
+    child: Column(
+      children: [
+        TextField(...),
+        TextField(...),
+        SizedBox(height: 80), // Extra space for keyboard
+        ElevatedButton(...),  // User can scroll to this!
+      ],
+    ),
+  ),
+)
+```
+
+#### **3. ListView Pattern for Dynamic Content**
+```dart
+// ✅ Best for dynamic lists with inputs
+KeyboardDismissibleScaffold(
+  body: ListView(
+    padding: EdgeInsets.all(16),
+    children: [
+      TextField(controller: _field1),
+      TextField(controller: _field2),
+      TextField(controller: _field3),
+      SizedBox(height: 100), // Extra padding
+      PulseButton(
+        text: 'Submit',
+        onPressed: _handleSubmit,
+      ),
+    ],
+  ),
+)
+```
+
+#### **4. Extension Method for Quick Wrapping**
+```dart
+// ✅ Wrap any widget to make it keyboard-dismissible
+Column(
+  children: [
+    TextField(...),
+    ElevatedButton(...),
+  ],
+).makeKeyboardDismissible()
+```
+
+#### **5. Mixin for StatefulWidget Integration**
+```dart
+class MyFormScreen extends StatefulWidget {
+  const MyFormScreen({super.key});
+
+  @override
+  State<MyFormScreen> createState() => _MyFormScreenState();
+}
+
+class _MyFormScreenState extends State<MyFormScreen> 
+    with KeyboardDismissibleStateMixin {  // ← Add mixin
+  
+  @override
+  Widget build(BuildContext context) {
+    return buildWithKeyboardDismiss(  // ← Wrap build
+      child: Scaffold(
+        body: Column(
+          children: [
+            TextField(...),
+            ElevatedButton(
+              onPressed: () {
+                dismissKeyboard(); // ← Helper method from mixin
+                _save();
+              },
+              child: Text('Save'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+```
+
+### **Best Practices for Keyboard Handling**
+
+#### **✅ DO: Essential Patterns**
+1. **Always use `SingleChildScrollView` or `ListView`** for screens with multiple input fields
+2. **Add extra padding at bottom** (60-100px) to ensure buttons visible above keyboard
+3. **Use `KeyboardDismissibleScaffold`** instead of regular `Scaffold` for input screens
+4. **Test on real devices** - simulators don't always show keyboard correctly
+5. **Use `KeyboardUtils.dismiss()`** before navigation or submission
+6. **Consider `resizeToAvoidBottomInset: false`** only for custom keyboard handling
+
+```dart
+// ✅ Complete example with all best practices
+KeyboardDismissibleScaffold(
+  resizeToAvoidBottomInset: true,  // Resize content for keyboard
+  enableDismissOnTap: true,         // Tap outside to dismiss
+  body: SingleChildScrollView(
+    padding: EdgeInsets.all(16),
+    child: Column(
+      children: [
+        // Input fields
+        AppTextField(
+          controller: _nameController,
+          label: 'Full Name',
+        ),
+        SizedBox(height: 16),
+        AppTextField(
+          controller: _emailController,
+          label: 'Email',
+          keyboardType: TextInputType.emailAddress,
+        ),
+        
+        // Extra space for keyboard
+        SizedBox(height: 100),
+        
+        // Action button
+        PulseButton(
+          text: 'Save Profile',
+          onPressed: () {
+            KeyboardUtils.dismiss(); // Dismiss before action
+            _handleSave();
+          },
+        ),
+      ],
+    ),
+  ),
+)
+```
+
+#### **❌ DON'T: Common Mistakes**
+1. **Don't use fixed `Column` without scroll** for screens with inputs
+2. **Don't forget extra bottom padding** (buttons will be hidden by keyboard)
+3. **Don't use `resizeToAvoidBottomInset: false`** unless you have custom handling
+4. **Don't nest `SingleChildScrollView` inside `SingleChildScrollView`**
+5. **Don't use `ListView` inside `Column` without Expanded**
+
+```dart
+// ❌ Common mistakes to avoid
+Scaffold(
+  body: Column(  // ❌ Not scrollable
+    children: [
+      TextField(...),
+      TextField(...),
+      ElevatedButton(...), // ❌ Will be obscured!
+    ],
+  ),
+)
+
+// ❌ Nested scroll views (causes scroll conflicts)
+SingleChildScrollView(
+  child: Column(
+    children: [
+      TextField(...),
+      SingleChildScrollView(  // ❌ Don't nest
+        child: ...
+      ),
+    ],
+  ),
+)
+```
+
+### **Keyboard Utility Functions**
+
+```dart
+// Dismiss keyboard programmatically
+KeyboardUtils.dismiss();
+
+// Check if keyboard is visible
+if (KeyboardUtils.isKeyboardVisible(context)) {
+  // Do something when keyboard is shown
+}
+
+// Get keyboard height
+double keyboardHeight = KeyboardUtils.getKeyboardHeight(context);
+```
+
+### **Platform-Specific Considerations**
+
+#### **iOS-Specific**:
+- Keyboard takes ~50% of screen on most devices
+- Keyboard has done/return button that dismisses automatically
+- Safe area handling important for notched devices (iPhone X+)
+- Test on both iPhone SE (small) and iPhone Pro Max (large)
+
+#### **Android-Specific**:
+- Keyboard behavior varies by manufacturer (Samsung, Google, etc.)
+- Some keyboards have dismiss button, some don't
+- `resizeToAvoidBottomInset` behavior more consistent than iOS
+- Test on different Android versions (11, 12, 13, 14)
+
+### **Migration Guide**
+
+**Existing Screens**: Update to use `KeyboardDismissibleScaffold`:
+
+```dart
+// ❌ Before (keyboard issues)
+class LoginScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Column(
+        children: [
+          PhoneInput(...),
+          ElevatedButton(...),
+        ],
+      ),
+    );
+  }
+}
+
+// ✅ After (keyboard friendly)
+class LoginScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return KeyboardDismissibleScaffold(
+      body: SingleChildScrollView(
+        padding: EdgeInsets.all(16),
+        child: Column(
+          children: [
+            PhoneInput(...),
+            SizedBox(height: 80), // Extra padding
+            ElevatedButton(...),
+          ],
+        ),
+      ),
+    );
+  }
+}
+```
+
+### **Testing Checklist**
+
+- [ ] Open screen with input fields
+- [ ] Tap input field to show keyboard
+- [ ] Verify content scrolls to show input field
+- [ ] Scroll down to verify bottom buttons are accessible
+- [ ] Tap outside input field to verify keyboard dismisses
+- [ ] Submit form with keyboard open
+- [ ] Test on iPhone SE (small screen)
+- [ ] Test on iPhone Pro Max (large screen)
+- [ ] Test on various Android devices
+- [ ] Test in both portrait and landscape (if supported)
+
+### **Key Learnings**
+
+**Critical Insights**:
+- ✅ **Keyboard handling must be global** - Apply to all screens with inputs
+- ✅ **Scrollable content is mandatory** - Use `SingleChildScrollView` or `ListView`
+- ✅ **Tap-to-dismiss improves UX** - Users expect this behavior
+- ✅ **Extra padding is essential** - 60-100px below last input/button
+- ✅ **Test on real devices** - Simulators don't accurately show keyboard issues
+
+**Common Gotchas**:
+- ⚠️ **Keyboard height varies** by device and keyboard type (emoji, predictive text)
+- ⚠️ **Safe area differs** on notched devices - use `SafeArea` widget
+- ⚠️ **TextField focus** can cause unexpected scroll jumps
+- ⚠️ **Dismissing before navigation** prevents weird transitions
+
+**Performance Considerations**:
+- ✅ `GestureDetector` for tap-to-dismiss is lightweight
+- ✅ `MediaQuery.viewInsets.bottom` is efficient for keyboard height
+- ✅ No performance impact from `resizeToAvoidBottomInset: true`
+
+**Related Files**:
+- `mobile/lib/presentation/widgets/common/keyboard_dismissible_scaffold.dart` - Main widget
+- `mobile/lib/presentation/screens/auth/login_screen.dart` - Example usage
+- `mobile/lib/presentation/screens/profile/profile_edit_screen.dart` - Complex form example
+
+---
+
 ## � **Events List Navigation Bug (October 2025)**
 
 **Context**: Events list was disappearing when users navigated to event details and returned. Reload button also stopped working.

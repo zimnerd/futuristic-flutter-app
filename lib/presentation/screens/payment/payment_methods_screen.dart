@@ -4,6 +4,7 @@ import '../../blocs/payment/payment_bloc.dart';
 import '../../../data/services/payment_service.dart';
 import '../../../widgets/app_button.dart';
 import '../../../widgets/app_text_field.dart';
+import '../../widgets/common/keyboard_dismissible_scaffold.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../screens/payment_demo_screen.dart';
@@ -25,7 +26,7 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return KeyboardDismissibleScaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
         title: Text(

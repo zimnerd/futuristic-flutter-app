@@ -8,6 +8,7 @@ import '../../blocs/auth/auth_state.dart';
 import '../../navigation/app_router.dart';
 import '../../theme/pulse_colors.dart';
 import '../../widgets/common/common_widgets.dart';
+import '../../widgets/common/keyboard_dismissible_scaffold.dart';
 
 /// Enhanced forgot password screen
 class ForgotPasswordScreen extends StatefulWidget {
@@ -38,7 +39,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return KeyboardDismissibleScaffold(
       body: BlocListener<AuthBloc, AuthState>(
         listener: (context, state) {
           setState(() {
@@ -134,6 +135,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
             },
           ),
           const SizedBox(height: PulseSpacing.xl),
+          
+          // Extra space for keyboard
+          const SizedBox(height: 80),
 
           // Reset button
           PulseButton(

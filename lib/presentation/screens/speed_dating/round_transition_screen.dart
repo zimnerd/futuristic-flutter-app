@@ -5,6 +5,7 @@ import '../../../data/services/speed_dating_service.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../blocs/auth/auth_bloc.dart';
 import '../../blocs/auth/auth_state.dart';
+import '../../widgets/common/keyboard_dismissible_scaffold.dart';
 import 'active_round_screen.dart';
 import 'speed_dating_matches_screen.dart';
 
@@ -166,7 +167,7 @@ class _RoundTransitionScreenState extends State<RoundTransitionScreen>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return KeyboardDismissibleScaffold(
       backgroundColor: Colors.black,
       body: SafeArea(
         child: _showMutualMatch ? _buildMutualMatchOverlay() : _buildContent(),

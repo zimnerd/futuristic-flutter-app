@@ -19,6 +19,7 @@ import '../../../presentation/blocs/group_chat/group_chat_event.dart';
 import '../../../data/models/chat_model.dart';
 import '../../../blocs/chat_bloc.dart';
 import '../../../presentation/theme/pulse_colors.dart';
+import '../../widgets/common/keyboard_dismissible_scaffold.dart';
 
 /// Comprehensive group chat screen with real-time messaging, participant management,
 /// media sharing, voice/video calls, typing indicators, message reactions, and admin controls
@@ -146,7 +147,8 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return KeyboardDismissibleScaffold(
+      enableDismissOnTap: false, // Don't dismiss on message tap
       backgroundColor: Colors.grey[50],
       appBar: _buildAppBar(),
       body: Column(

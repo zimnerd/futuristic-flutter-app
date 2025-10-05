@@ -6,6 +6,7 @@ import '../../../data/services/video_streaming_service.dart';
 import '../../../data/services/live_streaming_service.dart';
 import '../../../data/services/service_locator.dart';
 import '../../theme/pulse_colors.dart';
+import '../../widgets/common/keyboard_dismissible_scaffold.dart';
 
 /// Screen for viewing a live stream (audience view)
 class LiveStreamViewerScreen extends StatefulWidget {
@@ -212,7 +213,7 @@ class _LiveStreamViewerScreenState extends State<LiveStreamViewerScreen> {
     final String streamerName =
         widget.stream['streamerName']?.toString() ?? 'Unknown';
 
-    return Scaffold(
+    return KeyboardDismissibleScaffold(
       backgroundColor: Colors.black,
       body: Stack(
         children: [

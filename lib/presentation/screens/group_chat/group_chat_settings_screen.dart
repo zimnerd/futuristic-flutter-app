@@ -8,6 +8,7 @@ import 'package:image_picker/image_picker.dart';
 import '../../../features/group_chat/data/models.dart';
 import '../../../features/group_chat/data/group_chat_service.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../widgets/common/keyboard_dismissible_scaffold.dart';
 
 final sl = GetIt.instance;
 
@@ -1798,7 +1799,7 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return KeyboardDismissibleScaffold(
       backgroundColor: const Color(0xFF0A0E21),
       appBar: AppBar(
         backgroundColor: const Color(0xFF1A1F3A),
@@ -1966,7 +1967,7 @@ class _ReportedContentScreenState extends State<ReportedContentScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return KeyboardDismissibleScaffold(
       backgroundColor: const Color(0xFF0A0E21),
       appBar: AppBar(
         backgroundColor: const Color(0xFF1A1F3A),

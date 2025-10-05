@@ -12,6 +12,7 @@ import '../../../data/models/user_model.dart';
 import '../../../core/theme/pulse_design_system.dart';
 import '../../widgets/match/match_card.dart';
 import '../../navigation/app_router.dart';
+import '../../widgets/common/keyboard_dismissible_scaffold.dart';
 
 /// Actual Matches Screen - Shows mutual matches and people who liked you
 ///
@@ -86,7 +87,7 @@ class _MatchesScreenState extends State<MatchesScreen>
       create: (context) => MatchBloc(
         matchingService: MatchingService(apiClient: ApiClient.instance),
       )..add(const LoadMatches(excludeWithConversations: true)),
-      child: Scaffold(
+      child: KeyboardDismissibleScaffold(
         body: SafeArea(
           child: BlocConsumer<MatchBloc, MatchState>(
             listener: (context, state) {

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../navigation/app_router.dart';
 import '../../theme/pulse_colors.dart';
+import '../../widgets/common/keyboard_dismissible_scaffold.dart';
 import '../../../data/services/service_locator.dart';
 
 /// Screen for starting or editing a live stream
@@ -56,7 +57,7 @@ class _StartStreamScreenState extends State<StartStreamScreen> {
   Widget build(BuildContext context) {
     final isEditing = widget.streamToEdit != null;
     
-    return Scaffold(
+    return KeyboardDismissibleScaffold(
       appBar: AppBar(
         title: Text(isEditing ? 'Edit Stream' : 'Start Live Stream'),
         actions: [

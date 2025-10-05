@@ -27,6 +27,7 @@ import '../../theme/pulse_colors.dart';
 import '../../widgets/chat/message_bubble.dart';
 import '../../widgets/chat/ai_message_input.dart';
 import '../../widgets/chat/rich_ai_chat_assistant_modal.dart';
+import '../../widgets/common/keyboard_dismissible_scaffold.dart';
 
 class ChatScreen extends StatefulWidget {
   final String conversationId;
@@ -250,7 +251,8 @@ class _ChatScreenState extends State<ChatScreen> {
           _typingTimer?.cancel();
         }
       },
-      child: Scaffold(
+      child: KeyboardDismissibleScaffold(
+        enableDismissOnTap: false, // Don't dismiss on message tap
         backgroundColor: Colors.white,
         appBar: _buildAppBar(),
         body: Column(

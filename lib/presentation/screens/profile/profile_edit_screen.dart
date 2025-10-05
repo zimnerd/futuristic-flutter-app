@@ -7,6 +7,7 @@ import 'package:logger/logger.dart';
 
 import '../../blocs/profile/profile_bloc.dart';
 import '../../theme/pulse_colors.dart';
+import '../../widgets/common/keyboard_dismissible_scaffold.dart';
 import '../../widgets/common/pulse_button.dart';
 import '../../widgets/profile/enhanced_photo_grid.dart';
 import '../../widgets/profile/profile_completion_card.dart';
@@ -778,7 +779,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return KeyboardDismissibleScaffold(
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
         backgroundColor: Colors.white,

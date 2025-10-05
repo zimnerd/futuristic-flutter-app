@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../theme/pulse_colors.dart';
+import '../../widgets/common/keyboard_dismissible_scaffold.dart';
 import '../../blocs/date_planning/date_planning_bloc.dart';
 import '../../blocs/date_planning/date_planning_event.dart';
 
@@ -68,7 +69,7 @@ class _CreateDatePlanScreenState extends State<CreateDatePlanScreen> {
     final isEditing = widget.planToEdit != null;
     final isFromSuggestion = widget.suggestion != null;
     
-    return Scaffold(
+    return KeyboardDismissibleScaffold(
       appBar: AppBar(
         title: Text(
           isEditing 

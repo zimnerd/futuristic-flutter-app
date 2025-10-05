@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../business_logic/blocs/ai_preferences_bloc.dart';
 import '../../../core/services/service_locator.dart';
 import '../settings/ai_settings_screen.dart';
+import '../../widgets/common/keyboard_dismissible_scaffold.dart';
 
 /// Example of how to integrate AI preferences throughout the app
 class AiIntegrationExample extends StatelessWidget {
@@ -34,7 +35,7 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return KeyboardDismissibleScaffold(
       appBar: AppBar(
         title: const Text('AI Features Demo'),
         actions: [
@@ -283,7 +284,7 @@ class ExampleChatScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return KeyboardDismissibleScaffold(
       appBar: AppBar(title: const Text('Chat')),
       body: Column(
         children: [

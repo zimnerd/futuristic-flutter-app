@@ -11,6 +11,7 @@ import '../../theme/pulse_colors.dart';
 import '../../widgets/events/event_card.dart';
 import '../../widgets/events/category_chip.dart';
 import '../../widgets/events/advanced_filters_modal.dart';
+import '../../widgets/common/keyboard_dismissible_scaffold.dart';
 
 class EventsScreen extends StatefulWidget {
   const EventsScreen({super.key});
@@ -232,7 +233,7 @@ class _EventsScreenState extends State<EventsScreen>
           );
         }
       },
-      child: Scaffold(
+      child: KeyboardDismissibleScaffold(
         backgroundColor: PulseColors.surface,
         appBar: AppBar(
           backgroundColor: PulseColors.surface,

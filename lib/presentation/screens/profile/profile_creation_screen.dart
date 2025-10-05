@@ -7,6 +7,7 @@ import '../../blocs/profile/profile_bloc.dart';
 import '../../blocs/user/user_bloc.dart';
 import '../../blocs/user/user_event.dart';
 import '../../theme/pulse_colors.dart';
+import '../../widgets/common/keyboard_dismissible_scaffold.dart';
 import '../../widgets/common/pulse_loading_widget.dart';
 import '../../widgets/profile/interests_selector.dart';
 import '../../widgets/profile/photo_picker_grid.dart';
@@ -125,7 +126,7 @@ class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
           }
         }
       },
-      child: Scaffold(
+      child: KeyboardDismissibleScaffold(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         appBar: AppBar(
           title: Text('Create Profile'),
