@@ -33,6 +33,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     on<ClearUploadProgress>(_onClearUploadProgress);
     on<CancelProfileChanges>(_onCancelProfileChanges);
     on<UpdatePrivacySettings>(_onUpdatePrivacySettings);
+    on<LoadProfileStats>(_onLoadProfileStats); // NEW: Stats handler
   }
 
   Future<void> _onLoadProfile(
@@ -422,6 +423,52 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
           error: errorMessage,
         updateStatus: ProfileStatus.error,
       ));
+    }
+  }
+
+  Future<void> _onLoadProfileStats(
+    LoadProfileStats event,
+    Emitter<ProfileState> emit,
+  ) async {
+    try {
+      // Check if we have valid cached stats (unless force refresh)
+      final hasValidCache =
+          state.stats != null &&
+          state.statsLastFetchTime != null &&
+          !state.isStatsCacheStale;
+
+      if (!event.forceRefresh && hasValidCache) {
+        _logger.d(
+          '✅ Using cached stats (age: ${DateTime.now().difference(state.statsLastFetchTime!).inSeconds} sec)',
+        );
+        return;
+      }
+
+      _logger.i(
+        '🔄 Fetching profile stats from server (force: ${event.forceRefresh})',
+      );
+      emit(state.copyWith(statsStatus: ProfileStatus.loading));
+
+      final stats = await _profileService.getUserStats();
+
+      _logger.i('📊 Stats fetched from server:');
+      _logger.i('   - Matches: ${stats.matchesCount}');
+      _logger.i('   - Likes: ${stats.likesReceived}');
+      _logger.i('   - Visits: ${stats.profileViews}');
+
+      emit(
+        state.copyWith(
+          statsStatus: ProfileStatus.loaded,
+          stats: stats,
+          statsLastFetchTime: DateTime.now(),
+        ),
+      );
+    } catch (e) {
+      _logger.e('❌ Failed to load stats: $e');
+      final errorMessage = ErrorHandler.handleError(e, showDialog: false);
+      emit(
+        state.copyWith(statsStatus: ProfileStatus.error, error: errorMessage),
+      );
     }
   }
 }

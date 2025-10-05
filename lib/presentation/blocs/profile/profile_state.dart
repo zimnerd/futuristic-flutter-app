@@ -36,9 +36,12 @@ class ProfileState extends Equatable {
   final ProfileStatus status;
   final ProfileStatus updateStatus;
   final ProfileStatus uploadStatus;
+  final ProfileStatus statsStatus; // NEW: Stats loading status
   final UserProfile? profile;
+  final ProfileStats? stats; // NEW: User statistics
   final String? error;
   final DateTime? lastFetchTime; // Track when profile was last fetched
+  final DateTime? statsLastFetchTime; // NEW: Track when stats were last fetched
   final Map<String, PhotoUploadProgress>
   uploadingPhotos; // Track individual uploads
 
@@ -46,9 +49,12 @@ class ProfileState extends Equatable {
     this.status = ProfileStatus.initial,
     this.updateStatus = ProfileStatus.initial,
     this.uploadStatus = ProfileStatus.initial,
+    this.statsStatus = ProfileStatus.initial, // NEW
     this.profile,
+    this.stats, // NEW
     this.error,
     this.lastFetchTime,
+    this.statsLastFetchTime, // NEW
     this.uploadingPhotos = const {},
   });
 
@@ -56,18 +62,24 @@ class ProfileState extends Equatable {
     ProfileStatus? status,
     ProfileStatus? updateStatus,
     ProfileStatus? uploadStatus,
+    ProfileStatus? statsStatus, // NEW
     UserProfile? profile,
+    ProfileStats? stats, // NEW
     String? error,
     DateTime? lastFetchTime,
+    DateTime? statsLastFetchTime, // NEW
     Map<String, PhotoUploadProgress>? uploadingPhotos,
   }) {
     return ProfileState(
       status: status ?? this.status,
       updateStatus: updateStatus ?? this.updateStatus,
       uploadStatus: uploadStatus ?? this.uploadStatus,
+      statsStatus: statsStatus ?? this.statsStatus, // NEW
       profile: profile ?? this.profile,
+      stats: stats ?? this.stats, // NEW
       error: error ?? this.error,
       lastFetchTime: lastFetchTime ?? this.lastFetchTime,
+      statsLastFetchTime: statsLastFetchTime ?? this.statsLastFetchTime, // NEW
       uploadingPhotos: uploadingPhotos ?? this.uploadingPhotos,
     );
   }
@@ -82,14 +94,23 @@ class ProfileState extends Equatable {
     return DateTime.now().difference(lastFetchTime!).inMinutes >= 5;
   }
 
+  /// Check if cached stats are stale (older than 2 minutes)
+  bool get isStatsCacheStale {
+    if (statsLastFetchTime == null) return true;
+    return DateTime.now().difference(statsLastFetchTime!).inMinutes >= 2;
+  }
+
   @override
   List<Object?> get props => [
         status,
         updateStatus,
         uploadStatus,
+    statsStatus, // NEW
         profile,
+    stats, // NEW
         error,
     uploadingPhotos,
     lastFetchTime,
+    statsLastFetchTime, // NEW
       ];
 }

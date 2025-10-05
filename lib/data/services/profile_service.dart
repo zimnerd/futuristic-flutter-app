@@ -1220,6 +1220,50 @@ class ProfileService {
     }
   }
 
+  /// Get user profile statistics
+  Future<ProfileStats> getUserStats() async {
+    try {
+      _logger.i('🔍 Fetching user statistics');
+
+      // Fetch both matching stats and general statistics in parallel
+      final results = await Future.wait([
+        _apiClient.get('/matching/stats'),
+        _apiClient.get('/statistics/me'),
+      ]);
+
+      final matchingResponse = results[0];
+      final statsResponse = results[1];
+
+      if (matchingResponse.statusCode == 200 &&
+          statsResponse.statusCode == 200) {
+        final matchingData =
+            matchingResponse.data['data'] as Map<String, dynamic>;
+        final statsData = statsResponse.data as Map<String, dynamic>;
+
+        _logger.i('✅ Statistics fetched successfully');
+        _logger.i('   - Matches: ${matchingData['totalMatches']}');
+        _logger.i('   - Likes Received: ${matchingData['receivedLikes']}');
+        _logger.i('   - Profile Views: ${statsData['profileViews']}');
+
+        return ProfileStats(
+          matchesCount: matchingData['totalMatches'] ?? 0,
+          likesReceived: matchingData['receivedLikes'] ?? 0,
+          profileViews: statsData['profileViews'] ?? 0,
+          likesSent: matchingData['totalLikes'] ?? 0,
+          messagesCount: statsData['messagesCount'] ?? 0,
+        );
+      } else {
+        throw NetworkException('Failed to fetch statistics');
+      }
+    } on DioException catch (e) {
+      _logger.e('❌ Network error fetching statistics: ${e.message}');
+      throw NetworkException('Failed to fetch statistics: ${e.message}');
+    } catch (e) {
+      _logger.e('❌ Unexpected error fetching statistics: $e');
+      throw UserException('Failed to fetch statistics');
+    }
+  }
+
   /// Convert domain location to data model location
   UserLocation _convertLocation(domain.UserLocation location) {
     return UserLocation(
@@ -1230,6 +1274,23 @@ class ProfileService {
       updatedAt: DateTime.now(),
     );
   }
+}
+
+/// User profile statistics
+class ProfileStats {
+  final int matchesCount;
+  final int likesReceived;
+  final int profileViews;
+  final int likesSent;
+  final int messagesCount;
+
+  ProfileStats({
+    required this.matchesCount,
+    required this.likesReceived,
+    required this.profileViews,
+    required this.likesSent,
+    required this.messagesCount,
+  });
 }
 
 /// Helper class for photo ordering

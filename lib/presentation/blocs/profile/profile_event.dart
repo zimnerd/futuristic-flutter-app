@@ -83,3 +83,13 @@ class UploadMultiplePhotos extends ProfileEvent {
   @override
   List<Object> get props => [photoPaths];
 }
+
+/// Load user profile statistics
+class LoadProfileStats extends ProfileEvent {
+  final bool forceRefresh;
+
+  const LoadProfileStats({this.forceRefresh = false});
+
+  @override
+  List<Object?> get props => [forceRefresh];
+}
