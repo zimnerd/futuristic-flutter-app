@@ -220,10 +220,24 @@ class _FiltersScreenState extends State<FiltersScreen> {
             children: state.availableInterests.map((interest) {
               final isSelected = state.preferences.interests.contains(interest);
               return FilterChip(
-                label: Text(interest),
+                label: Text(
+                  interest,
+                  style: TextStyle(
+                    color: isSelected ? Colors.white : PulseColors.onSurface,
+                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                  ),
+                ),
                 selected: isSelected,
-                selectedColor: PulseColors.primary.withValues(alpha: 0.2),
-                checkmarkColor: PulseColors.primary,
+                selectedColor: PulseColors.primary,
+                backgroundColor: Colors.grey.shade200,
+                checkmarkColor: Colors.white,
+                side: BorderSide(
+                  color: isSelected
+                      ? PulseColors.primary
+                      : Colors.grey.shade300,
+                  width: 1.5,
+                ),
+                showCheckmark: true,
                 onSelected: (bool selected) {
                   final updatedInterests = List<String>.from(state.preferences.interests);
                   if (selected) {

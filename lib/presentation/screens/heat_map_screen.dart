@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:provider/provider.dart';
 import '../../data/services/heat_map_service.dart';
 import '../../core/services/location_service.dart';
 import '../../core/utils/logger.dart';
@@ -13,12 +14,19 @@ import '../../features/statistics/domain/models/map_cluster.dart';
 
 // Function to show the heat map as a full-screen modal
 void showHeatMapModal(BuildContext context) {
+  // Get the services from the parent context
+  final heatMapService = context.read<HeatMapService>();
+  final locationService = context.read<LocationService>();
+  
   showDialog(
     context: context,
     barrierDismissible: true,
-    builder: (modalContext) => Dialog.fullscreen(
-      backgroundColor: Colors.transparent,
-      child: const HeatMapScreen(),
+    builder: (modalContext) => BlocProvider(
+      create: (_) => HeatMapBloc(heatMapService, locationService),
+      child: Dialog.fullscreen(
+        backgroundColor: Colors.transparent,
+        child: const HeatMapScreen(),
+      ),
     ),
   );
 }
@@ -631,6 +639,10 @@ class _HeatMapScreenState extends State<HeatMapScreen> {
 
     AppLogger.debug('HeatMapScreen: Initial position: $initialPosition');
 
+    // Calculate optimal zoom level based on data distribution
+    final initialZoomLevel = hasGeographicMismatch ? 8.0 : 12.0;
+    AppLogger.debug('HeatMapScreen: Using zoom level: $initialZoomLevel');
+
     final markers = _buildMarkers(state);
     final circles = _buildCircles(state);
 
@@ -640,6 +652,7 @@ class _HeatMapScreenState extends State<HeatMapScreen> {
 
     AppLogger.debug('🗺️ About to build GoogleMap widget...');
     AppLogger.debug('🗺️ Initial position: $initialPosition');
+    AppLogger.debug('🗺️ Initial zoom: $initialZoomLevel');
     AppLogger.debug('🗺️ Markers count: ${markers.length}');
     AppLogger.debug('🗺️ Circles count: ${circles.length}');
 
@@ -661,29 +674,9 @@ class _HeatMapScreenState extends State<HeatMapScreen> {
           AppLogger.debug('🔧 This may indicate API key or network issues');
         }
 
-        // Wait for map to be fully initialized before camera operations
-        await Future.delayed(const Duration(milliseconds: 200));
-
-        if (mounted && _mapController != null) {
-          final zoomLevel = hasGeographicMismatch ? 8.0 : 12.0;
-          AppLogger.debug('🗺️ Moving camera to: $initialPosition, zoom: $zoomLevel');
-
-          try {
-            await _mapController!.animateCamera(
-              CameraUpdate.newCameraPosition(
-                CameraPosition(target: initialPosition, zoom: zoomLevel),
-              ),
-            );
-            AppLogger.debug('🗺️ Camera positioned successfully');
-
-            // Test tile loading after positioning
-            await Future.delayed(const Duration(milliseconds: 500));
-            final newBounds = await controller.getVisibleRegion();
-            AppLogger.debug('🔧 Post-animation visible region: ${newBounds.toString()}');
-          } catch (e) {
-            AppLogger.debug('🗺️ Camera positioning error: $e');
-          }
-        }
+        AppLogger.debug(
+          '🗺️ Map ready - user can now interact and zoom as needed',
+        );
       },
       onCameraMove: (CameraPosition position) {
         if (mounted) {
@@ -715,7 +708,8 @@ class _HeatMapScreenState extends State<HeatMapScreen> {
       },
       initialCameraPosition: CameraPosition(
         target: initialPosition,
-        zoom: 10.0, // Safe initial zoom level
+        zoom:
+            initialZoomLevel, // Use calculated zoom level - no animation needed
       ),
       markers: markers,
       circles: circles,
