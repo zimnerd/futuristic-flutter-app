@@ -5,6 +5,283 @@ This document captures key learnings from building the **Flutter mobile dating a
 
 ---
 
+## 🚨 **Error Handling & User Experience (October 2025)**
+
+**Status**: ✅ **ENHANCED** - Improved error extraction, user-friendly messages, and graceful degradation  
+**Date**: October 5, 2025  
+**Priority**: **CRITICAL** - Poor error handling directly impacts user trust and app usability
+
+**Context**: Users were seeing raw DioException stack traces instead of friendly error messages. Auto-login would fail with cryptic "Failed to send OTP: DioException [bad response]" messages when users weren't registered. This created confusion and poor UX.
+
+### **Problem - Error Handling Issues**
+
+#### **1. Raw Stack Traces Shown to Users**
+```dart
+// ❌ WRONG - Shows full exception details to users
+catch (e) {
+  emit(AuthError(message: e.toString()));  
+  // Results in: "Failed to send OTP: DioException [bad response]: 
+  // This exception was thrown because the response has a status code 
+  // of 400 and RequestOptions.validateStatus was configured to throw..."
+}
+```
+
+**Issues**:
+- Technical jargon confuses non-technical users
+- Stack traces leak implementation details
+- No actionable guidance for users
+- Creates impression of broken app
+
+#### **2. Backend Error Messages Not Extracted**
+```dart
+// ❌ WRONG - Backend sends clear message but app doesn't extract it
+// Backend response:
+{
+  "success": false,
+  "statusCode": 400,
+  "message": "No account found with this phone number. Please register first.",
+  "error": "Bad Request"
+}
+
+// App shows: "Failed to send OTP: DioException [bad response]"
+// User sees: Generic error instead of specific "Please register first"
+```
+
+#### **3. No Specific Exception Types for Common Errors**
+```dart
+// ❌ WRONG - All errors treated as generic failures
+if (statusCode == 400) {
+  return ServerException(message);  // Too generic!
+}
+
+// User can't distinguish between:
+// - Registration required
+// - Invalid input
+// - Rate limiting
+// - Business logic validation failures
+```
+
+### **Solution - Comprehensive Error Handling**
+
+#### **1. Enhanced Error Message Extraction**
+
+**File**: `mobile/lib/data/services/api_service_impl.dart`
+
+```dart
+// ✅ CORRECT - Extract message from backend response structure
+@override
+String extractErrorMessage(dynamic error) {
+  if (error is DioException) {
+    if (error.response?.data is Map) {
+      final data = error.response!.data as Map;
+      // Check multiple fields - backend might use 'message', 'error', or 'details'
+      return data['message'] ?? 
+             data['error'] ?? 
+             data['details'] ?? 
+             'Unknown error occurred';
+    }
+    return error.message ?? 'Network error occurred';
+  }
+  if (error is AppException) {
+    return error.message;
+  }
+  return error.toString();
+}
+```
+
+**Key Improvements**:
+- ✅ Extracts backend's user-friendly message from `response.data.message`
+- ✅ Falls back to `error` or `details` fields if needed
+- ✅ Provides sensible defaults for network errors
+- ✅ Already extracts message from `AppException` types
+
+#### **2. Specific Exception Types for Common Cases**
+
+**File**: `mobile/lib/data/exceptions/app_exceptions.dart`
+
+```dart
+// ✅ NEW - Specific exception for registration required
+class UserNotRegisteredException extends UserException {
+  const UserNotRegisteredException([String? customMessage])
+      : super(customMessage ?? 'No account found. Please register first.');
+}
+
+// ✅ Usage in error code mapping
+AppException createExceptionFromCode(String code, String message) {
+  switch (code) {
+    case 'USER_NOT_REGISTERED':
+      return UserNotRegisteredException(message);
+    // ... other cases
+  }
+}
+```
+
+**File**: `mobile/lib/data/services/api_service_impl.dart`
+
+```dart
+// ✅ CORRECT - Map 400 errors to specific exception types
+AppException _mapDioException(DioException error) {
+  switch (error.type) {
+    case DioExceptionType.badResponse:
+      final statusCode = error.response?.statusCode;
+      final message = extractErrorMessage(error);
+
+      switch (statusCode) {
+        case 400:
+          // Check if it's a registration-required error
+          if (message.toLowerCase().contains('register first') ||
+              message.toLowerCase().contains('no account found')) {
+            return UserNotRegisteredException(message);
+          }
+          return ValidationException(message);
+        case 401:
+          return const UnauthorizedException();
+        // ... other status codes
+      }
+  }
+}
+```
+
+**Benefits**:
+- ✅ Type-safe error handling with specific exception classes
+- ✅ Callers can check `if (e is UserNotRegisteredException)` for special handling
+- ✅ Clear distinction between validation errors and registration requirements
+- ✅ Preserves backend's detailed message while adding type safety
+
+#### **3. User-Friendly Error Messages in BLoC**
+
+**File**: `mobile/lib/presentation/blocs/auth/auth_bloc.dart`
+
+```dart
+// ✅ CORRECT - Provide context-specific, actionable messages
+catch (e, stackTrace) {
+  _logger.e('Send OTP error', error: e, stackTrace: stackTrace);
+  
+  // Extract user-friendly error message
+  String errorMessage = 'Failed to send OTP';
+  String? errorCode;
+  
+  if (e is AppException) {
+    errorMessage = e.message;
+    errorCode = e.code;
+    
+    // Special handling for specific error types
+    if (e is UserNotRegisteredException) {
+      errorMessage = 'No account found with this phone number. Please register first.';
+      errorCode = 'USER_NOT_REGISTERED';
+    } else if (e is ValidationException) {
+      errorMessage = e.message;
+    } else if (e is NoInternetException) {
+      errorMessage = 'No internet connection. Please check your network.';
+    } else if (e is TimeoutException) {
+      errorMessage = 'Request timed out. Please try again.';
+    }
+  } else {
+    // Fallback for non-AppException errors
+    _logger.w('Unexpected error type: ${e.runtimeType}');
+  }
+  
+  emit(AuthError(message: errorMessage, errorCode: errorCode));
+}
+```
+
+**Key Improvements**:
+- ✅ **Type-specific messages**: Different messages for different error types
+- ✅ **Actionable guidance**: "Please check your network" vs generic "error occurred"
+- ✅ **Preserves error codes**: `errorCode` field for programmatic handling
+- ✅ **Detailed logging**: Full error logged for debugging, but not shown to user
+
+#### **4. Graceful Error Handling in Auto-Login**
+
+**File**: `mobile/lib/presentation/widgets/auto_login_wrapper.dart`
+
+```dart
+// ✅ CORRECT - Handle specific error types gracefully in auto-login
+listener: (context, state) async {
+  if (state is AuthError) {
+    final errorCode = state.errorCode;
+    
+    // Gracefully handle registration-required errors
+    if (errorCode == 'USER_NOT_REGISTERED') {
+      _logger.i('⚠️ Auto-login skipped: Test user not registered in database');
+      _logger.i('ℹ️  Please register the user or use a different test account');
+    } else if (state.message.toLowerCase().contains('register first')) {
+      _logger.i('⚠️ Auto-login skipped: User registration required');
+    } else {
+      // Log other errors normally
+      _logger.w('❌ 🤖 Auto-login failed: ${state.message}');
+    }
+  }
+}
+```
+
+**Benefits**:
+- ✅ **Silent graceful degradation**: Registration errors don't spam error logs
+- ✅ **Informative messages**: Developers understand why auto-login was skipped
+- ✅ **Actionable suggestions**: Guides developer to register user or use different account
+- ✅ **Non-blocking**: App continues to welcome screen without crashing
+
+### **Testing Error Scenarios**
+
+```bash
+# Test registration-required error
+# 1. Use unregistered phone number
+# 2. Verify user sees: "No account found. Please register first."
+# 3. Verify no stack trace shown
+# 4. Verify auto-login gracefully skips with helpful log message
+
+# Test network errors
+# 1. Disable internet connection
+# 2. Verify user sees: "No internet connection. Please check your network."
+# 3. Verify timeout shows: "Request timed out. Please try again."
+
+# Test validation errors
+# 1. Send invalid phone format
+# 2. Verify user sees backend's validation message
+# 3. Verify error is type `ValidationException`
+```
+
+### **Key Takeaways**
+
+1. **Always extract backend messages**: Use `response.data.message` as primary source
+2. **Create specific exception types**: Don't lump everything into `ServerException`
+3. **Provide actionable guidance**: Tell users what to do, not just what went wrong
+4. **Handle gracefully in auto-login**: Development conveniences shouldn't create noise
+5. **Log full errors for debugging**: Keep technical details in logs, not UI
+6. **Test error scenarios**: Verify users see friendly messages, not stack traces
+
+### **Common Pitfalls to Avoid**
+
+❌ **Showing raw exception strings to users**
+```dart
+// BAD
+catch (e) {
+  showError(e.toString());  // Shows "DioException [bad response]..."
+}
+```
+
+❌ **Not checking nested error structures**
+```dart
+// BAD
+final message = error.response?.data['message'];  // Might be nested deeper
+```
+
+❌ **Generic error messages without context**
+```dart
+// BAD
+emit(AuthError(message: 'Error occurred'));  // Not helpful!
+```
+
+❌ **Not handling specific error types**
+```dart
+// BAD
+if (e is AppException) return e.message;  // Misses type-specific handling
+```
+
+✅ **Best Practice**: Extract → Map to specific type → Provide context → Log full details
+
+---
+
 ## ⌨️ **iOS Keyboard Handling & Scrollable Content (October 2025)**
 
 **Status**: ✅ **MIGRATION COMPLETE** - All 23 screens with keyboard input successfully migrated (100%)  

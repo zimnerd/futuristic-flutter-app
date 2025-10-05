@@ -73,6 +73,11 @@ class UserBlockedException extends UserException {
   const UserBlockedException() : super('User has been blocked');
 }
 
+class UserNotRegisteredException extends UserException {
+  const UserNotRegisteredException([String? customMessage])
+      : super(customMessage ?? 'No account found. Please register first.');
+}
+
 /// Matching-related exceptions
 class MatchException extends AppException {
   const MatchException(super.message, {super.code, super.details});
@@ -213,6 +218,8 @@ AppException createExceptionFromCode(
       return const InvalidCredentialsException();
     case 'USER_NOT_FOUND':
       return const UserNotFoundException();
+    case 'USER_NOT_REGISTERED':
+      return UserNotRegisteredException(message);
     case 'USER_BLOCKED':
       return const UserBlockedException();
     case 'NO_MORE_MATCHES':

@@ -87,7 +87,23 @@ class _AutoLoginWrapperState extends State<AutoLoginWrapper> {
             );
           }
         } else if (state is AuthError) {
-          _logger.w('❌ 🤖 Auto-login failed: ${state.message}');
+          // Handle specific error types with appropriate logging
+          final errorCode = state.errorCode;
+          
+          if (errorCode == 'USER_NOT_REGISTERED') {
+            _logger.i(
+              '⚠️ Auto-login skipped: Test user not registered in database',
+            );
+            _logger.i(
+              'ℹ️  Please register the user or use a different test account',
+            );
+          } else if (state.message.toLowerCase().contains('register first')) {
+            _logger.i(
+              '⚠️ Auto-login skipped: User registration required',
+            );
+          } else {
+            _logger.w('❌ 🤖 Auto-login failed: ${state.message}');
+          }
         } else if (state is AuthUnauthenticated) {
           // Stop location tracking on logout
           _logger.i('📍 Stopping location tracking after logout...');

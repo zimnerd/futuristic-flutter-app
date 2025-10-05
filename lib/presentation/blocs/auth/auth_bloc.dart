@@ -395,10 +395,35 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       _logger.i('OTP sent successfully');
     } catch (e, stackTrace) {
       _logger.e('Send OTP error', error: e, stackTrace: stackTrace);
+      
+      // Extract user-friendly error message
+      String errorMessage = 'Failed to send OTP';
+      String? errorCode;
+      
+      if (e is AppException) {
+        errorMessage = e.message;
+        errorCode = e.code;
+        
+        // Special handling for specific error types
+        if (e is UserNotRegisteredException) {
+          errorMessage = 'No account found with this phone number. Please register first.';
+          errorCode = 'USER_NOT_REGISTERED';
+        } else if (e is ValidationException) {
+          errorMessage = e.message;
+        } else if (e is NoInternetException) {
+          errorMessage = 'No internet connection. Please check your network.';
+        } else if (e is TimeoutException) {
+          errorMessage = 'Request timed out. Please try again.';
+        }
+      } else {
+        // Fallback for non-AppException errors
+        _logger.w('Unexpected error type: ${e.runtimeType}');
+      }
+      
       emit(
         AuthError(
-          message: e is AppException ? e.message : 'Failed to send OTP',
-          errorCode: e is AppException ? e.code : null,
+          message: errorMessage,
+          errorCode: errorCode,
         ),
       );
     }
@@ -501,10 +526,29 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       _logger.i('OTP resent successfully');
     } catch (e, stackTrace) {
       _logger.e('Resend OTP error', error: e, stackTrace: stackTrace);
+      
+      // Extract user-friendly error message (same pattern as sendOTP)
+      String errorMessage = 'Failed to resend OTP';
+      String? errorCode;
+      
+      if (e is AppException) {
+        errorMessage = e.message;
+        errorCode = e.code;
+        
+        // Special handling for specific error types
+        if (e is NoInternetException) {
+          errorMessage = 'No internet connection. Please check your network.';
+        } else if (e is TimeoutException) {
+          errorMessage = 'Request timed out. Please try again.';
+        }
+      } else {
+        _logger.w('Unexpected error type: ${e.runtimeType}');
+      }
+      
       emit(
         AuthError(
-          message: e is AppException ? e.message : 'Failed to resend OTP',
-          errorCode: e is AppException ? e.code : null,
+          message: errorMessage,
+          errorCode: errorCode,
         ),
       );
     }

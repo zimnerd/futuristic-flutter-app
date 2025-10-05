@@ -355,7 +355,8 @@ class ApiServiceImpl implements ApiService {
     if (error is DioException) {
       if (error.response?.data is Map) {
         final data = error.response!.data as Map;
-        return data['message'] ?? data['error'] ?? 'Unknown error occurred';
+        // Extract message from nested structure (backend format)
+        return data['message'] ?? data['error'] ?? data['details'] ?? 'Unknown error occurred';
       }
       return error.message ?? 'Network error occurred';
     }
@@ -466,6 +467,13 @@ class ApiServiceImpl implements ApiService {
         final message = extractErrorMessage(error);
 
         switch (statusCode) {
+          case 400:
+            // Check if it's a registration-required error
+            if (message.toLowerCase().contains('register first') ||
+                message.toLowerCase().contains('no account found')) {
+              return UserNotRegisteredException(message);
+            }
+            return ValidationException(message);
           case 401:
             return const UnauthorizedException();
           case 404:
