@@ -8,6 +8,7 @@ import '../../../data/models/user_model.dart';
 import '../../../data/services/token_service.dart';
 import '../../../data/services/websocket_service_impl.dart';
 import '../../../domain/repositories/user_repository.dart';
+import '../../../core/services/error_handler.dart';
 import 'auth_event.dart';
 import 'auth_state.dart';
 
@@ -294,9 +295,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       emit(AuthFailure(message: e.message, errorCode: e.code));
     } catch (e) {
       _logger.e('❌ Unexpected error during password reset: $e');
+      final errorMessage = ErrorHandler.handleError(e, showDialog: false);
       emit(
-        const AuthFailure(
-          message: 'Failed to send password reset email. Please try again.',
+        AuthFailure(
+          message: errorMessage,
           errorCode: 'password_reset_error',
         ),
       );
@@ -328,10 +330,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       _logger.e('Two-factor verification failed: ${e.message}');
       emit(AuthError(message: e.message));
     } catch (e) {
-      const message =
-          'An unexpected error occurred during two-factor verification';
       _logger.e('Two-factor verification error: $e');
-      emit(const AuthError(message: message));
+      final errorMessage = ErrorHandler.handleError(e, showDialog: false);
+      emit(AuthError(message: errorMessage));
     }
   }
 
@@ -357,10 +358,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       _logger.e('Biometric authentication failed: ${e.message}');
       emit(AuthError(message: e.message));
     } catch (e) {
-      const message =
-          'An unexpected error occurred during biometric authentication';
       _logger.e('Biometric authentication error: $e');
-      emit(const AuthError(message: message));
+      final errorMessage = ErrorHandler.handleError(e, showDialog: false);
+      emit(AuthError(message: errorMessage));
     }
   }
 
@@ -599,6 +599,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       }
     } catch (e) {
       _logger.e('💥 Failed to initialize real-time services: $e');
+      ErrorHandler.handleError(e, showDialog: false);
       // Don't throw error as this is not critical for basic app functionality
     }
   }

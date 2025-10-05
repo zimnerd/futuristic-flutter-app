@@ -5,6 +5,7 @@ import 'package:logger/logger.dart';
 import '../../../domain/entities/user_profile.dart';
 import '../../../data/services/profile_service.dart';
 import '../../../data/services/photo_manager_service.dart';
+import '../../../core/services/error_handler.dart';
 
 part 'profile_event.dart';
 part 'profile_state.dart';
@@ -97,9 +98,10 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
       ));
     } catch (e) {
       _logger.e('❌ Failed to load profile: $e');
+      final errorMessage = ErrorHandler.handleError(e, showDialog: false);
       emit(state.copyWith(
         status: ProfileStatus.error,
-        error: 'Failed to load profile: ${e.toString()}',
+        error: errorMessage,
       ));
     }
   }
@@ -133,10 +135,11 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
       );
     } catch (e) {
       _logger.e('❌ Profile update failed: $e');
+      final errorMessage = ErrorHandler.handleError(e, showDialog: false);
       emit(
         state.copyWith(
           updateStatus: ProfileStatus.error,
-          error: 'Failed to update profile: ${e.toString()}',
+          error: errorMessage,
         ),
       );
     }
@@ -216,6 +219,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
       }
     } catch (e) {
       _logger.e('❌ Photo upload failed: $e');
+      final errorMessage = ErrorHandler.handleError(e, showDialog: false);
       
       // Update uploading state to failed
       final failedUploadingPhotos = Map<String, PhotoUploadProgress>.from(
@@ -225,13 +229,13 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
         tempId: tempId,
         localPath: event.photoPath,
         state: PhotoUploadState.failed,
-        error: e.toString(),
+        error: errorMessage,
       );
       
       emit(
         state.copyWith(
           uploadStatus: ProfileStatus.error,
-          error: 'Failed to upload photo: ${e.toString()}',
+          error: errorMessage,
           uploadingPhotos: failedUploadingPhotos,
         ),
       );
@@ -286,10 +290,11 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
       }
     } catch (e) {
       _logger.e('❌ Multiple photo upload failed: $e');
+      final errorMessage = ErrorHandler.handleError(e, showDialog: false);
       emit(
         state.copyWith(
           uploadStatus: ProfileStatus.error,
-          error: 'Failed to upload photos: ${e.toString()}',
+          error: errorMessage,
         ),
       );
     }
@@ -322,8 +327,9 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
         );
       }
     } catch (e) {
+      final errorMessage = ErrorHandler.handleError(e, showDialog: false);
       emit(state.copyWith(
-        error: 'Failed to delete photo: ${e.toString()}',
+        error: errorMessage,
       ));
     }
   }
@@ -410,9 +416,10 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     } catch (e) {
       _logger.e('❌ Error updating privacy settings: $e');
       _logger.e('   - Stack trace: ${StackTrace.current}');
+      final errorMessage = ErrorHandler.handleError(e, showDialog: false);
       emit(state.copyWith(
         status: ProfileStatus.error,
-        error: 'Failed to update privacy settings: ${e.toString()}',
+          error: errorMessage,
         updateStatus: ProfileStatus.error,
       ));
     }

@@ -18,6 +18,7 @@ import '../../widgets/profile/profile_physical_attributes_section.dart';
 import '../../widgets/profile/profile_lifestyle_choices_section.dart';
 import '../../widgets/profile/profile_languages_section.dart';
 import '../../../domain/entities/user_profile.dart';
+import '../../../core/services/error_handler.dart';
 import './profile_details_screen.dart';
 
 // Logger instance for debugging
@@ -965,12 +966,11 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
               logger.e('❌ No profile or no photos in BLoC state');
             }
           } else if (state.uploadStatus == ProfileStatus.error) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('Failed to upload photo: ${state.error ?? "Unknown error"}'),
-                backgroundColor: PulseColors.error,
-                duration: const Duration(seconds: 3),
-              ),
+            // Show error dialog with detailed error message
+            ErrorHandler.handleError(
+              Exception(state.error ?? 'Unknown error'),
+              context: context,
+              showDialog: true,
             );
           }
           
@@ -1032,11 +1032,11 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
             _hasShownInitialToast = true;
           }
           if (state.updateStatus == ProfileStatus.error) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.error ?? 'Failed to update profile'),
-                backgroundColor: PulseColors.error,
-              ),
+            // Show error dialog with detailed error message
+            ErrorHandler.handleError(
+              Exception(state.error ?? 'Failed to update profile'),
+              context: context,
+              showDialog: true,
             );
           }
         },
