@@ -217,16 +217,33 @@ class HeatMapBloc extends Bloc<HeatMapEvent, HeatMapState> {
       }
       AppLogger.debug('📡 HeatMapBloc: Now fetching heat map data...');
       
-      final [heatmapDataPoints, coverageData] = await Future.wait([
+      // FIX: Fetch BOTH heatmap data AND backend clusters during initial load
+      // This eliminates race condition with onMapCreated timing
+      final [
+        heatmapDataPoints,
+        coverageData,
+        optimizedClusters,
+      ] = await Future.wait([
         _heatMapService.getHeatMapData(),
         _heatMapService.getLocationCoverageData(
           center: userCoords,
           radiusKm: event.radiusKm.toDouble(),
         ),
+        // Fetch backend clusters with default zoom level
+        _heatMapService.getOptimizedHeatMapData(
+          zoom: 11.0, // Default zoom for initial load
+          radiusKm: event.radiusKm.toDouble(),
+          maxClusters: 50,
+        ),
       ]);
       
       final points = heatmapDataPoints as List<HeatMapDataPoint>;
       final coverage = coverageData as LocationCoverageData;
+      final clusters = optimizedClusters as OptimizedHeatmapResponse;
+
+      AppLogger.debug(
+        '✅ HeatMapBloc: Received ${clusters.clusters.length} backend clusters during initial load',
+      );
       
       AppLogger.debug(
         '✅ HeatMapBloc: Data fetched - ${points.length} data points received',
@@ -259,6 +276,7 @@ class HeatMapBloc extends Bloc<HeatMapEvent, HeatMapState> {
       AppLogger.debug('✅ HeatMapBloc: HeatMapData created');
       AppLogger.debug('✅ HeatMapBloc: Emitting HeatMapLoaded state');
       AppLogger.debug('✅ Total data points: ${heatmapData.dataPoints.length}');
+      AppLogger.debug('✅ Backend clusters: ${clusters.clusters.length}');
       AppLogger.debug('✅ User location: $userCoords');
       AppLogger.debug('✅ Coverage areas: ${coverage.coverageAreas.length}');
       AppLogger.debug(
@@ -270,6 +288,8 @@ class HeatMapBloc extends Bloc<HeatMapEvent, HeatMapState> {
         coverageData: coverage,
         userLocation: userCoords,
         currentRadius: event.radiusKm,
+          backendClusters:
+              clusters.clusters, // FIX: Include clusters in initial state
       ));
     } catch (e) {
       AppLogger.debug('❌ HeatMapBloc: Error loading data: $e');
@@ -298,7 +318,16 @@ class HeatMapBloc extends Bloc<HeatMapEvent, HeatMapState> {
     FetchBackendClusters event,
     Emitter<HeatMapState> emit,
   ) async {
-    if (state is! HeatMapLoaded) return;
+    AppLogger.debug(
+      '🎯 FetchBackendClusters event received! Current state: ${state.runtimeType}',
+    );
+
+    if (state is! HeatMapLoaded) {
+      AppLogger.debug(
+        '⚠️ FetchBackendClusters called but state is ${state.runtimeType}, not HeatMapLoaded. Ignoring.',
+      );
+      return;
+    }
 
     final currentState = state as HeatMapLoaded;
 
@@ -323,7 +352,20 @@ class HeatMapBloc extends Bloc<HeatMapEvent, HeatMapState> {
         '${response.performance.clusteringTimeMs}ms clustering)',
       );
 
+      // Log cluster details for debugging
+      AppLogger.debug(
+        '🔍 First cluster: ${response.clusters.isNotEmpty ? response.clusters.first.toJson() : "NONE"}',
+      );
+      AppLogger.debug(
+        '🔍 Current state backendClusters before emit: ${currentState.backendClusters?.length ?? "null"}',
+      );
+      
       emit(currentState.copyWith(backendClusters: response.clusters));
+      
+      AppLogger.debug(
+        '🔍 State emitted with ${response.clusters.length} clusters',
+      );
+      AppLogger.debug('🔍 BLoC should trigger BlocBuilder rebuild now...');
     } catch (e) {
       AppLogger.debug('❌ Failed to fetch backend clusters: $e');
       // Don't emit error - keep existing state and let UI fall back gracefully
@@ -628,6 +670,9 @@ class _HeatMapScreenState extends State<HeatMapScreen>
                     } else if (state is HeatMapLoaded) {
                       AppLogger.debug('✅ BlocBuilder: State is HeatMapLoaded');
                       AppLogger.debug(
+                        '✅ BlocBuilder: backendClusters = ${state.backendClusters?.length ?? "null"}',
+                      );
+                      AppLogger.debug(
                         '✅ Data points: ${state.heatmapData.dataPoints.length}',
                       );
                       AppLogger.debug('✅ User location: ${state.userLocation}');
@@ -888,11 +933,20 @@ class _HeatMapScreenState extends State<HeatMapScreen>
     final initialZoomLevel = hasGeographicMismatch ? 8.0 : 12.0;
     AppLogger.debug('HeatMapScreen: Using zoom level: $initialZoomLevel');
 
+    AppLogger.debug('🎨 About to build markers and circles...');
+    AppLogger.debug(
+      '🎨 State has ${state.backendClusters?.length ?? "null"} backend clusters',
+    );
+    AppLogger.debug('🎨 _showClusters = $_showClusters');
+    
     final markers = _buildMarkers(state);
     final circles = _buildCircles(state);
 
     AppLogger.debug(
       'HeatMapScreen: Built ${markers.length} markers and ${circles.length} circles',
+    );
+    AppLogger.debug(
+      '🎨 Circles breakdown: ${circles.length} total circles built',
     );
 
     AppLogger.debug('🗺️ About to build GoogleMap widget...');
@@ -928,6 +982,34 @@ class _HeatMapScreenState extends State<HeatMapScreen>
           AppLogger.debug('✅ Northeast: ${bounds.northeast}');
           AppLogger.debug('✅ Southwest: ${bounds.southwest}');
           AppLogger.debug('✅ This indicates map tiles ARE loading');
+
+          // FIX: Fetch backend clusters immediately on map load (onCameraIdle may not fire initially)
+          if (_showClusters && mounted) {
+            AppLogger.debug(
+              '🎯 Fetching initial backend clusters (onMapCreated)...',
+            );
+            AppLogger.debug(
+              '🎯 Current BLoC state: ${context.read<HeatMapBloc>().state.runtimeType}',
+            );
+            AppLogger.debug(
+              '🎯 _showClusters = $_showClusters, mounted = $mounted',
+            );
+            final groupedZoom = _getGroupedZoomLevel(_currentZoom);
+            final radiusKm = _currentRadius.toDouble();
+
+            context.read<HeatMapBloc>().add(
+              FetchBackendClusters(
+                zoom: groupedZoom,
+                viewport: bounds,
+                radiusKm: radiusKm,
+              ),
+            );
+            AppLogger.debug('🎯 FetchBackendClusters event dispatched!');
+          } else {
+            AppLogger.debug(
+              '⏭️ Skipping initial cluster fetch: _showClusters=$_showClusters, mounted=$mounted',
+            );
+          }
         } catch (e, stackTrace) {
           AppLogger.debug('❌ ERROR: Cannot get visible region!');
           AppLogger.debug('❌ Error: $e');
