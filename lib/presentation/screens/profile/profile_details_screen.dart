@@ -7,6 +7,7 @@ import 'dart:io';
 import '../../../domain/entities/user_profile.dart';
 import '../../../data/models/user_model.dart';
 import '../../../blocs/chat_bloc.dart';
+import '../../blocs/profile/profile_bloc.dart';
 import '../../theme/pulse_colors.dart';
 import '../../widgets/common/pulse_button.dart';
 
@@ -65,6 +66,11 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
   void initState() {
     super.initState();
     _pageController = PageController();
+    
+    // Load stats if viewing own profile
+    if (widget.isOwnProfile) {
+      context.read<ProfileBloc>().add(const LoadProfileStats());
+    }
   }
 
   @override
@@ -2201,38 +2207,60 @@ Join PulseLink to connect!''';
   }
 
   Widget _buildStatsCards() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Row(
-        children: [
-          Expanded(
-            child: _buildStatCard(
-              icon: Icons.favorite,
-              label: 'Matches',
-              value: '127',
-              color: PulseColors.error,
+    return BlocBuilder<ProfileBloc, ProfileState>(
+      builder: (context, state) {
+        // Show loading shimmer while fetching stats
+        if (state.statsStatus == ProfileStatus.loading || state.stats == null) {
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              children: [
+                Expanded(child: _buildStatsLoadingSkeleton()),
+                const SizedBox(width: 12),
+                Expanded(child: _buildStatsLoadingSkeleton()),
+                const SizedBox(width: 12),
+                Expanded(child: _buildStatsLoadingSkeleton()),
+              ],
             ),
+          );
+        }
+
+        // Display real stats from API
+        final stats = state.stats!;
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Row(
+            children: [
+              Expanded(
+                child: _buildStatCard(
+                  icon: Icons.favorite,
+                  label: 'Matches',
+                  value: '${stats.matchesCount}',
+                  color: PulseColors.error,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildStatCard(
+                  icon: Icons.thumb_up,
+                  label: 'Likes',
+                  value: '${stats.likesReceived}',
+                  color: PulseColors.secondary,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildStatCard(
+                  icon: Icons.visibility,
+                  label: 'Visits',
+                  value: '${stats.profileViews}',
+                  color: PulseColors.primary,
+                ),
+              ),
+            ],
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: _buildStatCard(
-              icon: Icons.thumb_up,
-              label: 'Likes',
-              value: '89',
-              color: PulseColors.secondary,
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: _buildStatCard(
-              icon: Icons.visibility,
-              label: 'Visits',
-              value: '23',
-              color: PulseColors.primary,
-            ),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 
@@ -2286,6 +2314,53 @@ Join PulseLink to connect!''';
           Text(
             label,
             style: PulseTextStyles.bodyMedium.copyWith(color: Colors.grey[600]),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatsLoadingSkeleton() {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              color: Colors.grey[300],
+              shape: BoxShape.circle,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Container(
+            width: 40,
+            height: 20,
+            decoration: BoxDecoration(
+              color: Colors.grey[300],
+              borderRadius: BorderRadius.circular(4),
+            ),
+          ),
+          const SizedBox(height: 4),
+          Container(
+            width: 50,
+            height: 14,
+            decoration: BoxDecoration(
+              color: Colors.grey[200],
+              borderRadius: BorderRadius.circular(4),
+            ),
           ),
         ],
       ),

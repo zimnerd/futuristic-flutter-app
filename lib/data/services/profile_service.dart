@@ -9,6 +9,7 @@ import 'package:uuid/uuid.dart';
 import '../../core/network/api_client.dart';
 import '../exceptions/app_exceptions.dart';
 import '../models/profile_model.dart';
+import '../models/profile_stats.dart';
 import '../../domain/entities/user_profile.dart' as domain;
 import 'auth_service.dart';
 

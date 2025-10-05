@@ -5,6 +5,7 @@ import 'package:logger/logger.dart';
 import '../../../domain/entities/user_profile.dart';
 import '../../../data/services/profile_service.dart';
 import '../../../data/services/photo_manager_service.dart';
+import '../../../data/models/profile_stats.dart';
 import '../../../core/services/error_handler.dart';
 
 part 'profile_event.dart';
