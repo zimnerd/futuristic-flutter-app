@@ -348,7 +348,7 @@ class _HeatMapScreenState extends State<HeatMapScreen>
   double _currentZoom = 6.0;
   bool _showHeatmap = true; // Enabled by default for better UX
   bool _showClusters =
-      false; // Disabled by default - user can enable via toggle
+      true; // ENABLED BY DEFAULT - show user clusters immediately
   bool _isStatisticsPopupVisible = false;
   
   // Debouncing for camera movements to optimize performance
@@ -447,13 +447,42 @@ class _HeatMapScreenState extends State<HeatMapScreen>
   }
 
   /// Toggle cluster visibility (separate from heatmap)
-  void _toggleClusters() {
+  void _toggleClusters() async {
     setState(() {
       _showClusters = !_showClusters;
     });
     AppLogger.debug(
       'HeatMapScreen: Clusters ${_showClusters ? 'enabled' : 'disabled'}',
     );
+    
+    // If clusters were just enabled and we don't have backend clusters yet, fetch them now
+    if (_showClusters) {
+      final state = context.read<HeatMapBloc>().state;
+      if (state is HeatMapLoaded &&
+          (state.backendClusters == null || state.backendClusters!.isEmpty)) {
+        AppLogger.debug(
+          '🔄 Clusters enabled but no backend data - fetching now...',
+        );
+
+        try {
+          if (_mapController != null) {
+            final bounds = await _mapController!.getVisibleRegion();
+            final groupedZoom = _getGroupedZoomLevel(_currentZoom);
+            final radiusKm = _currentRadius.toDouble();
+
+            context.read<HeatMapBloc>().add(
+              FetchBackendClusters(
+                zoom: groupedZoom,
+                viewport: bounds,
+                radiusKm: radiusKm,
+              ),
+            );
+          }
+        } catch (e) {
+          AppLogger.error('❌ Error fetching backend clusters on toggle: $e');
+        }
+      }
+    }
   }
 
   /// Show statistics popup for users within radius
@@ -1027,6 +1056,13 @@ class _HeatMapScreenState extends State<HeatMapScreen>
   /// Build cluster circles - now uses backend-calculated clusters
   /// Eliminates heavy frontend computation that caused black screens
   Set<Circle> _buildClusterCircles(HeatMapLoaded state) {
+    AppLogger.debug('🔍 _buildClusterCircles called');
+    AppLogger.debug('🔍 _showClusters = $_showClusters');
+    AppLogger.debug('🔍 state.backendClusters = ${state.backendClusters}');
+    AppLogger.debug(
+      '🔍 backendClusters length = ${state.backendClusters?.length ?? 0}',
+    );
+    
     if (!_showClusters) {
       AppLogger.debug('⏭️ Skipping clusters - disabled by user');
       return {};
@@ -1041,6 +1077,9 @@ class _HeatMapScreenState extends State<HeatMapScreen>
     }
 
     AppLogger.debug('⏳ No backend clusters yet - returning empty (will fetch)');
+    AppLogger.debug(
+      '⏳ Backend clusters is ${state.backendClusters == null ? "NULL" : "EMPTY"}',
+    );
     return {};
   }
 

@@ -5,7 +5,143 @@ This document captures key learnings from building the **Flutter mobile dating a
 
 ---
 
-## 🚨 **Error Handling & User Experience (October 2025)**
+## � **Clusters Not Showing After Toggle Fix (January 2025)**
+
+**Status**: ✅ **FIXED** - Enabled clusters by default + fetch on toggle  
+**Date**: January 18, 2025  
+**Priority**: **HIGH** - Clusters are a core feature of the heat map
+
+**Context**: After fixing the black screen bug by removing local clustering, users reported that clusters were not showing even when toggled on/off. Investigation revealed a timing issue between toggle state and backend cluster fetching.
+
+### **Problem - Clusters Not Appearing**
+
+#### **Root Cause: Backend Clusters Not Fetched Until Camera Movement**
+
+**File**: `heat_map_screen.dart` line 940 (before fix)
+
+```dart
+// ❌ PROBLEM: Only fetches backend clusters if _showClusters is already true
+onCameraIdle: () {
+  if (mounted && !_isUpdatingClusters && _showClusters) {
+    // Fetch backend clusters
+  }
+}
+```
+
+**Default State**: `_showClusters = false` (line 351)
+
+**Sequence of Events**:
+1. Map loads → `_showClusters = false` by default
+2. Camera becomes idle → Backend clusters **NOT fetched** (condition fails)
+3. User toggles clusters ON → `setState()` rebuilds widget
+4. But `state.backendClusters == null` → No clusters to display!
+5. User must manually move camera → Then `onCameraIdle` fetches clusters
+
+**User Experience**: Toggle appears broken - nothing happens when clusters are enabled.
+
+### **Solution - Two-Part Fix**
+
+#### **Fix 1: Enable Clusters by Default**
+
+**File**: `heat_map_screen.dart` line 351
+
+```dart
+// ✅ CORRECT - Enable clusters by default for immediate user value
+bool _showClusters = true; // ENABLED BY DEFAULT - show user clusters immediately
+```
+
+**Rationale**:
+- Clusters are a core feature of the heat map
+- Users expect to see data immediately
+- No reason to hide clusters by default (they're privacy-safe)
+- Matches heatmap default behavior (`_showHeatmap = true`)
+
+#### **Fix 2: Fetch Backend Clusters When Toggled On**
+
+**File**: `heat_map_screen.dart` line 450
+
+```dart
+// ✅ CORRECT - Fetch backend clusters immediately when enabled
+void _toggleClusters() async {
+  setState(() {
+    _showClusters = !_showClusters;
+  });
+  
+  // If clusters were just enabled and we don't have backend clusters yet, fetch them now
+  if (_showClusters) {
+    final state = context.read<HeatMapBloc>().state;
+    if (state is HeatMapLoaded && 
+        (state.backendClusters == null || state.backendClusters!.isEmpty)) {
+      AppLogger.debug('🔄 Clusters enabled but no backend data - fetching now...');
+      
+      try {
+        if (_mapController != null) {
+          final bounds = await _mapController!.getVisibleRegion();
+          final groupedZoom = _getGroupedZoomLevel(_currentZoom);
+          final radiusKm = _currentRadius.toDouble();
+          
+          context.read<HeatMapBloc>().add(
+            FetchBackendClusters(
+              zoom: groupedZoom,
+              viewport: bounds,
+              radiusKm: radiusKm,
+            ),
+          );
+        }
+      } catch (e) {
+        AppLogger.error('❌ Error fetching backend clusters on toggle: $e');
+      }
+    }
+  }
+}
+```
+
+**Key Improvements**:
+- ✅ Checks if backend clusters are empty when toggling ON
+- ✅ Immediately fetches backend clusters if needed
+- ✅ Uses current viewport, zoom, and radius settings
+- ✅ Graceful error handling with logging
+- ✅ No waiting for camera movement required
+
+### **Result**
+
+**Before Fix**:
+- ❌ Clusters hidden by default
+- ❌ Toggle appears broken - no immediate effect
+- ❌ User must move camera to trigger fetch
+- ❌ Confusing UX - "why isn't this working?"
+
+**After Fix**:
+- ✅ Clusters visible immediately on map load
+- ✅ Toggle works instantly (fetches if needed)
+- ✅ No camera movement required
+- ✅ Smooth, responsive UX
+
+### **Key Lessons**
+
+1. **Default States Matter**: Core features should be enabled by default unless there's a good reason (performance, cost, etc.). Clusters are lightweight backend-calculated data.
+
+2. **Toggle Timing**: When toggling a feature ON that depends on backend data, check if data exists and fetch immediately if not. Don't wait for unrelated events (camera movement).
+
+3. **State Dependencies**: Be aware of conditional logic in event handlers. If `onCameraIdle` only fetches when `_showClusters` is true, then toggling ON won't help until camera moves.
+
+4. **User Expectations**: Users expect toggles to work immediately. Any delay or need for secondary actions (like moving the map) feels like a bug.
+
+5. **Default Visibility**: Both `_showHeatmap` and `_showClusters` should default to `true` since they're the core value proposition of the map feature.
+
+**Files Modified**:
+- `mobile/lib/presentation/screens/heat_map_screen.dart`
+  - Changed `_showClusters` default from `false` to `true` (line 351)
+  - Enhanced `_toggleClusters()` to fetch backend clusters immediately when enabled (line 450)
+
+**Related Issues**:
+- Black screen bug fix (removed local clustering)
+- Backend clustering migration
+- onCameraIdle event handling
+
+---
+
+## �🚨 **Error Handling & User Experience (October 2025)**
 
 **Status**: ✅ **ENHANCED** - Improved error extraction, user-friendly messages, and graceful degradation  
 **Date**: October 5, 2025  
