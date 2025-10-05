@@ -468,10 +468,12 @@ class ProfileService {
             profile.smoking != null) {
           changedExtendedFields['smoking'] = profile.smoking;
         }
-        if (profile.exercise != originalProfile.exercise &&
-            profile.exercise != null) {
-          changedExtendedFields['exercise'] = profile.exercise;
-        }
+        // NOTE: 'exercise' field is NOT part of Profile model - it's exerciseHabit in User model
+        // Remove this from profile updates (should go to /users/me instead if needed)
+        // if (profile.exercise != originalProfile.exercise &&
+        //     profile.exercise != null) {
+        //   changedExtendedFields['exercise'] = profile.exercise;
+        // }
         if (profile.drugs != originalProfile.drugs && profile.drugs != null) {
           changedExtendedFields['drugs'] = profile.drugs;
         }

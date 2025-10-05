@@ -67,22 +67,23 @@ class ProfileLifestyleChoicesSection extends StatelessWidget {
     'Prefer not to say',
   ];
 
-  // Map UI labels to backend enum values
+  // Map UI labels to backend Profile model values (lowercase for Profile DTO)
+  // NOTE: Profile model uses lowercase strings, not enum values
   static String? mapDrinkingToBackend(String? value) {
     if (value == null) return null;
     switch (value) {
       case 'Never':
-        return 'NEVER';
+        return 'never';
       case 'Rarely':
-        return 'RARELY';
+        return 'occasionally'; // Map 'Rarely' to 'occasionally' for backend
       case 'Socially':
-        return 'SOCIALLY';
+        return 'occasionally'; // Map 'Socially' to 'occasionally' for backend
       case 'Regularly':
-        return 'REGULARLY';
+        return 'regularly';
       case 'Prefer not to say':
-        return 'PREFER_NOT_TO_SAY';
+        return 'prefer-not-to-say';
       default:
-        return value.toUpperCase();
+        return value.toLowerCase();
     }
   }
 
@@ -90,17 +91,17 @@ class ProfileLifestyleChoicesSection extends StatelessWidget {
     if (value == null) return null;
     switch (value) {
       case 'Never':
-        return 'NEVER';
+        return 'never';
       case 'Socially':
-        return 'SOCIALLY';
+        return 'occasionally'; // Map 'Socially' to 'occasionally' for backend
       case 'Regularly':
-        return 'REGULARLY';
+        return 'regularly';
       case 'Trying to quit':
-        return 'TRYING_TO_QUIT';
+        return 'occasionally'; // Map 'Trying to quit' to 'occasionally' for backend
       case 'Prefer not to say':
-        return 'PREFER_NOT_TO_SAY';
+        return 'prefer-not-to-say';
       default:
-        return value.toUpperCase();
+        return value.toLowerCase();
     }
   }
 
@@ -142,19 +143,22 @@ class ProfileLifestyleChoicesSection extends StatelessWidget {
     }
   }
 
-  // Map backend values to UI labels
+  // Map backend values to UI labels (handles both uppercase enums and lowercase strings)
   static String? mapDrinkingFromBackend(String? value) {
     if (value == null) return null;
-    switch (value) {
+    final upperValue = value.toUpperCase();
+    switch (upperValue) {
       case 'NEVER':
         return 'Never';
       case 'RARELY':
-        return 'Rarely';
+      case 'OCCASIONALLY':
+        return 'Socially'; // Map both to 'Socially' for UI
       case 'SOCIALLY':
         return 'Socially';
       case 'REGULARLY':
         return 'Regularly';
       case 'PREFER_NOT_TO_SAY':
+      case 'PREFER-NOT-TO-SAY':
         return 'Prefer not to say';
       default:
         return value;
@@ -163,16 +167,20 @@ class ProfileLifestyleChoicesSection extends StatelessWidget {
 
   static String? mapSmokingFromBackend(String? value) {
     if (value == null) return null;
-    switch (value) {
+    final upperValue = value.toUpperCase();
+    switch (upperValue) {
       case 'NEVER':
         return 'Never';
       case 'SOCIALLY':
+      case 'OCCASIONALLY':
         return 'Socially';
       case 'REGULARLY':
         return 'Regularly';
       case 'TRYING_TO_QUIT':
+      case 'TRYING-TO-QUIT':
         return 'Trying to quit';
       case 'PREFER_NOT_TO_SAY':
+      case 'PREFER-NOT-TO-SAY':
         return 'Prefer not to say';
       default:
         return value;
