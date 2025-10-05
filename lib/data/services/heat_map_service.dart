@@ -17,21 +17,23 @@ class HeatMapService {
   Future<OptimizedHeatmapResponse> getOptimizedHeatMapData({
     required double zoom,
     double? northLat,
-    double? southLat, 
+    double? southLat,
     double? eastLng,
     double? westLng,
     int maxClusters = 50,
+    double? radiusKm,
   }) async {
     try {
       final queryParams = <String, dynamic>{
         'zoom': zoom,
         'maxClusters': maxClusters,
       };
-      
+
       if (northLat != null) queryParams['northLat'] = northLat;
       if (southLat != null) queryParams['southLat'] = southLat;
       if (eastLng != null) queryParams['eastLng'] = eastLng;
       if (westLng != null) queryParams['westLng'] = westLng;
+      if (radiusKm != null) queryParams['radiusKm'] = radiusKm;
 
       final response = await _apiClient.get(
         '${ApiConstants.statisticsHeatMap}/optimized',

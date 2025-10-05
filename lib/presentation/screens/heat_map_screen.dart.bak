@@ -7,11 +7,10 @@ import '../../data/services/heat_map_service.dart';
 import '../../core/services/location_service.dart';
 import '../../core/utils/logger.dart';
 import '../../data/models/heat_map_models.dart';
-import '../../data/models/optimized_heatmap_models.dart';
 import '../../core/models/location_models.dart';
 import '../../data/models/location_models.dart' as data_models;
-// Removed: MapClusteringService - local clustering replaced by backend clustering
-// Removed: map_cluster.dart - no longer using MapCluster model for overlays
+import '../../features/statistics/data/services/map_clustering_service.dart';
+import '../../features/statistics/domain/models/map_cluster.dart';
 
 /// ═══════════════════════════════════════════════════════════════════════════
 /// 🚀 PERFORMANCE & STABILITY OPTIMIZATIONS IMPLEMENTED
@@ -109,18 +108,6 @@ class UpdateRadius extends HeatMapEvent {
 
 class RefreshLocation extends HeatMapEvent {}
 
-class FetchBackendClusters extends HeatMapEvent {
-  final double zoom;
-  final LatLngBounds? viewport;
-  final double radiusKm;
-
-  FetchBackendClusters({
-    required this.zoom,
-    this.viewport,
-    required this.radiusKm,
-  });
-}
-
 // BLoC States
 abstract class HeatMapState {}
 
@@ -133,31 +120,13 @@ class HeatMapLoaded extends HeatMapState {
   final LocationCoverageData coverageData;
   final LocationCoordinates? userLocation;
   final int currentRadius;
-  final List<OptimizedClusterData>? backendClusters;
 
   HeatMapLoaded({
     required this.heatmapData,
     required this.coverageData,
     this.userLocation,
     required this.currentRadius,
-    this.backendClusters,
   });
-
-  HeatMapLoaded copyWith({
-    HeatMapData? heatmapData,
-    LocationCoverageData? coverageData,
-    LocationCoordinates? userLocation,
-    int? currentRadius,
-    List<OptimizedClusterData>? backendClusters,
-  }) {
-    return HeatMapLoaded(
-      heatmapData: heatmapData ?? this.heatmapData,
-      coverageData: coverageData ?? this.coverageData,
-      userLocation: userLocation ?? this.userLocation,
-      currentRadius: currentRadius ?? this.currentRadius,
-      backendClusters: backendClusters ?? this.backendClusters,
-    );
-  }
 }
 
 class HeatMapError extends HeatMapState {
@@ -174,7 +143,6 @@ class HeatMapBloc extends Bloc<HeatMapEvent, HeatMapState> {
     on<LoadHeatMapData>(_onLoadHeatMapData);
     on<UpdateRadius>(_onUpdateRadius);
     on<RefreshLocation>(_onRefreshLocation);
-    on<FetchBackendClusters>(_onFetchBackendClusters);
   }
 
   Future<void> _onLoadHeatMapData(LoadHeatMapData event, Emitter<HeatMapState> emit) async {
@@ -292,45 +260,7 @@ class HeatMapBloc extends Bloc<HeatMapEvent, HeatMapState> {
       add(LoadHeatMapData(50)); // Default radius
     }
   }
-
-  /// Fetch clusters from backend - eliminates heavy frontend computation
-  Future<void> _onFetchBackendClusters(
-    FetchBackendClusters event,
-    Emitter<HeatMapState> emit,
-  ) async {
-    if (state is! HeatMapLoaded) return;
-
-    final currentState = state as HeatMapLoaded;
-
-    try {
-      AppLogger.debug(
-        '🔄 Fetching clusters from backend (zoom: ${event.zoom}, radius: ${event.radiusKm}km)',
-      );
-
-      final response = await _heatMapService.getOptimizedHeatMapData(
-        zoom: event.zoom,
-        northLat: event.viewport?.northeast.latitude,
-        southLat: event.viewport?.southwest.latitude,
-        eastLng: event.viewport?.northeast.longitude,
-        westLng: event.viewport?.southwest.longitude,
-        radiusKm: event.radiusKm,
-        maxClusters: 50,
-      );
-
-      AppLogger.debug(
-        '✅ Received ${response.clusters.length} clusters from backend '
-        '(${response.performance.queryTimeMs}ms query, '
-        '${response.performance.clusteringTimeMs}ms clustering)',
-      );
-
-      emit(currentState.copyWith(backendClusters: response.clusters));
-    } catch (e) {
-      AppLogger.debug('❌ Failed to fetch backend clusters: $e');
-      // Don't emit error - keep existing state and let UI fall back gracefully
-    }
-  }
 }
-
 
 // Heat Map Screen Widget
 class HeatMapScreen extends StatefulWidget {
@@ -346,15 +276,15 @@ class _HeatMapScreenState extends State<HeatMapScreen>
   int _currentRadius = 50;
   MapType _mapType = MapType.normal;
   double _currentZoom = 6.0;
-  bool _showHeatmap = true; // Enabled by default for better UX
-  bool _showClusters =
-      false; // Disabled by default - user can enable via toggle
+  bool _showHeatmap = false; // Disabled by default for better UX
+  bool _showClusters = true; // Enabled by default for better performance
   bool _isStatisticsPopupVisible = false;
   
   // Debouncing for camera movements to optimize performance
   Timer? _debounceTimer;
   Timer? _clusterCalculationTimer;
   
+  bool _isMapReady = false;
   bool _isUpdatingClusters = false;
   bool _isCalculatingClusters = false;
 
@@ -366,6 +296,9 @@ class _HeatMapScreenState extends State<HeatMapScreen>
   // Cache management
   DateTime? _lastDataFetch;
   static const Duration _cacheValidity = Duration(minutes: 5);
+  List<MapCluster>? _cachedClusters;
+  double? _cachedClustersZoom;
+  int? _cachedDataHash;
 
   // Memoized circle sets to prevent rebuilding on every frame
   Set<Circle>? _memoizedCircles;
@@ -428,9 +361,9 @@ class _HeatMapScreenState extends State<HeatMapScreen>
     }
   }
 
-  /// Check if cached data is still valid (simplified for backend clusters)
+  /// Check if cached data is still valid
   bool _isCacheValid() {
-    if (_lastDataFetch == null) return false;
+    if (_lastDataFetch == null || _cachedClusters == null) return false;
     return DateTime.now().difference(_lastDataFetch!) < _cacheValidity;
   }
 
@@ -566,7 +499,40 @@ class _HeatMapScreenState extends State<HeatMapScreen>
   /// To use: Call heatMapService.getOptimizedHeatMapData() with zoom and viewport parameters
   /// Current implementation uses client-side clustering for simplicity
 
+  /// Schedule cluster recalculation with debouncing and loading state
+  void _scheduleClusterRecalculation() {
+    if (_isUpdatingClusters || !_isMapReady) return;
 
+    // Cancel any existing calculation timer
+    _clusterCalculationTimer?.cancel();
+
+    AppLogger.debug(
+      '⏱️ Scheduling cluster recalculation for grouped zoom level',
+    );
+
+    // Schedule the actual calculation after a short delay
+    _clusterCalculationTimer = Timer(const Duration(milliseconds: 100), () {
+      if (!mounted) return;
+      
+      _isUpdatingClusters = true;
+      AppLogger.debug(
+        '🔄 Starting cluster recalculation at zoom $_currentZoom (grouped: ${_getGroupedZoomLevel(_currentZoom)})',
+      );
+
+      // Trigger rebuild with new grouped zoom level
+      setState(() {
+        _isCalculatingClusters = false; // Hide loading indicator
+      });
+
+      // Reset flag after rebuild completes
+      Timer(const Duration(milliseconds: 100), () {
+        if (mounted) {
+          _isUpdatingClusters = false;
+          AppLogger.debug('✅ Cluster recalculation complete');
+        }
+      });
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -920,69 +886,48 @@ class _HeatMapScreenState extends State<HeatMapScreen>
           // Cancel any pending cluster calculation when camera starts moving
           _clusterCalculationTimer?.cancel();
           
-          // Update zoom without triggering loading state
-          // Keep existing clusters visible for smooth UX (Google Maps pattern)
-          _currentZoom = position.zoom;
+          setState(() {
+            _currentZoom = position.zoom;
+            _isCalculatingClusters = true; // Show loading indicator during zoom
+          });
+
+          AppLogger.debug(
+            '� Camera moved - Zoom: $_currentZoom, Target: ${position.target}',
+          );
+          
+          // Debounce cluster updates during camera movement
+          _debounceTimer?.cancel();
+          _debounceTimer = Timer(const Duration(milliseconds: 800), () {
+            if (mounted && !_isUpdatingClusters) {
+              AppLogger.debug(
+                '📷 Camera movement stopped, scheduling cluster recalculation...',
+              );
+              _scheduleClusterRecalculation();
+            }
+          });
         }
       },
-      onCameraIdle: () async {
+      onCameraIdle: () {
         AppLogger.debug('📷 Camera idle at zoom: $_currentZoom');
-        AppLogger.debug('✅ Map is now ready for interactions');
+        _isMapReady = true;
+        AppLogger.debug(
+          '� Map is now ready for interactions (_isMapReady = true)',
+        );
         
         // Cancel any pending debounced updates
         _debounceTimer?.cancel();
 
-        // Debounce backend cluster fetch: wait 300ms after camera stops
+        // Debounce cluster calculation: wait 300ms after camera stops
         _clusterCalculationTimer?.cancel();
-        _clusterCalculationTimer = Timer(
-          const Duration(milliseconds: 300),
-          () async {
-            if (mounted && !_isUpdatingClusters && _showClusters) {
-              final groupedZoom = _getGroupedZoomLevel(_currentZoom);
-              AppLogger.debug(
-                '� Camera stopped at grouped zoom $groupedZoom, fetching backend clusters...',
-              );
-
-              try {
-                // Get current viewport bounds
-                final controller = _mapController;
-                if (controller != null) {
-                  final bounds = await controller.getVisibleRegion();
-
-                  // Use user's distance preference from UI state
-                  final radiusKm = _currentRadius.toDouble();
-
-                  AppLogger.debug(
-                    '📡 Fetching backend clusters: zoom=$groupedZoom, radius=${radiusKm}km',
-                  );
-
-                  // Dispatch event to fetch backend clusters
-                  context.read<HeatMapBloc>().add(
-                    FetchBackendClusters(
-                      zoom: groupedZoom,
-                      viewport: bounds,
-                      radiusKm: radiusKm,
-                    ),
-                  );
-
-                  setState(() {
-                    _isCalculatingClusters = false; // Hide loading indicator
-                  });
-                }
-              } catch (e) {
-                AppLogger.debug('❌ Error fetching backend clusters: $e');
-                setState(() {
-                  _isCalculatingClusters = false;
-                });
-              }
-            } else if (!_showClusters) {
-              AppLogger.debug('⏭️ Skipping backend fetch - clusters disabled');
-              setState(() {
-                _isCalculatingClusters = false;
-              });
-            }
-          },
-        );
+        _clusterCalculationTimer = Timer(const Duration(milliseconds: 300), () {
+          if (mounted && !_isUpdatingClusters) {
+            final groupedZoom = _getGroupedZoomLevel(_currentZoom);
+            AppLogger.debug(
+              '📷 Camera stopped at grouped zoom $groupedZoom, triggering cluster update...',
+            );
+            _scheduleClusterRecalculation();
+          }
+        });
       },
       initialCameraPosition: CameraPosition(
         target: initialPosition,
@@ -1024,104 +969,119 @@ class _HeatMapScreenState extends State<HeatMapScreen>
   }
 
   /// Build cluster circles for privacy (no individual markers)
-  /// Build cluster circles - now uses backend-calculated clusters
-  /// Eliminates heavy frontend computation that caused black screens
   Set<Circle> _buildClusterCircles(HeatMapLoaded state) {
-    if (!_showClusters) {
-      AppLogger.debug('⏭️ Skipping clusters - disabled by user');
-      return {};
-    }
+    // Calculate data hash for cache validation
+    final dataHash =
+        state.heatmapData.dataPoints.length.hashCode ^
+        state.heatmapData.dataPoints.fold(
+          0,
+          (hash, point) =>
+              hash ^
+              point.coordinates.latitude.hashCode ^
+              point.coordinates.longitude.hashCode,
+        );
 
-    // Use backend clusters if available (preferred - no computation)
-    if (state.backendClusters != null && state.backendClusters!.isNotEmpty) {
+    // Check if we can use cached clusters (with grouped zoom levels)
+    final groupedZoom = _getGroupedZoomLevel(_currentZoom);
+    if (_cachedClusters != null &&
+        _cachedClustersZoom == groupedZoom &&
+        _cachedDataHash == dataHash) {
       AppLogger.debug(
-        '🚀 Using ${state.backendClusters!.length} backend-calculated clusters',
+        '🚀 Using cached clusters (grouped zoom: $groupedZoom, ${_cachedClusters!.length} clusters)',
       );
-      return _buildCirclesFromBackendClusters(state.backendClusters!);
+      return _buildCirclesFromCachedClusters(_cachedClusters!);
     }
-
-    AppLogger.debug('⏳ No backend clusters yet - returning empty (will fetch)');
-    return {};
-  }
-
-  /// Build circles from backend-calculated clusters (lightweight display only)
-  Set<Circle> _buildCirclesFromBackendClusters(
-    List<OptimizedClusterData> clusters,
-  ) {
+    
     final clusterCircles = <Circle>{};
 
-    for (final cluster in clusters) {
-      final position = LatLng(cluster.latitude, cluster.longitude);
-      final circleRadius = _getClusterRadiusFromDensity(cluster.userCount);
-      final circleColor = _getClusterColorFromDensity(cluster.densityScore);
+    // Note: User location shown via myLocationEnabled: true (Google blue dot)
+    AppLogger.debug('HeatMapScreen: User location will be shown via Google blue dot');
+    if (state.userLocation != null) {
+      AppLogger.debug(
+        'HeatMapScreen: User location coordinates: ${state.userLocation!.latitude}, ${state.userLocation!.longitude}',
+      );
+    }
 
+    // Cluster the data points based on zoom level
+    AppLogger.debug(
+      'HeatMapScreen: 🔍 Starting privacy clustering for ${state.heatmapData.dataPoints.length} data points at zoom $_currentZoom',
+    );
+    final clusters = MapClusteringService.clusterDataPointsInViewport(
+      state.heatmapData.dataPoints,
+      _currentZoom,
+    );
+    
+    // Cache the clusters with grouped zoom level
+    _cachedClusters = clusters;
+    _cachedClustersZoom = groupedZoom;
+    _cachedDataHash = dataHash;
+    AppLogger.debug(
+      'HeatMapScreen: 🎯 Privacy clustering completed: ${clusters.length} clusters from ${state.heatmapData.dataPoints.length} points (grouped zoom: $groupedZoom)',
+    );
+    
+    // Debug cluster details
+    for (int i = 0; i < clusters.length && i < 5; i++) {
+      final cluster = clusters[i];
+      AppLogger.debug(
+        'HeatMapScreen: 🔍 Privacy Cluster $i: ${cluster.count} points, ${cluster.totalUserCount} users at ${cluster.position}',
+      );
+    }
+
+    // Add cluster circles - PRIVACY: Show as circles with user count, never individual locations
+    for (int i = 0; i < clusters.length; i++) {
+      final cluster = clusters[i];
+      AppLogger.debug(
+        'HeatMapScreen: 🔐 Adding PRIVACY CLUSTER circle $i at ${cluster.position.latitude}, ${cluster.position.longitude} with ${cluster.count} points (${cluster.totalUserCount} users)',
+      );
+      
+      // Create privacy cluster circles with size based on user count
+      final circleRadius = _getClusterRadius(cluster.totalUserCount);
+      final circleColor = _getClusterColor(cluster.dominantStatus);
+
+      AppLogger.debug('🔵 Creating circle: id=${cluster.id}, center=${cluster.position}, radius=${circleRadius}m, color=$circleColor');
+      
       clusterCircles.add(
         Circle(
           circleId: CircleId(cluster.id),
-          center: position,
+          center: cluster.position,
           radius: circleRadius,
-          fillColor: circleColor.withValues(alpha: 0.4),
+          fillColor: circleColor.withValues(alpha: 0.4), // Slightly more opaque
           strokeColor: circleColor,
-          strokeWidth: 3,
-          onTap: () => _showBackendClusterDetails(cluster),
+          strokeWidth: 3, // Thicker stroke for visibility
+          onTap: () => _showClusterDetails(cluster),
         ),
       );
     }
 
     AppLogger.debug(
-      '✅ Built ${clusterCircles.length} circles from backend clusters',
+      'HeatMapScreen: Total privacy cluster circles built: ${clusterCircles.length}',
     );
     return clusterCircles;
   }
 
-  /// Calculate radius based on user count (backend cluster)
-  double _getClusterRadiusFromDensity(int userCount) {
-    if (userCount > 50) return 300.0;
-    if (userCount > 20) return 200.0;
-    if (userCount > 10) return 150.0;
-    if (userCount > 5) return 100.0;
-    return 80.0;
-  }
+  /// Build circles from cached clusters (optimization)
+  Set<Circle> _buildCirclesFromCachedClusters(List<MapCluster> clusters) {
+    final clusterCircles = <Circle>{};
 
-  /// Get color based on density score (backend cluster)
-  Color _getClusterColorFromDensity(int densityScore) {
-    if (densityScore >= 80) return const Color(0xFFFF0000); // Red - very high
-    if (densityScore >= 60) return const Color(0xFFFF6B00); // Orange - high
-    if (densityScore >= 40) return const Color(0xFFFFAA00); // Yellow - medium
-    if (densityScore >= 20) return const Color(0xFF00C2FF); // Cyan - low
-    return const Color(0xFF6E3BFF); // Purple - very low
-  }
+    for (final cluster in clusters) {
+      final circleRadius = _getClusterRadius(cluster.totalUserCount);
+      final circleColor = _getClusterColor(cluster.dominantStatus);
 
-  /// Show details for backend cluster
-  void _showBackendClusterDetails(OptimizedClusterData cluster) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Cluster Details'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('👥 Users: ${cluster.userCount}'),
-            Text('📊 Density Score: ${cluster.densityScore}'),
-            Text('🎂 Avg Age: ${cluster.avgAge.toStringAsFixed(1)}'),
-            const SizedBox(height: 8),
-            Text('📍 Location:', style: TextStyle(fontWeight: FontWeight.bold)),
-            Text(
-              '${cluster.latitude.toStringAsFixed(4)}, ${cluster.longitude.toStringAsFixed(4)}',
-            ),
-          ],
+      clusterCircles.add(
+        Circle(
+          circleId: CircleId(cluster.id),
+          center: cluster.position,
+          radius: circleRadius,
+          fillColor: circleColor.withValues(alpha: 0.4),
+          strokeColor: circleColor,
+          strokeWidth: 3,
+          onTap: () => _showClusterDetails(cluster),
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
-          ),
-        ],
-      ),
-    );
-  }
+      );
+    }
 
+    return clusterCircles;
+  }
 
   /// No individual markers for privacy - using empty set
   Set<Marker> _buildMarkers(HeatMapLoaded state) {
@@ -1136,15 +1096,13 @@ class _HeatMapScreenState extends State<HeatMapScreen>
     AppLogger.debug('🎨 _buildCircles: Starting to build circles...');
 
     // Create cache key from state properties that affect circles
-    // NOTE: Zoom level NOT included - keeps clusters visible during zoom animation
-    // Backend fetch on camera idle will update with new clusters smoothly
     final cacheKey =
         '${state.userLocation?.latitude}_'
         '${state.userLocation?.longitude}_'
         '${state.currentRadius}_'
+        '${(_currentZoom * 10).round()}_'
         '${_showClusters}_'
         '${_showHeatmap}_'
-        '${state.backendClusters?.length ?? 0}_'
         '${state.heatmapData.dataPoints.length}';
 
     // Return memoized circles if state hasn't changed
@@ -1278,52 +1236,380 @@ class _HeatMapScreenState extends State<HeatMapScreen>
   }
 
   /// Build cluster number overlays positioned over cluster circles
-  /// OPTIMIZED: Uses backend clusters instead of local clustering
   List<Widget> _buildClusterNumberOverlays(HeatMapLoaded state) {
-    // Disabled to prevent heavy local clustering during zoom
-    // Cluster info now shown on tap via _showBackendClusterDetails()
-    // This eliminates the black screen issue during zoom animations
-    return [];
-    
-    // TODO: If overlays needed, implement using state.backendClusters
-    // which are already calculated on backend (no frontend computation)
+    if (_mapController == null) return [];
+
+    final overlays = <Widget>[];
+
+    // Get clusters for positioning
+    final clusters = MapClusteringService.clusterDataPointsInViewport(
+      state.heatmapData.dataPoints,
+      _currentZoom,
+    );
+
+    for (final cluster in clusters) {
+      overlays.add(_buildClusterNumberOverlay(cluster));
+    }
+
+    return overlays;
   }
 
   /// Build individual cluster number overlay
-  // DISABLED: _buildClusterNumberOverlay() - removed to eliminate local clustering
-  // Cluster info now shown on tap via _showBackendClusterDetails()
-  // If overlays needed in future, implement using state.backendClusters (no frontend computation)
+  Widget _buildClusterNumberOverlay(MapCluster cluster) {
+    return FutureBuilder<ScreenCoordinate?>(
+      future: _mapController?.getScreenCoordinate(cluster.position),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) return const SizedBox.shrink();
+        
+        final screenCoords = snapshot.data!;
+        final clusterColor = _getClusterColor(cluster.dominantStatus);
 
+        return Positioned(
+          left: screenCoords.x.toDouble() - 20, // Center the overlay
+          top: screenCoords.y.toDouble() - 20,
+          child: GestureDetector(
+            onTap: () => _showClusterDetails(cluster),
+            onDoubleTap: () => _zoomIntoCluster(cluster),
+            child: Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: clusterColor,
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.white, width: 2),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.3),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Center(
+                child: Text(
+                  '${cluster.totalUserCount}',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
 
+  /// Get cluster circle radius based on user count AND zoom level (for privacy visualization)
+  double _getClusterRadius(int userCount) {
+    // Base radius scales with user count AND zoom level for visibility
+    double baseRadius;
+    if (userCount <= 5) {
+      baseRadius = 100.0;
+    } else if (userCount <= 10) {
+      baseRadius = 150.0;
+    } else if (userCount <= 25) {
+      baseRadius = 200.0;
+    } else if (userCount <= 50) {
+      baseRadius = 300.0;
+    } else {
+      baseRadius = 400.0; // Max radius for very large clusters
+    }
+    
+    // Scale radius based on zoom level for visibility
+    double zoomMultiplier;
+    if (_currentZoom <= 6) {
+      zoomMultiplier = 50.0; // Very large at continent level
+    } else if (_currentZoom <= 8) {
+      zoomMultiplier = 25.0; // Large at country level
+    } else if (_currentZoom <= 10) {
+      zoomMultiplier = 12.0; // Medium at region level
+    } else if (_currentZoom <= 12) {
+      zoomMultiplier = 6.0; // Smaller at city level
+    } else if (_currentZoom <= 15) {
+      zoomMultiplier = 3.0; // Small at district level
+    } else {
+      zoomMultiplier = 1.5; // Minimum at street level
+    }
+    
+    final finalRadius = baseRadius * zoomMultiplier;
+    AppLogger.debug('🎯 Cluster radius calculation: userCount=$userCount, zoom=$_currentZoom, base=$baseRadius, multiplier=$zoomMultiplier, final=${finalRadius}m');
+    return finalRadius;
+  }
 
-  // DISABLED HELPER METHODS: No longer used after removing cluster overlays
-  // These methods were for the old local clustering overlay feature
-  
-  /*
   /// Get cluster circle color based on dominant status
   Color _getClusterColor(String dominantStatus) {
-    ...
+    switch (dominantStatus.toLowerCase()) {
+      case 'matched':
+        return const Color(0xFF4CAF50); // Green
+      case 'liked_me':
+      case 'likedme':
+        return const Color(0xFFFF9800); // Orange  
+      case 'unmatched':
+      case 'available':
+        return const Color(0xFF2196F3); // Blue
+      case 'passed':
+        return const Color(0xFFF44336); // Red
+      default:
+        return const Color(0xFF9E9E9E); // Grey
+    }
   }
-  
-  String _getStatusDisplayName(String status) {
-    ...
-  }
-  */
 
-  // DISABLED METHODS: These methods are no longer used after removing cluster overlays
-  // They depend on MapCluster model which used local frontend clustering
-  // Cluster details now shown via _showBackendClusterDetails() using backend clusters
-  
-  /*
   /// Zoom into a cluster with smooth animation
   Future<void> _zoomIntoCluster(MapCluster cluster) async {
-    ...
+    if (_mapController == null) return;
+
+    AppLogger.debug(
+      '🔍 Zooming into cluster at ${cluster.position} with ${cluster.totalUserCount} users',
+    );
+
+    // Calculate target zoom level (increase by 2 levels, max 18)
+    final targetZoom = (_currentZoom + 2.0).clamp(8.0, 18.0);
+
+    try {
+      await _mapController!.animateCamera(
+        CameraUpdate.newCameraPosition(
+          CameraPosition(target: cluster.position, zoom: targetZoom),
+        ),
+      );
+
+      AppLogger.debug('✅ Zoomed to cluster successfully (zoom: $targetZoom)');
+    } catch (e) {
+      AppLogger.error('❌ Failed to zoom into cluster: $e');
+    }
   }
 
   void _showClusterDetails(MapCluster cluster) {
-    ...
+    // Calculate detailed statistics
+    final statusBreakdown = <String, Map<String, dynamic>>{};
+    int totalUsers = 0;
+    double totalDensity = 0;
+
+    for (final point in cluster.dataPoints) {
+      final status = point.label ?? 'Unknown';
+      final users = point.density;
+      totalUsers += users;
+      totalDensity += point.density;
+
+      statusBreakdown.putIfAbsent(
+        status,
+        () => {'users': 0, 'points': 0, 'avgDensity': 0.0},
+      );
+
+      statusBreakdown[status]!['users'] += users;
+      statusBreakdown[status]!['points'] += 1;
+    }
+
+    // Calculate average densities
+    for (final status in statusBreakdown.keys) {
+      final data = statusBreakdown[status]!;
+      data['avgDensity'] = data['users'] / data['points'];
+    }
+    
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        child: Container(
+          width: MediaQuery.of(context).size.width * 0.9,
+          height: MediaQuery.of(context).size.height * 0.7,
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header
+              Row(
+                children: [
+                  Container(
+                    width: 12,
+                    height: 12,
+                    decoration: BoxDecoration(
+                      color: _getClusterColor(cluster.dominantStatus),
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Cluster Analysis',
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const Spacer(),
+                  IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: const Icon(Icons.close),
+                  ),
+                ],
+              ),
+              const Divider(),
+
+              // Overview Statistics
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        '📊 Overview',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      _buildStatRow('Total Users', '$totalUsers'),
+                      _buildStatRow('Data Points', '${cluster.count}'),
+                      _buildStatRow('Dominant Status', cluster.dominantStatus),
+                      _buildStatRow(
+                        'Cluster Radius',
+                        '${(cluster.radius / 1000).toStringAsFixed(1)} km',
+                      ),
+                      _buildStatRow(
+                        'Average Density',
+                        '${(totalDensity / cluster.count).toStringAsFixed(1)} users/point',
+                      ),
+
+                      const SizedBox(height: 16),
+                      const Text(
+                        '📍 Location',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      _buildStatRow(
+                        'Latitude',
+                        cluster.position.latitude.toStringAsFixed(6),
+                      ),
+                      _buildStatRow(
+                        'Longitude',
+                        cluster.position.longitude.toStringAsFixed(6),
+                      ),
+                      _buildStatRow(
+                        'Zoom Level',
+                        '${_currentZoom.toStringAsFixed(1)}x',
+                      ),
+
+                      const SizedBox(height: 16),
+                      const Text(
+                        '👥 Status Breakdown',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+
+                      // Status breakdown with visual indicators
+                      ...statusBreakdown.entries.map((entry) {
+                        final status = entry.key;
+                        final data = entry.value;
+                        final percentage = ((data['users'] / totalUsers) * 100)
+                            .toStringAsFixed(1);
+
+                        return Container(
+                          margin: const EdgeInsets.only(bottom: 12),
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: _getClusterColor(
+                              status,
+                            ).withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: _getClusterColor(
+                                status,
+                              ).withValues(alpha: 0.3),
+                            ),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Container(
+                                    width: 8,
+                                    height: 8,
+                                    decoration: BoxDecoration(
+                                      color: _getClusterColor(status),
+                                      shape: BoxShape.circle,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    _getStatusDisplayName(status),
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  const Spacer(),
+                                  Text(
+                                    '$percentage%',
+                                    style: TextStyle(
+                                      color: _getClusterColor(status),
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 4),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text('${data['users']} users'),
+                                  Text('${data['points']} points'),
+                                  Text(
+                                    '${data['avgDensity'].toStringAsFixed(1)} avg density',
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        );
+                      }),
+
+                      const SizedBox(height: 16),
+                      const Text(
+                        '🔒 Privacy Notes',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.blue.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: Colors.blue.withValues(alpha: 0.3),
+                          ),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('• Individual locations are never shown'),
+                            Text('• Users are grouped by status for privacy'),
+                            Text('• Minimum cluster radius enforced'),
+                            Text('• Positions are stable across zoom levels'),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
-  */
 
   Widget _buildStatRow(String label, String value) {
     return Padding(
@@ -1336,6 +1622,23 @@ class _HeatMapScreenState extends State<HeatMapScreen>
         ],
       ),
     );
+  }
+  
+  String _getStatusDisplayName(String status) {
+    switch (status.toLowerCase()) {
+      case 'matched':
+        return '💖 Matched';
+      case 'liked_me':
+      case 'likedme':
+        return '💕 Liked Me';
+      case 'unmatched':
+      case 'available':
+        return '👋 Available';
+      case 'passed':
+        return '❌ Passed';
+      default:
+        return '❓ Unknown';
+    }
   }
 
   Widget _buildMapOverlay(BuildContext context, HeatMapLoaded state) {
@@ -1466,29 +1769,26 @@ class _HeatMapScreenState extends State<HeatMapScreen>
               child: Row(
                 children: [
                   _buildStatItem(
-                    'Active Users',
-                    state.heatmapData.totalUsers,
+                    'Total Users',
+                    state.coverageData.totalUsers,
                     '👥',
                   ),
                   const SizedBox(width: 12),
                   _buildStatItem(
-                    'Data Points',
-                    state.heatmapData.dataPoints
-                        .where((p) => p.density > 0)
-                        .length,
-                    '�',
+                    'Avg Density',
+                    state.coverageData.averageDensity.toInt(),
+                    '📊',
                   ),
                   const SizedBox(width: 12),
                   _buildStatItem(
-                    'Hot Spots',
-                    state.heatmapData.dataPoints
-                        .where((p) => p.density > 5)
-                        .length,
-                    '�',
+                    'Coverage',
+                    '${(state.coverageData.totalCoverage * 100).toStringAsFixed(1)}%',
+                    '🗺️',
                   ),
                   const SizedBox(width: 12),
                   _buildStatItem(
-                    'Coverage', '${_currentRadius}km',
+                    'Areas Found',
+                    state.coverageData.coverageAreas.length,
                     '📍',
                   ),
                 ],

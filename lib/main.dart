@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:google_maps_flutter_android/google_maps_flutter_android.dart';
+import 'package:google_maps_flutter_platform_interface/google_maps_flutter_platform_interface.dart';
 
 import 'firebase_options.dart';
 import 'app_providers.dart';
@@ -49,6 +52,17 @@ import 'presentation/widgets/auto_login_wrapper.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Fix Google Maps black screen issue on Android
+  // See: https://github.com/flutter/flutter/issues/40284
+  if (defaultTargetPlatform == TargetPlatform.android) {
+    final GoogleMapsFlutterPlatform mapsImplementation =
+        GoogleMapsFlutterPlatform.instance;
+    if (mapsImplementation is GoogleMapsFlutterAndroid) {
+      mapsImplementation.useAndroidViewSurface = true;
+      AppLogger.info('✅ Google Maps Android view surface enabled');
+    }
+  }
 
   // Initialize Firebase
   await Firebase.initializeApp(
