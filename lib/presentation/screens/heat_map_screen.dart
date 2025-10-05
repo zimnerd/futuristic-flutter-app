@@ -919,7 +919,7 @@ class _HeatMapScreenState extends State<HeatMapScreen>
         if (mounted) {
           // Cancel any pending cluster calculation when camera starts moving
           _clusterCalculationTimer?.cancel();
-          
+
           // Update zoom without triggering loading state
           // Keep existing clusters visible for smooth UX (Google Maps pattern)
           _currentZoom = position.zoom;
