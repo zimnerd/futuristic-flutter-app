@@ -655,6 +655,7 @@ class _HeatMapScreenState extends State<HeatMapScreen> {
     AppLogger.debug('🗺️ Initial zoom: $initialZoomLevel');
     AppLogger.debug('🗺️ Markers count: ${markers.length}');
     AppLogger.debug('🗺️ Circles count: ${circles.length}');
+    AppLogger.debug('🗺️ Geographic mismatch: $hasGeographicMismatch');
 
     return GoogleMap(
       key: const ValueKey('heat_map_google_map'),
@@ -720,7 +721,8 @@ class _HeatMapScreenState extends State<HeatMapScreen> {
       // UI Controls
       zoomControlsEnabled: false,
       compassEnabled: true,
-      myLocationEnabled: true,
+      // FIX: Disable myLocation when user is far from data (prevents map rendering issues)
+      myLocationEnabled: !hasGeographicMismatch,
       myLocationButtonEnabled: false,
       mapToolbarEnabled: false,
       // Gesture settings
