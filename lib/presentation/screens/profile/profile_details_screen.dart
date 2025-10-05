@@ -199,6 +199,12 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _buildProfileHeader(),
+                if (widget.isOwnProfile) ...[
+                  const SizedBox(height: 20),
+                  _buildStatsCards(),
+                  const SizedBox(height: 20),
+                  _buildProfileCompletionCard(),
+                ],
                 const SizedBox(height: 20),
                 _buildAboutSection(),
                 const SizedBox(height: 20),
@@ -241,14 +247,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
       foregroundColor: Colors.white,
       elevation: 0,
       actions: [
-        if (widget.isOwnProfile)
-          IconButton(
-            onPressed: () {
-              context.push('/profile-edit');
-            },
-            icon: const Icon(Icons.edit),
-          )
-        else
+        if (!widget.isOwnProfile)
           PopupMenuButton<String>(
             icon: const Icon(Icons.more_vert),
             onSelected: (value) {
@@ -2199,6 +2198,391 @@ Join PulseLink to connect!''';
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('Share text prepared:\n$shareText')),
     );
+  }
+
+  Widget _buildStatsCards() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Row(
+        children: [
+          Expanded(
+            child: _buildStatCard(
+              icon: Icons.favorite,
+              label: 'Matches',
+              value: '127',
+              color: PulseColors.error,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: _buildStatCard(
+              icon: Icons.thumb_up,
+              label: 'Likes',
+              value: '89',
+              color: PulseColors.secondary,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: _buildStatCard(
+              icon: Icons.visibility,
+              label: 'Visits',
+              value: '23',
+              color: PulseColors.primary,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatCard({
+    required IconData icon,
+    required String label,
+    required String value,
+    required Color color,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [color, color.withValues(alpha: 0.7)],
+              ),
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: color.withValues(alpha: 0.3),
+                  blurRadius: 8,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Icon(icon, color: Colors.white, size: 24),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            value,
+            style: PulseTextStyles.headlineMedium.copyWith(
+              color: Colors.black87,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            style: PulseTextStyles.bodyMedium.copyWith(color: Colors.grey[600]),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildProfileCompletionCard() {
+    final completionPercentage = _calculateProfileCompletion();
+    final strength = _getProfileStrength(completionPercentage);
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            const Color(0xFFFFF8E1),
+            Colors.orange.withValues(alpha: 0.1),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFFFF9800), Color(0xFFFF6D00)],
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.orange.withValues(alpha: 0.3),
+                      blurRadius: 8,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: const Icon(
+                  Icons.trending_up,
+                  color: Colors.white,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Complete Your Profile',
+                      style: PulseTextStyles.titleMedium.copyWith(
+                        color: Colors.black87,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      'Get more matches with a complete profile',
+                      style: PulseTextStyles.bodySmall.copyWith(
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Text(
+                '$completionPercentage%',
+                style: PulseTextStyles.headlineSmall.copyWith(
+                  color: const Color(0xFFFF9800),
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Profile Strength',
+                style: PulseTextStyles.bodyMedium.copyWith(
+                  color: Colors.grey[700],
+                ),
+              ),
+              Text(
+                strength,
+                style: PulseTextStyles.bodyMedium.copyWith(
+                  color: const Color(0xFFFF9800),
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: LinearProgressIndicator(
+              value: completionPercentage / 100,
+              backgroundColor: Colors.grey[300],
+              valueColor: const AlwaysStoppedAnimation<Color>(
+                Color(0xFFFF9800),
+              ),
+              minHeight: 8,
+            ),
+          ),
+          if (completionPercentage < 100) ...[
+            const SizedBox(height: 20),
+            Text(
+              'Complete these sections to boost your profile:',
+              style: PulseTextStyles.bodyMedium.copyWith(
+                color: Colors.black87,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 12),
+            ..._getMissingSections().map(
+              (section) => Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: _buildMissingSectionItem(section),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMissingSectionItem(Map<String, dynamic> section) {
+    return InkWell(
+      onTap: () => context.push('/profile-edit'),
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.grey.withValues(alpha: 0.2)),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFF9800).withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(
+                section['icon'] as IconData,
+                color: const Color(0xFFFF9800),
+                size: 20,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    section['title'] as String,
+                    style: PulseTextStyles.bodyMedium.copyWith(
+                      color: Colors.black87,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  Text(
+                    section['description'] as String,
+                    style: PulseTextStyles.bodySmall.copyWith(
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Text(
+              section['boost'] as String,
+              style: PulseTextStyles.labelMedium.copyWith(
+                color: const Color(0xFFFF9800),
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  int _calculateProfileCompletion() {
+    int completed = 0;
+    int total = 10;
+
+    // Basic info (always completed if profile exists)
+    completed += 1;
+
+    // Photos
+    if (widget.profile.photos.length >= 3) completed += 1;
+
+    // Bio
+    if (widget.profile.bio.isNotEmpty && widget.profile.bio.length > 50) {
+      completed += 1;
+    }
+
+    // Physical attributes
+    if (widget.profile.height != null) {
+      completed += 1;
+    }
+
+    // Lifestyle
+    if (widget.profile.drinking != null || widget.profile.smoking != null) {
+      completed += 1;
+    }
+
+    // Relationship goals
+    if (widget.profile.relationshipGoals.isNotEmpty) {
+      completed += 1;
+    }
+
+    // Job/Education
+    if (widget.profile.job?.isNotEmpty == true ||
+        widget.profile.education?.isNotEmpty == true) {
+      completed += 1;
+    }
+
+    // Interests
+    if (widget.profile.interests.length >= 3) completed += 1;
+
+    // Languages
+    if (widget.profile.languages.isNotEmpty) completed += 1;
+
+    // Personality traits or prompts
+    if (widget.profile.personalityTraits.isNotEmpty ||
+        widget.profile.promptQuestions.isNotEmpty) {
+      completed += 1;
+    }
+
+    return ((completed / total) * 100).round();
+  }
+
+  String _getProfileStrength(int percentage) {
+    if (percentage >= 90) return 'Excellent';
+    if (percentage >= 70) return 'Good';
+    if (percentage >= 50) return 'Fair';
+    return 'Needs Work';
+  }
+
+  List<Map<String, dynamic>> _getMissingSections() {
+    final missing = <Map<String, dynamic>>[];
+
+    if (widget.profile.photos.length < 3) {
+      missing.add({
+        'icon': Icons.photo_library,
+        'title': 'Add More Photos',
+        'description': 'Add at least 3 photos',
+        'boost': '+15%',
+      });
+    }
+
+    if (widget.profile.bio.isEmpty || widget.profile.bio.length < 50) {
+      missing.add({
+        'icon': Icons.description,
+        'title': 'Complete Your Bio',
+        'description': 'Write a compelling bio',
+        'boost': '+20%',
+      });
+    }
+
+    if (widget.profile.interests.length < 3) {
+      missing.add({
+        'icon': Icons.favorite,
+        'title': 'Add Interests',
+        'description': 'Show what you love',
+        'boost': '+15%',
+      });
+    }
+
+    if (widget.profile.relationshipGoals.isEmpty) {
+      missing.add({
+        'icon': Icons.flag,
+        'title': 'Dating Preferences',
+        'description': 'Set your gender and looking for preferences',
+        'boost': '+10%',
+      });
+    }
+
+    return missing;
   }
 
   void _reportProfile() {
