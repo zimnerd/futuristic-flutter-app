@@ -617,8 +617,8 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
                     );
                   }).toList(),
                 ),
+              ),
             ),
-          ),
 
         // Photo counter
         Positioned(
@@ -669,9 +669,9 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
                     ),
                   ],
                 ),
+              ),
             ),
           ),
-        ),
       ],
       ),
     ); // Close GestureDetector
@@ -2167,47 +2167,9 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
   }
 
   Widget _buildPhotoModal() {
-    return Dialog.fullscreen(
-      backgroundColor: Colors.black,
-      child: Scaffold(
-        backgroundColor: Colors.black,
-        appBar: AppBar(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          leading: IconButton(
-            icon: const Icon(Icons.close, color: Colors.white),
-            onPressed: () {
-              if (mounted) {
-                Navigator.of(context).pop();
-              }
-            },
-          ),
-          title: Text(
-            '${_currentPhotoIndex + 1} of ${widget.profile.photos.length}',
-            style: const TextStyle(color: Colors.white),
-          ),
-        ),
-        body: PageView.builder(
-          controller: PageController(initialPage: _currentPhotoIndex),
-          onPageChanged: (index) {
-            if (mounted) {
-              setState(() {
-                _currentPhotoIndex = index;
-              });
-            }
-          },
-          itemCount: widget.profile.photos.length,
-          itemBuilder: (context, index) {
-            final photo = widget.profile.photos[index];
-            return Center(
-              child: Hero(
-                tag: 'profile-photo-${photo.id}',
-                child: InteractiveViewer(child: _buildPhotoWidget(photo)),
-              ),
-            );
-          },
-        ),
-      ),
+    return _FullScreenPhotoViewer(
+      photos: widget.profile.photos,
+      initialIndex: _currentPhotoIndex,
     );
   }
 
@@ -2768,6 +2730,140 @@ Join PulseLink to connect!''';
             child: const Text('Block', style: TextStyle(color: Colors.red)),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// Full screen photo viewer with independent index tracking and description display
+class _FullScreenPhotoViewer extends StatefulWidget {
+  final List<ProfilePhoto> photos;
+  final int initialIndex;
+
+  const _FullScreenPhotoViewer({
+    required this.photos,
+    required this.initialIndex,
+  });
+
+  @override
+  State<_FullScreenPhotoViewer> createState() => _FullScreenPhotoViewerState();
+}
+
+class _FullScreenPhotoViewerState extends State<_FullScreenPhotoViewer> {
+  late int _currentIndex;
+  late PageController _pageController;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentIndex = widget.initialIndex;
+    _pageController = PageController(initialPage: widget.initialIndex);
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final currentPhoto = widget.photos[_currentIndex];
+    final hasDescription =
+        currentPhoto.description != null &&
+        currentPhoto.description!.isNotEmpty;
+
+    return Dialog.fullscreen(
+      backgroundColor: Colors.black,
+      child: Scaffold(
+        backgroundColor: Colors.black,
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.close, color: Colors.white),
+            onPressed: () {
+              if (mounted) {
+                Navigator.of(context).pop();
+              }
+            },
+          ),
+          title: Text(
+            '${_currentIndex + 1} of ${widget.photos.length}',
+            style: const TextStyle(color: Colors.white),
+          ),
+        ),
+        body: Stack(
+          children: [
+            // Photo viewer
+            PageView.builder(
+              controller: _pageController,
+              onPageChanged: (index) {
+                if (mounted) {
+                  setState(() {
+                    _currentIndex = index;
+                  });
+                }
+              },
+              itemCount: widget.photos.length,
+              itemBuilder: (context, index) {
+                final photo = widget.photos[index];
+                return Center(
+                  child: Hero(
+                    tag: 'profile-photo-${photo.id}',
+                    child: InteractiveViewer(
+                      child: CachedNetworkImage(
+                        imageUrl: photo.url,
+                        fit: BoxFit.contain,
+                        placeholder: (context, url) =>
+                            const Center(child: CircularProgressIndicator()),
+                        errorWidget: (context, url, error) => const Center(
+                          child: Icon(
+                            Icons.error,
+                            color: Colors.white,
+                            size: 48,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+
+            // Description overlay at bottom (if available)
+            if (hasDescription)
+              Positioned(
+                bottom: 0,
+                left: 0,
+                right: 0,
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.bottomCenter,
+                      end: Alignment.topCenter,
+                      colors: [
+                        Colors.black.withValues(alpha: 0.8),
+                        Colors.black.withValues(alpha: 0.6),
+                        Colors.transparent,
+                      ],
+                    ),
+                  ),
+                  padding: const EdgeInsets.fromLTRB(20, 40, 20, 40),
+                  child: Text(
+                    currentPhoto.description!,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                      height: 1.4,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }
