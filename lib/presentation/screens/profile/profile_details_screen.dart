@@ -136,53 +136,52 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
     final subscription = chatBloc.stream.listen((state) {
       if (state is ConversationCreated) {
         // Check if widget is still mounted before navigation
-        if (mounted) {
-          // Navigate to chat screen with the new conversation
-          // Use push to maintain navigation stack
-          context.push(
-            '/chat/${state.conversation.id}',
-            extra: {
-              'otherUserId': widget.profile.id,
-              'otherUserName': widget.profile.name,
-              'otherUserPhoto': widget.profile.photos.isNotEmpty
-                  ? widget.profile.photos.first.url
-                  : null,
-            },
-          );
-        }
+        if (!mounted) return;
+
+        // Navigate to chat screen with the new conversation
+        // Use push to maintain navigation stack
+        context.push(
+          '/chat/${state.conversation.id}',
+          extra: {
+            'otherUserId': widget.profile.id,
+            'otherUserName': widget.profile.name,
+            'otherUserPhoto': widget.profile.photos.isNotEmpty
+                ? widget.profile.photos.first.url
+                : null,
+          },
+        );
       } else if (state is ChatError) {
         // Check if widget is still mounted before showing message
-        if (mounted) {
-          // Show more helpful error message for matching requirement
-          String errorMessage =
-              'Failed to start conversation: ${state.message}';
-          if (state.message.toLowerCase().contains('matched') ||
-              state.message.toLowerCase().contains('403')) {
-            errorMessage =
-                "You can only message people you've matched with. Try liking this profile first!";
-          }
-          
-          scaffoldMessenger.showSnackBar(
-            SnackBar(
-              content: Text(errorMessage),
-              backgroundColor: Colors.red,
-              duration: const Duration(seconds: 4),
-              action:
-                  state.message.toLowerCase().contains('matched') ||
-                      state.message.toLowerCase().contains('403')
-                  ? SnackBarAction(
-                      label: 'Like Profile',
-                      textColor: Colors.white,
-                      onPressed: () {
-                        if (widget.onLike != null) {
-                          widget.onLike!();
-                        }
-                      },
-                    )
-                  : null,
-            ),
-          );
+        if (!mounted) return;
+
+        // Show more helpful error message for matching requirement
+        String errorMessage = 'Failed to start conversation: ${state.message}';
+        if (state.message.toLowerCase().contains('matched') ||
+            state.message.toLowerCase().contains('403')) {
+          errorMessage =
+              "You can only message people you've matched with. Try liking this profile first!";
         }
+
+        scaffoldMessenger.showSnackBar(
+          SnackBar(
+            content: Text(errorMessage),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 4),
+            action:
+                state.message.toLowerCase().contains('matched') ||
+                    state.message.toLowerCase().contains('403')
+                ? SnackBarAction(
+                    label: 'Like Profile',
+                    textColor: Colors.white,
+                    onPressed: () {
+                      if (widget.onLike != null) {
+                        widget.onLike!();
+                      }
+                    },
+                  )
+                : null,
+          ),
+        );
       }
     });
     
@@ -323,131 +322,147 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
       );
     }
 
-    return Stack(
-      children: [
-        // Photo carousel
-        PageView.builder(
-          controller: _pageController,
-          onPageChanged: (index) {
-            setState(() {
-              _currentPhotoIndex = index;
-            });
-          },
-          itemCount: widget.profile.photos.length,
-          itemBuilder: (context, index) {
-            final photo = widget.profile.photos[index];
-            return GestureDetector(
-              onTap: _onPhotoTap,
-              child: Hero(
-                tag: 'profile-photo-${photo.id}',
-                child: _buildPhotoWidget(photo),
-              ),
-            );
-          },
-        ),
+    // Wrap the entire Stack in a GestureDetector to handle swipe gestures properly
+    // This prevents the parent CustomScrollView from intercepting horizontal swipes
+    return GestureDetector(
+      // Block vertical scrolling when user is swiping photos horizontally
+      onHorizontalDragStart: (_) {}, // Claim horizontal gesture
+      onHorizontalDragUpdate: (details) {
+        // Let PageView handle the actual swipe
+      },
+      onHorizontalDragEnd: (_) {},
+      child: Stack(
+        children: [
+          // Photo carousel
+          PageView.builder(
+            controller: _pageController,
+            onPageChanged: (index) {
+              setState(() {
+                _currentPhotoIndex = index;
+              });
+            },
+            itemCount: widget.profile.photos.length,
+            itemBuilder: (context, index) {
+              final photo = widget.profile.photos[index];
+              return GestureDetector(
+                onTap: _onPhotoTap,
+                child: Hero(
+                  tag: 'profile-photo-${photo.id}',
+                  child: _buildPhotoWidget(photo),
+                ),
+              );
+            },
+          ),
 
-        // Dark gradient overlay for icon visibility (top-down fade)
-        Positioned.fill(
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.center,
-                colors: [
-                  Colors.black.withValues(alpha: 0.6),
-                  Colors.black.withValues(alpha: 0.3),
-                  Colors.transparent,
-                ],
-                stops: const [0.0, 0.3, 0.6],
+          // Dark gradient overlay for icon visibility (top-down fade)
+          Positioned.fill(
+            child: IgnorePointer(
+              // Allow gestures to pass through to PageView
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.center,
+                    colors: [
+                      Colors.black.withValues(alpha: 0.6),
+                      Colors.black.withValues(alpha: 0.3),
+                      Colors.transparent,
+                    ],
+                    stops: const [0.0, 0.3, 0.6],
+                  ),
+                ),
               ),
             ),
           ),
-        ),
 
-        // Bottom gradient overlay with profile info
-        Positioned(
-          bottom: 0,
-          left: 0,
-          right: 0,
-          child: Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Colors.transparent,
-                  Colors.black.withValues(alpha: 0.7),
-                  Colors.black.withValues(alpha: 0.9),
-                ],
-                stops: const [0.0, 0.5, 1.0],
-              ),
-            ),
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Name and verification badge
-                Row(
+          // Bottom gradient overlay with profile info
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: IgnorePointer(
+              // Allow gestures to pass through to PageView
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.transparent,
+                      Colors.black.withValues(alpha: 0.7),
+                      Colors.black.withValues(alpha: 0.9),
+                    ],
+                    stops: const [0.0, 0.5, 1.0],
+                  ),
+                ),
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    Flexible(
-                      child: Text(
-                        widget.profile.name,
-                        style: const TextStyle(
-                          fontSize: 28,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                          shadows: [
-                            Shadow(
-                              color: Colors.black45,
-                              offset: Offset(0, 1),
-                              blurRadius: 3,
+                    // Name and verification badge
+                    Row(
+                      children: [
+                        Flexible(
+                          child: Text(
+                            widget.profile.name,
+                            style: const TextStyle(
+                              fontSize: 28,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                              shadows: [
+                                Shadow(
+                                  color: Colors.black45,
+                                  offset: Offset(0, 1),
+                                  blurRadius: 3,
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    if (_shouldShowAge())
-                      Text(
-                        ', ${widget.profile.age}',
-                        style: const TextStyle(
-                          fontSize: 28,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.white,
-                          shadows: [
-                            Shadow(
-                              color: Colors.black45,
-                              offset: Offset(0, 1),
-                              blurRadius: 3,
-                            ),
-                          ],
-                        ),
-                      ),
-                    const SizedBox(width: 8),
-                    if (widget.profile.verified)
-                      Container(
-                        padding: const EdgeInsets.all(4),
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [
-                              PulseColors.primary,
-                              PulseColors.secondary,
-                            ],
+                            overflow: TextOverflow.ellipsis,
                           ),
-                          shape: BoxShape.circle,
-                          boxShadow: [
-                            BoxShadow(
-                              color: PulseColors.primary.withValues(alpha: 0.5),
-                              blurRadius: 8,
-                              spreadRadius: 2,
-                            ),
-                          ],
                         ),
-                        child: const Icon(
-                          Icons.verified,
-                          color: Colors.white,
+                        const SizedBox(width: 8),
+                        if (_shouldShowAge())
+                          Text(
+                            ', ${widget.profile.age}',
+                            style: const TextStyle(
+                              fontSize: 28,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.white,
+                              shadows: [
+                                Shadow(
+                                  color: Colors.black45,
+                                  offset: Offset(0, 1),
+                                  blurRadius: 3,
+                                ),
+                              ],
+                            ),
+                          ),
+                        const SizedBox(width: 8),
+                        if (widget.profile.verified)
+                          Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  PulseColors.primary,
+                                  PulseColors.secondary,
+                                ],
+                              ),
+                              shape: BoxShape.circle,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: PulseColors.primary.withValues(
+                                    alpha: 0.5,
+                                  ),
+                                  blurRadius: 8,
+                                  spreadRadius: 2,
+                                ),
+                              ],
+                            ),
+                            child: const Icon(
+                              Icons.verified,
+                              color: Colors.white,
                           size: 20,
                         ),
                       ),
@@ -516,7 +531,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
                   ),
                 const SizedBox(height: 8),
                 // Bio preview
-                if (widget.profile.bio != null && widget.profile.bio.isNotEmpty)
+                    if (widget.profile.bio.isNotEmpty)
                   Text(
                     widget.profile.bio.length > 100
                         ? '${widget.profile.bio.substring(0, 100)}...'
@@ -562,42 +577,46 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
             ),
           ),
         ),
+          ),
 
-        // Photo indicators
-        if (widget.profile.photos.length > 1)
+          // Photo indicators
+          if (widget.profile.photos.length > 1)
           Positioned(
             top: 100,
             left: 20,
             right: 20,
-            child: Row(
-              children: widget.profile.photos.asMap().entries.map((entry) {
-                final isActive = entry.key == _currentPhotoIndex;
-                return Expanded(
-                  child: Container(
-                    height: 4,
-                    margin: EdgeInsets.only(
-                      right: entry.key < widget.profile.photos.length - 1
-                          ? 6
-                          : 0,
-                    ),
-                    decoration: BoxDecoration(
-                      color: isActive 
-                        ? Colors.white 
-                          : Colors.white.withValues(alpha: 0.4),
-                      borderRadius: BorderRadius.circular(2),
-                      boxShadow: isActive
-                          ? [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.2),
-                                blurRadius: 4,
-                                offset: const Offset(0, 2),
-                              ),
-                            ]
-                          : null,
-                    ),
-                  ),
-                );
-              }).toList(),
+              child: IgnorePointer(
+                // Allow gestures to pass through
+                child: Row(
+                  children: widget.profile.photos.asMap().entries.map((entry) {
+                    final isActive = entry.key == _currentPhotoIndex;
+                    return Expanded(
+                      child: Container(
+                        height: 4,
+                        margin: EdgeInsets.only(
+                          right: entry.key < widget.profile.photos.length - 1
+                              ? 6
+                              : 0,
+                        ),
+                        decoration: BoxDecoration(
+                          color: isActive
+                              ? Colors.white
+                              : Colors.white.withValues(alpha: 0.4),
+                          borderRadius: BorderRadius.circular(2),
+                          boxShadow: isActive
+                              ? [
+                                  BoxShadow(
+                                    color: Colors.black.withValues(alpha: 0.2),
+                                    blurRadius: 4,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ]
+                              : null,
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
             ),
           ),
 
@@ -605,50 +624,57 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
         Positioned(
           bottom: 20,
           right: 20,
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  Colors.black.withValues(alpha: 0.7),
-                  Colors.black.withValues(alpha: 0.5),
-                ],
-              ),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                color: Colors.white.withValues(alpha: 0.2),
-                width: 1,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.3),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
+            child: IgnorePointer(
+              // Allow gestures to pass through
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
                 ),
-              ],
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  Icons.photo_library_outlined,
-                  color: Colors.white,
-                  size: 16,
-                ),
-                const SizedBox(width: 6),
-                Text(
-                  '${_currentPhotoIndex + 1}/${widget.profile.photos.length}',
-                  style: PulseTextStyles.labelMedium.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w600,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      Colors.black.withValues(alpha: 0.7),
+                      Colors.black.withValues(alpha: 0.5),
+                    ],
                   ),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.2),
+                    width: 1,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.3),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
                 ),
-              ],
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.photo_library_outlined,
+                      color: Colors.white,
+                      size: 16,
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      '${_currentPhotoIndex + 1}/${widget.profile.photos.length}',
+                      style: PulseTextStyles.labelMedium.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
             ),
           ),
         ),
       ],
-    );
+      ),
+    ); // Close GestureDetector
   }
 
   Widget _buildPhotoWidget(ProfilePhoto photo) {
@@ -1292,12 +1318,11 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
   bool _shouldShowAge() => widget.profile.showAge ?? true;
   bool _shouldShowDistance() => widget.profile.showDistance ?? true;
   bool _shouldShowOnlineStatus() => widget.profile.showOnlineStatus ?? true;
-  bool _shouldShowLastActive() => widget.profile.showLastActive ?? true;
 
   String _formatHeight(int cm) {
     final feet = cm ~/ 30.48;
     final inches = ((cm % 30.48) / 2.54).round();
-    return '$cm cm (${feet}\'${inches}\")';
+    return '$cm cm ($feet\' $inches")';
   }
 
   Widget _buildPhysicalAttributesSection() {

@@ -99,8 +99,8 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
     if (value == null || value.isEmpty) {
       return 'Please enter the OTP code';
     }
-    if (value.length < 4) {
-      return 'OTP code must be at least 4 digits';
+    if (value.length != 4) {
+      return 'OTP code must be exactly 4 digits';
     }
     if (!RegExp(r'^\d+$').hasMatch(value)) {
       return 'OTP code must contain only numbers';
@@ -232,10 +232,10 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
                           fontWeight: FontWeight.bold,
                           letterSpacing: 8,
                         ),
-                        maxLength: 6,
+                        maxLength: 4,
                         validator: _validateOTP,
                         decoration: InputDecoration(
-                          hintText: '• • • • • •',
+                          hintText: '• • • •',
                           hintStyle: TextStyle(
                             color: PulseColors.onSurfaceVariant.withValues(alpha: 0.3),
                             letterSpacing: 16,
