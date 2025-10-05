@@ -164,6 +164,7 @@ class ErrorHandler {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
+        backgroundColor: Colors.white,
         title: Row(
           children: [
             Icon(Icons.error_outline, color: Colors.red, size: 28),
@@ -171,7 +172,11 @@ class ErrorHandler {
             Expanded(
               child: Text(
                 title,
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
               ),
             ),
           ],
@@ -180,12 +185,15 @@ class ErrorHandler {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(message),
+            Text(
+              message,
+              style: TextStyle(color: Colors.black87),
+            ),
             if (statusCode != null && statusCode >= 500) ...[
               SizedBox(height: 16),
               Text(
                 'You can try again or contact support if the problem persists.',
-                style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                style: TextStyle(fontSize: 12, color: Colors.grey[700]),
               ),
             ],
           ],

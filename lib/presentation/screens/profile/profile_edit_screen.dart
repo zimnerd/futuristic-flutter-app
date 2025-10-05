@@ -156,8 +156,9 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
     _selectedExercise = ProfileLifestyleChoicesSection.mapExerciseFromBackend(
       profile.exercise,
     );
-    _selectedDrugs =
-        profile.drugs ?? 'Prefer not to say'; // No backend enum yet
+    _selectedDrugs = ProfileLifestyleChoicesSection.mapDrugsFromBackend(
+      profile.drugs,
+    ) ?? 'Prefer not to say';
     _selectedChildren = ProfileLifestyleChoicesSection.mapChildrenFromBackend(
       profile.children,
     );
@@ -339,7 +340,9 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
         exercise: ProfileLifestyleChoicesSection.mapExerciseToBackend(
           _selectedExercise,
         ),
-        drugs: _selectedDrugs, // Keep as-is, no mapping needed
+        drugs: ProfileLifestyleChoicesSection.mapDrugsToBackend(
+          _selectedDrugs,
+        ),
         children: ProfileLifestyleChoicesSection.mapChildrenToBackend(
           _selectedChildren,
         ),
@@ -733,7 +736,9 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
       exercise: ProfileLifestyleChoicesSection.mapExerciseToBackend(
         _selectedExercise,
       ),
-      drugs: _selectedDrugs, // Keep as-is, no mapping needed
+      drugs: ProfileLifestyleChoicesSection.mapDrugsToBackend(
+        _selectedDrugs,
+      ),
       children: ProfileLifestyleChoicesSection.mapChildrenToBackend(
         _selectedChildren,
       ),

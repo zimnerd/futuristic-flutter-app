@@ -105,6 +105,22 @@ class ProfileLifestyleChoicesSection extends StatelessWidget {
     }
   }
 
+  static String? mapDrugsToBackend(String? value) {
+    if (value == null) return null;
+    switch (value) {
+      case 'Never':
+        return 'never';
+      case 'Socially':
+        return 'occasionally'; // Map 'Socially' to 'occasionally' for backend
+      case 'Regularly':
+        return 'regularly';
+      case 'Prefer not to say':
+        return 'prefer-not-to-say';
+      default:
+        return value.toLowerCase();
+    }
+  }
+
   static String? mapExerciseToBackend(String? value) {
     if (value == null) return null;
     switch (value) {
@@ -200,6 +216,24 @@ class ProfileLifestyleChoicesSection extends StatelessWidget {
         return 'Regularly';
       case 'DAILY':
         return 'Daily';
+      default:
+        return value;
+    }
+  }
+
+  static String? mapDrugsFromBackend(String? value) {
+    if (value == null) return null;
+    final upperValue = value.toUpperCase();
+    switch (upperValue) {
+      case 'NEVER':
+        return 'Never';
+      case 'OCCASIONALLY':
+        return 'Socially';
+      case 'REGULARLY':
+        return 'Regularly';
+      case 'PREFER-NOT-TO-SAY':
+      case 'PREFER_NOT_TO_SAY':
+        return 'Prefer not to say';
       default:
         return value;
     }
