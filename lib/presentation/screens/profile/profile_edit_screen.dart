@@ -975,7 +975,6 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
           }
           
           if (state.updateStatus == ProfileStatus.success) {
-                _forceReloadProfile();
             // Only navigate away on final save, not section saves
             if (_isFinalSave) {
               logger.i(
@@ -996,6 +995,8 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
                 logger.i(
                   '🔄 Triggering fresh API call to reload profile after privacy save',
                 );
+
+                _forceReloadProfile();
                 // Refresh profile but stay on this tab
                 _isFinalSave = false;
               } else {
