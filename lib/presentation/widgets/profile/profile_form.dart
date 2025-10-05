@@ -175,7 +175,7 @@ class ProfileForm extends StatelessWidget {
         _buildTextField(
           controller: schoolController,
           label: 'School',
-          hint: 'Stanford University',
+          hint: 'Vaal University',
         ),
       ],
     );

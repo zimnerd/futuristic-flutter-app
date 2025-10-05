@@ -24,6 +24,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
     super.initState();
     // Load actual user profile from ProfileBloc (use cache if available)
     context.read<ProfileBloc>().add(const LoadProfile());
+    // Load real stats from API
+    context.read<ProfileBloc>().add(const LoadProfileStats());
   }
 
   @override
@@ -255,35 +257,63 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildCompactStats(UserProfile? userProfile) {
-    return Row(
-      children: [
-        Expanded(
-          child: _buildStatCard(
-            icon: Icons.favorite_rounded,
-            value: '127', // TODO: Get from userProfile when available
-            label: 'Matches',
-            colors: [const Color(0xFFFF6B9D), const Color(0xFFC738BD)],
-          ),
-        ),
-        const SizedBox(width: PulseSpacing.sm),
-        Expanded(
-          child: _buildStatCard(
-            icon: Icons.thumb_up_rounded,
-            value: '89', // TODO: Get from userProfile when available
-            label: 'Likes',
-            colors: [const Color(0xFF00D4AA), const Color(0xFF00E0C1)],
-          ),
-        ),
-        const SizedBox(width: PulseSpacing.sm),
-        Expanded(
-          child: _buildStatCard(
-            icon: Icons.visibility_rounded,
-            value: '23', // TODO: Get from userProfile when available
-            label: 'Visits',
-            colors: [const Color(0xFF6E3BFF), const Color(0xFF9D6CFF)],
-          ),
-        ),
-      ],
+    return BlocBuilder<ProfileBloc, ProfileState>(
+      builder: (context, state) {
+        // Show loading shimmer while fetching stats
+        if (state.statsStatus == ProfileStatus.loading || state.stats == null) {
+          return Row(
+            children: [
+              Expanded(child: _buildStatsLoadingSkeleton()),
+              const SizedBox(width: PulseSpacing.sm),
+              Expanded(child: _buildStatsLoadingSkeleton()),
+              const SizedBox(width: PulseSpacing.sm),
+              Expanded(child: _buildStatsLoadingSkeleton()),
+            ],
+          );
+        }
+
+        // Display real stats from API
+        final stats = state.stats!;
+        return Row(
+          children: [
+            Expanded(
+              child: _buildStatCard(
+                icon: Icons.favorite,
+                value: '${stats.matchesCount}',
+                label: 'Matches',
+                colors: [
+                  PulseColors.error,
+                  PulseColors.error.withValues(alpha: 0.7),
+                ],
+              ),
+            ),
+            const SizedBox(width: PulseSpacing.sm),
+            Expanded(
+              child: _buildStatCard(
+                icon: Icons.thumb_up,
+                value: '${stats.likesReceived}',
+                label: 'Likes',
+                colors: [
+                  PulseColors.secondary,
+                  PulseColors.secondary.withValues(alpha: 0.7),
+                ],
+              ),
+            ),
+            const SizedBox(width: PulseSpacing.sm),
+            Expanded(
+              child: _buildStatCard(
+                icon: Icons.visibility,
+                value: '${stats.profileViews}',
+                label: 'Visits',
+                colors: [
+                  PulseColors.primary,
+                  PulseColors.primary.withValues(alpha: 0.7),
+                ],
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -341,6 +371,54 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
+  Widget _buildStatsLoadingSkeleton() {
+    return Container(
+      padding: const EdgeInsets.all(PulseSpacing.md),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(PulseRadii.lg),
+        border: Border.all(color: PulseColors.outline.withValues(alpha: 0.3)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              color: Colors.grey[300],
+              borderRadius: BorderRadius.circular(PulseRadii.md),
+            ),
+          ),
+          const SizedBox(height: PulseSpacing.xs),
+          Container(
+            width: 40,
+            height: 20,
+            decoration: BoxDecoration(
+              color: Colors.grey[300],
+              borderRadius: BorderRadius.circular(4),
+            ),
+          ),
+          const SizedBox(height: 4),
+          Container(
+            width: 50,
+            height: 14,
+            decoration: BoxDecoration(
+              color: Colors.grey[200],
+              borderRadius: BorderRadius.circular(4),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildProfileSections(UserProfile? userProfile) {
     return Column(
       children: [
@@ -353,7 +431,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
             _buildSectionItem('Age', '${userProfile?.age ?? 0} years old'),
             _buildSectionItem('Bio', userProfile?.bio ?? 'No bio added'),
           ],
-          onEdit: () => _navigateToSectionEdit('basic_info', userProfile),
         ),
         const SizedBox(height: PulseSpacing.lg),
         
@@ -364,7 +441,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
           items: [
             _buildPhotoGrid(userProfile),
           ],
-          onEdit: () => _navigateToSectionEdit('photos', userProfile),
         ),
         const SizedBox(height: PulseSpacing.lg),
         
@@ -380,7 +456,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
             _buildSectionItem('School', userProfile?.school ?? 'Not specified'),
           ],
-          onEdit: () => _navigateToSectionEdit('work_education', userProfile),
         ),
         const SizedBox(height: PulseSpacing.lg),
         
@@ -391,7 +466,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
           items: [
             _buildInterestsDisplay(userProfile),
           ],
-          onEdit: () => _navigateToSectionEdit('interests', userProfile),
         ),
         const SizedBox(height: PulseSpacing.lg),
         
@@ -405,7 +479,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
               'Show me', _formatShowMe(userProfile?.showMe),
             ),
           ],
-          onEdit: () => _navigateToSectionEdit('preferences', userProfile),
         ),
       ],
     );
@@ -416,7 +489,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     required IconData icon,
     required UserProfile? userProfile,
     required List<Widget> items,
-    required VoidCallback onEdit,
   }) {
     return Container(
       padding: const EdgeInsets.all(PulseSpacing.lg),
@@ -460,19 +532,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-              ),
-              IconButton(
-                onPressed: onEdit,
-                icon: const Icon(Icons.edit, size: 20),
-                style: IconButton.styleFrom(
-                  backgroundColor: PulseColors.primary.withValues(alpha: 0.1),
-                  foregroundColor: PulseColors.primary,
-                  padding: const EdgeInsets.all(PulseSpacing.sm),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(PulseRadii.sm),
-                  ),
-                ),
-                tooltip: 'Edit $title',
               ),
             ],
           ),

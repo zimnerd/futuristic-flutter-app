@@ -1277,23 +1277,6 @@ class ProfileService {
   }
 }
 
-/// User profile statistics
-class ProfileStats {
-  final int matchesCount;
-  final int likesReceived;
-  final int profileViews;
-  final int likesSent;
-  final int messagesCount;
-
-  ProfileStats({
-    required this.matchesCount,
-    required this.likesReceived,
-    required this.profileViews,
-    required this.likesSent,
-    required this.messagesCount,
-  });
-}
-
 /// Helper class for photo ordering
 class PhotoOrder {
   final String photoId;

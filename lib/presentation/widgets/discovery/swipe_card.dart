@@ -365,6 +365,28 @@ class _UserInfoOverlay extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
               ),
             ],
+            // Badges row (occupation, education, etc)
+            if (user.occupation != null || user.education != null) ...[
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  // Occupation badge
+                  if (user.occupation != null)
+                    _buildBadgePill(
+                      icon: Icons.work_outline,
+                      label: user.occupation!,
+                    ),
+                  // Education badge
+                  if (user.education != null)
+                    _buildBadgePill(
+                      icon: Icons.school_outlined,
+                      label: user.education!,
+                    ),
+                ],
+              ),
+            ],
             if (user.distanceKm != null) ...[
               const SizedBox(height: 4),
               Row(
@@ -387,6 +409,50 @@ class _UserInfoOverlay extends StatelessWidget {
             ],
           ],
         ),
+      ),
+    );
+  }
+
+  /// Builds a badge pill for displaying profile attributes (occupation, education, etc.)
+  Widget _buildBadgePill({required IconData icon, required String label}) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.2),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.3),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.2),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: Colors.white, size: 12),
+          const SizedBox(width: 5),
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+              color: Colors.white,
+              shadows: [
+                Shadow(
+                  color: Colors.black45,
+                  offset: Offset(0, 1),
+                  blurRadius: 2,
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
