@@ -113,6 +113,37 @@ class CreateGroup extends GroupChatEvent {
   ];
 }
 
+// Participant management events
+class AddParticipantToGroup extends GroupChatEvent {
+  final String conversationId;
+  final String userId;
+  final String? role;
+
+  AddParticipantToGroup({
+    required this.conversationId,
+    required this.userId,
+    this.role,
+  });
+
+  @override
+  List<Object?> get props => [conversationId, userId, role];
+}
+
+class RemoveParticipantFromGroup extends GroupChatEvent {
+  final String conversationId;
+  final String userId;
+  final String? reason;
+
+  RemoveParticipantFromGroup({
+    required this.conversationId,
+    required this.userId,
+    this.reason,
+  });
+
+  @override
+  List<Object?> get props => [conversationId, userId, reason];
+}
+
 // Real-time events
 class NewJoinRequestReceived extends GroupChatEvent {
   final JoinRequest request;

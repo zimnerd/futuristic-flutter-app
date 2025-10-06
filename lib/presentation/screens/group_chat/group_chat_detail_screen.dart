@@ -15,9 +15,8 @@ import '../../../features/group_chat/presentation/screens/video_call_screen.dart
 import '../../../features/group_chat/presentation/widgets/voice_recorder_widget.dart';
 import 'package:file_picker/file_picker.dart';
 import '../../../presentation/blocs/group_chat/group_chat_bloc.dart';
-import '../../../presentation/blocs/group_chat/group_chat_event.dart';
 import '../../../data/models/chat_model.dart';
-import '../../../blocs/chat_bloc.dart';
+import '../../../blocs/chat_bloc.dart' as chat_bloc;
 import '../../../presentation/theme/pulse_colors.dart';
 import '../../widgets/common/keyboard_dismissible_scaffold.dart';
 
@@ -43,7 +42,7 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
   final FocusNode _messageFocusNode = FocusNode();
   
   // Services
-  final ChatBloc _chatBloc = GetIt.I<ChatBloc>();
+  final chat_bloc.ChatBloc _chatBloc = GetIt.I<chat_bloc.ChatBloc>();
   late final GroupChatWebSocketService _groupChatWS;
   late final GroupChatService _groupChatService;
   final ImagePicker _imagePicker = ImagePicker();
@@ -102,7 +101,7 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
   void _setupMessageListener() {
     // Listen to chat bloc for new messages
     _chatBloc.stream.listen((state) {
-      if (state is MessagesLoaded && mounted) {
+      if (state is chat_bloc.MessagesLoaded && mounted) {
         setState(() {
           _messages = state.messages;
         });
