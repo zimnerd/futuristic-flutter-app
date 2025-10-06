@@ -57,8 +57,8 @@ class GroupChatService {
   }
 
   /// Create a live session (Monkey.app style)
+  /// Backend automatically creates a conversation, no pre-existing group required
   Future<LiveSession> createLiveSession({
-    required String conversationId,
     required String title,
     String? description,
     int? maxParticipants,
@@ -66,7 +66,6 @@ class GroupChatService {
   }) async {
     try {
       final response = await _apiClient.createLiveSession(
-        conversationId: conversationId,
         title: title,
         description: description,
         maxParticipants: maxParticipants,

@@ -302,7 +302,6 @@ class _GroupListScreenState extends State<GroupListScreen>
     final titleController = TextEditingController();
     final descriptionController = TextEditingController();
     final maxParticipantsController = TextEditingController(text: '10');
-    GroupConversation? selectedGroup;
     bool requireApproval = true;
 
     // Read the bloc before showing the dialog to avoid provider scope issues
@@ -312,16 +311,6 @@ class _GroupListScreenState extends State<GroupListScreen>
       context: context,
       builder: (dialogContext) => StatefulBuilder(
         builder: (context, setState) {
-          // Pass bloc explicitly to avoid ProviderNotFoundException
-          return BlocBuilder<GroupChatBloc, GroupChatState>(
-            bloc: bloc,
-            builder: (context, state) {
-              final groups = state is GroupChatLoaded
-                  ? state.userGroups
-                      .where((g) => g.groupType == GroupType.liveHost)
-                      .toList()
-                  : <GroupConversation>[];
-
               return AlertDialog(
                 title: const Text('Create Live Session'),
                 contentPadding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
@@ -332,38 +321,6 @@ class _GroupListScreenState extends State<GroupListScreen>
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                      // Group Selection
-                      const Text(
-                        'Select Group',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 12,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      DropdownButtonFormField<GroupConversation>(
-                        initialValue: selectedGroup,
-                        decoration: const InputDecoration(
-                          hintText: 'Choose a live host group',
-                          border: OutlineInputBorder(),
-                          contentPadding: EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 8,
-                          ),
-                        ),
-                        items: groups.map((group) {
-                          return DropdownMenuItem(
-                            value: group,
-                            child: Text(group.name),
-                          );
-                        }).toList(),
-                        onChanged: (value) {
-                          setState(() {
-                            selectedGroup = value;
-                          });
-                        },
-                      ),
-                      const SizedBox(height: 16),
 
                       // Title
                       const Text(
@@ -469,18 +426,9 @@ class _GroupListScreenState extends State<GroupListScreen>
                   ElevatedButton(
                     onPressed: () async {
                       // Validation
-                      if (selectedGroup == null) {
-                        ScaffoldMessenger.of(this.context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Please select a group'),
-                            backgroundColor: Colors.red,
-                          ),
-                        );
-                        return;
-                      }
-
                       if (titleController.text.trim().isEmpty) {
-                        ScaffoldMessenger.of(this.context).showSnackBar(
+                        if (!mounted) return;
+                        ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
                             content: Text('Please enter a title'),
                             backgroundColor: Colors.red,
@@ -493,7 +441,8 @@ class _GroupListScreenState extends State<GroupListScreen>
                           int.tryParse(maxParticipantsController.text) ?? 10;
 
                       if (maxParticipants < 2 || maxParticipants > 100) {
-                        ScaffoldMessenger.of(this.context).showSnackBar(
+                        if (!mounted) return;
+                        ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
                             content: Text(
                               'Max participants must be between 2 and 100',
@@ -504,21 +453,23 @@ class _GroupListScreenState extends State<GroupListScreen>
                         return;
                       }
 
-                      // Show loading
+                      // Close dialog first
                       Navigator.pop(dialogContext);
+                      
+                      // Show loading
+                      if (!mounted) return;
                       showDialog(
-                        context: this.context,
+                        context: context,
                         barrierDismissible: false,
-                        builder: (context) => const Center(
+                        builder: (loadingContext) => const Center(
                           child: CircularProgressIndicator(),
                         ),
                       );
 
                       try {
-                        // Create live session via service
+                        // Create live session via service (no conversation required)
                         final service = GetIt.instance<GroupChatService>();
                         final session = await service.createLiveSession(
-                          conversationId: selectedGroup!.id,
                           title: titleController.text.trim(),
                           description: descriptionController.text.trim().isEmpty
                               ? null
@@ -527,11 +478,17 @@ class _GroupListScreenState extends State<GroupListScreen>
                           requireApproval: requireApproval,
                         );
 
+                        // Dispose controllers
+                        titleController.dispose();
+                        descriptionController.dispose();
+                        maxParticipantsController.dispose();
+
                         // Close loading
-                        if (!mounted || !context.mounted) return;
+                        if (!mounted) return;
                         Navigator.of(context).pop();
 
                         // Show success
+                        if (!mounted) return;
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
                             content: Text('Live session created successfully!'),
@@ -540,17 +497,22 @@ class _GroupListScreenState extends State<GroupListScreen>
                         );
 
                         // Reload sessions
-                        widget.bloc.add(
-                              LoadActiveLiveSessions(),
-                            );
+                        bloc.add(LoadActiveLiveSessions());
 
                         // Auto-join the created session
+                        if (!mounted) return;
                         _joinLiveSession(session);
                       } catch (e) {
+                        // Dispose controllers on error
+                        titleController.dispose();
+                        descriptionController.dispose();
+                        maxParticipantsController.dispose();
+                        
                         // Close loading
-                        if (!mounted || !context.mounted) return;
+                        if (!mounted) return;
                         Navigator.of(context).pop();
 
+                        if (!mounted) return;
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             content:
@@ -558,18 +520,12 @@ class _GroupListScreenState extends State<GroupListScreen>
                             backgroundColor: Colors.red,
                           ),
                         );
-                      } finally {
-                        titleController.dispose();
-                        descriptionController.dispose();
-                        maxParticipantsController.dispose();
                       }
                     },
                     child: const Text('Create'),
                   ),
                 ],
               );
-            },
-          );
         },
       ),
     );

@@ -1615,8 +1615,8 @@ class ApiClient {
   }
 
   /// Create a live session (Monkey.app style)
+  /// Backend automatically creates a conversation, no conversationId needed
   Future<Response> createLiveSession({
-    required String conversationId,
     required String title,
     String? description,
     int? maxParticipants,
@@ -1625,7 +1625,6 @@ class ApiClient {
     return await _dio.post(
       '/group-chat/live-session/create',
       data: {
-        'conversationId': conversationId,
         'title': title,
         if (description != null) 'description': description,
         if (maxParticipants != null) 'maxParticipants': maxParticipants,
