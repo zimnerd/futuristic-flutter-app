@@ -144,7 +144,6 @@ class HeatMapBloc extends Bloc<HeatMapEvent, HeatMapState> {
       }
       
       // FIX: Fetch BOTH heatmap data AND backend clusters during initial load
-      // This eliminates race condition with onMapCreated timing
       final [
         heatmapDataPoints,
         coverageData,
@@ -347,8 +346,6 @@ class _HeatMapScreenState extends State<HeatMapScreen>
     } else {
       // Load data first if not available
       context.read<HeatMapBloc>().add(LoadHeatMapData(_currentRadius));
-      // Show popup after data loads using BlocListener
-      // Note: This is handled in the widget's BlocListener in the build method
     }
   }
 
@@ -437,13 +434,6 @@ class _HeatMapScreenState extends State<HeatMapScreen>
       _buildStatRow('High Density (>5)', '$highDensity areas'),
     ];
   }
-
-  /// ✅ Optimized backend clustering is available via /api/v1/statistics/heatmap/optimized
-  /// The backend endpoint supports viewport-based clustering for better performance at scale
-  /// To use: Call heatMapService.getOptimizedHeatMapData() with zoom and viewport parameters
-  /// Current implementation uses client-side clustering for simplicity
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -560,17 +550,11 @@ class _HeatMapScreenState extends State<HeatMapScreen>
   Widget _buildMapWithData(BuildContext context, HeatMapLoaded state) {
     return Stack(
       children: [
-        // Full screen Google Map
         Positioned.fill(child: _buildGoogleMap(state)),
-        // Cluster number overlays (only show if clustering is enabled)
         if (_showClusters) ..._buildClusterNumberOverlays(state),
-        // Map controls overlay
         _buildMapControls(context),
-        // Map overlay info
         _buildMapOverlay(context, state),
-        // Stats panel
         _buildStatsPanel(context, state),
-        // Loading overlay during cluster calculations
         if (_isCalculatingClusters)
           Positioned(
             top: 100,
@@ -798,8 +782,7 @@ class _HeatMapScreenState extends State<HeatMapScreen>
   }
 
   /// Build cluster circles for privacy (no individual markers)
-  /// Build cluster circles - now uses backend-calculated clusters
-  /// Eliminates heavy frontend computation that caused black screens
+  /// Cluster circles disabled in favor of backend-calculated clusters
   Set<Circle> _buildClusterCircles(HeatMapLoaded state) {
     if (!_showClusters) {
       return {};
@@ -807,8 +790,7 @@ class _HeatMapScreenState extends State<HeatMapScreen>
     return {};
   }
 
-  /// Build cluster markers from backend optimized clusters (Google Maps best practice)
-  /// Creates custom markers with user count labels, status-based colors, and dynamic sizing
+  /// Build cluster markers with user count labels, status colors, and dynamic sizing
   Future<Set<Marker>> _buildMarkersFromBackendClusters(
     List<OptimizedClusterData> clusters,
   ) async {
@@ -1235,8 +1217,6 @@ class _HeatMapScreenState extends State<HeatMapScreen>
 
   Set<Circle> _buildCircles(HeatMapLoaded state) {
     // Create cache key from state properties that affect circles
-    // NOTE: Zoom level NOT included - keeps clusters visible during zoom animation
-    // Backend fetch on camera idle will update with new clusters smoothly
     final cacheKey =
         '${state.userLocation?.latitude}_'
         '${state.userLocation?.longitude}_'
@@ -1351,16 +1331,9 @@ class _HeatMapScreenState extends State<HeatMapScreen>
     return const Color(0xFFFF0000); // Red
   }
 
-  /// Build cluster number overlays positioned over cluster circles
-  /// OPTIMIZED: Uses backend clusters instead of local clustering
+  /// Cluster overlays disabled - info shown on tap via _showBackendClusterDetails()
   List<Widget> _buildClusterNumberOverlays(HeatMapLoaded state) {
-    // Disabled to prevent heavy local clustering during zoom
-    // Cluster info now shown on tap via _showBackendClusterDetails()
-    // This eliminates the black screen issue during zoom animations
     return [];
-    
-    // TODO: If overlays needed, implement using state.backendClusters
-    // which are already calculated on backend (no frontend computation)
   }
 
   Widget _buildStatRow(String label, String value) {
@@ -1915,6 +1888,7 @@ class _HeatMapScreenState extends State<HeatMapScreen>
                     final radiusKm = _currentRadius.toDouble();
 
                     if (!mounted) return;
+                    // ignore: use_build_context_synchronously
                     context.read<HeatMapBloc>().add(
                       FetchBackendClusters(
                         zoom: groupedZoom,

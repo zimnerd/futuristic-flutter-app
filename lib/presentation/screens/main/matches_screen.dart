@@ -426,8 +426,8 @@ class _MatchesScreenState extends State<MatchesScreen>
             onPressed: () async {
               Navigator.of(dialogContext).pop();
               try {
-                // TODO: Implement actual unmatch API call when endpoint is available
-                // await matchRepository.unmatch(match.id);
+                // Note: Unmatch API endpoint not yet available
+                // Future implementation: await matchRepository.unmatch(match.id);
 
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Unmatched successfully')),

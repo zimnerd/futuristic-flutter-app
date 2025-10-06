@@ -142,6 +142,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
         // Navigate to chat screen with the new conversation
         // Use push to maintain navigation stack
         if (!mounted) return;
+        // ignore: use_build_context_synchronously
         context.push(
           '/chat/${state.conversation.id}',
           extra: {
