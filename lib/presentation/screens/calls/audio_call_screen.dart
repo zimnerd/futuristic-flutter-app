@@ -18,6 +18,7 @@ class AudioCallScreen extends StatefulWidget {
   final String? token;
   final bool isOutgoing;
   final String? conversationId; // Optional, will be created if null
+  final String callType; // 'audio' or 'video'
 
   const AudioCallScreen({
     super.key,
@@ -29,6 +30,7 @@ class AudioCallScreen extends StatefulWidget {
     this.token,
     this.isOutgoing = false,
     this.conversationId,
+    this.callType = 'audio', // Default to audio for backward compatibility
   });
 
   @override
@@ -215,7 +217,7 @@ class _AudioCallScreenState extends State<AudioCallScreen>
       if (conversationId.isNotEmpty) {
         await _messagingService.createCallMessage(
           conversationId: conversationId,
-          callType: 'audio', // TODO: Support video calls
+          callType: widget.callType, // Dynamic call type (audio/video)
           duration: duration,
           isIncoming: !widget.isOutgoing,
           isMissed: !connected, // Missed if remote user never joined

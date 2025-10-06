@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:logger/logger.dart';
 
 /// Centralized error handler for all HTTP and network errors
@@ -13,6 +14,7 @@ class ErrorHandler {
     dynamic error, {
     BuildContext? context,
     bool showDialog = true,
+    VoidCallback? onRetry,
   }) {
     String userMessage = 'An unexpected error occurred';
     String? technicalDetails;
@@ -62,6 +64,7 @@ class ErrorHandler {
         message: userMessage,
         technicalDetails: technicalDetails,
         statusCode: statusCode,
+        onRetry: onRetry,
       );
     }
 
@@ -160,6 +163,7 @@ class ErrorHandler {
     required String message,
     String? technicalDetails,
     int? statusCode,
+    VoidCallback? onRetry,
   }) {
     showDialog(
       context: context,
@@ -203,15 +207,17 @@ class ErrorHandler {
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
-                // TODO: Navigate to login screen
+                // Navigate to login screen using go_router
+                context.go('/login');
               },
               child: Text('LOG IN'),
             ),
-          if (statusCode != null && statusCode >= 500)
+          if (statusCode != null && statusCode >= 500 && onRetry != null)
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
-                // TODO: Implement retry logic
+                // Execute the retry callback
+                onRetry();
               },
               child: Text('RETRY'),
             ),

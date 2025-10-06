@@ -5,10 +5,13 @@ import 'package:go_router/go_router.dart';
 import '../../blocs/match/match_bloc.dart';
 import '../../blocs/match/match_event.dart';
 import '../../blocs/match/match_state.dart';
+import '../../blocs/safety/safety_bloc.dart';
 import '../../../data/services/matching_service.dart';
+import '../../../data/services/safety_service.dart';
 import '../../../core/network/api_client.dart';
 import '../../../data/models/match_model.dart';
 import '../../../data/models/user_model.dart';
+import '../../../data/models/safety.dart';
 import '../../../core/theme/pulse_design_system.dart';
 import '../../widgets/match/match_card.dart';
 import '../../navigation/app_router.dart';
@@ -83,10 +86,18 @@ class _MatchesScreenState extends State<MatchesScreen>
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => MatchBloc(
-        matchingService: MatchingService(apiClient: ApiClient.instance),
-      )..add(const LoadMatches(excludeWithConversations: true)),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (context) => MatchBloc(
+            matchingService: MatchingService(apiClient: ApiClient.instance),
+          )..add(const LoadMatches(excludeWithConversations: true)),
+        ),
+        BlocProvider(
+          create: (context) =>
+              SafetyBloc(safetyService: SafetyService(ApiClient.instance)),
+        ),
+      ],
       child: KeyboardDismissibleScaffold(
         body: SafeArea(
           child: BlocConsumer<MatchBloc, MatchState>(
@@ -457,8 +468,10 @@ class _MatchesScreenState extends State<MatchesScreen>
                   throw Exception('User ID not available');
                 }
 
-                // Use SafetyService to block user
-                // TODO: Inject SafetyService via DI and call blockUser(userId)
+                // Use SafetyBloc to block user
+                context.read<SafetyBloc>().add(
+                  BlockUser(userId: userId, reason: 'Blocked from matches'),
+                );
 
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('User blocked successfully')),
@@ -501,8 +514,14 @@ class _MatchesScreenState extends State<MatchesScreen>
                   throw Exception('User ID not available');
                 }
 
-                // Use SafetyService to report user
-                // TODO: Inject SafetyService via DI and call reportUser(userId, reason)
+                // Use SafetyBloc to report user
+                context.read<SafetyBloc>().add(
+                  ReportUser(
+                    reportedUserId: userId,
+                    reportType: SafetyReportType.inappropriateContent,
+                    description: 'Reported from matches screen',
+                  ),
+                );
 
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(

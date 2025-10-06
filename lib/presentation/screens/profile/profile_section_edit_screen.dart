@@ -1,10 +1,12 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 
+import '../../blocs/profile/profile_bloc.dart';
 import '../../theme/pulse_colors.dart';
 import '../../widgets/common/keyboard_dismissible_scaffold.dart';
 import '../../widgets/common/pulse_button.dart';
@@ -1315,30 +1317,31 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
           _formData.containsKey('newPhotos')) {
         try {
           final newPhotos = _formData['newPhotos'] as List<File>;
-          // final currentPhotos = _formData['photos'] as List? ?? [];
 
-          // Upload each new photo
+          // Upload each new photo using ProfileBloc
           for (int i = 0; i < newPhotos.length; i++) {
-            // TODO: Integrate with ProfileBloc for actual upload
-            // Get user ID from auth/profile bloc
-            // final userId = _formData['userId'] ?? 'current-user-id';
-
-            // In production, use ProfileBloc:
-            // context.read<ProfileBloc>().add(UploadPhoto(
-            //   userId: userId,
-            //   imagePath: newPhotos[i].path,
-            //   isPrimary: i == 0 && currentPhotos.isEmpty,
-            //   order: currentPhotos.length + i,
-            // ));
-
-            // For now, log the upload intent
             debugPrint(
-              '📸 Would upload photo ${i + 1}/${newPhotos.length}: ${newPhotos[i].path}',
+              '📸 Uploading photo ${i + 1}/${newPhotos.length}: ${newPhotos[i].path}',
+            );
+
+            context.read<ProfileBloc>().add(
+              UploadPhoto(photoPath: newPhotos[i].path),
             );
           }
 
           // Remove loading dialog
           if (mounted) Navigator.pop(context);
+
+          // Show success message
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Uploading ${newPhotos.length} photo(s)...'),
+                backgroundColor: Colors.green,
+                duration: const Duration(seconds: 2),
+              ),
+            );
+          }
         } catch (e) {
           // Remove loading dialog
           if (mounted) Navigator.pop(context);
