@@ -44,6 +44,11 @@ import '../screens/ai_companion/ai_companion_chat_screen.dart';
 import '../../../features/group_chat/presentation/screens/group_chat_screen.dart';
 import '../../../features/group_chat/presentation/screens/create_group_screen.dart';
 import '../../../features/group_chat/presentation/screens/group_list_screen.dart';
+import '../../../features/group_chat/bloc/group_chat_bloc.dart';
+import '../../../features/group_chat/data/group_chat_service.dart';
+import '../../../features/group_chat/data/group_chat_websocket_service.dart';
+import '../../core/network/api_client.dart';
+import '../../core/constants/api_constants.dart';
 import '../../../features/group_chat/presentation/screens/video_call_screen.dart'
     as group_chat_video;
 import '../screens/group_chat/group_chat_settings_screen.dart';
@@ -543,7 +548,28 @@ class AppRouter {
           path: AppRoutes.groupList,
           name: 'groupList',
           builder: (context, state) {
-            return const GroupListScreen();
+            // Create GroupChatBloc with required services
+            final apiClient = ApiClient.instance;
+            final authToken = apiClient.authToken ?? '';
+
+            final groupChatService = GroupChatService(
+              baseUrl: ApiConstants.baseUrl,
+              accessToken: authToken,
+            );
+            final wsService = GroupChatWebSocketService(
+              baseUrl: ApiConstants.websocketUrl,
+              accessToken: authToken,
+            );
+
+            final bloc = GroupChatBloc(
+              service: groupChatService,
+              wsService: wsService,
+            );
+
+            return BlocProvider.value(
+              value: bloc,
+              child: GroupListScreen(bloc: bloc),
+            );
           },
         ),
         GoRoute(

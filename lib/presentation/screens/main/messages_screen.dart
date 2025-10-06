@@ -2,9 +2,10 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:get_it/get_it.dart';
+
 
 import '../../../core/utils/logger.dart';
+import '../../../core/constants/api_constants.dart';
 import '../../theme/pulse_colors.dart';
 import '../../widgets/common/common_widgets.dart';
 import '../../widgets/messaging/message_filters.dart';
@@ -20,6 +21,9 @@ import '../../blocs/auth/auth_bloc.dart';
 import '../../blocs/auth/auth_state.dart';
 import '../../../features/group_chat/presentation/screens/group_list_screen.dart';
 import '../../../features/group_chat/bloc/group_chat_bloc.dart';
+import '../../../features/group_chat/data/group_chat_service.dart';
+import '../../../features/group_chat/data/group_chat_websocket_service.dart';
+import '../../../core/network/api_client.dart';
 import 'settings_screen.dart';
 
 /// Enhanced messages screen with conversations list
@@ -470,9 +474,30 @@ class _MessagesScreenState extends State<MessagesScreen> {
           // Group Chat button
           IconButton(
             onPressed: () {
+              // Create GroupChatBloc with required services
+              final apiClient = ApiClient.instance;
+              final authToken = apiClient.authToken ?? '';
+
+              final groupChatService = GroupChatService(
+                baseUrl: ApiConstants.baseUrl,
+                accessToken: authToken,
+              );
+              final wsService = GroupChatWebSocketService(
+                baseUrl: ApiConstants.websocketUrl,
+                accessToken: authToken,
+              );
+
+              final bloc = GroupChatBloc(
+                service: groupChatService,
+                wsService: wsService,
+              );
+
               Navigator.of(context).push(
                 MaterialPageRoute(
-                  builder: (context) => const GroupListScreen(),
+                  builder: (_) => BlocProvider.value(
+                    value: bloc,
+                    child: GroupListScreen(bloc: bloc),
+                  ),
                 ),
               );
             },
@@ -914,11 +939,30 @@ class _MessagesScreenState extends State<MessagesScreen> {
           ),
           onTap: () {
             if (!mounted) return;
+            
+            // Create GroupChatBloc with required services
+            final apiClient = ApiClient.instance;
+            final authToken = apiClient.authToken ?? '';
+
+            final groupChatService = GroupChatService(
+              baseUrl: ApiConstants.baseUrl,
+              accessToken: authToken,
+            );
+            final wsService = GroupChatWebSocketService(
+              baseUrl: ApiConstants.websocketUrl,
+              accessToken: authToken,
+            );
+
+            final bloc = GroupChatBloc(
+              service: groupChatService,
+              wsService: wsService,
+            );
+            
             Navigator.of(context).push(
               MaterialPageRoute(
-                builder: (context) => BlocProvider(
-                  create: (context) => GetIt.instance<GroupChatBloc>(),
-                  child: const GroupListScreen(),
+                builder: (_) => BlocProvider.value(
+                  value: bloc,
+                  child: GroupListScreen(bloc: bloc),
                 ),
               ),
             );

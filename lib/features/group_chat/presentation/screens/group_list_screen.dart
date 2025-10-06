@@ -10,7 +10,9 @@ import '../../../../presentation/navigation/app_router.dart';
 import '../../../../data/services/webrtc_service.dart';
 
 class GroupListScreen extends StatefulWidget {
-  const GroupListScreen({super.key});
+  final GroupChatBloc bloc;
+
+  const GroupListScreen({super.key, required this.bloc});
 
   @override
   State<GroupListScreen> createState() => _GroupListScreenState();
@@ -24,7 +26,12 @@ class _GroupListScreenState extends State<GroupListScreen>
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
-    _loadGroups();
+    // Load groups after the first frame when context is available
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _loadGroups();
+      }
+    });
   }
 
   @override
@@ -34,7 +41,7 @@ class _GroupListScreenState extends State<GroupListScreen>
   }
 
   void _loadGroups() {
-    context.read<GroupChatBloc>().add(LoadUserGroups());
+    widget.bloc.add(LoadUserGroups());
   }
 
   @override
@@ -58,10 +65,7 @@ class _GroupListScreenState extends State<GroupListScreen>
       ),
       body: TabBarView(
         controller: _tabController,
-        children: [
-          _buildGroupsTab(),
-          _buildLiveSessionsTab(),
-        ],
+        children: [_buildGroupsTab(), _buildLiveSessionsTab()],
       ),
     );
   }
@@ -136,7 +140,7 @@ class _GroupListScreenState extends State<GroupListScreen>
 
           return RefreshIndicator(
             onRefresh: () async {
-              context.read<GroupChatBloc>().add(LoadActiveLiveSessions());
+              widget.bloc.add(LoadActiveLiveSessions());
             },
             child: ListView.builder(
               padding: const EdgeInsets.all(8),
@@ -462,7 +466,7 @@ class _GroupListScreenState extends State<GroupListScreen>
                         );
 
                         // Reload sessions
-                        this.context.read<GroupChatBloc>().add(
+                        widget.bloc.add(
                               LoadActiveLiveSessions(),
                             );
 
