@@ -84,7 +84,7 @@ class ProfilePhysicalAttributesSection extends StatelessWidget {
   String _formatHeight(int cm) {
     final feet = cm ~/ 30.48;
     final inches = ((cm % 30.48) / 2.54).round();
-    return '$cm cm (${feet}\'${inches}\")';
+    return '$cm cm ($feet\'$inches\")';
   }
 
   @override
