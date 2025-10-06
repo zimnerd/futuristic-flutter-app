@@ -17,6 +17,8 @@ import '../../blocs/match/match_state.dart';
 import '../../../blocs/chat_bloc.dart';
 import '../../blocs/auth/auth_bloc.dart';
 import '../../blocs/auth/auth_state.dart';
+import '../group_chat/group_chat_list_screen.dart';
+import 'settings_screen.dart';
 
 /// Enhanced messages screen with conversations list
 class MessagesScreen extends StatefulWidget {
@@ -463,10 +465,16 @@ class _MessagesScreenState extends State<MessagesScreen> {
             ),
           ),
           const Spacer(),
-          // AI Companion button
+          // Group Chat button
           IconButton(
-            onPressed: () => context.go('/ai-companion'),
-            icon: const Icon(Icons.smart_toy),
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const GroupChatListScreen(),
+                ),
+              );
+            },
+            icon: const Icon(Icons.groups),
             style: IconButton.styleFrom(
               backgroundColor: PulseColors.primaryContainer,
               foregroundColor: PulseColors.primary,
@@ -852,44 +860,87 @@ class _MessagesScreenState extends State<MessagesScreen> {
   }
 
   void _showMessageOptions(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) => Container(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: const Icon(Icons.mark_chat_read),
-              title: const Text('Mark all as read'),
-              onTap: () {
-                Navigator.of(context).pop();
-                // Mark all conversations as read
-                _markAllAsRead();
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.settings),
-              title: const Text('Chat settings'),
-              onTap: () {
-                Navigator.of(context).pop();
-                context.go('/settings/chat');
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.archive),
-              title: const Text('Archived chats'),
-              onTap: () {
-                Navigator.of(context).pop();
-                context.go('/messages/archived');
-              },
-            ),
-          ],
+    final RenderBox button = context.findRenderObject() as RenderBox;
+    final RenderBox overlay =
+        Navigator.of(context).overlay!.context.findRenderObject() as RenderBox;
+    final RelativeRect position = RelativeRect.fromRect(
+      Rect.fromPoints(
+        button.localToGlobal(Offset.zero, ancestor: overlay),
+        button.localToGlobal(
+          button.size.bottomRight(Offset.zero),
+          ancestor: overlay,
         ),
       ),
+      Offset.zero & overlay.size,
+    );
+
+    showMenu(
+      context: context,
+      position: position,
+      color: Colors.white,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12),
+      ),
+      elevation: 8,
+      items: [
+        PopupMenuItem(
+          child: Row(
+            children: [
+              Icon(Icons.mark_chat_read, color: PulseColors.onSurface),
+              const SizedBox(width: 12),
+              Text(
+                'Mark all as read',
+                style: TextStyle(color: PulseColors.onSurface),
+              ),
+            ],
+          ),
+          onTap: () {
+            Future.delayed(Duration.zero, () {
+              _markAllAsRead();
+            });
+          },
+        ),
+        PopupMenuItem(
+          child: Row(
+            children: [
+              Icon(Icons.groups, color: PulseColors.onSurface),
+              const SizedBox(width: 12),
+              Text(
+                'Group chats',
+                style: TextStyle(color: PulseColors.onSurface),
+              ),
+            ],
+          ),
+          onTap: () {
+            Future.delayed(Duration.zero, () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const GroupChatListScreen(),
+                ),
+              );
+            });
+          },
+        ),
+        PopupMenuItem(
+          child: Row(
+            children: [
+              Icon(Icons.settings, color: PulseColors.onSurface),
+              const SizedBox(width: 12),
+              Text(
+                'Messaging settings',
+                style: TextStyle(color: PulseColors.onSurface),
+              ),
+            ],
+          ),
+          onTap: () {
+            Future.delayed(Duration.zero, () {
+              // Use Navigator.push to avoid reloading main page
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (context) => const SettingsScreen()),
+              );
+            });
+          },
+        ),
+      ],
     );
   }
 
