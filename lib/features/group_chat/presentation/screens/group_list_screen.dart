@@ -395,11 +395,17 @@ class _GroupListScreenState extends State<GroupListScreen>
                       SwitchListTile(
                         title: const Text(
                           'Require Approval',
-                          style: TextStyle(fontSize: 14),
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Color(0xFF202124), // PulseLink dark text
+                        ),
                         ),
                         subtitle: const Text(
                           'Approve participants before they join',
-                          style: TextStyle(fontSize: 12),
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Color(0xFF202124), // PulseLink dark text
+                        ),
                         ),
                         value: requireApproval,
                         onChanged: (value) {
@@ -483,13 +489,13 @@ class _GroupListScreenState extends State<GroupListScreen>
                           requireApproval: requireApproval,
                         );
 
-                    // Dispose controllers
+                    // Close loading dialog first
+                    if (mounted) navigator.pop();
+
+                    // Then dispose controllers after dialog is closed
                     titleController.dispose();
                     descriptionController.dispose();
                     maxParticipantsController.dispose();
-
-                        // Close loading
-                    if (mounted) navigator.pop();
 
                         // Show success
                     if (mounted) {
@@ -508,13 +514,13 @@ class _GroupListScreenState extends State<GroupListScreen>
                     if (!mounted) return;
                         _joinLiveSession(session);
                       } catch (e) {
-                    // Dispose controllers on error
+                    // Close loading dialog first
+                    if (mounted) navigator.pop();
+
+                    // Then dispose controllers on error
                     titleController.dispose();
                     descriptionController.dispose();
                     maxParticipantsController.dispose();
-                        
-                        // Close loading
-                    if (mounted) navigator.pop();
 
                     if (mounted) {
                         scaffoldMessenger.showSnackBar(
