@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:get_it/get_it.dart';
 
 import '../../../core/utils/logger.dart';
 import '../../theme/pulse_colors.dart';
@@ -18,6 +19,7 @@ import '../../../blocs/chat_bloc.dart';
 import '../../blocs/auth/auth_bloc.dart';
 import '../../blocs/auth/auth_state.dart';
 import '../../../features/group_chat/presentation/screens/group_list_screen.dart';
+import '../../../features/group_chat/bloc/group_chat_bloc.dart';
 import 'settings_screen.dart';
 
 /// Enhanced messages screen with conversations list
@@ -911,13 +913,15 @@ class _MessagesScreenState extends State<MessagesScreen> {
             ],
           ),
           onTap: () {
-            Future.delayed(Duration.zero, () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => const GroupListScreen(),
+            if (!mounted) return;
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => BlocProvider(
+                  create: (context) => GetIt.instance<GroupChatBloc>(),
+                  child: const GroupListScreen(),
                 ),
-              );
-            });
+              ),
+            );
           },
         ),
         PopupMenuItem(
@@ -932,12 +936,11 @@ class _MessagesScreenState extends State<MessagesScreen> {
             ],
           ),
           onTap: () {
-            Future.delayed(Duration.zero, () {
-              // Use Navigator.push to avoid reloading main page
-              Navigator.of(context).push(
-                MaterialPageRoute(builder: (context) => const SettingsScreen()),
-              );
-            });
+            if (!mounted) return;
+            // Use Navigator.push to avoid reloading main page
+            Navigator.of(context).push(
+              MaterialPageRoute(builder: (context) => const SettingsScreen()),
+            );
           },
         ),
       ],

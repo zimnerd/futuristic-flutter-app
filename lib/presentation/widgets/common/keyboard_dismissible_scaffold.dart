@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 /// A wrapper around [Scaffold] that provides consistent keyboard handling behavior
 /// across the entire app, with special optimizations for iOS.

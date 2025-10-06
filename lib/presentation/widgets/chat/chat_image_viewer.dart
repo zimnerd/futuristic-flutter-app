@@ -1,4 +1,9 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
@@ -202,23 +207,94 @@ class _ChatImageViewerState extends State<ChatImageViewer> {
     );
   }
 
-  void _saveImage(BuildContext context) {
-    // TODO: Implement save to gallery functionality
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Save to gallery - Coming soon'),
-        duration: Duration(seconds: 2),
-      ),
-    );
+  Future<void> _saveImage(BuildContext context) async {
+    try {
+      // Request storage permission
+      final status = await Permission.photos.request();
+      if (!status.isGranted) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Storage permission denied'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+        return;
+      }
+
+      // Get current image URL
+      final imageUrl = widget.images[_currentIndex].url;
+
+      // Download image
+      final response = await http.get(Uri.parse(imageUrl));
+      if (response.statusCode != 200) {
+        throw Exception('Failed to download image');
+      }
+
+      // Get downloads directory
+      final directory = await getApplicationDocumentsDirectory();
+      final timestamp = DateTime.now().millisecondsSinceEpoch;
+      final filePath = '${directory.path}/pulse_image_$timestamp.jpg';
+
+      // Save to file
+      final file = File(filePath);
+      await file.writeAsBytes(response.bodyBytes);
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Image saved to ${file.path}'),
+            backgroundColor: Colors.green,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to save image: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
-  void _shareImage(BuildContext context) {
-    // TODO: Implement share functionality
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Share image - Coming soon'),
-        duration: Duration(seconds: 2),
-      ),
-    );
+  Future<void> _shareImage(BuildContext context) async {
+    try {
+      // Get current image URL
+      final imageUrl = widget.images[_currentIndex].url;
+
+      // Download image to temp file
+      final response = await http.get(Uri.parse(imageUrl));
+      if (response.statusCode != 200) {
+        throw Exception('Failed to download image');
+      }
+
+      // Get temp directory
+      final directory = await getTemporaryDirectory();
+      final timestamp = DateTime.now().millisecondsSinceEpoch;
+      final filePath = '${directory.path}/share_image_$timestamp.jpg';
+
+      // Save to temp file
+      final file = File(filePath);
+      await file.writeAsBytes(response.bodyBytes);
+
+      // Share the file
+      await Share.shareXFiles([
+        XFile(file.path),
+      ], text: 'Shared from Pulse Dating');
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to share image: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 }

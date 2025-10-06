@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:io' show Platform;
@@ -107,6 +109,7 @@ class _KeyboardAwareTextFieldState extends State<KeyboardAwareTextField> {
   }
 
   /// Scroll to make this field visible when keyboard appears
+  /// Safe to use context here as we access it from GlobalKey and check mounted
   void _scrollToField() {
     if (widget.scrollController == null) return;
 
@@ -115,17 +118,19 @@ class _KeyboardAwareTextFieldState extends State<KeyboardAwareTextField> {
     Future.delayed(Duration(milliseconds: delayMs), () {
       if (!mounted) return;
 
-      final context = _fieldKey.currentContext;
-      if (context == null) return;
+      // Safe: accessing GlobalKey's context, not widget BuildContext
+      final fieldContext = _fieldKey.currentContext;
+      if (fieldContext == null || !mounted) return;
 
-      final renderBox = context.findRenderObject() as RenderBox?;
+      final renderBox = fieldContext.findRenderObject() as RenderBox?;
       if (renderBox == null) return;
 
       final fieldOffset = renderBox.localToGlobal(Offset.zero).dy;
       final scrollOffset = widget.scrollController!.offset;
       final viewportHeight =
           widget.scrollController!.position.viewportDimension;
-      final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
+      if (!mounted) return;
+      final keyboardHeight = MediaQuery.of(fieldContext).viewInsets.bottom;
 
       // Calculate visible area (viewport minus keyboard)
       final visibleHeight = viewportHeight - keyboardHeight;
