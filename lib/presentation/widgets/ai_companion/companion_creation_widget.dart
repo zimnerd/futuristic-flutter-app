@@ -104,7 +104,12 @@ class _CompanionCreationWidgetState extends State<CompanionCreationWidget> {
   Widget build(BuildContext context) {
     return Container(
       height: MediaQuery.of(context).size.height * 0.9, // Constrain height
-      padding: const EdgeInsets.all(24),
+      padding: EdgeInsets.only(
+        left: 24,
+        right: 24,
+        top: 24,
+        bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+      ),
       child: Form(
         key: _formKey,
         child: Column(

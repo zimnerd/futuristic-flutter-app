@@ -90,7 +90,12 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
         ],
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+          padding: EdgeInsets.only(
+            left: 16,
+            right: 16,
+            top: 16,
+            bottom: MediaQuery.of(context).viewInsets.bottom + 16,
+          ),
         child: Form(
           key: _formKey,
           child: Column(

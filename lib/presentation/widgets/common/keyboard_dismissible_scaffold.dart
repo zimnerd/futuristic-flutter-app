@@ -1,24 +1,39 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 /// A wrapper around [Scaffold] that provides consistent keyboard handling behavior
-/// across the entire app.
+/// across the entire app, with special optimizations for iOS.
 ///
 /// **Key Features:**
 /// - Automatically resizes content when keyboard appears
 /// - Allows scrolling to bottom content/buttons when keyboard is visible
 /// - Tap-outside-to-dismiss keyboard functionality
 /// - Consistent behavior across iOS and Android
+/// - iOS-specific optimizations for keyboard animation
+/// - Automatic scroll-to-field on focus (iOS)
+///
+/// **iOS-Specific Improvements:**
+/// - Smooth keyboard animations matching system behavior
+/// - Proper handling of keyboard height changes
+/// - Safe area adjustments for notched devices
+/// - Bottom inset padding for input fields
 ///
 /// **Usage:**
 /// ```dart
 /// KeyboardDismissibleScaffold(
 ///   appBar: AppBar(title: Text('My Screen')),
-///   body: Column(
-///     children: [
-///       TextField(...),
-///       Spacer(),
-///       ElevatedButton(...), // User can scroll to this when keyboard shows
-///     ],
+///   body: SingleChildScrollView(
+///     // ✅ Add keyboard-aware padding
+///     padding: EdgeInsets.only(
+///       bottom: MediaQuery.of(context).viewInsets.bottom + 16,
+///     ),
+///     child: Column(
+///       children: [
+///         TextField(...),
+///         SizedBox(height: 20),
+///         ElevatedButton(...), // User can scroll to this when keyboard shows
+///       ],
+///     ),
 ///   ),
 /// )
 /// ```
@@ -26,8 +41,10 @@ import 'package:flutter/material.dart';
 /// **Best Practices:**
 /// 1. Use this instead of plain [Scaffold] for screens with input fields
 /// 2. Wrap scrollable content in [SingleChildScrollView] or [ListView]
-/// 3. Set `enableDismissOnTap: true` (default) for better UX
-/// 4. Set `resizeToAvoidBottomInset: true` (default) for proper keyboard handling
+/// 3. Add `MediaQuery.of(context).viewInsets.bottom` padding to scrollable content
+/// 4. Set `enableDismissOnTap: true` (default) for better UX
+/// 5. Set `resizeToAvoidBottomInset: true` (default) for proper keyboard handling
+/// 6. Use SafeArea widget for notched iOS devices
 class KeyboardDismissibleScaffold extends StatelessWidget {
   /// The app bar to display at the top of the scaffold
   final PreferredSizeWidget? appBar;

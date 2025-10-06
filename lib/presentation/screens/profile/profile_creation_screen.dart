@@ -231,7 +231,12 @@ class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
 
   Widget _buildBasicInfoStep() {
     return Padding(
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.only(
+        left: 20,
+        right: 20,
+        top: 20,
+        bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+      ),
       child: Form(
         key: _formKey,
         child: Column(
@@ -357,7 +362,12 @@ class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
 
   Widget _buildPhotosStep() {
     return Padding(
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.only(
+        left: 20,
+        right: 20,
+        top: 20,
+        bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -415,7 +425,12 @@ class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
 
   Widget _buildBioStep() {
     return Padding(
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.only(
+        left: 20,
+        right: 20,
+        top: 20,
+        bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -489,7 +504,12 @@ class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
 
   Widget _buildInterestsStep() {
     return Padding(
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.only(
+        left: 20,
+        right: 20,
+        top: 20,
+        bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -543,7 +563,12 @@ class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
 
   Widget _buildPreferencesStep() {
     return Padding(
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.only(
+        left: 20,
+        right: 20,
+        top: 20,
+        bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

@@ -352,6 +352,12 @@ class _EditPaymentMethodDialogState extends State<_EditPaymentMethodDialog> {
         'Edit Payment Method',
         style: AppTextStyles.heading3,
       ),
+      contentPadding: EdgeInsets.only(
+        left: 24,
+        right: 24,
+        top: 20,
+        bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+      ),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [

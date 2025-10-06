@@ -157,6 +157,9 @@ class _GroupChatSettingsScreenState extends State<GroupChatSettingsScreen> {
 
   Widget _buildBody() {
     return SingleChildScrollView(
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).viewInsets.bottom,
+      ),
       child: Column(
         children: [
           // Group Info Section
@@ -1523,7 +1526,12 @@ class _AddParticipantsDialogState extends State<AddParticipantsDialog> {
       backgroundColor: const Color(0xFF1A1F3A),
       child: Container(
         constraints: const BoxConstraints(maxHeight: 600, maxWidth: 400),
-        padding: const EdgeInsets.all(20),
+        padding: EdgeInsets.only(
+          left: 20,
+          right: 20,
+          top: 20,
+          bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,

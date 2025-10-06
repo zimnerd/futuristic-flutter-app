@@ -49,7 +49,12 @@ class _CreateSpeedDatingEventDialogState extends State<CreateSpeedDatingEventDia
       child: Container(
         constraints: const BoxConstraints(maxWidth: 400, maxHeight: 600),
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
+          padding: EdgeInsets.only(
+            left: 24,
+            right: 24,
+            top: 24,
+            bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+          ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,

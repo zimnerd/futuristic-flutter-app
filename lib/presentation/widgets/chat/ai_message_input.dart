@@ -145,8 +145,16 @@ class _AiMessageInputState extends State<AiMessageInput>
 
   @override
   Widget build(BuildContext context) {
+    // Get keyboard height for proper padding on iOS
+    final keyboardPadding = MediaQuery.of(context).viewInsets.bottom;
+    
     return Container(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+      padding: EdgeInsets.fromLTRB(
+        16,
+        12,
+        16,
+        keyboardPadding > 0 ? keyboardPadding + 8 : 8,
+      ),
       decoration: BoxDecoration(
         color: Colors.white,
         boxShadow: [

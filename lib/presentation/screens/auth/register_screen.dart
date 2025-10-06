@@ -191,8 +191,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
             ),
           ),
           child: SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.all(PulseSpacing.xl),
+            child: SingleChildScrollView(
+              padding: EdgeInsets.only(
+                left: PulseSpacing.xl,
+                right: PulseSpacing.xl,
+                top: PulseSpacing.xl,
+                bottom:
+                    MediaQuery.of(context).viewInsets.bottom + PulseSpacing.xl,
+              ),
               child: Form(
                 key: _formKey,
                 child: Column(
@@ -225,9 +231,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     const SizedBox(height: PulseSpacing.xxl),
 
                     // Form fields
-                    Expanded(
-                      child: SingleChildScrollView(
-                        child: Column(
+                    Column(
                           children: [
                             // Name input
                             PulseTextField(
@@ -352,8 +356,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             ),
                           ],
                         ),
-                      ),
-                    ),
+
+                    const SizedBox(height: PulseSpacing.xl),
 
                     // Sign in prompt
                     Row(

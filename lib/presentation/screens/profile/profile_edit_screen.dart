@@ -1106,7 +1106,12 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
 
   Widget _buildBasicInfoPage() {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.only(
+        left: 16,
+        right: 16,
+        top: 16,
+        bottom: MediaQuery.of(context).viewInsets.bottom + 16,
+      ),
       child: Form(
         key: _formKey,
         child: Column(
@@ -1241,7 +1246,12 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
 
   Widget _buildPhotosPage() {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.only(
+        left: 16,
+        right: 16,
+        top: 16,
+        bottom: MediaQuery.of(context).viewInsets.bottom + 16,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1277,7 +1287,12 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
 
   Widget _buildInterestsPage() {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.only(
+        left: 16,
+        right: 16,
+        top: 16,
+        bottom: MediaQuery.of(context).viewInsets.bottom + 16,
+      ),
       child: InterestsSelector(
         selectedInterests: _selectedInterests,
         onInterestsChanged: (interests) {
@@ -1293,7 +1308,12 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
 
   Widget _buildLifestylePage() {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.only(
+        left: 16,
+        right: 16,
+        top: 16,
+        bottom: MediaQuery.of(context).viewInsets.bottom + 16,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1411,7 +1431,12 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
 
   Widget _buildPrivacyPage() {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.only(
+        left: 16,
+        right: 16,
+        top: 16,
+        bottom: MediaQuery.of(context).viewInsets.bottom + 16,
+      ),
       child: ProfilePrivacySettings(
         privacySettings: _privacySettings,
         onSettingsChanged: (settings) {

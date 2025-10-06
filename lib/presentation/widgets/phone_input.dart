@@ -264,7 +264,12 @@ class _CountryPickerBottomSheetState extends State<_CountryPickerBottomSheet> {
     
     return Container(
       height: mediaQuery.size.height * 0.7,
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.only(
+        left: 16,
+        right: 16,
+        top: 16,
+        bottom: MediaQuery.of(context).viewInsets.bottom + 16,
+      ),
       decoration: BoxDecoration(
         color: colorScheme.surface,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),

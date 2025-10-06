@@ -228,11 +228,11 @@ class _CustomMessageSheetState extends State<_CustomMessageSheet> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       child: Padding(
-        padding: EdgeInsets.fromLTRB(
-          16,
-          16,
-          16,
-          MediaQuery.of(context).viewInsets.bottom + 16,
+        padding: EdgeInsets.only(
+          left: 16,
+          right: 16,
+          top: 16,
+          bottom: MediaQuery.of(context).viewInsets.bottom + 16,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,

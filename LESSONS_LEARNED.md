@@ -5,6 +5,155 @@ This document captures key learnings from building the **Flutter mobile dating a
 
 ---
 
+## ⌨️ **iOS Keyboard Handling - Comprehensive Solution (January 2025)**
+
+**Status**: ✅ **IMPLEMENTED** - Multi-layered keyboard handling architecture  
+**Date**: January 2025  
+**Priority**: **CRITICAL** - Core UX for iOS users
+
+**Context**: iOS keyboard can cover form fields and buttons, especially last fields in scrollable forms. Flutter doesn't automatically scroll to focused fields or add keyboard padding by default. This creates frustrating UX where users can't see what they're typing or reach the submit button.
+
+### **Problem - Keyboard Covering UI Elements**
+
+#### **Root Issues**
+1. **No Auto-Scroll**: Fields don't automatically scroll into view when focused
+2. **Missing Padding**: Fixed-bottom elements (like chat input) get covered by keyboard
+3. **Inconsistent Handling**: Some screens handle keyboard properly, others don't
+4. **Manual Calculations**: Developers must manually calculate keyboard height and scroll positions
+
+**Why This Is Bad**:
+- **Poor UX**: Users can't see what they're typing
+- **Inaccessible Buttons**: Submit buttons get covered by keyboard
+- **Platform Inconsistency**: Works differently on iOS vs Android
+- **Developer Friction**: Every form requires custom keyboard handling code
+
+### **Solution - Four-Layer Architecture**
+
+#### **Layer 1: Keyboard Packages**
+
+**Packages Added** (in `pubspec.yaml`):
+```yaml
+dependencies:
+  keyboard_dismisser: ^3.0.0  # Global tap-to-dismiss
+  keyboard_actions: ^4.1.0     # Custom keyboard toolbar (next/done buttons)
+```
+
+#### **Layer 2: FormScrollHelper Utility**
+
+**File**: `lib/core/utils/form_scroll_helper.dart`
+
+**Purpose**: Automatic scroll-to-field when keyboard appears
+
+**Algorithm**:
+1. Register fields → Link each FocusNode to a GlobalKey
+2. Listen for focus → Detect when field receives focus
+3. Calculate position → Read field offset, viewport height, keyboard height
+4. Compute scroll → Position field 25% from top of visible area (optimal)
+5. Animate → Smooth scroll with platform-specific timing (400ms iOS, 300ms Android)
+
+#### **Layer 3: KeyboardDismissibleScaffold Widget**
+
+**File**: `lib/presentation/widgets/common/keyboard_dismissible_scaffold.dart`
+
+**Features**:
+- Automatic resize with `resizeToAvoidBottomInset: true`
+- Tap-to-dismiss with GestureDetector
+- Safe area handling for iOS notches
+- Smooth keyboard animations
+
+**Usage Pattern**:
+```dart
+KeyboardDismissibleScaffold(
+  body: SingleChildScrollView(
+    padding: EdgeInsets.only(
+      bottom: MediaQuery.of(context).viewInsets.bottom + 24,  // KEY!
+    ),
+    child: Form(children: [...]),
+  ),
+)
+```
+
+#### **Layer 4: KeyboardAwareTextField Widget**
+
+**File**: `lib/presentation/widgets/common/keyboard_aware_textfield.dart`
+
+**Features**:
+- Auto-scroll to field when focused
+- Field navigation (next/done buttons)
+- Consistent brand styling
+- Built-in validation display
+
+**Example**:
+```dart
+KeyboardAwareTextField(
+  label: 'Email',
+  focusNode: _emailFocusNode,
+  nextFocusNode: _passwordFocusNode,  // Auto-move
+  scrollController: _scrollController,
+)
+```
+
+### **Implementation Checklist**
+
+**For New Screens**:
+- [ ] Use `KeyboardDismissibleScaffold` as base
+- [ ] Wrap form in `SingleChildScrollView`
+- [ ] Add `MediaQuery.of(context).viewInsets.bottom` padding
+- [ ] Use `KeyboardAwareTextField` for inputs
+- [ ] Set proper TextInputAction (next/done)
+
+**For Existing Screens**:
+- [ ] Verify viewInsets.bottom padding exists
+- [ ] Test on iOS devices (especially iPhone X+)
+- [ ] Test with long forms
+- [ ] Test fixed-bottom elements (chat input)
+
+### **Key Takeaways**
+
+1. ✅ **Always add MediaQuery.viewInsets.bottom padding** to scrollable content
+2. ✅ **Position focused field at 25% from top** (not center) for better visibility
+3. ✅ **Use platform-specific animation timing** (400ms iOS, 300ms Android)
+4. ✅ **Clamp scroll positions** to avoid over-scrolling
+5. ✅ **Use WidgetsBinding.addPostFrameCallback** for layout calculations
+6. ✅ **Extension methods provide clean API** (KeyboardUtils on BuildContext)
+7. ✅ **iOS requires more careful height management** than Android
+
+### **Common Pitfalls**
+
+❌ **Fixed padding (keyboard covers content)**:
+```dart
+padding: const EdgeInsets.all(24)  // BAD
+```
+
+✅ **Dynamic padding**:
+```dart
+padding: EdgeInsets.only(
+  left: 24, right: 24, top: 24,
+  bottom: MediaQuery.of(context).viewInsets.bottom + 24,  // GOOD
+)
+```
+
+❌ **Missing ScrollController** (can't scroll programmatically)
+
+✅ **Provide ScrollController** for auto-scroll behavior
+
+### **Testing Strategy**
+
+**Devices**: iPhone SE, iPhone 14 Pro, iPhone 14 Pro Max, iPad  
+**Scenarios**: Single field, long form, chat input, search bar, modal  
+**Check**: Auto-scroll, no overlap, smooth animations, safe area
+
+### **Related Files**
+
+- `lib/core/utils/form_scroll_helper.dart` - Auto-scroll utility
+- `lib/presentation/widgets/common/keyboard_dismissible_scaffold.dart` - Base scaffold
+- `lib/presentation/widgets/common/keyboard_aware_textfield.dart` - Smart text field
+- `lib/presentation/widgets/chat/ai_message_input.dart` - Chat input example
+- `lib/presentation/screens/auth/login_screen.dart` - Form example
+- `mobile/pubspec.yaml` - Keyboard packages
+
+---
+
 ## 🎥 **iOS Permissions - Proactive Camera & Microphone Access (January 2025)**
 
 **Status**: ✅ **IMPLEMENTED** - Proactive permission handling with user-friendly dialogs  
@@ -5678,5 +5827,844 @@ GET /messages/:id/read-receipts - Get read status
 5. **Error Recovery**: Always have fallbacks and retry mechanisms
 6. **Performance First**: Lazy loading, caching, and efficient rendering are critical
 7. **Accessibility Matters**: Design for all users from day one, not as an afterthought
+
+---
+
+## 📸 **Chat Media Attachments - Upload Status & Full-Screen Viewing (January 2025)**
+
+**Status**: ✅ **IMPLEMENTED** - Complete image upload and viewing system  
+**Date**: January 2025  
+**Priority**: **HIGH** - Core messaging feature
+
+**Context**: Users needed ability to attach images to chat messages with organized backend storage, upload status tracking, captions, and full-screen viewing. System must handle three upload states (uploading/uploaded/failed) with appropriate UI feedback and retry mechanisms.
+
+### **Architecture Overview**
+
+```mermaid
+flowchart LR
+    A[User Picks Image] --> B[ChatImageMessage]
+    B --> C[Upload State: Uploading]
+    C --> D[FormData Upload]
+    D --> E{Success?}
+    E -->|Yes| F[Upload State: Uploaded]
+    E -->|No| G[Upload State: Failed]
+    F --> H[Tap to View]
+    G --> I[Retry/Delete Options]
+    H --> J[ChatImageViewer]
+    J --> K[Full Screen + Zoom]
+```
+
+### **Problem - 400 Bad Request on Image Upload**
+
+#### **Root Cause: JSON Instead of Multipart/Form-Data**
+
+**Original Implementation** ❌:
+```dart
+// chat_remote_data_source.dart (WRONG)
+Future<String> uploadMedia(String filePath, String type) async {
+  final response = await _dio.post(
+    '/chat/media/upload',
+    data: {
+      'filePath': filePath,  // ❌ Sending file path as JSON
+      'type': type,
+    },
+  );
+  return response.data['mediaId'];
+}
+```
+
+**Why This Failed**:
+- Backend expects `Express.Multer.File` from `FileInterceptor('file')`
+- JSON payload cannot contain actual file binary data
+- Backend correctly returned 400 Bad Request (invalid format)
+
+### **Solution - Complete Chat Media System**
+
+#### **Layer 1: Backend Endpoint (NestJS)**
+
+**File**: `backend/src/chat/chat.controller.ts`
+
+```typescript
+@Post('chat/media/upload')
+@UseInterceptors(FileInterceptor('file'))
+@UseGuards(JwtAuthGuard)
+async uploadChatMedia(
+  @CurrentUser() user: any,
+  @UploadedFile() file: Express.Multer.File,
+  @Body('caption') caption?: string,
+) {
+  // Determine media type from MIME type
+  const mediaType = file.mimetype.startsWith('image/') ? 'IMAGE'
+    : file.mimetype.startsWith('video/') ? 'VIDEO'
+    : file.mimetype.startsWith('audio/') ? 'AUDIO'
+    : 'DOCUMENT';
+
+  const uploadDto: UploadMediaDto = {
+    category: 'CHAT',
+    mediaType,
+    isPublic: false,
+    caption,
+    requiresModeration: false,
+  };
+
+  const result = await this.mediaService.uploadMedia(
+    user.sub,
+    file,
+    uploadDto,
+  );
+
+  return {
+    success: true,
+    data: {
+      mediaId: result.id,
+      url: result.url,
+      thumbnailUrl: result.thumbnailUrl,
+      type: result.mediaType,
+      caption: result.caption,
+    },
+  };
+}
+```
+
+**Key Features**:
+- ✅ Uses `FileInterceptor('file')` for multipart handling
+- ✅ Integrates with existing MediaService for organized folders
+- ✅ Creates: `uploads/{userId}/chat/{date}/filename.ext`
+- ✅ Automatic MIME type detection
+- ✅ Returns wrapped response: `{success, data: {...}}`
+
+**Module Integration**:
+```typescript
+// chat.module.ts
+@Module({
+  imports: [
+    MediaModule,  // ✅ Import for MediaService access
+    // ... other modules
+  ],
+  controllers: [ChatController],
+  providers: [ChatService],
+})
+export class ChatModule {}
+```
+
+#### **Layer 2: Mobile Upload Service (Dart/Dio)**
+
+**File**: `lib/data/datasources/remote/chat_remote_data_source.dart`
+
+```dart
+import 'dart:io';
+import 'package:dio/dio.dart';
+import 'package:path/path.dart' as path;
+
+class ChatRemoteDataSource {
+  final Dio _dio;
+
+  Future<String> uploadMedia(
+    String filePath,
+    String type, {
+    String? caption,
+  }) async {
+    final file = File(filePath);
+    
+    // ✅ Validate file exists before upload
+    if (!await file.exists()) {
+      throw ApiException(
+        message: 'File not found: $filePath',
+        statusCode: 404,
+      );
+    }
+
+    // ✅ Create FormData with actual file binary
+    final formData = FormData.fromMap({
+      'file': await MultipartFile.fromFile(
+        file.path,
+        filename: path.basename(file.path),
+      ),
+      'type': type,
+      if (caption != null) 'caption': caption,
+    });
+
+    // ✅ Upload to dedicated chat media endpoint
+    final response = await _dio.post(
+      '/chat/media/upload',
+      data: formData,
+    );
+
+    // ✅ Handle wrapped response format
+    final data = response.data['data'] ?? response.data;
+    return data['mediaId'] as String;
+  }
+}
+```
+
+**Critical Points**:
+- ✅ Uses `MultipartFile.fromFile()` for actual file upload
+- ✅ File existence check prevents cryptic errors
+- ✅ Handles both wrapped and unwrapped responses
+- ✅ Returns mediaId for message association
+
+#### **Layer 3: Domain Model Enhancement**
+
+**File**: `lib/domain/entities/message.dart`
+
+```dart
+/// Media attachment with upload lifecycle tracking
+class MediaAttachment extends Equatable {
+  final String url;
+  final String? thumbnailUrl;
+  final String? caption;
+  final int? width;
+  final int? height;
+  final int? fileSize;
+  final int? duration;  // For videos/audio
+  final String? mimeType;
+  final MediaUploadStatus uploadStatus;
+
+  const MediaAttachment({
+    required this.url,
+    this.thumbnailUrl,
+    this.caption,
+    this.width,
+    this.height,
+    this.fileSize,
+    this.duration,
+    this.mimeType,
+    this.uploadStatus = MediaUploadStatus.uploaded,
+  });
+
+  @override
+  List<Object?> get props => [
+        url,
+        thumbnailUrl,
+        caption,
+        width,
+        height,
+        fileSize,
+        duration,
+        mimeType,
+        uploadStatus,
+      ];
+}
+
+/// Upload lifecycle states
+enum MediaUploadStatus {
+  uploading,  // Show progress spinner
+  uploaded,   // Tap to view full screen
+  failed,     // Show retry/delete buttons
+}
+
+/// Extended Message entity
+class Message extends Equatable {
+  // ... existing fields
+  final MediaAttachment? mediaAttachment;
+
+  const Message({
+    // ... other parameters
+    this.mediaAttachment,
+  });
+
+  @override
+  List<Object?> get props => [
+    // ... other props
+    mediaAttachment,
+  ];
+}
+```
+
+**Why This Design Works**:
+- ✅ Immutable value object (Equatable)
+- ✅ Upload status enables reactive UI
+- ✅ Rich metadata for display (dimensions, file size, duration)
+- ✅ Optional fields for progressive enhancement
+- ✅ Separate thumbnail URL for performance
+
+#### **Layer 4: Chat Image Message Widget**
+
+**File**: `lib/presentation/widgets/chat/chat_image_message.dart`
+
+```dart
+class ChatImageMessage extends StatelessWidget {
+  final Message message;
+  final bool isCurrentUser;
+  final VoidCallback? onRetryUpload;
+  final VoidCallback? onDeleteUpload;
+
+  @override
+  Widget build(BuildContext context) {
+    final mediaAttachment = message.mediaAttachment;
+    if (mediaAttachment == null) return const SizedBox.shrink();
+
+    return GestureDetector(
+      // ✅ Open full-screen viewer on tap (if uploaded)
+      onTap: mediaAttachment.uploadStatus == MediaUploadStatus.uploaded
+          ? () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => ChatImageViewer(
+                    images: [mediaAttachment],
+                    initialIndex: 0,
+                    heroTag: 'chat_image_${message.id}',
+                  ),
+                ),
+              );
+            }
+          : null,
+      onLongPress: () => _showActions(context, mediaAttachment),
+      child: Stack(
+        children: [
+          // Image with rounded corners
+          ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: CachedNetworkImage(
+              imageUrl: mediaAttachment.thumbnailUrl ?? mediaAttachment.url,
+              width: 280,
+              placeholder: (context, url) => _buildShimmerPlaceholder(),
+              errorWidget: (context, url, error) => _buildErrorState(),
+            ),
+          ),
+
+          // Upload status overlay
+          if (mediaAttachment.uploadStatus == MediaUploadStatus.uploading)
+            _buildUploadingOverlay(),
+
+          if (mediaAttachment.uploadStatus == MediaUploadStatus.failed)
+            _buildFailedOverlay(context),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildUploadingOverlay() {
+    return Positioned.fill(
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.black.withValues(alpha: 0.5),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: const Center(
+          child: CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFailedOverlay(BuildContext context) {
+    return Positioned.fill(
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.red.withValues(alpha: 0.7),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.error_outline, color: Colors.white, size: 48),
+            const SizedBox(height: 8),
+            const Text(
+              'Upload Failed',
+              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // Retry button
+                ElevatedButton.icon(
+                  onPressed: onRetryUpload,
+                  icon: const Icon(Icons.refresh),
+                  label: const Text('Retry'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    foregroundColor: Colors.red,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                // Delete button
+                OutlinedButton.icon(
+                  onPressed: onDeleteUpload,
+                  icon: const Icon(Icons.delete),
+                  label: const Text('Delete'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.white,
+                    side: const BorderSide(color: Colors.white),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+```
+
+**UI States Summary**:
+- **Uploading**: Semi-transparent black overlay + spinner
+- **Uploaded**: Clean image, tap to view full screen
+- **Failed**: Red overlay + retry/delete buttons
+
+#### **Layer 5: Full-Screen Image Viewer**
+
+**File**: `lib/presentation/widgets/chat/chat_image_viewer.dart`
+
+**Dependencies**:
+```yaml
+# pubspec.yaml
+dependencies:
+  photo_view: ^0.15.0  # Pinch-to-zoom, pan, rotate
+```
+
+```dart
+import 'package:photo_view/photo_view.dart';
+import 'package:photo_view/photo_view_gallery.dart';
+
+class ChatImageViewer extends StatefulWidget {
+  final List<MediaAttachment> images;
+  final int initialIndex;
+  final String? heroTag;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        backgroundColor: Colors.black,
+        title: Text('${_currentIndex + 1} / ${widget.images.length}'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.download),
+            onPressed: () => _saveImage(context),
+          ),
+          IconButton(
+            icon: const Icon(Icons.share),
+            onPressed: () => _shareImage(context),
+          ),
+        ],
+      ),
+      body: Stack(
+        children: [
+          // Image gallery with pinch-to-zoom
+          PhotoViewGallery.builder(
+            pageController: _pageController,
+            itemCount: widget.images.length,
+            onPageChanged: (index) => setState(() => _currentIndex = index),
+            builder: (context, index) {
+              final image = widget.images[index];
+              return PhotoViewGalleryPageOptions(
+                imageProvider: CachedNetworkImageProvider(image.url),
+                heroAttributes: widget.heroTag != null
+                    ? PhotoViewHeroAttributes(tag: '${widget.heroTag}_$index')
+                    : null,
+                minScale: PhotoViewComputedScale.contained,
+                maxScale: PhotoViewComputedScale.covered * 2.0,
+                initialScale: PhotoViewComputedScale.contained,
+              );
+            },
+          ),
+
+          // Caption overlay (bottom)
+          if (widget.images[_currentIndex].caption != null)
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.bottomCenter,
+                    end: Alignment.topCenter,
+                    colors: [
+                      Colors.black.withValues(alpha: 0.8),
+                      Colors.black.withValues(alpha: 0.0),
+                    ],
+                  ),
+                ),
+                child: Text(
+                  widget.images[_currentIndex].caption!,
+                  style: const TextStyle(color: Colors.white, fontSize: 16),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ),
+
+          // Image counter dots (if multiple images)
+          if (widget.images.length > 1)
+            Positioned(
+              top: 16,
+              child: _buildImageIndicators(),
+            ),
+        ],
+      ),
+    );
+  }
+}
+```
+
+**Key Features**:
+- ✅ Hero animation from chat message (smooth transition)
+- ✅ Pinch-to-zoom (PhotoView library)
+- ✅ Swipe between images (if multiple)
+- ✅ Caption overlay with gradient background
+- ✅ Page indicators (dots)
+- ✅ Save and share actions (TODO: implement)
+
+### **Upload Flow Step-by-Step**
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant UI as ChatImageMessage
+    participant BLoC as ChatBloc
+    participant Service as ChatRemoteDataSource
+    participant Backend as NestJS API
+    participant Storage as MediaService
+
+    User->>UI: Pick image from gallery
+    UI->>BLoC: SendMessageEvent(mediaAttachment: uploading)
+    BLoC->>UI: Emit ChatState(optimistic message)
+    UI->>UI: Show image with spinner overlay
+    
+    BLoC->>Service: uploadMedia(filePath, type, caption)
+    Service->>Service: Create FormData with MultipartFile
+    Service->>Backend: POST /chat/media/upload (multipart/form-data)
+    Backend->>Storage: uploadMedia(userId, file, {category: 'CHAT'})
+    Storage->>Storage: Create uploads/{userId}/chat/{date}/
+    Storage->>Storage: Save file + generate thumbnail
+    Storage-->>Backend: {mediaId, url, thumbnailUrl}
+    Backend-->>Service: {success: true, data: {...}}
+    Service-->>BLoC: mediaId
+    
+    BLoC->>Backend: POST /chat/messages (with mediaId)
+    Backend-->>BLoC: Message created
+    BLoC->>UI: Emit ChatState(uploadStatus: uploaded)
+    UI->>UI: Remove spinner, enable tap to view
+    
+    User->>UI: Tap image
+    UI->>UI: Navigate to ChatImageViewer (full screen)
+```
+
+### **Error Handling Patterns**
+
+#### **Network Failure During Upload**
+
+```dart
+// In ChatBloc
+try {
+  final mediaId = await _chatRepository.uploadMedia(filePath, type);
+  // Update message with uploaded status
+  emit(state.copyWith(
+    messages: state.messages.map((msg) =>
+      msg.id == tempId
+        ? msg.copyWith(
+            mediaAttachment: msg.mediaAttachment?.copyWith(
+              uploadStatus: MediaUploadStatus.uploaded,
+            ),
+          )
+        : msg
+    ).toList(),
+  ));
+} catch (e) {
+  // Update message with failed status
+  emit(state.copyWith(
+    messages: state.messages.map((msg) =>
+      msg.id == tempId
+        ? msg.copyWith(
+            mediaAttachment: msg.mediaAttachment?.copyWith(
+              uploadStatus: MediaUploadStatus.failed,
+            ),
+          )
+        : msg
+    ).toList(),
+  ));
+}
+```
+
+#### **Retry Mechanism**
+
+```dart
+// In ChatImageMessage widget
+onRetryUpload: () {
+  context.read<ChatBloc>().add(
+    RetryMediaUploadEvent(messageId: message.id),
+  );
+},
+```
+
+### **Best Practices Learned**
+
+#### **✅ DO: Always Use FormData for File Uploads**
+```dart
+// ✅ Correct
+final formData = FormData.fromMap({
+  'file': await MultipartFile.fromFile(filePath),
+});
+await _dio.post('/upload', data: formData);
+```
+
+#### **❌ DON'T: Send File Paths as JSON**
+```dart
+// ❌ Wrong
+await _dio.post('/upload', data: {'filePath': '/path/to/file'});
+```
+
+#### **✅ DO: Track Upload Lifecycle in Domain Model**
+```dart
+enum MediaUploadStatus { uploading, uploaded, failed }
+
+class MediaAttachment {
+  final MediaUploadStatus uploadStatus;
+  // ...
+}
+```
+
+#### **✅ DO: Show Upload Status in UI**
+```dart
+if (mediaAttachment.uploadStatus == MediaUploadStatus.uploading) {
+  return CircularProgressIndicator();
+} else if (mediaAttachment.uploadStatus == MediaUploadStatus.failed) {
+  return RetryButton();
+}
+```
+
+#### **✅ DO: Validate Files Before Upload**
+```dart
+final file = File(filePath);
+if (!await file.exists()) {
+  throw FileNotFoundException();
+}
+```
+
+#### **✅ DO: Use Dedicated Endpoints for Different Upload Types**
+```dart
+// ✅ Correct
+POST /chat/media/upload       // Chat attachments
+POST /profile/media/upload    // Profile pictures
+POST /story/media/upload      // Story content
+```
+
+#### **❌ DON'T: Use Generic Upload Endpoint for Everything**
+```dart
+// ❌ Wrong (loses context, harder to organize)
+POST /media/upload  // Used for everything
+```
+
+### **Performance Optimizations**
+
+#### **1. Thumbnail Generation (Backend)**
+```typescript
+// MediaService automatically creates thumbnails for images
+{
+  url: 'https://.../image.jpg',
+  thumbnailUrl: 'https://.../image_thumb.jpg',  // 300x300
+}
+```
+
+#### **2. Progressive Image Loading (Mobile)**
+```dart
+CachedNetworkImage(
+  imageUrl: mediaAttachment.url,
+  placeholder: (context, url) => CachedNetworkImage(
+    imageUrl: mediaAttachment.thumbnailUrl!,  // Load thumbnail first
+    placeholder: (context, url) => Shimmer(...),
+  ),
+)
+```
+
+#### **3. Image Caching**
+```dart
+// Uses cached_network_image package
+// - Automatic disk caching
+// - Memory caching
+// - Stale-while-revalidate pattern
+```
+
+### **Folder Structure**
+
+```
+uploads/
+├── {userId}/
+│   ├── chat/
+│   │   ├── 2025-01-20/
+│   │   │   ├── abc123_original.jpg
+│   │   │   ├── abc123_thumb.jpg
+│   │   │   └── def456_original.mp4
+│   │   └── 2025-01-21/
+│   │       └── ...
+│   ├── profile/
+│   │   └── ...
+│   └── story/
+│       └── ...
+```
+
+**Organization Benefits**:
+- ✅ Easy to find user's media
+- ✅ Date-based organization aids cleanup
+- ✅ Category separation (chat vs profile vs story)
+- ✅ Automatic folder creation
+- ✅ Thumbnail co-location with originals
+
+### **Testing Checklist**
+
+- [x] Upload image with caption
+- [x] Upload image without caption
+- [x] View uploaded image in full screen
+- [x] Pinch-to-zoom in viewer
+- [x] Swipe between multiple images
+- [x] Failed upload shows retry/delete
+- [x] Retry after failed upload
+- [x] Delete failed upload
+- [x] Long-press action sheet
+- [ ] Save to gallery (TODO)
+- [ ] Share image (TODO)
+- [ ] Upload video (TODO)
+- [ ] Upload audio (TODO)
+- [ ] Upload document (TODO)
+
+### **Known Limitations & Future Work**
+
+#### **Save to Gallery (Needs Implementation)**
+```dart
+// TODO: Add image_gallery_saver package
+dependencies:
+  image_gallery_saver: ^2.0.3
+
+// Implementation
+Future<void> _saveImage(BuildContext context) async {
+  final imageUrl = widget.images[_currentIndex].url;
+  final response = await Dio().get(
+    imageUrl,
+    options: Options(responseType: ResponseType.bytes),
+  );
+  final result = await ImageGallerySaver.saveImage(
+    Uint8List.fromList(response.data),
+  );
+  // Show success/failure snackbar
+}
+```
+
+#### **Share Functionality (Needs Implementation)**
+```dart
+// TODO: Add share_plus package
+dependencies:
+  share_plus: ^7.2.1
+
+// Implementation
+Future<void> _shareImage(BuildContext context) async {
+  final imageUrl = widget.images[_currentIndex].url;
+  await Share.share(
+    imageUrl,
+    subject: widget.images[_currentIndex].caption,
+  );
+}
+```
+
+#### **Video Support (Next Priority)**
+```dart
+// TODO: Create ChatVideoMessage widget
+class ChatVideoMessage extends StatelessWidget {
+  // Similar to ChatImageMessage but with:
+  // - VideoPlayer for playback
+  // - Play/pause controls
+  // - Duration display
+  // - Thumbnail with play icon
+}
+```
+
+#### **Audio Support**
+```dart
+// TODO: Create ChatAudioMessage widget
+class ChatAudioMessage extends StatelessWidget {
+  // - Waveform visualization
+  // - Play/pause controls
+  // - Duration display
+  // - Seek bar
+}
+```
+
+#### **Document Support**
+```dart
+// TODO: Create ChatDocumentMessage widget
+class ChatDocumentMessage extends StatelessWidget {
+  // - File icon based on extension
+  // - File name and size display
+  // - Download button
+  // - Open in external viewer
+}
+```
+
+### **Integration Checklist**
+
+- [ ] **MessageBubble Integration**: Add conditional rendering for message.mediaAttachment
+  ```dart
+  Widget build(BuildContext context) {
+    if (message.mediaAttachment != null) {
+      switch (message.mediaAttachment!.mimeType) {
+        case 'image/*':
+          return ChatImageMessage(message: message, ...);
+        case 'video/*':
+          return ChatVideoMessage(message: message, ...);
+        case 'audio/*':
+          return ChatAudioMessage(message: message, ...);
+        default:
+          return ChatDocumentMessage(message: message, ...);
+      }
+    }
+    return ChatTextMessage(message: message);
+  }
+  ```
+
+- [ ] **BLoC Events**: Add upload state management
+  ```dart
+  abstract class ChatEvent {
+    // ... existing events
+    const factory ChatEvent.uploadMedia({
+      required String filePath,
+      required String type,
+      String? caption,
+    }) = UploadMediaEvent;
+
+    const factory ChatEvent.retryMediaUpload({
+      required String messageId,
+    }) = RetryMediaUploadEvent;
+
+    const factory ChatEvent.deleteFailedMedia({
+      required String messageId,
+    }) = DeleteFailedMediaEvent;
+  }
+  ```
+
+- [ ] **Repository Layer**: Implement upload methods
+  ```dart
+  abstract class ChatRepository {
+    Future<String> uploadMedia(String filePath, String type, {String? caption});
+    Future<void> deleteMedia(String mediaId);
+  }
+  ```
+
+### **Key Takeaways**
+
+1. **Multipart/Form-Data is Required**: Never send file paths as JSON - use FormData with MultipartFile
+2. **Track Upload Lifecycle**: Use enums (uploading/uploaded/failed) for reactive UI updates
+3. **Optimistic UI Updates**: Show image immediately with spinner, don't wait for upload
+4. **Organized Storage**: Use category-based folders (uploads/{userId}/chat/{date}/)
+5. **Thumbnail Generation**: Always generate thumbnails for performance (backend responsibility)
+6. **Progressive Loading**: Load thumbnail first, then full image (mobile optimization)
+7. **Error Recovery**: Always provide retry and delete options for failed uploads
+8. **Modular Widgets**: Separate concerns (ChatImageMessage, ChatImageViewer, etc.)
+9. **Full-Screen Experience**: Use PhotoView for professional zoom/pan/rotate experience
+10. **Hero Animations**: Use Hero widgets for smooth transitions between views
+
+### **Related Documentation**
+
+- **Backend**: `backend/src/media/media.service.ts` - File upload and organization logic
+- **Backend**: `backend/src/chat/chat.controller.ts` - Chat media upload endpoint
+- **Mobile**: `lib/domain/entities/message.dart` - MediaAttachment domain model
+- **Mobile**: `lib/data/datasources/remote/chat_remote_data_source.dart` - Upload service
+- **Mobile**: `lib/presentation/widgets/chat/chat_image_message.dart` - Image message UI
+- **Mobile**: `lib/presentation/widgets/chat/chat_image_viewer.dart` - Full-screen viewer
 
 ---

@@ -105,7 +105,13 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
         child: Form(
           key: _formKey,
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(PulseSpacing.lg),
+            padding: EdgeInsets.only(
+              left: PulseSpacing.lg,
+              right: PulseSpacing.lg,
+              top: PulseSpacing.lg,
+              bottom:
+                  MediaQuery.of(context).viewInsets.bottom + PulseSpacing.lg,
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [

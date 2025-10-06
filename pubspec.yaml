@@ -99,6 +99,8 @@ dependencies:
   google_maps_cluster_manager: ^3.1.0
   google_polyline_algorithm: ^3.1.0
   photo_view: ^0.15.0
+  keyboard_dismisser: ^3.0.0
+  keyboard_actions: ^4.1.0
   google_maps_flutter_android: ^2.18.2
   google_maps_flutter_platform_interface: ^2.14.0
 

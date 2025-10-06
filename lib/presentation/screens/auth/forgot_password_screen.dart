@@ -74,8 +74,14 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
             ),
           ),
           child: SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.all(PulseSpacing.xl),
+            child: SingleChildScrollView(
+              padding: EdgeInsets.only(
+                left: PulseSpacing.xl,
+                right: PulseSpacing.xl,
+                top: PulseSpacing.xl,
+                bottom:
+                    MediaQuery.of(context).viewInsets.bottom + PulseSpacing.xl,
+              ),
               child: _emailSent ? _buildSuccessView() : _buildFormView(),
             ),
           ),
