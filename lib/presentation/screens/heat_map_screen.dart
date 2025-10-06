@@ -115,7 +115,10 @@ class HeatMapBloc extends Bloc<HeatMapEvent, HeatMapState> {
     on<FetchBackendClusters>(_onFetchBackendClusters);
   }
 
-  Future<void> _onLoadHeatMapData(LoadHeatMapData event, Emitter<HeatMapState> emit) async {
+  Future<void> _onLoadHeatMapData(
+    LoadHeatMapData event,
+    Emitter<HeatMapState> emit,
+  ) async {
     emit(HeatMapLoading());
     
     try {
@@ -2202,7 +2205,7 @@ class _HeatMapScreenState extends State<HeatMapScreen>
                     _memoizedMarkers = null;
                   }
                 });
-                
+
                 // Only fetch clusters when turning ON
                 if (_showClusters && mounted) {
                   try {
