@@ -51,6 +51,7 @@ class PermissionService {
     }
 
     // Show explanation dialog
+    if (!context.mounted) return false;
     final shouldRequest = await _showPermissionExplanationDialog(
       context: context,
       title: '📹 Video Call Permissions',
@@ -65,6 +66,7 @@ class PermissionService {
     bool cameraGranted = cameraStatus.isGranted;
     if (!cameraGranted) {
       if (cameraStatus.isPermanentlyDenied) {
+        if (!context.mounted) return false;
         await _showSettingsDialog(
           context: context,
           title: '📸 Camera Access Denied',
@@ -78,6 +80,7 @@ class PermissionService {
       
       if (!cameraGranted) {
         if (status.isPermanentlyDenied) {
+          if (!context.mounted) return false;
           await _showSettingsDialog(
             context: context,
             title: '📸 Camera Access Denied',
@@ -92,6 +95,7 @@ class PermissionService {
     bool micGranted = microphoneStatus.isGranted;
     if (!micGranted) {
       if (microphoneStatus.isPermanentlyDenied) {
+        if (!context.mounted) return false;
         await _showSettingsDialog(
           context: context,
           title: '🎤 Microphone Access Denied',
@@ -105,6 +109,7 @@ class PermissionService {
       
       if (!micGranted) {
         if (status.isPermanentlyDenied) {
+          if (!context.mounted) return false;
           await _showSettingsDialog(
             context: context,
             title: '🎤 Microphone Access Denied',
@@ -158,6 +163,7 @@ class PermissionService {
 
     // If permanently denied, show settings dialog
     if (status.isPermanentlyDenied) {
+      if (!context.mounted) return false;
       await _showSettingsDialog(
         context: context,
         title: title,
@@ -167,6 +173,7 @@ class PermissionService {
     }
 
     // Show explanation dialog before requesting
+    if (!context.mounted) return false;
     final shouldRequest = await _showPermissionExplanationDialog(
       context: context,
       title: title,
@@ -187,6 +194,7 @@ class PermissionService {
 
     // Handle denial
     if (newStatus.isPermanentlyDenied) {
+      if (!context.mounted) return false;
       await _showSettingsDialog(
         context: context,
         title: title,
