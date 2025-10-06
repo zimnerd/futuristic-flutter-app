@@ -292,7 +292,7 @@ class GroupChatService {
       // Use ApiClient's underlying Dio for requests without dedicated methods
       // Still benefits from auto auth token, interceptors, logging
       final response = await _apiClient.dio.get(
-        '/group-chat/conversations/$conversationId/messages',
+        '/chat/conversations/$conversationId/messages',
         queryParameters: {'limit': limit, 'offset': offset},
       );
 
@@ -315,7 +315,7 @@ class GroupChatService {
   }) async {
     try {
       final response = await _apiClient.dio.delete(
-        '/group-chat/conversations/$conversationId/messages/$messageId',
+        '/chat/conversations/$conversationId/messages/$messageId',
       );
 
       if (response.statusCode != 200) {
@@ -335,7 +335,7 @@ class GroupChatService {
   }) async {
     try {
       final response = await _apiClient.dio.post(
-        '/group-chat/conversations/$conversationId/messages/$messageId/reactions',
+        '/chat/conversations/$conversationId/messages/$messageId/reactions',
         data: {'emoji': emoji},
       );
 
@@ -356,7 +356,7 @@ class GroupChatService {
   }) async {
     try {
       final response = await _apiClient.dio.delete(
-        '/group-chat/conversations/$conversationId/messages/$messageId/reactions/$emoji',
+        '/chat/conversations/$conversationId/messages/$messageId/reactions/$emoji',
       );
 
       if (response.statusCode != 200) {
@@ -375,7 +375,7 @@ class GroupChatService {
   }) async {
     try {
       final response = await _apiClient.dio.post(
-        '/group-chat/conversations/$conversationId/messages/$messageId/read',
+        '/chat/conversations/$conversationId/messages/$messageId/read',
       );
 
       if (response.statusCode != 200) {
@@ -396,7 +396,7 @@ class GroupChatService {
   }) async {
     try {
       final response = await _apiClient.dio.get(
-        '/group-chat/conversations/$conversationId/messages/search',
+        '/chat/conversations/$conversationId/messages/search',
         queryParameters: {'q': query},
       );
 

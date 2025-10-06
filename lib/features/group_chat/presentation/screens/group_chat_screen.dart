@@ -1019,16 +1019,26 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                     final participant = widget.group.participants[index];
                     return ListTile(
                       leading: CircleAvatar(
+                        backgroundColor: const Color(0xFF6E3BFF),
                         backgroundImage: participant.profilePhoto != null
                             ? CachedNetworkImageProvider(
                                 participant.profilePhoto!)
                             : null,
                         child: participant.profilePhoto == null
-                            ? Text(participant.firstName[0])
+                            ? Text(
+                                participant.firstName[0],
+                                style: const TextStyle(color: Colors.white),
+                              )
                             : null,
                       ),
-                      title: Text(participant.fullName),
-                      subtitle: Text(_getRoleLabel(participant.role)),
+                      title: Text(
+                        participant.fullName,
+                        style: const TextStyle(color: Color(0xFF202124)),
+                      ),
+                      subtitle: Text(
+                        _getRoleLabel(participant.role),
+                        style: const TextStyle(color: Color(0xFF5F6368)),
+                      ),
                       trailing: participant.isOnline
                           ? Container(
                               width: 12,

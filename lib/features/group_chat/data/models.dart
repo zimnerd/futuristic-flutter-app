@@ -127,7 +127,9 @@ class GroupParticipant {
       lastName: user?['lastName'] as String? ?? '',
       profilePhoto: user?['profilePhoto'] as String?,
       role: _parseRole(json['role'] as String? ?? 'MEMBER'),
-      joinedAt: DateTime.parse(json['joinedAt'] as String),
+      joinedAt: json['joinedAt'] != null
+          ? DateTime.parse(json['joinedAt'] as String)
+          : DateTime.now(), // Default to now if not provided
       isOnline: json['isOnline'] as bool? ?? false,
     );
   }
@@ -395,13 +397,13 @@ class GroupMessage {
       id: json['id'] as String,
       conversationId: json['conversationId'] as String,
       senderId: json['senderId'] as String,
-      senderUsername: json['senderUsername'] as String,
+      senderUsername: json['senderUsername'] as String? ?? 'Unknown',
       senderFirstName: json['senderFirstName'] as String?,
       senderLastName: json['senderLastName'] as String?,
-      senderProfilePhoto: json['senderProfilePhoto'] as String?,
-      content: json['content'] as String,
+      senderProfilePhoto: json['senderAvatar'] as String? ?? json['senderProfilePhoto'] as String?,
+      content: json['content'] as String? ?? '',
       type: json['type'] as String? ?? 'text',
-      timestamp: DateTime.parse(json['timestamp'] as String),
+      timestamp: DateTime.parse(json['createdAt'] as String? ?? json['timestamp'] as String? ?? DateTime.now().toIso8601String()),
       status: json['status'] as String? ?? 'sent',
       tempId: json['tempId'] as String?,
       replyTo: json['replyTo'] != null

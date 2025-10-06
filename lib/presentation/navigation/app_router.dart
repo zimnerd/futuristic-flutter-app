@@ -574,7 +574,26 @@ class AppRouter {
           name: 'groupChat',
           builder: (context, state) {
             final group = state.extra as GroupConversation;
-            return GroupChatScreen(group: group);
+            
+            // Create GroupChatBloc with required services
+            final apiClient = ApiClient.instance;
+            final authToken = apiClient.authToken ?? '';
+
+            final groupChatService = GroupChatService();
+            final wsService = GroupChatWebSocketService(
+              baseUrl: ApiConstants.websocketUrl,
+              accessToken: authToken,
+            );
+
+            final bloc = GroupChatBloc(
+              service: groupChatService,
+              wsService: wsService,
+            );
+
+            return BlocProvider.value(
+              value: bloc,
+              child: GroupChatScreen(group: group),
+            );
           },
         ),
         GoRoute(

@@ -5,6 +5,169 @@ This document captures key learnings from building the **Flutter mobile dating a
 
 ---
 
+## 🔄 **Backend API Response Format Inconsistencies (January 2025)**
+
+**Status**: ✅ **RESOLVED** - Dual format handling implemented  
+**Date**: January 2025  
+**Priority**: **CRITICAL** - Breaks group creation flow
+
+**Context**: Backend returns DIFFERENT JSON structures for the same entity depending on which endpoint you call. Create group response includes full `settings` object, but user-groups list response flattens `groupType` to root-level `type` field.
+
+### **Problem - Multiple Response Formats for GroupConversation**
+
+#### **Backend Response Inconsistency**
+
+**Format 1 - Create Response** (`POST /api/v1/group-chat/create`):
+```json
+{
+  "id": "uuid",
+  "title": "Test group",
+  "settings": {
+    "id": "uuid",
+    "conversationId": "uuid",
+    "groupType": "TRADITIONAL",
+    "maxParticipants": 50,
+    "allowParticipantInvite": false,
+    "requireApproval": true,
+    "autoAcceptFriends": false,
+    "enableVoiceChat": true,
+    "enableVideoChat": false,
+    "createdAt": "2025-01-06T17:31:07.650Z",
+    "updatedAt": "2025-01-06T17:31:07.650Z"
+  },
+  "participantCount": 5,
+  "participants": [...]
+}
+```
+
+**Format 2 - User Groups List** (`GET /api/v1/group-chat/user-groups`):
+```json
+{
+  "id": "uuid",
+  "title": "Test group",
+  "type": "TRADITIONAL",  // ❌ NOT "settings.groupType"!
+  "participantCount": 5,
+  "role": "OWNER",
+  "participants": [...]
+}
+```
+
+**Error Encountered**:
+```
+⛔ type 'Null' is not a subtype of type 'String' in type cast
+Location: group_chat_service.dart:54 (after create)
+Location: group_chat_service.dart:193 (after getUserGroups)
+```
+
+**Why This Happens**:
+- Backend optimizes list response by flattening nested objects
+- Create response returns full entity with all relations
+- Mobile models only handled Format 1 (nested settings)
+- Format 2 caused null pointer when accessing `json['settings']`
+
+### **Solution - Dual Format Detection in fromJson**
+
+**File**: `lib/features/group_chat/data/models.dart`
+
+**Implementation**:
+```dart
+factory GroupConversation.fromJson(Map<String, dynamic> json) {
+  // Handle both response formats:
+  // 1. Create response: { settings: {...} }
+  // 2. User-groups response: { type: "TRADITIONAL" }
+  
+  GroupSettings? parsedSettings;
+  if (json['settings'] != null) {
+    // Format 1: Full settings object from create response
+    parsedSettings = GroupSettings.fromJson(json['settings'] as Map<String, dynamic>);
+  } else if (json['type'] != null) {
+    // Format 2: Type field from user-groups response
+    // Create minimal settings with defaults
+    parsedSettings = GroupSettings(
+      id: json['id'] as String,
+      groupType: GroupSettings._parseGroupType(json['type'] as String),
+      maxParticipants: 50,
+      allowParticipantInvite: false,
+      requireApproval: false,
+      autoAcceptFriends: false,
+      enableVoiceChat: true,
+      enableVideoChat: false,
+    );
+  }
+
+  return GroupConversation(
+    id: json['id'] as String,
+    title: json['title'] as String,
+    settings: parsedSettings,
+    participants: (json['participants'] as List<dynamic>?)
+        ?.map((p) => GroupParticipant.fromJson(p))
+        .toList() ?? [],
+    // ... other fields
+  );
+}
+```
+
+**Additional Fix - Missing joinedAt Field**:
+The user-groups response also omits `joinedAt` from participants, causing null cast errors:
+
+```dart
+factory GroupParticipant.fromJson(Map<String, dynamic> json) {
+  final user = json['user'] as Map<String, dynamic>?;
+  return GroupParticipant(
+    id: json['id'] as String,
+    userId: user?['id'] as String? ?? json['userId'] as String? ?? '',
+    firstName: user?['firstName'] as String? ?? 'Unknown',
+    lastName: user?['lastName'] as String? ?? '',
+    profilePhoto: user?['profilePhoto'] as String?,
+    role: _parseRole(json['role'] as String? ?? 'MEMBER'),
+    joinedAt: json['joinedAt'] != null 
+        ? DateTime.parse(json['joinedAt'] as String)
+        : DateTime.now(), // ✅ Default to now if not provided
+    isOnline: json['isOnline'] as bool? ?? false,
+  );
+}
+```
+
+**Key Points**:
+- ✅ Check for `settings` object first (Format 1)
+- ✅ Fall back to `type` field (Format 2)
+- ✅ Create minimal GroupSettings with defaults for Format 2
+- ✅ Only use parameters that exist in GroupSettings constructor
+- ✅ Handle missing optional fields like `joinedAt` with null checks
+- ❌ DON'T try to pass `conversationId`, `createdAt`, `updatedAt` - they're not constructor parameters
+- ❌ DON'T assume all fields are present - check for null first
+
+### **Lessons Learned**
+
+#### **What Worked** ✅
+1. **Format detection**: Check which fields exist, adapt parsing logic
+2. **Minimal objects**: Create settings with defaults when backend doesn't provide them
+3. **Null safety**: Use optional chaining and null coalescing
+4. **Constructor alignment**: Only pass parameters that actually exist in constructor
+
+#### **What Didn't Work** ❌
+1. ❌ Assuming backend consistency across endpoints
+2. ❌ Passing non-existent constructor parameters (causes compile errors)
+3. ❌ Single fromJson implementation without format detection
+4. ❌ Expecting backend to change - mobile must adapt
+
+#### **Best Practices**
+- **Always check constructor signature** before creating objects in fromJson
+- **Use format detection** when backend has multiple response shapes
+- **Provide sensible defaults** when data is missing
+- **Test both create and list flows** to catch format inconsistencies
+- **Document format differences** in code comments
+
+#### **Backend Communication**
+While the mobile solution works, ideally backend should:
+- Return consistent response formats across endpoints
+- OR use GraphQL where clients specify exact fields needed
+- OR document format differences in OpenAPI spec
+
+For now, mobile handles both formats gracefully.
+
+---
+
 ## ⌨️ **iOS Keyboard Handling - Comprehensive Solution (January 2025)**
 
 **Status**: ✅ **IMPLEMENTED** - Multi-layered keyboard handling architecture  
