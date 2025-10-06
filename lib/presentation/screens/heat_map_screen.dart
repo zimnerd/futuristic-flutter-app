@@ -536,44 +536,6 @@ class _HeatMapScreenState extends State<HeatMapScreen>
   }
 
   /// Toggle cluster visibility (separate from heatmap)
-  void _toggleClusters() async {
-    setState(() {
-      _showClusters = !_showClusters;
-    });
-    AppLogger.debug(
-      'HeatMapScreen: Clusters ${_showClusters ? 'enabled' : 'disabled'}',
-    );
-    
-    // If clusters were just enabled and we don't have backend clusters yet, fetch them now
-    if (_showClusters) {
-      final state = context.read<HeatMapBloc>().state;
-      if (state is HeatMapLoaded &&
-          (state.backendClusters == null || state.backendClusters!.isEmpty)) {
-        AppLogger.debug(
-          '🔄 Clusters enabled but no backend data - fetching now...',
-        );
-
-        try {
-          if (_mapController != null) {
-            final bounds = await _mapController!.getVisibleRegion();
-            final groupedZoom = _getGroupedZoomLevel(_currentZoom);
-            final radiusKm = _currentRadius.toDouble();
-
-            context.read<HeatMapBloc>().add(
-              FetchBackendClusters(
-                zoom: groupedZoom,
-                viewport: bounds,
-                radiusKm: radiusKm,
-              ),
-            );
-          }
-        } catch (e) {
-          AppLogger.error('❌ Error fetching backend clusters on toggle: $e');
-        }
-      }
-    }
-  }
-
   /// Show statistics popup for users within radius
   void _showStatisticsPopup() async {
     if (_isStatisticsPopupVisible) return;
@@ -763,19 +725,6 @@ class _HeatMapScreenState extends State<HeatMapScreen>
                 fontWeight: FontWeight.bold,
               ),
             ),
-          ),
-          IconButton(
-            icon: Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: _showHeatmap ? const Color(0xFF00C2FF) : Colors.grey,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Icon(Icons.scatter_plot, color: Colors.white, size: 20),
-            ),
-            onPressed: _toggleHeatmap,
-            padding: EdgeInsets.zero,
-            constraints: const BoxConstraints(),
           ),
           const SizedBox(width: 8),
           IconButton(
@@ -1162,10 +1111,10 @@ class _HeatMapScreenState extends State<HeatMapScreen>
                     '📡 Fetching backend clusters: zoom=$groupedZoom, radius=${radiusKm}km',
                   );
 
-                  // Invalidate marker cache - new clusters will be fetched
-                  setState(() {
-                    _memoizedMarkers = null;
-                  });
+                // Invalidate marker cache - new clusters will be fetched
+                setState(() {
+                  _memoizedMarkers = null;
+                });
 
                   // Dispatch event to fetch backend clusters
                 print(
@@ -1330,7 +1279,9 @@ class _HeatMapScreenState extends State<HeatMapScreen>
 
     // Use backend clusters if available (no longer rendering as circles - using markers instead)
     if (state.backendClusters != null && state.backendClusters!.isNotEmpty) {
-      print('ℹ️ℹ️ℹ️ RENDER TEST: Backend clusters available - rendered as markers, not circles');
+      print(
+        'ℹ️ℹ️ℹ️ RENDER TEST: Backend clusters available - rendered as markers, not circles',
+      );
       AppLogger.debug(
         'ℹ️ Backend clusters rendered as markers (see _buildMarkers)',
       );
@@ -1352,19 +1303,32 @@ class _HeatMapScreenState extends State<HeatMapScreen>
     List<OptimizedClusterData> clusters,
   ) async {
     print('🎨🎨🎨 RENDER TEST: _buildMarkersFromBackendClusters START!');
-    print('   Processing ${clusters.length} clusters');
+    print('   Original clusters: ${clusters.length}');
+
+    // Apply zoom-based aggregation
+    final aggregatedClusters = _aggregateClustersByStatus(
+      clusters,
+      _currentZoom,
+    );
+
+    print(
+      '   Processing ${aggregatedClusters.length} clusters (after aggregation)',
+    );
     AppLogger.debug('🎯 _buildMarkersFromBackendClusters: START');
-    AppLogger.debug('📊 Processing ${clusters.length} clusters');
-    
+    AppLogger.debug('📊 Original clusters: ${clusters.length}');
+    AppLogger.debug(
+      '📊 Aggregated clusters: ${aggregatedClusters.length} at zoom ${_currentZoom}',
+    );
+
     final clusterMarkers = <Marker>{};
 
-    for (var i = 0; i < clusters.length; i++) {
-      final cluster = clusters[i];
-      
+    for (var i = 0; i < aggregatedClusters.length; i++) {
+      final cluster = aggregatedClusters[i];
+
       // Determine predominant status and corresponding color
       final predominantStatus = _getPredominantStatus(cluster.statusBreakdown);
       final statusColor = _getStatusColor(predominantStatus);
-      
+
       // Determine size tier based on user count
       final sizeTier = _getClusterSizeTier(cluster.userCount);
       final markerSize = _getMarkerSize(sizeTier);
@@ -1411,29 +1375,94 @@ class _HeatMapScreenState extends State<HeatMapScreen>
     return clusterMarkers;
   }
 
-  /// Calculate radius based on user count (deprecated - now using markers)
-  @Deprecated('Use _getMarkerSize instead - clusters now use markers not circles')
-  double _getClusterRadiusFromDensity(int userCount) {
-    if (userCount > 50) return 300.0;
-    if (userCount > 20) return 200.0;
-    if (userCount > 10) return 150.0;
-    if (userCount > 5) return 100.0;
-    return 80.0;
-  }
-
-  /// Get color based on density score (deprecated - now using status-based colors)
-  @Deprecated('Use _getStatusColor instead - clusters now use status-based coloring')
-  Color _getClusterColorFromDensity(int densityScore) {
-    if (densityScore >= 80) return const Color(0xFFFF0000); // Red - very high
-    if (densityScore >= 60) return const Color(0xFFFF6B00); // Orange - high
-    if (densityScore >= 40) return const Color(0xFFFFAA00); // Yellow - medium
-    if (densityScore >= 20) return const Color(0xFF00C2FF); // Cyan - low
-    return const Color(0xFF6E3BFF); // Purple - very low
-  }
-
   // ═══════════════════════════════════════════════════════════════════════════
   // Google Maps Cluster Marker Helpers
   // ═══════════════════════════════════════════════════════════════════════════
+
+  /// Aggregate clusters by status at low zoom levels (1-10)
+  /// Returns 1-4 mega-clusters (one per status with users)
+  List<OptimizedClusterData> _aggregateClustersByStatus(
+    List<OptimizedClusterData> clusters,
+    double zoom,
+  ) {
+    // Only aggregate at very low zoom levels (1-10)
+    if (zoom >= 9) {
+      return clusters; // Return original clusters at high zoom
+    }
+
+    print(
+      '🔄🔄🔄 AGGREGATION: Zoom $zoom detected - aggregating ${clusters.length} clusters by status',
+    );
+
+    // Accumulate totals by status
+    final Map<String, int> statusTotals = {
+      'matched': 0,
+      'liked_me': 0,
+      'unmatched': 0,
+      'passed': 0,
+    };
+
+    // Calculate geographic center (simple average)
+    double sumLat = 0.0;
+    double sumLng = 0.0;
+    int totalUsers = 0;
+
+    for (final cluster in clusters) {
+      sumLat += cluster.latitude * cluster.userCount;
+      sumLng += cluster.longitude * cluster.userCount;
+      totalUsers += cluster.userCount;
+
+      final breakdown = cluster.statusBreakdown ?? {};
+      statusTotals['matched'] =
+          statusTotals['matched']! + (breakdown['matched'] ?? 0);
+      statusTotals['liked_me'] =
+          statusTotals['liked_me']! + (breakdown['liked_me'] ?? 0);
+      statusTotals['unmatched'] =
+          statusTotals['unmatched']! + (breakdown['unmatched'] ?? 0);
+      statusTotals['passed'] =
+          statusTotals['passed']! + (breakdown['passed'] ?? 0);
+    }
+
+    final centerLat = totalUsers > 0 ? sumLat / totalUsers : 0.0;
+    final centerLng = totalUsers > 0 ? sumLng / totalUsers : 0.0;
+
+    print('   Status totals: ${statusTotals}');
+    print('   Center: ($centerLat, $centerLng)');
+
+    // Create mega-clusters (one per status that has users)
+    final List<OptimizedClusterData> megaClusters = [];
+
+    statusTotals.forEach((status, count) {
+      if (count > 0) {
+        // Create single-status breakdown for this mega-cluster
+        final Map<String, int> singleStatusBreakdown = {status: count};
+
+        final megaCluster = OptimizedClusterData(
+          id: 'mega_$status',
+          latitude: centerLat,
+          longitude: centerLng,
+          userCount: count,
+          radius: 150.0,
+          densityScore: 0,
+          avgAge: 0.0,
+          genderDistribution: null,
+          ageDistribution: null,
+          statusBreakdown: singleStatusBreakdown,
+        );
+
+        megaClusters.add(megaCluster);
+      }
+    });
+
+    print('✅✅✅ AGGREGATION: Created ${megaClusters.length} mega-clusters');
+    megaClusters.asMap().forEach((index, mega) {
+      print(
+        '   Mega-cluster $index: ${mega.statusBreakdown} (${mega.userCount} users)',
+      );
+    });
+
+    return megaClusters;
+  }
 
   /// Get predominant status from statusBreakdown
   String _getPredominantStatus(Map<String, int>? statusBreakdown) {
@@ -1507,21 +1536,13 @@ class _HeatMapScreenState extends State<HeatMapScreen>
       ..color = Colors.white
       ..style = PaintingStyle.stroke
       ..strokeWidth = 4;
-    canvas.drawCircle(
-      Offset(size / 2, size / 2),
-      size / 2 - 2,
-      strokePaint,
-    );
+    canvas.drawCircle(Offset(size / 2, size / 2), size / 2 - 2, strokePaint);
 
     // Draw inner circle (colored)
     final Paint fillPaint = Paint()
       ..color = color
       ..style = PaintingStyle.fill;
-    canvas.drawCircle(
-      Offset(size / 2, size / 2),
-      size / 2 - 4,
-      fillPaint,
-    );
+    canvas.drawCircle(Offset(size / 2, size / 2), size / 2 - 4, fillPaint);
 
     // Draw user count text
     final TextPainter textPainter = TextPainter(
@@ -1538,14 +1559,16 @@ class _HeatMapScreenState extends State<HeatMapScreen>
     textPainter.layout();
     textPainter.paint(
       canvas,
-      Offset(
-        (size - textPainter.width) / 2,
-        (size - textPainter.height) / 2,
-      ),
+      Offset((size - textPainter.width) / 2, (size - textPainter.height) / 2),
     );
 
-    final ui.Image img = await pictureRecorder.endRecording().toImage(size, size);
-    final ByteData? byteData = await img.toByteData(format: ui.ImageByteFormat.png);
+    final ui.Image img = await pictureRecorder.endRecording().toImage(
+      size,
+      size,
+    );
+    final ByteData? byteData = await img.toByteData(
+      format: ui.ImageByteFormat.png,
+    );
 
     return BitmapDescriptor.bytes(byteData!.buffer.asUint8List());
   }
@@ -1562,39 +1585,100 @@ class _HeatMapScreenState extends State<HeatMapScreen>
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Cluster Details'),
+        backgroundColor: const Color(0xFF1E1E1E),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Row(
+          children: [
+            Icon(Icons.people, color: Color(0xFF6E3BFF), size: 24),
+            SizedBox(width: 8),
+            Text(
+              'Cluster Details',
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              '👥 Total Users: ${cluster.userCount}',
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: const Color(0xFF6E3BFF).withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.group, color: Color(0xFF6E3BFF), size: 20),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Total Users: ${cluster.userCount}',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                      color: Colors.white,
+                    ),
+                  ),
+                ],
+              ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 16),
             const Text(
               'Status Breakdown:',
-              style: TextStyle(fontWeight: FontWeight.bold),
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Colors.white70,
+                fontSize: 12,
+              ),
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 8),
             _buildStatusRow('✅ Matched', matched, Colors.green),
             _buildStatusRow('❤️ Liked Me', likedMe, Colors.orange),
             _buildStatusRow('👋 Available', available, const Color(0xFF00C2FF)),
             _buildStatusRow('👎 Passed', passed, Colors.red),
-            const SizedBox(height: 12),
-            const Text(
-              '📍 Location:',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            Text(
-              '${cluster.latitude.toStringAsFixed(4)}, ${cluster.longitude.toStringAsFixed(4)}',
-              style: const TextStyle(fontSize: 12),
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                children: [
+                  const Icon(
+                    Icons.location_on,
+                    color: Color(0xFF00C2FF),
+                    size: 16,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      '${cluster.latitude.toStringAsFixed(4)}, ${cluster.longitude.toStringAsFixed(4)}',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: Colors.white70,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ],
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
+            style: TextButton.styleFrom(
+              backgroundColor: const Color(0xFF6E3BFF),
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
             child: const Text('Close'),
           ),
         ],
@@ -1605,23 +1689,48 @@ class _HeatMapScreenState extends State<HeatMapScreen>
   /// Build a status row for cluster details dialog
   Widget _buildStatusRow(String label, int count, Color color) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 2),
+      padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         children: [
           Container(
-            width: 12,
-            height: 12,
+            width: 16,
+            height: 16,
             decoration: BoxDecoration(
               color: color,
               shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: color.withValues(alpha: 0.5),
+                  blurRadius: 4,
+                  spreadRadius: 4,
+                ),
+              ],
             ),
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 12),
           Expanded(
             child: Text(
-              '$label: $count',
+              label,
               style: TextStyle(
-                color: count > 0 ? Colors.black : Colors.grey,
+                color: count > 0 ? Colors.white : Colors.white38,
+                fontWeight: count > 0 ? FontWeight.w500 : FontWeight.normal,
+              ),
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+            decoration: BoxDecoration(
+              color: count > 0
+                  ? color.withValues(alpha: 0.3)
+                  : Colors.white.withValues(alpha: 0.05),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Text(
+              count.toString(),
+              style: TextStyle(
+                color: count > 0 ? Colors.white : Colors.white38,
+                fontWeight: FontWeight.bold,
+                fontSize: 12,
               ),
             ),
           ),
@@ -1634,41 +1743,49 @@ class _HeatMapScreenState extends State<HeatMapScreen>
   /// Build markers synchronously - uses memoized cluster markers
   Set<Marker> _buildMarkers(HeatMapLoaded state) {
     AppLogger.debug('🏷️ _buildMarkers: START');
-    
+
     // Return memoized markers if available
     if (_memoizedMarkers != null) {
-      AppLogger.debug('🚀 Using memoized markers (${_memoizedMarkers!.length} markers)');
+      AppLogger.debug(
+        '🚀 Using memoized markers (${_memoizedMarkers!.length} markers)',
+      );
       return _memoizedMarkers!;
     }
 
     // If no memoized markers but we have clusters, trigger async generation
-    if (_showClusters && 
-        state.backendClusters != null && 
+    if (_showClusters &&
+        state.backendClusters != null &&
         state.backendClusters!.isNotEmpty) {
       print('🎯🎯🎯 MARKER TEST: Need to generate cluster markers...');
       AppLogger.debug(
         '🎯 Triggering async marker generation for ${state.backendClusters!.length} clusters',
       );
-      
+
       // Trigger async marker generation (don't await)
       _generateClusterMarkers(state.backendClusters!);
     }
 
-    AppLogger.debug('🏷️ _buildMarkers: Returning empty set (markers generating async)');
+    AppLogger.debug(
+      '🏷️ _buildMarkers: Returning empty set (markers generating async)',
+    );
     return <Marker>{};
   }
 
   /// Generate cluster markers asynchronously and update state
-  Future<void> _generateClusterMarkers(List<OptimizedClusterData> clusters) async {
+  Future<void> _generateClusterMarkers(
+    List<OptimizedClusterData> clusters,
+  ) async {
     print('🔄🔄🔄 MARKER GEN: Starting async marker generation...');
-    
+
     final clusterMarkers = await _buildMarkersFromBackendClusters(clusters);
-    
-    print('✅✅✅ MARKER GEN: Generated ${clusterMarkers.length} markers, updating state...');
+
+    print(
+      '✅✅✅ MARKER GEN: Generated ${clusterMarkers.length} markers, updating state...',
+    );
     setState(() {
       _memoizedMarkers = clusterMarkers;
     });
-    
+
     AppLogger.debug('✅ Cluster markers generated and state updated');
   }
 
@@ -1924,11 +2041,11 @@ class _HeatMapScreenState extends State<HeatMapScreen>
 
   Widget _buildMapOverlay(BuildContext context, HeatMapLoaded state) {
     return Positioned(
-      top: 16,
-      left: 16,
-      right: 16,
+      top: 6,
+      left: 8,
+      right: 8,
       child: Container(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
           color: Colors.black.withValues(alpha: 0.8),
           borderRadius: BorderRadius.circular(16),
@@ -2049,31 +2166,32 @@ class _HeatMapScreenState extends State<HeatMapScreen>
               scrollDirection: Axis.horizontal,
               child: Row(
                 children: [
-                  _buildStatItem(
+                  _buildStatItemWithIcon(
                     'Active Users',
                     state.heatmapData.totalUsers,
-                    '👥',
+                    Icons.people,
                   ),
                   const SizedBox(width: 12),
-                  _buildStatItem(
+                  _buildStatItemWithIcon(
                     'Data Points',
                     state.heatmapData.dataPoints
                         .where((p) => p.density > 0)
                         .length,
-                    '�',
+                    Icons.scatter_plot,
                   ),
                   const SizedBox(width: 12),
-                  _buildStatItem(
+                  _buildStatItemWithIcon(
                     'Hot Spots',
                     state.heatmapData.dataPoints
                         .where((p) => p.density > 5)
                         .length,
-                    '�',
+                    Icons.local_fire_department,
                   ),
                   const SizedBox(width: 12),
-                  _buildStatItem(
-                    'Coverage', '${_currentRadius}km',
-                    '📍',
+                  _buildStatItemWithIcon(
+                    'Coverage',
+                    '${_currentRadius}km',
+                    Icons.location_on,
                   ),
                 ],
               ),
@@ -2084,23 +2202,22 @@ class _HeatMapScreenState extends State<HeatMapScreen>
     );
   }
 
-  Widget _buildStatItem(String label, dynamic value, String emoji) {
+  Widget _buildStatItemWithIcon(String label, dynamic value, IconData icon) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text(
-          emoji,
-          style: const TextStyle(fontSize: 16),
+        Icon(icon, color: Colors.white, size: 20,
         ),
-        const SizedBox(height: 2),
+        const SizedBox(height: 4),
         Text(
           value.toString(),
           style: const TextStyle(
             color: Colors.white,
-            fontSize: 14,
+            fontSize: 16,
             fontWeight: FontWeight.bold,
           ),
         ),
+        const SizedBox(height: 2),
         Text(
           label,
           style: const TextStyle(
@@ -2418,29 +2535,6 @@ class _HeatMapScreenState extends State<HeatMapScreen>
                 });
               },
               tooltip: _showHeatmap ? 'Hide Heatmap' : 'Show Heatmap',
-            ),
-          ),
-          const SizedBox(height: 8),
-          // Clustering Toggle
-          Container(
-            decoration: BoxDecoration(
-              color: _showClusters ? const Color(0xFF00C2FF) : Colors.white,
-              borderRadius: BorderRadius.circular(8),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.2),
-                  blurRadius: 4,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: IconButton(
-              icon: Icon(
-                Icons.scatter_plot,
-                color: _showClusters ? Colors.white : Colors.black87,
-              ),
-              onPressed: _toggleClusters,
-              tooltip: _showClusters ? 'Hide Clusters' : 'Show Clusters',
             ),
           ),
           const SizedBox(height: 8),
