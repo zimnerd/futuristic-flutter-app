@@ -63,6 +63,10 @@ class GroupChatService {
     String? description,
     int? maxParticipants,
     bool requireApproval = true,
+    String sessionType = 'CASUAL_CHAT',
+    int durationMinutes = 30,
+    bool allowVideo = true,
+    bool allowAudio = true,
   }) async {
     try {
       final response = await _apiClient.createLiveSession(
@@ -70,6 +74,10 @@ class GroupChatService {
         description: description,
         maxParticipants: maxParticipants,
         requireApproval: requireApproval,
+        sessionType: sessionType,
+        durationMinutes: durationMinutes,
+        allowVideo: allowVideo,
+        allowAudio: allowAudio,
       );
 
       if (response.statusCode == 201) {

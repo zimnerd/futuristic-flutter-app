@@ -1621,6 +1621,10 @@ class ApiClient {
     String? description,
     int? maxParticipants,
     bool requireApproval = true,
+    String sessionType = 'CASUAL_CHAT',
+    int durationMinutes = 30,
+    bool allowVideo = true,
+    bool allowAudio = true,
   }) async {
     return await _dio.post(
       '/group-chat/live-session/create',
@@ -1629,6 +1633,10 @@ class ApiClient {
         if (description != null) 'description': description,
         if (maxParticipants != null) 'maxParticipants': maxParticipants,
         'requireApproval': requireApproval,
+        'sessionType': sessionType,
+        'durationMinutes': durationMinutes,
+        'allowVideo': allowVideo,
+        'allowAudio': allowAudio,
       },
     );
   }
