@@ -47,17 +47,10 @@ class _ParticipantPickerDialogState extends State<ParticipantPickerDialog> {
     });
 
     try {
-      // Build query parameters
-      final queryParams = <String, String>{};
-      if (query != null && query.isNotEmpty) {
-        // Note: Backend searchUsers doesn't have a 'query' param,
-        // so we'll just load users and filter client-side for now
-        // In production, you'd want to add a name/username search to backend
-      }
-
+      // Fetch matched users instead of all users
+      // This ensures users can only add people they've matched with
       final response = await _apiClient.get(
-        ApiConstants.usersSearch,
-        queryParameters: queryParams,
+        ApiConstants.matchingMatches,
       );
 
       if (response.statusCode == 200) {
@@ -67,11 +60,11 @@ class _ParticipantPickerDialogState extends State<ParticipantPickerDialog> {
           _isLoading = false;
         });
       } else {
-        throw Exception('Failed to load users');
+        throw Exception('Failed to load matched users');
       }
     } catch (e) {
       setState(() {
-        _error = 'Failed to load users: $e';
+        _error = 'Failed to load matched users: $e';
         _isLoading = false;
       });
     }
@@ -146,7 +139,7 @@ class _ParticipantPickerDialogState extends State<ParticipantPickerDialog> {
                           '${_selectedIds.length} selected',
                           style: TextStyle(
                             fontSize: 14,
-                            color: Colors.grey[600],
+                            color: Theme.of(context).textTheme.bodySmall?.color?.withValues(alpha: 0.7),
                           ),
                         ),
                       ],

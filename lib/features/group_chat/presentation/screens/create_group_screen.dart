@@ -183,7 +183,7 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
               _getGroupTypeDescription(_selectedType),
               style: TextStyle(
                 fontSize: 12,
-                color: Colors.grey[600],
+                color: Theme.of(context).textTheme.bodySmall?.color?.withValues(alpha: 0.7),
                 fontStyle: FontStyle.italic,
               ),
             ),
@@ -328,7 +328,7 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
               'Select people to add to the group',
               style: TextStyle(
                 fontSize: 12,
-                color: Colors.grey[600],
+                color: Theme.of(context).textTheme.bodySmall?.color?.withValues(alpha: 0.7),
               ),
             ),
             if (_selectedParticipantIds.isNotEmpty) ...[

@@ -420,18 +420,24 @@ class GroupChatService {
       final settings = <String, dynamic>{};
       if (title != null) settings['title'] = title;
       if (description != null) settings['description'] = description;
-      if (allowParticipantInvite != null)
+      if (allowParticipantInvite != null) {
         settings['allowParticipantInvite'] = allowParticipantInvite;
-      if (requireApproval != null)
+      }
+      if (requireApproval != null) {
         settings['requireApproval'] = requireApproval;
-      if (autoAcceptFriends != null)
+      }
+      if (autoAcceptFriends != null) {
         settings['autoAcceptFriends'] = autoAcceptFriends;
-      if (enableVoiceChat != null)
+      }
+      if (enableVoiceChat != null) {
         settings['enableVoiceChat'] = enableVoiceChat;
-      if (enableVideoChat != null)
+      }
+      if (enableVideoChat != null) {
         settings['enableVideoChat'] = enableVideoChat;
-      if (maxParticipants != null)
+      }
+      if (maxParticipants != null) {
         settings['maxParticipants'] = maxParticipants;
+      }
 
       final response = await _apiClient.updateGroupSettings(
         conversationId: conversationId,
