@@ -847,14 +847,6 @@ class _HeatMapScreenState extends State<HeatMapScreen>
 
       clusterMarkers.add(marker);
     }
-
-    AppLogger.debug(
-      '✅ RENDER TEST: COMPLETED! Built ${clusterMarkers.length} cluster markers!',
-    );
-    AppLogger.debug(
-      '✅ COMPLETED: Built ${clusterMarkers.length} markers from backend clusters',
-    );
-    AppLogger.debug('🎯 _buildMarkersFromBackendClusters: END');
     return clusterMarkers;
   }
 
@@ -872,10 +864,6 @@ class _HeatMapScreenState extends State<HeatMapScreen>
     if (zoom >= 9) {
       return clusters; // Return original clusters at high zoom
     }
-
-    AppLogger.debug(
-      '🔄 AGGREGATION: Zoom $zoom detected - aggregating ${clusters.length} clusters by status',
-    );
 
     // Accumulate totals by status
     final Map<String, int> statusTotals = {
