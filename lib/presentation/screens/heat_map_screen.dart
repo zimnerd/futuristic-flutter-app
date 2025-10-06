@@ -812,24 +812,11 @@ class _HeatMapScreenState extends State<HeatMapScreen>
   Future<Set<Marker>> _buildMarkersFromBackendClusters(
     List<OptimizedClusterData> clusters,
   ) async {
-    AppLogger.debug('🎨 RENDER TEST: _buildMarkersFromBackendClusters START!');
-    AppLogger.debug('   Original clusters: ${clusters.length}');
-
     // Apply zoom-based aggregation
     final aggregatedClusters = _aggregateClustersByStatus(
       clusters,
       _currentZoom,
     );
-
-    print(
-      '   Processing ${aggregatedClusters.length} clusters (after aggregation)',
-    );
-    AppLogger.debug('🎯 _buildMarkersFromBackendClusters: START');
-    AppLogger.debug('📊 Original clusters: ${clusters.length}');
-    AppLogger.debug(
-      '📊 Aggregated clusters: ${aggregatedClusters.length} at zoom $_currentZoom',
-    );
-
     final clusterMarkers = <Marker>{};
 
     for (var i = 0; i < aggregatedClusters.length; i++) {
