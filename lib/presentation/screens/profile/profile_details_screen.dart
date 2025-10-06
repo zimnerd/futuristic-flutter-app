@@ -10,6 +10,7 @@ import '../../../blocs/chat_bloc.dart';
 import '../../blocs/profile/profile_bloc.dart';
 import '../../theme/pulse_colors.dart';
 import '../../widgets/common/pulse_button.dart';
+import '../../../core/utils/time_format_utils.dart';
 
 /// Context for profile viewing - determines which actions to show
 enum ProfileContext {
@@ -480,7 +481,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
                       ),
                       const SizedBox(width: 4),
                       Text(
-                        '2 km away',
+                        widget.profile.distanceString,
                         style: const TextStyle(
                           fontSize: 14,
                           color: Colors.white,
@@ -903,7 +904,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
               children: [
                 if (_shouldShowDistance())
                   Text(
-                    '2 km away',
+                    widget.profile.distanceString,
                     style: PulseTextStyles.bodyMedium.copyWith(
                       color: Colors.black87,
                       fontWeight: FontWeight.w600,
@@ -942,7 +943,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
                       ),
                       const SizedBox(width: 6),
                       Text(
-                        'Active 2 hours ago',
+                        _formatLastActive(),
                         style: PulseTextStyles.labelSmall.copyWith(
                           color: Colors.grey[600],
                         ),
@@ -1211,34 +1212,46 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
               return Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 20,
-                  vertical: 12,
+                  vertical: 14,
                 ),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
-                      PulseColors.primary.withValues(alpha: 0.1),
-                      PulseColors.secondary.withValues(alpha: 0.1),
+                      PulseColors.primary.withValues(alpha: 0.15),
+                      PulseColors.secondary.withValues(alpha: 0.15),
                     ],
                   ),
                   borderRadius: BorderRadius.circular(24),
                   border: Border.all(
-                    color: PulseColors.primary.withValues(alpha: 0.2),
-                    width: 1,
+                    color: PulseColors.primary.withValues(alpha: 0.3),
+                    width: 1.5,
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: PulseColors.primary.withValues(alpha: 0.1),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
+                      color: PulseColors.primary.withValues(alpha: 0.15),
+                      blurRadius: 10,
+                      offset: const Offset(0, 3),
                     ),
                   ],
                 ),
-                child: Text(
-                  interest,
-                  style: PulseTextStyles.bodyMedium.copyWith(
-                    color: PulseColors.primary,
-                    fontWeight: FontWeight.w600,
-                  ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.check_circle,
+                      color: PulseColors.success,
+                      size: 18,
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      interest,
+                      style: PulseTextStyles.bodyMedium.copyWith(
+                        color: PulseColors.primary,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15,
+                      ),
+                    ),
+                  ],
                 ),
               );
             }).toList(),
@@ -1318,6 +1331,11 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
   bool _shouldShowAge() => widget.profile.showAge ?? true;
   bool _shouldShowDistance() => widget.profile.showDistance ?? true;
   bool _shouldShowOnlineStatus() => widget.profile.showOnlineStatus ?? true;
+
+  /// Format last active time for display
+  String _formatLastActive() {
+    return formatLastActive(widget.profile.lastActiveAt);
+  }
 
   String _formatHeight(int cm) {
     final feet = cm ~/ 30.48;

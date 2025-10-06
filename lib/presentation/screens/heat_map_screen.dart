@@ -467,26 +467,11 @@ class _HeatMapScreenState extends State<HeatMapScreen>
               Expanded(
                 child: BlocBuilder<HeatMapBloc, HeatMapState>(
                   builder: (context, state) {
-                    AppLogger.debug(
-                      '🎯 BlocBuilder: Building with state type: ${state.runtimeType}',
-                    );
-                    
                     if (state is HeatMapLoading) {
-                      AppLogger.debug('⏳ BlocBuilder: State is HeatMapLoading');
                       return _buildLoadingState();
                     } else if (state is HeatMapLoaded) {
-                      AppLogger.debug('✅ BlocBuilder: State is HeatMapLoaded');
-                      AppLogger.debug(
-                        '✅ BlocBuilder: backendClusters = ${state.backendClusters?.length ?? "null"}',
-                      );
-                      AppLogger.debug(
-                        '✅ Data points: ${state.heatmapData.dataPoints.length}',
-                      );
-                      AppLogger.debug('✅ User location: ${state.userLocation}');
                       return _buildMapWithData(context, state);
                     } else if (state is HeatMapError) {
-                      AppLogger.debug('❌ BlocBuilder: State is HeatMapError');
-                      AppLogger.debug('❌ Error message: ${state.message}');
                       return _buildErrorState(context, state);
                     }
                     return _buildInitialState(context);
@@ -574,14 +559,6 @@ class _HeatMapScreenState extends State<HeatMapScreen>
   }
 
   Widget _buildMapWithData(BuildContext context, HeatMapLoaded state) {
-    AppLogger.debug(
-      '═══════════════════════════════════════════════════════════',
-    );
-    AppLogger.debug('🏗️ HeatMapScreen: _buildMapWithData called');
-    AppLogger.debug('🏗️ _googleMapKey: ${_googleMapKey.hashCode}');
-    AppLogger.debug(
-      '🏗️ HeatMapScreen: Building map with data - userLocation: ${state.userLocation}, dataPoints: ${state.heatmapData.dataPoints.length}, radius: ${state.currentRadius}',
-    );
     return Stack(
       children: [
         // Full screen Google Map
@@ -638,55 +615,21 @@ class _HeatMapScreenState extends State<HeatMapScreen>
   }
 
   Widget _buildGoogleMap(HeatMapLoaded state) {
-    AppLogger.debug('HeatMapScreen: Building GoogleMap widget');
-    AppLogger.debug('HeatMapScreen: User location: ${state.userLocation}');
-    AppLogger.debug(
-      'HeatMapScreen: Heatmap data points: ${state.heatmapData.dataPoints.length}',
-    );
-
     // Determine best position for map camera
     LatLng initialPosition;
     bool hasGeographicMismatch = false;
 
-    AppLogger.debug('HeatMapScreen: 🔍 Checking data points for geographic mismatch...');
-    AppLogger.debug(
-      'HeatMapScreen: Data points count: ${state.heatmapData.dataPoints.length}',
-    );
-
     if (state.heatmapData.dataPoints.isNotEmpty) {
       final firstPoint = state.heatmapData.dataPoints.first;
-      final lastPoint = state.heatmapData.dataPoints.last;
-      AppLogger.debug(
-        'HeatMapScreen: First data point: ${firstPoint.coordinates.latitude}, ${firstPoint.coordinates.longitude}',
-      );
-      AppLogger.debug(
-        'HeatMapScreen: Last data point: ${lastPoint.coordinates.latitude}, ${lastPoint.coordinates.longitude}',
-      );
 
       // Check if user location and data are on different continents
       final userLat = state.userLocation?.latitude ?? 0;
       final dataLat = firstPoint.coordinates.latitude;
-      AppLogger.debug('HeatMapScreen: 🔍 User latitude: $userLat');
-      AppLogger.debug('HeatMapScreen: 🔍 Data latitude: $dataLat');
-      AppLogger.debug('HeatMapScreen: 🔍 User > 0: ${userLat > 0}');
-      AppLogger.debug('HeatMapScreen: 🔍 Data < 0: ${dataLat < 0}');
-      AppLogger.debug('HeatMapScreen: 🔍 User < 0: ${userLat < 0}');
-      AppLogger.debug('HeatMapScreen: 🔍 Data > 0: ${dataLat > 0}');
 
       hasGeographicMismatch =
           (userLat > 0 && dataLat < 0) || (userLat < 0 && dataLat > 0);
-      AppLogger.debug(
-        'HeatMapScreen: 🔍 Geographic mismatch detected: $hasGeographicMismatch',
-      );
 
       if (hasGeographicMismatch) {
-        AppLogger.debug(
-          'HeatMapScreen: ⚠️ WARNING: User location and data points are on different continents!',
-        );
-        AppLogger.debug('HeatMapScreen: User: $userLat, Data: $dataLat');
-        AppLogger.debug(
-          'HeatMapScreen: Centering map on data cluster instead of user location',
-        );
 
         // Calculate center of data points
         final avgLat =
@@ -729,38 +672,14 @@ class _HeatMapScreenState extends State<HeatMapScreen>
     final googleMapWidget = GoogleMap(
       key: _googleMapKey, // Use dynamic key instead of const ValueKey
       onMapCreated: (GoogleMapController controller) async {
-        AppLogger.debug(
-          '═══════════════════════════════════════════════════════════',
-        );
-        AppLogger.debug('✅ GoogleMap: onMapCreated callback triggered!');
-        AppLogger.debug('✅ Controller type: ${controller.runtimeType}');
-        AppLogger.debug('✅ Map ID: ${controller.mapId}');
-        
         _mapController = controller;
-        AppLogger.debug('✅ Map controller assigned to _mapController');
         
         // Check if map tiles are loading by testing a basic operation
         try {
-          AppLogger.debug(
-            '🔍 Testing map tile loading by getting visible region...',
-          );
           final bounds = await controller.getVisibleRegion();
-          AppLogger.debug('✅ Visible region obtained successfully!');
-          AppLogger.debug('✅ Northeast: ${bounds.northeast}');
-          AppLogger.debug('✅ Southwest: ${bounds.southwest}');
-          AppLogger.debug('✅ This indicates map tiles ARE loading');
 
           // FIX: Fetch backend clusters immediately on map load (onCameraIdle may not fire initially)
           if (_showClusters && mounted) {
-            AppLogger.debug(
-              '🎯 Fetching initial backend clusters (onMapCreated)...',
-            );
-            AppLogger.debug(
-              '🎯 Current BLoC state: ${context.read<HeatMapBloc>().state.runtimeType}',
-            );
-            AppLogger.debug(
-              '🎯 _showClusters = $_showClusters, mounted = $mounted',
-            );
             final groupedZoom = _getGroupedZoomLevel(_currentZoom);
             final radiusKm = _currentRadius.toDouble();
 
@@ -771,101 +690,36 @@ class _HeatMapScreenState extends State<HeatMapScreen>
                 radiusKm: radiusKm,
               ),
             );
-            AppLogger.debug('🎯 FetchBackendClusters event dispatched!');
-          } else {
-            AppLogger.debug(
-              '⏭️ Skipping initial cluster fetch: _showClusters=$_showClusters, mounted=$mounted',
-            );
           }
-        } catch (e, stackTrace) {
-          AppLogger.debug('❌ ERROR: Cannot get visible region!');
-          AppLogger.debug('❌ Error: $e');
-          AppLogger.debug('❌ Stack trace: $stackTrace');
-          AppLogger.debug(
-            '❌ This may indicate API key, network, or platform view issues',
-          );
+        } catch (e) {
+          AppLogger.error('Cannot get visible region: $e');
         }
-
-        AppLogger.debug(
-          '✅ Map ready - user can now interact and zoom as needed',
-        );
-        AppLogger.debug(
-          '═══════════════════════════════════════════════════════════',
-        );
       },
       onCameraMove: (CameraPosition position) {
         if (mounted) {
-          // DIAGNOSTIC: Using both print() and AppLogger to test visibility
-          print(
-            '🔍🔍🔍 ZOOM TEST: onCameraMove fired! zoom=${position.zoom.toStringAsFixed(2)}',
-          );
-          AppLogger.debug(
-            '🔍 onCameraMove: Camera moving - zoom=${position.zoom.toStringAsFixed(2)}, target=${position.target.latitude.toStringAsFixed(4)},${position.target.longitude.toStringAsFixed(4)}',
-          );
-          
           // Cancel any pending cluster calculation when camera starts moving
           _clusterCalculationTimer?.cancel();
-          print('   ⏸️  ZOOM TEST: Cancelled timer');
-          AppLogger.debug('   ⏸️  Cancelled pending cluster calculation timer');
 
           // Update zoom without triggering loading state
           // Keep existing clusters visible for smooth UX (Google Maps pattern)
-          final oldZoom = _currentZoom;
           _currentZoom = position.zoom;
-          
-          if ((oldZoom - position.zoom).abs() > 0.5) {
-            AppLogger.debug(
-              '   📊 Significant zoom change: ${oldZoom.toStringAsFixed(2)} → ${position.zoom.toStringAsFixed(2)}',
-            );
-          }
         }
       },
       onCameraIdle: () async {
-        // DIAGNOSTIC: Using both print() and AppLogger to test visibility
-        print('═══════════════════════════════════════════════════════════');
-        print(
-          '📷📷📷 ZOOM TEST: onCameraIdle fired! zoom=${_currentZoom.toStringAsFixed(2)}',
-        );
-        print('   mounted=$mounted, _showClusters=$_showClusters');
-        AppLogger.debug(
-          '═══════════════════════════════════════════════════════════',
-        );
-        AppLogger.debug('📷 onCameraIdle: Camera stopped moving');
-        AppLogger.debug('🔍 Current state:');
-        AppLogger.debug('   - zoom: ${_currentZoom.toStringAsFixed(2)}');
-        AppLogger.debug('   - mounted: $mounted');
-        AppLogger.debug('   - _isUpdatingClusters: $_isUpdatingClusters');
-        AppLogger.debug('   - _showClusters: $_showClusters');
-        AppLogger.debug('   - _currentRadius: $_currentRadius km');
-        
         // Cancel any pending debounced updates
         _debounceTimer?.cancel();
 
         // Debounce backend cluster fetch: wait 300ms after camera stops
         _clusterCalculationTimer?.cancel();
-        print('⏰⏰⏰ ZOOM TEST: Starting 300ms debounce timer...');
-        AppLogger.debug(
-          '⏰ Starting 300ms debounce timer before cluster fetch...',
-        );
         
         _clusterCalculationTimer = Timer(
           const Duration(milliseconds: 300),
           () async {
-          print('⏱️⏱️⏱️ ZOOM TEST: Timer fired! Checking conditions...');
-          AppLogger.debug('⏱️  Debounce timer fired (300ms elapsed)');
-          AppLogger.debug('🔍 Checking conditions for cluster fetch:');
-          AppLogger.debug('   - mounted: $mounted');
-          AppLogger.debug('   - _isUpdatingClusters: $_isUpdatingClusters');
-          AppLogger.debug('   - _showClusters: $_showClusters');
             
             if (mounted && !_isUpdatingClusters && _showClusters) {
-            print('✅✅✅ ZOOM TEST: All conditions met! Fetching clusters...');
-            AppLogger.debug(
-              '✅ All conditions met! Proceeding with cluster fetch...',
-            );
               final groupedZoom = _getGroupedZoomLevel(_currentZoom);
               AppLogger.debug(
-              '� Camera stopped at grouped zoom $groupedZoom, fetching backend clusters...',
+                '� Camera stopped at grouped zoom $groupedZoom, fetching backend clusters...',
               );
 
               try {
@@ -877,23 +731,12 @@ class _HeatMapScreenState extends State<HeatMapScreen>
                   // Use user's distance preference from UI state
                   final radiusKm = _currentRadius.toDouble();
 
-                  AppLogger.debug(
-                    '📡 Fetching backend clusters: zoom=$groupedZoom, radius=${radiusKm}km',
-                  );
-
                 // Invalidate marker cache - new clusters will be fetched
                 setState(() {
                   _memoizedMarkers = null;
                 });
 
                   // Dispatch event to fetch backend clusters
-                print(
-                  '🚀🚀🚀 ZOOM TEST: Dispatching FetchBackendClusters event!',
-                );
-                AppLogger.debug(
-                  '🚀 Dispatching FetchBackendClusters event to BLoC...',
-                );
-                  
                   context.read<HeatMapBloc>().add(
                     FetchBackendClusters(
                       zoom: groupedZoom,
@@ -901,51 +744,18 @@ class _HeatMapScreenState extends State<HeatMapScreen>
                       radiusKm: radiusKm,
                     ),
                   );
-                  
-                print('✅✅✅ ZOOM TEST: Event dispatched successfully!');
-                AppLogger.debug(
-                  '✅ FetchBackendClusters event dispatched successfully!',
-                );
-                AppLogger.debug('   - zoom: $groupedZoom');
-                AppLogger.debug('   - radius: ${radiusKm}km');
-                AppLogger.debug(
-                  '   - viewport: NE(${bounds.northeast.latitude.toStringAsFixed(4)},${bounds.northeast.longitude.toStringAsFixed(4)}) SW(${bounds.southwest.latitude.toStringAsFixed(4)},${bounds.southwest.longitude.toStringAsFixed(4)})',
-                );
-                AppLogger.debug(
-                  '═══════════════════════════════════════════════════════════',
-                );
 
                   setState(() {
                     _isCalculatingClusters = false; // Hide loading indicator
                   });
                 }
               } catch (e) {
-                AppLogger.debug('❌ Error fetching backend clusters: $e');
+                AppLogger.error('Error fetching backend clusters: $e');
                 setState(() {
                   _isCalculatingClusters = false;
                 });
               }
-          } else {
-            // Log why cluster fetch was skipped
-            print('⚠️⚠️⚠️ ZOOM TEST: SKIPPED cluster fetch!');
-            if (!mounted) {
-              print('   Reason: Widget not mounted');
-              AppLogger.debug('⚠️ SKIPPED: Widget not mounted');
-            } else if (_isUpdatingClusters) {
-              print('   Reason: Already updating clusters');
-              AppLogger.debug(
-                '⚠️ SKIPPED: Already updating clusters (_isUpdatingClusters=true)',
-              );
-            } else if (!_showClusters) {
-              print('   Reason: Clusters disabled by user');
-              AppLogger.debug(
-                '⚠️ SKIPPED: Clusters disabled by user (_showClusters=false)',
-              );
-            }
-            AppLogger.debug(
-              '═══════════════════════════════════════════════════════════',
-            );
-              
+            } else {
               setState(() {
                 _isCalculatingClusters = false;
               });
@@ -982,11 +792,6 @@ class _HeatMapScreenState extends State<HeatMapScreen>
       trafficEnabled: false,
       buildingsEnabled: true,
       indoorViewEnabled: true,
-    );
-    
-    AppLogger.debug('✅ GoogleMap widget constructed successfully!');
-    AppLogger.debug(
-      '═══════════════════════════════════════════════════════════',
     );
 
     return googleMapWidget;

@@ -346,8 +346,12 @@ class MatchingService {
       'zodiacSign': null,
       'lifestyle': <String, dynamic>{},
       'preferences': <String, dynamic>{},
-      'lastActiveAt': user['updatedAt'],
-      'distanceKm': null,
+      'lastActiveAt':
+          user['lastActiveAt'] ?? user['lastActive'] ?? user['updatedAt'],
+      'distanceKm':
+          matchJson['distance'] as double? ??
+          user['distanceKm'] as double? ??
+          user['distance'] as double?,
     };
 
     return _userProfileFromJson(combinedUser);

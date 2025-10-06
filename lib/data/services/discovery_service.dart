@@ -268,10 +268,16 @@ class DiscoveryService {
       zodiacSign: null,
       lifestyle: <String, dynamic>{},
       preferences: <String, dynamic>{},
-      lastActiveAt: user['lastActive'] != null
+      lastActiveAt: user['lastActiveAt'] != null
+          ? DateTime.parse(user['lastActiveAt'] as String)
+          : user['lastActive'] != null
           ? DateTime.parse(user['lastActive'] as String)
           : null,
-      distanceKm: null,
+      distanceKm:
+          suggestion['distanceKm'] as double? ??
+          suggestion['distance'] as double? ??
+          user['distanceKm'] as double? ??
+          user['distance'] as double?,
     );
   }
 }
