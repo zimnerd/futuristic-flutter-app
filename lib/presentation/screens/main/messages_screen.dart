@@ -478,10 +478,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
               final apiClient = ApiClient.instance;
               final authToken = apiClient.authToken ?? '';
 
-              final groupChatService = GroupChatService(
-                baseUrl: ApiConstants.baseUrl,
-                accessToken: authToken,
-              );
+              final groupChatService = GroupChatService();
               final wsService = GroupChatWebSocketService(
                 baseUrl: ApiConstants.websocketUrl,
                 accessToken: authToken,
@@ -625,10 +622,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
                   final apiClient = ApiClient.instance;
                   final authToken = apiClient.authToken ?? '';
 
-                  final groupChatService = GroupChatService(
-                    baseUrl: ApiConstants.baseUrl,
-                    accessToken: authToken,
-                  );
+                  final groupChatService = GroupChatService();
                   final wsService = GroupChatWebSocketService(
                     baseUrl: ApiConstants.websocketUrl,
                     accessToken: authToken,

@@ -495,7 +495,6 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
       final mediaData = await service.uploadMedia(
         filePath: filePath,
         mediaType: 'audio',
-        mimeType: 'audio/m4a',
         metadata: {
           'duration': duration,
           'conversationId': widget.group.id,
@@ -623,7 +622,6 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
       final mediaData = await service.uploadMedia(
         filePath: compressedFile.path,
         mediaType: 'image',
-        mimeType: 'image/jpeg',
         metadata: {'conversationId': widget.group.id, 'messageType': 'image'},
       );
 
@@ -697,7 +695,6 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
       final mediaData = await service.uploadMedia(
         filePath: pickedFile.path,
         mediaType: 'video',
-        mimeType: 'video/mp4',
         metadata: {'conversationId': widget.group.id, 'messageType': 'video'},
       );
 
@@ -790,9 +787,6 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
       final mediaData = await service.uploadMedia(
         filePath: file.path!,
         mediaType: 'document',
-        mimeType: file.extension != null
-            ? 'application/${file.extension}'
-            : null,
         metadata: {
           'conversationId': widget.group.id,
           'messageType': 'file',

@@ -4,7 +4,6 @@ import '../storage/hive_storage_service.dart';
 import '../constants/api_constants.dart';
 import '../../data/services/messaging_service.dart';
 import '../../data/services/matching_service.dart';
-import '../../data/services/token_service.dart';
 import '../../features/group_chat/data/group_chat_service.dart';
 import '../../features/group_chat/data/group_chat_websocket_service.dart';
 import '../../data/datasources/remote/user_remote_data_source.dart';
@@ -50,12 +49,9 @@ Future<void> initializeDependencies() async {
     () => MatchingService(apiClient: sl()),
   );
 
-  // Group Chat Services - will be initialized after login with token
+  // Group Chat Services - now use ApiClient singleton internally
   sl.registerLazySingleton<GroupChatService>(
-    () => GroupChatService(
-      baseUrl: ApiConstants.baseUrl,
-      accessToken: TokenService().getAccessToken() as String?,
-    ),
+    () => GroupChatService(),
   );
   sl.registerLazySingleton<GroupChatWebSocketService>(
     () => GroupChatWebSocketService(

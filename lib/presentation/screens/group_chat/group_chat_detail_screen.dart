@@ -183,7 +183,6 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
                             final result = await _groupChatService.uploadMedia(
                               filePath: filePath,
                               mediaType: 'audio',
-                              mimeType: 'audio/m4a',
                             );
 
                             if (result['url'] != null) {
@@ -2003,7 +2002,6 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
         final result = await _groupChatService.uploadMedia(
           filePath: image.path,
           mediaType: 'image',
-          mimeType: 'image/jpeg',
         );
 
         // Send message with uploaded image URL
@@ -2042,7 +2040,6 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
         final result = await _groupChatService.uploadMedia(
           filePath: video.path,
           mediaType: 'video',
-          mimeType: 'video/mp4',
         );
 
         // Send message with uploaded video URL
@@ -2094,7 +2091,6 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
         final uploadResult = await _groupChatService.uploadMedia(
           filePath: file.path!,
           mediaType: 'document',
-          mimeType: file.extension ?? 'application/octet-stream',
         );
 
         // Send message with uploaded document URL

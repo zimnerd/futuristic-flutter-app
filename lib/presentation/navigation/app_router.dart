@@ -552,10 +552,7 @@ class AppRouter {
             final apiClient = ApiClient.instance;
             final authToken = apiClient.authToken ?? '';
 
-            final groupChatService = GroupChatService(
-              baseUrl: ApiConstants.baseUrl,
-              accessToken: authToken,
-            );
+            final groupChatService = GroupChatService();
             final wsService = GroupChatWebSocketService(
               baseUrl: ApiConstants.websocketUrl,
               accessToken: authToken,
@@ -592,7 +589,25 @@ class AppRouter {
           path: AppRoutes.createGroup,
           name: 'createGroup',
           builder: (context, state) {
-            return const CreateGroupScreen();
+            // Create GroupChatBloc with required services
+            final apiClient = ApiClient.instance;
+            final authToken = apiClient.authToken ?? '';
+
+            final groupChatService = GroupChatService();
+            final wsService = GroupChatWebSocketService(
+              baseUrl: ApiConstants.websocketUrl,
+              accessToken: authToken,
+            );
+
+            final bloc = GroupChatBloc(
+              service: groupChatService,
+              wsService: wsService,
+            );
+
+            return BlocProvider.value(
+              value: bloc,
+              child: const CreateGroupScreen(),
+            );
           },
         ),
         GoRoute(
