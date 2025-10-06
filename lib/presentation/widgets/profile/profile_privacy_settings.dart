@@ -346,7 +346,7 @@ class _ProfilePrivacySettingsState extends State<ProfilePrivacySettings> {
               border: Border.all(color: Colors.grey[300]!),
             ),
             child: DropdownButtonFormField<String>(
-              value: currentValue,
+              initialValue: currentValue,
               decoration: const InputDecoration(
                 border: InputBorder.none,
                 contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),

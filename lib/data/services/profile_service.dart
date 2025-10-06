@@ -16,7 +16,6 @@ import 'auth_service.dart';
 /// Service for managing user profiles and related operations
 class ProfileService {
   final ApiClient _apiClient;
-  final AuthService _authService;
   final Logger _logger;
   final Uuid _uuid = const Uuid();
 
@@ -25,7 +24,6 @@ class ProfileService {
     required AuthService authService,
     Logger? logger,
   }) : _apiClient = apiClient,
-        _authService = authService,
         _logger = logger ?? Logger();
 
   /// Get user profile by ID
@@ -273,14 +271,6 @@ class ProfileService {
   }
 
   /// Helper method to get current user ID
-  Future<String> _getCurrentUserId() async {
-    final currentUser = await _authService.getCurrentUser();
-    if (currentUser == null) {
-      throw AuthException('No authenticated user found');
-    }
-    return currentUser.id;
-  }
-
   /// Create new user profile
   Future<UserProfile> createProfile({
     required String userId,
@@ -1185,42 +1175,6 @@ class ProfileService {
     }
   }
 
-  /// Convert data model UserProfile to domain entity
-  /// Convert domain preferences to data model preferences
-  UserPreferences? _convertPreferences(Map<String, dynamic> preferences) {
-    try {
-      return UserPreferences(
-        id: preferences['id'] ?? _uuid.v4(),
-        userId: preferences['userId'] ?? '',
-        ageRange: AgeRange(
-          min: preferences['ageRangeMin'] ?? 18,
-          max: preferences['ageRangeMax'] ?? 50,
-        ),
-        maxDistance: preferences['maxDistance']?.toDouble() ?? 50.0,
-        genderPreference: List<String>.from(preferences['genderPreference'] ?? []),
-        lookingFor: List<String>.from(preferences['lookingFor'] ?? []),
-        dealBreakers: List<String>.from(preferences['dealBreakers'] ?? []),
-        interests: List<String>.from(preferences['interests'] ?? []),
-        lifestyle: LifestylePreferences(
-          drinkingHabits: preferences['drinkingHabits'],
-          smokingHabits: preferences['smokingHabits'],
-          exerciseFrequency: preferences['exerciseFrequency'],
-          dietType: preferences['dietType'],
-          religiosity: preferences['religiosity'],
-          politicalViews: preferences['politicalViews'],
-          hobbies: List<String>.from(preferences['hobbies'] ?? []),
-          musicGenres: List<String>.from(preferences['musicGenres'] ?? []),
-          travelPreferences: List<String>.from(preferences['travelPreferences'] ?? []),
-        ),
-        createdAt: DateTime.tryParse(preferences['createdAt'] ?? '') ?? DateTime.now(),
-        updatedAt: DateTime.tryParse(preferences['updatedAt'] ?? '') ?? DateTime.now(),
-      );
-    } catch (e) {
-      _logger.e('Failed to convert preferences: $e');
-      return null;
-    }
-  }
-
   /// Get user profile statistics
   Future<ProfileStats> getUserStats() async {
     try {
@@ -1263,17 +1217,6 @@ class ProfileService {
       _logger.e('❌ Unexpected error fetching statistics: $e');
       throw UserException('Failed to fetch statistics');
     }
-  }
-
-  /// Convert domain location to data model location
-  UserLocation _convertLocation(domain.UserLocation location) {
-    return UserLocation(
-      latitude: location.latitude,
-      longitude: location.longitude,
-      city: location.city,
-      country: location.country,
-      updatedAt: DateTime.now(),
-    );
   }
 }
 

@@ -107,10 +107,10 @@ class ErrorDialogUtils {
                           vertical: 4,
                         ),
                         decoration: BoxDecoration(
-                          color: errorInfo.color.withOpacity(0.1),
+                          color: errorInfo.color.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(4),
                           border: Border.all(
-                            color: errorInfo.color.withOpacity(0.3),
+                            color: errorInfo.color.withValues(alpha: 0.3),
                           ),
                         ),
                         child: Text(
