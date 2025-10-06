@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:pulse_dating_app/core/utils/logger.dart';
 
 /// User profile entity for matching and display
 class UserProfile extends Equatable {
@@ -232,6 +233,7 @@ class UserProfile extends Equatable {
       job: job ?? this.job,
       company: company ?? this.company,
       school: school ?? this.school,
+      // ignore: deprecated_member_use_from_same_package
       lookingFor: lookingFor ?? this.lookingFor,
       isOnline: isOnline ?? this.isOnline,
       lastSeen: lastSeen ?? this.lastSeen,
@@ -336,7 +338,7 @@ class UserProfile extends Equatable {
 
   /// Log readReceipts value for debugging
   void _logReadReceipts(String source) {
-    print('🔍 [UserProfile.$source] readReceipts = $readReceipts');
+    AppLogger.debug('🔍 [UserProfile.$source] readReceipts = $readReceipts');
   }
 
   /// Convert UserProfile to JSON
@@ -365,6 +367,7 @@ class UserProfile extends Equatable {
       'job': job,
       'company': company,
       'school': school,
+      // ignore: deprecated_member_use_from_same_package
       'lookingFor': lookingFor,
       'isOnline': isOnline,
       'lastSeen': lastSeen?.toIso8601String(),
@@ -420,6 +423,7 @@ class UserProfile extends Equatable {
     job,
     company,
     school,
+    // ignore: deprecated_member_use_from_same_package
     lookingFor,
     isOnline,
     lastSeen,

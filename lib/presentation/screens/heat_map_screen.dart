@@ -736,6 +736,7 @@ class _HeatMapScreenState extends State<HeatMapScreen>
                 });
 
                   // Dispatch event to fetch backend clusters
+                  if (!mounted) return;
                   context.read<HeatMapBloc>().add(
                     FetchBackendClusters(
                       zoom: groupedZoom,
@@ -811,8 +812,8 @@ class _HeatMapScreenState extends State<HeatMapScreen>
   Future<Set<Marker>> _buildMarkersFromBackendClusters(
     List<OptimizedClusterData> clusters,
   ) async {
-    print('🎨🎨🎨 RENDER TEST: _buildMarkersFromBackendClusters START!');
-    print('   Original clusters: ${clusters.length}');
+    AppLogger.debug('🎨 RENDER TEST: _buildMarkersFromBackendClusters START!');
+    AppLogger.debug('   Original clusters: ${clusters.length}');
 
     // Apply zoom-based aggregation
     final aggregatedClusters = _aggregateClustersByStatus(
@@ -826,7 +827,7 @@ class _HeatMapScreenState extends State<HeatMapScreen>
     AppLogger.debug('🎯 _buildMarkersFromBackendClusters: START');
     AppLogger.debug('📊 Original clusters: ${clusters.length}');
     AppLogger.debug(
-      '📊 Aggregated clusters: ${aggregatedClusters.length} at zoom ${_currentZoom}',
+      '📊 Aggregated clusters: ${aggregatedClusters.length} at zoom $_currentZoom',
     );
 
     final clusterMarkers = <Marker>{};
@@ -860,8 +861,8 @@ class _HeatMapScreenState extends State<HeatMapScreen>
       clusterMarkers.add(marker);
     }
 
-    print(
-      '✅✅✅ RENDER TEST: COMPLETED! Built ${clusterMarkers.length} cluster markers!',
+    AppLogger.debug(
+      '✅ RENDER TEST: COMPLETED! Built ${clusterMarkers.length} cluster markers!',
     );
     AppLogger.debug(
       '✅ COMPLETED: Built ${clusterMarkers.length} markers from backend clusters',
@@ -885,8 +886,8 @@ class _HeatMapScreenState extends State<HeatMapScreen>
       return clusters; // Return original clusters at high zoom
     }
 
-    print(
-      '🔄🔄🔄 AGGREGATION: Zoom $zoom detected - aggregating ${clusters.length} clusters by status',
+    AppLogger.debug(
+      '🔄 AGGREGATION: Zoom $zoom detected - aggregating ${clusters.length} clusters by status',
     );
 
     // Accumulate totals by status
