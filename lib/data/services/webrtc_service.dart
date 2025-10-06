@@ -97,26 +97,27 @@ class WebRTCService {
     }
   }
 
-  /// Request necessary permissions for calls
-  Future<bool> requestPermissions({bool isVideoCall = true}) async {
+  /// Check if necessary permissions are granted (does not request)
+  /// This should be called AFTER permissions have been requested by the UI layer
+  Future<bool> checkPermissions({bool isVideoCall = true}) async {
     try {
-      final permissions = <Permission>[
-        Permission.microphone,
-        if (isVideoCall) Permission.camera,
-      ];
+      final micStatus = await Permission.microphone.status;
+      if (!micStatus.isGranted) {
+        _logger.w('Microphone permission not granted');
+        return false;
+      }
 
-      final statuses = await permissions.request();
-      
-      for (final permission in permissions) {
-        if (statuses[permission] != PermissionStatus.granted) {
-          _logger.w('Permission denied: $permission');
+      if (isVideoCall) {
+        final cameraStatus = await Permission.camera.status;
+        if (!cameraStatus.isGranted) {
+          _logger.w('Camera permission not granted');
           return false;
         }
       }
 
       return true;
     } catch (e) {
-      _logger.e('Error requesting permissions: $e');
+      _logger.e('Error checking permissions: $e');
       return false;
     }
   }
@@ -135,8 +136,10 @@ class WebRTCService {
         throw Exception('Already in a call');
       }
 
-      // Request permissions
-      final hasPermissions = await requestPermissions(isVideoCall: callType == CallType.video);
+      // Check permissions (should already be granted by UI layer)
+      final hasPermissions = await checkPermissions(
+        isVideoCall: callType == CallType.video,
+      );
       if (!hasPermissions) {
         throw Exception('Required permissions not granted');
       }
@@ -194,8 +197,8 @@ class WebRTCService {
         throw Exception('No incoming call to answer');
       }
 
-      // Request permissions
-      final hasPermissions = await requestPermissions(
+      // Check permissions (should already be granted by UI layer)
+      final hasPermissions = await checkPermissions(
         isVideoCall: _currentCall!.type == CallType.video,
       );
       if (!hasPermissions) {

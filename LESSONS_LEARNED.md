@@ -5,7 +5,225 @@ This document captures key learnings from building the **Flutter mobile dating a
 
 ---
 
-## � **Clusters Not Showing After Toggle Fix (January 2025)**
+## 🎥 **iOS Permissions - Proactive Camera & Microphone Access (January 2025)**
+
+**Status**: ✅ **IMPLEMENTED** - Proactive permission handling with user-friendly dialogs  
+**Date**: January 2025  
+**Priority**: **CRITICAL** - Required for video calls and iOS compliance
+
+**Context**: iOS doesn't automatically show permission prompts - apps must request them explicitly. The original implementation only checked permissions after attempting to use them, resulting in "permission denied" toasts without giving users a chance to grant access.
+
+### **Problem - Silent Permission Failures**
+
+#### **Root Cause: Reactive vs Proactive Permission Handling**
+
+**Original Flow** ❌:
+1. User taps "Start Video Call"
+2. WebRTC service tries to access camera/microphone
+3. iOS blocks access (no permission granted yet)
+4. App shows toast: "Permission denied"
+5. User has NO WAY to grant permission without going to Settings
+
+**Why This Is Bad**:
+- **Poor UX**: Users don't understand WHY permission was denied
+- **No Context**: No explanation of what permissions are needed
+- **No Action Path**: Users stuck with no clear next step
+- **iOS Rejection Risk**: Apple requires proper permission context
+
+### **Solution - Three-Layer Permission Architecture**
+
+#### **Layer 1: Permission Service (Core Logic)**
+
+**File**: `lib/core/services/permission_service.dart`
+
+**Key Features**:
+```dart
+class PermissionService {
+  /// Request camera + microphone for video calls with explanatory dialog
+  Future<bool> requestVideoCallPermissions(BuildContext context) async {
+    // 1. Check current status first (avoid redundant prompts)
+    // 2. Show explanation dialog BEFORE system prompt
+    // 3. Request permissions one by one
+    // 4. Handle denied/permanently denied cases
+    // 5. Open Settings if permanently denied
+  }
+  
+  /// Request microphone only for audio calls
+  Future<bool> requestAudioCallPermissions(BuildContext context)
+  
+  /// Individual permission methods
+  Future<bool> requestCameraPermission(BuildContext context)
+  Future<bool> requestMicrophonePermission(BuildContext context)
+  Future<bool> requestPhotoLibraryPermission(BuildContext context)
+  
+  /// Check status without requesting
+  Future<bool> isCameraPermissionGranted()
+  Future<bool> isMicrophonePermissionGranted()
+  Future<bool> areVideoCallPermissionsGranted()
+}
+```
+
+**Dialog Flow**:
+1. **Explanation Dialog** → Tells user WHY we need permission
+2. **System Prompt** → iOS native permission dialog
+3. **Settings Dialog** → If permanently denied, offer to open Settings
+
+**Benefits**:
+- ✅ User understands context before iOS prompt
+- ✅ Handles all permission states (granted, denied, permanently denied)
+- ✅ Provides clear action paths for users
+- ✅ Follows iOS Human Interface Guidelines
+
+#### **Layer 2: Permission Mixin (UI Integration)**
+
+**File**: `lib/core/mixins/permission_required_mixin.dart`
+
+**Usage Pattern**:
+```dart
+class _VideoCallScreenState extends State<VideoCallScreen> 
+    with PermissionRequiredMixin {
+  
+  void _initiateCall() async {
+    // Proactive permission request BEFORE attempting call
+    final hasPermissions = await ensureVideoCallPermissions();
+    if (!hasPermissions) {
+      // Show user-friendly error, exit gracefully
+      return;
+    }
+    
+    // Now safe to start call - permissions already granted
+    await _webRTCService.startCall(...);
+  }
+}
+```
+
+**Available Methods**:
+- `ensureVideoCallPermissions()` - Camera + Microphone
+- `ensureAudioCallPermissions()` - Microphone only
+- `ensureCameraPermission()` - Camera only (photo upload, AR)
+- `ensureMicrophonePermission()` - Microphone only
+- `ensurePhotoLibraryPermission()` - Photo library access
+- `checkVideoCallPermissions()` - Check without requesting
+
+#### **Layer 3: Service Layer (Permission Check)**
+
+**File**: `lib/data/services/webrtc_service.dart`
+
+**Pattern**:
+```dart
+// ✅ CORRECT - Check permissions that UI layer already requested
+Future<void> startCall(...) async {
+  // Silent check - should always pass if UI layer did its job
+  final hasPermissions = await checkPermissions(isVideoCall: true);
+  if (!hasPermissions) {
+    throw Exception('Required permissions not granted');
+  }
+  
+  // Proceed with call
+}
+```
+
+**Why Not Request Here?**:
+- ❌ Services have no `BuildContext` for dialogs
+- ❌ Violates separation of concerns
+- ❌ Can't show proper explanations to users
+- ✅ UI layer is responsible for user interactions
+
+### **iOS Info.plist Configuration**
+
+**File**: `ios/Runner/Info.plist`
+
+**Required Keys**:
+```xml
+<!-- Camera Permission -->
+<key>NSCameraUsageDescription</key>
+<string>This app needs access to camera to take profile photos and make video calls</string>
+
+<!-- Microphone Permission -->
+<key>NSMicrophoneUsageDescription</key>
+<string>PulseLink needs access to your microphone for audio and video calls</string>
+
+<!-- Photo Library Permission -->
+<key>NSPhotoLibraryUsageDescription</key>
+<string>This app needs access to photo library to select profile photos</string>
+```
+
+**CRITICAL**: These descriptions appear in iOS permission prompts. Make them:
+- Clear about what feature needs the permission
+- Specific about how it will be used
+- User-friendly (avoid technical jargon)
+
+### **Implementation Checklist**
+
+When adding new features requiring permissions:
+
+- [ ] Add permission to `Info.plist` with clear description
+- [ ] Use `PermissionRequiredMixin` in your screen widget
+- [ ] Call `ensureXxxPermission()` BEFORE using the feature
+- [ ] Handle `false` return value gracefully
+- [ ] Service layer uses `checkPermissions()` (not `requestPermissions()`)
+- [ ] Test on iOS with permissions: Not Determined, Denied, Permanently Denied
+- [ ] Test Settings app integration (when permanently denied)
+
+### **User Flow Examples**
+
+**First Time Video Call**:
+1. User taps "Video Call"
+2. App shows: "📹 Video Call Permissions - To make video calls, Pulse needs: 📸 Camera, 🎤 Microphone"
+3. User taps "Continue"
+4. iOS shows camera permission prompt → User grants
+5. iOS shows microphone permission prompt → User grants
+6. Call starts successfully ✅
+
+**Permission Previously Denied**:
+1. User taps "Video Call"
+2. App detects denial
+3. App shows: "📸 Camera Access Denied - Please enable in Settings > Pulse > Camera"
+4. User taps "Open Settings"
+5. iOS opens Settings → User enables permission
+6. User returns to app → Try again → Call works ✅
+
+**Permission Permanently Denied**:
+1. User taps "Video Call"  
+2. App detects permanent denial (can't show iOS prompt again)
+3. App shows Settings dialog with clear instructions
+4. User must manually enable in Settings
+5. No silent failures - user knows exactly what to do ✅
+
+### **Key Learnings**
+
+✅ **DO**:
+- Request permissions proactively BEFORE using features
+- Show explanation dialogs before iOS system prompts
+- Handle all permission states (granted, denied, permanently denied)
+- Provide clear paths to Settings when needed
+- Test on real iOS devices (simulator doesn't fully mimic permission behavior)
+
+❌ **DON'T**:
+- Don't request permissions in service layer (no context)
+- Don't assume permissions are granted
+- Don't show generic error messages
+- Don't retry iOS prompts after permanent denial
+- Don't mix permission logic across layers
+
+### **Related Files**
+
+**Core Services**:
+- `lib/core/services/permission_service.dart` - Main permission logic
+- `lib/core/mixins/permission_required_mixin.dart` - Widget integration
+
+**Updated Screens**:
+- `lib/presentation/screens/call/video_call_screen.dart` - Video calling
+- `lib/presentation/screens/call/audio_call_screen.dart` - Audio calling (TODO)
+- `lib/presentation/screens/profile/photo_upload_screen.dart` - Photo upload (TODO)
+
+**Configuration**:
+- `ios/Runner/Info.plist` - Permission descriptions
+- `pubspec.yaml` - `permission_handler: ^12.0.1` dependency
+
+---
+
+## 📍 **Clusters Not Showing After Toggle Fix (January 2025)**
 
 **Status**: ✅ **FIXED** - Enabled clusters by default + fetch on toggle  
 **Date**: January 18, 2025  

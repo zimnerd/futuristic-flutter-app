@@ -6,6 +6,7 @@ import '../../widgets/call/call_controls.dart';
 import '../../../domain/entities/user_profile.dart';
 import '../../../data/services/webrtc_service.dart';
 import '../../../data/models/call_model.dart' as model;
+import '../../../core/mixins/permission_required_mixin.dart';
 
 class VideoCallScreen extends StatefulWidget {
   final UserProfile remoteUser;
@@ -23,7 +24,8 @@ class VideoCallScreen extends StatefulWidget {
   State<VideoCallScreen> createState() => _VideoCallScreenState();
 }
 
-class _VideoCallScreenState extends State<VideoCallScreen> {
+class _VideoCallScreenState extends State<VideoCallScreen>
+    with PermissionRequiredMixin {
   final WebRTCService _webRTCService = WebRTCService();
   
   bool _isVideoEnabled = true;
@@ -113,6 +115,23 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
 
   void _initiateCall() async {
     try {
+      // Request permissions first
+      final hasPermissions = await ensureVideoCallPermissions();
+      if (!hasPermissions) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Camera and microphone permissions are required for video calls',
+              ),
+              backgroundColor: Colors.red,
+            ),
+          );
+          Navigator.of(context).pop();
+        }
+        return;
+      }
+
       // Start WebRTC call
       await _webRTCService.startCall(
         receiverId: widget.remoteUser.id,
@@ -136,7 +155,25 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
     if (mounted) {
       Navigator.of(context).pop(); // Close dialog
     }
+    
     try {
+      // Request permissions first
+      final hasPermissions = await ensureVideoCallPermissions();
+      if (!hasPermissions) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Camera and microphone permissions are required for video calls',
+              ),
+              backgroundColor: Colors.red,
+            ),
+          );
+          Navigator.of(context).pop();
+        }
+        return;
+      }
+
       // Answer WebRTC call
       await _webRTCService.answerCall(
         channelName: 'call_${widget.callId}',
