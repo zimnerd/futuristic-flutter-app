@@ -284,76 +284,6 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
     }
   }
 
-  void _saveProfile() {
-    // Mark as final save to trigger navigation
-    _isFinalSave = true;
-    
-    // Only validate form if we're on page 0 (Basic Info) which has the form
-    // For other pages, skip validation since they don't use the form
-    bool isValid = true;
-    if (_currentPageIndex == 0) {
-      isValid = _formKey.currentState?.validate() ?? false;
-    }
-    
-    if (isValid) {
-      final updatedProfile = UserProfile(
-        id: _currentProfile?.id ?? 'current_user_id',
-        name: _nameController.text.trim(),
-        bio: _bioController.text.trim(),
-        age: _calculateAge(
-          _dateOfBirth ??
-              DateTime.now().subtract(const Duration(days: 365 * 25)),
-        ),
-        dateOfBirth: _dateOfBirth,
-        photos: _photos,
-        interests: _selectedInterests,
-        location: _currentProfile?.location ?? UserLocation(
-          latitude: 0.0,
-          longitude: 0.0,
-          city: 'Current City',
-        ),
-        gender: _convertGenderToBackendFormat(_selectedGender),
-        // Send backend field names
-        occupation: _jobController.text.trim(),
-        education: _schoolController.text.trim(),
-        // Legacy fields for compatibility
-        job: _jobController.text.trim(),
-        company: _companyController.text.trim(),
-        school: _schoolController.text.trim(),
-        // lookingFor removed - relationshipGoals now handles this
-        isOnline: true,
-        lastSeen: DateTime.now(),
-        verified: _currentProfile?.verified ?? false,
-        // New lifestyle fields - map UI values to backend enum format
-        lifestyleChoice: _selectedLifestyle,
-        relationshipGoals: _selectedRelationshipGoals,
-        height: _selectedHeight,
-        religion: _selectedReligion,
-        politics: ProfilePhysicalAttributesSection.mapPoliticsToBackend(
-          _selectedPolitics,
-        ),
-        drinking: ProfileLifestyleChoicesSection.mapDrinkingToBackend(
-          _selectedDrinking,
-        ),
-        smoking: ProfileLifestyleChoicesSection.mapSmokingToBackend(
-          _selectedSmoking,
-        ),
-        exercise: ProfileLifestyleChoicesSection.mapExerciseToBackend(
-          _selectedExercise,
-        ),
-        drugs: ProfileLifestyleChoicesSection.mapDrugsToBackend(
-          _selectedDrugs,
-        ),
-        children: ProfileLifestyleChoicesSection.mapChildrenToBackend(
-          _selectedChildren,
-        ),
-        languages: _selectedLanguages,
-      );
-
-      context.read<ProfileBloc>().add(UpdateProfile(profile: updatedProfile));
-    }
-  }
-  
   /// Convert UI gender format back to backend format
   String? _convertGenderToBackendFormat(String? uiGender) {
     if (uiGender == null) return null;
@@ -614,7 +544,6 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
       job: _currentProfile?.job,
       company: _currentProfile?.company,
       school: _currentProfile?.school,
-      lookingFor: _currentProfile?.lookingFor,
       isOnline: true,
       lastSeen: DateTime.now(),
       verified: _currentProfile?.verified ?? false,
@@ -655,7 +584,6 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
       job: _currentProfile?.job,
       company: _currentProfile?.company,
       school: _currentProfile?.school,
-      lookingFor: _currentProfile?.lookingFor,
       isOnline: true,
       lastSeen: DateTime.now(),
       verified: _currentProfile?.verified ?? false,

@@ -781,7 +781,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       case 'preferences':
         return {
           'gender': userProfile.gender,
-          'lookingFor': userProfile.lookingFor,
+          'relationshipGoals': userProfile.relationshipGoals,
         };
       default:
         return {};
@@ -821,7 +821,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     // Preferences check
     if ((userProfile.gender?.isEmpty ?? true) ||
-        (userProfile.lookingFor?.isEmpty ?? true)) {
+        (userProfile.relationshipGoals.isEmpty)) {
       _navigateToSectionEdit('preferences', userProfile);
       return;
     }

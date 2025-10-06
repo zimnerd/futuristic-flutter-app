@@ -241,7 +241,9 @@ class ProfileCompletionCard extends StatelessWidget {
     if (profile.job?.isEmpty ?? true) missingFields.add('Job');
     if (profile.school?.isEmpty ?? true) missingFields.add('Education');
     if (profile.gender?.isEmpty ?? true) missingFields.add('Gender');
-    if (profile.lookingFor?.isEmpty ?? true) missingFields.add('Looking For');
+    if (profile.relationshipGoals.isEmpty) {
+      missingFields.add('Relationship Goals');
+    }
     
     // Check photo requirements (minimum 2 photos recommended)
     if (profile.photos.length < 2) {

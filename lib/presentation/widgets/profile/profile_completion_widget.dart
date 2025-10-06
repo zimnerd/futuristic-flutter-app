@@ -367,7 +367,7 @@ class ProfileCompletionWidget extends StatelessWidget {
     totalPoints += preferencesSection.points;
     
     if ((profile!.gender?.isNotEmpty ?? false) && 
-        (profile!.lookingFor?.isNotEmpty ?? false)) {
+        profile!.relationshipGoals.isNotEmpty) {
       earnedPoints += preferencesSection.points;
     } else {
       missingSections.add(preferencesSection);

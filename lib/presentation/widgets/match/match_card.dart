@@ -398,10 +398,10 @@ class MatchCard extends StatelessWidget {
       return 'Matched ${diff.inDays} days ago';
     } else if (diff.inDays < 30) {
       final weeks = (diff.inDays / 7).floor();
-      return 'Matched ${weeks} ${weeks == 1 ? 'week' : 'weeks'} ago';
+      return 'Matched $weeks ${weeks == 1 ? 'week' : 'weeks'} ago';
     } else {
       final months = (diff.inDays / 30).floor();
-      return 'Matched ${months} ${months == 1 ? 'month' : 'months'} ago';
+      return 'Matched $months ${months == 1 ? 'month' : 'months'} ago';
     }
   }
 

@@ -40,8 +40,9 @@ class _EnhancedPhotoGridState extends State<EnhancedPhotoGrid> {
   final ImagePicker _picker = ImagePicker();
   List<ProfilePhoto> _photos = [];
   bool _isUploading = false;
-  Map<String, bool> _uploadingPhotos = {}; // Track individual photo uploads
-  Map<String, bool> _uploadedPhotos = {}; // Track completed uploads
+  final Map<String, bool> _uploadingPhotos =
+      {}; // Track individual photo uploads
+  final Map<String, bool> _uploadedPhotos = {}; // Track completed uploads
 
   @override
   void initState() {

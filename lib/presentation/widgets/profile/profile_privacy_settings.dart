@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:logger/logger.dart';
 import '../../theme/pulse_colors.dart';
+
+final _logger = Logger();
 
 /// Widget for managing profile privacy settings
 class ProfilePrivacySettings extends StatefulWidget {
@@ -23,10 +26,10 @@ class _ProfilePrivacySettingsState extends State<ProfilePrivacySettings> {
   void initState() {
     super.initState();
     _settings = Map.from(widget.privacySettings);
-    print(
+    _logger.d(
       '🔍 [ProfilePrivacySettings.initState] readReceipts from widget: ${widget.privacySettings['readReceipts']}',
     );
-    print(
+    _logger.d(
       '🔍 [ProfilePrivacySettings.initState] readReceipts in _settings: ${_settings['readReceipts']}',
     );
   }
@@ -34,24 +37,24 @@ class _ProfilePrivacySettingsState extends State<ProfilePrivacySettings> {
   @override
   void didUpdateWidget(ProfilePrivacySettings oldWidget) {
     super.didUpdateWidget(oldWidget);
-    print(
+    _logger.d(
       '🔍 [ProfilePrivacySettings.didUpdateWidget] OLD readReceipts: ${oldWidget.privacySettings['readReceipts']}',
     );
-    print(
+    _logger.d(
       '🔍 [ProfilePrivacySettings.didUpdateWidget] NEW readReceipts: ${widget.privacySettings['readReceipts']}',
     );
     if (widget.privacySettings != oldWidget.privacySettings) {
-      print(
+      _logger.d(
         '🔍 [ProfilePrivacySettings.didUpdateWidget] Settings changed, updating _settings',
       );
       setState(() {
         _settings = Map.from(widget.privacySettings);
-        print(
+        _logger.d(
           '🔍 [ProfilePrivacySettings.didUpdateWidget] readReceipts in _settings after update: ${_settings['readReceipts']}',
         );
       });
     } else {
-      print(
+      _logger.d(
         '🔍 [ProfilePrivacySettings.didUpdateWidget] Settings unchanged, skipping update',
       );
     }

@@ -86,8 +86,9 @@ class UserProfile {
           (json['photos'] as List?)
               ?.map((photo) {
                 // Handle new nested structure: {id, url, ...}
-                if (photo is String)
+                if (photo is String) {
                   return photo; // Backward compatibility with URLs
+                }
                 if (photo is Map<String, dynamic>) {
                   // Extract url from photo object
                   return photo['url'] as String? ?? '';

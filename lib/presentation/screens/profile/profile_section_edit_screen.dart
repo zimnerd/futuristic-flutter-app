@@ -794,7 +794,7 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
 
   Widget _buildPreferencesSection() {
     // Convert API gender values to display values
-    String _convertGenderToDisplay(String? gender) {
+    String convertGenderToDisplay(String? gender) {
       switch (gender?.toUpperCase()) {
         case 'MALE':
           return 'Man';
@@ -808,7 +808,7 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
       }
     }
 
-    String _convertGenderToAPI(String display) {
+    String convertGenderToAPI(String display) {
       switch (display) {
         case 'Man':
           return 'MALE';
@@ -823,7 +823,7 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
     
     return StatefulBuilder(
       builder: (context, setState) {
-        final currentGender = _convertGenderToDisplay(
+        final currentGender = convertGenderToDisplay(
           _formData['gender']?.toString(),
         );
         
@@ -836,7 +836,7 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
               options: ['Woman', 'Man', 'Non-binary', 'Other'],
               onChanged: (value) {
                 setState(() {
-                  _formData['gender'] = _convertGenderToAPI(value!);
+                  _formData['gender'] = convertGenderToAPI(value!);
                 });
               },
             ),

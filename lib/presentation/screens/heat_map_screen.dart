@@ -4,7 +4,6 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:provider/provider.dart';
 import '../../data/services/heat_map_service.dart';
 import '../../core/services/location_service.dart';
 import '../../core/utils/logger.dart';
@@ -276,7 +275,7 @@ class _HeatMapScreenState extends State<HeatMapScreen>
   Timer? _debounceTimer;
   Timer? _clusterCalculationTimer;
   
-  bool _isUpdatingClusters = false;
+  final bool _isUpdatingClusters = false;
   bool _isCalculatingClusters = false;
 
   // Google Maps lifecycle management to fix black screen issue
@@ -801,74 +800,9 @@ class _HeatMapScreenState extends State<HeatMapScreen>
   /// Build cluster circles - now uses backend-calculated clusters
   /// Eliminates heavy frontend computation that caused black screens
   Set<Circle> _buildClusterCircles(HeatMapLoaded state) {
-    print('═══════════════════════════════════════════════════════════');
-    print('🔨🔨🔨 RENDER TEST: _buildClusterCircles called!');
-    print('   _showClusters=$_showClusters');
-    print(
-      '   state.backendClusters=${state.backendClusters?.length ?? "null"}',
-    );
-    AppLogger.debug(
-      '───────────────────────────────────────────────────────────',
-    );
-    AppLogger.debug('🔍 _buildClusterCircles called');
-    AppLogger.debug('🔍 Step 1: Check if clusters are enabled');
-    AppLogger.debug('   - _showClusters = $_showClusters');
-    
     if (!_showClusters) {
-      print('⏭️⏭️⏭️ RENDER TEST: SKIPPED - Clusters disabled!');
-      AppLogger.debug('⏭️ RETURN EARLY: Clusters disabled by user');
-      AppLogger.debug(
-        '───────────────────────────────────────────────────────────',
-      );
       return {};
     }
-    
-    AppLogger.debug('✅ Clusters are enabled, continuing...');
-    AppLogger.debug('🔍 Step 2: Check backend clusters availability');
-    AppLogger.debug(
-      '   - state.backendClusters == null? ${state.backendClusters == null}',
-    );
-    AppLogger.debug(
-      '   - backendClusters length = ${state.backendClusters?.length ?? 0}',
-    );
-
-    if (state.backendClusters != null && state.backendClusters!.isNotEmpty) {
-      print(
-        '✅✅✅ RENDER TEST: ${state.backendClusters!.length} backend clusters available!',
-      );
-      AppLogger.debug(
-        '✅ Backend clusters available: ${state.backendClusters!.length} clusters',
-      );
-      AppLogger.debug('🔍 Step 3: Converting backend clusters to circles...');
-    } else {
-      print('⚠️⚠️⚠️ RENDER TEST: NO backend clusters!');
-      print('   backendClusters is null: ${state.backendClusters == null}');
-      AppLogger.debug('⚠️ NO backend clusters available!');
-      AppLogger.debug(
-        '   - backendClusters is null: ${state.backendClusters == null}',
-      );
-      AppLogger.debug(
-        '   - backendClusters is empty: ${state.backendClusters?.isEmpty ?? false}',
-      );
-    }
-
-    // Use backend clusters if available (no longer rendering as circles - using markers instead)
-    if (state.backendClusters != null && state.backendClusters!.isNotEmpty) {
-      print(
-        'ℹ️ℹ️ℹ️ RENDER TEST: Backend clusters available - rendered as markers, not circles',
-      );
-      AppLogger.debug(
-        'ℹ️ Backend clusters rendered as markers (see _buildMarkers)',
-      );
-    }
-
-    AppLogger.debug('⏳ No backend clusters yet - returning empty (will fetch)');
-    AppLogger.debug(
-      '⏳ Backend clusters is ${state.backendClusters == null ? "NULL" : "EMPTY"}',
-    );
-    AppLogger.debug(
-      '───────────────────────────────────────────────────────────',
-    );
     return {};
   }
 
@@ -907,21 +841,7 @@ class _HeatMapScreenState extends State<HeatMapScreen>
       // Determine size tier based on user count
       final sizeTier = _getClusterSizeTier(cluster.userCount);
       final markerSize = _getMarkerSize(sizeTier);
-
-      if (i == 0) {
-        print('   First cluster details:');
-        print('     ID: ${cluster.id}');
-        print('     Users: ${cluster.userCount}');
-        print('     Status: $predominantStatus → $statusColor');
-        print('     Size: $sizeTier ($markerSize px)');
-        AppLogger.debug('🔍 First cluster details:');
-        AppLogger.debug('   - ID: ${cluster.id}');
-        AppLogger.debug('   - UserCount: ${cluster.userCount}');
-        AppLogger.debug('   - PredominantStatus: $predominantStatus');
-        AppLogger.debug('   - Color: $statusColor');
-        AppLogger.debug('   - SizeTier: $sizeTier');
-      }
-
+      
       // Generate custom marker icon with user count label
       final markerIcon = await _generateClusterMarkerIcon(
         userCount: cluster.userCount,
