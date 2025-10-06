@@ -12,6 +12,7 @@ class OptimizedClusterData {
   final double avgAge;
   final Map<String, dynamic>? genderDistribution;
   final Map<String, dynamic>? ageDistribution;
+  final Map<String, int>? statusBreakdown; // matched, liked_me, unmatched, passed
 
   const OptimizedClusterData({
     required this.id,
@@ -23,6 +24,7 @@ class OptimizedClusterData {
     required this.avgAge,
     this.genderDistribution,
     this.ageDistribution,
+    this.statusBreakdown,
   });
 
   factory OptimizedClusterData.fromJson(Map<String, dynamic> json) {
@@ -31,11 +33,16 @@ class OptimizedClusterData {
       latitude: (json['latitude'] as num).toDouble(),
       longitude: (json['longitude'] as num).toDouble(),
       userCount: json['userCount'] as int,
-      radius: (json['radius'] as num).toDouble(),
-      densityScore: json['densityScore'] as int,
-      avgAge: (json['avgAge'] as num).toDouble(),
+      radius:
+          (json['radius'] as num?)?.toDouble() ??
+          100.0, // Default radius if not provided
+      densityScore: json['densityScore'] as int? ?? 0,
+      avgAge: (json['avgAge'] as num?)?.toDouble() ?? 0.0,
       genderDistribution: json['genderDistribution'] as Map<String, dynamic>?,
       ageDistribution: json['ageDistribution'] as Map<String, dynamic>?,
+      statusBreakdown: json['statusBreakdown'] != null
+          ? Map<String, int>.from(json['statusBreakdown'] as Map)
+          : null,
     );
   }
 

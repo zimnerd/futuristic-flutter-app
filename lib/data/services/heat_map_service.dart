@@ -40,13 +40,16 @@ class HeatMapService {
         queryParameters: queryParams,
       );
 
-      if (response.data != null && response.data['clusters'] is List) {
-        final clusters = (response.data['clusters'] as List)
+      // Backend wraps data in a "data" property: { data: { clusters: [...], performance: {...} } }
+      final dataPayload = response.data['data'] ?? response.data;
+
+      if (dataPayload != null && dataPayload['clusters'] is List) {
+        final clusters = (dataPayload['clusters'] as List)
             .map((json) => OptimizedClusterData.fromJson(json))
             .toList();
             
-        final performance = response.data['performance'] != null 
-            ? PerformanceMetrics.fromJson(response.data['performance'])
+        final performance = dataPayload['performance'] != null
+            ? PerformanceMetrics.fromJson(dataPayload['performance'])
             : PerformanceMetrics(queryTimeMs: 0, clusteringTimeMs: 0);
         
         dev.log('Fetched ${clusters.length} optimized clusters (${performance.queryTimeMs}ms query, ${performance.clusteringTimeMs}ms clustering)', name: 'HeatMapService');

@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'dart:ui' as ui;
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -318,23 +320,53 @@ class HeatMapBloc extends Bloc<HeatMapEvent, HeatMapState> {
     FetchBackendClusters event,
     Emitter<HeatMapState> emit,
   ) async {
+    print('═══════════════════════════════════════════════════════════');
+    print('🎯🎯🎯 BLOC TEST: FetchBackendClusters event received!');
+    print('   State: ${state.runtimeType}, zoom: ${event.zoom}');
     AppLogger.debug(
-      '🎯 FetchBackendClusters event received! Current state: ${state.runtimeType}',
+      '═══════════════════════════════════════════════════════════',
     );
+    AppLogger.debug('🎯 BLoC: FetchBackendClusters event received!');
+    AppLogger.debug('   - Current state: ${state.runtimeType}');
+    AppLogger.debug('   - Event zoom: ${event.zoom}');
+    AppLogger.debug('   - Event radius: ${event.radiusKm}km');
+    AppLogger.debug('   - Has viewport: ${event.viewport != null}');
 
+    // Handle both HeatMapInitial and HeatMapLoaded states
+    // If state is Initial, trigger LoadHeatMapData to initialize the state first
     if (state is! HeatMapLoaded) {
+      print('   ⚠️  State is ${state.runtimeType} - not loaded yet!');
+      print('   Triggering LoadHeatMapData first...');
       AppLogger.debug(
-        '⚠️ FetchBackendClusters called but state is ${state.runtimeType}, not HeatMapLoaded. Ignoring.',
+        '⚠️ FetchBackendClusters called but state is ${state.runtimeType}.',
       );
+      AppLogger.debug(
+        '   Triggering LoadHeatMapData to initialize state first...',
+      );
+      AppLogger.debug(
+        '═══════════════════════════════════════════════════════════',
+      );
+      // Trigger initial data load which will include backend clusters
+      add(LoadHeatMapData(event.radiusKm.toInt()));
       return;
     }
 
     final currentState = state as HeatMapLoaded;
 
     try {
-      AppLogger.debug(
-        '🔄 Fetching clusters from backend (zoom: ${event.zoom}, radius: ${event.radiusKm}km)',
-      );
+      print('🔄🔄🔄 BLOC TEST: Making API call...');
+      AppLogger.debug('🔄 Making API call to getOptimizedHeatMapData...');
+      AppLogger.debug('   - zoom: ${event.zoom}');
+      AppLogger.debug('   - radius: ${event.radiusKm}km');
+      AppLogger.debug('   - viewport bounds:');
+      if (event.viewport != null) {
+        AppLogger.debug(
+          '     NE: ${event.viewport!.northeast.latitude.toStringAsFixed(4)}, ${event.viewport!.northeast.longitude.toStringAsFixed(4)}',
+        );
+        AppLogger.debug(
+          '     SW: ${event.viewport!.southwest.latitude.toStringAsFixed(4)}, ${event.viewport!.southwest.longitude.toStringAsFixed(4)}',
+        );
+      }
 
       final response = await _heatMapService.getOptimizedHeatMapData(
         zoom: event.zoom,
@@ -346,6 +378,10 @@ class HeatMapBloc extends Bloc<HeatMapEvent, HeatMapState> {
         maxClusters: 50,
       );
 
+      print('✅✅✅ BLOC TEST: Received ${response.clusters.length} clusters!');
+      print(
+        '   First cluster: ${response.clusters.isNotEmpty ? response.clusters.first.id : "NONE"}',
+      );
       AppLogger.debug(
         '✅ Received ${response.clusters.length} clusters from backend '
         '(${response.performance.queryTimeMs}ms query, '
@@ -362,12 +398,22 @@ class HeatMapBloc extends Bloc<HeatMapEvent, HeatMapState> {
       
       emit(currentState.copyWith(backendClusters: response.clusters));
       
+      print(
+        '📢📢📢 BLOC TEST: State emitted with ${response.clusters.length} clusters!',
+      );
+      print('   BlocBuilder should rebuild now...');
       AppLogger.debug(
         '🔍 State emitted with ${response.clusters.length} clusters',
       );
       AppLogger.debug('🔍 BLoC should trigger BlocBuilder rebuild now...');
+      AppLogger.debug(
+        '═══════════════════════════════════════════════════════════',
+      );
     } catch (e) {
       AppLogger.debug('❌ Failed to fetch backend clusters: $e');
+      AppLogger.debug(
+        '═══════════════════════════════════════════════════════════',
+      );
       // Don't emit error - keep existing state and let UI fall back gracefully
     }
   }
@@ -409,8 +455,9 @@ class _HeatMapScreenState extends State<HeatMapScreen>
   DateTime? _lastDataFetch;
   static const Duration _cacheValidity = Duration(minutes: 5);
 
-  // Memoized circle sets to prevent rebuilding on every frame
+  // Memoized sets to prevent rebuilding on every frame
   Set<Circle>? _memoizedCircles;
+  Set<Marker>? _memoizedMarkers;
   String? _lastCacheKey;
   
   // Performance tracking
@@ -641,6 +688,7 @@ class _HeatMapScreenState extends State<HeatMapScreen>
 
   @override
   Widget build(BuildContext context) {
+    AppLogger.debug('🎨 HeatMapScreen: build() called');
     // Access services from the parent context before creating BlocProvider
     final heatMapService = context.read<HeatMapService>();
     final locationService = context.read<LocationService>();
@@ -1028,30 +1076,77 @@ class _HeatMapScreenState extends State<HeatMapScreen>
       },
       onCameraMove: (CameraPosition position) {
         if (mounted) {
+          // DIAGNOSTIC: Using both print() and AppLogger to test visibility
+          print(
+            '🔍🔍🔍 ZOOM TEST: onCameraMove fired! zoom=${position.zoom.toStringAsFixed(2)}',
+          );
+          AppLogger.debug(
+            '🔍 onCameraMove: Camera moving - zoom=${position.zoom.toStringAsFixed(2)}, target=${position.target.latitude.toStringAsFixed(4)},${position.target.longitude.toStringAsFixed(4)}',
+          );
+          
           // Cancel any pending cluster calculation when camera starts moving
           _clusterCalculationTimer?.cancel();
+          print('   ⏸️  ZOOM TEST: Cancelled timer');
+          AppLogger.debug('   ⏸️  Cancelled pending cluster calculation timer');
 
           // Update zoom without triggering loading state
           // Keep existing clusters visible for smooth UX (Google Maps pattern)
+          final oldZoom = _currentZoom;
           _currentZoom = position.zoom;
+          
+          if ((oldZoom - position.zoom).abs() > 0.5) {
+            AppLogger.debug(
+              '   📊 Significant zoom change: ${oldZoom.toStringAsFixed(2)} → ${position.zoom.toStringAsFixed(2)}',
+            );
+          }
         }
       },
       onCameraIdle: () async {
-        AppLogger.debug('📷 Camera idle at zoom: $_currentZoom');
-        AppLogger.debug('✅ Map is now ready for interactions');
+        // DIAGNOSTIC: Using both print() and AppLogger to test visibility
+        print('═══════════════════════════════════════════════════════════');
+        print(
+          '📷📷📷 ZOOM TEST: onCameraIdle fired! zoom=${_currentZoom.toStringAsFixed(2)}',
+        );
+        print('   mounted=$mounted, _showClusters=$_showClusters');
+        AppLogger.debug(
+          '═══════════════════════════════════════════════════════════',
+        );
+        AppLogger.debug('📷 onCameraIdle: Camera stopped moving');
+        AppLogger.debug('🔍 Current state:');
+        AppLogger.debug('   - zoom: ${_currentZoom.toStringAsFixed(2)}');
+        AppLogger.debug('   - mounted: $mounted');
+        AppLogger.debug('   - _isUpdatingClusters: $_isUpdatingClusters');
+        AppLogger.debug('   - _showClusters: $_showClusters');
+        AppLogger.debug('   - _currentRadius: $_currentRadius km');
         
         // Cancel any pending debounced updates
         _debounceTimer?.cancel();
 
         // Debounce backend cluster fetch: wait 300ms after camera stops
         _clusterCalculationTimer?.cancel();
+        print('⏰⏰⏰ ZOOM TEST: Starting 300ms debounce timer...');
+        AppLogger.debug(
+          '⏰ Starting 300ms debounce timer before cluster fetch...',
+        );
+        
         _clusterCalculationTimer = Timer(
           const Duration(milliseconds: 300),
           () async {
+          print('⏱️⏱️⏱️ ZOOM TEST: Timer fired! Checking conditions...');
+          AppLogger.debug('⏱️  Debounce timer fired (300ms elapsed)');
+          AppLogger.debug('🔍 Checking conditions for cluster fetch:');
+          AppLogger.debug('   - mounted: $mounted');
+          AppLogger.debug('   - _isUpdatingClusters: $_isUpdatingClusters');
+          AppLogger.debug('   - _showClusters: $_showClusters');
+            
             if (mounted && !_isUpdatingClusters && _showClusters) {
+            print('✅✅✅ ZOOM TEST: All conditions met! Fetching clusters...');
+            AppLogger.debug(
+              '✅ All conditions met! Proceeding with cluster fetch...',
+            );
               final groupedZoom = _getGroupedZoomLevel(_currentZoom);
               AppLogger.debug(
-                '� Camera stopped at grouped zoom $groupedZoom, fetching backend clusters...',
+              '� Camera stopped at grouped zoom $groupedZoom, fetching backend clusters...',
               );
 
               try {
@@ -1067,7 +1162,19 @@ class _HeatMapScreenState extends State<HeatMapScreen>
                     '📡 Fetching backend clusters: zoom=$groupedZoom, radius=${radiusKm}km',
                   );
 
+                  // Invalidate marker cache - new clusters will be fetched
+                  setState(() {
+                    _memoizedMarkers = null;
+                  });
+
                   // Dispatch event to fetch backend clusters
+                print(
+                  '🚀🚀🚀 ZOOM TEST: Dispatching FetchBackendClusters event!',
+                );
+                AppLogger.debug(
+                  '🚀 Dispatching FetchBackendClusters event to BLoC...',
+                );
+                  
                   context.read<HeatMapBloc>().add(
                     FetchBackendClusters(
                       zoom: groupedZoom,
@@ -1075,6 +1182,19 @@ class _HeatMapScreenState extends State<HeatMapScreen>
                       radiusKm: radiusKm,
                     ),
                   );
+                  
+                print('✅✅✅ ZOOM TEST: Event dispatched successfully!');
+                AppLogger.debug(
+                  '✅ FetchBackendClusters event dispatched successfully!',
+                );
+                AppLogger.debug('   - zoom: $groupedZoom');
+                AppLogger.debug('   - radius: ${radiusKm}km');
+                AppLogger.debug(
+                  '   - viewport: NE(${bounds.northeast.latitude.toStringAsFixed(4)},${bounds.northeast.longitude.toStringAsFixed(4)}) SW(${bounds.southwest.latitude.toStringAsFixed(4)},${bounds.southwest.longitude.toStringAsFixed(4)})',
+                );
+                AppLogger.debug(
+                  '═══════════════════════════════════════════════════════════',
+                );
 
                   setState(() {
                     _isCalculatingClusters = false; // Hide loading indicator
@@ -1086,8 +1206,27 @@ class _HeatMapScreenState extends State<HeatMapScreen>
                   _isCalculatingClusters = false;
                 });
               }
+          } else {
+            // Log why cluster fetch was skipped
+            print('⚠️⚠️⚠️ ZOOM TEST: SKIPPED cluster fetch!');
+            if (!mounted) {
+              print('   Reason: Widget not mounted');
+              AppLogger.debug('⚠️ SKIPPED: Widget not mounted');
+            } else if (_isUpdatingClusters) {
+              print('   Reason: Already updating clusters');
+              AppLogger.debug(
+                '⚠️ SKIPPED: Already updating clusters (_isUpdatingClusters=true)',
+              );
             } else if (!_showClusters) {
-              AppLogger.debug('⏭️ Skipping backend fetch - clusters disabled');
+              print('   Reason: Clusters disabled by user');
+              AppLogger.debug(
+                '⚠️ SKIPPED: Clusters disabled by user (_showClusters=false)',
+              );
+            }
+            AppLogger.debug(
+              '═══════════════════════════════════════════════════════════',
+            );
+              
               setState(() {
                 _isCalculatingClusters = false;
               });
@@ -1138,64 +1277,142 @@ class _HeatMapScreenState extends State<HeatMapScreen>
   /// Build cluster circles - now uses backend-calculated clusters
   /// Eliminates heavy frontend computation that caused black screens
   Set<Circle> _buildClusterCircles(HeatMapLoaded state) {
-    AppLogger.debug('🔍 _buildClusterCircles called');
-    AppLogger.debug('🔍 _showClusters = $_showClusters');
-    AppLogger.debug('🔍 state.backendClusters = ${state.backendClusters}');
-    AppLogger.debug(
-      '🔍 backendClusters length = ${state.backendClusters?.length ?? 0}',
+    print('═══════════════════════════════════════════════════════════');
+    print('🔨🔨🔨 RENDER TEST: _buildClusterCircles called!');
+    print('   _showClusters=$_showClusters');
+    print(
+      '   state.backendClusters=${state.backendClusters?.length ?? "null"}',
     );
+    AppLogger.debug(
+      '───────────────────────────────────────────────────────────',
+    );
+    AppLogger.debug('🔍 _buildClusterCircles called');
+    AppLogger.debug('🔍 Step 1: Check if clusters are enabled');
+    AppLogger.debug('   - _showClusters = $_showClusters');
     
     if (!_showClusters) {
-      AppLogger.debug('⏭️ Skipping clusters - disabled by user');
+      print('⏭️⏭️⏭️ RENDER TEST: SKIPPED - Clusters disabled!');
+      AppLogger.debug('⏭️ RETURN EARLY: Clusters disabled by user');
+      AppLogger.debug(
+        '───────────────────────────────────────────────────────────',
+      );
       return {};
     }
+    
+    AppLogger.debug('✅ Clusters are enabled, continuing...');
+    AppLogger.debug('🔍 Step 2: Check backend clusters availability');
+    AppLogger.debug(
+      '   - state.backendClusters == null? ${state.backendClusters == null}',
+    );
+    AppLogger.debug(
+      '   - backendClusters length = ${state.backendClusters?.length ?? 0}',
+    );
 
-    // Use backend clusters if available (preferred - no computation)
     if (state.backendClusters != null && state.backendClusters!.isNotEmpty) {
-      AppLogger.debug(
-        '🚀 Using ${state.backendClusters!.length} backend-calculated clusters',
+      print(
+        '✅✅✅ RENDER TEST: ${state.backendClusters!.length} backend clusters available!',
       );
-      return _buildCirclesFromBackendClusters(state.backendClusters!);
+      AppLogger.debug(
+        '✅ Backend clusters available: ${state.backendClusters!.length} clusters',
+      );
+      AppLogger.debug('🔍 Step 3: Converting backend clusters to circles...');
+    } else {
+      print('⚠️⚠️⚠️ RENDER TEST: NO backend clusters!');
+      print('   backendClusters is null: ${state.backendClusters == null}');
+      AppLogger.debug('⚠️ NO backend clusters available!');
+      AppLogger.debug(
+        '   - backendClusters is null: ${state.backendClusters == null}',
+      );
+      AppLogger.debug(
+        '   - backendClusters is empty: ${state.backendClusters?.isEmpty ?? false}',
+      );
+    }
+
+    // Use backend clusters if available (no longer rendering as circles - using markers instead)
+    if (state.backendClusters != null && state.backendClusters!.isNotEmpty) {
+      print('ℹ️ℹ️ℹ️ RENDER TEST: Backend clusters available - rendered as markers, not circles');
+      AppLogger.debug(
+        'ℹ️ Backend clusters rendered as markers (see _buildMarkers)',
+      );
     }
 
     AppLogger.debug('⏳ No backend clusters yet - returning empty (will fetch)');
     AppLogger.debug(
       '⏳ Backend clusters is ${state.backendClusters == null ? "NULL" : "EMPTY"}',
     );
+    AppLogger.debug(
+      '───────────────────────────────────────────────────────────',
+    );
     return {};
   }
 
-  /// Build circles from backend-calculated clusters (lightweight display only)
-  Set<Circle> _buildCirclesFromBackendClusters(
+  /// Build cluster markers from backend optimized clusters (Google Maps best practice)
+  /// Creates custom markers with user count labels, status-based colors, and dynamic sizing
+  Future<Set<Marker>> _buildMarkersFromBackendClusters(
     List<OptimizedClusterData> clusters,
-  ) {
-    final clusterCircles = <Circle>{};
+  ) async {
+    print('🎨🎨🎨 RENDER TEST: _buildMarkersFromBackendClusters START!');
+    print('   Processing ${clusters.length} clusters');
+    AppLogger.debug('🎯 _buildMarkersFromBackendClusters: START');
+    AppLogger.debug('📊 Processing ${clusters.length} clusters');
+    
+    final clusterMarkers = <Marker>{};
 
-    for (final cluster in clusters) {
-      final position = LatLng(cluster.latitude, cluster.longitude);
-      final circleRadius = _getClusterRadiusFromDensity(cluster.userCount);
-      final circleColor = _getClusterColorFromDensity(cluster.densityScore);
+    for (var i = 0; i < clusters.length; i++) {
+      final cluster = clusters[i];
+      
+      // Determine predominant status and corresponding color
+      final predominantStatus = _getPredominantStatus(cluster.statusBreakdown);
+      final statusColor = _getStatusColor(predominantStatus);
+      
+      // Determine size tier based on user count
+      final sizeTier = _getClusterSizeTier(cluster.userCount);
+      final markerSize = _getMarkerSize(sizeTier);
 
-      clusterCircles.add(
-        Circle(
-          circleId: CircleId(cluster.id),
-          center: position,
-          radius: circleRadius,
-          fillColor: circleColor.withValues(alpha: 0.4),
-          strokeColor: circleColor,
-          strokeWidth: 3,
-          onTap: () => _showBackendClusterDetails(cluster),
-        ),
+      if (i == 0) {
+        print('   First cluster details:');
+        print('     ID: ${cluster.id}');
+        print('     Users: ${cluster.userCount}');
+        print('     Status: $predominantStatus → $statusColor');
+        print('     Size: $sizeTier ($markerSize px)');
+        AppLogger.debug('🔍 First cluster details:');
+        AppLogger.debug('   - ID: ${cluster.id}');
+        AppLogger.debug('   - UserCount: ${cluster.userCount}');
+        AppLogger.debug('   - PredominantStatus: $predominantStatus');
+        AppLogger.debug('   - Color: $statusColor');
+        AppLogger.debug('   - SizeTier: $sizeTier');
+      }
+
+      // Generate custom marker icon with user count label
+      final markerIcon = await _generateClusterMarkerIcon(
+        userCount: cluster.userCount,
+        color: statusColor,
+        size: markerSize,
       );
+
+      final marker = Marker(
+        markerId: MarkerId(cluster.id),
+        position: LatLng(cluster.latitude, cluster.longitude),
+        icon: markerIcon,
+        anchor: const Offset(0.5, 0.5), // Center the marker
+        onTap: () => _showBackendClusterDetails(cluster),
+      );
+
+      clusterMarkers.add(marker);
     }
 
-    AppLogger.debug(
-      '✅ Built ${clusterCircles.length} circles from backend clusters',
+    print(
+      '✅✅✅ RENDER TEST: COMPLETED! Built ${clusterMarkers.length} cluster markers!',
     );
-    return clusterCircles;
+    AppLogger.debug(
+      '✅ COMPLETED: Built ${clusterMarkers.length} markers from backend clusters',
+    );
+    AppLogger.debug('🎯 _buildMarkersFromBackendClusters: END');
+    return clusterMarkers;
   }
 
-  /// Calculate radius based on user count (backend cluster)
+  /// Calculate radius based on user count (deprecated - now using markers)
+  @Deprecated('Use _getMarkerSize instead - clusters now use markers not circles')
   double _getClusterRadiusFromDensity(int userCount) {
     if (userCount > 50) return 300.0;
     if (userCount > 20) return 200.0;
@@ -1204,7 +1421,8 @@ class _HeatMapScreenState extends State<HeatMapScreen>
     return 80.0;
   }
 
-  /// Get color based on density score (backend cluster)
+  /// Get color based on density score (deprecated - now using status-based colors)
+  @Deprecated('Use _getStatusColor instead - clusters now use status-based coloring')
   Color _getClusterColorFromDensity(int densityScore) {
     if (densityScore >= 80) return const Color(0xFFFF0000); // Red - very high
     if (densityScore >= 60) return const Color(0xFFFF6B00); // Orange - high
@@ -1213,23 +1431,164 @@ class _HeatMapScreenState extends State<HeatMapScreen>
     return const Color(0xFF6E3BFF); // Purple - very low
   }
 
-  /// Show details for backend cluster
+  // ═══════════════════════════════════════════════════════════════════════════
+  // Google Maps Cluster Marker Helpers
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  /// Get predominant status from statusBreakdown
+  String _getPredominantStatus(Map<String, int>? statusBreakdown) {
+    if (statusBreakdown == null || statusBreakdown.isEmpty) {
+      return 'unmatched'; // Default to available/unmatched
+    }
+
+    String predominant = 'unmatched';
+    int maxCount = 0;
+
+    // Priority order: matched > liked_me > unmatched > passed
+    statusBreakdown.forEach((status, count) {
+      if (count > maxCount) {
+        maxCount = count;
+        predominant = status;
+      } else if (count == maxCount && status == 'matched') {
+        // Prefer matched when tied
+        predominant = status;
+      }
+    });
+
+    return predominant;
+  }
+
+  /// Get color for predominant status (per legend)
+  Color _getStatusColor(String status) {
+    switch (status) {
+      case 'matched':
+        return Colors.green; // Green - Matched
+      case 'liked_me':
+        return Colors.orange; // Orange - Liked Me
+      case 'passed':
+        return Colors.red; // Red - Passed
+      case 'unmatched':
+      default:
+        return const Color(0xFF00C2FF); // Blue/Cyan - Available
+    }
+  }
+
+  /// Get cluster size tier based on user count
+  String _getClusterSizeTier(int userCount) {
+    if (userCount > 50) return 'large';
+    if (userCount > 10) return 'medium';
+    return 'small';
+  }
+
+  /// Get marker size in pixels based on tier
+  int _getMarkerSize(String sizeTier) {
+    switch (sizeTier) {
+      case 'large':
+        return 80;
+      case 'medium':
+        return 60;
+      case 'small':
+      default:
+        return 50;
+    }
+  }
+
+  /// Generate custom cluster marker icon with user count label
+  Future<BitmapDescriptor> _generateClusterMarkerIcon({
+    required int userCount,
+    required Color color,
+    required int size,
+  }) async {
+    final ui.PictureRecorder pictureRecorder = ui.PictureRecorder();
+    final Canvas canvas = Canvas(pictureRecorder);
+
+    // Draw outer circle (white stroke)
+    final Paint strokePaint = Paint()
+      ..color = Colors.white
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 4;
+    canvas.drawCircle(
+      Offset(size / 2, size / 2),
+      size / 2 - 2,
+      strokePaint,
+    );
+
+    // Draw inner circle (colored)
+    final Paint fillPaint = Paint()
+      ..color = color
+      ..style = PaintingStyle.fill;
+    canvas.drawCircle(
+      Offset(size / 2, size / 2),
+      size / 2 - 4,
+      fillPaint,
+    );
+
+    // Draw user count text
+    final TextPainter textPainter = TextPainter(
+      textDirection: TextDirection.ltr,
+    );
+    textPainter.text = TextSpan(
+      text: userCount.toString(),
+      style: TextStyle(
+        color: Colors.white,
+        fontSize: size > 60 ? 20 : (size > 50 ? 16 : 14),
+        fontWeight: FontWeight.bold,
+      ),
+    );
+    textPainter.layout();
+    textPainter.paint(
+      canvas,
+      Offset(
+        (size - textPainter.width) / 2,
+        (size - textPainter.height) / 2,
+      ),
+    );
+
+    final ui.Image img = await pictureRecorder.endRecording().toImage(size, size);
+    final ByteData? byteData = await img.toByteData(format: ui.ImageByteFormat.png);
+
+    return BitmapDescriptor.bytes(byteData!.buffer.asUint8List());
+  }
+
+  /// Show details for backend cluster with status breakdown
   void _showBackendClusterDetails(OptimizedClusterData cluster) {
+    // Extract status breakdown
+    final statusBreakdown = cluster.statusBreakdown ?? {};
+    final matched = statusBreakdown['matched'] ?? 0;
+    final likedMe = statusBreakdown['liked_me'] ?? 0;
+    final available = statusBreakdown['unmatched'] ?? 0;
+    final passed = statusBreakdown['passed'] ?? 0;
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Cluster Details'),
+        title: const Text('Cluster Details'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('👥 Users: ${cluster.userCount}'),
-            Text('📊 Density Score: ${cluster.densityScore}'),
-            Text('🎂 Avg Age: ${cluster.avgAge.toStringAsFixed(1)}'),
-            const SizedBox(height: 8),
-            Text('📍 Location:', style: TextStyle(fontWeight: FontWeight.bold)),
+            Text(
+              '👥 Total Users: ${cluster.userCount}',
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            ),
+            const SizedBox(height: 12),
+            const Text(
+              'Status Breakdown:',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 4),
+            _buildStatusRow('✅ Matched', matched, Colors.green),
+            _buildStatusRow('❤️ Liked Me', likedMe, Colors.orange),
+            _buildStatusRow('👋 Available', available, const Color(0xFF00C2FF)),
+            _buildStatusRow('👎 Passed', passed, Colors.red),
+            const SizedBox(height: 12),
+            const Text(
+              '📍 Location:',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
             Text(
               '${cluster.latitude.toStringAsFixed(4)}, ${cluster.longitude.toStringAsFixed(4)}',
+              style: const TextStyle(fontSize: 12),
             ),
           ],
         ),
@@ -1243,18 +1602,90 @@ class _HeatMapScreenState extends State<HeatMapScreen>
     );
   }
 
-
-  /// No individual markers for privacy - using empty set
-  Set<Marker> _buildMarkers(HeatMapLoaded state) {
-    // PRIVACY: Return empty markers set - all user locations shown as clusters only
-    AppLogger.debug(
-      'HeatMapScreen: 🔐 No individual markers for privacy - using cluster circles only',
+  /// Build a status row for cluster details dialog
+  Widget _buildStatusRow(String label, int count, Color color) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: Row(
+        children: [
+          Container(
+            width: 12,
+            height: 12,
+            decoration: BoxDecoration(
+              color: color,
+              shape: BoxShape.circle,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              '$label: $count',
+              style: TextStyle(
+                color: count > 0 ? Colors.black : Colors.grey,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
+  }
+
+
+  /// Build markers synchronously - uses memoized cluster markers
+  Set<Marker> _buildMarkers(HeatMapLoaded state) {
+    AppLogger.debug('🏷️ _buildMarkers: START');
+    
+    // Return memoized markers if available
+    if (_memoizedMarkers != null) {
+      AppLogger.debug('🚀 Using memoized markers (${_memoizedMarkers!.length} markers)');
+      return _memoizedMarkers!;
+    }
+
+    // If no memoized markers but we have clusters, trigger async generation
+    if (_showClusters && 
+        state.backendClusters != null && 
+        state.backendClusters!.isNotEmpty) {
+      print('🎯🎯🎯 MARKER TEST: Need to generate cluster markers...');
+      AppLogger.debug(
+        '🎯 Triggering async marker generation for ${state.backendClusters!.length} clusters',
+      );
+      
+      // Trigger async marker generation (don't await)
+      _generateClusterMarkers(state.backendClusters!);
+    }
+
+    AppLogger.debug('🏷️ _buildMarkers: Returning empty set (markers generating async)');
     return <Marker>{};
   }
 
+  /// Generate cluster markers asynchronously and update state
+  Future<void> _generateClusterMarkers(List<OptimizedClusterData> clusters) async {
+    print('🔄🔄🔄 MARKER GEN: Starting async marker generation...');
+    
+    final clusterMarkers = await _buildMarkersFromBackendClusters(clusters);
+    
+    print('✅✅✅ MARKER GEN: Generated ${clusterMarkers.length} markers, updating state...');
+    setState(() {
+      _memoizedMarkers = clusterMarkers;
+    });
+    
+    AppLogger.debug('✅ Cluster markers generated and state updated');
+  }
+
   Set<Circle> _buildCircles(HeatMapLoaded state) {
+    AppLogger.debug(
+      '═══════════════════════════════════════════════════════════',
+    );
     AppLogger.debug('🎨 _buildCircles: Starting to build circles...');
+    AppLogger.debug('🔍 State inspection:');
+    AppLogger.debug('   - _showClusters: $_showClusters');
+    AppLogger.debug('   - _showHeatmap: $_showHeatmap');
+    AppLogger.debug(
+      '   - backendClusters: ${state.backendClusters?.length ?? "null"}',
+    );
+    AppLogger.debug('   - dataPoints: ${state.heatmapData.dataPoints.length}');
+    AppLogger.debug('   - userLocation: ${state.userLocation}');
+    AppLogger.debug('   - currentRadius: ${state.currentRadius}');
 
     // Create cache key from state properties that affect circles
     // NOTE: Zoom level NOT included - keeps clusters visible during zoom animation
@@ -1268,14 +1699,22 @@ class _HeatMapScreenState extends State<HeatMapScreen>
         '${state.backendClusters?.length ?? 0}_'
         '${state.heatmapData.dataPoints.length}';
 
+    AppLogger.debug('🔑 Cache key: $cacheKey');
+    AppLogger.debug('🔑 Last cache key: $_lastCacheKey');
+    AppLogger.debug('🔑 Has memoized circles: ${_memoizedCircles != null}');
+
     // Return memoized circles if state hasn't changed
     if (_memoizedCircles != null && _lastCacheKey == cacheKey) {
       AppLogger.debug(
         '🚀 Using memoized circles (${_memoizedCircles!.length} circles)',
       );
+      AppLogger.debug(
+        '═══════════════════════════════════════════════════════════',
+      );
       return _memoizedCircles!;
     }
 
+    AppLogger.debug('⚡ Building NEW circles (cache miss or state changed)');
     // Safety: If building new circles, ensure we don't return empty set during transition
     final circles = <Circle>{};
     
@@ -1343,6 +1782,30 @@ class _HeatMapScreenState extends State<HeatMapScreen>
       );
     }
     
+    AppLogger.debug(
+      '✅ _buildCircles FINAL RETURN: ${circles.length} circles to GoogleMap',
+    );
+    if (circles.isNotEmpty) {
+      AppLogger.debug('📍 Circle types in set:');
+      final clusterCount = circles
+          .where((c) => c.circleId.value.startsWith('grid_'))
+          .length;
+      final coverageCount = circles
+          .where((c) => c.circleId.value == 'coverage_circle')
+          .length;
+      final heatmapCount = circles
+          .where((c) => c.circleId.value.startsWith('heatmap_'))
+          .length;
+      AppLogger.debug('   - Cluster circles: $clusterCount');
+      AppLogger.debug('   - Coverage circle: $coverageCount');
+      AppLogger.debug('   - Heatmap circles: $heatmapCount');
+      AppLogger.debug(
+        '📋 Sample IDs: ${circles.take(5).map((c) => c.circleId.value).join(", ")}',
+      );
+    }
+    AppLogger.debug(
+      '═══════════════════════════════════════════════════════════',
+    );
     return circles;
   }
 
