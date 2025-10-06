@@ -1581,4 +1581,215 @@ class ApiClient {
   Future<Response> getPopularEvents() async {
     return await _dio.get('/events/popular');
   }
+
+  // ==================== GROUP CHAT ENDPOINTS ====================
+
+  /// Create a new group conversation
+  Future<Response> createGroup({
+    required String title,
+    required String groupType,
+    required List<String> participantUserIds,
+    int maxParticipants = 50,
+    bool allowParticipantInvite = true,
+    bool requireApproval = false,
+    bool autoAcceptFriends = true,
+    bool enableVoiceChat = true,
+    bool enableVideoChat = false,
+  }) async {
+    return await _dio.post(
+      '/group-chat/create',
+      data: {
+        'title': title,
+        'groupType': groupType,
+        'participantUserIds': participantUserIds,
+        'maxParticipants': maxParticipants,
+        'allowParticipantInvite': allowParticipantInvite,
+        'requireApproval': requireApproval,
+        'autoAcceptFriends': autoAcceptFriends,
+        'enableVoiceChat': enableVoiceChat,
+        'enableVideoChat': enableVideoChat,
+      },
+    );
+  }
+
+  /// Get all groups the current user belongs to
+  Future<Response> getUserGroups() async {
+    return await _dio.get('/group-chat/user-groups');
+  }
+
+  /// Get group details
+  Future<Response> getGroupDetails(String conversationId) async {
+    return await _dio.get('/group-chat/$conversationId');
+  }
+
+  /// Create a live session (Monkey.app style)
+  Future<Response> createLiveSession({
+    required String conversationId,
+    required String title,
+    String? description,
+    int? maxParticipants,
+    bool requireApproval = true,
+  }) async {
+    return await _dio.post(
+      '/group-chat/live-session/create',
+      data: {
+        'conversationId': conversationId,
+        'title': title,
+        if (description != null) 'description': description,
+        if (maxParticipants != null) 'maxParticipants': maxParticipants,
+        'requireApproval': requireApproval,
+      },
+    );
+  }
+
+  /// Get all active live sessions
+  Future<Response> getActiveLiveSessions({String? groupType}) async {
+    return await _dio.get(
+      '/group-chat/live-sessions/active',
+      queryParameters: groupType != null ? {'groupType': groupType} : null,
+    );
+  }
+
+  /// Join a live session
+  Future<Response> joinLiveSession({
+    required String sessionId,
+    String? message,
+  }) async {
+    return await _dio.post(
+      '/group-chat/live-session/$sessionId/join',
+      data: {
+        if (message != null) 'message': message,
+      },
+    );
+  }
+
+  /// Get pending join requests for a session (for host)
+  Future<Response> getPendingJoinRequests(String sessionId) async {
+    return await _dio.get('/group-chat/join-requests/pending/$sessionId');
+  }
+
+  /// Approve a join request
+  Future<Response> approveJoinRequest(String requestId) async {
+    return await _dio.patch('/group-chat/join-request/$requestId/approve');
+  }
+
+  /// Reject a join request
+  Future<Response> rejectJoinRequest({
+    required String requestId,
+    String? reason,
+  }) async {
+    return await _dio.patch(
+      '/group-chat/join-request/$requestId/reject',
+      data: {
+        if (reason != null) 'reason': reason,
+      },
+    );
+  }
+
+  /// Add participant to group
+  Future<Response> addGroupParticipant({
+    required String conversationId,
+    required String userId,
+  }) async {
+    return await _dio.post(
+      '/group-chat/participants/add',
+      data: {
+        'conversationId': conversationId,
+        'userId': userId,
+      },
+    );
+  }
+
+  /// Remove participant from group
+  Future<Response> removeGroupParticipant({
+    required String targetUserId,
+    required String conversationId,
+    String? reason,
+  }) async {
+    return await _dio.post(
+      '/group-chat/participants/$targetUserId/remove',
+      data: {
+        'conversationId': conversationId,
+        if (reason != null) 'reason': reason,
+      },
+    );
+  }
+
+  /// Update group settings
+  Future<Response> updateGroupSettings({
+    required String conversationId,
+    required Map<String, dynamic> settings,
+  }) async {
+    return await _dio.patch(
+      '/group-chat/conversation/$conversationId/settings',
+      data: settings,
+    );
+  }
+
+  /// Change participant role
+  Future<Response> changeParticipantRole({
+    required String conversationId,
+    required String targetUserId,
+    required String role,
+    String? reason,
+  }) async {
+    return await _dio.patch(
+      '/group-chat/conversation/$conversationId/participants/$targetUserId/role',
+      data: {
+        'role': role,
+        if (reason != null) 'reason': reason,
+      },
+    );
+  }
+
+  /// Leave a group
+  Future<Response> leaveGroup(String conversationId) async {
+    return await _dio.post('/group-chat/conversation/$conversationId/leave');
+  }
+
+  /// Delete a group (owner only)
+  Future<Response> deleteGroup(String conversationId) async {
+    return await _dio.post('/group-chat/conversation/$conversationId/delete');
+  }
+
+  /// Search users to add to group
+  Future<Response> searchUsersForGroup({
+    required String conversationId,
+    required String query,
+  }) async {
+    return await _dio.get(
+      '/group-chat/conversation/$conversationId/search-users',
+      queryParameters: {'query': query},
+    );
+  }
+
+  /// Report inappropriate behavior in group
+  Future<Response> reportGroup({
+    required String reportedContentId,
+    required String reportType,
+    required String reason,
+    String? details,
+  }) async {
+    return await _dio.post(
+      '/group-chat/report',
+      data: {
+        'reportedContentId': reportedContentId,
+        'reportType': reportType,
+        'reason': reason,
+        if (details != null) 'details': details,
+      },
+    );
+  }
+
+  /// Generate RTC token for live session video call
+  Future<Response> generateLiveSessionRtcToken({
+    required String sessionId,
+    bool audioOnly = false,
+  }) async {
+    return await _dio.post(
+      '/group-chat/live-session/$sessionId/rtc-token',
+      queryParameters: {'audioOnly': audioOnly.toString()},
+    );
+  }
 }
+
