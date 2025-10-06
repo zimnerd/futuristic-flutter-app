@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:get_it/get_it.dart';
 import '../../../../presentation/blocs/group_chat/group_chat_bloc.dart';
 import '../../data/models.dart';
 import '../../data/group_chat_service.dart';
@@ -302,7 +301,11 @@ class _GroupListScreenState extends State<GroupListScreen>
     final titleController = TextEditingController();
     final descriptionController = TextEditingController();
     final maxParticipantsController = TextEditingController(text: '10');
+    final durationController = TextEditingController(text: '30');
+    String sessionType = 'CASUAL_CHAT';
     bool requireApproval = true;
+    bool allowVideo = true;
+    bool allowAudio = true;
     bool controllersDisposed = false;
 
     // Read the bloc before showing the dialog to avoid provider scope issues
@@ -314,238 +317,561 @@ class _GroupListScreenState extends State<GroupListScreen>
         titleController.dispose();
         descriptionController.dispose();
         maxParticipantsController.dispose();
+        durationController.dispose();
         controllersDisposed = true;
       }
     }
 
+    // Helper to build labels with icons
+    Widget buildLabel(String text, IconData icon) {
+      return Row(
+        children: [
+          Icon(icon, size: 18, color: const Color(0xFF6E3BFF)),
+          const SizedBox(width: 8),
+          Text(
+            text,
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF202124),
+            ),
+          ),
+        ],
+      );
+    }
+
+    // Helper to build modern input decoration
+    InputDecoration buildInputDecoration(String hint, IconData icon) {
+      return InputDecoration(
+        hintText: hint,
+        prefixIcon: Icon(icon, color: const Color(0xFF6E3BFF)),
+        filled: true,
+        fillColor: Colors.white,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide(
+            color: const Color(0xFF6E3BFF).withOpacity(0.3),
+          ),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide(
+            color: const Color(0xFF6E3BFF).withOpacity(0.3),
+          ),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(color: Color(0xFF6E3BFF), width: 2),
+        ),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 12,
+        ),
+      );
+    }
+
+    // Helper to build toggle options
+    Widget buildToggleOption({
+      required IconData icon,
+      required String title,
+      required String subtitle,
+      required bool value,
+      required ValueChanged<bool> onChanged,
+    }) {
+      return Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: const Color(0xFF6E3BFF).withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(icon, color: const Color(0xFF6E3BFF), size: 20),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF202124),
+                  ),
+                ),
+                Text(
+                  subtitle,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: const Color(0xFF202124).withOpacity(0.6),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Switch(
+            value: value,
+            onChanged: onChanged,
+            activeColor: const Color(0xFF6E3BFF),
+          ),
+        ],
+      );
+    }
+
     showDialog(
       context: context,
+      barrierColor: Colors.black87,
       builder: (dialogContext) => StatefulBuilder(
         builder: (context, setState) {
-              return AlertDialog(
-                title: const Text('Create Live Session'),
-                contentPadding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
-                content: SizedBox(
-                  width: double.maxFinite,
-                  child: SingleChildScrollView(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-
-                      // Title
-                      const Text(
-                        'Session Title',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 12,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      TextField(
-                        controller: titleController,
-                        decoration: const InputDecoration(
-                          hintText: 'Enter session title',
-                          border: OutlineInputBorder(),
-                          contentPadding: EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 8,
-                          ),
-                        ),
-                        maxLength: 100,
-                      ),
-                      const SizedBox(height: 8),
-
-                      // Description
-                      const Text(
-                        'Description (Optional)',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 12,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      TextField(
-                        controller: descriptionController,
-                        decoration: const InputDecoration(
-                          hintText: 'Enter session description',
-                          border: OutlineInputBorder(),
-                          contentPadding: EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 8,
-                          ),
-                        ),
-                        maxLines: 3,
-                        maxLength: 500,
-                      ),
-                      const SizedBox(height: 8),
-
-                      // Max Participants
-                      const Text(
-                        'Max Participants',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 12,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      TextField(
-                        controller: maxParticipantsController,
-                        decoration: const InputDecoration(
-                          border: OutlineInputBorder(),
-                          contentPadding: EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 8,
-                          ),
-                        ),
-                        keyboardType: TextInputType.number,
-                      ),
-                      const SizedBox(height: 16),
-
-                      // Require Approval
-                      SwitchListTile(
-                        title: const Text(
-                          'Require Approval',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Color(0xFF202124), // PulseLink dark text
-                        ),
-                        ),
-                        subtitle: const Text(
-                          'Approve participants before they join',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Color(0xFF202124), // PulseLink dark text
-                        ),
-                        ),
-                        value: requireApproval,
-                        onChanged: (value) {
-                          setState(() {
-                            requireApproval = value;
-                          });
-                        },
-                        contentPadding: EdgeInsets.zero,
-                      ),
-                    ],
-                  ),
+          return Dialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(28),
+            ),
+            backgroundColor: Colors.transparent,
+            child: Container(
+              constraints: const BoxConstraints(maxWidth: 500),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [Color(0xFFF5F3FF), Color(0xFFFFFFFF)],
                 ),
-                ),
-                actions: [
-                  TextButton(
-                    onPressed: () {
-                  disposeControllers();
-                      Navigator.pop(dialogContext);
-                    },
-                    child: const Text('Cancel'),
-                  ),
-                  ElevatedButton(
-                    onPressed: () async {
-                  // Validation
-                      if (titleController.text.trim().isEmpty) {
-                    if (!mounted) return;
-                    ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Please enter a title'),
-                            backgroundColor: Colors.red,
-                          ),
-                        );
-                        return;
-                      }
-
-                      final maxParticipants =
-                          int.tryParse(maxParticipantsController.text) ?? 10;
-
-                      if (maxParticipants < 2 || maxParticipants > 100) {
-                    if (!mounted) return;
-                    ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text(
-                              'Max participants must be between 2 and 100',
-                            ),
-                            backgroundColor: Colors.red,
-                          ),
-                        );
-                        return;
-                      }
-
-                  // Capture values before closing dialog
-                  final title = titleController.text.trim();
-                  final description = descriptionController.text.trim().isEmpty
-                      ? null
-                      : descriptionController.text.trim();
-                  final maxParticipantsValue = maxParticipants;
-                  final requireApprovalValue = requireApproval;
-
-                  // Close dialog and dispose controllers immediately
-                      Navigator.pop(dialogContext);
-                      
-                  // Dispose controllers after dialog is closed
-                  WidgetsBinding.instance.addPostFrameCallback((_) {
-                    disposeControllers();
-                  });
-                      
-                  // Show loading
-                  if (!mounted) return;
-                      showDialog(
-                    context: context,
-                        barrierDismissible: false,
-                    builder: (loadingContext) =>
-                        const Center(
-                          child: CircularProgressIndicator(),
-                        ),
-                      );
-
-                  // Capture navigator and scaffold messenger before async gap
-                  final navigator = Navigator.of(context);
-                      final scaffoldMessenger = ScaffoldMessenger.of(context);
-
-                      try {
-                    // Create live session via service (no conversation required)
-                        final service = GetIt.instance<GroupChatService>();
-                    final session = await service.createLiveSession(
-                      title: title,
-                      description: description,
-                      maxParticipants: maxParticipantsValue,
-                      requireApproval: requireApprovalValue,
-                        );
-
-                    // Close loading dialog
-                    if (mounted) navigator.pop();
-
-                        // Show success
-                    if (mounted) {
-                        scaffoldMessenger.showSnackBar(
-                          const SnackBar(
-                            content: Text('Live session created successfully!'),
-                            backgroundColor: Colors.green,
-                          ),
-                        );
-                    }
-
-                        // Reload sessions
-                    bloc.add(LoadActiveLiveSessions());
-
-                        // Auto-join the created session
-                    if (!mounted) return;
-                        _joinLiveSession(session);
-                      } catch (e) {
-                    // Close loading dialog
-                    if (mounted) navigator.pop();
-
-                    if (mounted) {
-                        scaffoldMessenger.showSnackBar(
-                          SnackBar(
-                            content:
-                                Text('Failed to create session: ${e.toString()}'),
-                            backgroundColor: Colors.red,
-                          ),
-                        );
-                      }
-                      }
-                    },
-                    child: const Text('Create'),
+                borderRadius: BorderRadius.circular(28),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF6E3BFF).withOpacity(0.3),
+                    blurRadius: 30,
+                    offset: const Offset(0, 10),
                   ),
                 ],
+              ),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Header with gradient
+                    Container(
+                      padding: const EdgeInsets.all(24),
+                      decoration: const BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [Color(0xFF6E3BFF), Color(0xFF9D5CFF)],
+                        ),
+                        borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(28),
+                          topRight: Radius.circular(28),
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: const Icon(
+                              Icons.video_call_rounded,
+                              color: Colors.white,
+                              size: 32,
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          const Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Create Live Session',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                SizedBox(height: 4),
+                                Text(
+                                  'Start a real-time group experience',
+                                  style: TextStyle(
+                                    color: Colors.white70,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    // Form content
+                    Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Title
+                          buildLabel('Session Title', Icons.title),
+                          const SizedBox(height: 8),
+                          TextField(
+                            controller: titleController,
+                            decoration: buildInputDecoration(
+                              'Enter session title',
+                              Icons.edit_outlined,
+                            ),
+                            maxLength: 100,
+                          ),
+                          const SizedBox(height: 16),
+
+                          // Description
+                          buildLabel('Description', Icons.description_outlined),
+                          const SizedBox(height: 8),
+                          TextField(
+                            controller: descriptionController,
+                            decoration: buildInputDecoration(
+                              'Enter description',
+                              Icons.notes,
+                            ),
+                            maxLines: 3,
+                            maxLength: 500,
+                          ),
+                          const SizedBox(height: 16),
+
+                          // Session Type
+                          buildLabel('Session Type', Icons.category_outlined),
+                          const SizedBox(height: 8),
+                          Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(
+                                color: const Color(0xFF6E3BFF).withOpacity(0.3),
+                              ),
+                            ),
+                            child: DropdownButtonFormField<String>(
+                              value: sessionType,
+                              decoration: const InputDecoration(
+                                border: InputBorder.none,
+                                contentPadding: EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 12,
+                                ),
+                                prefixIcon: Icon(
+                                  Icons.category_outlined,
+                                  color: Color(0xFF6E3BFF),
+                                ),
+                              ),
+                              items: const [
+                                DropdownMenuItem(
+                                  value: 'SPEED_DATING',
+                                  child: Text('⚡ Speed Dating'),
+                                ),
+                                DropdownMenuItem(
+                                  value: 'CASUAL_CHAT',
+                                  child: Text('💬 Casual Chat'),
+                                ),
+                                DropdownMenuItem(
+                                  value: 'GROUP_HANGOUT',
+                                  child: Text('👥 Group Hangout'),
+                                ),
+                                DropdownMenuItem(
+                                  value: 'DATING_GAME',
+                                  child: Text('🎮 Dating Game'),
+                                ),
+                              ],
+                              onChanged: (value) {
+                                if (value != null)
+                                  setState(() => sessionType = value);
+                              },
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+
+                          // Duration and Max Participants in a row
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    buildLabel(
+                                      'Duration (min)',
+                                      Icons.timer_outlined,
+                                    ),
+                                    const SizedBox(height: 8),
+                                    TextField(
+                                      controller: durationController,
+                                      decoration: buildInputDecoration(
+                                        '5-180',
+                                        Icons.timer,
+                                      ),
+                                      keyboardType: TextInputType.number,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    buildLabel(
+                                      'Max People',
+                                      Icons.people_outline,
+                                    ),
+                                    const SizedBox(height: 8),
+                                    TextField(
+                                      controller: maxParticipantsController,
+                                      decoration: buildInputDecoration(
+                                        '2-100',
+                                        Icons.people,
+                                      ),
+                                      keyboardType: TextInputType.number,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 24),
+
+                          // Settings section
+                          Container(
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF6E3BFF).withOpacity(0.05),
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(
+                                color: const Color(0xFF6E3BFF).withOpacity(0.1),
+                              ),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Row(
+                                  children: [
+                                    Icon(
+                                      Icons.settings_outlined,
+                                      color: Color(0xFF6E3BFF),
+                                      size: 20,
+                                    ),
+                                    SizedBox(width: 8),
+                                    Text(
+                                      'Session Settings',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                        color: Color(0xFF202124),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 12),
+                                buildToggleOption(
+                                  icon: Icons.verified_user_outlined,
+                                  title: 'Require Approval',
+                                  subtitle:
+                                      'Approve participants before joining',
+                                  value: requireApproval,
+                                  onChanged: (v) =>
+                                      setState(() => requireApproval = v),
+                                ),
+                                const Divider(height: 24),
+                                buildToggleOption(
+                                  icon: Icons.videocam_outlined,
+                                  title: 'Allow Video',
+                                  subtitle: 'Enable video streaming',
+                                  value: allowVideo,
+                                  onChanged: (v) =>
+                                      setState(() => allowVideo = v),
+                                ),
+                                const Divider(height: 24),
+                                buildToggleOption(
+                                  icon: Icons.mic_outlined,
+                                  title: 'Allow Audio',
+                                  subtitle: 'Enable voice communication',
+                                  value: allowAudio,
+                                  onChanged: (v) =>
+                                      setState(() => allowAudio = v),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    // Action buttons
+                    Container(
+                      padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: TextButton(
+                              onPressed: () {
+                                disposeControllers();
+                                Navigator.pop(dialogContext);
+                              },
+                              style: TextButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 16,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                              ),
+                              child: const Text(
+                                'Cancel',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                  color: Color(0xFF6E3BFF),
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: ElevatedButton(
+                              onPressed: () async {
+                                // Validation
+                                if (titleController.text.trim().isEmpty) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('Please enter a title'),
+                                      backgroundColor: Colors.red,
+                                    ),
+                                  );
+                                  return;
+                                }
+
+                                final maxPart =
+                                    int.tryParse(
+                                      maxParticipantsController.text,
+                                    ) ??
+                                    10;
+                                final duration =
+                                    int.tryParse(durationController.text) ?? 30;
+
+                                if (maxPart < 2 || maxPart > 100) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('Max participants: 2-100'),
+                                      backgroundColor: Colors.red,
+                                    ),
+                                  );
+                                  return;
+                                }
+
+                                if (duration < 5 || duration > 180) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('Duration: 5-180 minutes'),
+                                      backgroundColor: Colors.red,
+                                    ),
+                                  );
+                                  return;
+                                }
+
+                                // Capture values before async
+                                final title = titleController.text.trim();
+                                final description =
+                                    descriptionController.text.trim().isEmpty
+                                    ? null
+                                    : descriptionController.text.trim();
+
+                                // Show loading
+                                showDialog(
+                                  context: context,
+                                  barrierDismissible: false,
+                                  builder: (c) => const Center(
+                                    child: CircularProgressIndicator(),
+                                  ),
+                                );
+
+                                final navigator = Navigator.of(context);
+                                final scaffoldMessenger = ScaffoldMessenger.of(
+                                  context,
+                                );
+
+                                try {
+                                  final service = GroupChatService();
+                                  final session = await service
+                                      .createLiveSession(
+                                        title: title,
+                                        description: description,
+                                        maxParticipants: maxPart,
+                                        requireApproval: requireApproval,
+                                        sessionType: sessionType,
+                                        durationMinutes: duration,
+                                        allowVideo: allowVideo,
+                                        allowAudio: allowAudio,
+                                      );
+
+                                  if (mounted) navigator.pop(); // Close loading
+                                  if (mounted)
+                                    Navigator.pop(dialogContext); // Close form
+
+                                  WidgetsBinding.instance.addPostFrameCallback(
+                                    (_) => disposeControllers(),
+                                  );
+
+                                  if (mounted) {
+                                    scaffoldMessenger.showSnackBar(
+                                      const SnackBar(
+                                        content: Text('Live session created!'),
+                                        backgroundColor: Colors.green,
+                                      ),
+                                    );
+                                  }
+
+                                  bloc.add(LoadActiveLiveSessions());
+                                  if (!mounted) return;
+                                  _joinLiveSession(session);
+                                } catch (e) {
+                                  if (mounted)
+                                    navigator.pop(); // Close loading only
+                                  if (mounted) {
+                                    scaffoldMessenger.showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                          'Failed: ${e.toString()}',
+                                        ),
+                                        backgroundColor: Colors.red,
+                                        duration: const Duration(seconds: 5),
+                                      ),
+                                    );
+                                  }
+                                }
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF6E3BFF),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 16,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                                elevation: 2,
+                              ),
+                              child: const Text(
+                                'Create',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           );
         },
       ),
