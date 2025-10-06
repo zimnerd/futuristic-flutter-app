@@ -710,8 +710,12 @@ class _GroupListScreenState extends State<GroupListScreen>
                           Expanded(
                             child: TextButton(
                               onPressed: () {
-                                disposeControllers();
                                 Navigator.pop(dialogContext);
+                                // Delay disposal until after dialog closes
+                                Future.delayed(
+                                  const Duration(milliseconds: 300),
+                                  disposeControllers,
+                                );
                               },
                               style: TextButton.styleFrom(
                                 padding: const EdgeInsets.symmetric(
@@ -813,8 +817,10 @@ class _GroupListScreenState extends State<GroupListScreen>
                                   if (mounted)
                                     Navigator.pop(dialogContext); // Close form
 
-                                  WidgetsBinding.instance.addPostFrameCallback(
-                                    (_) => disposeControllers(),
+                                  // Delay disposal until after dialog closes
+                                  Future.delayed(
+                                    const Duration(milliseconds: 300),
+                                    disposeControllers,
                                   );
 
                                   if (mounted) {
