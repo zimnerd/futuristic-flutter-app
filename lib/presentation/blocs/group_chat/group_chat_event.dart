@@ -88,35 +88,26 @@ class RejectJoinRequest extends GroupChatEvent {
 /// Create a new group conversation
 class CreateGroupConversation extends GroupChatEvent {
   final String title;
+  final String? description;
   final GroupType groupType;
   final List<String> participantUserIds;
-  final int maxParticipants;
-  final bool allowParticipantInvite;
   final bool requireApproval;
-  final bool enableVoiceChat;
-  final bool enableVideoChat;
 
   const CreateGroupConversation({
     required this.title,
+    this.description,
     required this.groupType,
     required this.participantUserIds,
-    this.maxParticipants = 50,
-    this.allowParticipantInvite = true,
     this.requireApproval = false,
-    this.enableVoiceChat = true,
-    this.enableVideoChat = false,
   });
 
   @override
   List<Object?> get props => [
         title,
+    description,
         groupType,
         participantUserIds,
-        maxParticipants,
-        allowParticipantInvite,
-        requireApproval,
-        enableVoiceChat,
-        enableVideoChat,
+    requireApproval,
       ];
 }
 

@@ -238,13 +238,10 @@ class GroupChatBloc extends Bloc<GroupChatEvent, GroupChatState> {
 
       final group = await _groupChatService.createGroup(
         title: event.title,
+        description: event.description,
         groupType: event.groupType,
         participantUserIds: event.participantUserIds,
-        maxParticipants: event.maxParticipants,
-        allowParticipantInvite: event.allowParticipantInvite,
         requireApproval: event.requireApproval,
-        enableVoiceChat: event.enableVoiceChat,
-        enableVideoChat: event.enableVideoChat,
       );
 
       emit(GroupChatGroupCreated(group));

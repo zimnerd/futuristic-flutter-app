@@ -119,13 +119,14 @@ class GroupParticipant {
   String get fullName => '$firstName $lastName';
 
   factory GroupParticipant.fromJson(Map<String, dynamic> json) {
+    final user = json['user'] as Map<String, dynamic>?;
     return GroupParticipant(
       id: json['id'] as String,
-      userId: json['userId'] as String,
-      firstName: json['user']?['firstName'] as String? ?? 'Unknown',
-      lastName: json['user']?['lastName'] as String? ?? '',
-      profilePhoto: json['user']?['profilePhoto'] as String?,
-      role: _parseRole(json['role'] as String),
+      userId: user?['id'] as String? ?? json['userId'] as String? ?? '',
+      firstName: user?['firstName'] as String? ?? 'Unknown',
+      lastName: user?['lastName'] as String? ?? '',
+      profilePhoto: user?['profilePhoto'] as String?,
+      role: _parseRole(json['role'] as String? ?? 'MEMBER'),
       joinedAt: DateTime.parse(json['joinedAt'] as String),
       isOnline: json['isOnline'] as bool? ?? false,
     );
@@ -175,13 +176,33 @@ class GroupConversation {
   GroupType get groupType => settings?.groupType ?? GroupType.standard;
 
   factory GroupConversation.fromJson(Map<String, dynamic> json) {
+    // Handle both response formats:
+    // 1. Create response: { id, title, settings: {...}, participants: [...] }
+    // 2. User-groups response: { id, title, type: "TRADITIONAL", participants: [...] }
+    
+    GroupSettings? parsedSettings;
+    if (json['settings'] != null) {
+      // Format 1: settings object from create response
+      parsedSettings = GroupSettings.fromJson(json['settings'] as Map<String, dynamic>);
+    } else if (json['type'] != null) {
+      // Format 2: type field from user-groups response - create minimal settings
+      parsedSettings = GroupSettings(
+        id: json['id'] as String, // Use conversation ID as settings ID
+        groupType: GroupSettings._parseGroupType(json['type'] as String),
+        maxParticipants: 50, // Default value
+        allowParticipantInvite: false,
+        requireApproval: false,
+        autoAcceptFriends: false,
+        enableVoiceChat: true,
+        enableVideoChat: false,
+      );
+    }
+
     return GroupConversation(
       id: json['id'] as String,
       title: json['title'] as String,
       description: json['description'] as String?,
-      settings: json['groupSettings'] != null
-          ? GroupSettings.fromJson(json['groupSettings'] as Map<String, dynamic>)
-          : null,
+      settings: parsedSettings,
       participants: (json['participants'] as List<dynamic>?)
               ?.map((p) => GroupParticipant.fromJson(p as Map<String, dynamic>))
               .toList() ??

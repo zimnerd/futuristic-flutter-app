@@ -15,26 +15,34 @@ class GroupChatService {
   /// Create a new group conversation
   Future<GroupConversation> createGroup({
     required String title,
+    String? description,
     required GroupType groupType,
     required List<String> participantUserIds,
-    int maxParticipants = 50,
-    bool allowParticipantInvite = true,
     bool requireApproval = false,
-    bool autoAcceptFriends = true,
-    bool enableVoiceChat = true,
-    bool enableVideoChat = false,
   }) async {
     try {
+      // Map mobile GroupType enum to backend enum values
+      String backendGroupType;
+      switch (groupType) {
+        case GroupType.liveHost:
+          backendGroupType = 'LIVE_SESSION';
+          break;
+        case GroupType.speedDating:
+          backendGroupType = 'SPEED_DATING';
+          break;
+        default:
+          backendGroupType = 'TRADITIONAL';
+      }
+
+      // Determine join policy based on requireApproval flag
+      final joinPolicy = requireApproval ? 'REQUEST_TO_JOIN' : 'OPEN';
+
       final response = await _apiClient.createGroup(
-        title: title,
-        groupType: groupType.name.toUpperCase(),
-        participantUserIds: participantUserIds,
-        maxParticipants: maxParticipants,
-        allowParticipantInvite: allowParticipantInvite,
-        requireApproval: requireApproval,
-        autoAcceptFriends: autoAcceptFriends,
-        enableVoiceChat: enableVoiceChat,
-        enableVideoChat: enableVideoChat,
+        name: title,
+        description: description,
+        groupType: backendGroupType,
+        participantIds: participantUserIds,
+        joinPolicy: joinPolicy,
       );
 
       if (response.statusCode == 201) {

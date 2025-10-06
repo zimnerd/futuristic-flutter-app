@@ -96,38 +96,26 @@ class LeaveLiveSessionRoom extends GroupChatEvent {
 
 class CreateGroup extends GroupChatEvent {
   final String title;
+  final String? description;
   final GroupType groupType;
   final List<String> participantUserIds;
-  final int maxParticipants;
-  final bool allowParticipantInvite;
   final bool requireApproval;
-  final bool autoAcceptFriends;
-  final bool enableVoiceChat;
-  final bool enableVideoChat;
 
   CreateGroup({
     required this.title,
+    this.description,
     required this.groupType,
     required this.participantUserIds,
-    this.maxParticipants = 50,
-    this.allowParticipantInvite = true,
     this.requireApproval = false,
-    this.autoAcceptFriends = true,
-    this.enableVoiceChat = true,
-    this.enableVideoChat = false,
   });
 
   @override
   List<Object?> get props => [
         title,
+    description,
         groupType,
-        participantUserIds,
-        maxParticipants,
-        allowParticipantInvite,
-        requireApproval,
-        autoAcceptFriends,
-        enableVoiceChat,
-        enableVideoChat,
+    participantUserIds,
+    requireApproval,
       ];
 }
 
@@ -674,14 +662,10 @@ class GroupChatBloc extends Bloc<GroupChatEvent, GroupChatState> {
     try {
       final group = await service.createGroup(
         title: event.title,
+        description: event.description,
         groupType: event.groupType,
         participantUserIds: event.participantUserIds,
-        maxParticipants: event.maxParticipants,
-        allowParticipantInvite: event.allowParticipantInvite,
         requireApproval: event.requireApproval,
-        autoAcceptFriends: event.autoAcceptFriends,
-        enableVoiceChat: event.enableVoiceChat,
-        enableVideoChat: event.enableVideoChat,
       );
       emit(GroupCreated(group));
     } catch (e) {

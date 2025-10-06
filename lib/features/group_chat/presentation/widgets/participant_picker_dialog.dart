@@ -87,8 +87,10 @@ class _ParticipantPickerDialogState extends State<ParticipantPickerDialog> {
     }
 
     return _users.where((user) {
-      final firstName = (user['firstName'] as String? ?? '').toLowerCase();
-      final lastName = (user['lastName'] as String? ?? '').toLowerCase();
+      // API returns nested structure: {id: matchId, user: {firstName, lastName, ...}}
+      final userData = user['user'] as Map<String, dynamic>? ?? user;
+      final firstName = (userData['firstName'] as String? ?? '').toLowerCase();
+      final lastName = (userData['lastName'] as String? ?? '').toLowerCase();
       final fullName = '$firstName $lastName';
       return fullName.contains(query);
     }).toList();
@@ -212,7 +214,28 @@ class _ParticipantPickerDialogState extends State<ParticipantPickerDialog> {
                     child: ElevatedButton(
                       onPressed: _selectedIds.isEmpty
                           ? null
-                          : () => Navigator.pop(context, _selectedIds.toList()),
+                          : () {
+                              // Return map of {userId: fullName} for selected users
+                              final selectedData = <String, String>{};
+                              for (final user in _users) {
+                                final userData =
+                                    user['user'] as Map<String, dynamic>? ??
+                                    user;
+                                final userId =
+                                    userData['id'] as String? ??
+                                    user['id'] as String;
+                                if (_selectedIds.contains(userId)) {
+                                  final firstName =
+                                      userData['firstName'] as String? ??
+                                      'Unknown';
+                                  final lastName =
+                                      userData['lastName'] as String? ?? '';
+                                  selectedData[userId] = '$firstName $lastName'
+                                      .trim();
+                                }
+                              }
+                              Navigator.pop(context, selectedData);
+                            },
                       style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 12),
                         shape: RoundedRectangleBorder(
@@ -298,12 +321,18 @@ class _ParticipantPickerDialogState extends State<ParticipantPickerDialog> {
   }
 
   Widget _buildUserTile(Map<String, dynamic> user) {
-    final userId = user['id'] as String;
-    final firstName = user['firstName'] as String? ?? 'Unknown';
-    final lastName = user['lastName'] as String? ?? '';
+    // API returns nested structure: {id: matchId, user: {id, firstName, lastName, photos, ...}}
+    final matchId = user['id'] as String;
+    final userData = user['user'] as Map<String, dynamic>? ?? user;
+    final userId = userData['id'] as String? ?? matchId;
+    final firstName = userData['firstName'] as String? ?? 'Unknown';
+    final lastName = userData['lastName'] as String? ?? '';
     final fullName = '$firstName $lastName'.trim();
-    final profilePhoto = user['profilePhoto'] as String?;
-    final location = user['location'] as String?;
+    final photos = userData['photos'] as List?;
+    final profilePhoto = photos != null && photos.isNotEmpty
+        ? photos[0] as String?
+        : null;
+    final location = userData['location'] as String?;
     final isSelected = _selectedIds.contains(userId);
 
     return ListTile(
@@ -353,17 +382,25 @@ class _ParticipantPickerDialogState extends State<ParticipantPickerDialog> {
         fullName,
         style: TextStyle(
           fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+          color: const Color(0xFF202124), // PulseColors.onSurface
         ),
       ),
       subtitle: location != null
           ? Row(
               children: [
-                const Icon(Icons.location_on, size: 12),
+                const Icon(
+                  Icons.location_on,
+                  size: 12,
+                  color: Color(0xFF5F6368),
+                ),
                 const SizedBox(width: 4),
                 Expanded(
                   child: Text(
                     location,
                     overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: Color(0xFF5F6368), // PulseColors.onSurfaceVariant
+                    ),
                   ),
                 ),
               ],

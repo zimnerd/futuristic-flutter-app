@@ -245,7 +245,12 @@ class _LiveSessionHostScreenState extends State<LiveSessionHostScreen> {
             ),
             ListTile(
               leading: const Icon(Icons.lock),
-              title: const Text('Require Approval'),
+              title: const Text(
+                'Require Approval',
+                style: TextStyle(
+                  color: Color(0xFF202124),
+                ), // PulseColors.onSurface
+              ),
               trailing: Switch(
                 value: widget.session.requireApproval,
                 onChanged: null, // Read-only for now

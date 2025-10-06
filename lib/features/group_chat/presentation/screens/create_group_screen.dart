@@ -25,6 +25,8 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
   bool _enableVideoChat = false;
 
   final List<String> _selectedParticipantIds = [];
+  final Map<String, String> _selectedParticipantNames =
+      {}; // Map userId -> fullName
 
   @override
   void dispose() {
@@ -37,14 +39,23 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Create Group'),
+        title: const Text(
+          'Create Group',
+          style: TextStyle(
+            color: Color(0xFF202124), // PulseColors.onSurface
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        iconTheme: const IconThemeData(
+          color: Color(0xFF202124), // PulseColors.onSurface
+        ),
         actions: [
           TextButton(
             onPressed: _createGroup,
             child: const Text(
               'Create',
               style: TextStyle(
-                color: Colors.white,
+                color: Color(0xFF6E3BFF), // PulseColors.primary
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -106,11 +117,14 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
             const SizedBox(height: 16),
             TextFormField(
               controller: _titleController,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 labelText: 'Group Name',
                 hintText: 'Enter group name',
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.group),
+                border: const OutlineInputBorder(),
+                prefixIcon: const Icon(Icons.group),
+                labelStyle: const TextStyle(
+                  color: Color(0xFF202124), // PulseColors.onSurface
+                ),
               ),
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
@@ -126,11 +140,14 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
             const SizedBox(height: 16),
             TextFormField(
               controller: _descriptionController,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 labelText: 'Description (optional)',
                 hintText: 'What is this group about?',
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.description),
+                border: const OutlineInputBorder(),
+                prefixIcon: const Icon(Icons.description),
+                labelStyle: const TextStyle(
+                  color: Color(0xFF202124), // PulseColors.onSurface
+                ),
               ),
               maxLines: 3,
               maxLength: 200,
@@ -163,6 +180,12 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
                 return ChoiceChip(
                   label: Text(_getGroupTypeLabel(type)),
                   selected: _selectedType == type,
+                  labelStyle: TextStyle(
+                    color: _selectedType == type
+                        ? Colors.white
+                        : const Color(0xFF202124), // PulseColors.onSurface
+                  ),
+                  selectedColor: const Color(0xFF6E3BFF), // PulseColors.primary
                   onSelected: (selected) {
                     if (selected) {
                       setState(() {
@@ -240,8 +263,14 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
             ),
             SwitchListTile(
               contentPadding: EdgeInsets.zero,
-              title: const Text('Require Approval'),
-              subtitle: const Text('Host must approve new members'),
+              title: const Text(
+                'Require Approval',
+                style: TextStyle(color: Color(0xFF202124)),
+              ),
+              subtitle: const Text(
+                'Host must approve new members',
+                style: TextStyle(color: Color(0xFF5F6368)),
+              ),
               value: _requireApproval,
               onChanged: (value) {
                 setState(() {
@@ -251,8 +280,14 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
             ),
             SwitchListTile(
               contentPadding: EdgeInsets.zero,
-              title: const Text('Allow Participant Invites'),
-              subtitle: const Text('Members can invite others'),
+              title: const Text(
+                'Allow Participant Invites',
+                style: TextStyle(color: Color(0xFF202124)),
+              ),
+              subtitle: const Text(
+                'Members can invite others',
+                style: TextStyle(color: Color(0xFF5F6368)),
+              ),
               value: _allowParticipantInvite,
               onChanged: (value) {
                 setState(() {
@@ -262,8 +297,14 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
             ),
             SwitchListTile(
               contentPadding: EdgeInsets.zero,
-              title: const Text('Auto Accept Friends'),
-              subtitle: const Text('Automatically accept your friends'),
+              title: const Text(
+                'Auto Accept Friends',
+                style: TextStyle(color: Color(0xFF202124)),
+              ),
+              subtitle: const Text(
+                'Automatically accept your friends',
+                style: TextStyle(color: Color(0xFF5F6368)),
+              ),
               value: _autoAcceptFriends,
               onChanged: (value) {
                 setState(() {
@@ -273,8 +314,14 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
             ),
             SwitchListTile(
               contentPadding: EdgeInsets.zero,
-              title: const Text('Enable Voice Chat'),
-              subtitle: const Text('Allow voice messages and calls'),
+              title: const Text(
+                'Enable Voice Chat',
+                style: TextStyle(color: Color(0xFF202124)),
+              ),
+              subtitle: const Text(
+                'Allow voice messages and calls',
+                style: TextStyle(color: Color(0xFF5F6368)),
+              ),
               value: _enableVoiceChat,
               onChanged: (value) {
                 setState(() {
@@ -284,8 +331,14 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
             ),
             SwitchListTile(
               contentPadding: EdgeInsets.zero,
-              title: const Text('Enable Video Chat'),
-              subtitle: const Text('Allow video calls'),
+              title: const Text(
+                'Enable Video Chat',
+                style: TextStyle(color: Color(0xFF202124)),
+              ),
+              subtitle: const Text(
+                'Allow video calls',
+                style: TextStyle(color: Color(0xFF5F6368)),
+              ),
               value: _enableVideoChat,
               onChanged: (value) {
                 setState(() {
@@ -319,7 +372,7 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
                 TextButton.icon(
                   onPressed: _showParticipantPicker,
                   icon: const Icon(Icons.person_add),
-                  label: Text('Add (${_selectedParticipantIds.length})'),
+                  label: Text('Add (${_selectedParticipantNames.length})'),
                 ),
               ],
             ),
@@ -337,12 +390,21 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
                 spacing: 8,
                 runSpacing: 8,
                 children: _selectedParticipantIds.map((id) {
+                  final name = _selectedParticipantNames[id] ?? 'Unknown User';
                   return Chip(
-                    label: Text('User $id'),
+                    label: Text(
+                      name,
+                      style: const TextStyle(
+                        color: Color(
+                          0xFF202124,
+                        ), // PulseColors.onSurface - dark text
+                      ),
+                    ),
                     deleteIcon: const Icon(Icons.close, size: 18),
                     onDeleted: () {
                       setState(() {
                         _selectedParticipantIds.remove(id);
+                        _selectedParticipantNames.remove(id);
                       });
                     },
                   );
@@ -390,18 +452,21 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
   }
 
   void _showParticipantPicker() async {
-    final selectedIds = await showDialog<List<String>>(
+    final selectedData = await showDialog<Map<String, String>>(
       context: context,
       builder: (context) =>
           ParticipantPickerDialog(initialSelectedIds: _selectedParticipantIds,
       ),
     );
 
-    if (selectedIds != null && mounted) {
+    if (selectedData != null && mounted) {
       setState(() {
+        _selectedParticipantNames
+          ..clear()
+          ..addAll(selectedData);
         _selectedParticipantIds
           ..clear()
-          ..addAll(selectedIds);
+          ..addAll(selectedData.keys);
       });
     }
   }
@@ -424,14 +489,12 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
     context.read<GroupChatBloc>().add(
           CreateGroup(
             title: _titleController.text.trim(),
+        description: _descriptionController.text.trim().isNotEmpty
+            ? _descriptionController.text.trim()
+            : null,
             groupType: _selectedType,
-            participantUserIds: _selectedParticipantIds,
-            maxParticipants: _maxParticipants,
-            allowParticipantInvite: _allowParticipantInvite,
-            requireApproval: _requireApproval,
-            autoAcceptFriends: _autoAcceptFriends,
-            enableVoiceChat: _enableVoiceChat,
-            enableVideoChat: _enableVideoChat,
+        participantUserIds: _selectedParticipantIds,
+        requireApproval: _requireApproval,
           ),
         );
   }

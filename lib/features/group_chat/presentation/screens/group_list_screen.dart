@@ -268,11 +268,16 @@ class _GroupListScreenState extends State<GroupListScreen>
     GroupConversation? selectedGroup;
     bool requireApproval = true;
 
+    // Read the bloc before showing the dialog to avoid provider scope issues
+    final bloc = context.read<GroupChatBloc>();
+
     showDialog(
       context: context,
       builder: (dialogContext) => StatefulBuilder(
         builder: (context, setState) {
+          // Pass bloc explicitly to avoid ProviderNotFoundException
           return BlocBuilder<GroupChatBloc, GroupChatState>(
+            bloc: bloc,
             builder: (context, state) {
               final groups = state is GroupChatLoaded
                   ? state.userGroups
@@ -282,11 +287,14 @@ class _GroupListScreenState extends State<GroupListScreen>
 
               return AlertDialog(
                 title: const Text('Create Live Session'),
-                content: SingleChildScrollView(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
+                contentPadding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
+                content: SizedBox(
+                  width: double.maxFinite,
+                  child: SingleChildScrollView(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
                       // Group Selection
                       const Text(
                         'Select Group',
@@ -409,6 +417,7 @@ class _GroupListScreenState extends State<GroupListScreen>
                       ),
                     ],
                   ),
+                ),
                 ),
                 actions: [
                   TextButton(

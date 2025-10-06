@@ -1586,28 +1586,20 @@ class ApiClient {
 
   /// Create a new group conversation
   Future<Response> createGroup({
-    required String title,
+    required String name,
+    String? description,
     required String groupType,
-    required List<String> participantUserIds,
-    int maxParticipants = 50,
-    bool allowParticipantInvite = true,
-    bool requireApproval = false,
-    bool autoAcceptFriends = true,
-    bool enableVoiceChat = true,
-    bool enableVideoChat = false,
+    required List<String> participantIds,
+    required String joinPolicy,
   }) async {
     return await _dio.post(
       '/group-chat/create',
       data: {
-        'title': title,
+        'name': name,
+        if (description != null) 'description': description,
         'groupType': groupType,
-        'participantUserIds': participantUserIds,
-        'maxParticipants': maxParticipants,
-        'allowParticipantInvite': allowParticipantInvite,
-        'requireApproval': requireApproval,
-        'autoAcceptFriends': autoAcceptFriends,
-        'enableVoiceChat': enableVoiceChat,
-        'enableVideoChat': enableVideoChat,
+        'participantIds': participantIds,
+        'joinPolicy': joinPolicy,
       },
     );
   }
