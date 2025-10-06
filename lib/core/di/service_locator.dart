@@ -12,7 +12,7 @@ import '../../data/repositories/user_repository_impl.dart';
 import '../../domain/repositories/user_repository.dart';
 import '../../presentation/blocs/messaging/messaging_bloc.dart';
 import '../../presentation/blocs/matching/matching_bloc.dart';
-import '../../features/group_chat/bloc/group_chat_bloc.dart';
+import '../../presentation/blocs/group_chat/group_chat_bloc.dart';
 
 /// Service locator for dependency injection
 final GetIt sl = GetIt.instance;

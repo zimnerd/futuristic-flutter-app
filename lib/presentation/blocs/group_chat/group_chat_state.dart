@@ -260,6 +260,111 @@ class GroupChatSessionEndedLive extends GroupChatState {
   List<Object?> get props => [session];
 }
 
+// ==================== MESSAGING STATES ====================
+
+/// Messages loaded
+class GroupChatMessagesLoaded extends GroupChatState {
+  final List<GroupMessage> messages;
+  final String conversationId;
+
+  const GroupChatMessagesLoaded({
+    required this.messages,
+    required this.conversationId,
+  });
+
+  @override
+  List<Object?> get props => [messages, conversationId];
+}
+
+/// Message sent successfully
+class GroupChatMessageSent extends GroupChatState {
+  final GroupMessage message;
+
+  const GroupChatMessageSent(this.message);
+
+  @override
+  List<Object?> get props => [message];
+}
+
+/// Message deleted
+class GroupChatMessageDeleted extends GroupChatState {
+  final String messageId;
+
+  const GroupChatMessageDeleted(this.messageId);
+
+  @override
+  List<Object?> get props => [messageId];
+}
+
+/// Reaction added
+class GroupChatReactionAdded extends GroupChatState {
+  final String messageId;
+  final String emoji;
+
+  const GroupChatReactionAdded({
+    required this.messageId,
+    required this.emoji,
+  });
+
+  @override
+  List<Object?> get props => [messageId, emoji];
+}
+
+/// Message search results
+class GroupChatMessageSearchResults extends GroupChatState {
+  final List<GroupMessage> results;
+  final String query;
+
+  const GroupChatMessageSearchResults({
+    required this.results,
+    required this.query,
+  });
+
+  @override
+  List<Object?> get props => [results, query];
+}
+
+/// User groups loaded
+class GroupChatUserGroupsLoaded extends GroupChatState {
+  final List<GroupConversation> groups;
+
+  const GroupChatUserGroupsLoaded(this.groups);
+
+  @override
+  List<Object?> get props => [groups];
+}
+
+// ==================== WEBRTC/VIDEO CALL STATES ====================
+
+/// Video call started
+class GroupChatVideoCallStarted extends GroupChatState {
+  final String liveSessionId;
+  final int localUid;
+
+  const GroupChatVideoCallStarted({
+    required this.liveSessionId,
+    required this.localUid,
+  });
+
+  @override
+  List<Object?> get props => [liveSessionId, localUid];
+}
+
+/// Video call ended
+class GroupChatVideoCallEnded extends GroupChatState {
+  const GroupChatVideoCallEnded();
+}
+
+/// Video call error
+class GroupChatVideoCallError extends GroupChatState {
+  final String error;
+
+  const GroupChatVideoCallError(this.error);
+
+  @override
+  List<Object?> get props => [error];
+}
+
 // ==================== ERROR STATES ====================
 
 /// Error state

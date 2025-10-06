@@ -44,7 +44,7 @@ import '../screens/ai_companion/ai_companion_chat_screen.dart';
 import '../../../features/group_chat/presentation/screens/group_chat_screen.dart';
 import '../../../features/group_chat/presentation/screens/create_group_screen.dart';
 import '../../../features/group_chat/presentation/screens/group_list_screen.dart';
-import '../../../features/group_chat/bloc/group_chat_bloc.dart';
+import '../blocs/group_chat/group_chat_bloc.dart';
 import '../../../features/group_chat/data/group_chat_service.dart';
 import '../../../features/group_chat/data/group_chat_websocket_service.dart';
 import '../../core/network/api_client.dart';

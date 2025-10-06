@@ -85,6 +85,11 @@ class RejectJoinRequest extends GroupChatEvent {
 
 // ==================== GROUP MANAGEMENT EVENTS ====================
 
+/// Load user's groups
+class LoadUserGroups extends GroupChatEvent {
+  const LoadUserGroups();
+}
+
 /// Create a new group conversation
 class CreateGroupConversation extends GroupChatEvent {
   final String title;
@@ -109,6 +114,26 @@ class CreateGroupConversation extends GroupChatEvent {
         participantUserIds,
     requireApproval,
       ];
+}
+
+/// Join a group/conversation WebSocket room
+class JoinGroup extends GroupChatEvent {
+  final String conversationId;
+
+  const JoinGroup(this.conversationId);
+
+  @override
+  List<Object?> get props => [conversationId];
+}
+
+/// Leave a group/conversation WebSocket room
+class LeaveGroup extends GroupChatEvent {
+  final String conversationId;
+
+  const LeaveGroup(this.conversationId);
+
+  @override
+  List<Object?> get props => [conversationId];
 }
 
 /// Load group details
@@ -243,6 +268,216 @@ class LiveSessionEnded extends GroupChatEvent {
 
   @override
   List<Object?> get props => [session];
+}
+
+// ==================== MESSAGING EVENTS ====================
+
+/// Load messages for a conversation
+class LoadMessages extends GroupChatEvent {
+  final String conversationId;
+
+  const LoadMessages(this.conversationId);
+
+  @override
+  List<Object?> get props => [conversationId];
+}
+
+/// Send a message
+class SendMessage extends GroupChatEvent {
+  final String conversationId;
+  final String content;
+  final String type;
+  final String? replyToMessageId;
+  final String? tempId;
+
+  const SendMessage({
+    required this.conversationId,
+    required this.content,
+    this.type = 'text',
+    this.replyToMessageId,
+    this.tempId,
+  });
+
+  @override
+  List<Object?> get props => [
+    conversationId,
+    content,
+    type,
+    replyToMessageId,
+    tempId,
+  ];
+}
+
+/// Message received (WebSocket event)
+class MessageReceived extends GroupChatEvent {
+  final GroupMessage message;
+
+  const MessageReceived(this.message);
+
+  @override
+  List<Object?> get props => [message];
+}
+
+/// Message confirmed by server (WebSocket event)
+class MessageConfirmed extends GroupChatEvent {
+  final GroupMessage message;
+
+  const MessageConfirmed(this.message);
+
+  @override
+  List<Object?> get props => [message];
+}
+
+/// Delete a message
+class DeleteMessage extends GroupChatEvent {
+  final String messageId;
+  final String conversationId;
+
+  const DeleteMessage({
+    required this.messageId,
+    required this.conversationId,
+  });
+
+  @override
+  List<Object?> get props => [messageId, conversationId];
+}
+
+/// Add reaction to message
+class AddReaction extends GroupChatEvent {
+  final String messageId;
+  final String conversationId;
+  final String emoji;
+
+  const AddReaction({
+    required this.messageId,
+    required this.conversationId,
+    required this.emoji,
+  });
+
+  @override
+  List<Object?> get props => [messageId, conversationId, emoji];
+}
+
+/// Remove reaction from message
+class RemoveReaction extends GroupChatEvent {
+  final String messageId;
+  final String conversationId;
+  final String emoji;
+
+  const RemoveReaction({
+    required this.messageId,
+    required this.conversationId,
+    required this.emoji,
+  });
+
+  @override
+  List<Object?> get props => [messageId, conversationId, emoji];
+}
+
+/// Mark message as read
+class MarkMessageAsRead extends GroupChatEvent {
+  final String messageId;
+  final String conversationId;
+
+  const MarkMessageAsRead({
+    required this.messageId,
+    required this.conversationId,
+  });
+
+  @override
+  List<Object?> get props => [messageId, conversationId];
+}
+
+/// Search messages in conversation
+class SearchMessages extends GroupChatEvent {
+  final String conversationId;
+  final String query;
+
+  const SearchMessages({
+    required this.conversationId,
+    required this.query,
+  });
+
+  @override
+  List<Object?> get props => [conversationId, query];
+}
+
+/// Clear message search results
+class ClearMessageSearch extends GroupChatEvent {
+  const ClearMessageSearch();
+}
+
+/// Send typing indicator
+class SendTypingIndicator extends GroupChatEvent {
+  final String conversationId;
+  final bool isTyping;
+
+  const SendTypingIndicator({
+    required this.conversationId,
+    required this.isTyping,
+  });
+
+  @override
+  List<Object?> get props => [conversationId, isTyping];
+}
+
+/// Typing indicator received (WebSocket event)
+class TypingIndicatorReceived extends GroupChatEvent {
+  final String userId;
+  final String username;
+  final bool isTyping;
+
+  const TypingIndicatorReceived({
+    required this.userId,
+    required this.username,
+    required this.isTyping,
+  });
+
+  @override
+  List<Object?> get props => [userId, username, isTyping];
+}
+
+// ==================== WEBRTC/VIDEO CALL EVENTS ====================
+
+/// Start video call
+class StartVideoCall extends GroupChatEvent {
+  final String liveSessionId;
+  final String token;
+  final bool enableVideo;
+
+  const StartVideoCall({
+    required this.liveSessionId,
+    required this.token,
+    this.enableVideo = true,
+  });
+
+  @override
+  List<Object?> get props => [liveSessionId, token, enableVideo];
+}
+
+/// End video call
+class EndVideoCall extends GroupChatEvent {
+  const EndVideoCall();
+}
+
+/// Toggle microphone mute
+class ToggleMute extends GroupChatEvent {
+  const ToggleMute();
+}
+
+/// Toggle video on/off
+class ToggleVideo extends GroupChatEvent {
+  const ToggleVideo();
+}
+
+/// Toggle speaker on/off
+class ToggleSpeaker extends GroupChatEvent {
+  const ToggleSpeaker();
+}
+
+/// Switch camera (front/back)
+class SwitchCamera extends GroupChatEvent {
+  const SwitchCamera();
 }
 
 // ==================== UTILITY EVENTS ====================

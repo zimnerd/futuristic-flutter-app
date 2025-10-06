@@ -29,14 +29,12 @@ class LoadPendingJoinRequests extends GroupChatEvent {
 class LoadUserGroups extends GroupChatEvent {}
 
 class CreateLiveSession extends GroupChatEvent {
-  final String conversationId;
   final String title;
   final String? description;
   final int? maxParticipants;
   final bool requireApproval;
 
   CreateLiveSession({
-    required this.conversationId,
     required this.title,
     this.description,
     this.maxParticipants,
@@ -45,7 +43,6 @@ class CreateLiveSession extends GroupChatEvent {
 
   @override
   List<Object?> get props => [
-        conversationId,
         title,
         description,
         maxParticipants,
@@ -574,7 +571,6 @@ class GroupChatBloc extends Bloc<GroupChatEvent, GroupChatState> {
     emit(GroupChatLoading());
     try {
       final session = await service.createLiveSession(
-        conversationId: event.conversationId,
         title: event.title,
         description: event.description,
         maxParticipants: event.maxParticipants,
