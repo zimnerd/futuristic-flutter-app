@@ -467,7 +467,8 @@ class _GroupListScreenState extends State<GroupListScreen>
                         ),
                       );
 
-                      // Capture scaffold messenger before async gap
+                  // Capture navigator and scaffold messenger before async gap
+                  final navigator = Navigator.of(context);
                       final scaffoldMessenger = ScaffoldMessenger.of(context);
 
                       try {
@@ -488,7 +489,7 @@ class _GroupListScreenState extends State<GroupListScreen>
                     maxParticipantsController.dispose();
 
                         // Close loading
-                    if (mounted) Navigator.of(context).pop();
+                    if (mounted) navigator.pop();
 
                         // Show success
                     if (mounted) {
@@ -513,7 +514,7 @@ class _GroupListScreenState extends State<GroupListScreen>
                     maxParticipantsController.dispose();
                         
                         // Close loading
-                    if (mounted) Navigator.of(context).pop();
+                    if (mounted) navigator.pop();
 
                     if (mounted) {
                         scaffoldMessenger.showSnackBar(
