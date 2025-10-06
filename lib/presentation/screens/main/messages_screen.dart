@@ -17,7 +17,7 @@ import '../../blocs/match/match_state.dart';
 import '../../../blocs/chat_bloc.dart';
 import '../../blocs/auth/auth_bloc.dart';
 import '../../blocs/auth/auth_state.dart';
-import '../group_chat/group_chat_list_screen.dart';
+import '../../../features/group_chat/presentation/screens/group_list_screen.dart';
 import 'settings_screen.dart';
 
 /// Enhanced messages screen with conversations list
@@ -470,7 +470,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
             onPressed: () {
               Navigator.of(context).push(
                 MaterialPageRoute(
-                  builder: (context) => const GroupChatListScreen(),
+                  builder: (context) => const GroupListScreen(),
                 ),
               );
             },
@@ -914,7 +914,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
             Future.delayed(Duration.zero, () {
               Navigator.of(context).push(
                 MaterialPageRoute(
-                  builder: (context) => const GroupChatListScreen(),
+                  builder: (context) => const GroupListScreen(),
                 ),
               );
             });
