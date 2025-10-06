@@ -47,13 +47,35 @@ class _GroupListScreenState extends State<GroupListScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFF5F5F7),
       appBar: AppBar(
-        title: const Text('My Groups'),
+        elevation: 0,
+        backgroundColor: const Color(0xFF6E3BFF),
+        foregroundColor: Colors.white,
+        title: const Text(
+          'My Groups',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 20,
+          ),
+        ),
         bottom: TabBar(
           controller: _tabController,
+          indicatorColor: Colors.white,
+          indicatorWeight: 3,
+          labelColor: Colors.white,
+          unselectedLabelColor: Colors.white70,
           tabs: const [
-            Tab(text: 'Groups', icon: Icon(Icons.group)),
-            Tab(text: 'Live Sessions', icon: Icon(Icons.live_tv)),
+            Tab(
+              text: 'Groups',
+              icon: Icon(Icons.group),
+              iconMargin: EdgeInsets.only(bottom: 4),
+            ),
+            Tab(
+              text: 'Live Sessions',
+              icon: Icon(Icons.live_tv),
+              iconMargin: EdgeInsets.only(bottom: 4),
+            ),
           ],
         ),
         actions: [
@@ -161,8 +183,9 @@ class _GroupListScreenState extends State<GroupListScreen>
             onRefresh: () async {
               _loadGroups();
             },
+            color: const Color(0xFF6E3BFF),
             child: ListView.builder(
-              padding: const EdgeInsets.all(8),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               itemCount: groups.length,
               itemBuilder: (context, index) {
                 return _GroupCard(
@@ -201,8 +224,9 @@ class _GroupListScreenState extends State<GroupListScreen>
             onRefresh: () async {
               widget.bloc.add(LoadActiveLiveSessions());
             },
+            color: const Color(0xFF6E3BFF),
             child: ListView.builder(
-              padding: const EdgeInsets.all(8),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               itemCount: liveSessions.length,
               itemBuilder: (context, index) {
                 return _LiveSessionCard(
@@ -230,22 +254,35 @@ class _GroupListScreenState extends State<GroupListScreen>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 80, color: Colors.grey[400]),
-            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: const Color(0xFF6E3BFF).withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                icon,
+                size: 64,
+                color: const Color(0xFF6E3BFF),
+              ),
+            ),
+            const SizedBox(height: 24),
             Text(
               title,
               style: const TextStyle(
-                fontSize: 20,
+                fontSize: 22,
                 fontWeight: FontWeight.bold,
+                color: Color(0xFF202124),
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 12),
             Text(
               subtitle,
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey[600],
+              style: const TextStyle(
+                fontSize: 16,
+                color: Color(0xFF5F6368),
+                height: 1.4,
               ),
             ),
           ],
@@ -619,53 +656,180 @@ class _GroupCard extends StatelessWidget {
     required this.onTap,
   });
 
-  @override
+    @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      child: ListTile(
-        leading: CircleAvatar(
-          backgroundColor: _getGroupColor(group.groupType),
-          child: Icon(
-            _getGroupIcon(group.groupType),
-            color: Colors.white,
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            _getGroupColor(group.groupType).withValues(alpha: 0.05),
+            _getGroupColor(group.groupType).withValues(alpha: 0.02),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: _getGroupColor(group.groupType).withValues(alpha: 0.2),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: _getGroupColor(group.groupType).withValues(alpha: 0.08),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
           ),
-        ),
-        title: Text(
-          group.name,
-          style: const TextStyle(fontWeight: FontWeight.bold),
-        ),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (group.description != null) ...[
-              const SizedBox(height: 4),
-              Text(
-                group.description!,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ],
-            const SizedBox(height: 4),
-            Row(
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(16),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
               children: [
-                Icon(Icons.people, size: 14, color: Colors.grey[600]),
-                const SizedBox(width: 4),
-                Text(
-                  '${group.participants.length} members',
-                  style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                // Icon with gradient background
+                Container(
+                  width: 56,
+                  height: 56,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        _getGroupColor(group.groupType),
+                        _getGroupColor(group.groupType).withValues(alpha: 0.7),
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(14),
+                    boxShadow: [
+                      BoxShadow(
+                        color: _getGroupColor(group.groupType).withValues(alpha: 0.3),
+                        blurRadius: 8,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Icon(
+                    _getGroupIcon(group.groupType),
+                    color: Colors.white,
+                    size: 28,
+                  ),
                 ),
                 const SizedBox(width: 16),
-                if (group.settings?.enableVideoChat == true)
-                  Icon(Icons.videocam, size: 14, color: Colors.grey[600]),
-                if (group.settings?.enableVoiceChat == true)
-                  Icon(Icons.mic, size: 14, color: Colors.grey[600]),
+                // Content
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        group.title,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                          color: Color(0xFF202124),
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      if (group.description != null) ...[
+                        const SizedBox(height: 6),
+                        Text(
+                          group.description!,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontSize: 13,
+                            color: Color(0xFF5F6368),
+                          ),
+                        ),
+                      ],
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: _getGroupColor(group.groupType).withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.people,
+                                  size: 14,
+                                  color: _getGroupColor(group.groupType),
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  '${group.participants.length} members',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                    color: _getGroupColor(group.groupType),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          if (group.settings?.enableVideoChat == true)
+                            Container(
+                              padding: const EdgeInsets.all(6),
+                              decoration: BoxDecoration(
+                                color: Colors.green.withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: const Icon(
+                                Icons.videocam,
+                                size: 14,
+                                color: Colors.green,
+                              ),
+                            ),
+                          const SizedBox(width: 4),
+                          if (group.settings?.enableVoiceChat == true)
+                            Container(
+                              padding: const EdgeInsets.all(6),
+                              decoration: BoxDecoration(
+                                color: Colors.blue.withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: const Icon(
+                                Icons.mic,
+                                size: 14,
+                                color: Colors.blue,
+                              ),
+                            ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 12),
+                // Chevron
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: _getGroupColor(group.groupType).withValues(alpha: 0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.chevron_right,
+                    color: _getGroupColor(group.groupType),
+                    size: 20,
+                  ),
+                ),
               ],
             ),
-          ],
+          ),
         ),
-        trailing: const Icon(Icons.chevron_right),
-        onTap: onTap,
       ),
     );
   }
