@@ -468,8 +468,21 @@ class _GroupListScreenState extends State<GroupListScreen>
                         return;
                       }
 
-                  // Close dialog first
+                  // Capture values before closing dialog
+                  final title = titleController.text.trim();
+                  final description = descriptionController.text.trim().isEmpty
+                      ? null
+                      : descriptionController.text.trim();
+                  final maxParticipantsValue = maxParticipants;
+                  final requireApprovalValue = requireApproval;
+
+                  // Close dialog and dispose controllers immediately
                       Navigator.pop(dialogContext);
+                      
+                  // Dispose controllers after dialog is closed
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    disposeControllers();
+                  });
                       
                   // Show loading
                   if (!mounted) return;
@@ -490,19 +503,14 @@ class _GroupListScreenState extends State<GroupListScreen>
                     // Create live session via service (no conversation required)
                         final service = GetIt.instance<GroupChatService>();
                     final session = await service.createLiveSession(
-                          title: titleController.text.trim(),
-                          description: descriptionController.text.trim().isEmpty
-                              ? null
-                              : descriptionController.text.trim(),
-                          maxParticipants: maxParticipants,
-                          requireApproval: requireApproval,
+                      title: title,
+                      description: description,
+                      maxParticipants: maxParticipantsValue,
+                      requireApproval: requireApprovalValue,
                         );
 
-                    // Close loading dialog first
+                    // Close loading dialog
                     if (mounted) navigator.pop();
-
-                    // Then dispose controllers safely
-                    disposeControllers();
 
                         // Show success
                     if (mounted) {
@@ -521,11 +529,8 @@ class _GroupListScreenState extends State<GroupListScreen>
                     if (!mounted) return;
                         _joinLiveSession(session);
                       } catch (e) {
-                    // Close loading dialog first
+                    // Close loading dialog
                     if (mounted) navigator.pop();
-
-                    // Then dispose controllers safely
-                    disposeControllers();
 
                     if (mounted) {
                         scaffoldMessenger.showSnackBar(
