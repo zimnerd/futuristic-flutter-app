@@ -467,6 +467,9 @@ class _GroupListScreenState extends State<GroupListScreen>
                         ),
                       );
 
+                      // Capture scaffold messenger before async gap
+                      final scaffoldMessenger = ScaffoldMessenger.of(context);
+
                       try {
                     // Create live session via service (no conversation required)
                         final service = GetIt.instance<GroupChatService>();
@@ -485,17 +488,17 @@ class _GroupListScreenState extends State<GroupListScreen>
                     maxParticipantsController.dispose();
 
                         // Close loading
-                    if (!mounted) return;
-                        Navigator.of(context).pop();
+                    if (mounted) Navigator.of(context).pop();
 
                         // Show success
-                    if (!mounted) return;
-                        ScaffoldMessenger.of(context).showSnackBar(
+                    if (mounted) {
+                        scaffoldMessenger.showSnackBar(
                           const SnackBar(
                             content: Text('Live session created successfully!'),
                             backgroundColor: Colors.green,
                           ),
                         );
+                    }
 
                         // Reload sessions
                     bloc.add(LoadActiveLiveSessions());
@@ -510,17 +513,17 @@ class _GroupListScreenState extends State<GroupListScreen>
                     maxParticipantsController.dispose();
                         
                         // Close loading
-                    if (!mounted) return;
-                        Navigator.of(context).pop();
+                    if (mounted) Navigator.of(context).pop();
 
-                    if (!mounted) return;
-                        ScaffoldMessenger.of(context).showSnackBar(
+                    if (mounted) {
+                        scaffoldMessenger.showSnackBar(
                           SnackBar(
                             content:
                                 Text('Failed to create session: ${e.toString()}'),
                             backgroundColor: Colors.red,
                           ),
-                    );
+                        );
+                      }
                       }
                     },
                     child: const Text('Create'),
