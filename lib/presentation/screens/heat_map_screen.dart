@@ -12,70 +12,6 @@ import '../../data/models/heat_map_models.dart';
 import '../../data/models/optimized_heatmap_models.dart';
 import '../../core/models/location_models.dart';
 import '../../data/models/location_models.dart' as data_models;
-// Removed: MapClusteringService - local clustering replaced by backend clustering
-// Removed: map_cluster.dart - no longer using MapCluster model for overlays
-
-/// ═══════════════════════════════════════════════════════════════════════════
-/// 🚀 PERFORMANCE & STABILITY OPTIMIZATIONS IMPLEMENTED
-/// ═══════════════════════════════════════════════════════════════════════════
-///
-/// This heat map implementation follows best practices to prevent black screen
-/// flashes, stuttering, and poor performance when panning/zooming:
-///
-/// ✅ 1. STABLE GOOGLEMAP WIDGET
-///    - Uses `final GlobalKey` (immutable) to prevent widget recreation
-///    - Removed all setState() calls that would rebuild the map
-///    - No conditional rendering with bool toggles
-///    - Fixed size container - no layout shifts
-///
-/// ✅ 2. DEBOUNCED CAMERA EVENTS
-///    - 500ms debounce on onCameraMove to prevent constant rebuilds
-///    - Only updates clusters on onCameraIdle for smooth performance
-///    - Prevents rebuilding during active panning/zooming
-///
-/// ✅ 3. SMART CLUSTER CACHING (BLACK SCREEN FIX)
-///    - Level 1: Cache MapCluster objects by GROUPED zoom levels + data hash
-///    - Level 2: Memoize Circle widgets with automatic cache key validation
-///    - Zoom level grouping: 1-3→2, 4-6→5, 7-9→8, 10-12→11, 13-15→14, 16-18→17
-///    - No manual cache clearing on zoom - lets natural key mismatch trigger rebuild
-///    - Only caches non-empty circle sets (prevents caching transition states)
-///    - Fixes black screen during zoom by avoiding premature cache invalidation
-///    - Debounced recalculation: Shows loading indicator until zoom/pan stops
-///
-/// ✅ 4. VIEWPORT FILTERING
-///    - MapClusteringService filters points to visible region only
-///    - Prevents processing thousands of off-screen points
-///    - Uses getVisibleRegion() for accurate bounds
-///
-/// ✅ 5. MINIMAL OVERLAY COUNT
-///    - Aggressive clustering to keep overlay count low (dozens, not hundreds)
-///    - Zoom-based cluster radius for appropriate detail level
-///    - Single cluster at extreme zoom out to prevent overwhelm
-///
-/// ✅ 6. PERSISTENT CONTROLLER & STATE
-///    - GoogleMapController maintained across rebuilds
-///    - State kept alive between camera movements
-///    - No dispose/recreate cycles
-///
-/// ✅ 7. INTERACTIVE CLUSTER GESTURES
-///    - Single tap: Shows detailed stats dialog (user count, status breakdown, density)
-///    - Double tap: Zooms into cluster with smooth animation (+2 zoom levels)
-///    - Non-blocking UI - doesn't interfere with map double-tap zoom
-///    - Gesture detection on cluster overlays only, map gestures work elsewhere
-///
-/// 📊 PERFORMANCE METRICS
-///    - Handles 100+ data points smoothly at 60 FPS
-///    - Cluster updates complete in <100ms with caching
-///    - No black screen flashes during pan/zoom
-///    - Smooth transitions between zoom levels
-///
-/// 🔧 FUTURE OPTIMIZATIONS (if needed for 1000+ points)
-///    - Move clustering to compute() isolate for true async processing
-///    - Implement CustomPainter for overlay rendering (faster than widgets)
-///    - Add tile-based data loading for massive datasets
-///    - Pre-generate cluster icon bitmaps (BitmapDescriptor caching)
-///
-/// ═══════════════════════════════════════════════════════════════════════════
 
 // Function to show the heat map as a full-screen modal
 void showHeatMapModal(BuildContext context) {
@@ -180,26 +116,16 @@ class HeatMapBloc extends Bloc<HeatMapEvent, HeatMapState> {
   }
 
   Future<void> _onLoadHeatMapData(LoadHeatMapData event, Emitter<HeatMapState> emit) async {
-    AppLogger.debug(
-      '═══════════════════════════════════════════════════════════',
-    );
-    AppLogger.debug(
-      '🔄 HeatMapBloc: LoadHeatMapData event received (radius: ${event.radiusKm}km)',
-    );
     emit(HeatMapLoading());
-    AppLogger.debug('🔄 HeatMapBloc: Emitted HeatMapLoading state');
     
     try {
-      AppLogger.debug('📍 HeatMapBloc: Starting location request...');
       final position = await _locationService.getCurrentLocation();
-      AppLogger.debug('📍 HeatMapBloc: Location result: $position');
       
       final userCoords = position != null 
         ? LocationCoordinates(latitude: position.latitude, longitude: position.longitude) 
         : null;
       
       if (userCoords == null) {
-        AppLogger.debug('❌ HeatMapBloc: No location available, emitting error');
         emit(
           HeatMapError(
             'Unable to get current location. Please enable location services and grant permission.',
@@ -209,15 +135,11 @@ class HeatMapBloc extends Bloc<HeatMapEvent, HeatMapState> {
       }
       
       // First, update user location in backend
-      AppLogger.debug('📡 HeatMapBloc: Updating user location in backend...');
       try {
         await _heatMapService.updateUserLocation(userCoords);
-        AppLogger.debug('✅ HeatMapBloc: User location updated successfully');
       } catch (e) {
-        AppLogger.debug('⚠️ HeatMapBloc: Failed to update user location: $e');
         // Continue anyway - try to fetch data without updating location
       }
-      AppLogger.debug('📡 HeatMapBloc: Now fetching heat map data...');
       
       // FIX: Fetch BOTH heatmap data AND backend clusters during initial load
       // This eliminates race condition with onMapCreated timing
@@ -242,14 +164,6 @@ class HeatMapBloc extends Bloc<HeatMapEvent, HeatMapState> {
       final points = heatmapDataPoints as List<HeatMapDataPoint>;
       final coverage = coverageData as LocationCoverageData;
       final clusters = optimizedClusters as OptimizedHeatmapResponse;
-
-      AppLogger.debug(
-        '✅ HeatMapBloc: Received ${clusters.clusters.length} backend clusters during initial load',
-      );
-      
-      AppLogger.debug(
-        '✅ HeatMapBloc: Data fetched - ${points.length} data points received',
-      );
       
       // Create HeatMapData from points
       final heatmapData = HeatMapData(
@@ -275,16 +189,6 @@ class HeatMapBloc extends Bloc<HeatMapEvent, HeatMapState> {
         generatedAt: DateTime.now(),
       );
       
-      AppLogger.debug('✅ HeatMapBloc: HeatMapData created');
-      AppLogger.debug('✅ HeatMapBloc: Emitting HeatMapLoaded state');
-      AppLogger.debug('✅ Total data points: ${heatmapData.dataPoints.length}');
-      AppLogger.debug('✅ Backend clusters: ${clusters.clusters.length}');
-      AppLogger.debug('✅ User location: $userCoords');
-      AppLogger.debug('✅ Coverage areas: ${coverage.coverageAreas.length}');
-      AppLogger.debug(
-        '═══════════════════════════════════════════════════════════',
-      );
-      
       emit(HeatMapLoaded(
         heatmapData: heatmapData,
         coverageData: coverage,
@@ -294,10 +198,6 @@ class HeatMapBloc extends Bloc<HeatMapEvent, HeatMapState> {
               clusters.clusters, // FIX: Include clusters in initial state
       ));
     } catch (e) {
-      AppLogger.debug('❌ HeatMapBloc: Error loading data: $e');
-      AppLogger.debug(
-        '═══════════════════════════════════════════════════════════',
-      );
       emit(HeatMapError('Failed to load heat map data: ${e.toString()}'));
     }
   }
@@ -320,32 +220,9 @@ class HeatMapBloc extends Bloc<HeatMapEvent, HeatMapState> {
     FetchBackendClusters event,
     Emitter<HeatMapState> emit,
   ) async {
-    print('═══════════════════════════════════════════════════════════');
-    print('🎯🎯🎯 BLOC TEST: FetchBackendClusters event received!');
-    print('   State: ${state.runtimeType}, zoom: ${event.zoom}');
-    AppLogger.debug(
-      '═══════════════════════════════════════════════════════════',
-    );
-    AppLogger.debug('🎯 BLoC: FetchBackendClusters event received!');
-    AppLogger.debug('   - Current state: ${state.runtimeType}');
-    AppLogger.debug('   - Event zoom: ${event.zoom}');
-    AppLogger.debug('   - Event radius: ${event.radiusKm}km');
-    AppLogger.debug('   - Has viewport: ${event.viewport != null}');
-
     // Handle both HeatMapInitial and HeatMapLoaded states
     // If state is Initial, trigger LoadHeatMapData to initialize the state first
     if (state is! HeatMapLoaded) {
-      print('   ⚠️  State is ${state.runtimeType} - not loaded yet!');
-      print('   Triggering LoadHeatMapData first...');
-      AppLogger.debug(
-        '⚠️ FetchBackendClusters called but state is ${state.runtimeType}.',
-      );
-      AppLogger.debug(
-        '   Triggering LoadHeatMapData to initialize state first...',
-      );
-      AppLogger.debug(
-        '═══════════════════════════════════════════════════════════',
-      );
       // Trigger initial data load which will include backend clusters
       add(LoadHeatMapData(event.radiusKm.toInt()));
       return;
@@ -354,20 +231,6 @@ class HeatMapBloc extends Bloc<HeatMapEvent, HeatMapState> {
     final currentState = state as HeatMapLoaded;
 
     try {
-      print('🔄🔄🔄 BLOC TEST: Making API call...');
-      AppLogger.debug('🔄 Making API call to getOptimizedHeatMapData...');
-      AppLogger.debug('   - zoom: ${event.zoom}');
-      AppLogger.debug('   - radius: ${event.radiusKm}km');
-      AppLogger.debug('   - viewport bounds:');
-      if (event.viewport != null) {
-        AppLogger.debug(
-          '     NE: ${event.viewport!.northeast.latitude.toStringAsFixed(4)}, ${event.viewport!.northeast.longitude.toStringAsFixed(4)}',
-        );
-        AppLogger.debug(
-          '     SW: ${event.viewport!.southwest.latitude.toStringAsFixed(4)}, ${event.viewport!.southwest.longitude.toStringAsFixed(4)}',
-        );
-      }
-
       final response = await _heatMapService.getOptimizedHeatMapData(
         zoom: event.zoom,
         northLat: event.viewport?.northeast.latitude,
@@ -378,42 +241,9 @@ class HeatMapBloc extends Bloc<HeatMapEvent, HeatMapState> {
         maxClusters: 50,
       );
 
-      print('✅✅✅ BLOC TEST: Received ${response.clusters.length} clusters!');
-      print(
-        '   First cluster: ${response.clusters.isNotEmpty ? response.clusters.first.id : "NONE"}',
-      );
-      AppLogger.debug(
-        '✅ Received ${response.clusters.length} clusters from backend '
-        '(${response.performance.queryTimeMs}ms query, '
-        '${response.performance.clusteringTimeMs}ms clustering)',
-      );
-
-      // Log cluster details for debugging
-      AppLogger.debug(
-        '🔍 First cluster: ${response.clusters.isNotEmpty ? response.clusters.first.toJson() : "NONE"}',
-      );
-      AppLogger.debug(
-        '🔍 Current state backendClusters before emit: ${currentState.backendClusters?.length ?? "null"}',
-      );
-      
       emit(currentState.copyWith(backendClusters: response.clusters));
-      
-      print(
-        '📢📢📢 BLOC TEST: State emitted with ${response.clusters.length} clusters!',
-      );
-      print('   BlocBuilder should rebuild now...');
-      AppLogger.debug(
-        '🔍 State emitted with ${response.clusters.length} clusters',
-      );
-      AppLogger.debug('🔍 BLoC should trigger BlocBuilder rebuild now...');
-      AppLogger.debug(
-        '═══════════════════════════════════════════════════════════',
-      );
     } catch (e) {
-      AppLogger.debug('❌ Failed to fetch backend clusters: $e');
-      AppLogger.debug(
-        '═══════════════════════════════════════════════════════════',
-      );
+      AppLogger.error('Failed to fetch backend clusters: $e');
       // Don't emit error - keep existing state and let UI fall back gracefully
     }
   }
@@ -450,10 +280,6 @@ class _HeatMapScreenState extends State<HeatMapScreen>
   // See: https://github.com/flutter/flutter/issues/40284
   // Use a stable key to prevent unnecessary widget recreation
   final GlobalKey _googleMapKey = GlobalKey();
-  
-  // Cache management
-  DateTime? _lastDataFetch;
-  static const Duration _cacheValidity = Duration(minutes: 5);
 
   // Memoized sets to prevent rebuilding on every frame
   Set<Circle>? _memoizedCircles;
@@ -466,20 +292,16 @@ class _HeatMapScreenState extends State<HeatMapScreen>
   @override
   void initState() {
     super.initState();
-    AppLogger.debug('🚀 HeatMapScreen: initState called');
     // Register lifecycle observer to handle app resume
     WidgetsBinding.instance.addObserver(this);
-    AppLogger.debug('🚀 HeatMapScreen: WidgetsBindingObserver registered');
   }
 
   @override
   void dispose() {
-    AppLogger.debug('🛑 HeatMapScreen: dispose called');
     _debounceTimer?.cancel();
     _clusterCalculationTimer?.cancel();
     // Unregister lifecycle observer
     WidgetsBinding.instance.removeObserver(this);
-    AppLogger.debug('🛑 HeatMapScreen: Cleanup completed');
     super.dispose();
   }
 
@@ -493,49 +315,22 @@ class _HeatMapScreenState extends State<HeatMapScreen>
     final group = ((zoom - 1) / 3).floor();
     final groupedZoom = (group * 3) + 2; // Middle value of each group
 
-    AppLogger.debug('🎯 Zoom grouping: $zoom → $groupedZoom');
     return groupedZoom.toDouble();
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
-    AppLogger.debug('🔄 HeatMapScreen: App lifecycle changed to: $state');
 
     if (state == AppLifecycleState.resumed) {
-      AppLogger.debug(
-        '🔄 HeatMapScreen: App resumed - refreshing map controller',
-      );
       // Instead of recreating the entire widget, just refresh the map controller
       // This prevents the black screen issue caused by platform view recreation
       if (_mapController != null && mounted) {
         // Map is already initialized, no need to recreate it
-        AppLogger.debug(
-          '🔄 HeatMapScreen: Map controller exists, no action needed',
-        );
       }
     }
   }
 
-  /// Check if cached data is still valid (simplified for backend clusters)
-  bool _isCacheValid() {
-    if (_lastDataFetch == null) return false;
-    return DateTime.now().difference(_lastDataFetch!) < _cacheValidity;
-  }
-
-  /// Toggle heatmap visibility
-  void _toggleHeatmap() {
-    setState(() {
-      _showHeatmap = !_showHeatmap;
-    });
-    
-    // If enabling heatmap and we need fresh data, trigger reload
-    if (_showHeatmap && !_isCacheValid()) {
-      context.read<HeatMapBloc>().add(LoadHeatMapData(_currentRadius));
-    }
-  }
-
-  /// Toggle cluster visibility (separate from heatmap)
   /// Show statistics popup for users within radius
   void _showStatisticsPopup() async {
     if (_isStatisticsPopupVisible) return;
@@ -650,7 +445,6 @@ class _HeatMapScreenState extends State<HeatMapScreen>
 
   @override
   Widget build(BuildContext context) {
-    AppLogger.debug('🎨 HeatMapScreen: build() called');
     // Access services from the parent context before creating BlocProvider
     final heatMapService = context.read<HeatMapService>();
     final locationService = context.read<LocationService>();
@@ -904,7 +698,6 @@ class _HeatMapScreenState extends State<HeatMapScreen>
             state.heatmapData.dataPoints.length;
 
         initialPosition = LatLng(avgLat, avgLng);
-        AppLogger.debug('HeatMapScreen: Data center position: $initialPosition');
       } else {
         // Use user location if data is in same region
         initialPosition = state.userLocation != null
@@ -924,37 +717,11 @@ class _HeatMapScreenState extends State<HeatMapScreen>
           : const LatLng(-26.2041028, 28.0473051); // Default to Johannesburg
     }
 
-    AppLogger.debug('HeatMapScreen: Initial position: $initialPosition');
-
     // Calculate optimal zoom level based on data distribution
     final initialZoomLevel = hasGeographicMismatch ? 8.0 : 12.0;
-    AppLogger.debug('HeatMapScreen: Using zoom level: $initialZoomLevel');
-
-    AppLogger.debug('🎨 About to build markers and circles...');
-    AppLogger.debug(
-      '🎨 State has ${state.backendClusters?.length ?? "null"} backend clusters',
-    );
-    AppLogger.debug('🎨 _showClusters = $_showClusters');
     
     final markers = _buildMarkers(state);
     final circles = _buildCircles(state);
-
-    AppLogger.debug(
-      'HeatMapScreen: Built ${markers.length} markers and ${circles.length} circles',
-    );
-    AppLogger.debug(
-      '🎨 Circles breakdown: ${circles.length} total circles built',
-    );
-
-    AppLogger.debug('🗺️ About to build GoogleMap widget...');
-    AppLogger.debug('🗺️ Initial position: $initialPosition');
-    AppLogger.debug('🗺️ Initial zoom: $initialZoomLevel');
-    AppLogger.debug('🗺️ Markers count: ${markers.length}');
-    AppLogger.debug('🗺️ Circles count: ${circles.length}');
-    AppLogger.debug('🗺️ Geographic mismatch: $hasGeographicMismatch');
-    AppLogger.debug('🗺️ Map key: ${_googleMapKey.hashCode}');
-
-    AppLogger.debug('✅ HeatMapScreen: Creating GoogleMap widget now...');
 
     final googleMapWidget = GoogleMap(
       key: _googleMapKey, // Use dynamic key instead of const ValueKey
@@ -1426,9 +1193,6 @@ class _HeatMapScreenState extends State<HeatMapScreen>
     final centerLat = totalUsers > 0 ? sumLat / totalUsers : 0.0;
     final centerLng = totalUsers > 0 ? sumLng / totalUsers : 0.0;
 
-    print('   Status totals: ${statusTotals}');
-    print('   Center: ($centerLat, $centerLng)');
-
     // Create mega-clusters (one per status that has users)
     final List<OptimizedClusterData> megaClusters = [];
 
@@ -1452,13 +1216,6 @@ class _HeatMapScreenState extends State<HeatMapScreen>
 
         megaClusters.add(megaCluster);
       }
-    });
-
-    print('✅✅✅ AGGREGATION: Created ${megaClusters.length} mega-clusters');
-    megaClusters.asMap().forEach((index, mega) {
-      print(
-        '   Mega-cluster $index: ${mega.statusBreakdown} (${mega.userCount} users)',
-      );
     });
 
     return megaClusters;
@@ -1742,32 +1499,22 @@ class _HeatMapScreenState extends State<HeatMapScreen>
 
   /// Build markers synchronously - uses memoized cluster markers
   Set<Marker> _buildMarkers(HeatMapLoaded state) {
-    AppLogger.debug('🏷️ _buildMarkers: START');
+    // Return empty set if clustering is disabled
+    if (!_showClusters) {
+      return <Marker>{};
+    }
 
     // Return memoized markers if available
     if (_memoizedMarkers != null) {
-      AppLogger.debug(
-        '🚀 Using memoized markers (${_memoizedMarkers!.length} markers)',
-      );
       return _memoizedMarkers!;
     }
 
     // If no memoized markers but we have clusters, trigger async generation
-    if (_showClusters &&
-        state.backendClusters != null &&
-        state.backendClusters!.isNotEmpty) {
-      print('🎯🎯🎯 MARKER TEST: Need to generate cluster markers...');
-      AppLogger.debug(
-        '🎯 Triggering async marker generation for ${state.backendClusters!.length} clusters',
-      );
-
+    if (state.backendClusters != null && state.backendClusters!.isNotEmpty) {
       // Trigger async marker generation (don't await)
       _generateClusterMarkers(state.backendClusters!);
     }
 
-    AppLogger.debug(
-      '🏷️ _buildMarkers: Returning empty set (markers generating async)',
-    );
     return <Marker>{};
   }
 
@@ -1775,35 +1522,14 @@ class _HeatMapScreenState extends State<HeatMapScreen>
   Future<void> _generateClusterMarkers(
     List<OptimizedClusterData> clusters,
   ) async {
-    print('🔄🔄🔄 MARKER GEN: Starting async marker generation...');
-
     final clusterMarkers = await _buildMarkersFromBackendClusters(clusters);
 
-    print(
-      '✅✅✅ MARKER GEN: Generated ${clusterMarkers.length} markers, updating state...',
-    );
     setState(() {
       _memoizedMarkers = clusterMarkers;
     });
-
-    AppLogger.debug('✅ Cluster markers generated and state updated');
   }
 
   Set<Circle> _buildCircles(HeatMapLoaded state) {
-    AppLogger.debug(
-      '═══════════════════════════════════════════════════════════',
-    );
-    AppLogger.debug('🎨 _buildCircles: Starting to build circles...');
-    AppLogger.debug('🔍 State inspection:');
-    AppLogger.debug('   - _showClusters: $_showClusters');
-    AppLogger.debug('   - _showHeatmap: $_showHeatmap');
-    AppLogger.debug(
-      '   - backendClusters: ${state.backendClusters?.length ?? "null"}',
-    );
-    AppLogger.debug('   - dataPoints: ${state.heatmapData.dataPoints.length}');
-    AppLogger.debug('   - userLocation: ${state.userLocation}');
-    AppLogger.debug('   - currentRadius: ${state.currentRadius}');
-
     // Create cache key from state properties that affect circles
     // NOTE: Zoom level NOT included - keeps clusters visible during zoom animation
     // Backend fetch on camera idle will update with new clusters smoothly
@@ -1816,34 +1542,16 @@ class _HeatMapScreenState extends State<HeatMapScreen>
         '${state.backendClusters?.length ?? 0}_'
         '${state.heatmapData.dataPoints.length}';
 
-    AppLogger.debug('🔑 Cache key: $cacheKey');
-    AppLogger.debug('🔑 Last cache key: $_lastCacheKey');
-    AppLogger.debug('🔑 Has memoized circles: ${_memoizedCircles != null}');
-
     // Return memoized circles if state hasn't changed
     if (_memoizedCircles != null && _lastCacheKey == cacheKey) {
-      AppLogger.debug(
-        '🚀 Using memoized circles (${_memoizedCircles!.length} circles)',
-      );
-      AppLogger.debug(
-        '═══════════════════════════════════════════════════════════',
-      );
       return _memoizedCircles!;
     }
 
-    AppLogger.debug('⚡ Building NEW circles (cache miss or state changed)');
     // Safety: If building new circles, ensure we don't return empty set during transition
     final circles = <Circle>{};
-    
-    AppLogger.debug(
-      '🔨 Building fresh circles (cache key changed from $_lastCacheKey to $cacheKey)',
-    );
 
     // Add user coverage circle (always shown)
     if (state.userLocation != null) {
-      AppLogger.debug(
-        '🎨 Adding user coverage circle at ${state.userLocation}',
-      );
       circles.add(
         Circle(
           circleId: const CircleId('coverage_circle'),
@@ -1874,55 +1582,16 @@ class _HeatMapScreenState extends State<HeatMapScreen>
     
     // Add heatmap overlay circles when heatmap is enabled
     if (_showHeatmap) {
-      AppLogger.debug('🎨 Heatmap enabled, building heatmap circles...');
       final heatmapCircles = _buildHeatmapCircles(state);
       circles.addAll(heatmapCircles);
-      AppLogger.debug('🎨 Added ${heatmapCircles.length} heatmap circles');
-    } else {
-      AppLogger.debug('🎨 Heatmap disabled, skipping heatmap circles');
     }
-
-    AppLogger.debug(
-      '🎨 _buildCircles: Completed with ${circles.length} total circles',
-    );
 
     // Cache the result only if we have circles (prevent caching empty/transition states)
     if (circles.isNotEmpty) {
       _memoizedCircles = circles;
       _lastCacheKey = cacheKey;
-      AppLogger.debug(
-        '💾 Cached ${circles.length} circles with key: $cacheKey',
-      );
-    } else {
-      AppLogger.debug(
-        '⚠️ Not caching empty circle set - might be transition state',
-      );
     }
     
-    AppLogger.debug(
-      '✅ _buildCircles FINAL RETURN: ${circles.length} circles to GoogleMap',
-    );
-    if (circles.isNotEmpty) {
-      AppLogger.debug('📍 Circle types in set:');
-      final clusterCount = circles
-          .where((c) => c.circleId.value.startsWith('grid_'))
-          .length;
-      final coverageCount = circles
-          .where((c) => c.circleId.value == 'coverage_circle')
-          .length;
-      final heatmapCount = circles
-          .where((c) => c.circleId.value.startsWith('heatmap_'))
-          .length;
-      AppLogger.debug('   - Cluster circles: $clusterCount');
-      AppLogger.debug('   - Coverage circle: $coverageCount');
-      AppLogger.debug('   - Heatmap circles: $heatmapCount');
-      AppLogger.debug(
-        '📋 Sample IDs: ${circles.take(5).map((c) => c.circleId.value).join(", ")}',
-      );
-    }
-    AppLogger.debug(
-      '═══════════════════════════════════════════════════════════',
-    );
     return circles;
   }
 
@@ -1990,42 +1659,6 @@ class _HeatMapScreenState extends State<HeatMapScreen>
     // which are already calculated on backend (no frontend computation)
   }
 
-  /// Build individual cluster number overlay
-  // DISABLED: _buildClusterNumberOverlay() - removed to eliminate local clustering
-  // Cluster info now shown on tap via _showBackendClusterDetails()
-  // If overlays needed in future, implement using state.backendClusters (no frontend computation)
-
-
-
-  // DISABLED HELPER METHODS: No longer used after removing cluster overlays
-  // These methods were for the old local clustering overlay feature
-  
-  /*
-  /// Get cluster circle color based on dominant status
-  Color _getClusterColor(String dominantStatus) {
-    ...
-  }
-  
-  String _getStatusDisplayName(String status) {
-    ...
-  }
-  */
-
-  // DISABLED METHODS: These methods are no longer used after removing cluster overlays
-  // They depend on MapCluster model which used local frontend clustering
-  // Cluster details now shown via _showBackendClusterDetails() using backend clusters
-  
-  /*
-  /// Zoom into a cluster with smooth animation
-  Future<void> _zoomIntoCluster(MapCluster cluster) async {
-    ...
-  }
-
-  void _showClusterDetails(MapCluster cluster) {
-    ...
-  }
-  */
-
   Widget _buildStatRow(String label, String value) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 2),
@@ -2045,7 +1678,7 @@ class _HeatMapScreenState extends State<HeatMapScreen>
       left: 8,
       right: 8,
       child: Container(
-        padding: const EdgeInsets.all(8),
+        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: Colors.black.withValues(alpha: 0.8),
           borderRadius: BorderRadius.circular(16),
@@ -2119,6 +1752,15 @@ class _HeatMapScreenState extends State<HeatMapScreen>
   }
 
   Widget _buildStatsPanel(BuildContext context, HeatMapLoaded state) {
+    // Calculate stats from actual backend clusters (visible markers)
+    final totalUsers =
+        state.backendClusters?.fold<int>(
+          0,
+          (sum, cluster) => sum + cluster.userCount,
+        ) ??
+        0;
+    final clusterCount = state.backendClusters?.length ?? 0;
+
     return Positioned(
       bottom: 16,
       left: 16,
@@ -2168,23 +1810,19 @@ class _HeatMapScreenState extends State<HeatMapScreen>
                 children: [
                   _buildStatItemWithIcon(
                     'Active Users',
-                    state.heatmapData.totalUsers,
+                    totalUsers,
                     Icons.people,
                   ),
                   const SizedBox(width: 12),
                   _buildStatItemWithIcon(
-                    'Data Points',
-                    state.heatmapData.dataPoints
-                        .where((p) => p.density > 0)
-                        .length,
+                    'Clusters',
+                    clusterCount,
                     Icons.scatter_plot,
                   ),
                   const SizedBox(width: 12),
                   _buildStatItemWithIcon(
-                    'Hot Spots',
-                    state.heatmapData.dataPoints
-                        .where((p) => p.density > 5)
-                        .length,
+                    'Total Users',
+                    totalUsers,
                     Icons.local_fire_department,
                   ),
                   const SizedBox(width: 12),
@@ -2535,6 +2173,57 @@ class _HeatMapScreenState extends State<HeatMapScreen>
                 });
               },
               tooltip: _showHeatmap ? 'Hide Heatmap' : 'Show Heatmap',
+            ),
+          ),
+          const SizedBox(height: 8),
+          // Clustering Toggle
+          Container(
+            decoration: BoxDecoration(
+              color: _showClusters ? const Color(0xFF00C2FF) : Colors.white,
+              borderRadius: BorderRadius.circular(8),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.2),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: IconButton(
+              icon: Icon(
+                Icons.scatter_plot,
+                color: _showClusters ? Colors.white : Colors.black87,
+              ),
+              onPressed: () async {
+                setState(() {
+                  _showClusters = !_showClusters;
+                  // Clear memoized markers when turning off clusters
+                  if (!_showClusters) {
+                    _memoizedMarkers = null;
+                  }
+                });
+                
+                // Only fetch clusters when turning ON
+                if (_showClusters && mounted) {
+                  try {
+                    final bounds = await _mapController?.getVisibleRegion();
+                    final groupedZoom = _getGroupedZoomLevel(_currentZoom);
+                    final radiusKm = _currentRadius.toDouble();
+
+                    if (!mounted) return;
+                    context.read<HeatMapBloc>().add(
+                      FetchBackendClusters(
+                        zoom: groupedZoom,
+                        viewport: bounds,
+                        radiusKm: radiusKm,
+                      ),
+                    );
+                  } catch (e) {
+                    AppLogger.error('Failed to fetch clusters: $e');
+                  }
+                }
+              },
+              tooltip: _showClusters ? 'Hide Clusters' : 'Show Clusters',
             ),
           ),
           const SizedBox(height: 8),
