@@ -303,9 +303,20 @@ class _GroupListScreenState extends State<GroupListScreen>
     final descriptionController = TextEditingController();
     final maxParticipantsController = TextEditingController(text: '10');
     bool requireApproval = true;
+    bool controllersDisposed = false;
 
     // Read the bloc before showing the dialog to avoid provider scope issues
     final bloc = context.read<GroupChatBloc>();
+    
+    // Helper function to safely dispose controllers once
+    void disposeControllers() {
+      if (!controllersDisposed) {
+        titleController.dispose();
+        descriptionController.dispose();
+        maxParticipantsController.dispose();
+        controllersDisposed = true;
+      }
+    }
 
     showDialog(
       context: context,
@@ -422,9 +433,7 @@ class _GroupListScreenState extends State<GroupListScreen>
                 actions: [
                   TextButton(
                     onPressed: () {
-                      titleController.dispose();
-                      descriptionController.dispose();
-                      maxParticipantsController.dispose();
+                  disposeControllers();
                       Navigator.pop(dialogContext);
                     },
                     child: const Text('Cancel'),
@@ -492,10 +501,8 @@ class _GroupListScreenState extends State<GroupListScreen>
                     // Close loading dialog first
                     if (mounted) navigator.pop();
 
-                    // Then dispose controllers after dialog is closed
-                    titleController.dispose();
-                    descriptionController.dispose();
-                    maxParticipantsController.dispose();
+                    // Then dispose controllers safely
+                    disposeControllers();
 
                         // Show success
                     if (mounted) {
@@ -517,10 +524,8 @@ class _GroupListScreenState extends State<GroupListScreen>
                     // Close loading dialog first
                     if (mounted) navigator.pop();
 
-                    // Then dispose controllers on error
-                    titleController.dispose();
-                    descriptionController.dispose();
-                    maxParticipantsController.dispose();
+                    // Then dispose controllers safely
+                    disposeControllers();
 
                     if (mounted) {
                         scaffoldMessenger.showSnackBar(
