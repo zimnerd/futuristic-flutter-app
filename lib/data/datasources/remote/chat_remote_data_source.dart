@@ -1,3 +1,6 @@
+import 'dart:io';
+import 'package:dio/dio.dart';
+import 'package:path/path.dart' as path;
 import 'package:logger/logger.dart';
 
 import '../../models/chat_model.dart' hide ConversationModel;
@@ -477,16 +480,30 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
     try {
       _logger.i('Uploading media file: $filePath');
 
+      // Read the file
+      final file = File(filePath);
+      if (!await file.exists()) {
+        throw ApiException('File not found: $filePath');
+      }
+
+      // Create multipart form data
+      final formData = FormData.fromMap({
+        'file': await MultipartFile.fromFile(
+          filePath,
+          filename: path.basename(filePath),
+        ),
+        'type': type.name,
+      });
+
       final response = await _apiService.post(
         '/chat/media/upload',
-        data: {
-          'filePath': filePath,
-          'type': type.name,
-        },
+        data: formData,
       );
 
-      if (response.statusCode == 201) {
-        return response.data['mediaId'];
+      if (response.statusCode == 201 || response.statusCode == 200) {
+        // Parse the response - backend returns { success: true, data: { mediaId, url, ... } }
+        final data = response.data['data'] ?? response.data;
+        return data['mediaId'] ?? data['id'];
       } else {
         throw ApiException('Failed to upload media: ${response.statusMessage}');
       }

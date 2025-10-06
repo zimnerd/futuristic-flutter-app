@@ -1,5 +1,105 @@
 import 'package:equatable/equatable.dart';
 
+/// Media attachment metadata for messages
+class MediaAttachment extends Equatable {
+  const MediaAttachment({
+    required this.url,
+    this.thumbnailUrl,
+    this.caption,
+    this.width,
+    this.height,
+    this.fileSize,
+    this.duration,
+    this.mimeType,
+    this.uploadStatus = MediaUploadStatus.uploaded,
+  });
+
+  final String url;
+  final String? thumbnailUrl;
+  final String? caption;
+  final int? width;
+  final int? height;
+  final int? fileSize;
+  final int? duration; // For audio/video in seconds
+  final String? mimeType;
+  final MediaUploadStatus uploadStatus;
+
+  MediaAttachment copyWith({
+    String? url,
+    String? thumbnailUrl,
+    String? caption,
+    int? width,
+    int? height,
+    int? fileSize,
+    int? duration,
+    String? mimeType,
+    MediaUploadStatus? uploadStatus,
+  }) {
+    return MediaAttachment(
+      url: url ?? this.url,
+      thumbnailUrl: thumbnailUrl ?? this.thumbnailUrl,
+      caption: caption ?? this.caption,
+      width: width ?? this.width,
+      height: height ?? this.height,
+      fileSize: fileSize ?? this.fileSize,
+      duration: duration ?? this.duration,
+      mimeType: mimeType ?? this.mimeType,
+      uploadStatus: uploadStatus ?? this.uploadStatus,
+    );
+  }
+
+  factory MediaAttachment.fromJson(Map<String, dynamic> json) {
+    return MediaAttachment(
+      url: json['url'] as String,
+      thumbnailUrl: json['thumbnailUrl'] as String?,
+      caption: json['caption'] as String?,
+      width: json['width'] as int?,
+      height: json['height'] as int?,
+      fileSize: json['fileSize'] as int?,
+      duration: json['duration'] as int?,
+      mimeType: json['mimeType'] as String?,
+      uploadStatus: MediaUploadStatus.values.firstWhere(
+        (e) => e.name == json['uploadStatus'],
+        orElse: () => MediaUploadStatus.uploaded,
+      ),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'url': url,
+      'thumbnailUrl': thumbnailUrl,
+      'caption': caption,
+      'width': width,
+      'height': height,
+      'fileSize': fileSize,
+      'duration': duration,
+      'mimeType': mimeType,
+      'uploadStatus': uploadStatus.name,
+    };
+  }
+
+  @override
+  List<Object?> get props => [
+        url,
+        thumbnailUrl,
+        caption,
+        width,
+        height,
+        fileSize,
+        duration,
+        mimeType,
+        uploadStatus,
+      ];
+}
+
+/// Media upload status enumeration
+enum MediaUploadStatus {
+  uploading,
+  uploaded,
+  failed,
+}
+
 /// Message entity for chat functionality
 class Message extends Equatable {
   const Message({
@@ -16,6 +116,7 @@ class Message extends Equatable {
     this.mediaUrl,
     this.mediaType,
     this.mediaDuration,
+    this.mediaAttachment,
     this.reactions = const [],
     this.status = MessageStatus.sent,
     this.createdAt,
@@ -34,6 +135,7 @@ class Message extends Equatable {
   final String? mediaUrl;
   final String? mediaType;
   final int? mediaDuration; // For audio/video messages
+  final MediaAttachment? mediaAttachment; // Enhanced media metadata
   final List<MessageReaction> reactions;
   final MessageStatus status;
   final DateTime? createdAt;
@@ -88,6 +190,7 @@ class Message extends Equatable {
     String? mediaUrl,
     String? mediaType,
     int? mediaDuration,
+    MediaAttachment? mediaAttachment,
     List<MessageReaction>? reactions,
     MessageStatus? status,
     DateTime? createdAt,
@@ -106,6 +209,7 @@ class Message extends Equatable {
       mediaUrl: mediaUrl ?? this.mediaUrl,
       mediaType: mediaType ?? this.mediaType,
       mediaDuration: mediaDuration ?? this.mediaDuration,
+      mediaAttachment: mediaAttachment ?? this.mediaAttachment,
       reactions: reactions ?? this.reactions,
       status: status ?? this.status,
       createdAt: createdAt ?? this.createdAt,
@@ -131,6 +235,9 @@ class Message extends Equatable {
       mediaUrl: json['mediaUrl'] as String?,
       mediaType: json['mediaType'] as String?,
       mediaDuration: json['mediaDuration'] as int?,
+      mediaAttachment: json['mediaAttachment'] != null
+          ? MediaAttachment.fromJson(json['mediaAttachment'] as Map<String, dynamic>)
+          : null,
       reactions:
           (json['reactions'] as List<dynamic>?)
               ?.map(
@@ -165,6 +272,7 @@ class Message extends Equatable {
       'mediaUrl': mediaUrl,
       'mediaType': mediaType,
       'mediaDuration': mediaDuration,
+      'mediaAttachment': mediaAttachment?.toJson(),
       'reactions': reactions.map((reaction) => reaction.toJson()).toList(),
       'status': status.name,
       'createdAt': createdAt?.toIso8601String(),
@@ -186,9 +294,10 @@ class Message extends Equatable {
         mediaUrl,
         mediaType,
         mediaDuration,
+        mediaAttachment,
         reactions,
-    status,
-    createdAt,
+        status,
+        createdAt,
       ];
 }
 
