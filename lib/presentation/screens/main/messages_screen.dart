@@ -546,17 +546,118 @@ class _MessagesScreenState extends State<MessagesScreen> {
             ],
           ),
           const SizedBox(width: PulseSpacing.sm),
-          IconButton(
-            onPressed: () {
-              _showMessageOptions(context);
-            },
+          PopupMenuButton<String>(
             icon: const Icon(Icons.more_vert),
-            style: IconButton.styleFrom(
-              backgroundColor: PulseColors.surfaceVariant,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(PulseRadii.md),
-              ),
+            tooltip: 'More options',
+            offset: const Offset(0, 50),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
             ),
+            elevation: 8,
+            color: Theme.of(context).cardColor,
+            itemBuilder: (context) => [
+              PopupMenuItem<String>(
+                value: 'mark_read',
+                child: ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: PulseColors.primary.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Icon(
+                      Icons.mark_chat_read,
+                      color: PulseColors.primary,
+                    ),
+                  ),
+                  title: const Text(
+                    'Mark all as read',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ),
+              PopupMenuItem<String>(
+                value: 'group_chats',
+                child: ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: PulseColors.primary.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Icon(Icons.groups, color: PulseColors.primary),
+                  ),
+                  title: const Text(
+                    'Group chats',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ),
+              PopupMenuItem<String>(
+                value: 'settings',
+                child: ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: PulseColors.primary.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Icon(Icons.settings, color: PulseColors.primary),
+                  ),
+                  title: const Text(
+                    'Messaging settings',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ),
+            ],
+            onSelected: (value) {
+              switch (value) {
+                case 'mark_read':
+                  _markAllAsRead();
+                  break;
+                case 'group_chats':
+                  if (!mounted) return;
+
+                  final apiClient = ApiClient.instance;
+                  final authToken = apiClient.authToken ?? '';
+
+                  final groupChatService = GroupChatService(
+                    baseUrl: ApiConstants.baseUrl,
+                    accessToken: authToken,
+                  );
+                  final wsService = GroupChatWebSocketService(
+                    baseUrl: ApiConstants.websocketUrl,
+                    accessToken: authToken,
+                  );
+
+                  final bloc = GroupChatBloc(
+                    service: groupChatService,
+                    wsService: wsService,
+                  );
+
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => BlocProvider.value(
+                        value: bloc,
+                        child: GroupListScreen(bloc: bloc),
+                      ),
+                    ),
+                  );
+                  break;
+                case 'settings':
+                  if (!mounted) return;
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => const SettingsScreen(),
+                    ),
+                  );
+                  break;
+              }
+            },
           ),
         ],
       ),
@@ -883,111 +984,6 @@ class _MessagesScreenState extends State<MessagesScreen> {
         'otherUserName': conversation.name,
         'otherUserPhoto': conversation.avatar,
       },
-    );
-  }
-
-  void _showMessageOptions(BuildContext context) {
-    final RenderBox button = context.findRenderObject() as RenderBox;
-    final RenderBox overlay =
-        Navigator.of(context).overlay!.context.findRenderObject() as RenderBox;
-    final RelativeRect position = RelativeRect.fromRect(
-      Rect.fromPoints(
-        button.localToGlobal(Offset.zero, ancestor: overlay),
-        button.localToGlobal(
-          button.size.bottomRight(Offset.zero),
-          ancestor: overlay,
-        ),
-      ),
-      Offset.zero & overlay.size,
-    );
-
-    showMenu(
-      context: context,
-      position: position,
-      color: Colors.white,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12),
-      ),
-      elevation: 8,
-      items: [
-        PopupMenuItem(
-          child: Row(
-            children: [
-              Icon(Icons.mark_chat_read, color: PulseColors.onSurface),
-              const SizedBox(width: 12),
-              Text(
-                'Mark all as read',
-                style: TextStyle(color: PulseColors.onSurface),
-              ),
-            ],
-          ),
-          onTap: () {
-            Future.delayed(Duration.zero, () {
-              _markAllAsRead();
-            });
-          },
-        ),
-        PopupMenuItem(
-          child: Row(
-            children: [
-              Icon(Icons.groups, color: PulseColors.onSurface),
-              const SizedBox(width: 12),
-              Text(
-                'Group chats',
-                style: TextStyle(color: PulseColors.onSurface),
-              ),
-            ],
-          ),
-          onTap: () {
-            if (!mounted) return;
-            
-            // Create GroupChatBloc with required services
-            final apiClient = ApiClient.instance;
-            final authToken = apiClient.authToken ?? '';
-
-            final groupChatService = GroupChatService(
-              baseUrl: ApiConstants.baseUrl,
-              accessToken: authToken,
-            );
-            final wsService = GroupChatWebSocketService(
-              baseUrl: ApiConstants.websocketUrl,
-              accessToken: authToken,
-            );
-
-            final bloc = GroupChatBloc(
-              service: groupChatService,
-              wsService: wsService,
-            );
-            
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (_) => BlocProvider.value(
-                  value: bloc,
-                  child: GroupListScreen(bloc: bloc),
-                ),
-              ),
-            );
-          },
-        ),
-        PopupMenuItem(
-          child: Row(
-            children: [
-              Icon(Icons.settings, color: PulseColors.onSurface),
-              const SizedBox(width: 12),
-              Text(
-                'Messaging settings',
-                style: TextStyle(color: PulseColors.onSurface),
-              ),
-            ],
-          ),
-          onTap: () {
-            if (!mounted) return;
-            // Use Navigator.push to avoid reloading main page
-            Navigator.of(context).push(
-              MaterialPageRoute(builder: (context) => const SettingsScreen()),
-            );
-          },
-        ),
-      ],
     );
   }
 

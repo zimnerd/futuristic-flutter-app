@@ -57,9 +57,68 @@ class _GroupListScreenState extends State<GroupListScreen>
           ],
         ),
         actions: [
-          IconButton(
+          PopupMenuButton<String>(
             icon: const Icon(Icons.add),
-            onPressed: _showCreateOptions,
+            tooltip: 'Create new',
+            offset: const Offset(0, 50),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            elevation: 8,
+            color: Theme.of(context).cardColor,
+            itemBuilder: (context) => [
+              PopupMenuItem<String>(
+                value: 'group',
+                child: ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.blue.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Icon(Icons.group_add, color: Colors.blue),
+                  ),
+                  title: const Text(
+                    'Create Group',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  subtitle: const Text(
+                    'Start a new group conversation',
+                    style: TextStyle(fontSize: 12),
+                  ),
+                ),
+              ),
+              PopupMenuItem<String>(
+                value: 'live',
+                child: ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.purple.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Icon(Icons.live_tv, color: Colors.purple),
+                  ),
+                  title: const Text(
+                    'Start Live Session',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  subtitle: const Text(
+                    'Host a live session',
+                    style: TextStyle(fontSize: 12),
+                  ),
+                ),
+              ),
+            ],
+            onSelected: (value) {
+              if (value == 'group') {
+                _navigateToCreateGroup();
+              } else if (value == 'live') {
+                _createLiveSession();
+              }
+            },
           ),
         ],
       ),
@@ -188,37 +247,6 @@ class _GroupListScreenState extends State<GroupListScreen>
                 fontSize: 14,
                 color: Colors.grey[600],
               ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _showCreateOptions() {
-    showModalBottomSheet(
-      context: context,
-      builder: (context) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: const Icon(Icons.group_add),
-              title: const Text('Create Group'),
-              subtitle: const Text('Start a new group conversation'),
-              onTap: () {
-                Navigator.pop(context);
-                _navigateToCreateGroup();
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.live_tv),
-              title: const Text('Start Live Session'),
-              subtitle: const Text('Host a live session'),
-              onTap: () {
-                Navigator.pop(context);
-                _createLiveSession();
-              },
             ),
           ],
         ),
