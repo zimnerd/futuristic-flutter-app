@@ -320,7 +320,7 @@ class _GroupListScreenState extends State<GroupListScreen>
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
+                  children: [
 
                       // Title
                       const Text(
@@ -425,10 +425,10 @@ class _GroupListScreenState extends State<GroupListScreen>
                   ),
                   ElevatedButton(
                     onPressed: () async {
-                      // Validation
+                  // Validation
                       if (titleController.text.trim().isEmpty) {
-                        if (!mounted) return;
-                        ScaffoldMessenger.of(context).showSnackBar(
+                    if (!mounted) return;
+                    ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
                             content: Text('Please enter a title'),
                             backgroundColor: Colors.red,
@@ -441,8 +441,8 @@ class _GroupListScreenState extends State<GroupListScreen>
                           int.tryParse(maxParticipantsController.text) ?? 10;
 
                       if (maxParticipants < 2 || maxParticipants > 100) {
-                        if (!mounted) return;
-                        ScaffoldMessenger.of(context).showSnackBar(
+                    if (!mounted) return;
+                    ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
                             content: Text(
                               'Max participants must be between 2 and 100',
@@ -453,23 +453,24 @@ class _GroupListScreenState extends State<GroupListScreen>
                         return;
                       }
 
-                      // Close dialog first
+                  // Close dialog first
                       Navigator.pop(dialogContext);
                       
-                      // Show loading
-                      if (!mounted) return;
+                  // Show loading
+                  if (!mounted) return;
                       showDialog(
-                        context: context,
+                    context: context,
                         barrierDismissible: false,
-                        builder: (loadingContext) => const Center(
+                    builder: (loadingContext) =>
+                        const Center(
                           child: CircularProgressIndicator(),
                         ),
                       );
 
                       try {
-                        // Create live session via service (no conversation required)
+                    // Create live session via service (no conversation required)
                         final service = GetIt.instance<GroupChatService>();
-                        final session = await service.createLiveSession(
+                    final session = await service.createLiveSession(
                           title: titleController.text.trim(),
                           description: descriptionController.text.trim().isEmpty
                               ? null
@@ -478,17 +479,17 @@ class _GroupListScreenState extends State<GroupListScreen>
                           requireApproval: requireApproval,
                         );
 
-                        // Dispose controllers
-                        titleController.dispose();
-                        descriptionController.dispose();
-                        maxParticipantsController.dispose();
+                    // Dispose controllers
+                    titleController.dispose();
+                    descriptionController.dispose();
+                    maxParticipantsController.dispose();
 
                         // Close loading
-                        if (!mounted) return;
+                    if (!mounted) return;
                         Navigator.of(context).pop();
 
                         // Show success
-                        if (!mounted) return;
+                    if (!mounted) return;
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
                             content: Text('Live session created successfully!'),
@@ -497,35 +498,35 @@ class _GroupListScreenState extends State<GroupListScreen>
                         );
 
                         // Reload sessions
-                        bloc.add(LoadActiveLiveSessions());
+                    bloc.add(LoadActiveLiveSessions());
 
                         // Auto-join the created session
-                        if (!mounted) return;
+                    if (!mounted) return;
                         _joinLiveSession(session);
                       } catch (e) {
-                        // Dispose controllers on error
-                        titleController.dispose();
-                        descriptionController.dispose();
-                        maxParticipantsController.dispose();
+                    // Dispose controllers on error
+                    titleController.dispose();
+                    descriptionController.dispose();
+                    maxParticipantsController.dispose();
                         
                         // Close loading
-                        if (!mounted) return;
+                    if (!mounted) return;
                         Navigator.of(context).pop();
 
-                        if (!mounted) return;
+                    if (!mounted) return;
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             content:
                                 Text('Failed to create session: ${e.toString()}'),
                             backgroundColor: Colors.red,
                           ),
-                        );
+                    );
                       }
                     },
                     child: const Text('Create'),
                   ),
                 ],
-              );
+          );
         },
       ),
     );
