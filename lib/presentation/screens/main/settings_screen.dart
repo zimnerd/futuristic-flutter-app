@@ -3,6 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/constants/app_constants.dart';
+import '../../../core/services/location_service.dart';
+import '../../../core/services/location_tracking_initializer.dart';
 import '../../blocs/auth/auth_bloc.dart';
 import '../../blocs/auth/auth_event.dart';
 import '../../theme/pulse_colors.dart';
@@ -115,6 +117,16 @@ class SettingsScreen extends StatelessWidget {
                 const SnackBar(content: Text('Terms & Privacy coming soon!')),
               );
             },
+          ),
+          const SizedBox(height: PulseSpacing.xl),
+
+          // Debug & Testing Section (Development Only)
+          _buildSectionHeader('Debug & Testing'),
+          _buildSettingsTile(
+            icon: Icons.location_on,
+            title: 'Test Location Permissions',
+            subtitle: 'Manually trigger location permission flow',
+            onTap: () => _testLocationPermissions(context),
           ),
           const SizedBox(height: PulseSpacing.xl),
 
@@ -324,5 +336,52 @@ class SettingsScreen extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  void _testLocationPermissions(BuildContext context) async {
+    try {
+      debugPrint('🔧 SettingsScreen: Starting manual location permission test');
+
+      final locationService = context.read<LocationService>();
+      final locationTracker = LocationTrackingInitializer();
+
+      debugPrint(
+        '🔧 SettingsScreen: Requesting location permissions with dialog...',
+      );
+      final success = await locationService.requestPermissionsWithDialog(
+        context,
+      );
+
+      if (success) {
+        debugPrint(
+          '🔧 SettingsScreen: Location permissions granted, starting tracking...',
+        );
+        await locationTracker.initializeWithDialogs(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              '✅ Location permissions granted and tracking started!',
+            ),
+            backgroundColor: Colors.green,
+          ),
+        );
+      } else {
+        debugPrint('🔧 SettingsScreen: Location permissions denied');
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('❌ Location permissions denied or failed'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint('🔧 SettingsScreen: Error testing location permissions: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('❌ Error testing location permissions: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 }

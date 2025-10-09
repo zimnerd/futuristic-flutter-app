@@ -90,6 +90,8 @@ class AuthBlocListenable extends ChangeNotifier {
 /// Provides type-safe navigation with route guards and transitions
 class AppRouter {
   static GoRouter? _router;
+  static final GlobalKey<NavigatorState> navigatorKey =
+      GlobalKey<NavigatorState>();
   
   /// Initialize router with AuthBloc for navigation state updates
   static void initialize(AuthBloc authBloc) {
@@ -100,6 +102,7 @@ class AppRouter {
       initialLocation: AppRoutes.welcome,
       redirect: _handleRedirect,
       refreshListenable: authListenable,
+      navigatorKey: navigatorKey,
       routes: [
       // Onboarding routes
       GoRoute(

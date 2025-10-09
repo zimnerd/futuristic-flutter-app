@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:line_icons/line_icons.dart';
 import '../../../core/theme/pulse_design_system.dart';
+import '../../../core/network/api_client.dart';
 import '../../blocs/auth/auth_bloc.dart';
 import '../../blocs/auth/auth_event.dart';
 
@@ -32,6 +33,7 @@ class MainNavigationWrapper extends StatefulWidget {
 class _MainNavigationWrapperState extends State<MainNavigationWrapper>
     with TickerProviderStateMixin {
   late AnimationController _animationController;
+  int _unreadMessageCount = 0;
 
   final List<NavigationItem> _navigationItems = [
     NavigationItem(
@@ -73,12 +75,45 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper>
       duration: const Duration(milliseconds: 150),
       vsync: this,
     );
+    _loadUnreadMessageCount();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Refresh unread count when app comes to foreground
+    _loadUnreadMessageCount();
   }
 
   @override
   void dispose() {
     _animationController.dispose();
     super.dispose();
+  }
+
+  Future<void> _loadUnreadMessageCount() async {
+    try {
+      final response = await ApiClient.instance.getUnreadMessageCount();
+      if (response.statusCode == 200 && response.data != null) {
+        final count = response.data['count'] ?? 0;
+        setState(() {
+          _unreadMessageCount = count;
+        });
+      }
+    } catch (e) {
+      // Handle error silently, keep current count
+    }
+  }
+
+  Future<void> _markAllConversationsAsRead() async {
+    try {
+      // Call API to mark all conversations as read
+      await ApiClient.instance.markAllConversationsAsRead();
+      // Refresh the count after marking as read
+      await _loadUnreadMessageCount();
+    } catch (e) {
+      // Handle error silently
+    }
   }
 
   void _onItemTapped(int index) {
@@ -96,6 +131,11 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper>
     if (index == 4) {
       _showProfileMenu();
       return;
+    }
+
+    // Handle messages tab - mark conversations as read
+    if (index == 3) {
+      _markAllConversationsAsRead();
     }
 
     // Use navigationShell.goBranch for tab switching (preserves state)
@@ -154,7 +194,11 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper>
                 _buildModernNavItem(_navigationItems[0], 0),
                 _buildModernNavItem(_navigationItems[1], 1),
                 _buildModernNavItem(_navigationItems[2], 2),
-                _buildModernNavItem(_navigationItems[3], 3),
+                _buildModernNavItem(
+                  _navigationItems[3],
+                  3,
+                  badgeCount: _unreadMessageCount,
+                ),
                 _buildModernNavItem(_navigationItems[4], 4),
               ],
             ),
@@ -164,7 +208,11 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper>
     );
   }
 
-  Widget _buildModernNavItem(NavigationItem item, int index) {
+  Widget _buildModernNavItem(
+    NavigationItem item,
+    int index, {
+    int? badgeCount,
+  }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final isActive = index == widget.navigationShell.currentIndex;
     
@@ -232,6 +280,27 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper>
                               fontWeight: FontWeight.w500,
                             ),
                           ),
+                          if (badgeCount != null && badgeCount > 0) ...[
+                            const SizedBox(width: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 6,
+                                vertical: 2,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.red,
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Text(
+                                badgeCount > 99 ? '99+' : badgeCount.toString(),
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ],
                         ],
                       ),
                     ),
@@ -243,7 +312,41 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper>
                       horizontal: 12,
                       vertical: 10,
                     ),
-                    child: Icon(item.icon, color: inactiveColor, size: 24),
+                    child: Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        Icon(item.icon, color: inactiveColor, size: 24),
+                        if (badgeCount != null && badgeCount > 0)
+                          Positioned(
+                            right: -6,
+                            top: -6,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 4,
+                                vertical: 2,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.red,
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(
+                                  color: isDark
+                                      ? PulseColors.surfaceDark
+                                      : PulseColors.white,
+                                  width: 2,
+                                ),
+                              ),
+                              child: Text(
+                                badgeCount > 99 ? '99+' : badgeCount.toString(),
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
                   ),
           ),
         );
@@ -578,11 +681,13 @@ class NavigationItem {
   final IconData activeIcon;
   final String label;
   final String route;
+  final int? badgeCount;
 
   const NavigationItem({
     required this.icon,
     required this.activeIcon,
     required this.label,
     required this.route,
+    this.badgeCount,
   });
 }

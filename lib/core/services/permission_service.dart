@@ -145,6 +145,91 @@ class PermissionService {
     );
   }
 
+  /// Request location permission with user-friendly prompts
+  Future<bool> requestLocationPermission(BuildContext context) async {
+    return await _requestPermissionWithDialog(
+      context: context,
+      permission: Permission.location,
+      title: '📍 Location Access Required',
+      message:
+          'PulseLink needs access to your location to show people nearby and display coverage maps.',
+      settingsMessage:
+          'Location access is required to find nearby users and show coverage areas.\n\nPlease enable it in Settings > PulseLink > Location',
+    );
+  }
+
+  /// Request location permission when in use (foreground only)
+  Future<bool> requestLocationWhenInUsePermission(BuildContext context) async {
+    _logger.i(
+      '📍 PermissionService: Requesting location when in use permission',
+    );
+    return await _requestPermissionWithDialog(
+      context: context,
+      permission: Permission.locationWhenInUse,
+      title: '📍 Location Access Required',
+      message:
+          'PulseLink needs access to your location while using the app to show people nearby and display coverage maps.',
+      settingsMessage:
+          'Location access is required to find nearby users.\n\nPlease enable it in Settings > PulseLink > Location',
+    );
+  }
+
+  /// Request location permission always (background + foreground)
+  Future<bool> requestLocationAlwaysPermission(BuildContext context) async {
+    return await _requestPermissionWithDialog(
+      context: context,
+      permission: Permission.locationAlways,
+      title: '📍 Continuous Location Access',
+      message:
+          'PulseLink needs continuous access to your location to provide real-time updates and background location tracking.',
+      settingsMessage:
+          'Continuous location access is required for real-time features.\n\nPlease enable it in Settings > PulseLink > Location',
+    );
+  }
+
+  /// Show dialog explaining which features are limited without location permission
+  Future<void> showLocationFeaturesLimitedDialog(BuildContext context) async {
+    await showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (BuildContext dialogContext) => AlertDialog(
+        title: const Text(
+          '📍 Location Features Limited',
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.w600,
+            color: Colors.black,
+          ),
+        ),
+        content: const Text(
+          'Without location access, you won\'t be able to:\n\n• See people nearby\n• View coverage maps\n• Get location-based recommendations\n\nYou can enable location access in Settings > PulseLink > Location',
+          style: TextStyle(fontSize: 16, color: Colors.black),
+        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: const Text('Later', style: TextStyle(color: Colors.grey)),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.of(dialogContext).pop();
+              await openAppSettings();
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF6E3BFF),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            child: const Text('Open Settings'),
+          ),
+        ],
+      ),
+    );
+  }
+
   /// Generic permission request with dialog flow
   Future<bool> _requestPermissionWithDialog({
     required BuildContext context,
@@ -153,17 +238,31 @@ class PermissionService {
     required String message,
     required String settingsMessage,
   }) async {
+    _logger.i(
+      '📍 PermissionService: Starting permission request for $permission',
+    );
+    
     // Check current status
     final status = await permission.status;
+    _logger.i('📍 PermissionService: Current permission status: $status');
 
     // If already granted, return true
     if (status.isGranted) {
+      _logger.i('📍 PermissionService: Permission already granted');
       return true;
     }
 
     // If permanently denied, show settings dialog
     if (status.isPermanentlyDenied) {
-      if (!context.mounted) return false;
+      _logger.w(
+        '📍 PermissionService: Permission permanently denied, showing settings dialog',
+      );
+      if (!context.mounted) {
+        _logger.w(
+          '📍 PermissionService: Context not mounted for settings dialog',
+        );
+        return false;
+      }
       await _showSettingsDialog(
         context: context,
         title: title,
@@ -172,20 +271,34 @@ class PermissionService {
       return false;
     }
 
+    _logger.i('📍 PermissionService: Showing explanation dialog');
+    
     // Show explanation dialog before requesting
-    if (!context.mounted) return false;
+    if (!context.mounted) {
+      _logger.w(
+        '📍 PermissionService: Context not mounted for explanation dialog',
+      );
+      return false;
+    }
     final shouldRequest = await _showPermissionExplanationDialog(
       context: context,
       title: title,
       message: message,
     );
 
+    _logger.i(
+      '📍 PermissionService: User chose to request permission: $shouldRequest',
+    );
+    
     if (!shouldRequest) {
       return false;
     }
 
+    _logger.i('📍 PermissionService: Requesting system permission');
+    
     // Request the permission
     final newStatus = await permission.request();
+    _logger.i('📍 PermissionService: New permission status: $newStatus');
 
     if (newStatus.isGranted) {
       _logger.i('Permission granted: $permission');
@@ -194,6 +307,9 @@ class PermissionService {
 
     // Handle denial
     if (newStatus.isPermanentlyDenied) {
+      _logger.w(
+        '📍 PermissionService: Permission permanently denied after request',
+      );
       if (!context.mounted) return false;
       await _showSettingsDialog(
         context: context,
@@ -201,6 +317,7 @@ class PermissionService {
         message: settingsMessage,
       );
     } else {
+      _logger.w('📍 PermissionService: Permission denied (not permanent)');
       Fluttertoast.showToast(
         msg: 'Permission denied. You can grant it later in settings.',
         backgroundColor: Colors.orange,
@@ -228,11 +345,12 @@ class PermissionService {
           style: const TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.w600,
+            color: Colors.black,
           ),
         ),
         content: Text(
           message,
-          style: const TextStyle(fontSize: 16),
+          style: const TextStyle(fontSize: 16, color: Colors.black),
         ),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
@@ -278,11 +396,12 @@ class PermissionService {
           style: const TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.w600,
+            color: Colors.black,
           ),
         ),
         content: Text(
           message,
-          style: const TextStyle(fontSize: 16),
+          style: const TextStyle(fontSize: 16, color: Colors.black),
         ),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
@@ -331,5 +450,23 @@ class PermissionService {
     final cameraStatus = await Permission.camera.status;
     final microphoneStatus = await Permission.microphone.status;
     return cameraStatus.isGranted && microphoneStatus.isGranted;
+  }
+
+  /// Check if location permission is granted
+  Future<bool> isLocationPermissionGranted() async {
+    final status = await Permission.location.status;
+    return status.isGranted;
+  }
+
+  /// Check if location when in use permission is granted
+  Future<bool> isLocationWhenInUsePermissionGranted() async {
+    final status = await Permission.locationWhenInUse.status;
+    return status.isGranted;
+  }
+
+  /// Check if location always permission is granted
+  Future<bool> isLocationAlwaysPermissionGranted() async {
+    final status = await Permission.locationAlways.status;
+    return status.isGranted;
   }
 }

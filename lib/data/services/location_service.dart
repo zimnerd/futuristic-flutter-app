@@ -130,7 +130,10 @@ class LocationService {
   /// Update location on server
   Future<void> _updateServerLocation(Position position) async {
     try {
-      await _apiService.post('/users/location', data: {
+      await _apiService.put(
+        '/users/me/location',
+        data: {
+          // Fixed: POST -> PUT, /users/location -> /me/location
         'latitude': position.latitude,
         'longitude': position.longitude,
         'location': await _getLocationName(position),

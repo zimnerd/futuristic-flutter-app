@@ -10,6 +10,7 @@ import '../../../domain/entities/message.dart';
 import '../../blocs/messaging/messaging_bloc.dart';
 import '../../theme/pulse_colors.dart';
 import '../../../core/services/service_locator.dart';
+import '../../../core/services/permission_service.dart';
 
 /// Enhanced message composer with voice, attachments, and rich features
 class MessageComposer extends StatefulWidget {
@@ -852,11 +853,20 @@ class _MessageComposerState extends State<MessageComposer>
 
   Future<void> _handleLocationAttachment() async {
     try {
+      // Request location permission using the consistent PermissionService pattern
+      final permissionService = PermissionService();
+      final hasPermission = await permissionService.requestLocationWhenInUsePermission(context);
+
+      if (!hasPermission) {
+        _showSnackbar('Location permission is required to share your location.');
+        return;
+      }
+
       _showSnackbar('Getting your location...');
 
       // Use the location service from service locator
       final position = await ServiceLocator.instance.location.getCurrentLocation();
-      
+
       if (position == null) {
         _showSnackbar('Unable to get location. Please check permissions.');
         return;
@@ -874,7 +884,7 @@ class _MessageComposerState extends State<MessageComposer>
           ),
         );
       }
-      
+
       _showSnackbar('Location shared');
       _hideAttachments();
     } catch (e) {

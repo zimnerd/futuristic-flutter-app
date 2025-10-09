@@ -425,8 +425,9 @@ class ApiClient {
     required double latitude,
     required double longitude,
   }) async {
-    return await _dio.patch(
-      '/users/location',
+    return await _dio.put(
+      // Fixed: was PATCH, now PUT to match backend
+      '/users/me/location', // Fixed: was /users/location, now /me/location
       data: {'latitude': latitude, 'longitude': longitude},
     );
   }
@@ -619,9 +620,8 @@ class ApiClient {
     Map<String, dynamic>? metadata,
   }) async {
     return await _dio.post(
-      '/api/v1/chat/messages',
+      '/api/v1/messaging/conversations/$conversationId/messages',
       data: {
-        'conversationId': conversationId,
         'content': content,
         'type': type,
         if (metadata != null) 'metadata': metadata,
@@ -662,6 +662,16 @@ class ApiClient {
   /// Mark conversation as read
   Future<Response> markConversationAsRead(String conversationId) async {
     return await _dio.patch('/api/v1/chat/conversations/$conversationId/read');
+  }
+
+  /// Get unread message count
+  Future<Response> getUnreadMessageCount() async {
+    return await _dio.get('/api/v1/messaging/unread-count');
+  }
+
+  /// Mark all conversations as read
+  Future<Response> markAllConversationsAsRead() async {
+    return await _dio.post('/api/v1/messaging/mark-all-read');
   }
 
   /// Delete conversation

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/material.dart';
 import '../utils/logger.dart';
 import '../models/location_models.dart' show LocationCoordinates;
 import 'location_service.dart';
@@ -20,9 +21,23 @@ class LocationTrackingInitializer {
   bool _isInitialized = false;
   bool _isTracking = false;
 
-  /// Initialize location tracking for authenticated user
+  /// Initialize location tracking for authenticated user (legacy method)
   /// Should be called immediately after successful login
   Future<bool> initialize() async {
+    return await _initializeWithPermissions(showDialogs: false);
+  }
+
+  /// Initialize location tracking with user-friendly permission dialogs (recommended)
+  /// Should be called immediately after successful login
+  Future<bool> initializeWithDialogs(BuildContext context) async {
+    return await _initializeWithPermissions(showDialogs: true, context: context);
+  }
+
+  /// Internal initialization method
+  Future<bool> _initializeWithPermissions({
+    required bool showDialogs,
+    BuildContext? context,
+  }) async {
     if (_isInitialized) {
       AppLogger.info('📍 Location tracking already initialized');
       return true;
@@ -32,15 +47,27 @@ class LocationTrackingInitializer {
       AppLogger.info('📍 Initializing location tracking...');
 
       // Request location permissions
-      final permissionStatus = await _locationService.requestPermissions(
-        showRationale: true,
-      );
-
-      if (permissionStatus != LocationPermissionStatus.granted) {
-        AppLogger.warning(
-          '📍 Location permission not granted: $permissionStatus',
+      bool permissionGranted;
+      if (showDialogs && context != null) {
+        // Use dialog-based permission request
+        permissionGranted = await _locationService.requestPermissionsWithDialog(
+          context,
         );
-        _handlePermissionDenied(permissionStatus);
+      } else {
+        // Use legacy permission request
+        final permissionStatus = await _locationService.requestPermissions(
+          showRationale: true,
+        );
+        permissionGranted =
+            permissionStatus == LocationPermissionStatus.granted;
+      }
+
+      if (!permissionGranted) {
+        AppLogger.warning('📍 Location permission not granted');
+        // Note: Dialog-based method already shows user-friendly messages
+        if (!showDialogs) {
+          _handlePermissionDenied(LocationPermissionStatus.denied);
+        }
         return false;
       }
 

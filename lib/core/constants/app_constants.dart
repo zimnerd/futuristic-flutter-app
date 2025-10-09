@@ -100,7 +100,8 @@ class ApiEndpoints {
   static const String updateProfile = '/users/profile';
   static const String uploadPhoto = '/users/photos';
   static const String deletePhoto = '/users/photos';
-  static const String updateLocation = '/users/location';
+  static const String updateLocation =
+      '/users/me/location'; // Fixed: was /users/location, now /me/location
   static const String preferences = '/users/preferences';
 
   // Discovery & Matching

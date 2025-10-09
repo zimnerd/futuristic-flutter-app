@@ -6,6 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../../data/services/heat_map_service.dart';
 import '../../core/services/location_service.dart';
+import '../../core/services/permission_service.dart';
 import '../../core/utils/logger.dart';
 import '../../data/models/heat_map_models.dart';
 import '../../data/models/optimized_heatmap_models.dart';
@@ -1545,6 +1546,12 @@ class _HeatMapScreenState extends State<HeatMapScreen>
   }
 
   Widget _buildErrorState(BuildContext context, HeatMapError state) {
+    // Check if this is a location permission error
+    final isLocationError =
+        state.message.contains('location') ||
+        state.message.contains('permission') ||
+        state.message.contains('Unable to get current location');
+
     return Container(
       decoration: const BoxDecoration(
         gradient: LinearGradient(
@@ -1557,14 +1564,16 @@ class _HeatMapScreenState extends State<HeatMapScreen>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(
-              Icons.error_outline,
+            Icon(
+              isLocationError ? Icons.location_off : Icons.error_outline,
               color: Colors.red,
               size: 64,
             ),
             const SizedBox(height: 24),
             Text(
-              'Oops! Something went wrong',
+              isLocationError
+                  ? 'Location Access Required'
+                  : 'Oops! Something went wrong',
               style: const TextStyle(
                 color: Colors.white,
                 fontSize: 20,
@@ -1575,31 +1584,81 @@ class _HeatMapScreenState extends State<HeatMapScreen>
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 32),
               child: Text(
-                state.message,
+                isLocationError
+                    ? 'The heat map needs location access to show people nearby and coverage areas. Please enable location permissions to continue.'
+                    : state.message,
                 textAlign: TextAlign.center,
-                style: TextStyle(
+                style: const TextStyle(
                   color: Colors.white70,
                   fontSize: 16,
                 ),
               ),
             ),
             const SizedBox(height: 32),
-            ElevatedButton(
-              onPressed: () {
-                context.read<HeatMapBloc>().add(LoadHeatMapData(_currentRadius));
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF6E3BFF),
-                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+            if (isLocationError) ...[
+              ElevatedButton(
+                onPressed: () async {
+                  final permissionService = PermissionService();
+                  final granted = await permissionService
+                      .requestLocationWhenInUsePermission(context);
+                  if (granted) {
+                    // Retry loading data after permission granted
+                    context.read<HeatMapBloc>().add(
+                      LoadHeatMapData(_currentRadius),
+                    );
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF6E3BFF),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 32,
+                    vertical: 16,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: const Text(
+                  'Enable Location',
+                  style: TextStyle(color: Colors.white, fontSize: 16),
                 ),
               ),
-              child: const Text(
-                'Try Again',
-                style: TextStyle(color: Colors.white, fontSize: 16),
+              const SizedBox(height: 16),
+              TextButton(
+                onPressed: () async {
+                  final permissionService = PermissionService();
+                  await permissionService.showLocationFeaturesLimitedDialog(
+                    context,
+                  );
+                },
+                child: const Text(
+                  'What features need location?',
+                  style: TextStyle(color: Colors.white70, fontSize: 14),
+                ),
               ),
-            ),
+            ] else ...[
+              ElevatedButton(
+                onPressed: () {
+                  context.read<HeatMapBloc>().add(
+                    LoadHeatMapData(_currentRadius),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF6E3BFF),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 32,
+                    vertical: 16,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: const Text(
+                  'Try Again',
+                  style: TextStyle(color: Colors.white, fontSize: 16),
+                ),
+              ),
+            ],
           ],
         ),
       ),

@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../blocs/safety/safety_bloc.dart';
 import '../../../core/services/service_locator.dart';
+import '../../../core/services/permission_service.dart';
 
 /// Emergency button widget for quick access to safety features
 class EmergencyButtonWidget extends StatelessWidget {
@@ -150,19 +151,37 @@ class EmergencyButtonWidget extends StatelessWidget {
   Future<void> _triggerEmergency(BuildContext context) async {
     final safetyBloc = context.read<SafetyBloc>();
     final scaffoldMessenger = ScaffoldMessenger.of(context);
-    
+
     String location = "Location unavailable";
-    
+
     try {
+      // Request location permission for emergency location sharing
+      final permissionService = PermissionService();
+      final hasPermission = await permissionService
+          .requestLocationWhenInUsePermission(context);
+
+      if (!hasPermission) {
+        // For emergency situations, still try to get location but inform user
+        scaffoldMessenger.showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Emergency alert sent! Location permission denied - emergency services will use available location data.',
+            ),
+            backgroundColor: Colors.orange,
+            duration: Duration(seconds: 3),
+          ),
+        );
+      }
+
       // Use the location service from service locator
       final position = await ServiceLocator.instance.location.getCurrentLocation();
-      
+
       if (position != null) {
         location = "Lat: ${position.latitude}, Lng: ${position.longitude}";
-        
+
         // Try to get a readable address
         final address = await ServiceLocator.instance.location.getAddressFromCoordinates(
-          position.latitude, 
+          position.latitude,
           position.longitude,
         );
         if (address != null) {
@@ -174,7 +193,7 @@ class EmergencyButtonWidget extends StatelessWidget {
     } catch (e) {
       location = "Location error: $e";
     }
-    
+
     safetyBloc.add(
       TriggerEmergencyContact(
         location: location,

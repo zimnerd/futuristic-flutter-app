@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'dart:developer' as dev;
-import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -9,6 +9,7 @@ import '../models/location_models.dart';
 import '../../data/services/heat_map_service.dart';
 import '../../domain/services/api_service.dart';
 import '../di/service_locator.dart';
+import 'permission_service.dart';
 
 /// Location permission status
 enum LocationPermissionStatus {
@@ -220,6 +221,126 @@ class LocationService {
     } catch (e) {
       dev.log('Error requesting location permission: $e');
       return LocationPermissionStatus.unknown;
+    }
+  }
+
+  /// Request location permissions with user-friendly dialogs (recommended)
+  /// This method shows explanatory dialogs and handles permission denial gracefully
+  Future<bool> requestPermissionsWithDialog(BuildContext context) async {
+    try {
+      debugPrint('📍 LocationService: Starting permission request with dialog');
+
+      // Check if location service is enabled first
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      debugPrint(
+        '📍 LocationService: Location services enabled: $serviceEnabled',
+      );
+
+      if (!serviceEnabled) {
+        debugPrint(
+          '📍 LocationService: Location services disabled, showing enable dialog',
+        );
+        // Show dialog to enable location services
+        if (!context.mounted) {
+          debugPrint(
+            '📍 LocationService: Context not mounted, returning false',
+          );
+          return false;
+        }
+
+        final enableService = await showDialog<bool>(
+          context: context,
+          barrierDismissible: false,
+          builder: (BuildContext dialogContext) => AlertDialog(
+            title: const Text(
+              '📍 Location Services Required',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w600,
+                color: Colors.black,
+              ),
+            ),
+            content: const Text(
+              'Location services are disabled. Please enable them to use location features.',
+              style: TextStyle(fontSize: 16, color: Colors.black),
+            ),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(dialogContext).pop(false),
+                child: const Text(
+                  'Cancel',
+                  style: TextStyle(color: Colors.grey),
+                ),
+              ),
+              ElevatedButton(
+                onPressed: () async {
+                  Navigator.of(dialogContext).pop(true);
+                  await Geolocator.openLocationSettings();
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF6E3BFF),
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                child: const Text('Enable Location'),
+              ),
+            ],
+          ),
+        );
+
+        debugPrint(
+          '📍 LocationService: User chose to enable services: $enableService',
+        );
+
+        if (enableService != true) {
+          debugPrint(
+            '📍 LocationService: User cancelled location services enable',
+          );
+          return false;
+        }
+
+        // Check again after user potentially enabled services
+        serviceEnabled = await Geolocator.isLocationServiceEnabled();
+        debugPrint(
+          '📍 LocationService: Location services after settings: $serviceEnabled',
+        );
+
+        if (!serviceEnabled) {
+          debugPrint('📍 LocationService: Location services still disabled');
+          return false;
+        }
+      }
+
+      debugPrint(
+        '📍 LocationService: Location services enabled, requesting permission',
+      );
+
+      // Use PermissionService for user-friendly permission request
+      final permissionService = PermissionService();
+      final granted = await permissionService
+          .requestLocationWhenInUsePermission(context);
+
+      debugPrint('📍 LocationService: Permission granted: $granted');
+
+      if (!granted && context.mounted) {
+        debugPrint(
+          '📍 LocationService: Permission denied, showing features limited dialog',
+        );
+        // Show dialog explaining which features are limited
+        await permissionService.showLocationFeaturesLimitedDialog(context);
+      }
+
+      return granted;
+    } catch (e) {
+      debugPrint(
+        '📍 LocationService: Error requesting location permission with dialog: $e',
+      );
+      return false;
     }
   }
 

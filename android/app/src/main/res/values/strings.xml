@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Location Permission Descriptions -->
+    <string name="location_permission_title">📍 Location Access Required</string>
+    <string name="location_permission_message">PulseLink needs access to your location to show people nearby and display coverage maps.</string>
+    <string name="location_permission_settings_message">Location access is required to find nearby users and show coverage areas.\n\nPlease enable it in Settings > PulseLink > Location</string>
+    <string name="location_permission_denied_message">Location permission denied. You can grant it later in settings.</string>
+    <string name="location_features_limited_title">📍 Location Features Limited</string>
+    <string name="location_features_limited_message">Without location access, you won\'t be able to:\n\n• See people nearby\n• View coverage maps\n• Get location-based recommendations\n\nYou can enable location access in Settings > PulseLink > Location</string>
+</resources>

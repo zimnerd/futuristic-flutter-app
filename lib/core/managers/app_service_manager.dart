@@ -1,6 +1,8 @@
 import 'dart:async';
+import 'package:flutter/material.dart';
 import '../services/service_locator.dart';
 import '../../data/services/analytics_service.dart';
+import '../../presentation/navigation/app_router.dart';
 import '../utils/logger.dart';
 
 /// App service manager for coordinating all services
@@ -102,6 +104,8 @@ class AppServiceManager {
   void _handleNewMessage(Map<String, dynamic> notification) {
     final conversationId = notification['conversationId'] as String?;
     final senderId = notification['senderId'] as String?;
+    final senderName = notification['senderName'] as String? ?? 'Someone';
+    final message = notification['message'] as String? ?? 'New message';
     
     ServiceLocator.instance.analytics.trackMessagingEvent(
       action: 'received',
@@ -111,6 +115,36 @@ class AppServiceManager {
         'source': 'notification',
       },
     );
+
+    // Show in-app notification snackbar
+    _showInAppNotification('$senderName: $message');
+  }
+
+  /// Show in-app notification snackbar
+  void _showInAppNotification(String message) {
+    try {
+      final context = AppRouter.navigatorKey.currentContext;
+      if (context != null && context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(message, style: const TextStyle(color: Colors.white)),
+            backgroundColor: const Color(0xFF6E3BFF), // Pulse primary color
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 4),
+            action: SnackBarAction(
+              label: 'View',
+              textColor: Colors.white,
+              onPressed: () {
+                // Navigate to messages screen
+                // This will be handled by the notification tap
+              },
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      AppLogger.error('Failed to show in-app notification: $e');
+    }
   }
 
   /// Handle new match notification

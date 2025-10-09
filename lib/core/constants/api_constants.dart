@@ -32,7 +32,8 @@ class ApiConstants {
   static const String usersBlock = '$users/block';
   static const String usersUnblock = '$users/unblock';
   static const String usersReport = '$users/report';
-  static const String usersLocation = '$users/location';
+  static const String usersLocation =
+      '$users/me/location'; // Fixed: was /users/location, now /me/location
   static const String usersPreferences = '$users/preferences';
   static const String usersPrivacy = '$users/privacy';
   static const String usersDiscovery = '$users/discovery';
