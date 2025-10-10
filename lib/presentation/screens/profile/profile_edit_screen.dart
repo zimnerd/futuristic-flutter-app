@@ -281,6 +281,11 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
         _photosMarkedForDeletion.add(photoUrl);
         _photos.removeWhere((p) => p.url == photoUrl);
       });
+      
+      // Clear cache for this specific photo immediately
+      logger.i('🧹 Clearing cache for deleted photo: $photoUrl');
+      CachedNetworkImage.evictFromCache(photoUrl);
+      
       // Dispatch DeletePhoto event for backend tracking
       context.read<ProfileBloc>().add(DeletePhoto(photoUrl: photoUrl));
       logger.i('🗑️ Photo deletion dispatched to BLoC: $photoUrl');
@@ -958,6 +963,10 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
           }
           
           if (state.updateStatus == ProfileStatus.success) {
+            // Clear photo cache on ANY successful update to prevent stale images
+            logger.i('🧹 Clearing photo cache after successful update');
+            _clearPhotoCache();
+            
             // Only navigate away on final save, not section saves
             if (_isFinalSave) {
               logger.i(
@@ -994,14 +1003,20 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
                 logger.i('🚀 Executing context.go("/profile")');
                 context.go('/profile');
                 logger.i('✅ Navigation command sent');
-                // No need to reload profile - UpdateProfile already returns fresh data
+                // Force reload profile to ensure fresh data after navigation
+                _forceReloadProfile();
                 _isFinalSave = false; // Reset flag
               }
             } else {
-              // Section save successful - just show subtle feedback
-              // Only show if not initial load
+              // Section save successful - clear cache and force refresh to get latest data
+              logger.i('✅ Section $_currentPageIndex saved successfully');
+              
+              // Force refresh to ensure we have latest data from server
+              // This bypasses BLoC cache and ensures any photo changes are reflected
+              _forceReloadProfile();
+              
+              // Only show toast if not initial load
               if (_hasShownInitialToast) {
-                logger.i('✅ Section $_currentPageIndex saved successfully');
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text('Section saved!'),
