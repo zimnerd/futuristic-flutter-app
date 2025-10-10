@@ -810,9 +810,7 @@ class _GroupListScreenState extends State<GroupListScreen>
                                       );
 
                                   if (mounted) {
-                                    Navigator.of(
-                                      context,
-                                    ).pop(); // ignore: use_build_context_synchronously
+                                    Navigator.of(context).pop(); // ignore: use_build_context_synchronously
                                   }
                                   if (mounted) {
                                     Navigator.pop(dialogContext); // Close form
