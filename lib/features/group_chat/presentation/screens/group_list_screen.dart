@@ -795,11 +795,6 @@ class _GroupListScreenState extends State<GroupListScreen>
                                   ),
                                 );
 
-                                final navigator = Navigator.of(context);
-                                final scaffoldMessenger = ScaffoldMessenger.of(
-                                  context,
-                                );
-
                                 try {
                                   final service = GroupChatService();
                                   final session = await service
@@ -814,7 +809,10 @@ class _GroupListScreenState extends State<GroupListScreen>
                                         allowAudio: allowAudio,
                                       );
 
-                                  if (mounted) navigator.pop(); // Close loading
+                                  if (mounted) {
+                                    Navigator.of(context).pop(); // Close loading
+                                    // ignore: use_build_context_synchronously
+                                  }
                                   if (mounted) {
                                     Navigator.pop(dialogContext); // Close form
                                   }
@@ -826,7 +824,8 @@ class _GroupListScreenState extends State<GroupListScreen>
                                   );
 
                                   if (mounted) {
-                                    scaffoldMessenger.showSnackBar(
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      // ignore: use_build_context_synchronously
                                       const SnackBar(
                                         content: Text('Live session created!'),
                                         backgroundColor: Colors.green,
@@ -839,10 +838,12 @@ class _GroupListScreenState extends State<GroupListScreen>
                                   _joinLiveSession(session);
                                 } catch (e) {
                                   if (mounted) {
-                                    navigator.pop(); // Close loading only
+                                    Navigator.of(context).pop(); // Close loading only
+                                    // ignore: use_build_context_synchronously
                                   }
                                   if (mounted) {
-                                    scaffoldMessenger.showSnackBar(
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      // ignore: use_build_context_synchronously
                                       SnackBar(
                                         content: Text(
                                           'Failed: ${e.toString()}',

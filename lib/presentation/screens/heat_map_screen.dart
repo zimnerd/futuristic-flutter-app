@@ -1599,11 +1599,12 @@ class _HeatMapScreenState extends State<HeatMapScreen>
               ElevatedButton(
                 onPressed: () async {
                   final permissionService = PermissionService();
+                  final bloc = context.read<HeatMapBloc>();
                   final granted = await permissionService
                       .requestLocationWhenInUsePermission(context);
-                  if (granted) {
+                  if (granted && mounted) {
                     // Retry loading data after permission granted
-                    context.read<HeatMapBloc>().add(
+                    bloc.add(
                       LoadHeatMapData(_currentRadius),
                     );
                   }
