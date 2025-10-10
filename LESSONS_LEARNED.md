@@ -5,6 +5,139 @@ This document captures key learnings from building the **Flutter mobile dating a
 
 ---
 
+## 📸 **Profile Photo Persistence Bug (October 2025)**
+
+**Status**: ✅ **RESOLVED** - Added photo sync to database  
+**Date**: October 10, 2025  
+**Priority**: **CRITICAL** - Profile photos not persisting
+
+**Context**: Users upload profile photos successfully to media storage, photos appear in app, but don't persist after app restart or navigation. Photos uploaded via `/media/upload` but never linked to user profile in database.
+
+### **Problem - Photos Upload But Never Sync to Database**
+
+#### **Upload Flow (Broken)**
+```dart
+1. User selects photo → _handleAddPhoto() ✅
+2. UploadPhoto event dispatched to ProfileBloc ✅
+3. _onUploadPhoto calls uploadPhoto() → /media/upload ✅
+4. Media uploaded successfully, URL returned ✅
+5. Photo added to local state (state.profile.photos) ✅
+6. UpdateProfile called to save profile changes ✅
+7. ❌ syncPhotos() NEVER CALLED - photos not in database!
+8. App restart → photos lost (only in local state, not DB)
+```
+
+#### **Root Cause**
+```dart
+// profile_bloc.dart _onUpdateProfile (BROKEN)
+Future<void> _onUpdateProfile(UpdateProfile event, Emitter<ProfileState> emit) async {
+  // Photos are already uploaded directly to permanent storage
+  // Just update profile data without photo sync ❌ BUG!
+  final updatedProfile = await _profileService.updateProfile(
+    event.profile,
+    originalProfile: _originalProfile,
+  );
+}
+```
+
+**Why It Failed:**
+- `updateProfile()` only sends basic info and extended profile fields to `/users/me` and `/users/me/profile`
+- **Does NOT call** `/users/me/photos` to sync uploaded media
+- Photos exist in `Media` table but no `Photo` records created
+- Backend `syncUserPhotos()` never executed
+- Result: Photos in media storage but not linked to user profile
+
+### **Solution - Call syncPhotos Before Update**
+
+#### **Fixed Flow**
+```dart
+// profile_bloc.dart _onUpdateProfile (FIXED)
+Future<void> _onUpdateProfile(UpdateProfile event, Emitter<ProfileState> emit) async {
+  // Sync photos to database if profile has photos
+  // This links uploaded media to the user's profile in the database
+  if (event.profile.photos.isNotEmpty) {
+    _logger.i('📸 Syncing ${event.profile.photos.length} photos with profile...');
+    try {
+      // Convert ProfilePhoto to ProfilePhotoSync for the API call
+      final photoSyncData = event.profile.photos
+          .asMap()
+          .entries
+          .map((entry) => ProfilePhotoSync(
+                mediaId: entry.value.id, // Media ID from upload
+                description: entry.value.description,
+                order: entry.value.order,
+                isMain: entry.value.isMain,
+              ))
+          .toList();
+
+      // Call /users/me/photos to create Photo records in DB
+      await _profileService.syncPhotos(photos: photoSyncData);
+      _logger.i('✅ Photos synced successfully to database');
+    } catch (e) {
+      _logger.e('❌ Failed to sync photos: $e');
+      // Continue with profile update even if photo sync fails
+      // Photos are already uploaded to media storage
+    }
+  }
+
+  // Update profile data (basic info + extended fields)
+  final updatedProfile = await _profileService.updateProfile(
+    event.profile,
+    originalProfile: _originalProfile,
+  );
+}
+```
+
+#### **Backend Photo Sync Endpoint**
+```typescript
+// backend/src/users/users.controller.ts
+@Put('me/photos')
+async syncUserPhotos(@User() user, @Body() syncDto: SyncPhotosDto) {
+  return this.usersService.syncUserPhotos(user.id, syncDto);
+}
+
+// SyncPhotosDto structure
+{
+  photos: [
+    {
+      mediaId: string,        // From /media/upload response
+      description?: string,
+      order: number,
+      isMain: boolean
+    }
+  ]
+}
+```
+
+### **Key Learnings**
+
+1. **Media Upload ≠ Photo Persistence**: Uploading to `/media/upload` only creates `Media` records. Must call `/users/me/photos` to create `Photo` records linked to profile.
+
+2. **Two-Step Photo Process**:
+   - Step 1: Upload to media storage (`/media/upload`) → Returns media ID
+   - Step 2: Sync media to profile (`/users/me/photos`) → Creates Photo records in DB
+
+3. **ProfileBloc Responsibility**: `_onUpdateProfile` must sync photos before updating profile data. Can't assume photos "already uploaded" means "already persisted to profile".
+
+4. **Backend Validation**: `syncUserPhotos` validates:
+   - Media exists in database
+   - Media belongs to user  
+   - Media is confirmed (not temporary)
+   - Creates Photo records with proper order/isMain
+
+5. **Error Handling**: Photo sync failure shouldn't block profile update since media already in storage. Log error and continue.
+
+### **Testing Checklist**
+
+- [ ] Upload profile photo
+- [ ] Click save on any profile tab
+- [ ] Verify photo sync logs appear
+- [ ] Check database for Photo records
+- [ ] Restart app → photos should persist
+- [ ] Navigate away and back → photos should remain
+
+---
+
 ## 🌍 **Location Permission Context Issue (January 2025)**
 
 **Status**: ✅ **RESOLVED** - Graceful fallback implemented  

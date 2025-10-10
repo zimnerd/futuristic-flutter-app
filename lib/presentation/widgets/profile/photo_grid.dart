@@ -2,11 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:logger/logger.dart';
 import 'dart:io';
 
 import '../../theme/pulse_colors.dart';
 import '../../../domain/entities/user_profile.dart';
 import '../../blocs/profile/profile_bloc.dart';
+
+final _logger = Logger();
 
 /// Photo grid widget with drag-to-reorder and advanced management
 class PhotoGrid extends StatefulWidget {
@@ -149,24 +152,21 @@ class _PhotoGridState extends State<PhotoGrid> {
     }
   }
 
-  /// Build cache-busted URL by appending timestamp query parameter
-  /// This forces fresh image load after photo changes (delete/upload)
-  String _buildCacheBustedUrl(String url) {
-    // If URL already has query parameters, append with &, otherwise use ?
-    final separator = url.contains('?') ? '&' : '?';
-    // Use current timestamp to invalidate cache
-    final timestamp = DateTime.now().millisecondsSinceEpoch;
-    return '$url${separator}_t=$timestamp';
-  }
-
   void _deletePhoto(int index) {
     final photoToDelete = _photos[index];
+    
+    _logger.i('🗑️ Deleting photo at index $index:');
+    _logger.i('   - Photo ID: ${photoToDelete.id}');
+    _logger.i('   - Photo URL: ${photoToDelete.url}');
+    _logger.i('   - Total photos before delete: ${_photos.length}');
 
     // If delete callback provided, trigger proper deletion via BLoC
     if (widget.onPhotoDelete != null) {
+      _logger.d('   - Using BLoC deletion callback');
       widget.onPhotoDelete!(photoToDelete);
       // BLoC will update photos list via onPhotosChanged
     } else {
+      _logger.d('   - Using fallback local deletion');
       // Fallback: just remove locally (old behavior)
       setState(() {
         _photos.removeAt(index);
@@ -176,6 +176,7 @@ class _PhotoGridState extends State<PhotoGrid> {
         }
       });
       widget.onPhotosChanged(_photos);
+      _logger.i('   - Photos after delete: ${_photos.length}');
     }
   }
 
@@ -315,33 +316,44 @@ class _PhotoGridState extends State<PhotoGrid> {
         ),
         child: Stack(
           children: [
-            // Photo
+            // Photo - ALWAYS use network image (photos uploaded immediately)
             ClipRRect(
               borderRadius: BorderRadius.circular(12),
               child: Container(
                 width: double.infinity,
                 height: double.infinity,
                 color: Colors.grey[200],
-                child: photo.isLocal
-                    ? Image.file(
-                        File(photo.url),
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
-                          return _buildErrorPlaceholder();
-                        },
-                      )
-                    : CachedNetworkImage(
-                        // Add cache-busting query parameter to force fresh load
-                        imageUrl: _buildCacheBustedUrl(photo.url),
-                        fit: BoxFit.cover,
-                        placeholder: (context, url) =>
-                            _buildLoadingPlaceholder(),
-                        errorWidget: (context, url, error) =>
-                            _buildErrorPlaceholder(),
-                        // Force re-download on error instead of showing cached broken image
-                        cacheKey: photo
-                            .id, // Use photo ID as cache key for better invalidation
-                      ),
+                child: Builder(
+                  builder: (context) {
+                    _logger.d('📸 Rendering photo at index $index: ${photo.url}');
+                    _logger.d('   - Photo ID: ${photo.id}');
+                    _logger.d('   - Cache key: ${photo.id}');
+                    
+                    return CachedNetworkImage(
+                      // Use fresh backend URL (no cache busting needed - photo ID changes on re-upload)
+                      imageUrl: photo.url,
+                      fit: BoxFit.cover,
+                      placeholder: (context, url) {
+                        _logger.d('⏳ Loading placeholder for: $url');
+                        return _buildLoadingPlaceholder();
+                      },
+                      errorWidget: (context, url, error) {
+                        _logger.e('❌ Failed to load image at index $index:');
+                        _logger.e('   - URL: $url');
+                        _logger.e('   - Error: $error');
+                        _logger.e('   - Photo ID: ${photo.id}');
+                        return _buildErrorPlaceholder();
+                      },
+                      // Use photo ID as cache key for proper invalidation
+                      cacheKey: photo.id,
+                      // Force fresh fetch on error (network-first strategy)
+                      maxHeightDiskCache: 1000,
+                      maxWidthDiskCache: 1000,
+                      memCacheHeight: 1000,
+                      memCacheWidth: 1000,
+                    );
+                  },
+                ),
               ),
             ),
 
@@ -1367,5 +1379,7 @@ extension ProfilePhotoExtension on ProfilePhoto {
     );
   }
 
-  bool get isLocal => url.startsWith('/') || url.startsWith('file://');
+  // NOTE: isLocal extension removed - photos are ALWAYS from backend after immediate upload
+  // Backend URLs start with "/" (e.g., "/api/v1/uploads/...") but are NOT local file paths
+  // Always use CachedNetworkImage, never Image.file() for ProfilePhoto URLs
 }

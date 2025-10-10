@@ -113,11 +113,40 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     Emitter<ProfileState> emit,
   ) async {
     try {
-      _logger.i('� Updating profile...');
+      _logger.i('📝 Updating profile...');
       emit(state.copyWith(updateStatus: ProfileStatus.loading));
 
-      // Photos are already uploaded directly to permanent storage
-      // Just update profile data without photo sync
+      // Sync photos to database if profile has photos
+      // This links uploaded media to the user's profile in the database
+      if (event.profile.photos.isNotEmpty) {
+        _logger.i(
+          '📸 Syncing ${event.profile.photos.length} photos with profile...',
+        );
+        try {
+          // Convert ProfilePhoto to ProfilePhotoSync for the API call
+          final photoSyncData = event.profile.photos
+              .asMap()
+              .entries
+              .map(
+                (entry) => ProfilePhotoSync(
+                  mediaId: entry.value.id,
+                  description: entry.value.description,
+                  order: entry.value.order,
+                  isMain: entry.value.isMain,
+                ),
+              )
+              .toList();
+
+          await _profileService.syncPhotos(photos: photoSyncData);
+          _logger.i('✅ Photos synced successfully to database');
+        } catch (e) {
+          _logger.e('❌ Failed to sync photos: $e');
+          // Continue with profile update even if photo sync fails
+          // Photos are already uploaded to media storage
+        }
+      }
+
+      // Update profile data (basic info + extended fields)
       _logger.i('📝 Updating profile data...');
       final updatedProfile = await _profileService.updateProfile(
         event.profile,

@@ -372,12 +372,10 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
     try {
       logger.i('🧹 Clearing photo cache for all profile images');
 
-      // Clear cache for current photos
+      // Clear cache for all current photos (all ProfilePhoto URLs are backend URLs)
       for (final photo in _photos) {
-        if (!photo.isLocal) {
-          await CachedNetworkImage.evictFromCache(photo.url);
-          logger.d('   - Cleared cache for: ${photo.url}');
-        }
+        await CachedNetworkImage.evictFromCache(photo.url);
+        logger.d('   - Cleared cache for: ${photo.url}');
       }
 
       // Also clear cache for photos marked for deletion (in case they're still visible)
@@ -946,42 +944,62 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
               '📊 BLoC profile photos count: ${state.profile?.photos.length ?? 0}',
             );
             
-            if (state.profile != null && state.profile!.photos.isNotEmpty) {
+            if (state.profile != null) {
               logger.i('🔄 Syncing _photos with BLoC state photos');
 
               final previousPhotoCount = _photos.length;
-              // Sync _photos with BLoC state (includes the new upload)
+              final wasPhotoDeleted =
+                  _photos.length > state.profile!.photos.length;
+              final wasPhotoAdded =
+                  _photos.length < state.profile!.photos.length;
+
+              // Sync _photos with BLoC state (includes uploads/deletions)
               setState(() {
                 _photos = List.from(state.profile!.photos);
-                // Add temp URL to tracking list
-                final latestPhoto = state.profile!.photos.last;
-                if (!_tempPhotoUrls.contains(latestPhoto.url)) {
-                  _tempPhotoUrls.add(latestPhoto.url);
+                
+                // Add temp URL to tracking list for new uploads
+                if (wasPhotoAdded && state.profile!.photos.isNotEmpty) {
+                  final latestPhoto = state.profile!.photos.last;
+                  if (!_tempPhotoUrls.contains(latestPhoto.url)) {
+                    _tempPhotoUrls.add(latestPhoto.url);
+                  }
+                  logger.i(
+                    '🆕 Latest photo: id=${latestPhoto.id}, url=${latestPhoto.url}',
+                  );
                 }
+
                 logger.i('✅ Photos synced: ${_photos.length} photos total');
-                logger.i(
-                  '🆕 Latest photo: id=${latestPhoto.id}, url=${latestPhoto.url}',
-                );
               });
               
-              // NO RELOAD HERE - BLoC already has the latest state
-              // Just clear the cache to force fresh images on next render
-              logger.i('🧹 Clearing photo cache after successful upload');
+              // Clear cache to force fresh images on next render
+              logger.i('🧹 Clearing photo cache after photo change');
               _clearPhotoCache();
               
-              // Only show toast if photos actually changed (not on initial load)
-              if (_hasShownInitialToast &&
-                  _photos.length > previousPhotoCount) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Photo uploaded successfully!'),
-                    backgroundColor: PulseColors.success,
-                    duration: Duration(seconds: 2),
-                  ),
-                );
+              // Show appropriate toast based on action
+              if (_hasShownInitialToast) {
+                if (wasPhotoAdded && _photos.length > previousPhotoCount) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Photo uploaded successfully!'),
+                      backgroundColor: PulseColors.success,
+                      duration: Duration(seconds: 2),
+                    ),
+                  );
+                } else if (wasPhotoDeleted) {
+                  logger.i(
+                    '🗑️ Photo deleted, UI synced with ${_photos.length} remaining photos',
+                  );
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Photo deleted successfully'),
+                      backgroundColor: PulseColors.success,
+                      duration: Duration(seconds: 2),
+                    ),
+                  );
+                }
               }
             } else {
-              logger.e('❌ No profile or no photos in BLoC state');
+              logger.e('❌ No profile in BLoC state');
             }
           } else if (state.uploadStatus == ProfileStatus.error) {
             // Show error dialog with detailed error message
