@@ -345,6 +345,9 @@ class SettingsScreen extends StatelessWidget {
       final locationService = context.read<LocationService>();
       final locationTracker = LocationTrackingInitializer();
 
+      // Store messenger reference before any async operations
+      final messenger = ScaffoldMessenger.of(context);
+
       debugPrint(
         '🔧 SettingsScreen: Requesting location permissions with dialog...',
       );
@@ -352,14 +355,11 @@ class SettingsScreen extends StatelessWidget {
         context,
       );
 
-      // Store messenger reference before async operations
-      final messenger = ScaffoldMessenger.of(context);
-
       if (success) {
         debugPrint(
           '🔧 SettingsScreen: Location permissions granted, starting tracking...',
         );
-        await locationTracker.initializeWithDialogs(context);
+        await locationTracker.initializeWithDialogs(context); // ignore: use_build_context_synchronously
         messenger.showSnackBar(
           const SnackBar(
             content: Text(
@@ -379,7 +379,7 @@ class SettingsScreen extends StatelessWidget {
       }
     } catch (e) {
       debugPrint('🔧 SettingsScreen: Error testing location permissions: $e');
-      final messenger = ScaffoldMessenger.of(context);
+      final messenger = ScaffoldMessenger.of(context); // ignore: use_build_context_synchronously
       messenger.showSnackBar(
         SnackBar(
           content: Text('❌ Error testing location permissions: $e'),

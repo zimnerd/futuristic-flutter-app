@@ -1604,7 +1604,7 @@ class _HeatMapScreenState extends State<HeatMapScreen>
                       .requestLocationWhenInUsePermission(context);
                   if (granted && mounted) {
                     // Retry loading data after permission granted
-                    bloc.add(
+                    bloc.add( // ignore: use_build_context_synchronously
                       LoadHeatMapData(_currentRadius),
                     );
                   }
