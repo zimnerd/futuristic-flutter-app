@@ -110,16 +110,42 @@ class _AutoLoginWrapperState extends State<AutoLoginWrapper> {
   /// Navigate to messages screen when notification is tapped
   void _navigateToMessages(Map<String, dynamic> messageData) {
     // Extract conversation ID from notification data if available
-    final conversationId = messageData['conversationId'];
+    // Note: Firebase notification data is nested under 'data' key
+    final nestedData =
+        messageData['data'] as Map<String, dynamic>? ?? messageData;
+    final conversationId = nestedData['conversationId'];
 
     if (conversationId != null) {
       // Navigate to specific conversation
       _logger.i('📱 Navigating to conversation: $conversationId');
-      // TODO: Implement navigation to specific conversation
-      // For now, just navigate to messages tab
+
+      // Extract additional user data if available
+      final otherUserId = nestedData['senderId'] ?? nestedData['otherUserId'];
+      final otherUserName =
+          nestedData['senderName'] ?? nestedData['otherUserName'] ?? 'User';
+      final otherUserPhoto =
+          nestedData['senderPhoto'] ?? nestedData['otherUserPhoto'];
+
+      try {
+        AppRouter.router.go(
+          AppRoutes.chat.replaceFirst(':conversationId', conversationId),
+          extra: {
+            'otherUserId': otherUserId,
+            'otherUserName': otherUserName,
+            'otherUserPhoto': otherUserPhoto,
+          },
+        );
+        _logger.i(
+          '📱 Successfully navigated to specific conversation: $conversationId',
+        );
+        return;
+      } catch (e) {
+        _logger.e('❌ Failed to navigate to specific conversation: $e');
+        // Fall back to messages screen
+      }
     }
 
-    // Navigate to messages screen using GoRouter
+    // Navigate to messages screen using GoRouter (fallback)
     try {
       AppRouter.router.go(AppRoutes.messages);
       _logger.i('📱 Successfully navigated to messages screen');

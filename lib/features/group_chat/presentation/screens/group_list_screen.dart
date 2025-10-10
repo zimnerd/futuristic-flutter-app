@@ -350,13 +350,13 @@ class _GroupListScreenState extends State<GroupListScreen>
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
           borderSide: BorderSide(
-            color: const Color(0xFF6E3BFF).withOpacity(0.3),
+            color: const Color(0xFF6E3BFF).withAlpha(77), // 0.3 * 255 ≈ 77
           ),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
           borderSide: BorderSide(
-            color: const Color(0xFF6E3BFF).withOpacity(0.3),
+            color: const Color(0xFF6E3BFF).withAlpha(77), // 0.3 * 255 ≈ 77
           ),
         ),
         focusedBorder: OutlineInputBorder(
@@ -383,7 +383,7 @@ class _GroupListScreenState extends State<GroupListScreen>
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: const Color(0xFF6E3BFF).withOpacity(0.1),
+              color: const Color(0xFF6E3BFF).withAlpha(26), // 0.1 * 255 ≈ 26
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(icon, color: const Color(0xFF6E3BFF), size: 20),
@@ -405,7 +405,7 @@ class _GroupListScreenState extends State<GroupListScreen>
                   subtitle,
                   style: TextStyle(
                     fontSize: 12,
-                    color: const Color(0xFF202124).withOpacity(0.6),
+                    color: const Color(0xFF202124).withAlpha(153), // 0.6 * 255 ≈ 153
                   ),
                 ),
               ],
@@ -414,7 +414,7 @@ class _GroupListScreenState extends State<GroupListScreen>
           Switch(
             value: value,
             onChanged: onChanged,
-            activeColor: const Color(0xFF6E3BFF),
+            activeThumbColor: const Color(0xFF6E3BFF),
           ),
         ],
       );
@@ -441,7 +441,7 @@ class _GroupListScreenState extends State<GroupListScreen>
                 borderRadius: BorderRadius.circular(28),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF6E3BFF).withOpacity(0.3),
+                    color: const Color(0xFF6E3BFF).withAlpha(77), // 0.3 * 255 ≈ 77
                     blurRadius: 30,
                     offset: const Offset(0, 10),
                   ),
@@ -468,7 +468,7 @@ class _GroupListScreenState extends State<GroupListScreen>
                           Container(
                             padding: const EdgeInsets.all(12),
                             decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.2),
+                              color: Colors.white.withAlpha(51), // 0.2 * 255 ≈ 51
                               borderRadius: BorderRadius.circular(16),
                             ),
                             child: const Icon(
@@ -546,11 +546,11 @@ class _GroupListScreenState extends State<GroupListScreen>
                               color: Colors.white,
                               borderRadius: BorderRadius.circular(16),
                               border: Border.all(
-                                color: const Color(0xFF6E3BFF).withOpacity(0.3),
+                                color: const Color(0xFF6E3BFF).withAlpha(77), // 0.3 * 255 ≈ 77
                               ),
                             ),
                             child: DropdownButtonFormField<String>(
-                              value: sessionType,
+                              initialValue: sessionType,
                               decoration: const InputDecoration(
                                 border: InputBorder.none,
                                 contentPadding: EdgeInsets.symmetric(
@@ -581,8 +581,9 @@ class _GroupListScreenState extends State<GroupListScreen>
                                 ),
                               ],
                               onChanged: (value) {
-                                if (value != null)
+                                if (value != null) {
                                   setState(() => sessionType = value);
+                                }
                               },
                             ),
                           ),
@@ -640,10 +641,10 @@ class _GroupListScreenState extends State<GroupListScreen>
                           Container(
                             padding: const EdgeInsets.all(16),
                             decoration: BoxDecoration(
-                              color: const Color(0xFF6E3BFF).withOpacity(0.05),
+                              color: const Color(0xFF6E3BFF).withAlpha(13), // 0.05 * 255 ≈ 13
                               borderRadius: BorderRadius.circular(16),
                               border: Border.all(
-                                color: const Color(0xFF6E3BFF).withOpacity(0.1),
+                                color: const Color(0xFF6E3BFF).withAlpha(26), // 0.1 * 255 ≈ 26
                               ),
                             ),
                             child: Column(
@@ -814,8 +815,9 @@ class _GroupListScreenState extends State<GroupListScreen>
                                       );
 
                                   if (mounted) navigator.pop(); // Close loading
-                                  if (mounted)
+                                  if (mounted) {
                                     Navigator.pop(dialogContext); // Close form
+                                  }
 
                                   // Delay disposal until after dialog closes
                                   Future.delayed(
@@ -836,8 +838,9 @@ class _GroupListScreenState extends State<GroupListScreen>
                                   if (!mounted) return;
                                   _joinLiveSession(session);
                                 } catch (e) {
-                                  if (mounted)
+                                  if (mounted) {
                                     navigator.pop(); // Close loading only
+                                  }
                                   if (mounted) {
                                     scaffoldMessenger.showSnackBar(
                                       SnackBar(

@@ -320,6 +320,12 @@ class LocationService {
         '📍 LocationService: Location services enabled, requesting permission',
       );
 
+      // Check if context is still mounted before proceeding with async operation
+      if (!context.mounted) {
+        debugPrint('📍 LocationService: Context not mounted, returning false');
+        return false;
+      }
+
       // Use PermissionService for user-friendly permission request
       final permissionService = PermissionService();
       final granted = await permissionService
