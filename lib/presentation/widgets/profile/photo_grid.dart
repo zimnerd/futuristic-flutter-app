@@ -51,20 +51,45 @@ class _PhotoGridState extends State<PhotoGrid> {
   @override
   void initState() {
     super.initState();
+    
+    _logger.i('🏁 PhotoGrid initialized');
+    _logger.d('   - Initial photos count: ${widget.photos.length}');
+    _logger.d('   - Photo IDs: ${widget.photos.map((p) => p.id).join(", ")}');
+    _logger.d('   - Photo URLs: ${widget.photos.map((p) => p.url).join(", ")}');
+    
     _photos = List.from(widget.photos);
   }
+
 
   @override
   void didUpdateWidget(PhotoGrid oldWidget) {
     super.didUpdateWidget(oldWidget);
     
     if (oldWidget.photos != widget.photos) {
+      _logger.i('🔄 Photo list updated via widget rebuild');
+      _logger.d('   - Old count: ${oldWidget.photos.length}');
+      _logger.d('   - New count: ${widget.photos.length}');
+      _logger.d(
+        '   - New photo IDs: ${widget.photos.map((p) => p.id).join(", ")}',
+      );
+      _logger.d(
+        '   - New photo URLs: ${widget.photos.map((p) => p.url).join(", ")}',
+      );
+      
       _photos = List.from(widget.photos);
+      
+      _logger.i('   - Internal photos list synchronized');
     }
   }
 
+
   Future<void> _addPhoto() async {
+    _logger.i('📷 Add photo initiated');
+    _logger.d('   - Current photos count: ${_photos.length}');
+    _logger.d('   - Max photos: ${widget.maxPhotos}');
+    
     if (_photos.length >= widget.maxPhotos) {
+      _logger.w('   - Max photos reached, showing dialog');
       _showMaxPhotosReachedDialog();
       return;
     }
@@ -72,6 +97,7 @@ class _PhotoGridState extends State<PhotoGrid> {
     try {
       // Support multi-select up to remaining photo slots
       final int remainingSlots = widget.maxPhotos - _photos.length;
+      _logger.d('   - Remaining slots: $remainingSlots');
 
       final List<XFile> images = await _picker.pickMultiImage(
         maxWidth: 1080,
@@ -80,10 +106,15 @@ class _PhotoGridState extends State<PhotoGrid> {
       );
 
       if (images.isNotEmpty) {
+        _logger.i('   - Selected ${images.length} image(s)');
+        
         // Limit to remaining slots
         final imagesToUpload = images.take(remainingSlots).toList();
 
         if (images.length > remainingSlots) {
+          _logger.w(
+            '   - Limiting to $remainingSlots photos, ${images.length - remainingSlots} discarded',
+          );
           _showErrorDialog(
             'Only $remainingSlots photo(s) can be added. ${images.length - remainingSlots} photo(s) were not uploaded.',
           );
@@ -91,6 +122,7 @@ class _PhotoGridState extends State<PhotoGrid> {
 
         // If upload callback provided, trigger direct upload
         if (widget.onPhotoUpload != null) {
+          _logger.i('   - Starting upload via BLoC callback');
           setState(() {
             _isUploading = true;
           });
@@ -99,13 +131,18 @@ class _PhotoGridState extends State<PhotoGrid> {
             // Upload each photo directly to permanent storage with progress tracking
             for (final image in imagesToUpload) {
               final tempId = 'temp_${image.path.split('/').last}';
+              _logger.d('   - Uploading photo: $tempId');
+              _logger.d('     Path: ${image.path}');
 
               setState(() {
                 _uploadingPhotos[tempId] = true;
               });
               
               final imageFile = File(image.path);
+              _logger.d('     File size: ${await imageFile.length()} bytes');
+              
               await widget.onPhotoUpload!(imageFile);
+              _logger.i('     ✅ Upload successful: $tempId');
               
               setState(() {
                 _uploadingPhotos.remove(tempId);
@@ -121,8 +158,10 @@ class _PhotoGridState extends State<PhotoGrid> {
                 }
               });
             }
+            _logger.i('   - All uploads complete, waiting for BLoC update');
             // BLoC will update photos list via onPhotosChanged
           } catch (uploadError) {
+            _logger.e('   - Upload failed: $uploadError');
             _showErrorDialog('Failed to upload photo: $uploadError');
           } finally {
             if (mounted) {
@@ -133,6 +172,7 @@ class _PhotoGridState extends State<PhotoGrid> {
             }
           }
         } else {
+          _logger.d('   - Using fallback local storage (no BLoC callback)');
           // Fallback: Add all selected images locally (old behavior)
           for (final selectedImage in imagesToUpload) {
             final newPhoto = ProfilePhoto(
@@ -143,9 +183,12 @@ class _PhotoGridState extends State<PhotoGrid> {
             setState(() {
               _photos.add(newPhoto);
             });
+            _logger.d('     - Added local photo: ${newPhoto.id}');
           }
           widget.onPhotosChanged(_photos);
         }
+      } else {
+        _logger.d('   - No images selected');
       }
     } catch (e) {
       _showErrorDialog('Failed to select photo: $e');
