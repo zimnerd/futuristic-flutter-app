@@ -52,7 +52,7 @@ class GroupChatWebSocketService {
   /// Connect to the WebSocket server
   void connect() {
     socket = io.io(
-      baseUrl,
+      '${baseUrl}/group-chat',
       io.OptionBuilder()
           .setTransports(['websocket'])
           .disableAutoConnect()
