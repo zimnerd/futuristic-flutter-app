@@ -1,6 +1,5 @@
 import '../../../core/network/api_client.dart';
 import 'package:logger/logger.dart';
-import 'package:dio/dio.dart';
 import 'package:hive/hive.dart';
 import '../../domain/repositories/user_repository.dart';
 import '../repositories/user_repository_simple.dart';
@@ -80,7 +79,7 @@ class ServiceLocator {
   void initialize([Box<String>? secureStorageBox]) {
     if (_isInitialized) return;
 
-    // Initialize API client (for advanced features)
+    // Initialize API client (singleton for all API calls)
     _apiClient = ApiClient.instance;
     
     // Initialize API service implementation (for repository pattern)
@@ -95,7 +94,7 @@ class ServiceLocator {
     final secureStorage =
         secureStorageBox ?? Hive.box<String>('secure_storage');
     _authService = AuthService(
-      httpClient: Dio(),
+      apiClient: _apiClient,
       secureStorage: secureStorage,
     );
 

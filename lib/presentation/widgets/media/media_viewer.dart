@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:video_player/video_player.dart';
-import 'package:dio/dio.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 import '../../theme/pulse_colors.dart';
 import '../../../domain/entities/message.dart';
+import '../../../core/network/api_client.dart';
 
 /// Full-screen media viewer with modern UX - simplified version using InteractiveViewer
 class MediaViewer extends StatefulWidget {
@@ -385,8 +385,8 @@ class _MediaViewerState extends State<MediaViewer>
         );
       }
 
-      // Download the media
-      final dio = Dio();
+      // Download the media using ApiClient singleton
+      final dio = ApiClient.instance.dio;
       final directory = await getApplicationDocumentsDirectory();
       final fileName = url
           .split('/')

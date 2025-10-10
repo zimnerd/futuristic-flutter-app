@@ -7,22 +7,23 @@ import 'package:hive/hive.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:logger/logger.dart';
 
+import '../../core/network/api_client.dart';
 import '../exceptions/app_exceptions.dart';
 import '../models/user_model.dart';
 
 /// Authentication service handling JWT tokens, biometric auth, and device fingerprinting
 class AuthService {
   AuthService({
-    required Dio httpClient,
+    required ApiClient apiClient,
     required Box<String> secureStorage,
     LocalAuthentication? localAuth,
     Logger? logger,
-  })  : _httpClient = httpClient,
+  }) : _apiClient = apiClient,
         _secureStorage = secureStorage,
         _localAuth = localAuth ?? LocalAuthentication(),
         _logger = logger ?? Logger();
 
-  final Dio _httpClient;
+  final ApiClient _apiClient;
   final Box<String> _secureStorage;
   final LocalAuthentication _localAuth;
   final Logger _logger;
@@ -47,7 +48,7 @@ class AuthService {
       // Generate device fingerprint
       final deviceFingerprint = await _generateDeviceFingerprint();
 
-      final response = await _httpClient.post(
+      final response = await _apiClient.post(
         '/auth/login',
         data: {
           'email': email,
@@ -107,7 +108,7 @@ class AuthService {
     try {
       _logger.i('🔐 Verifying 2FA code...');
 
-      final response = await _httpClient.post(
+      final response = await _apiClient.post(
         '/auth/verify-2fa',
         data: {
           'sessionId': sessionId,
@@ -154,7 +155,7 @@ class AuthService {
       // Generate device fingerprint
       final deviceFingerprint = await _generateDeviceFingerprint();
 
-      final response = await _httpClient.post(
+      final response = await _apiClient.post(
         '/auth/register',
         data: {
           'email': email,
@@ -204,13 +205,9 @@ class AuthService {
 
       final accessToken = await _getAccessToken();
       if (accessToken != null) {
+        // ApiClient automatically adds auth token via interceptors
         // Inform server about logout
-        await _httpClient.post(
-          '/auth/logout',
-          options: Options(
-            headers: {'Authorization': 'Bearer $accessToken'},
-          ),
-        );
+        await _apiClient.logout();
       }
 
       // Clear all stored data
@@ -264,7 +261,7 @@ class AuthService {
 
       _logger.i('🔄 Refreshing access token...');
 
-      final response = await _httpClient.post(
+      final response = await _apiClient.post(
         '/auth/refresh',
         data: {'refreshToken': refreshToken},
       );
@@ -298,7 +295,7 @@ class AuthService {
     try {
       _logger.i('📧 Requesting password reset for: $email');
 
-      final response = await _httpClient.post(
+      final response = await _apiClient.post(
         '/auth/forgot-password',
         data: {'email': email},
       );
@@ -323,7 +320,7 @@ class AuthService {
     try {
       _logger.i('🔑 Resetting password...');
 
-      final response = await _httpClient.post(
+      final response = await _apiClient.post(
         '/auth/reset-password',
         data: {
           'token': token,
@@ -454,12 +451,8 @@ class AuthService {
       final accessToken = await _getAccessToken();
       if (accessToken == null) return false;
 
-      final response = await _httpClient.get(
-        '/auth/validate',
-        options: Options(
-          headers: {'Authorization': 'Bearer $accessToken'},
-        ),
-      );
+      // ApiClient automatically adds auth token via interceptors
+      final response = await _apiClient.dio.get('/auth/validate');
 
       return response.statusCode == 200;
     } catch (e) {
