@@ -1495,20 +1495,55 @@ class _ChatScreenState extends State<ChatScreen> {
     try {
       AppLogger.debug('Opening camera for photo capture');
 
-      // Check and request camera permission
-      final cameraPermission = await Permission.camera.request();
-      if (cameraPermission != PermissionStatus.granted) {
+      // Check current permission status first
+      var cameraPermission = await Permission.camera.status;
+      AppLogger.debug('Current camera permission status: $cameraPermission');
+      
+      // If denied or not determined, request permission
+      if (!cameraPermission.isGranted) {
+        AppLogger.debug('Requesting camera permission...');
+        cameraPermission = await Permission.camera.request();
+        AppLogger.debug('Permission request result: $cameraPermission');
+      }
+      
+      // Handle different permission states
+      if (cameraPermission.isDenied) {
         AppLogger.warning('Camera permission denied');
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text(
-                'Camera permission is required to take photos. Please enable it in settings.',
+                'Camera permission is required to take photos.',
               ),
               backgroundColor: Colors.orange,
             ),
           );
         }
+        return;
+      }
+      
+      if (cameraPermission.isPermanentlyDenied) {
+        AppLogger.warning('Camera permission permanently denied');
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text(
+                'Camera permission is permanently denied. Please enable it in settings.',
+              ),
+              backgroundColor: Colors.red,
+              action: SnackBarAction(
+                label: 'Settings',
+                textColor: Colors.white,
+                onPressed: () => openAppSettings(),
+              ),
+            ),
+          );
+        }
+        return;
+      }
+      
+      if (!cameraPermission.isGranted) {
+        AppLogger.warning('Camera permission not granted: $cameraPermission');
         return;
       }
 
@@ -1576,20 +1611,65 @@ class _ChatScreenState extends State<ChatScreen> {
     try {
       AppLogger.debug('Opening camera for video capture');
 
-      // Check and request camera permission
-      final cameraPermission = await Permission.camera.request();
-      if (cameraPermission != PermissionStatus.granted) {
-        AppLogger.warning('Camera permission denied for video capture');
+      // Check current permission status first
+      var cameraPermission = await Permission.camera.status;
+      var microphonePermission = await Permission.microphone.status;
+      
+      AppLogger.debug('Current camera permission status: $cameraPermission');
+      AppLogger.debug('Current microphone permission status: $microphonePermission');
+      
+      // Request camera permission if not granted
+      if (!cameraPermission.isGranted) {
+        AppLogger.debug('Requesting camera permission...');
+        cameraPermission = await Permission.camera.request();
+        AppLogger.debug('Camera permission request result: $cameraPermission');
+      }
+      
+      // Request microphone permission if not granted
+      if (!microphonePermission.isGranted) {
+        AppLogger.debug('Requesting microphone permission...');
+        microphonePermission = await Permission.microphone.request();
+        AppLogger.debug('Microphone permission request result: $microphonePermission');
+      }
+      
+      // Handle camera permission states
+      if (cameraPermission.isDenied || microphonePermission.isDenied) {
+        AppLogger.warning('Camera or microphone permission denied');
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text(
-                'Camera permission is required to record videos. Please enable it in settings.',
+                'Camera and microphone permissions are required to record videos.',
               ),
               backgroundColor: Colors.orange,
             ),
           );
         }
+        return;
+      }
+      
+      if (cameraPermission.isPermanentlyDenied || microphonePermission.isPermanentlyDenied) {
+        AppLogger.warning('Camera or microphone permission permanently denied');
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text(
+                'Permissions are permanently denied. Please enable them in settings.',
+              ),
+              backgroundColor: Colors.red,
+              action: SnackBarAction(
+                label: 'Settings',
+                textColor: Colors.white,
+                onPressed: () => openAppSettings(),
+              ),
+            ),
+          );
+        }
+        return;
+      }
+      
+      if (!cameraPermission.isGranted || !microphonePermission.isGranted) {
+        AppLogger.warning('Required permissions not granted');
         return;
       }
 

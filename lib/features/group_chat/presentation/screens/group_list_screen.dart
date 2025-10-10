@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import '../../../../presentation/blocs/group_chat/group_chat_bloc.dart';
 import '../../data/models.dart';
 import '../../data/group_chat_service.dart';
 import '../../../../presentation/navigation/app_router.dart';
 import '../../../../data/services/webrtc_service.dart';
+import '../../../../presentation/widgets/common/initials_avatar.dart';
 
 class GroupListScreen extends StatefulWidget {
   final GroupChatBloc bloc;
@@ -1004,33 +1004,11 @@ class _GroupCard extends StatelessWidget {
             padding: const EdgeInsets.all(16),
             child: Row(
               children: [
-                // Icon with gradient background
-                Container(
-                  width: 56,
-                  height: 56,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        _getGroupColor(group.groupType),
-                        _getGroupColor(group.groupType).withValues(alpha: 0.7),
-                      ],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.circular(14),
-                    boxShadow: [
-                      BoxShadow(
-                        color: _getGroupColor(group.groupType).withValues(alpha: 0.3),
-                        blurRadius: 8,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: Icon(
-                    _getGroupIcon(group.groupType),
-                    color: Colors.white,
-                    size: 28,
-                  ),
+                // Group avatar with initials
+                InitialsAvatar(
+                  name: group.title,
+                  imageUrl: null, // Groups use initials based on name
+                  radius: 28,
                 ),
                 const SizedBox(width: 16),
                 // Content
@@ -1163,23 +1141,6 @@ class _GroupCard extends StatelessWidget {
         return Colors.red;
     }
   }
-
-  IconData _getGroupIcon(GroupType type) {
-    switch (type) {
-      case GroupType.standard:
-        return Icons.group;
-      case GroupType.study:
-        return Icons.school;
-      case GroupType.interest:
-        return Icons.interests;
-      case GroupType.dating:
-        return Icons.favorite;
-      case GroupType.liveHost:
-        return Icons.live_tv;
-      case GroupType.speedDating:
-        return Icons.flash_on;
-    }
-  }
 }
 
 class _LiveSessionCard extends StatelessWidget {
@@ -1198,13 +1159,10 @@ class _LiveSessionCard extends StatelessWidget {
       child: ListTile(
         leading: Stack(
           children: [
-            CircleAvatar(
-              backgroundImage: session.hostAvatarUrl != null
-                  ? CachedNetworkImageProvider(session.hostAvatarUrl!)
-                  : null,
-              child: session.hostAvatarUrl == null
-                  ? const Icon(Icons.person)
-                  : null,
+            InitialsAvatar(
+              name: session.hostFirstName,
+              imageUrl: session.hostAvatarUrl,
+              radius: 20,
             ),
             Positioned(
               right: 0,

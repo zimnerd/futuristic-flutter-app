@@ -638,10 +638,29 @@ class AppRouter {
           builder: (context, state) {
             final liveSessionId = state.pathParameters['liveSessionId'] ?? '';
             final data = state.extra as Map<String, dynamic>?;
-            return group_chat_video.VideoCallScreen(
-              liveSessionId: liveSessionId,
-              rtcToken: data?['rtcToken'] as String? ?? '',
-              session: data?['session'],
+            
+            // Get or create GroupChatBloc - must be provided for VideoCallScreen
+            final groupChatBloc = data?['groupChatBloc'] as GroupChatBloc?;
+
+            if (groupChatBloc == null) {
+              // Return error screen if bloc not provided
+              return Scaffold(
+                appBar: AppBar(title: const Text('Error')),
+                body: const Center(
+                  child: Text(
+                    'Failed to initialize video call. Please try again.',
+                  ),
+                ),
+              );
+            }
+
+            return BlocProvider.value(
+              value: groupChatBloc,
+              child: group_chat_video.VideoCallScreen(
+                liveSessionId: liveSessionId,
+                rtcToken: data?['rtcToken'] as String? ?? '',
+                session: data?['session'],
+              ),
             );
           },
         ),

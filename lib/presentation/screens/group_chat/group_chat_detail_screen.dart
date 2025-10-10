@@ -19,6 +19,7 @@ import '../../../data/models/chat_model.dart';
 import '../../../blocs/chat_bloc.dart' as chat_bloc;
 import '../../../presentation/theme/pulse_colors.dart';
 import '../../widgets/common/keyboard_dismissible_scaffold.dart';
+import '../../widgets/common/initials_avatar.dart';
 
 /// Comprehensive group chat screen with real-time messaging, participant management,
 /// media sharing, voice/video calls, typing indicators, message reactions, and admin controls
@@ -236,26 +237,13 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
       ),
       title: Row(
         children: [
-            // Group avatar
+          // Group avatar with initials from group name
             Hero(
               tag: 'group_avatar_${widget.group.id}',
-              child: Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: LinearGradient(
-                    colors: [
-                      PulseColors.primary,
-                      PulseColors.secondary.withValues(alpha: 0.8),
-                    ],
-                  ),
-                ),
-                child: Icon(
-                  _getGroupIcon(widget.group.groupType),
-                  color: Colors.white,
-                  size: 20,
-                ),
+            child: InitialsAvatar(
+              name: widget.group.title,
+              imageUrl: null, // Groups use initials, not images
+              radius: 20,
               ),
             ),
             const SizedBox(width: 12),
@@ -1879,12 +1867,18 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
 
       // Navigate to video call screen (users can disable video for voice-only)
       if (!mounted) return;
+      
+      // Provide GroupChatBloc to the VideoCallScreen route
+      final groupChatBloc = context.read<GroupChatBloc>();
       Navigator.of(context).push(
         MaterialPageRoute(
-          builder: (context) => VideoCallScreen(
-            liveSessionId: widget.group.id,
-            rtcToken: tokenData['token'] as String,
-            session: callSession,
+          builder: (context) => BlocProvider.value(
+            value: groupChatBloc,
+            child: VideoCallScreen(
+              liveSessionId: widget.group.id,
+              rtcToken: tokenData['token'] as String,
+              session: callSession,
+            ),
           ),
         ),
       );
@@ -1949,12 +1943,18 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
 
       // Navigate to video call screen with token
       if (!mounted) return;
+      
+      // Provide GroupChatBloc to the VideoCallScreen route
+      final groupChatBloc = context.read<GroupChatBloc>();
       Navigator.of(context).push(
         MaterialPageRoute(
-          builder: (context) => VideoCallScreen(
-            liveSessionId: widget.group.id,
-            rtcToken: tokenData['token'] as String,
-            session: callSession,
+          builder: (context) => BlocProvider.value(
+            value: groupChatBloc,
+            child: VideoCallScreen(
+              liveSessionId: widget.group.id,
+              rtcToken: tokenData['token'] as String,
+              session: callSession,
+            ),
           ),
         ),
       );
@@ -2282,23 +2282,6 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
     return currentParticipant.role == ParticipantRole.owner ||
         currentParticipant.role == ParticipantRole.admin ||
         currentParticipant.role == ParticipantRole.moderator;
-  }
-
-  IconData _getGroupIcon(GroupType type) {
-    switch (type) {
-      case GroupType.dating:
-        return Icons.favorite;
-      case GroupType.speedDating:
-        return Icons.flash_on;
-      case GroupType.study:
-        return Icons.school;
-      case GroupType.interest:
-        return Icons.interests;
-      case GroupType.liveHost:
-        return Icons.live_tv;
-      default:
-        return Icons.group;
-    }
   }
 
   String _formatMessageTime(DateTime timestamp) {

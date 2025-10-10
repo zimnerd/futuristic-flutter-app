@@ -94,13 +94,12 @@ class ConversationModel extends Conversation {
     if (lastMessageData != null) {
       // Backend provides lastMessage with this structure:
       // { id, content, type, senderUsername, createdAt }
-      final content = lastMessageData['content'] as String? ?? '';
+      final content = (lastMessageData['content'] as String? ?? '').trim();
       final type = lastMessageData['type'] as String? ?? 'text';
 
       // Provide appropriate preview based on message type
-      if (content.isNotEmpty) {
-        lastMessageContent = content;
-      } else if (type == 'image') {
+      // Prioritize type detection for media messages over content
+      if (type == 'image') {
         lastMessageContent = '📷 Photo';
       } else if (type == 'video') {
         lastMessageContent = '🎥 Video';
@@ -108,6 +107,9 @@ class ConversationModel extends Conversation {
         lastMessageContent = '🎵 Voice message';
       } else if (type == 'file') {
         lastMessageContent = '📄 Attachment';
+      } else if (content.isNotEmpty) {
+        // Regular text message
+        lastMessageContent = content;
       } else {
         lastMessageContent = 'No content';
       }

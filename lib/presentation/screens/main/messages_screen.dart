@@ -76,6 +76,15 @@ class _MessagesScreenState extends State<MessagesScreen> {
       AppLogger.debug(
         '✅ Received ${conversations.length} conversations from API',
       );
+      
+      // Filter out group conversations - they should only appear in Group Chat tab
+      final directConversations = conversations
+          .where((conv) => !conv.isGroup)
+          .toList();
+      AppLogger.debug(
+        '🔍 Filtered to ${directConversations.length} direct conversations (excluded ${conversations.length - directConversations.length} group chats)',
+      );
+      
       if (!mounted || !context.mounted) return;
       
       // Get current user ID
@@ -86,7 +95,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
       }
       
       // Convert backend Conversation models to UI ConversationData
-      final conversationDataList = conversations.map((conversation) {
+      final conversationDataList = directConversations.map((conversation) {
         // Get the other participant (assuming 1-on-1 conversations)
         final otherParticipant = conversation.participants.firstWhere(
           (participant) => participant.id != currentUserId, // Compare with current user ID
@@ -202,35 +211,28 @@ class _MessagesScreenState extends State<MessagesScreen> {
     }
 
     // Extract content and type from message object
-    final content = message.content ?? '';
+    final content = (message.content ?? '').trim();
     final type = message.type ?? 'text';
 
-    // If content is empty, check message type for attachments
+    // Prioritize type detection for media messages
+    if (type == 'image') {
+      return '📷 Photo';
+    } else if (type == 'video') {
+      return '🎥 Video';
+    } else if (type == 'audio' || type == 'voice') {
+      return '🎵 Voice message';
+    } else if (type == 'file') {
+      return '📄 Attachment';
+    }
+    
+    // If no content, return appropriate message
     if (content.isEmpty) {
-      // Check message type for media attachments
-      if (type == 'image') {
-        return '📷 Photo';
-      } else if (type == 'video') {
-        return '🎥 Video';
-      } else if (type == 'audio' || type == 'voice') {
-        return '🎵 Voice message';
-      } else if (type == 'file') {
-        return '📄 Attachment';
-      }
       return 'No messages yet';
     }
 
     // Handle different message types with appropriate icons (when content contains keywords)
     if (content.toLowerCase().contains('location') || content.startsWith('geo:')) {
       return '📍 Location shared';
-    } else if (content.toLowerCase().contains('image') || content.toLowerCase().contains('photo')) {
-      return '📷 Photo';
-    } else if (content.toLowerCase().contains('video')) {
-      return '🎥 Video';
-    } else if (content.toLowerCase().contains('voice') || content.toLowerCase().contains('audio')) {
-      return '🎵 Voice message';
-    } else if (content.toLowerCase().contains('file') || content.toLowerCase().contains('document')) {
-      return '📄 File';
     }
     
     // Regular text message - truncate if too long
