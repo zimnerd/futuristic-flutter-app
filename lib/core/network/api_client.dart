@@ -602,7 +602,7 @@ class ApiClient {
     int offset = 0,
   }) async {
     return await _dio.get(
-      '/api/v1/chat/search/messages',
+      '/chat/search/messages',
       queryParameters: {
         'query': query,
         if (conversationId != null) 'conversationId': conversationId,
@@ -620,7 +620,7 @@ class ApiClient {
     Map<String, dynamic>? metadata,
   }) async {
     return await _dio.post(
-      '/api/v1/messaging/conversations/$conversationId/messages',
+      '/messaging/conversations/$conversationId/messages',
       data: {
         'content': content,
         'type': type,
@@ -638,7 +638,7 @@ class ApiClient {
     bool isMissed = false,
   }) async {
     return await _dio.post(
-      '/api/v1/chat/conversations/$conversationId/call-message',
+      '/chat/conversations/$conversationId/call-message',
       data: {
         'callType': callType,
         'duration': duration,
@@ -654,29 +654,29 @@ class ApiClient {
     required List<String> messageIds,
   }) async {
     return await _dio.post(
-      '/api/v1/chat/conversations/$conversationId/read',
+      '/chat/conversations/$conversationId/read',
       data: {'messageIds': messageIds},
     );
   }
 
   /// Mark conversation as read
   Future<Response> markConversationAsRead(String conversationId) async {
-    return await _dio.patch('/api/v1/chat/conversations/$conversationId/read');
+    return await _dio.patch('/chat/conversations/$conversationId/read');
   }
 
   /// Get unread message count
   Future<Response> getUnreadMessageCount() async {
-    return await _dio.get('/api/v1/messaging/unread-count');
+    return await _dio.get('/messaging/unread-count');
   }
 
   /// Mark all conversations as read
   Future<Response> markAllConversationsAsRead() async {
-    return await _dio.post('/api/v1/messaging/mark-all-read');
+    return await _dio.post('/messaging/mark-all-read');
   }
 
   /// Delete conversation
   Future<Response> deleteConversation(String conversationId) async {
-    return await _dio.delete('/api/v1/chat/conversations/$conversationId');
+    return await _dio.delete('/chat/conversations/$conversationId');
   }
 
   /// Block a user
@@ -712,7 +712,7 @@ class ApiClient {
     String? initialMessage,
   }) async {
     return await _dio.post(
-      '/api/v1/chat/conversations/start-from-match',
+      '/chat/conversations/start-from-match',
       data: {
         'matchId': matchId,
         if (initialMessage != null) 'initialMessage': initialMessage,

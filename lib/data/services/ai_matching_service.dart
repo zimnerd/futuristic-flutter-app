@@ -17,7 +17,7 @@ class AiMatchingService {
   }) async {
     try {
       final response = await _apiClient.post(
-        '/api/v1/ai-matching/descriptive-matching',
+        '/ai-matching/descriptive-matching',
         data: {
           'description': description,
           'maxResults': maxResults,
@@ -48,7 +48,7 @@ class AiMatchingService {
   }) async {
     try {
       final response = await _apiClient.post(
-        '/api/v1/ai-matching/profile-generation',
+        '/ai-matching/profile-generation',
         data: {
           'currentProfile': currentProfile,
           'targetAudience': targetAudience,
@@ -75,7 +75,7 @@ class AiMatchingService {
   }) async {
     try {
       final response = await _apiClient.post(
-        '/api/v1/ai-matching/photo-selection',
+        '/ai-matching/photo-selection',
         data: {
           'photoUrls': photoUrls,
           'targetDemographic': targetDemographic,
@@ -101,7 +101,7 @@ class AiMatchingService {
   }) async {
     try {
       final response = await _apiClient.post(
-        '/api/v1/ai-matching/qa-profile-builder',
+        '/ai-matching/qa-profile-builder',
         data: {
           'currentAnswers': currentAnswers ?? {},
         },
@@ -127,7 +127,7 @@ class AiMatchingService {
   }) async {
     try {
       final response = await _apiClient.post(
-        '/api/v1/ai-matching/personality-analysis',
+        '/ai-matching/personality-analysis',
         data: {
           'profileData': profileData,
           'messagingHistory': messagingHistory ?? [],
@@ -154,7 +154,7 @@ class AiMatchingService {
   }) async {
     try {
       final response = await _apiClient.post(
-        '/api/v1/ai-matching/compatibility-analysis',
+        '/ai-matching/compatibility-analysis',
         data: {
           'otherUserId': otherUserId,
           'conversationHistory': conversationHistory ?? [],
@@ -181,7 +181,7 @@ class AiMatchingService {
   }) async {
     try {
       final response = await _apiClient.post(
-        '/api/v1/ai-matching/conversation-coaching',
+        '/ai-matching/conversation-coaching',
         data: {
           'conversationId': conversationId,
           'currentMessage': currentMessage,
@@ -208,7 +208,7 @@ class AiMatchingService {
   }) async {
     try {
       final response = await _apiClient.post(
-        '/api/v1/ai-matching/predictive-analytics',
+        '/ai-matching/predictive-analytics',
         data: {
           'timeframe': timeframe ?? '30d',
           'metrics': metrics ?? ['match_probability', 'conversation_success', 'meeting_likelihood'],
@@ -235,7 +235,7 @@ class AiMatchingService {
   }) async {
     try {
       final response = await _apiClient.post(
-        '/api/v1/ai-matching/advanced-personalization',
+        '/ai-matching/advanced-personalization',
         data: {
           'focusArea': focusArea,
           'preferences': preferences ?? {},
@@ -258,7 +258,7 @@ class AiMatchingService {
   /// Check AI token usage and limits
   Future<Map<String, dynamic>?> getTokenUsage() async {
     try {
-      final response = await _apiClient.get('/api/v1/ai-matching/token-usage');
+      final response = await _apiClient.get('/ai-matching/token-usage');
 
       if (response.statusCode == 200 && response.data != null) {
         _logger.d('AI token usage information retrieved');
@@ -280,7 +280,7 @@ class AiMatchingService {
   }) async {
     try {
       final response = await _apiClient.post(
-        '/api/v1/ai-matching/content-moderation',
+        '/ai-matching/content-moderation',
         data: {
           'content': content,
           'contentType': contentType ?? 'text',
@@ -307,7 +307,7 @@ class AiMatchingService {
   }) async {
     try {
       final response = await _apiClient.post(
-        '/api/v1/ai-matching/visual-preference-analysis',
+        '/ai-matching/visual-preference-analysis',
         data: {
           'likedPhotoIds': likedPhotoIds,
           'passedPhotoIds': passedPhotoIds,
@@ -341,7 +341,7 @@ class AiMatchingService {
       if (minCompatibility != null) queryParams['minCompatibility'] = minCompatibility.toString();
 
       final response = await _apiClient.get(
-        '/api/v1/matching/ai/recommendations',
+        '/matching/ai/recommendations',
         queryParameters: queryParams,
       );
 
@@ -370,7 +370,7 @@ class AiMatchingService {
   }) async {
     try {
       final response = await _apiClient.post(
-        '/api/v1/matching/ai/score',
+        '/matching/ai/score',
         data: {
           'userId': userId,
           'targetUserId': targetUserId,
@@ -399,7 +399,7 @@ class AiMatchingService {
   }) async {
     try {
       final response = await _apiClient.post(
-        '/api/v1/matching/ai/feedback',
+        '/matching/ai/feedback',
         data: {
           'userId': userId,
           'targetUserId': targetUserId,

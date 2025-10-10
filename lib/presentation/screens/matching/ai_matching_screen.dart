@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/utils/logger.dart';
+import '../../../core/network/api_client.dart';
 import '../../../data/models/user_model.dart';
 import '../../../data/models/match_model.dart';
 import '../../../data/services/ai_matching_service.dart';
@@ -29,8 +30,7 @@ class _AiMatchingScreenState extends State<AiMatchingScreen>
     with TickerProviderStateMixin {
   
   final AiMatchingService _aiService = AiMatchingService(
-    // Will be injected via service locator in real implementation
-    throw UnimplementedError('Service locator not implemented in this example'),
+    ApiClient.instance,
   );
 
   late TabController _tabController;

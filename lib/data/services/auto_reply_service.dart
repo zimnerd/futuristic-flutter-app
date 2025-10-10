@@ -220,7 +220,7 @@ class AutoReplyService {
   /// Get user's reply preferences
   Future<Map<String, dynamic>?> getReplyPreferences() async {
     try {
-      final response = await _apiClient.get('/api/v1/ai/reply-preferences');
+      final response = await _apiClient.get('/ai/reply-preferences');
 
       if (response.statusCode == 200) {
         final preferences = response.data['preferences'];

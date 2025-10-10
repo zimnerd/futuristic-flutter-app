@@ -12,7 +12,7 @@ class VirtualGiftService {
   /// Get all available virtual gifts
   Future<List<VirtualGift>> getAvailableGifts() async {
     try {
-      final response = await _apiClient.get('/api/v1/virtual-gifts/catalog');
+      final response = await _apiClient.get('/virtual-gifts/catalog');
 
       if (response.statusCode == 200 && response.data != null) {
         final List<dynamic> data = response.data['gifts'] ?? [];
@@ -193,7 +193,7 @@ class VirtualGiftService {
   /// Get user's gift statistics
   Future<Map<String, dynamic>?> getUserGiftStats() async {
     try {
-      final response = await _apiClient.get('/api/v1/virtual-gifts/stats');
+      final response = await _apiClient.get('/virtual-gifts/stats');
 
       if (response.statusCode == 200 && response.data != null) {
         final stats = {

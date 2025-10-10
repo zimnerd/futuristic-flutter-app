@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import '../../../core/network/api_client.dart';
 import '../../../data/models/match_model.dart';
 import '../../../data/models/user_model.dart';
 import '../../../data/services/ai_matching_service.dart';
@@ -27,11 +28,11 @@ class _SmartMatchWidgetState extends State<SmartMatchWidget>
     with TickerProviderStateMixin {
   
   final AiMatchingService _aiService = AiMatchingService(
-    // Will be injected via service locator in real implementation
-    throw UnimplementedError('Service locator not implemented in this example'),
+    ApiClient.instance,
   );
   
   List<MatchModel> _recommendations = [];
+
   bool _isLoading = false;
   String _selectedFilter = 'all';
   

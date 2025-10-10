@@ -110,7 +110,7 @@ class PremiumService {
   /// Reactivate cancelled subscription
   Future<UserSubscription?> reactivateSubscription() async {
     try {
-      final response = await _apiClient.post('/api/v1/premium/reactivate');
+      final response = await _apiClient.post('/premium/reactivate');
 
       if (response.statusCode == 200 && response.data != null) {
         final subscription = UserSubscription.fromJson(response.data!);
@@ -157,7 +157,7 @@ class PremiumService {
   /// Get user's coin balance
   Future<CoinBalance?> getCoinBalance() async {
     try {
-      final response = await _apiClient.get('/api/v1/premium/coins/balance');
+      final response = await _apiClient.get('/premium/coins/balance');
 
       if (response.statusCode == 200 && response.data != null) {
         final balance = CoinBalance.fromJson(response.data!);
@@ -234,7 +234,7 @@ class PremiumService {
   /// Get available premium features for current subscription
   Future<List<PremiumFeature>> getAvailableFeatures() async {
     try {
-      final response = await _apiClient.get('/api/v1/premium/features');
+      final response = await _apiClient.get('/premium/features');
 
       if (response.statusCode == 200 && response.data != null) {
         final List<dynamic> data = response.data['features'] ?? [];
@@ -265,7 +265,7 @@ class PremiumService {
   /// Get premium feature usage stats
   Future<Map<String, dynamic>?> getFeatureUsageStats() async {
     try {
-      final response = await _apiClient.get('/api/v1/premium/usage-stats');
+      final response = await _apiClient.get('/premium/usage-stats');
 
       if (response.statusCode == 200 && response.data != null) {
         final stats = {
@@ -362,7 +362,7 @@ class PremiumService {
   /// Get billing information
   Future<Map<String, dynamic>?> getBillingInfo() async {
     try {
-      final response = await _apiClient.get('/api/v1/premium/billing-info');
+      final response = await _apiClient.get('/premium/billing-info');
 
       if (response.statusCode == 200 && response.data != null) {
         final billingInfo = {
