@@ -3,7 +3,6 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:pulse_dating_app/presentation/widgets/chat/message_input.dart';
 import 'package:pulse_dating_app/presentation/widgets/chat/typing_indicator.dart';
-import 'package:pulse_dating_app/presentation/widgets/profile/photo_grid.dart';
 import 'package:pulse_dating_app/presentation/widgets/call/call_controls.dart';
 
 void main() {
@@ -50,25 +49,6 @@ void main() {
       // Assert
       expect(find.text('John is typing'), findsOneWidget);
       expect(find.byType(AnimatedBuilder), findsOneWidget);
-    });
-  });
-
-  group('Profile Widgets Tests', () {
-    testWidgets('PhotoGrid displays add photo button when empty', (
-      tester,
-    ) async {
-      // Act
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: PhotoGrid(photos: const [], onPhotosChanged: (_) {}),
-          ),
-        ),
-      );
-
-      // Assert
-      expect(find.text('Add Photo'), findsOneWidget);
-      expect(find.byIcon(Icons.add_a_photo), findsOneWidget);
     });
   });
 

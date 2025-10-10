@@ -4,12 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:logger/logger.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 import '../../blocs/profile/profile_bloc.dart';
 import '../../theme/pulse_colors.dart';
 import '../../widgets/common/keyboard_dismissible_scaffold.dart';
 import '../../widgets/common/pulse_button.dart';
-import '../../widgets/profile/enhanced_photo_grid.dart';
+import '../../widgets/profile/photo_grid.dart';
 import '../../widgets/profile/profile_completion_card.dart';
 import '../../widgets/profile/profile_privacy_settings.dart';
 import '../../widgets/profile/interests_selector.dart';
@@ -273,6 +274,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
         _photos.removeWhere((p) => p.url == photoUrl);
       });
       // Temp photos don't need deletion event, they'll auto-cleanup
+      logger.i('🗑️ Temp photo removed from UI');
     } else {
       // Mark existing photo for deletion
       setState(() {
@@ -281,6 +283,16 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
       });
       // Dispatch DeletePhoto event for backend tracking
       context.read<ProfileBloc>().add(DeletePhoto(photoUrl: photoUrl));
+      logger.i('🗑️ Photo deletion dispatched to BLoC: $photoUrl');
+
+      // Force refresh profile from server after deletion
+      // This ensures we get the latest photo list without the deleted photo
+      logger.i('🔄 Forcing profile refresh after photo deletion');
+      Future.delayed(const Duration(milliseconds: 500), () {
+        if (mounted) {
+          _forceReloadProfile();
+        }
+      });
     }
   }
 
@@ -317,6 +329,9 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
   Future<void> _forceReloadProfile() async {
     logger.i('🔄 Force reload triggered - fetching fresh profile from server');
 
+    // Clear cached network images to force re-download of photos
+    await _clearPhotoCache();
+
     // Dispatch LoadProfile event with forceRefresh=true to bypass cache
     context.read<ProfileBloc>().add(const LoadProfile(forceRefresh: true));
 
@@ -328,6 +343,33 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
         backgroundColor: PulseColors.primary,
       ),
     );
+  }
+
+  /// Clear cached network images for all profile photos
+  /// This forces CachedNetworkImage to re-download images instead of showing stale cached versions
+  Future<void> _clearPhotoCache() async {
+    try {
+      logger.i('🧹 Clearing photo cache for all profile images');
+
+      // Clear cache for current photos
+      for (final photo in _photos) {
+        if (!photo.isLocal) {
+          await CachedNetworkImage.evictFromCache(photo.url);
+          logger.d('   - Cleared cache for: ${photo.url}');
+        }
+      }
+
+      // Also clear cache for photos marked for deletion (in case they're still visible)
+      for (final photoUrl in _photosMarkedForDeletion) {
+        await CachedNetworkImage.evictFromCache(photoUrl);
+        logger.d('   - Cleared cache for deleted: $photoUrl');
+      }
+
+      logger.i('✅ Photo cache cleared successfully');
+    } catch (e) {
+      logger.w('⚠️ Failed to clear photo cache: $e');
+      // Don't throw - cache clearing is optional optimization
+    }
   }
 
   /// Wrap a page with pull-to-refresh functionality
@@ -885,6 +927,13 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
                 );
               });
               
+              // Force refresh profile from server to ensure we have latest photo data
+              // This bypasses BLoC cache and clears any stale image URLs
+              logger.i(
+                '🔄 Forcing profile refresh after photo upload to clear cache',
+              );
+              _forceReloadProfile();
+              
               // Only show toast if photos actually changed (not on initial load)
               if (_hasShownInitialToast &&
                   _photos.length > previousPhotoCount) {
@@ -1260,7 +1309,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
           // Photo grid with BLoC state for upload progress
           BlocBuilder<ProfileBloc, ProfileState>(
             builder: (context, state) {
-              return EnhancedPhotoGrid(
+              return PhotoGrid(
                 photos: _photos,
                 onPhotosChanged: (photos) {
                   setState(() {

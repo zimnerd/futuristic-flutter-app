@@ -307,10 +307,12 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     Emitter<ProfileState> emit,
   ) async {
     try {
-      // Mark for deletion (deferred until save)
-      _photoManager.markPhotoForDeletion(event.photoUrl);
+      _logger.i('🗑️ Deleting photo immediately: ${event.photoUrl}');
 
-      _logger.i('🗑️ Photo marked for deletion: ${event.photoUrl}');
+      // Delete photo immediately via API (don't just mark for later)
+      await _profileService.deletePhoto(event.photoUrl);
+      
+      _logger.i('✅ Photo deleted from backend');
       
       // Remove from UI immediately
       if (state.profile != null) {
@@ -325,13 +327,16 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
           state.copyWith(
             profile: updatedProfile,
             updateStatus: ProfileStatus.initial,
+            uploadStatus: ProfileStatus.success, // Indicate deletion success
           ),
         );
       }
     } catch (e) {
+      _logger.e('❌ Failed to delete photo: $e');
       final errorMessage = ErrorHandler.handleError(e, showDialog: false);
       emit(state.copyWith(
         error: errorMessage,
+        uploadStatus: ProfileStatus.error,
       ));
     }
   }
