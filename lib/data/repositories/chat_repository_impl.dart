@@ -452,6 +452,8 @@ class ChatRepositoryImpl implements ChatRepository {
       
       // Create optimistic message for immediate UI update
       final optimisticId = 'optimistic_$tempId';
+      // Create optimistic message WITHOUT mediaUrls
+      // Backend will send full URLs in WebSocket response
       final optimisticMessage = MessageModel(
         id: optimisticId,
         conversationId: conversationId,
@@ -460,8 +462,13 @@ class ChatRepositoryImpl implements ChatRepository {
         type: type,
         content: content,
         status: MessageStatus.sending,
-        mediaUrls: mediaIds,
-        metadata: metadata,
+        // Don't set mediaUrls with IDs - they're not URLs!
+        // Backend will provide real URLs in WebSocket response
+        metadata: {
+          ...?metadata,
+          if (mediaIds != null && mediaIds.isNotEmpty)
+            'pendingMediaIds': mediaIds, // Track for upload state UI
+        },
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
         tempId: tempId, // Store tempId for correlation

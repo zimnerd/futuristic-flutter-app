@@ -714,6 +714,13 @@ class MessageBubble extends StatelessWidget {
 
   /// Build media content widget
   Widget _buildMediaContent(BuildContext context) {
+    // Check if message is uploading (has pending media)
+    if (message.status == MessageStatus.sending &&
+        message.metadata?['pendingMediaIds'] != null) {
+      return _buildUploadingPlaceholder(context);
+    }
+
+    // Check if we have actual media URLs
     if (!_hasMedia()) return const SizedBox.shrink();
 
     final mediaUrls = message.mediaUrls!;
@@ -733,12 +740,46 @@ class MessageBubble extends StatelessWidget {
     );
   }
 
+  /// Build uploading placeholder for pending media
+  Widget _buildUploadingPlaceholder(BuildContext context) {
+    return Container(
+      width: 200,
+      height: 200,
+      decoration: BoxDecoration(
+        color: Colors.grey[200],
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation<Color>(
+              Theme.of(context).colorScheme.primary,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'Uploading...',
+            style: TextStyle(
+              color: Colors.grey[600],
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   /// Build single image with modern styling
   Widget _buildSingleImage(
     BuildContext context,
     String imageUrl,
     String heroTag,
   ) {
+    // Add cache buster for recently uploaded images
+    final cacheBustedUrl = _addCacheBuster(imageUrl);
+
     return GestureDetector(
       onTap: () => _openMediaViewer(context, [imageUrl], 0, heroTag),
       child: Hero(
@@ -748,7 +789,7 @@ class MessageBubble extends StatelessWidget {
           child: ClipRRect(
             borderRadius: BorderRadius.circular(12),
             child: CachedNetworkImage(
-              imageUrl: imageUrl,
+              imageUrl: cacheBustedUrl, // Use cache-busted URL
               fit: BoxFit.cover,
               placeholder: (context, url) => _buildImagePlaceholder(),
               errorWidget: (context, url, error) => _buildImageError(),
@@ -759,6 +800,27 @@ class MessageBubble extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  /// Add cache buster to URL for recently uploaded images
+  String _addCacheBuster(String url) {
+    try {
+      final uri = Uri.parse(url);
+      final now = DateTime.now().millisecondsSinceEpoch;
+
+      // Add timestamp query parameter to force cache refresh
+      return uri
+          .replace(
+            queryParameters: {
+              ...uri.queryParameters,
+              't': now.toString(),
+            },
+          )
+          .toString();
+    } catch (e) {
+      // If URL parsing fails, return original
+      return url;
+    }
   }
 
   /// Build shimmer placeholder for loading images
