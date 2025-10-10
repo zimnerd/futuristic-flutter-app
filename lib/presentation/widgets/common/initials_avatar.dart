@@ -68,7 +68,7 @@ class InitialsAvatar extends StatelessWidget {
         radius: radius,
         backgroundImage: NetworkImage(imageUrl!),
         backgroundColor: backgroundColor ?? _generateColorFromString(name),
-        onBackgroundImageError: (_, __) {
+        onBackgroundImageError: (_, _) {
           // Fallback to initials if image fails to load
         },
         child: child,
