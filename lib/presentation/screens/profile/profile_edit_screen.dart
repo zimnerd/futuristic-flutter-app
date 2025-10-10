@@ -76,6 +76,9 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
   
   // Flag to track if we've shown initial toast (prevent toasts on page load)
   bool _hasShownInitialToast = false;
+  
+  // Flag to prevent infinite reload loops
+  bool _isReloading = false;
 
   // New profile fields state
   String? _selectedLifestyle;
@@ -290,14 +293,9 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
       context.read<ProfileBloc>().add(DeletePhoto(photoUrl: photoUrl));
       logger.i('🗑️ Photo deletion dispatched to BLoC: $photoUrl');
 
-      // Force refresh profile from server after deletion
-      // This ensures we get the latest photo list without the deleted photo
-      logger.i('🔄 Forcing profile refresh after photo deletion');
-      Future.delayed(const Duration(milliseconds: 500), () {
-        if (mounted) {
-          _forceReloadProfile();
-        }
-      });
+      // NO RELOAD HERE - The BLoC will handle updating the state
+      // The BlocBuilder will automatically rebuild with the updated photo list
+      logger.i('✅ Photo deleted - BLoC will update state automatically');
     }
   }
 
@@ -332,22 +330,40 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
 
   /// Force reload profile from server, skipping cache
   Future<void> _forceReloadProfile() async {
+    // Prevent multiple simultaneous reloads
+    if (_isReloading) {
+      logger.i('⏭️ Reload already in progress, skipping duplicate request');
+      return;
+    }
+
+    _isReloading = true;
     logger.i('🔄 Force reload triggered - fetching fresh profile from server');
 
-    // Clear cached network images to force re-download of photos
-    await _clearPhotoCache();
+    try {
+      // Clear cached network images to force re-download of photos
+      await _clearPhotoCache();
 
-    // Dispatch LoadProfile event with forceRefresh=true to bypass cache
-    context.read<ProfileBloc>().add(const LoadProfile(forceRefresh: true));
+      // Dispatch LoadProfile event with forceRefresh=true to bypass cache
+      if (mounted) {
+        context.read<ProfileBloc>().add(const LoadProfile(forceRefresh: true));
+      }
 
-    // Show a subtle loading indicator
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Refreshing profile...'),
-        duration: Duration(seconds: 1),
-        backgroundColor: PulseColors.primary,
-      ),
-    );
+      // Show a subtle loading indicator
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Refreshing profile...'),
+            duration: Duration(seconds: 1),
+            backgroundColor: PulseColors.primary,
+          ),
+        );
+      }
+      
+      // Wait a bit before allowing another reload
+      await Future.delayed(const Duration(milliseconds: 1000));
+    } finally {
+      _isReloading = false;
+    }
   }
 
   /// Clear cached network images for all profile photos
@@ -895,11 +911,27 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
             logger.i(
               '📝 Calling _populateFields with profile: ${state.profile!.name}',
             );
+            
+            // Save current tab/page index before refresh
+            final currentTabIndex = _tabController.index;
+            final currentPageIndex = _currentPageIndex;
+            
             // Wrap in setState to trigger UI rebuild for all populated fields (especially DOB)
             setState(() {
               _currentProfile = state.profile;
               _populateFields(state.profile!);
             });
+            
+            // Restore tab/page position after refresh to keep user on same tab
+            if (currentTabIndex != _tabController.index) {
+              logger.i('📍 Restoring tab position to index: $currentTabIndex');
+              _tabController.animateTo(currentTabIndex);
+              _pageController.jumpToPage(currentTabIndex);
+              setState(() {
+                _currentPageIndex = currentPageIndex;
+              });
+            }
+            
             logger.i(
               '✅ _populateFields completed, _currentProfile: ${_currentProfile?.name}',
             );
@@ -932,12 +964,10 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
                 );
               });
               
-              // Force refresh profile from server to ensure we have latest photo data
-              // This bypasses BLoC cache and clears any stale image URLs
-              logger.i(
-                '🔄 Forcing profile refresh after photo upload to clear cache',
-              );
-              _forceReloadProfile();
+              // NO RELOAD HERE - BLoC already has the latest state
+              // Just clear the cache to force fresh images on next render
+              logger.i('🧹 Clearing photo cache after successful upload');
+              _clearPhotoCache();
               
               // Only show toast if photos actually changed (not on initial load)
               if (_hasShownInitialToast &&
@@ -1008,12 +1038,13 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
                 _isFinalSave = false; // Reset flag
               }
             } else {
-              // Section save successful - clear cache and force refresh to get latest data
+              // Section save successful - just clear cache, no reload needed
               logger.i('✅ Section $_currentPageIndex saved successfully');
               
-              // Force refresh to ensure we have latest data from server
-              // This bypasses BLoC cache and ensures any photo changes are reflected
-              _forceReloadProfile();
+              // Clear photo cache to ensure fresh images on next render
+              // NO RELOAD - BLoC already updated the state after the save
+              logger.i('🧹 Clearing photo cache after section save');
+              _clearPhotoCache();
 
               // Only show toast if not initial load
               if (_hasShownInitialToast) {

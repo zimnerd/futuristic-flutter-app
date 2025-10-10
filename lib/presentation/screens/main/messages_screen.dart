@@ -54,16 +54,28 @@ class _MessagesScreenState extends State<MessagesScreen> {
     _loadMatchStories();
   }
 
-  /// Load conversations from backend API
-  Future<void> _loadConversations() async {
+  /// Load all conversations from the backend
+  /// Also refreshes matches when force reload is needed
+  Future<void> _loadConversations({bool includeMatches = false}) async {
+    AppLogger.debug(
+      '🔄 Loading conversations... (includeMatches: $includeMatches)',
+    );
     setState(() {
       _isLoading = true;
       _error = null;
     });
 
     try {
+      // Reload matches if requested (e.g., on pull-to-refresh)
+      if (includeMatches) {
+        _loadMatchStories();
+      }
+
+      AppLogger.debug('📞 Calling getUserConversations API...');
       final conversations = await _conversationService.getUserConversations();
-      
+      AppLogger.debug(
+        '✅ Received ${conversations.length} conversations from API',
+      );
       if (!mounted || !context.mounted) return;
       
       // Get current user ID
@@ -149,8 +161,15 @@ class _MessagesScreenState extends State<MessagesScreen> {
         _isLoading = false;
       });
       
+      AppLogger.debug(
+        '🎯 Set _allConversations to ${_allConversations.length} items',
+      );
       _applyFilters();
+      AppLogger.debug(
+        '✅ After filters: ${_filteredConversations.length} conversations',
+      );
     } catch (e) {
+      AppLogger.error('❌ Error loading conversations: $e');
       setState(() {
         _error = 'Failed to load conversations: $e';
         _isLoading = false;
@@ -182,13 +201,26 @@ class _MessagesScreenState extends State<MessagesScreen> {
       return 'No messages yet';
     }
 
-    // Extract content from message object
+    // Extract content and type from message object
     final content = message.content ?? '';
+    final type = message.type ?? 'text';
+
+    // If content is empty, check message type for attachments
     if (content.isEmpty) {
+      // Check message type for media attachments
+      if (type == 'image') {
+        return '📷 Photo';
+      } else if (type == 'video') {
+        return '🎥 Video';
+      } else if (type == 'audio' || type == 'voice') {
+        return '🎵 Voice message';
+      } else if (type == 'file') {
+        return '📄 Attachment';
+      }
       return 'No messages yet';
     }
 
-    // Handle different message types with appropriate icons
+    // Handle different message types with appropriate icons (when content contains keywords)
     if (content.toLowerCase().contains('location') || content.startsWith('geo:')) {
       return '📍 Location shared';
     } else if (content.toLowerCase().contains('image') || content.toLowerCase().contains('photo')) {
@@ -448,8 +480,22 @@ class _MessagesScreenState extends State<MessagesScreen> {
                   : _error != null
                       ? _buildErrorState()
                       : _filteredConversations.isEmpty
-                          ? _buildEmptyState()
-                          : _buildConversationsList(),
+                    ? RefreshIndicator(
+                        onRefresh: () =>
+                            _loadConversations(includeMatches: true),
+                        child: SingleChildScrollView(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          child: SizedBox(
+                            height: MediaQuery.of(context).size.height * 0.6,
+                            child: _buildEmptyState(),
+                          ),
+                        ),
+                      )
+                    : RefreshIndicator(
+                        onRefresh: () =>
+                            _loadConversations(includeMatches: true),
+                        child: _buildConversationsList(),
+                      ),
             ),
           ],
         ),
@@ -1007,12 +1053,9 @@ class _MessagesScreenState extends State<MessagesScreen> {
   }
 
   bool _matchesCurrentFilters(ConversationData conversation) {
-    // 🎯 CORE FILTER: Only show conversations that have actual messages
-    // Exclude conversations with "No messages yet" (users should only appear in matches section)
-    if (conversation.lastMessage == 'No messages yet') {
-      return false;
-    }
-
+    // NOTE: Removed "No messages yet" filter - conversations should show even without messages
+    // This allows users to see all their conversations, including newly created ones
+    
     // Type filter
     if (_currentFilters.type != MessageFilterType.all &&
         conversation.type != _currentFilters.type) {
