@@ -1014,7 +1014,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
               // Force refresh to ensure we have latest data from server
               // This bypasses BLoC cache and ensures any photo changes are reflected
               _forceReloadProfile();
-              
+
               // Only show toast if not initial load
               if (_hasShownInitialToast) {
                 ScaffoldMessenger.of(context).showSnackBar(
