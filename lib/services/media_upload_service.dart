@@ -331,7 +331,7 @@ class MediaUploadService {
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        return _parseUploadResponse(response.data);
+        return MediaUploadResult.fromJson(response.data);
       } else {
         throw MediaUploadException(
           'Upload failed with status ${response.statusCode}',
@@ -502,29 +502,8 @@ class MediaUploadService {
   }
 
   /// Parse upload response from server
-  MediaUploadResult _parseUploadResponse(dynamic responseData) {
-    try {
-      if (responseData is Map<String, dynamic>) {
-        return MediaUploadResult(
-          success: true,
-          mediaId: responseData['id']?.toString() ?? 
-                   'media_${DateTime.now().millisecondsSinceEpoch}',
-          mediaUrl: responseData['url']?.toString() ?? 
-                    responseData['originalUrl']?.toString(),
-          thumbnailUrl: responseData['thumbnailUrl']?.toString(),
-          mediaType: responseData['type']?.toString() ?? 'unknown',
-          category: responseData['category']?.toString(),
-          fileSize: responseData['fileSize'],
-          mimeType: responseData['mimeType']?.toString(),
-          metadata: responseData['metadata'] as Map<String, dynamic>?,
-        );
-      }
-      
-      throw MediaUploadException('Invalid response format');
-    } catch (e) {
-      throw MediaUploadException('Failed to parse upload response: $e');
-    }
-  }
+  // Removed _parseUploadResponse - use MediaUploadResult.fromJson instead
+  // which properly handles the backend's nested response structure
 }
 
 // ===========================================
@@ -658,16 +637,24 @@ class MediaUploadResult {
   });
 
   factory MediaUploadResult.fromJson(Map<String, dynamic> json) {
+    // Backend response is wrapped in { success, statusCode, message, data: {...} }
+    final dataObject = json['data'] ?? json;
+    
     return MediaUploadResult(
       success: json['success'] ?? false,
-      mediaId: json['mediaId'],
-      mediaUrl: json['mediaUrl'],
-      thumbnailUrl: json['thumbnailUrl'],
-      mediaType: json['mediaType'],
-      category: json['category'],
-      fileSize: json['fileSize'],
-      mimeType: json['mimeType'],
-      metadata: json['metadata'],
+      mediaId:
+          dataObject['id'] ??
+          dataObject['mediaId'], // Backend uses "id", fallback to "mediaId"
+      mediaUrl:
+          dataObject['url'] ??
+          dataObject['mediaUrl'], // Backend uses "url", fallback to "mediaUrl"
+      thumbnailUrl: dataObject['thumbnailUrl'],
+      mediaType:
+          dataObject['type'] ?? dataObject['mediaType'], // Backend uses "type"
+      category: dataObject['category'],
+      fileSize: dataObject['fileSize'],
+      mimeType: dataObject['mimeType'],
+      metadata: dataObject['metadata'],
       error: json['error'],
     );
   }

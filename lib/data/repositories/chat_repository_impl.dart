@@ -447,6 +447,7 @@ class ChatRepositoryImpl implements ChatRepository {
         'content': content,
         'type': type.name,
         'metadata': metadata,
+        'mediaIds': mediaIds, // 🆕 Send mediaIds to backend
         'tempId': tempId, // Include tempId for correlation
       });
       
