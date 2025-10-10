@@ -13,6 +13,7 @@ import '../../widgets/messaging/message_search.dart';
 import '../../widgets/messaging/match_stories_section.dart';
 import '../../../data/services/conversation_service.dart';
 import '../../../data/models/user.dart';
+import '../../../domain/entities/message.dart' show MessageType;
 import '../../blocs/match/match_bloc.dart';
 import '../../blocs/match/match_event.dart';
 import '../../blocs/match/match_state.dart';
@@ -122,6 +123,12 @@ class _MessagesScreenState extends State<MessagesScreen> {
         AppLogger.debug(
           '🐛 Last message content: "${conversation.lastMessage?.content ?? 'NULL'}"',
         );
+        AppLogger.debug(
+          '🐛 Last message type: "${conversation.lastMessage?.type ?? 'NULL'}"',
+        );
+        AppLogger.debug(
+          '🐛 Last message metadata: ${conversation.lastMessage?.metadata}',
+        );
 
         // Determine enhanced last message preview with type detection
         String lastMessagePreview = _formatMessagePreview(conversation.lastMessage);
@@ -213,21 +220,47 @@ class _MessagesScreenState extends State<MessagesScreen> {
     // Extract content and type from message object
     final content = (message.content ?? '').trim();
     final type = message.type ?? 'text';
+    final metadata = message.metadata as Map<String, dynamic>?;
 
     // Prioritize type detection for media messages
-    if (type == 'image') {
+    if (type == 'image' || type == MessageType.image.name) {
       return '📷 Photo';
-    } else if (type == 'video') {
+    } else if (type == 'video' || type == MessageType.video.name) {
       return '🎥 Video';
-    } else if (type == 'audio' || type == 'voice') {
+    } else if (type == 'audio' || type == 'voice' || type == MessageType.audio.name) {
       return '🎵 Voice message';
-    } else if (type == 'file') {
+    } else if (type == 'file' || type == MessageType.file.name) {
       return '📄 Attachment';
+    }
+    
+    // Check metadata for media type hints
+    if (metadata != null) {
+      final mediaType = metadata['mediaType'] as String?;
+      if (mediaType == 'image') return '📷 Photo';
+      if (mediaType == 'video') return '🎥 Video';
+      if (mediaType == 'audio') return '🎵 Voice message';
     }
     
     // If no content, return appropriate message
     if (content.isEmpty) {
       return 'No messages yet';
+    }
+
+    // Check if content is an image URL (fallback detection)
+    if (content.startsWith('http') && 
+        (content.contains('/uploads/') || content.contains('/media/')) &&
+        (content.endsWith('.jpg') || content.endsWith('.jpeg') || 
+         content.endsWith('.png') || content.endsWith('.gif') ||
+         content.endsWith('.webp') || content.contains('.jpg?') || 
+         content.contains('.jpeg?') || content.contains('.png?'))) {
+      return '📷 Photo';
+    }
+
+    // Check if content is a video URL
+    if (content.startsWith('http') && 
+        (content.endsWith('.mp4') || content.endsWith('.mov') || 
+         content.endsWith('.avi') || content.contains('.mp4?'))) {
+      return '🎥 Video';
     }
 
     // Handle different message types with appropriate icons (when content contains keywords)

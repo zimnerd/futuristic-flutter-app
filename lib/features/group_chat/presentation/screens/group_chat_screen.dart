@@ -18,6 +18,7 @@ import '../widgets/message_bubble.dart';
 import '../widgets/typing_indicator.dart';
 import '../widgets/voice_recorder_widget.dart';
 import '../widgets/message_search_bar.dart';
+import '../../../../presentation/widgets/common/initials_avatar.dart';
 
 class GroupChatScreen extends StatefulWidget {
   final GroupConversation group;
@@ -119,19 +120,45 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
     }
 
     return AppBar(
-      title: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      backgroundColor: const Color(0xFF6E3BFF), // PulseColors.primary
+      elevation: 0,
+      leading: IconButton(
+        icon: const Icon(Icons.arrow_back, color: Colors.white),
+        onPressed: () => Navigator.of(context).pop(),
+      ),
+      title: Row(
         children: [
-          Text(widget.group.name),
-          Text(
-            '${widget.group.participants.length} members',
-            style: const TextStyle(fontSize: 12),
+          // Group avatar with initials
+          InitialsAvatar(name: widget.group.name, imageUrl: null, radius: 20),
+          const SizedBox(width: 12),
+          // Group info
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  widget.group.name,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  '${widget.group.participants.length} members',
+                  style: const TextStyle(color: Colors.white70, fontSize: 12),
+                ),
+              ],
+            ),
           ),
         ],
       ),
       actions: [
         IconButton(
-          icon: const Icon(Icons.search),
+          icon: const Icon(Icons.search, color: Colors.white),
           onPressed: () {
             setState(() {
               _isSearchMode = true;
@@ -141,17 +168,18 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
         ),
         if (widget.group.settings?.enableVideoChat == true)
           IconButton(
-            icon: const Icon(Icons.videocam),
+            icon: const Icon(Icons.videocam, color: Colors.white),
             onPressed: _startVideoCall,
             tooltip: 'Start video call',
           ),
         if (widget.group.settings?.enableVoiceChat == true)
           IconButton(
-            icon: const Icon(Icons.call),
+            icon: const Icon(Icons.call, color: Colors.white),
             onPressed: _startVoiceCall,
             tooltip: 'Start voice call',
           ),
         PopupMenuButton(
+          icon: const Icon(Icons.more_vert, color: Colors.white),
           itemBuilder: (context) => [
             const PopupMenuItem(
               value: 'participants',
