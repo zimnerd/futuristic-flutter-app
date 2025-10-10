@@ -230,6 +230,29 @@ class LocationService {
     try {
       debugPrint('📍 LocationService: Starting permission request with dialog');
 
+      // Check if context has MaterialLocalizations (required for dialogs)
+      // This prevents "No MaterialLocalizations found" errors when called too early
+      bool canShowDialogs = false;
+      try {
+        // Try to get MaterialLocalizations - if it throws, context isn't ready
+        Localizations.of<MaterialLocalizations>(context, MaterialLocalizations);
+        canShowDialogs = context.mounted;
+      } catch (e) {
+        debugPrint(
+          '📍 LocationService: Context not ready for dialogs, using silent permission request',
+        );
+        canShowDialogs = false;
+      }
+
+      // If we can't show dialogs yet, fall back to silent permission request
+      if (!canShowDialogs) {
+        debugPrint(
+          '📍 LocationService: Using silent permission request (context not ready)',
+        );
+        final status = await requestPermissions(showRationale: false);
+        return status == LocationPermissionStatus.granted;
+      }
+
       // Check if location service is enabled first
       bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
       debugPrint(

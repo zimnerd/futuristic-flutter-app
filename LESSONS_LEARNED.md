@@ -5,6 +5,97 @@ This document captures key learnings from building the **Flutter mobile dating a
 
 ---
 
+## 🌍 **Location Permission Context Issue (January 2025)**
+
+**Status**: ✅ **RESOLVED** - Graceful fallback implemented  
+**Date**: January 2025  
+**Priority**: **HIGH** - Prevents location tracking initialization
+
+**Context**: `AutoLoginWrapper` widget is positioned above `MaterialApp` in the widget tree. When `BlocListener<AuthBloc>` tries to show location permission dialogs on `AuthAuthenticated` state, the context doesn't have `MaterialLocalizations` yet, causing "No MaterialLocalizations found" error.
+
+### **Problem - Dialog Before Material Context**
+
+#### **Widget Tree Structure**
+```dart
+AppProviders
+└─ MultiBlocProvider
+   └─ AutoLoginWrapper  ← BlocListener is here
+      └─ MaterialApp.router  ← Material context starts here
+```
+
+#### **Error Scenario**
+```dart
+// In auto_login_wrapper.dart BlocListener callback:
+final locationInitialized = await _locationTracker.initializeWithDialogs(context);
+// context here is from BlocListener, which is ABOVE MaterialApp
+// Shows: "No MaterialLocalizations found" when trying to show dialog
+```
+
+#### **Root Cause**
+- `AutoLoginWrapper` wraps `MaterialApp`, so `BlocListener` context doesn't have Material widgets
+- Even with `addPostFrameCallback` and 500ms delay, the context passed to callback is still BlocListener's context
+- `showDialog()` requires Material context with `MaterialLocalizations`
+
+### **Solution - Graceful Fallback**
+
+#### **Check for Material Context Before Showing Dialogs**
+```dart
+// In location_service.dart requestPermissionsWithDialog():
+bool canShowDialogs = false;
+try {
+  // Try to get MaterialLocalizations - if it throws, context isn't ready
+  Localizations.of<MaterialLocalizations>(context, MaterialLocalizations);
+  canShowDialogs = context.mounted;
+} catch (e) {
+  debugPrint('📍 LocationService: Context not ready for dialogs, using silent permission request');
+  canShowDialogs = false;
+}
+
+// If we can't show dialogs yet, fall back to silent permission request
+if (!canShowDialogs) {
+  debugPrint('📍 LocationService: Using silent permission request (context not ready)');
+  final status = await requestPermissions(showRationale: false);
+  return status == LocationPermissionStatus.granted;
+}
+
+// Otherwise proceed with normal dialog flow...
+```
+
+### **Key Lessons**
+
+1. **✅ Always check if context has required widgets before showing dialogs**
+   - Use `try-catch` around `Localizations.of<MaterialLocalizations>()` to detect if context is ready
+   - Provide graceful fallback for early initialization scenarios
+
+2. **✅ Understand widget tree hierarchy for context availability**
+   - Widgets above `MaterialApp` don't have `MaterialLocalizations`
+   - Even with delays, the context reference doesn't change
+
+3. **✅ Provide non-dialog alternatives for critical permissions**
+   - Location tracking shouldn't require dialogs to function
+   - Silent permission request works for early initialization
+   - Show dialogs later when user interacts with location features
+
+4. **✅ Use logging to understand context state**
+   - Log when using silent vs dialog permission requests
+   - Helps debug initialization timing issues
+
+### **Alternative Solutions Considered**
+
+1. **Navigator Context** - `Navigator.of(context, rootNavigator: true)` 
+   - ❌ Doesn't work - Navigator isn't built yet either
+
+2. **Move Initialization** - Move location init to first screen with Material context
+   - ❌ Delays location tracking, breaks auto-login UX
+
+3. **GlobalKey** - Use GlobalKey to get MaterialApp's context
+   - ❌ Overly complex, requires additional state management
+
+4. **Skip Dialogs** - Only use silent permission requests
+   - ⚠️ Works but provides poor UX for permission explanations
+
+---
+
 ## 🔄 **Backend API Response Format Inconsistencies (January 2025)**
 
 **Status**: ✅ **RESOLVED** - Dual format handling implemented  
