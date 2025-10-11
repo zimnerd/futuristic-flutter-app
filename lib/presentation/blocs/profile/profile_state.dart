@@ -9,12 +9,14 @@ class PhotoUploadProgress {
   final String localPath; // Local file path
   final PhotoUploadState state;
   final String? error; // Error message if failed
+  final ProfilePhoto? uploadedPhoto; // The uploaded photo (when success)
 
   const PhotoUploadProgress({
     required this.tempId,
     required this.localPath,
     required this.state,
     this.error,
+    this.uploadedPhoto,
   });
 
   PhotoUploadProgress copyWith({
@@ -22,12 +24,14 @@ class PhotoUploadProgress {
     String? localPath,
     PhotoUploadState? state,
     String? error,
+    ProfilePhoto? uploadedPhoto,
   }) {
     return PhotoUploadProgress(
       tempId: tempId ?? this.tempId,
       localPath: localPath ?? this.localPath,
       state: state ?? this.state,
       error: error ?? this.error,
+      uploadedPhoto: uploadedPhoto ?? this.uploadedPhoto,
     );
   }
 }

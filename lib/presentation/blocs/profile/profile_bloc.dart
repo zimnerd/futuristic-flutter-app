@@ -208,45 +208,53 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
 
       _logger.i('✅ Photo uploaded permanently: $photoUrl');
 
-      // Add to profile
+      // Create the new photo object
+      final newPhoto = ProfilePhoto(
+        id: photoUrl.split('/').last, // Use filename as temp ID
+        url: photoUrl,
+        order: state.profile?.photos.length ?? 0,
+      );
+
+      // Update uploading state to success (keep photo in uploading state)
+      final successUploadingPhotos = Map<String, PhotoUploadProgress>.from(
+        state.uploadingPhotos,
+      );
+      successUploadingPhotos[tempId] = PhotoUploadProgress(
+        tempId: tempId,
+        localPath: event.photoPath,
+        state: PhotoUploadState.success,
+        uploadedPhoto: newPhoto, // Store the uploaded photo
+      );
+
+      emit(
+        state.copyWith(
+          uploadStatus: ProfileStatus.success,
+          uploadingPhotos: successUploadingPhotos,
+          lastFetchTime: DateTime.now(),
+        ),
+      );
+
+      // Show success checkmark for 1.5 seconds, then add to profile and remove from uploading
+      await Future.delayed(const Duration(milliseconds: 1500));
+
       if (state.profile != null) {
         final updatedPhotos = List<ProfilePhoto>.from(state.profile!.photos)
-          ..add(
-            ProfilePhoto(
-              id: photoUrl.split('/').last, // Use filename as temp ID
-              url: photoUrl,
-              order: state.profile!.photos.length,
-            ),
-          );
+          ..add(newPhoto);
 
         final updatedProfile = state.profile!.copyWith(photos: updatedPhotos);
 
-        // Update uploading state to success
-        final successUploadingPhotos = Map<String, PhotoUploadProgress>.from(
-          state.uploadingPhotos,
-        );
-        successUploadingPhotos[tempId] = PhotoUploadProgress(
-          tempId: tempId,
-          localPath: event.photoPath,
-          state: PhotoUploadState.success,
-        );
-
-        emit(
-          state.copyWith(
-            uploadStatus: ProfileStatus.success,
-            profile: updatedProfile,
-            uploadingPhotos: successUploadingPhotos,
-            lastFetchTime: DateTime.now(),
-          ),
-        );
-
-        // Auto-clear success state after 3 seconds
-        await Future.delayed(const Duration(seconds: 3));
+        // Remove from uploading state and add to profile
         final clearedUploadingPhotos = Map<String, PhotoUploadProgress>.from(
           state.uploadingPhotos,
         );
         clearedUploadingPhotos.remove(tempId);
-        emit(state.copyWith(uploadingPhotos: clearedUploadingPhotos));
+
+        emit(
+          state.copyWith(
+            profile: updatedProfile,
+            uploadingPhotos: clearedUploadingPhotos,
+          ),
+        );
       }
     } catch (e) {
       _logger.e('❌ Photo upload failed: $e');
