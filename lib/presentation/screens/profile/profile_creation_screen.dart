@@ -6,12 +6,15 @@ import '../../../services/profile_draft_service.dart';
 import '../../blocs/profile/profile_bloc.dart';
 import '../../blocs/user/user_bloc.dart';
 import '../../blocs/user/user_event.dart';
+import '../../blocs/auth/auth_bloc.dart';
+import '../../blocs/auth/auth_state.dart';
 import '../../theme/pulse_colors.dart';
 import '../../widgets/common/keyboard_dismissible_scaffold.dart';
 import '../../widgets/common/pulse_loading_widget.dart';
 import '../../widgets/profile/interests_selector.dart';
 import '../../widgets/profile/photo_picker_grid.dart';
 import '../../widgets/profile/profile_exit_dialog.dart';
+import '../../../core/config/app_config.dart';
 
 /// Profile creation screen for new users
 class ProfileCreationScreen extends StatefulWidget {
@@ -547,12 +550,27 @@ class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
           ),
           const SizedBox(height: 32),
           Expanded(
-            child: InterestsSelector(
-              selectedInterests: _selectedInterests,
-              onInterestsChanged: (interests) {
-                setState(() {
-                  _selectedInterests = interests;
-                });
+            child: BlocBuilder<ProfileBloc, ProfileState>(
+              builder: (context, profileState) {
+                // Get access token if available
+                String? accessToken;
+                final authState = context.read<AuthBloc>().state;
+                if (authState is AuthAuthenticated) {
+                  // Token would typically be stored in secure storage
+                  // For now, pass null and the API will work without auth if needed
+                  accessToken = null; // TODO: Get from secure storage
+                }
+
+                return InterestsSelector(
+                  baseUrl: AppConfig.apiBaseUrl,
+                  accessToken: accessToken,
+                  selectedInterests: _selectedInterests,
+                  onInterestsChanged: (interests) {
+                    setState(() {
+                      _selectedInterests = interests;
+                    });
+                  },
+                );
               },
             ),
           ),
