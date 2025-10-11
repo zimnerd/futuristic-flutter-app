@@ -12,15 +12,11 @@ class InterestsSelector extends StatefulWidget {
   final Function(List<String>) onInterestsChanged;
   final int maxInterests;
   final int minInterests;
-  final String baseUrl;
-  final String? accessToken;
 
   const InterestsSelector({
     super.key,
     required this.selectedInterests,
     required this.onInterestsChanged,
-    required this.baseUrl,
-    this.accessToken,
     this.maxInterests = 10,
     this.minInterests = 3,
   });
@@ -112,10 +108,7 @@ class _InterestsSelectorState extends State<InterestsSelector>
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) => InterestsBloc(
-        repository: InterestsRepository(
-          baseUrl: widget.baseUrl,
-          accessToken: widget.accessToken,
-        ),
+        repository: InterestsRepository(),
       )..add(const LoadInterests()),
       child: BlocBuilder<InterestsBloc, InterestsState>(
         builder: (context, state) {

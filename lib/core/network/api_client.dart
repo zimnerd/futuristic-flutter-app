@@ -433,6 +433,25 @@ class ApiClient {
   }
 
   // ===========================================
+  // INTERESTS ENDPOINTS
+  // ===========================================
+
+  /// Get all interest categories with nested interests
+  Future<Response> getInterestCategories() async {
+    return await _dio.get('/interests/categories');
+  }
+
+  /// Get all interests with category information
+  Future<Response> getAllInterests() async {
+    return await _dio.get('/interests');
+  }
+
+  /// Get just the interest names (backward compatibility)
+  Future<Response> getInterestNames() async {
+    return await _dio.get('/interests/names');
+  }
+
+  // ===========================================
   // MATCHING ENDPOINTS (Actual backend paths)
   // ===========================================
 

@@ -1,37 +1,20 @@
-import 'package:http/http.dart' as http;
-import 'dart:convert';
+import '../../core/network/api_client.dart';
 import '../models/interest_category.dart';
 import '../models/interest.dart';
 
 class InterestsRepository {
-  final String baseUrl;
-  final String? accessToken;
+  final ApiClient _apiClient;
 
-  InterestsRepository({
-    required this.baseUrl,
-    this.accessToken,
-  });
-
-  Map<String, String> get _headers {
-    final headers = {
-      'Content-Type': 'application/json',
-    };
-    if (accessToken != null) {
-      headers['Authorization'] = 'Bearer $accessToken';
-    }
-    return headers;
-  }
+  InterestsRepository({ApiClient? apiClient})
+    : _apiClient = apiClient ?? ApiClient.instance;
 
   /// Fetch all interest categories with nested interests
   Future<List<InterestCategory>> getCategories() async {
     try {
-      final response = await http.get(
-        Uri.parse('$baseUrl/api/v1/interests/categories'),
-        headers: _headers,
-      );
+      final response = await _apiClient.getInterestCategories();
 
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
+      if (response.statusCode == 200 && response.data != null) {
+        final data = response.data as Map<String, dynamic>;
         if (data['success'] == true && data['data'] != null) {
           final categories = data['data']['categories'] as List<dynamic>;
           return categories
@@ -52,13 +35,10 @@ class InterestsRepository {
   /// Fetch all interests with category information
   Future<List<Interest>> getAllInterests() async {
     try {
-      final response = await http.get(
-        Uri.parse('$baseUrl/api/v1/interests'),
-        headers: _headers,
-      );
+      final response = await _apiClient.getAllInterests();
 
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
+      if (response.statusCode == 200 && response.data != null) {
+        final data = response.data as Map<String, dynamic>;
         if (data['success'] == true && data['data'] != null) {
           final interests = data['data']['interests'] as List<dynamic>;
           return interests
@@ -79,13 +59,10 @@ class InterestsRepository {
   /// Fetch just the interest names (backward compatibility)
   Future<List<String>> getInterestNames() async {
     try {
-      final response = await http.get(
-        Uri.parse('$baseUrl/api/v1/interests/names'),
-        headers: _headers,
-      );
+      final response = await _apiClient.getInterestNames();
 
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
+      if (response.statusCode == 200 && response.data != null) {
+        final data = response.data as Map<String, dynamic>;
         if (data['success'] == true && data['data'] != null) {
           final names = data['data']['names'] as List<dynamic>;
           return names.map((name) => name as String).toList();
