@@ -151,9 +151,20 @@ class _MessagesScreenState extends State<MessagesScreen> {
         );
       }).toList();
       
+      // FILTER: Only include conversations that have actual messages
+      // Exclude conversations with "No messages yet" or empty lastMessage
+      final conversationsWithMessages = conversationDataList.where((conv) {
+        return conv.lastMessage.isNotEmpty &&
+            conv.lastMessage != 'No messages yet';
+      }).toList();
+
+      AppLogger.debug(
+        '🔍 Filtered conversations: ${conversationDataList.length} total → ${conversationsWithMessages.length} with messages',
+      );
+      
       // Deduplicate conversations by otherUserId to prevent duplicate entries
       final Map<String, ConversationData> uniqueConversations = {};
-      for (final conv in conversationDataList) {
+      for (final conv in conversationsWithMessages) {
         if (!uniqueConversations.containsKey(conv.otherUserId) || 
             uniqueConversations[conv.otherUserId]!.lastMessageTime.isBefore(
               conv.lastMessageTime,
@@ -169,7 +180,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
       );
       
       AppLogger.debug(
-        '🗋️ Loaded ${conversations.length} conversations, deduplicated to ${deduplicatedList.length}',
+        '🗋️ After deduplication: ${deduplicatedList.length} conversations',
       );
 
       setState(() {
@@ -445,9 +456,44 @@ class _MessagesScreenState extends State<MessagesScreen> {
                     return matchStory;
                   }).toList();
 
-                  if (matchStories.isNotEmpty) {
+                    // Filter: Only show matches that don't have messages yet
+                    // Check if their conversationId exists in _allConversations and has no lastMessage
+                    final matchesWithoutMessages = matchStories.where((match) {
+                      if (match.conversationId == null) {
+                        // No conversation created yet = definitely show in New Matches
+                        return true;
+                      }
+
+                      // Check if conversation exists and has messages
+                      final conversation = _allConversations.firstWhere(
+                        (conv) => conv.id == match.conversationId,
+                        orElse: () => ConversationData(
+                          id: '',
+                          name: '',
+                          avatar: '',
+                          lastMessage: '',
+                          timestamp: '',
+                          lastMessageTime: DateTime.now(),
+                          unreadCount: 0,
+                          isOnline: false,
+                          otherUserId: '',
+                          type: MessageFilterType.all,
+                        ),
+                      );
+
+                      // Only show in New Matches if conversation has no messages
+                      return conversation.id.isEmpty ||
+                          conversation.lastMessage.isEmpty ||
+                          conversation.lastMessage == 'No messages yet';
+                    }).toList();
+
+                    AppLogger.debug(
+                      '📊 Filtered matches: ${matchStories.length} total → ${matchesWithoutMessages.length} without messages',
+                    );
+
+                    if (matchesWithoutMessages.isNotEmpty) {
                     return MatchStoriesSection(
-                      matches: matchStories,
+                        matches: matchesWithoutMessages,
                       onMatchTap: _onMatchStoryTap,
                       hasMore: matchState.hasMore,
                       onLoadMore: _loadMoreMatches,
