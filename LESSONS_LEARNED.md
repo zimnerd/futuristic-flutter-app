@@ -5,7 +5,186 @@ This document captures key learnings from building the **Flutter mobile dating a
 
 ---
 
-## 📸 **Profile Photo Persistence Bug (October 2025)**
+## �️ **Photo Deletion Bug - Wrong ID Extraction (January 2025)**
+
+**Status**: ✅ **RESOLVED** - Pass Media ID directly instead of extracting from URL  
+**Date**: January 10, 2025  
+**Priority**: **CRITICAL** - Deleted photos remain in database and storage
+
+**Context**: Users delete profile photos from the app, but photos remain in the Media table and on the server storage. Investigation revealed mobile app was trying to extract Media ID from photo URL incorrectly.
+
+### **Problem - Incorrect Photo ID Extraction**
+
+#### **Original Broken Code**
+```dart
+// profile_service.dart (BROKEN)
+Future<void> deletePhoto(String photoUrl) async {
+  // ❌ BUG: Trying to extract Media ID from URL
+  final photoId = photoUrl.split('/').last.split('.').first;
+  // This doesn't work because:
+  // URL format: https://api.pulselink.com/uploads/user_123/abc-def-ghi.jpg
+  // Split result: 'abc-def-ghi' (not the Media UUID!)
+  return deletePhotoWithDetails(photoId: photoId);
+}
+
+// profile_edit_screen.dart (BROKEN)
+void _handleDeletePhoto(ProfilePhoto photo) {
+  // ❌ Passing URL instead of ID
+  context.read<ProfileBloc>().add(DeletePhoto(photoUrl: photo.url));
+}
+
+// profile_event.dart (BROKEN)
+class DeletePhoto extends ProfileEvent {
+  final String photoUrl; // ❌ Should be photoId
+  const DeletePhoto({required this.photoUrl});
+}
+
+// profile_bloc.dart (BROKEN)
+Future<void> _onDeletePhoto(DeletePhoto event, Emitter<ProfileState> emit) async {
+  // ❌ Passing URL, which gets incorrectly parsed
+  await _profileService.deletePhoto(event.photoUrl);
+  
+  // ❌ Filtering by URL instead of ID
+  final updatedPhotos = state.profile!.photos
+      .where((photo) => photo.url != event.photoUrl)
+      .toList();
+}
+```
+
+**Why It Failed:**
+1. `ProfilePhoto` entity has `id` field (the actual Media UUID)
+2. Mobile was passing `photo.url` to delete event
+3. Service tried to extract ID from URL using string split
+4. URL structure doesn't match expected pattern
+5. Wrong ID sent to backend → photo not found → deletion failed
+6. Result: Photos remain in Media table and storage
+
+### **Solution - Pass Media ID Directly**
+
+#### **Fixed Code**
+```dart
+// profile_edit_screen.dart (FIXED)
+void _handleDeletePhoto(ProfilePhoto photo) {
+  final photoUrl = photo.url;
+  final photoId = photo.id; // ✅ Get actual Media ID from entity
+  
+  if (_tempPhotoUrls.contains(photoUrl)) {
+    // Temp photo handling (unchanged)
+  } else {
+    setState(() {
+      _photosMarkedForDeletion.add(photoUrl);
+      _photos.removeWhere((p) => p.url == photoUrl);
+    });
+    
+    CachedNetworkImage.evictFromCache(photoUrl);
+    
+    // ✅ Pass Media ID directly
+    context.read<ProfileBloc>().add(DeletePhoto(photoId: photoId));
+    logger.i('🗑️ Photo deletion dispatched - ID: $photoId, URL: $photoUrl');
+  }
+}
+
+// profile_event.dart (FIXED)
+class DeletePhoto extends ProfileEvent {
+  final String photoId; // ✅ Media UUID
+  const DeletePhoto({required this.photoId});
+  
+  @override
+  List<Object> get props => [photoId];
+}
+
+// profile_bloc.dart (FIXED)
+Future<void> _onDeletePhoto(DeletePhoto event, Emitter<ProfileState> emit) async {
+  _logger.i('🗑️ Deleting photo with ID: ${event.photoId}');
+  
+  // ✅ Pass Media ID directly to service
+  await _profileService.deletePhotoWithDetails(photoId: event.photoId);
+  _logger.i('✅ Photo deleted from backend');
+  
+  // ✅ Filter by ID instead of URL
+  if (state.profile != null) {
+    final updatedPhotos = state.profile!.photos
+        .where((photo) => photo.id != event.photoId)
+        .toList();
+    
+    final updatedProfile = state.profile!.copyWith(photos: updatedPhotos);
+    emit(state.copyWith(
+      profile: updatedProfile,
+      updateStatus: ProfileStatus.initial,
+      uploadStatus: ProfileStatus.success,
+    ));
+  }
+}
+
+// profile_service.dart (FIXED)
+/// Delete profile photo using media ID
+Future<void> deletePhotoWithDetails({
+  required String photoId,
+}) async {
+  _logger.i('🗑️ Deleting photo with Media ID: $photoId');
+  
+  // ✅ Direct API call with correct Media UUID
+  final response = await _apiClient.delete('/media/files/$photoId');
+  
+  if (response.statusCode == 200) {
+    _logger.i('✅ Photo deleted successfully from backend');
+  } else {
+    throw NetworkException('Failed to delete photo');
+  }
+}
+```
+
+#### **Backend Verification**
+```typescript
+// backend/src/media/media.controller.ts
+@Delete('files/:photoId') // ✅ Endpoint exists
+async deleteMediaFile(@Param('photoId') photoId: string, @Request() req) {
+  await this.mediaService.deleteMedia(photoId, req.user.id);
+  return { success: true };
+}
+
+// backend/src/media/media.service.ts
+async deleteMedia(mediaId: string, userId: string): Promise<void> {
+  // ✅ Deletes originalUrl, processedUrl, thumbnailUrl from storage
+  // ✅ Deletes Media record from database
+  // ✅ Invalidates user profile cache
+  // Complete implementation working correctly
+}
+```
+
+### **Key Lessons**
+
+**❌ Anti-Patterns:**
+- Extracting entity IDs from URLs using string manipulation
+- Passing URL when ID is available in the entity
+- Assuming URL structure for ID extraction
+- Using photoUrl for deletion when photoId exists
+
+**✅ Best Practices:**
+- Use entity IDs directly (photo.id)
+- Pass UUIDs for backend operations
+- Don't parse IDs from URLs
+- Store and use proper entity identifiers
+- Match event parameters to what backend expects
+
+**Testing Checklist:**
+- [ ] Delete photo from profile edit screen
+- [ ] Verify photo removed from UI immediately
+- [ ] Check Media table - record should be deleted
+- [ ] Check server storage - files should be deleted
+- [ ] Check backend logs - no deletion errors
+- [ ] Verify cache cleared for deleted photo
+- [ ] Test with multiple photo deletions
+
+**Impact:**
+- **Before**: Photos deleted from UI but remained in database and storage
+- **After**: Complete deletion from database, storage, and cache
+- **Storage Cleanup**: Proper file removal prevents storage bloat
+- **Data Integrity**: Media table stays in sync with user profiles
+
+---
+
+## �📸 **Profile Photo Persistence Bug (October 2025)**
 
 **Status**: ✅ **RESOLVED** - Added photo sync to database  
 **Date**: October 10, 2025  

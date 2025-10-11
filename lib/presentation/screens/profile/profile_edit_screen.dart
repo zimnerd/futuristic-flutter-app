@@ -268,6 +268,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
   /// Handle deleting photo via BLoC event
   void _handleDeletePhoto(ProfilePhoto photo) {
     final photoUrl = photo.url;
+    final photoId = photo.id;
     
     // Check if this is a temp photo (not yet saved)
     if (_tempPhotoUrls.contains(photoUrl)) {
@@ -289,9 +290,11 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
       logger.i('🧹 Clearing cache for deleted photo: $photoUrl');
       CachedNetworkImage.evictFromCache(photoUrl);
       
-      // Dispatch DeletePhoto event for backend tracking
-      context.read<ProfileBloc>().add(DeletePhoto(photoUrl: photoUrl));
-      logger.i('🗑️ Photo deletion dispatched to BLoC: $photoUrl');
+      // Dispatch DeletePhoto event with media ID for backend deletion
+      context.read<ProfileBloc>().add(DeletePhoto(photoId: photoId));
+      logger.i(
+        '🗑️ Photo deletion dispatched to BLoC - ID: $photoId, URL: $photoUrl',
+      );
 
       // NO RELOAD HERE - The BLoC will handle updating the state
       // The BlocBuilder will automatically rebuild with the updated photo list

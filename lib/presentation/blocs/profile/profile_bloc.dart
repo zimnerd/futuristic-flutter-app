@@ -336,17 +336,17 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     Emitter<ProfileState> emit,
   ) async {
     try {
-      _logger.i('🗑️ Deleting photo immediately: ${event.photoUrl}');
+      _logger.i('🗑️ Deleting photo immediately with ID: ${event.photoId}');
 
-      // Delete photo immediately via API (don't just mark for later)
-      await _profileService.deletePhoto(event.photoUrl);
+      // Delete photo immediately via API using media ID
+      await _profileService.deletePhotoWithDetails(photoId: event.photoId);
       
       _logger.i('✅ Photo deleted from backend');
       
-      // Remove from UI immediately
+      // Remove from UI immediately by finding photo with matching ID
       if (state.profile != null) {
         final updatedPhotos = state.profile!.photos
-            .where((photo) => photo.url != event.photoUrl)
+            .where((photo) => photo.id != event.photoId)
             .toList();
         
         final updatedProfile = state.profile!.copyWith(photos: updatedPhotos);

@@ -909,28 +909,19 @@ class ProfileService {
     }
   }
 
-  /// Delete photo by URL (wrapper for BLoC compatibility)
-  Future<void> deletePhoto(String photoUrl) async {
-    // Extract photo ID from URL - backend gets userId from auth token
-    final photoId = photoUrl.split('/').last.split('.').first;
-    return deletePhotoWithDetails(
-      photoId: photoId,
-    );
-  }
-
-  /// Delete profile photo (original method)
+  /// Delete profile photo using media ID
   Future<void> deletePhotoWithDetails({
     required String photoId,
   }) async {
     try {
-      _logger.i('🗑️ Deleting photo: $photoId (auth from token)');
+      _logger.i('🗑️ Deleting photo with Media ID: $photoId');
       
       final response = await _apiClient.delete(
         '/media/files/$photoId',
       );
       
       if (response.statusCode == 200) {
-        _logger.i('✅ Photo deleted successfully');
+        _logger.i('✅ Photo deleted successfully from backend');
       } else {
         throw NetworkException('Failed to delete photo');
       }

@@ -35,12 +35,12 @@ class UploadPhoto extends ProfileEvent {
 }
 
 class DeletePhoto extends ProfileEvent {
-  final String photoUrl;
+  final String photoId;
 
-  const DeletePhoto({required this.photoUrl});
+  const DeletePhoto({required this.photoId});
 
   @override
-  List<Object> get props => [photoUrl];
+  List<Object> get props => [photoId];
 }
 
 class RetryPhotoUpload extends ProfileEvent {
