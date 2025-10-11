@@ -5,7 +5,352 @@ This document captures key learnings from building the **Flutter mobile dating a
 
 ---
 
-## 🎯 **Database-Backed Interests - API Integration with BLoC (January 2025)**
+## �️ **Centralized API Client Architecture - ALWAYS Use ApiClient (January 2025)**
+
+**Status**: ✅ **MANDATORY** - All API calls must go through centralized ApiClient  
+**Date**: January 10, 2025  
+**Priority**: **CRITICAL** - Architecture enforcement
+
+**Rule**: **NEVER use direct HTTP packages (http, dio) in repositories. ALWAYS use the centralized ApiClient singleton.**
+
+### **Why This Matters**
+
+The project uses a **centralized ApiClient pattern** (Dio-based singleton) with automatic authentication, error handling, and logging. Bypassing this creates:
+- ❌ **Inconsistent auth** - Manual Bearer token management in every repository
+- ❌ **No auto-refresh** - 401 errors don't trigger token refresh
+- ❌ **Duplicated code** - baseUrl, headers, error handling repeated everywhere
+- ❌ **Harder testing** - Must mock multiple HTTP clients instead of one ApiClient
+- ❌ **No unified logging** - Can't trace all API calls through single interceptor
+- ❌ **Leaky abstractions** - Widgets shouldn't need baseUrl/accessToken parameters
+
+### **The Anti-Pattern (DO NOT DO THIS ❌)**
+
+```dart
+// ❌ WRONG: Direct HTTP usage with manual auth
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+
+class InterestsRepository {
+  final String baseUrl;
+  final String? accessToken;
+  
+  InterestsRepository({required this.baseUrl, this.accessToken});
+  
+  Map<String, String> get _headers {
+    final headers = {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+    };
+    if (accessToken != null) {
+      headers['Authorization'] = 'Bearer $accessToken';
+    }
+    return headers;
+  }
+  
+  Future<List<InterestCategory>> getCategories() async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/api/v1/interests/categories'),
+      headers: _headers,
+    );
+    
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body) as Map<String, dynamic>;
+      // Manual parsing...
+    }
+    throw Exception('Failed to fetch');
+  }
+}
+
+// ❌ WRONG: Widget needs API infrastructure knowledge
+InterestsSelector(
+  baseUrl: AppConfig.apiBaseUrl,        // UI shouldn't know this
+  accessToken: authState.accessToken,   // UI shouldn't know this
+  selectedInterests: _selectedInterests,
+  onInterestsChanged: (interests) { ... },
+)
+```
+
+**Problems with this approach:**
+1. Every repository must manually add Bearer token
+2. No automatic token refresh on 401
+3. No unified error handling
+4. No request/response logging
+5. Hard to mock for testing
+6. Widgets coupled to API infrastructure
+7. Duplicate baseUrl/headers setup code
+
+### **The Correct Pattern (ALWAYS DO THIS ✅)**
+
+```dart
+// ✅ CORRECT: Use centralized ApiClient
+import '../../core/network/api_client.dart';
+
+class InterestsRepository {
+  final ApiClient _apiClient;
+  
+  // Constructor accepts optional ApiClient (for testing)
+  InterestsRepository({ApiClient? apiClient})
+      : _apiClient = apiClient ?? ApiClient.instance;
+  
+  Future<List<InterestCategory>> getCategories() async {
+    // ApiClient automatically adds Bearer token via interceptors
+    final response = await _apiClient.getInterestCategories();
+    
+    if (response.statusCode == 200 && response.data != null) {
+      final data = response.data as Map<String, dynamic>;
+      if (data['success'] == true && data['data'] != null) {
+        final categories = data['data']['categories'] as List<dynamic>;
+        return categories
+            .map((json) => InterestCategory.fromJson(json))
+            .toList();
+      }
+    }
+    throw Exception('Failed to fetch interest categories');
+  }
+}
+
+// ✅ CORRECT: Widget doesn't need API knowledge
+InterestsSelector(
+  selectedInterests: _selectedInterests,
+  onInterestsChanged: (interests) { ... },
+  maxInterests: 10,
+  minInterests: 3,
+)
+```
+
+**Benefits:**
+1. ✅ **Automatic auth** - Interceptor adds Bearer token to all requests
+2. ✅ **Auto token refresh** - 401 triggers automatic refresh and retry
+3. ✅ **Unified error handling** - Network errors handled consistently
+4. ✅ **Centralized logging** - All requests logged through single interceptor
+5. ✅ **Easier testing** - Mock ApiClient once, not multiple HTTP clients
+6. ✅ **Type safety** - Dio Response<T> better than raw http.Response
+7. ✅ **Cleaner widgets** - No baseUrl/accessToken parameters needed
+8. ✅ **Single source of truth** - All API behavior in one place
+
+### **ApiClient Architecture**
+
+```dart
+// lib/core/network/api_client.dart
+class ApiClient {
+  late final Dio _dio;
+  final TokenService _tokenService;
+  String? _authToken;
+  
+  // Singleton pattern
+  static ApiClient? _instance;
+  static ApiClient get instance => _instance ??= ApiClient._();
+  
+  ApiClient._() : _tokenService = TokenService() {
+    _dio = Dio(BaseOptions(
+      baseUrl: ApiConstants.baseUrl,
+      connectTimeout: const Duration(seconds: 30),
+      receiveTimeout: const Duration(seconds: 30),
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'X-Platform': 'mobile-flutter',
+        'X-App-Version': '1.0.0',
+      },
+    ));
+    
+    // ✅ Request Interceptor - Auto-inject auth token
+    _dio.interceptors.add(
+      InterceptorsWrapper(
+        onRequest: (options, handler) async {
+          if (_authToken != null) {
+            options.headers['Authorization'] = 'Bearer $_authToken';
+          }
+          logger.d('Request: ${options.method} ${options.path}');
+          return handler.next(options);
+        },
+        
+        // ✅ Error Interceptor - Handle 401 with auto-refresh
+        onError: (error, handler) async {
+          if (error.response?.statusCode == 401) {
+            try {
+              final newToken = await _tokenService.refreshToken();
+              _authToken = newToken;
+              
+              // Retry failed request with new token
+              final opts = error.requestOptions;
+              opts.headers['Authorization'] = 'Bearer $newToken';
+              final response = await _dio.fetch(opts);
+              return handler.resolve(response);
+            } catch (e) {
+              return handler.reject(error);
+            }
+          }
+          return handler.next(error);
+        },
+      ),
+    );
+  }
+  
+  // Set token (called after login)
+  void setAuthToken(String token) {
+    _authToken = token;
+  }
+  
+  // Clear token (called on logout)
+  void clearAuthToken() {
+    _authToken = null;
+  }
+}
+```
+
+### **Adding New API Endpoints**
+
+When adding new features, **always add methods to ApiClient first**:
+
+```dart
+// 1. Add method to ApiClient
+class ApiClient {
+  // ... existing code ...
+  
+  // ===========================================
+  // YOUR_FEATURE ENDPOINTS
+  // ===========================================
+  
+  /// Description of what this endpoint does
+  Future<Response> getYourFeature() async {
+    return await _dio.get('/your-feature');
+  }
+  
+  /// Create new resource
+  Future<Response> createYourFeature(Map<String, dynamic> data) async {
+    return await _dio.post('/your-feature', data: data);
+  }
+}
+
+// 2. Use in Repository
+class YourFeatureRepository {
+  final ApiClient _apiClient;
+  
+  YourFeatureRepository({ApiClient? apiClient})
+      : _apiClient = apiClient ?? ApiClient.instance;
+  
+  Future<YourFeature> getFeature() async {
+    final response = await _apiClient.getYourFeature();
+    // Parse response...
+  }
+}
+
+// 3. BLoC uses Repository (no ApiClient knowledge)
+class YourFeatureBloc extends Bloc<YourFeatureEvent, YourFeatureState> {
+  final YourFeatureRepository repository;
+  
+  YourFeatureBloc({required this.repository});
+  
+  // Events trigger repository calls...
+}
+
+// 4. Widget uses BLoC (no API knowledge at all)
+BlocProvider(
+  create: (context) => YourFeatureBloc(
+    repository: YourFeatureRepository(),  // Uses ApiClient.instance
+  ),
+  child: YourFeatureWidget(),
+)
+```
+
+### **Testing Pattern**
+
+```dart
+// test/data/repositories/your_feature_repository_test.dart
+void main() {
+  late YourFeatureRepository repository;
+  late MockApiClient mockApiClient;
+  
+  setUp(() {
+    mockApiClient = MockApiClient();
+    repository = YourFeatureRepository(apiClient: mockApiClient);
+  });
+  
+  test('getFeature returns data on success', () async {
+    // Arrange
+    when(() => mockApiClient.getYourFeature())
+        .thenAnswer((_) async => Response(
+          requestOptions: RequestOptions(path: '/your-feature'),
+          statusCode: 200,
+          data: {'success': true, 'data': {...}},
+        ));
+    
+    // Act
+    final result = await repository.getFeature();
+    
+    // Assert
+    expect(result, isA<YourFeature>());
+    verify(() => mockApiClient.getYourFeature()).called(1);
+  });
+}
+```
+
+**Benefits:**
+- ✅ Mock ApiClient once (not Dio, not http)
+- ✅ Test repository logic in isolation
+- ✅ No need to mock auth token injection
+- ✅ Consistent test patterns across all repositories
+
+### **Migration Checklist**
+
+If you find code using direct HTTP packages:
+
+- [ ] Check if endpoint exists in ApiClient (search `_dio.get`, `_dio.post`, etc.)
+- [ ] If not, add method to ApiClient with clear comment
+- [ ] Update repository constructor: `YourRepository({ApiClient? apiClient}) : _apiClient = apiClient ?? ApiClient.instance`
+- [ ] Replace `http.get(...)` with `_apiClient.getYourEndpoint()`
+- [ ] Replace `json.decode(response.body)` with `response.data`
+- [ ] Remove `baseUrl` and `accessToken` fields from repository
+- [ ] Remove `_headers` getter (ApiClient handles this)
+- [ ] Update widget to remove `baseUrl`/`accessToken` parameters
+- [ ] Remove unused imports (`package:http/http.dart`, `dart:convert`)
+- [ ] Run tests to ensure nothing breaks
+
+### **Real-World Example: Interests Refactor**
+
+**Before (Anti-Pattern ❌):**
+- InterestsRepository: 95 lines with manual auth
+- InterestsSelector: Required `baseUrl` and `accessToken` parameters
+- profile_edit_screen: 18 lines of auth token extraction logic
+- profile_creation_screen: 12 lines of auth token extraction logic
+- Total: ~135 lines of unnecessary code
+
+**After (Correct Pattern ✅):**
+- InterestsRepository: 81 lines using ApiClient (-14 lines, -14.7%)
+- InterestsSelector: No baseUrl/accessToken parameters (-2 params)
+- profile_edit_screen: Direct widget instantiation (-18 lines)
+- profile_creation_screen: Direct widget instantiation (-12 lines)
+- Total: ~44 lines removed, cleaner architecture
+
+**Code Diff:**
+```dart
+// OLD ❌
+InterestsRepository(
+  baseUrl: widget.baseUrl,
+  accessToken: widget.accessToken,
+)
+
+// NEW ✅
+InterestsRepository()  // Uses ApiClient.instance automatically
+```
+
+### **Key Takeaways**
+
+1. **NEVER import `package:http/http.dart` or create raw `Dio()` instances in repositories**
+2. **ALWAYS use `ApiClient.instance` for all API calls**
+3. **Add new endpoints to ApiClient first, then use in repositories**
+4. **Repositories should accept optional `ApiClient` for testing**
+5. **Widgets should NEVER know about baseUrl, accessToken, or API infrastructure**
+6. **Auth token injection is automatic via interceptors**
+7. **Error handling (401 refresh, network errors) is unified**
+8. **All API calls are logged through single interceptor**
+
+**Remember:** The goal is **single source of truth** for all API behavior. If you find yourself writing `http.get` or creating new `Dio()` instances, **STOP** and use `ApiClient` instead.
+
+---
+
+## �🎯 **Database-Backed Interests - API Integration with BLoC (January 2025)**
 
 **Status**: ✅ **COMPLETE** - Replaced static interests with cached API endpoints  
 **Date**: January 10, 2025  
