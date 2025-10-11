@@ -59,12 +59,33 @@ class _InterestsSelectorState extends State<InterestsSelector>
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Maximum Interests Reached'),
-        content: Text('You can select up to ${widget.maxInterests} interests.'),
+        backgroundColor: Colors.white,
+        title: const Text(
+          'Maximum Interests Reached',
+          style: TextStyle(
+            color: Color(0xFF202124), // Dark text color
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        content: Text(
+          'You can select up to ${widget.maxInterests} interests.',
+          style: const TextStyle(
+            color: Color(0xFF5F6368), // Medium gray text
+            fontSize: 16,
+          ),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('OK'),
+            child: const Text(
+              'OK',
+              style: TextStyle(
+                color: Color(0xFF6E3BFF), // Primary purple
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ),
         ],
       ),

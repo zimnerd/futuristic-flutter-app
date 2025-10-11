@@ -594,9 +594,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
       height: 100,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
-        itemCount: photos.length + 1, // +1 for add photo button
+        itemCount: photos.length,
         itemBuilder: (context, index) {
-          if (index < photos.length) {
             return Container(
               width: 80,
               height: 80,
@@ -622,29 +621,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
               ),
             );
-          } else {
-            return GestureDetector(
-              onTap: () => _navigateToSectionEdit('photos', userProfile),
-              child: Container(
-                width: 80,
-                height: 80,
-                margin: const EdgeInsets.only(right: PulseSpacing.sm),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(PulseRadii.md),
-                  border: Border.all(
-                    color: PulseColors.outline,
-                    style: BorderStyle.solid,
-                  ),
-                  color: PulseColors.surfaceVariant,
-                ),
-                child: const Icon(
-                  Icons.add_a_photo,
-                  color: PulseColors.onSurfaceVariant,
-                  size: 32,
-                ),
-              ),
-            );
-          }
+          
         },
       ),
     );
