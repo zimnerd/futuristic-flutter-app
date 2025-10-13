@@ -230,17 +230,18 @@ class _MessagesScreenState extends State<MessagesScreen> {
 
     // Extract content and type from message object
     final content = (message.content ?? '').trim();
-    final type = message.type ?? 'text';
+    final type = message.type;
     final metadata = message.metadata as Map<String, dynamic>?;
 
     // Prioritize type detection for media messages
-    if (type == 'image' || type == MessageType.image.name) {
+    // Check for MessageType enum directly (type is MessageType enum, not string)
+    if (type == MessageType.image || type?.toString() == 'MessageType.image' || type == 'image') {
       return '📷 Photo';
-    } else if (type == 'video' || type == MessageType.video.name) {
+    } else if (type == MessageType.video || type?.toString() == 'MessageType.video' || type == 'video') {
       return '🎥 Video';
-    } else if (type == 'audio' || type == 'voice' || type == MessageType.audio.name) {
+    } else if (type == MessageType.audio || type?.toString() == 'MessageType.audio' || type == 'audio' || type == 'voice') {
       return '🎵 Voice message';
-    } else if (type == 'file' || type == MessageType.file.name) {
+    } else if (type == MessageType.file || type?.toString() == 'MessageType.file' || type == 'file') {
       return '📄 Attachment';
     }
     
