@@ -7,6 +7,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:http/http.dart' as http;
 import '../core/constants/api_constants.dart';
 import '../core/utils/logger.dart';
+import '../data/services/token_service.dart';
 
 /// Firebase Cloud Messaging service for real-time push notifications
 class FirebaseNotificationService {
@@ -32,6 +33,8 @@ class FirebaseNotificationService {
     _authToken = authToken;
     
     try {
+      AppLogger.info('🔔 Initializing Firebase notifications...');
+      
       // Get Firebase messaging instance (Firebase should already be initialized)
       _messaging = FirebaseMessaging.instance;
       
@@ -43,19 +46,26 @@ class FirebaseNotificationService {
       
       // Get FCM token
       _fcmToken = await _messaging?.getToken();
-      AppLogger.info('FCM Token: $_fcmToken');
+      AppLogger.info(
+        '📱 FCM Token obtained: ${_fcmToken != null ? "${_fcmToken!.substring(0, 20)}..." : "null"}',
+      );
       
       // Register token with backend
       if (_fcmToken != null && _authToken != null) {
+        AppLogger.info('🚀 Registering FCM token with backend...');
         await _registerTokenWithBackend(_fcmToken!);
+      } else {
+        AppLogger.warning(
+          '⚠️ Cannot register FCM token: token=${_fcmToken != null}, authToken=${_authToken != null}',
+        );
       }
       
       // Set up message handlers
       _setupMessageHandlers();
       
-      AppLogger.info('Firebase notifications initialized successfully');
+      AppLogger.info('✅ Firebase notifications initialized successfully');
     } catch (e) {
-      AppLogger.error('Failed to initialize Firebase notifications: $e');
+      AppLogger.error('❌ Failed to initialize Firebase notifications: $e');
     }
   }
 
@@ -227,6 +237,33 @@ class FirebaseNotificationService {
     if (_authToken == null) return;
     
     try {
+      // Get actual user ID from token or stored user data
+      String? userId;
+      try {
+        final tokenService = TokenService();
+        final userData = await tokenService.getUserData();
+        if (userData != null && userData.containsKey('id')) {
+          userId = userData['id']?.toString();
+        }
+
+        // Fallback to extracting from access token
+        if (userId == null) {
+          final accessToken = await tokenService.getAccessToken();
+          if (accessToken != null) {
+            userId = tokenService.extractUserIdFromToken(accessToken);
+          }
+        }
+      } catch (e) {
+        AppLogger.error('Failed to get user ID: $e');
+      }
+
+      if (userId == null) {
+        AppLogger.error('Cannot register FCM token: user ID is null');
+        return;
+      }
+
+      AppLogger.info('Registering FCM token for user: $userId');
+      
       final response = await http.post(
         Uri.parse('${ApiConstants.baseUrl}/push-notifications/register-token'),
         headers: {
@@ -235,18 +272,22 @@ class FirebaseNotificationService {
         },
         body: json.encode({
           'token': token,
-          'userId': 'current_user', // Will be extracted from JWT on backend
+          'userId': userId,
           'platform': Platform.isIOS ? 'ios' : 'android',
         }),
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        AppLogger.info('FCM token registered successfully with backend');
+        AppLogger.info(
+          '✅ FCM token registered successfully with backend for user: $userId',
+        );
       } else {
-        AppLogger.warning('Failed to register FCM token: ${response.statusCode}');
+        AppLogger.warning(
+          '❌ Failed to register FCM token: ${response.statusCode}, Body: ${response.body}',
+        );
       }
     } catch (e) {
-      AppLogger.error('Error registering FCM token: $e');
+      AppLogger.error('❌ Error registering FCM token: $e');
     }
   }
 
