@@ -282,10 +282,20 @@ class _ChatImageViewerState extends State<ChatImageViewer> {
       final file = File(filePath);
       await file.writeAsBytes(response.bodyBytes);
 
-      // Share the file
-      await Share.shareXFiles([
-        XFile(file.path),
-      ], text: 'Shared from Pulse Dating');
+      // Share the file using share_plus
+      // ignore: deprecated_member_use
+      final xFile = XFile(file.path);
+      // ignore: deprecated_member_use
+      await Share.shareXFiles([xFile], text: 'Shared from Pulse Dating');
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Image shared successfully'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
