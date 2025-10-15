@@ -417,12 +417,13 @@ class ServiceLocator {
     // Set auth token for API client (which sets it for all HTTP services)
     _apiClient.setAuthToken(token);
 
-    // Initialize Firebase notifications with auth token
+    // Re-register Firebase FCM token with new auth token
     try {
-      Logger().d('🔔 ServiceLocator: Initializing Firebase notifications with auth token');
-      await _firebaseNotificationService.updateAuthToken(token);
+      Logger().d('🔔 ServiceLocator: Re-registering FCM token with backend');
+      await _firebaseNotificationService.reRegisterToken();
+      Logger().d('✅ ServiceLocator: FCM token re-registered successfully');
     } catch (e) {
-      Logger().e('❌ ServiceLocator: Failed to initialize Firebase notifications: $e');
+      Logger().e('❌ ServiceLocator: Failed to re-register FCM token: $e');
     }
   }
 }
