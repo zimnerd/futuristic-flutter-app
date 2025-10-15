@@ -393,6 +393,10 @@ class FirebaseNotificationService {
 /// Background message handler (must be top-level function)
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  await Firebase.initializeApp();
+  // Firebase is already initialized in main.dart, so we don't need to initialize again
+  // Only initialize if running in background isolate and Firebase is not initialized
+  if (Firebase.apps.isEmpty) {
+    await Firebase.initializeApp();
+  }
   AppLogger.info('Background message received: ${message.data}');
 }
