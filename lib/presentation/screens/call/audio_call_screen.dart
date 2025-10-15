@@ -378,7 +378,10 @@ class _AudioCallScreenState extends State<AudioCallScreen>
 
         // User name
         Text(
-          widget.remoteUser.firstName ?? widget.remoteUser.username,
+          widget.remoteUser.firstName != null &&
+                  widget.remoteUser.lastName != null
+              ? '${widget.remoteUser.firstName} ${widget.remoteUser.lastName}'
+              : widget.remoteUser.firstName ?? widget.remoteUser.username,
           style: const TextStyle(
             color: Colors.white,
             fontSize: 28,
@@ -412,7 +415,11 @@ class _AudioCallScreenState extends State<AudioCallScreen>
   }
 
   Widget _buildAvatarFallback() {
-    final displayName = widget.remoteUser.firstName ?? widget.remoteUser.username;
+    final displayName =
+        widget.remoteUser.firstName != null &&
+            widget.remoteUser.lastName != null
+        ? '${widget.remoteUser.firstName} ${widget.remoteUser.lastName}'
+        : widget.remoteUser.firstName ?? widget.remoteUser.username;
     return Container(
       color: PulseColors.primary,
       child: Center(

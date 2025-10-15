@@ -132,6 +132,14 @@ class FirebaseNotificationService {
       _handleMessageOpened(message);
     });
 
+    // Listen for token refresh - Firebase will automatically retry
+    _messaging?.onTokenRefresh.listen((String newToken) {
+      AppLogger.info('🔄 FCM token refreshed: ${newToken.substring(0, 20)}...');
+      _fcmToken = newToken;
+      // Automatically register new token with backend
+      _registerTokenWithBackend(newToken);
+    });
+
     // Check for initial message when app is opened from terminated state
     _checkInitialMessage();
   }
@@ -290,12 +298,41 @@ class FirebaseNotificationService {
   }
 
   /// Re-register FCM token (call this on login)
+  /// Non-blocking: If token unavailable, onTokenRefresh listener will handle it
   Future<void> reRegisterToken() async {
-    if (_fcmToken != null) {
-      AppLogger.info('🔄 Re-registering FCM token after login...');
-      await _registerTokenWithBackend(_fcmToken!);
-    } else {
-      AppLogger.warning('⚠️ Cannot re-register: FCM token not available');
+    try {
+      // If we have a cached token, use it immediately
+      if (_fcmToken != null) {
+        AppLogger.info('🔄 Re-registering cached FCM token...');
+        await _registerTokenWithBackend(_fcmToken!);
+        return;
+      }
+
+      // Try to get token once (non-blocking)
+      AppLogger.info('🔄 Attempting to fetch FCM token...');
+      try {
+        _fcmToken = await _messaging?.getToken().timeout(
+          const Duration(seconds: 3),
+          onTimeout: () => null,
+        );
+
+        if (_fcmToken != null) {
+          AppLogger.info(
+            '✅ FCM token obtained: ${_fcmToken!.substring(0, 20)}...',
+          );
+          await _registerTokenWithBackend(_fcmToken!);
+        } else {
+          AppLogger.info(
+            '⏳ FCM token not ready yet - will auto-register via onTokenRefresh listener',
+          );
+        }
+      } catch (e) {
+        AppLogger.warning(
+          '⚠️ Could not fetch FCM token: $e - will auto-register via onTokenRefresh listener',
+        );
+      }
+    } catch (e) {
+      AppLogger.error('❌ Error in reRegisterToken: $e');
     }
   }
 

@@ -12,7 +12,16 @@ class TestCredentials {
     ),
     TestAccount(
       email: 'user2@pulselink.com',
-      password: 'User2123!',
+      password: 'User123!',
+      role: 'USER',
+      name: 'Alice Smith',
+      description: 'Second regular user for chat testing',
+      avatar: '👩',
+    ),
+
+    TestAccount(
+      email: 'user2@pulselink.com',
+      password: 'User123!',
       role: 'USER',
       name: 'Alice Smith',
       description: 'Second regular user for chat testing',

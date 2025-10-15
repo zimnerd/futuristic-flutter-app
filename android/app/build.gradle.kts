@@ -49,4 +49,6 @@ flutter {
 
 dependencies {
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
+    // Google Play Services - Required for Firebase Cloud Messaging
+    implementation("com.google.android.gms:play-services-base:18.5.0")
 }

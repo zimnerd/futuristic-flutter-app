@@ -330,7 +330,10 @@ class _EnhancedCallScreenState extends State<EnhancedCallScreen>
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: Text(
-                        participant.firstName ?? participant.username,
+                        participant.firstName != null &&
+                                participant.lastName != null
+                            ? '${participant.firstName} ${participant.lastName}'
+                            : participant.firstName ?? participant.username,
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 10,
