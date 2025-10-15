@@ -7,9 +7,9 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:436349093696:android:50bcdd0c06acd8154d1ca5",
+        "mobilesdk_app_id": "1:436349093696:android:b91f9173cc17e3814d1ca5",
         "android_client_info": {
-          "package_name": "co.za.pulsetek.futuristic"
+          "package_name": "co.za.pulsetek.pulselink"
         }
       },
       "oauth_client": [
@@ -20,7 +20,7 @@
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyBpizzbo74ju0c-xcdhiVGF8gkxT1rlOCw"
+          "current_key": "AIzaSyDqyX_cC63fALPGIJdBLPx9ioruBbA8PIA"
         }
       ],
       "services": {
