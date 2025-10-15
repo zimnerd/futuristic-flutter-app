@@ -7,7 +7,9 @@ import '../utils/logger.dart';
 /// Required by Firebase Messaging for proper FCM token generation.
 /// Official Firebase docs: https://firebase.google.com/docs/cloud-messaging/flutter/client
 class PlayServicesChecker {
-  static const MethodChannel _channel = MethodChannel('co.za.pulsetek.futuristic/play_services');
+  static const MethodChannel _channel = MethodChannel(
+    'co.za.pulsetek.pulselink/play_services',
+  );
 
   /// Check if Google Play Services is available on this device
   /// 

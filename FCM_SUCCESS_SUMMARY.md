@@ -115,7 +115,7 @@ final response = await _apiClient.post(
 - **API Key:** AIzaSyBpizzbo74ju0c-xcdhiVGF8gkxT1rlOCw (unrestricted)
 
 ### Android App
-- **Package Name:** co.za.pulsetek.futuristic
+- **Package Name:** co.za.pulsetek.pulselink
 - **SHA-1 Fingerprint:** ✅ Registered in Firebase Console
 - **Google Services:** google-services.json configured
 - **Play Services:** play-services-base:18.5.0

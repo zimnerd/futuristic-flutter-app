@@ -24,8 +24,27 @@
 	<string>????</string>
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
+	<key>GMSApiKey</key>
+	<string>AIzaSyAV42zvffrhtkgnhYhOGLJZiqheBCj1-C4</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+	</dict>
+	<key>NSCameraUsageDescription</key>
+	<string>This app needs access to camera to take profile photos and make video calls</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>PulseLink needs access to your location to show people nearby and display coverage maps</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>PulseLink needs access to your location to show people nearby and display coverage maps</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>PulseLink needs access to your microphone for audio and video calls</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>This app needs access to photo library to save photos</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>This app needs access to photo library to select profile photos</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>
@@ -45,37 +64,6 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
-	
-	<!-- Camera and Photo Library Permissions -->
-	<key>NSCameraUsageDescription</key>
-	<string>This app needs access to camera to take profile photos and make video calls</string>
-	<key>NSPhotoLibraryUsageDescription</key>
-	<string>This app needs access to photo library to select profile photos</string>
-	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>This app needs access to photo library to save photos</string>
-	
-	<!-- Microphone Permission for Audio/Video Calls -->
-	<key>NSMicrophoneUsageDescription</key>
-	<string>PulseLink needs access to your microphone for audio and video calls</string>
-	
-	<!-- Location Permissions -->
-	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>PulseLink needs access to your location to show people nearby and display coverage maps</string>
-	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>PulseLink needs access to your location to show people nearby and display coverage maps</string>
-	
-	<!-- Network/Internet Access -->
-	<key>NSAppTransportSecurity</key>
-	<dict>
-		<key>NSAllowsArbitraryLoads</key>
-		<true/>
-	</dict>
-	
-	<!-- Google Maps API Key -->
-	<key>GMSApiKey</key>
-	<string>AIzaSyAV42zvffrhtkgnhYhOGLJZiqheBCj1-C4</string>
-	
-	<!-- Enable embedded views for Google Maps -->
 	<key>io.flutter.embedded_views_preview</key>
 	<true/>
 </dict>
