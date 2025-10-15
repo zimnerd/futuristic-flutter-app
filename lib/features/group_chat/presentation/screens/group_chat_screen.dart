@@ -871,9 +871,9 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Start Video Call'),
-        content: const Text(
-          'Video calling will be implemented with WebRTC integration.',
+        title: const Text('Start Group Video Call'),
+        content: Text(
+          'Start a video call with all ${widget.group.participantCount} group members?',
         ),
         actions: [
           TextButton(
@@ -885,7 +885,10 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
               Navigator.pop(context);
               await _initiateCall(isVideoCall: true);
             },
-            child: const Text('Start'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF6E3BFF), // PulseColors.primary
+            ),
+            child: const Text('Start Call'),
           ),
         ],
       ),
@@ -973,9 +976,9 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Start Voice Call'),
-        content: const Text(
-          'Voice calling will be implemented with WebRTC integration.',
+        title: const Text('Start Group Voice Call'),
+        content: Text(
+          'Start an audio call with all ${widget.group.participantCount} group members?',
         ),
         actions: [
           TextButton(
@@ -987,7 +990,10 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
               Navigator.pop(context);
               await _initiateCall(isVideoCall: false);
             },
-            child: const Text('Start'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF6E3BFF), // PulseColors.primary
+            ),
+            child: const Text('Start Call'),
           ),
         ],
       ),

@@ -9,6 +9,7 @@ import '../../../data/services/token_service.dart';
 import '../../../data/services/websocket_service_impl.dart';
 import '../../../domain/repositories/user_repository.dart';
 import '../../../core/services/error_handler.dart';
+import '../../../services/firebase_notification_service.dart';
 import 'auth_event.dart';
 import 'auth_state.dart';
 
@@ -638,6 +639,12 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         webSocketService.setAuthToken(authToken);
         await webSocketService.connect();
         _logger.i('✅ WebSocket service initialized successfully');
+
+        // Re-register FCM token on every login to ensure correct user-device mapping
+        final firebaseNotificationService =
+            FirebaseNotificationService.instance;
+        await firebaseNotificationService.reRegisterToken();
+        _logger.i('✅ FCM token re-registered for user: ${user.id}');
       } else {
         _logger.w('⚠️ No auth token available for real-time services');
       }

@@ -7,6 +7,7 @@ import '../../../domain/entities/user_profile.dart';
 import '../../../data/services/webrtc_service.dart';
 import '../../../data/models/call_model.dart' as model;
 import '../../../core/mixins/permission_required_mixin.dart';
+import '../../../core/network/api_client.dart';
 
 class VideoCallScreen extends StatefulWidget {
   final UserProfile remoteUser;
@@ -132,14 +133,26 @@ class _VideoCallScreenState extends State<VideoCallScreen>
         return;
       }
 
-      // Start WebRTC call
+      // Get call token from backend
+      final tokenResponse = await ApiClient.instance.post(
+        '/webrtc/calls/${widget.callId}/token',
+      );
+      
+      if (tokenResponse.data == null) {
+        throw Exception('Failed to get call token');
+      }
+      
+      final String token = tokenResponse.data['token'] as String;
+      final String channelName = tokenResponse.data['channelName'] as String;
+
+      // Start WebRTC call with real token from backend
       await _webRTCService.startCall(
         receiverId: widget.remoteUser.id,
         receiverName: widget.remoteUser.name,
         receiverAvatar: widget.remoteUser.photos.isNotEmpty ? widget.remoteUser.photos.first.url : null,
         callType: model.CallType.video,
-        channelName: 'call_${widget.callId}',
-        token: 'placeholder_token', // Should come from backend
+        channelName: channelName,
+        token: token,
       );
       
       setState(() {
@@ -148,6 +161,15 @@ class _VideoCallScreenState extends State<VideoCallScreen>
       _startCallTimer();
     } catch (e) {
       debugPrint('Failed to initiate call: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to start call: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        Navigator.of(context).pop();
+      }
     }
   }
 
@@ -174,10 +196,22 @@ class _VideoCallScreenState extends State<VideoCallScreen>
         return;
       }
 
-      // Answer WebRTC call
+      // Get call token from backend
+      final tokenResponse = await ApiClient.instance.post(
+        '/webrtc/calls/${widget.callId}/token',
+      );
+      
+      if (tokenResponse.data == null) {
+        throw Exception('Failed to get call token');
+      }
+      
+      final String token = tokenResponse.data['token'] as String;
+      final String channelName = tokenResponse.data['channelName'] as String;
+
+      // Answer WebRTC call with real token from backend
       await _webRTCService.answerCall(
-        channelName: 'call_${widget.callId}',
-        token: 'placeholder_token', // Should come from backend
+        channelName: channelName,
+        token: token,
       );
       
       if (mounted) {
@@ -188,6 +222,15 @@ class _VideoCallScreenState extends State<VideoCallScreen>
       _startCallTimer();
     } catch (e) {
       debugPrint('Failed to accept call: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to accept call: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        Navigator.of(context).pop();
+      }
     }
   }
 

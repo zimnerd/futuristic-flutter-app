@@ -4,10 +4,9 @@ import 'dart:io';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:http/http.dart' as http;
-import '../core/constants/api_constants.dart';
+import 'package:device_info_plus/device_info_plus.dart';
+import '../core/network/api_client.dart';
 import '../core/utils/logger.dart';
-import '../data/services/token_service.dart';
 
 /// Firebase Cloud Messaging service for real-time push notifications
 class FirebaseNotificationService {
@@ -17,7 +16,7 @@ class FirebaseNotificationService {
 
   FirebaseMessaging? _messaging;
   FlutterLocalNotificationsPlugin? _localNotifications;
-  String? _authToken;
+  final ApiClient _apiClient = ApiClient.instance;
   String? _fcmToken;
   
   final StreamController<Map<String, dynamic>> _notificationStreamController = 
@@ -30,8 +29,6 @@ class FirebaseNotificationService {
 
   /// Initialize Firebase messaging and local notifications
   Future<void> initialize({String? authToken}) async {
-    _authToken = authToken;
-    
     try {
       AppLogger.info('🔔 Initializing Firebase notifications...');
       
@@ -50,14 +47,12 @@ class FirebaseNotificationService {
         '📱 FCM Token obtained: ${_fcmToken != null ? "${_fcmToken!.substring(0, 20)}..." : "null"}',
       );
       
-      // Register token with backend
-      if (_fcmToken != null && _authToken != null) {
+      // Register token with backend if we have it
+      if (_fcmToken != null) {
         AppLogger.info('🚀 Registering FCM token with backend...');
         await _registerTokenWithBackend(_fcmToken!);
       } else {
-        AppLogger.warning(
-          '⚠️ Cannot register FCM token: token=${_fcmToken != null}, authToken=${_authToken != null}',
-        );
+        AppLogger.warning('⚠️ Cannot register FCM token: token not available');
       }
       
       // Set up message handlers
@@ -232,58 +227,43 @@ class FirebaseNotificationService {
     }
   }
 
-  /// Register FCM token with backend
+  /// Register FCM token with backend using ApiClient
   Future<void> _registerTokenWithBackend(String token) async {
-    if (_authToken == null) return;
-    
     try {
-      // Get actual user ID from token or stored user data
-      String? userId;
-      try {
-        final tokenService = TokenService();
-        final userData = await tokenService.getUserData();
-        if (userData != null && userData.containsKey('id')) {
-          userId = userData['id']?.toString();
-        }
-
-        // Fallback to extracting from access token
-        if (userId == null) {
-          final accessToken = await tokenService.getAccessToken();
-          if (accessToken != null) {
-            userId = tokenService.extractUserIdFromToken(accessToken);
-          }
-        }
-      } catch (e) {
-        AppLogger.error('Failed to get user ID: $e');
-      }
-
+      // Get current user ID
+      final userId = await _apiClient.getCurrentUserId();
+      
       if (userId == null) {
-        AppLogger.error('Cannot register FCM token: user ID is null');
+        AppLogger.error(
+          '❌ Cannot register FCM token: user ID is null (user not authenticated)',
+        );
         return;
       }
 
-      AppLogger.info('Registering FCM token for user: $userId');
-      
-      final response = await http.post(
-        Uri.parse('${ApiConstants.baseUrl}/push-notifications/register-token'),
-        headers: {
-          'Authorization': 'Bearer $_authToken',
-          'Content-Type': 'application/json',
-        },
-        body: json.encode({
-          'token': token,
-          'userId': userId,
-          'platform': Platform.isIOS ? 'ios' : 'android',
-        }),
+      // Get device ID
+      final deviceId = await _getDeviceId();
+      final platform = Platform.isIOS ? 'ios' : 'android';
+
+      AppLogger.info(
+        '📤 Registering FCM token for user: $userId, device: $deviceId',
       );
 
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        AppLogger.info(
-          '✅ FCM token registered successfully with backend for user: $userId',
-        );
+      // Use ApiClient which automatically handles /api/v1 prefix and auth token
+      final response = await _apiClient.post(
+        '/push-notifications/register-token',
+        data: {
+          'token': token,
+          'userId': userId,
+          'deviceId': deviceId,
+          'platform': platform,
+        },
+      );
+
+      if (response.data['success'] == true) {
+        AppLogger.info('✅ FCM token registered successfully for user: $userId');
       } else {
         AppLogger.warning(
-          '❌ Failed to register FCM token: ${response.statusCode}, Body: ${response.body}',
+          '❌ Failed to register FCM token: ${response.data['message']}',
         );
       }
     } catch (e) {
@@ -291,11 +271,31 @@ class FirebaseNotificationService {
     }
   }
 
-  /// Update auth token and re-register
-  Future<void> updateAuthToken(String? token) async {
-    _authToken = token;
-    if (token != null && _fcmToken != null) {
+  /// Get device ID for registration
+  Future<String> _getDeviceId() async {
+    try {
+      final deviceInfo = DeviceInfoPlugin();
+      if (Platform.isAndroid) {
+        final androidInfo = await deviceInfo.androidInfo;
+        return androidInfo.id;
+      } else if (Platform.isIOS) {
+        final iosInfo = await deviceInfo.iosInfo;
+        return iosInfo.identifierForVendor ?? 'ios-unknown';
+      }
+      return 'unknown-device';
+    } catch (e) {
+      AppLogger.warning('Failed to get device ID: $e');
+      return 'device-${DateTime.now().millisecondsSinceEpoch}';
+    }
+  }
+
+  /// Re-register FCM token (call this on login)
+  Future<void> reRegisterToken() async {
+    if (_fcmToken != null) {
+      AppLogger.info('🔄 Re-registering FCM token after login...');
       await _registerTokenWithBackend(_fcmToken!);
+    } else {
+      AppLogger.warning('⚠️ Cannot re-register: FCM token not available');
     }
   }
 
@@ -329,26 +329,20 @@ class FirebaseNotificationService {
     }
   }
 
-  /// Send test notification
+  /// Send test notification using ApiClient
   Future<void> sendTestNotification() async {
-    if (_authToken == null) return;
-    
     try {
-      final response = await http.post(
-        Uri.parse('${ApiConstants.baseUrl}/notifications/test'),
-        headers: {
-          'Authorization': 'Bearer $_authToken',
-          'Content-Type': 'application/json',
-        },
-      );
+      final response = await _apiClient.post('/notifications/test');
 
-      if (response.statusCode == 200) {
-        AppLogger.info('Test notification sent successfully');
+      if (response.data['success'] == true) {
+        AppLogger.info('✅ Test notification sent successfully');
       } else {
-        AppLogger.warning('Failed to send test notification: ${response.statusCode}');
+        AppLogger.warning(
+          '❌ Failed to send test notification: ${response.data['message']}',
+        );
       }
     } catch (e) {
-      AppLogger.error('Error sending test notification: $e');
+      AppLogger.error('❌ Error sending test notification: $e');
     }
   }
 
