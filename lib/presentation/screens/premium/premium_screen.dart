@@ -5,6 +5,7 @@ import '../../../data/models/premium.dart';
 import '../../blocs/premium/premium_bloc.dart';
 import '../../blocs/premium/premium_event.dart';
 import '../../blocs/premium/premium_state.dart';
+import '../../sheets/coin_purchase_sheet.dart';
 import '../../theme/pulse_colors.dart';
 import '../../theme/theme_extensions.dart';
 import '../../widgets/common/pulse_loading_widget.dart';
@@ -382,19 +383,12 @@ class _PremiumScreenState extends State<PremiumScreen>
   }
 
   void _showCoinPurchaseDialog() {
-    // Implementation for coin purchase
-    showDialog(
+    // Show coin purchase sheet
+    showModalBottomSheet(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Purchase Coins'),
-        content: const Text('Coin purchase functionality coming soon!'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('OK'),
-          ),
-        ],
-      ),
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => const CoinPurchaseSheet(),
     );
   }
 

@@ -476,6 +476,49 @@ class DiscoveryBloc extends Bloc<DiscoveryEvent, DiscoveryState> {
       emit(currentState.copyWith(rewindJustCompleted: false));
     }
   }
+
+  /// Load users who liked the current user (premium feature)
+  Future<void> _onLoadWhoLikedYou(
+    LoadWhoLikedYou event,
+    Emitter<DiscoveryState> emit,
+  ) async {
+    try {
+      emit(const DiscoveryLoading());
+
+      final users = await _discoveryService.getWhoLikedYou(
+        filters: event.filters,
+        limit: 20,
+      );
+
+      if (users.isEmpty) {
+        emit(
+          DiscoveryEmpty(
+            currentFilters: event.filters ?? const DiscoveryFilters(),
+          ),
+        );
+        return;
+      }
+
+      emit(
+        DiscoveryLoaded(
+          userStack: users,
+          currentFilters: event.filters ?? const DiscoveryFilters(),
+          canUndo: false,
+          hasMoreUsers: users.length >= 20,
+        ),
+      );
+
+      // Prefetch media for smooth experience
+      _prefetchService.prefetchProfiles(profiles: users, currentIndex: 0);
+    } catch (error) {
+      AppLogger.debug('Failed to load who liked you: $error');
+      emit(
+        DiscoveryError(
+          message: 'Failed to load users who liked you: ${error.toString()}',
+        ),
+      );
+    }
+  }
 }
 
 /// Internal event for dismissing match celebrations

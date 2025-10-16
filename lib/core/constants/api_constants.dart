@@ -47,6 +47,7 @@ class ApiConstants {
   static const String matchingUndo = '$matching/undo';
   static const String matchingSuggestions = '$matching/suggestions';
   static const String matchingMatches = '$matching/matches';
+  static const String matchingWhoLikedMe = '$matching/who-liked-me';
   static const String matchingPreferences = '$matching/preferences';
   static const String matchingFeedback = '$matching/feedback';
 

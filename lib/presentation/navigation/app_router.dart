@@ -65,6 +65,7 @@ import '../screens/calls/call_details_screen.dart';
 import '../blocs/call_history/call_history_barrel.dart';
 import '../../../data/repositories/call_history_repository.dart';
 import '../screens/discovery/discovery_screen.dart';
+import '../screens/discovery/who_liked_you_screen.dart';
 import '../screens/features/advanced_features_screen.dart';
 import '../screens/heat_map_screen.dart';
 import '../../../domain/entities/user_profile.dart';
@@ -280,6 +281,11 @@ class AppRouter {
         builder: (context, state) => const DiscoveryScreen(),
       ),
       GoRoute(
+          path: AppRoutes.whoLikedYou,
+          name: 'whoLikedYou',
+          builder: (context, state) => const WhoLikedYouScreen(),
+        ),
+        GoRoute(
         path: AppRoutes.advancedFeatures,
         name: 'advancedFeatures',
         builder: (context, state) => const AdvancedFeaturesScreen(),
@@ -855,6 +861,7 @@ class AppRoutes {
   
   // Advanced feature routes
   static const String discovery = '/discovery';
+  static const String whoLikedYou = '/who-liked-you';
   static const String advancedFeatures = '/advanced-features';
   static const String virtualGifts = '/virtual-gifts';
   static const String premium = '/premium';
