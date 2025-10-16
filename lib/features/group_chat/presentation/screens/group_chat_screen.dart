@@ -11,7 +11,6 @@ import '../../../../presentation/blocs/group_chat/group_chat_bloc.dart';
 import '../../data/models.dart';
 import '../../data/group_chat_service.dart';
 import 'video_call_screen.dart';
-import '../../../../data/services/webrtc_service.dart';
 import '../../../../presentation/blocs/auth/auth_bloc.dart';
 import '../../../../presentation/blocs/auth/auth_state.dart';
 import '../widgets/message_bubble.dart';
@@ -21,7 +20,6 @@ import '../widgets/message_search_bar.dart';
 import '../../../../presentation/widgets/common/initials_avatar.dart';
 import '../../../../core/services/call_invitation_service.dart';
 import '../../../../core/models/call_invitation.dart';
-import '../../../calls/presentation/screens/incoming_call_screen.dart';
 import '../../../calls/presentation/screens/outgoing_call_screen.dart';
 
 class GroupChatScreen extends StatefulWidget {
@@ -914,86 +912,6 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
       }
     } catch (e) {
       _showErrorSnackBar('Failed to start call: ${e.toString()}');
-    }
-  }
-
-  Future<void> _initiateCall({required bool isVideoCall}) async {
-    try {
-      // Show loading indicator
-      if (!mounted) return;
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (context) => Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const CircularProgressIndicator(),
-              const SizedBox(height: 16),
-              Text(
-                'Starting ${isVideoCall ? 'video' : 'voice'} call...',
-                style: const TextStyle(color: Colors.white),
-              ),
-            ],
-          ),
-        ),
-      );
-
-      // Get RTC token from backend using group ID as channel name
-      final webrtcService = WebRTCService();
-      final tokenData = await webrtcService.getRtcToken(
-        channelName: widget.group.id,
-        role: 1, // PUBLISHER role for group calls
-      );
-
-      // Close loading dialog
-      if (!mounted) return;
-      Navigator.of(context).pop();
-
-      // Create a pseudo LiveSession for the group call
-      final callSession = LiveSession(
-        id: widget.group.id,
-        conversationId: widget.group.id,
-        hostId: '', // Current user - will be managed by backend
-        hostName: 'Group Call',
-        title: '${widget.group.title} ${isVideoCall ? 'Video' : 'Voice'} Call',
-        description: 'Group ${isVideoCall ? 'video' : 'voice'} call',
-        groupType: widget.group.groupType,
-        status: LiveSessionStatus.active,
-        currentParticipants: widget.group.participantCount,
-        maxParticipants: widget.group.participantCount,
-        requireApproval: false,
-        createdAt: DateTime.now(),
-      );
-
-      // Navigate to video call screen with token
-      if (!mounted) return;
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (context) => BlocProvider.value(
-            value: context.read<GroupChatBloc>(),
-            child: VideoCallScreen(
-              liveSessionId: widget.group.id,
-              rtcToken: tokenData['token'] as String,
-              session: callSession,
-            ),
-          ),
-        ),
-      );
-    } catch (e) {
-      // Close loading dialog if still showing
-      if (mounted && Navigator.of(context).canPop()) {
-        Navigator.of(context).pop();
-      }
-
-      // Show error message
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Failed to start call: ${e.toString()}'),
-          backgroundColor: Colors.red,
-        ),
-      );
     }
   }
 
