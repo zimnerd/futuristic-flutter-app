@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:agora_rtc_engine/agora_rtc_engine.dart'; // ✅ ADDED: For video rendering
 
 import '../../widgets/call/call_controls.dart';
 import '../../../domain/entities/user_profile.dart';
@@ -342,6 +343,7 @@ class _VideoCallScreenState extends State<VideoCallScreen>
     );
   }
 
+  // ✅ FIXED: Build remote video with actual Agora video view
   Widget _buildRemoteVideo() {
     return Container(
       width: double.infinity,
@@ -387,32 +389,59 @@ class _VideoCallScreenState extends State<VideoCallScreen>
                 ],
               ),
             )
-          : Container(
-              // Remote video widget placeholder - in real implementation this would be WebRTC widget
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Colors.blue.withValues(alpha: 0.3),
-                    Colors.purple.withValues(alpha: 0.3),
-                  ],
-                ),
-              ),
-              child: const Center(
-                child: Text(
-                  'Remote Video Stream',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
+          : StreamBuilder<List<int>>(
+              stream: _webRTCService.remoteUsersStream,
+              builder: (context, snapshot) {
+                if (!snapshot.hasData || snapshot.data!.isEmpty || _webRTCService.engine == null) {
+                  // Waiting for remote user to join
+                  return Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Colors.blue.withValues(alpha: 0.3),
+                          Colors.purple.withValues(alpha: 0.3),
+                        ],
+                      ),
+                    ),
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const CircularProgressIndicator(color: Colors.white),
+                          const SizedBox(height: 16),
+                          Text(
+                            'Waiting for ${widget.remoteUser.name.split(' ').first} to join...',
+                            style: const TextStyle(color: Colors.white, fontSize: 16),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }
+
+                final remoteUid = snapshot.data!.first;
+                
+                // ✅ RENDER ACTUAL REMOTE VIDEO
+                return AgoraVideoView(
+                  controller: VideoViewController.remote(
+                    rtcEngine: _webRTCService.engine!,
+                    canvas: VideoCanvas(uid: remoteUid),
+                    connection: RtcConnection(channelId: widget.callId),
                   ),
-                ),
-              ),
+                );
+              },
             ),
     );
   }
 
+  // ✅ FIXED: Build local video with actual Agora video view
   Widget _buildLocalVideo() {
+    if (_webRTCService.engine == null) {
+      return const SizedBox.shrink(); // Don't show anything if engine not ready
+    }
+
     return Positioned(
       top: 60,
       right: 16,
@@ -426,24 +455,10 @@ class _VideoCallScreenState extends State<VideoCallScreen>
         ),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(10),
-          child: Container(
-            // Local video widget placeholder - in real implementation this would be WebRTC camera widget
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  Colors.green.withValues(alpha: 0.5),
-                  Colors.blue.withValues(alpha: 0.5),
-                ],
-              ),
-            ),
-            child: const Center(
-              child: Text(
-                'You',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 12,
-                ),
-              ),
+          child: AgoraVideoView(
+            controller: VideoViewController(
+              rtcEngine: _webRTCService.engine!,
+              canvas: const VideoCanvas(uid: 0), // uid 0 = local user
             ),
           ),
         ),

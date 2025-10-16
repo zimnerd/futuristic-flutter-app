@@ -44,6 +44,13 @@ class WebRTCService {
   bool get isMuted => _isMuted;
   bool get isVideoEnabled => _isVideoEnabled;
   bool get isSpeakerOn => _isSpeakerOn;
+  
+  // ✅ ADDED: Getter for Agora engine (needed for video rendering)
+  RtcEngine? get engine => _engine;
+
+  // ✅ ADDED: Track remote users
+  List<int> _remoteUsers = [];
+  List<int> get remoteUsers => _remoteUsers;
 
   /// Initialize WebRTC service with Agora App ID
   Future<void> initialize({
@@ -69,10 +76,12 @@ class WebRTCService {
         },
         onUserJoined: (RtcConnection connection, int remoteUid, int elapsed) {
           _logger.i('User joined: $remoteUid');
+            _remoteUsers = [remoteUid]; // ✅ ADDED: Update remote users list
           _remoteUsersController.add([remoteUid]);
         },
         onUserOffline: (RtcConnection connection, int remoteUid, UserOfflineReasonType reason) {
           _logger.i('User offline: $remoteUid, reason: $reason');
+                _remoteUsers = []; // ✅ ADDED: Clear remote users list
           _remoteUsersController.add([]);
           if (reason == UserOfflineReasonType.userOfflineDropped ||
               reason == UserOfflineReasonType.userOfflineQuit) {
@@ -353,10 +362,16 @@ class WebRTCService {
     if (callType == CallType.video) {
       // Enable video for video calls
       await _engine!.enableVideo();
+      await _engine!.enableLocalVideo(
+        true,
+      ); // ✅ ADDED: Enable local video capture
       await _engine!.startPreview();
     } else {
       // Disable video for audio calls
       await _engine!.disableVideo();
+      await _engine!.enableLocalVideo(
+        false,
+      ); // ✅ ADDED: Ensure video is disabled
     }
 
     // Set default states
@@ -365,9 +380,6 @@ class WebRTCService {
     _isSpeakerOn = callType == CallType.video; // Default to speaker for video calls
 
     await _engine!.muteLocalAudioStream(_isMuted);
-    if (callType == CallType.video) {
-      await _engine!.muteLocalVideoStream(!_isVideoEnabled);
-    }
     await _engine!.setEnableSpeakerphone(_isSpeakerOn);
 
     // Emit initial states

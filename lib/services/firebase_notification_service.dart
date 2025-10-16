@@ -1,11 +1,13 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import '../core/network/api_client.dart';
 import '../core/utils/logger.dart';
+import '../presentation/navigation/app_router.dart';
 
 /// Firebase Cloud Messaging service for real-time push notifications
 class FirebaseNotificationService {
@@ -17,6 +19,9 @@ class FirebaseNotificationService {
   FlutterLocalNotificationsPlugin? _localNotifications;
   final ApiClient _apiClient = ApiClient.instance;
   String? _fcmToken;
+  
+  // Track active call notifications for missed call handling
+  final Map<int, Timer> _activeCallTimers = {};
   
   final StreamController<Map<String, dynamic>> _notificationStreamController = 
       StreamController<Map<String, dynamic>>.broadcast();
@@ -99,18 +104,39 @@ class FirebaseNotificationService {
       onDidReceiveNotificationResponse: _onLocalNotificationClick,
     );
 
-    // Create notification channel for Android
+    // Create notification channels for Android
     if (Platform.isAndroid) {
-      const channel = AndroidNotificationChannel(
-        'pulselink_messages',
-        'PulseLink Messages',
-        description: 'Chat messages and notifications',
-        importance: Importance.high,
-      );
+      final androidPlugin = _localNotifications
+          ?.resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin
+          >();
 
-      await _localNotifications
-          ?.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
-          ?.createNotificationChannel(channel);
+      if (androidPlugin != null) {
+        // Regular messages channel
+        const messagesChannel = AndroidNotificationChannel(
+          'pulselink_messages',
+          'PulseLink Messages',
+          description: 'Chat messages and notifications',
+          importance: Importance.high,
+        );
+
+        // High-priority channel for incoming calls with ringtone
+        const callsChannel = AndroidNotificationChannel(
+          'incoming_calls',
+          'Incoming Calls',
+          description: 'Notifications for incoming audio and video calls',
+          importance: Importance.max,
+          playSound: true,
+          enableVibration: true,
+          enableLights: true,
+          showBadge: true,
+        );
+
+        await androidPlugin.createNotificationChannel(messagesChannel);
+        await androidPlugin.createNotificationChannel(callsChannel);
+
+        AppLogger.info('✅ Notification channels created');
+      }
     }
   }
 
@@ -145,8 +171,16 @@ class FirebaseNotificationService {
   /// Handle foreground messages by showing local notification
   Future<void> _handleForegroundMessage(RemoteMessage message) async {
     try {
-      // Show local notification for foreground messages
-      await _showLocalNotification(message);
+      final data = message.data;
+
+      // Check if this is an incoming call notification
+      if (data['type'] == 'incoming_call') {
+        AppLogger.info('📞 Incoming call notification received');
+        await _showIncomingCallNotification(message);
+      } else {
+        // Show regular local notification for foreground messages
+        await _showLocalNotification(message);
+      }
       
       // Add to stream for app to handle
       _notificationStreamController.add({
@@ -195,6 +229,197 @@ class FirebaseNotificationService {
     }
   }
 
+  /// Show high-priority incoming call notification with ringtone
+  Future<void> _showIncomingCallNotification(RemoteMessage message) async {
+    try {
+      final data = message.data;
+      final callType = data['callType'] ?? 'AUDIO';
+      final callerName = data['callerName'] ?? 'Unknown';
+      final callId = data['callId'] ?? '';
+
+      // Android notification with full-screen intent and action buttons
+      // WhatsApp-style persistent notification with looping ringtone
+      final androidDetails = AndroidNotificationDetails(
+        'incoming_calls',
+        'Incoming Calls',
+        channelDescription: 'Incoming audio and video calls',
+        importance: Importance.max,
+        priority: Priority.max,
+        category: AndroidNotificationCategory.call,
+        fullScreenIntent: true, // Show full screen even when locked
+        playSound: true,
+        sound: const RawResourceAndroidNotificationSound(
+          'ringtone',
+        ), // Custom ringtone (loops automatically)
+        enableVibration: true,
+        vibrationPattern: Int64List.fromList([
+          0,
+          1000,
+          500,
+          1000,
+        ]), // Custom vibration pattern that loops
+        ongoing: true, // Cannot be dismissed by swiping (WhatsApp-style)
+        autoCancel: false, // Don't auto-dismiss until answered/declined
+        timeoutAfter: 60000, // 60 seconds timeout (like WhatsApp)
+        actions: <AndroidNotificationAction>[
+          AndroidNotificationAction(
+            'accept_call',
+            'Accept',
+            showsUserInterface: true,
+            cancelNotification: false,
+          ),
+          AndroidNotificationAction(
+            'decline_call',
+            'Decline',
+            cancelNotification: true,
+          ),
+        ],
+      );
+
+      // iOS notification with critical alert level
+      const iosDetails = DarwinNotificationDetails(
+        presentAlert: true,
+        presentBadge: true,
+        presentSound: true,
+        interruptionLevel: InterruptionLevel.critical,
+        categoryIdentifier: 'INCOMING_CALL',
+      );
+
+      final details = NotificationDetails(
+        android: androidDetails,
+        iOS: iosDetails,
+      );
+
+      // Use call ID as notification ID for uniqueness
+      final notificationId = callId.hashCode.abs();
+
+      await _localNotifications?.show(
+        notificationId,
+        '$callType Call',
+        '$callerName is calling...',
+        details,
+        payload: json.encode(data),
+      );
+
+      AppLogger.info(
+        '✅ Incoming call notification displayed: $callType from $callerName',
+      );
+
+      // Schedule missed call notification after 60 seconds if not answered
+      _scheduleMissedCallNotification(data, notificationId);
+    } catch (e) {
+      AppLogger.error('❌ Error showing incoming call notification: $e');
+    }
+  }
+
+  /// Schedule a missed call notification if the call is not answered within timeout
+  /// (WhatsApp-style missed call notification)
+  void _scheduleMissedCallNotification(
+    Map<String, dynamic> callData,
+    int activeNotificationId,
+  ) {
+    // Cancel any existing timer for this notification ID
+    _activeCallTimers[activeNotificationId]?.cancel();
+
+    // Create new timer for 60 seconds (like WhatsApp)
+    _activeCallTimers[activeNotificationId] = Timer(
+      const Duration(seconds: 60),
+      () async {
+        try {
+          // Check if the original notification is still active
+          // If it is, the call was not answered - show missed call notification
+          final activeNotifications = await _localNotifications
+              ?.getActiveNotifications();
+
+          final isStillActive =
+              activeNotifications?.any(
+                (notification) => notification.id == activeNotificationId,
+              ) ??
+              false;
+
+          if (isStillActive) {
+            // Call was not answered - cancel ongoing notification and show missed call
+            await _localNotifications?.cancel(activeNotificationId);
+            await _showMissedCallNotification(callData);
+
+            AppLogger.info(
+              '📵 Call not answered - showing missed call notification',
+            );
+          }
+
+          // Clean up timer
+          _activeCallTimers.remove(activeNotificationId);
+        } catch (e) {
+          AppLogger.error('❌ Error handling missed call notification: $e');
+        }
+      },
+    );
+  }
+
+  /// Cancel the missed call timer when user answers or declines
+  void _cancelMissedCallTimer(int notificationId) {
+    _activeCallTimers[notificationId]?.cancel();
+    _activeCallTimers.remove(notificationId);
+    AppLogger.info(
+      '⏹️ Cancelled missed call timer for notification $notificationId',
+    );
+  }
+
+  /// Show persistent missed call notification (like WhatsApp)
+  Future<void> _showMissedCallNotification(
+    Map<String, dynamic> callData,
+  ) async {
+    try {
+      final callerName = callData['callerName'] ?? 'Unknown';
+      final callType = callData['callType'] ?? 'AUDIO';
+      final callId = callData['callId'] ?? '';
+
+      // Regular notification (not full-screen) for missed calls
+      const androidDetails = AndroidNotificationDetails(
+        'pulselink_messages',
+        'PulseLink Messages',
+        channelDescription: 'Missed calls and messages',
+        importance: Importance.high,
+        priority: Priority.high,
+        showWhen: true,
+        styleInformation: BigTextStyleInformation(
+          'Tap to call back',
+          htmlFormatBigText: false,
+        ),
+      );
+
+      const iosDetails = DarwinNotificationDetails(
+        presentAlert: true,
+        presentBadge: true,
+        presentSound: false, // No sound for missed calls
+      );
+
+      const details = NotificationDetails(
+        android: androidDetails,
+        iOS: iosDetails,
+      );
+
+      // Use different notification ID for missed call
+      final missedCallId = '${callId}_missed'.hashCode.abs();
+
+      await _localNotifications?.show(
+        missedCallId,
+        'Missed $callType Call',
+        '$callerName tried to call you',
+        details,
+        payload: json.encode({
+          ...callData,
+          'type': 'missed_call',
+          'isMissed': true,
+        }),
+      );
+
+      AppLogger.info('✅ Missed call notification displayed: $callerName');
+    } catch (e) {
+      AppLogger.error('❌ Error showing missed call notification: $e');
+    }
+  }
+
   /// Handle message opened from notification
   void _handleMessageOpened(RemoteMessage message) {
     _messageClickStreamController.add({
@@ -208,15 +433,100 @@ class FirebaseNotificationService {
   /// Handle local notification click
   void _onLocalNotificationClick(NotificationResponse response) {
     try {
+      final actionId = response.actionId;
+      
       if (response.payload != null) {
         final data = json.decode(response.payload!);
-        _messageClickStreamController.add({
-          'data': data,
-          'type': data['type'] ?? 'message',
-        });
+        final type = data['type'] ?? 'message';
+
+        // Handle incoming call actions
+        if (type == 'incoming_call') {
+          final callId = data['callId'] ?? '';
+          final notificationId = callId.hashCode.abs();
+
+          // Cancel missed call timer since user interacted with notification
+          _cancelMissedCallTimer(notificationId);
+
+          if (actionId == 'accept_call') {
+            AppLogger.info('✅ User accepted call');
+            _navigateToCallScreen(data, isAccepted: true);
+          } else if (actionId == 'decline_call') {
+            AppLogger.info('❌ User declined call');
+            _declineCall(data['callId']);
+          } else if (actionId == null) {
+            // User tapped notification body (not action button)
+            AppLogger.info('📱 User tapped call notification');
+            _navigateToCallScreen(data, isAccepted: false);
+          }
+        } else {
+          // Handle regular notification clicks
+          _messageClickStreamController.add({'data': data, 'type': type});
+        }
       }
     } catch (e) {
       AppLogger.error('Error handling notification click: $e');
+    }
+  }
+
+  /// Navigate to appropriate call screen based on call type
+  void _navigateToCallScreen(
+    Map<String, dynamic> data, {
+    required bool isAccepted,
+  }) {
+    try {
+      final callType = data['callType'] ?? 'AUDIO';
+      final callId = data['callId'] ?? '';
+      final callerId = data['callerId'] ?? '';
+      final callerName = data['callerName'] ?? 'Unknown';
+      final callerPhoto = data['callerPhoto'] ?? '';
+
+      // Get navigator from AppRouter
+      final navigator = AppRouter.navigatorKey.currentState;
+      if (navigator == null) {
+        AppLogger.error('❌ Navigator not available');
+        return;
+      }
+
+      if (callType == 'VIDEO') {
+        navigator.pushNamed(
+          '/video-call',
+          arguments: {
+            'callId': callId,
+            'remoteUserId': callerId,
+            'remoteUserName': callerName,
+            'remoteUserPhoto': callerPhoto,
+            'isIncoming': true,
+            'isAccepted': isAccepted,
+          },
+        );
+      } else {
+        navigator.pushNamed(
+          '/audio-call',
+          arguments: {
+            'callId': callId,
+            'remoteUserId': callerId,
+            'remoteUserName': callerName,
+            'remoteUserPhoto': callerPhoto,
+            'isIncoming': true,
+            'isAccepted': isAccepted,
+          },
+        );
+      }
+
+      AppLogger.info('✅ Navigated to $callType call screen');
+    } catch (e) {
+      AppLogger.error('❌ Error navigating to call screen: $e');
+    }
+  }
+
+  /// Decline incoming call
+  Future<void> _declineCall(String callId) async {
+    try {
+      // Call backend API to decline the call
+      await _apiClient.post('/calls/$callId/decline');
+      AppLogger.info('✅ Call declined: $callId');
+    } catch (e) {
+      AppLogger.error('❌ Error declining call: $e');
     }
   }
 
