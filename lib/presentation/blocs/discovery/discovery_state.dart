@@ -166,3 +166,46 @@ class DiscoveryBoostActivated extends DiscoveryState {
   @override
   List<Object> get props => [boostDuration, updatedState];
 }
+
+/// Loading users who liked the current user
+class WhoLikedYouLoading extends DiscoveryState {
+  const WhoLikedYouLoading();
+}
+
+/// Successfully loaded users who liked the current user
+class WhoLikedYouLoaded extends DiscoveryState {
+  const WhoLikedYouLoaded({
+    required this.likes,
+    required this.currentFilters,
+    this.hasMoreLikes = false,
+  });
+
+  final List<UserProfile> likes;
+  final DiscoveryFilters? currentFilters;
+  final bool hasMoreLikes;
+
+  WhoLikedYouLoaded copyWith({
+    List<UserProfile>? likes,
+    DiscoveryFilters? currentFilters,
+    bool? hasMoreLikes,
+  }) {
+    return WhoLikedYouLoaded(
+      likes: likes ?? this.likes,
+      currentFilters: currentFilters ?? this.currentFilters,
+      hasMoreLikes: hasMoreLikes ?? this.hasMoreLikes,
+    );
+  }
+
+  @override
+  List<Object?> get props => [likes, currentFilters, hasMoreLikes];
+}
+
+/// Error loading who liked you
+class WhoLikedYouError extends DiscoveryState {
+  const WhoLikedYouError({required this.message});
+
+  final String message;
+
+  @override
+  List<Object> get props => [message];
+}

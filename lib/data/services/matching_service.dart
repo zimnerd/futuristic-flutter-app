@@ -610,7 +610,18 @@ class MatchingService {
     String currentUserId,
   ) {
     final user = apiMatch['user'] as Map<String, dynamic>?;
-    final userProfile = user != null ? MatchModel.parseUserProfile(user) : null;
+    final distance = (apiMatch['distance'] as num?)?.toDouble();
+
+    // Parse user profile and inject distance from match level
+    UserProfile? userProfile;
+    if (user != null) {
+      userProfile = MatchModel.parseUserProfile(user);
+      // Add distance if available and profile was parsed
+      if (userProfile != null && distance != null) {
+        userProfile = userProfile.copyWith(distanceKm: distance);
+      }
+    }
+    
     final userId = userProfile?.id ?? '';
 
     // Parse timestamps from API response, with fallbacks
@@ -639,7 +650,8 @@ class MatchingService {
       user1Id: currentUserId, // Use actual current user ID
       user2Id: userId, // The matched user
       isMatched: true, // If it's in matches, it's matched
-      compatibilityScore: 0.85, // Default score since API doesn't provide it
+      compatibilityScore:
+          (apiMatch['compatibility'] as num?)?.toDouble() ?? 0.0,
       matchReasons: null, // No need to store user data here
       status: apiMatch['status'] as String? ?? 'matched',
       matchedAt: matchedAt,

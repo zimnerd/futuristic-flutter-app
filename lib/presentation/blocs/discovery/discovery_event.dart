@@ -115,3 +115,13 @@ class ClearRewindFlag extends DiscoveryEvent {
 class LoadDiscoverableUsersWithPreferences extends DiscoveryEvent {
   const LoadDiscoverableUsersWithPreferences();
 }
+
+/// Load users who liked the current user (premium feature)
+class LoadWhoLikedYou extends DiscoveryEvent {
+  const LoadWhoLikedYou({this.filters});
+
+  final DiscoveryFilters? filters;
+
+  @override
+  List<Object?> get props => [filters];
+}

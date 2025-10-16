@@ -359,10 +359,18 @@ class MatchCard extends StatelessWidget {
     return 'Matched $timeAgo • ${_getStatusText(match.status)}';
   }
 
-  /// Get user location
+  /// Get user location with distance
   String _getUserLocation() {
     if (userProfile?.location != null) {
-      return userProfile!.location.displayName;
+      final location = userProfile!.location.displayName;
+      // Add distance if available
+      if (userProfile!.distanceKm != null && userProfile!.distanceKm! > 0) {
+        final distanceFormatted = userProfile!.distanceKm! < 1
+            ? '${(userProfile!.distanceKm! * 1000).round()}m'
+            : '${userProfile!.distanceKm!.round()}km';
+        return '$distanceFormatted away • $location';
+      }
+      return location;
     }
     return '';
   }

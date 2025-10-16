@@ -42,6 +42,7 @@ class DiscoveryBloc extends Bloc<DiscoveryEvent, DiscoveryState> {
     on<RefreshDiscovery>(_onRefreshDiscovery);
     on<DismissMatch>(_onDismissMatch);
     on<ClearRewindFlag>(_onClearRewindFlag);
+    on<LoadWhoLikedYou>(_onLoadWhoLikedYou);
   }
 
   final DiscoveryService _discoveryService;

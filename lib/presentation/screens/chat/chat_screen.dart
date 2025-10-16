@@ -30,6 +30,7 @@ import '../../widgets/chat/message_bubble.dart';
 import '../../widgets/chat/call_message_widget.dart';
 import '../../widgets/chat/ai_message_input.dart';
 import '../../widgets/chat/rich_ai_chat_assistant_modal.dart';
+import '../../sheets/conversation_picker_sheet.dart';
 import '../../widgets/common/keyboard_dismissible_scaffold.dart';
 import '../../dialogs/call_back_confirmation_dialog.dart';
 import '../../sheets/call_details_bottom_sheet.dart';
@@ -2367,30 +2368,14 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   void _forwardMessage(MessageModel message) {
-    // Show conversation selection dialog for forwarding
-    showDialog(
+    // Show conversation picker bottom sheet
+    showModalBottomSheet(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Forward Message'),
-        content: const Text(
-          'Select a conversation to forward this message to:',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              // Forward feature: Show conversation selector dialog
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Forward feature coming soon')),
-              );
-            },
-            child: const Text('Forward'),
-          ),
-        ],
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => ConversationPickerSheet(
+        messageId: message.id,
+        currentConversationId: widget.conversationId,
       ),
     );
   }

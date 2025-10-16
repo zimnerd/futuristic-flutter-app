@@ -188,6 +188,10 @@ class MatchModel {
         education: userJson['education'],
         gender: userJson['gender'],
         isVerified: userJson['isVerified'] ?? false,
+        // Parse lastActive from backend (returned as 'lastActive', not 'lastActiveAt')
+        lastActiveAt: userJson['lastActive'] != null
+            ? DateTime.tryParse(userJson['lastActive'].toString())
+            : null,
       );
     } catch (e) {
       debugPrint('Error parsing user profile: $e');

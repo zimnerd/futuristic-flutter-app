@@ -175,7 +175,7 @@ class DiscoveryService {
       final response = await _apiClient.get(
         '${ApiConstants.matching}/super-likes/remaining',
       );
-      
+
       if (response.statusCode == 200 && response.data != null) {
         return response.data!['remaining'] as int;
       } else {
@@ -185,6 +185,55 @@ class DiscoveryService {
       // Throw error instead of falling back to mock data
       throw Exception('Failed to get remaining super likes: $error');
     }
+  }
+
+  /// Get users who liked the current user (premium feature)
+  Future<List<UserProfile>> getWhoLikedYou({
+    DiscoveryFilters? filters,
+    int offset = 0,
+    int limit = 20,
+  }) async {
+    try {
+      final queryParams = <String, dynamic>{
+        'offset': offset,
+        'limit': limit,
+      };
+
+      // Add filter parameters if provided
+      if (filters != null) {
+        if (filters.minAge != null) queryParams['minAge'] = filters.minAge;
+        if (filters.maxAge != null) queryParams['maxAge'] = filters.maxAge;
+        if (filters.maxDistance != null) queryParams['maxDistance'] = filters.maxDistance;
+        if (filters.interests.isNotEmpty) queryParams['interests'] = filters.interests.join(',');
+      }
+
+      final response = await _apiClient.get(
+        '${ApiConstants.matching}/likes/received',
+        queryParameters: queryParams,
+      );
+
+      final Map<String, dynamic> data = response.data as Map<String, dynamic>;
+      final List<dynamic> likesJson = data['data'] ?? data['likes'] ?? [];
+
+      return likesJson
+          .map((like) {
+            // Handle both direct user objects and nested user objects
+            final userMap = like is Map<String, dynamic>
+                ? (like['user'] as Map<String, dynamic>? ?? like)
+                : like as Map<String, dynamic>;
+            return _userProfileFromLike(userMap);
+          })
+          .toList();
+
+    } catch (error) {
+      throw Exception('Failed to fetch who liked you: $error');
+    }
+  }
+
+  /// Convert like JSON from API to UserProfile entity
+  UserProfile _userProfileFromLike(Map<String, dynamic> user) {
+    // Reuse the same parsing logic as suggestions
+    return _userProfileFromSuggestion({'user': user});
   }
 
   /// Convert suggestion JSON from API to UserProfile entity
