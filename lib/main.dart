@@ -49,6 +49,19 @@ import 'presentation/blocs/discovery/discovery_bloc.dart';
 import 'presentation/navigation/app_router.dart';
 import 'presentation/theme/pulse_theme.dart';
 import 'presentation/widgets/auto_login_wrapper.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+
+/// Background message handler (must be top-level function)
+@pragma('vm:entry-point')
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  // Initialize Firebase if not already initialized (background isolate)
+  if (Firebase.apps.isEmpty) {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+  }
+  AppLogger.info('Background message received: ${message.messageId}');
+}
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -64,11 +77,23 @@ void main() async {
     }
   }
 
-  // Initialize Firebase
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
-  AppLogger.info('✅ Firebase initialized');
+  // Initialize Firebase ONCE (check if already initialized by background handler)
+  try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+    AppLogger.info('✅ Firebase initialized');
+  } catch (e) {
+    if (e.toString().contains('duplicate-app')) {
+      AppLogger.info('✅ Firebase already initialized (by background handler)');
+    } else {
+      AppLogger.error('❌ Firebase initialization error: $e');
+      rethrow;
+    }
+  }
+
+  // Register background message handler
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
   // Set preferred orientations
   await SystemChrome.setPreferredOrientations([

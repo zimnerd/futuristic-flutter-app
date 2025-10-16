@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:device_info_plus/device_info_plus.dart';
@@ -117,9 +116,8 @@ class FirebaseNotificationService {
 
   /// Set up Firebase message handlers
   void _setupMessageHandlers() {
-    // Handle background messages
-    FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
-
+    // NOTE: Background message handler is registered in main.dart
+    
     // Handle foreground messages
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       AppLogger.info('Foreground message received: ${message.data}');
@@ -388,15 +386,4 @@ class FirebaseNotificationService {
     _notificationStreamController.close();
     _messageClickStreamController.close();
   }
-}
-
-/// Background message handler (must be top-level function)
-@pragma('vm:entry-point')
-Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  // Firebase is already initialized in main.dart, so we don't need to initialize again
-  // Only initialize if running in background isolate and Firebase is not initialized
-  if (Firebase.apps.isEmpty) {
-    await Firebase.initializeApp();
-  }
-  AppLogger.info('Background message received: ${message.data}');
 }
