@@ -298,10 +298,13 @@ class _LiveSessionsScreenState extends State<LiveSessionsScreen> {
       if (!mounted) return;
       Navigator.of(context).push(
         MaterialPageRoute(
-          builder: (context) => VideoCallScreen(
-            liveSessionId: session.id,
-            rtcToken: tokenData['token'] as String,
-            session: session,
+          builder: (context) => BlocProvider.value(
+            value: context.read<GroupChatBloc>(),
+            child: VideoCallScreen(
+              liveSessionId: session.id,
+              rtcToken: tokenData['token'] as String,
+              session: session,
+            ),
           ),
         ),
       );

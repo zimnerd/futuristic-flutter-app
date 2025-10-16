@@ -19,6 +19,10 @@ import '../widgets/typing_indicator.dart';
 import '../widgets/voice_recorder_widget.dart';
 import '../widgets/message_search_bar.dart';
 import '../../../../presentation/widgets/common/initials_avatar.dart';
+import '../../../../core/services/call_invitation_service.dart';
+import '../../../../core/models/call_invitation.dart';
+import '../../../calls/presentation/screens/incoming_call_screen.dart';
+import '../../../calls/presentation/screens/outgoing_call_screen.dart';
 
 class GroupChatScreen extends StatefulWidget {
   final GroupConversation group;
@@ -36,6 +40,7 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   final ImagePicker _imagePicker = ImagePicker();
+  final CallInvitationService _callInvitationService = CallInvitationService();
   bool _isTyping = false;
   bool _isSearchMode = false;
   bool _isRecordingVoice = false;
@@ -867,32 +872,49 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
     }
   }
 
-  void _startVideoCall() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Start Group Video Call'),
-        content: Text(
-          'Start a video call with all ${widget.group.participantCount} group members?',
+  void _startVideoCall() async {
+    try {
+      // Get current user info
+      final authState = context.read<AuthBloc>().state;
+      if (authState is! AuthAuthenticated) {
+        _showErrorSnackBar('Authentication required');
+        return;
+      }
+
+      // Send call invitation
+      final invitation = await _callInvitationService.sendCallInvitation(
+        recipientId:
+            widget.group.id, // Use group ID as recipient for group calls
+        recipientName: widget.group.title,
+        callType: CallType.video,
+        groupId: widget.group.id,
+        conversationId: widget.group.id,
+        metadata: {
+          'participantCount': widget.group.participantCount,
+          'groupType': widget.group.groupType.toString(),
+        },
+      );
+
+      // Show outgoing call screen
+      if (!mounted) return;
+      final result = await Navigator.push<Map<String, dynamic>>(
+        context,
+        MaterialPageRoute(
+          builder: (context) => OutgoingCallScreen(
+            invitation: invitation,
+            recipientName: widget.group.title,
+          ),
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              Navigator.pop(context);
-              await _initiateCall(isVideoCall: true);
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF6E3BFF), // PulseColors.primary
-            ),
-            child: const Text('Start Call'),
-          ),
-        ],
-      ),
-    );
+      );
+
+      // Handle call acceptance
+      if (result != null && result['accepted'] == true) {
+        final acceptedInvitation = result['invitation'] as CallInvitation;
+        await _navigateToVideoCall(acceptedInvitation);
+      }
+    } catch (e) {
+      _showErrorSnackBar('Failed to start call: ${e.toString()}');
+    }
   }
 
   Future<void> _initiateCall({required bool isVideoCall}) async {
@@ -948,10 +970,13 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
       if (!mounted) return;
       Navigator.of(context).push(
         MaterialPageRoute(
-          builder: (context) => VideoCallScreen(
-            liveSessionId: widget.group.id,
-            rtcToken: tokenData['token'] as String,
-            session: callSession,
+          builder: (context) => BlocProvider.value(
+            value: context.read<GroupChatBloc>(),
+            child: VideoCallScreen(
+              liveSessionId: widget.group.id,
+              rtcToken: tokenData['token'] as String,
+              session: callSession,
+            ),
           ),
         ),
       );
@@ -972,30 +997,99 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
     }
   }
 
-  void _startVoiceCall() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Start Group Voice Call'),
-        content: Text(
-          'Start an audio call with all ${widget.group.participantCount} group members?',
+  void _startVoiceCall() async {
+    try {
+      // Get current user info
+      final authState = context.read<AuthBloc>().state;
+      if (authState is! AuthAuthenticated) {
+        _showErrorSnackBar('Authentication required');
+        return;
+      }
+
+      // Send call invitation
+      final invitation = await _callInvitationService.sendCallInvitation(
+        recipientId:
+            widget.group.id, // Use group ID as recipient for group calls
+        recipientName: widget.group.title,
+        callType: CallType.audio,
+        groupId: widget.group.id,
+        conversationId: widget.group.id,
+        metadata: {
+          'participantCount': widget.group.participantCount,
+          'groupType': widget.group.groupType.toString(),
+        },
+      );
+
+      // Show outgoing call screen
+      if (!mounted) return;
+      final result = await Navigator.push<Map<String, dynamic>>(
+        context,
+        MaterialPageRoute(
+          builder: (context) => OutgoingCallScreen(
+            invitation: invitation,
+            recipientName: widget.group.title,
+          ),
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              Navigator.pop(context);
-              await _initiateCall(isVideoCall: false);
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF6E3BFF), // PulseColors.primary
+      );
+
+      // Handle call acceptance
+      if (result != null && result['accepted'] == true) {
+        final acceptedInvitation = result['invitation'] as CallInvitation;
+        await _navigateToVideoCall(
+          acceptedInvitation,
+        ); // Same screen works for audio
+      }
+    } catch (e) {
+      _showErrorSnackBar('Failed to start call: ${e.toString()}');
+    }
+  }
+
+  /// Navigate to video call screen with accepted invitation
+  Future<void> _navigateToVideoCall(CallInvitation invitation) async {
+    try {
+      // Create a pseudo LiveSession for the group call
+      final callSession = LiveSession(
+        id: widget.group.id,
+        conversationId: widget.group.id,
+        hostId: invitation.callerId,
+        hostName: invitation.callerName,
+        title: '${widget.group.title} Video Call',
+        description: 'Group video call',
+        groupType: widget.group.groupType,
+        status: LiveSessionStatus.active,
+        currentParticipants: widget.group.participantCount,
+        maxParticipants: widget.group.participantCount,
+        requireApproval: false,
+        createdAt: DateTime.now(),
+      );
+
+      // Navigate to video call screen
+      if (!mounted) return;
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => BlocProvider.value(
+            value: context.read<GroupChatBloc>(),
+            child: VideoCallScreen(
+              liveSessionId: widget.group.id,
+              rtcToken: invitation.rtcToken!,
+              session: callSession,
             ),
-            child: const Text('Start Call'),
           ),
-        ],
+        ),
+      );
+    } catch (e) {
+      _showErrorSnackBar('Failed to join call: ${e.toString()}');
+    }
+  }
+
+  /// Show error snackbar
+  void _showErrorSnackBar(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red,
+        duration: const Duration(seconds: 3),
       ),
     );
   }

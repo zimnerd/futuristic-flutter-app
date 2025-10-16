@@ -26,9 +26,12 @@ import '../../../core/performance/media_loading_optimizer.dart';
 import '../../../core/performance/memory_manager.dart';
 import '../../theme/pulse_colors.dart';
 import '../../widgets/chat/message_bubble.dart';
+import '../../widgets/chat/call_message_widget.dart';
 import '../../widgets/chat/ai_message_input.dart';
 import '../../widgets/chat/rich_ai_chat_assistant_modal.dart';
 import '../../widgets/common/keyboard_dismissible_scaffold.dart';
+import '../../dialogs/call_back_confirmation_dialog.dart';
+import '../../sheets/call_details_bottom_sheet.dart';
 
 class ChatScreen extends StatefulWidget {
   final String conversationId;
@@ -1034,6 +1037,17 @@ class _ChatScreenState extends State<ChatScreen> {
                   '_buildMessagesList - Message ${message.id}: senderId=${message.senderId}, currentUserId=$currentUserId, isCurrentUser=$isCurrentUser, content="${message.content}", status=${message.status}',
                 );
 
+                // Handle call messages specially
+                if (message.type == MessageType.call) {
+                  return CallMessageWidget(
+                    message: message,
+                    isMe: isCurrentUser,
+                    onCallBack: () => _handleCallBack(message),
+                    onViewDetails: () => _showCallDetails(message),
+                  );
+                }
+
+                // Regular message bubble for all other message types
                 return MessageBubble(
                   message: message,
                   isCurrentUser: isCurrentUser,
@@ -2518,7 +2532,73 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
-  // Callback methods for MessageBubble
+  // Callback methods for MessageBubble and CallMessageWidget
+
+  // Handle call back action from call message
+  Future<void> _handleCallBack(MessageModel message) async {
+    await CallBackConfirmationDialog.show(
+      context,
+      callMessage: message,
+      otherUser: widget.otherUserProfile,
+      onConfirm: (bool shouldUseVideo) {
+        _initiateCallFromMessage(message, isVideo: shouldUseVideo);
+      },
+    );
+  }
+
+  // Show call details bottom sheet
+  void _showCallDetails(MessageModel message) {
+    CallDetailsBottomSheet.show(
+      context,
+      callMessage: message,
+      otherUser: widget.otherUserProfile,
+      onCallBack: () => _handleCallBack(message),
+    );
+  }
+
+  // Initiate call from call message
+  void _initiateCallFromMessage(MessageModel message, {required bool isVideo}) {
+    final callMetadata = message.metadata ?? {};
+    final isIncoming = callMetadata['isIncoming'] as bool? ?? false;
+
+    // Get the other user's ID (the person we're calling back)
+    final otherUserId = isIncoming
+        ? message
+              .senderId // If it was incoming, call back the sender
+        : widget
+              .otherUserId; // If it was outgoing, use the conversation participant
+
+    AppLogger.info(
+      'Initiating ${isVideo ? 'video' : 'audio'} call to user: $otherUserId from call message',
+    );
+
+    // Navigate to appropriate call screen
+    if (isVideo) {
+      context.push(
+        '/video-call',
+        extra: {
+          'otherUserId': otherUserId,
+          'otherUserName': widget.otherUserName,
+          'otherUserPhoto': widget.otherUserPhoto,
+          'conversationId': widget.conversationId,
+          'isOutgoing': true,
+        },
+      );
+    } else {
+      context.push(
+        '/audio-call',
+        extra: {
+          'otherUserId': otherUserId,
+          'otherUserName': widget.otherUserName,
+          'otherUserPhoto': widget.otherUserPhoto,
+          'conversationId': widget.conversationId,
+          'isOutgoing': true,
+          'callType': 'audio',
+        },
+      );
+    }
+  }
+  
   void _onLongPress(MessageModel message) {
     _showMessageOptions(context, message);
   }

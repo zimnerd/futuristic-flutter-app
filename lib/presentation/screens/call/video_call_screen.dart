@@ -6,9 +6,12 @@ import 'package:agora_rtc_engine/agora_rtc_engine.dart'; // ✅ ADDED: For video
 import '../../widgets/call/call_controls.dart';
 import '../../../domain/entities/user_profile.dart';
 import '../../../data/services/webrtc_service.dart';
+import '../../../data/services/messaging_service.dart';
+import '../../../data/services/conversation_service.dart';
 import '../../../data/models/call_model.dart' as model;
 import '../../../core/mixins/permission_required_mixin.dart';
 import '../../../core/network/api_client.dart';
+import '../../../core/utils/logger.dart';
 
 class VideoCallScreen extends StatefulWidget {
   final UserProfile remoteUser;
@@ -29,6 +32,9 @@ class VideoCallScreen extends StatefulWidget {
 class _VideoCallScreenState extends State<VideoCallScreen>
     with PermissionRequiredMixin {
   final WebRTCService _webRTCService = WebRTCService();
+  final MessagingService _messagingService = MessagingService(
+    apiClient: ApiClient.instance,
+  );
   
   bool _isVideoEnabled = true;
   bool _isAudioEnabled = true;
@@ -36,6 +42,8 @@ class _VideoCallScreenState extends State<VideoCallScreen>
   bool _isCallConnected = false;
   bool _showControls = true;
   Duration _callDuration = Duration.zero;
+  Timer? _callDurationTimer;
+  DateTime? _callStartTime;
 
   @override
   void initState() {
@@ -158,6 +166,7 @@ class _VideoCallScreenState extends State<VideoCallScreen>
       
       setState(() {
         _isCallConnected = true;
+        _callStartTime = DateTime.now(); // Start tracking call duration
       });
       _startCallTimer();
     } catch (e) {
@@ -218,6 +227,7 @@ class _VideoCallScreenState extends State<VideoCallScreen>
       if (mounted) {
         setState(() {
           _isCallConnected = true;
+          _callStartTime = DateTime.now(); // Start tracking call duration
         });
       }
       _startCallTimer();
@@ -291,7 +301,20 @@ class _VideoCallScreenState extends State<VideoCallScreen>
 
   void _endCall() async {
     try {
+      // Calculate call duration
+      final duration = _callStartTime != null
+          ? DateTime.now().difference(_callStartTime!).inSeconds
+          : 0;
+
+      // End the WebRTC call first
       await _webRTCService.endCall();
+      
+      // Stop call duration timer
+      _callDurationTimer?.cancel();
+
+      // Try to create call message (don't block navigation if it fails)
+      _createCallMessageAsync(duration);
+      
       if (mounted) {
         setState(() {
           _isCallConnected = false;
@@ -299,10 +322,36 @@ class _VideoCallScreenState extends State<VideoCallScreen>
         Navigator.of(context).pop();
       }
     } catch (e) {
-      debugPrint('Failed to end call: $e');
+      AppLogger.error('Failed to end call: $e');
       if (mounted) {
         Navigator.of(context).pop();
       }
+    }
+  }
+
+  // Create call message asynchronously (don't wait for it)
+  Future<void> _createCallMessageAsync(int duration) async {
+    try {
+      // Get or create conversation directly
+      final conversationService = ConversationService();
+      final conversation = await conversationService.createConversation(
+        participantId: widget.remoteUser.id,
+      );
+
+      if (conversation != null) {
+        await _messagingService.createCallMessage(
+          conversationId: conversation.id,
+          callType: 'video',
+          duration: duration,
+          isIncoming: widget.isIncoming,
+          isMissed: !_isCallConnected,
+        );
+        AppLogger.info(
+          'Video call message created: duration=${duration}s, connected=$_isCallConnected',
+        );
+      }
+    } catch (e) {
+      AppLogger.error('Failed to create video call message: $e');
     }
   }
 
