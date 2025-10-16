@@ -122,7 +122,7 @@ class BackgroundSyncManager extends WidgetsBindingObserver {
   }
 
   /// Get sync status information
-  Map<String, dynamic> getSyncStatus() {
+  Future<Map<String, dynamic>> getSyncStatus() async {
     if (!_isInitialized || _syncService == null) {
       return {
         'isInitialized': false,
@@ -131,7 +131,7 @@ class BackgroundSyncManager extends WidgetsBindingObserver {
       };
     }
 
-    return _syncService!.getSyncStatus();
+    return await _syncService!.getSyncStatus();
   }
 
   /// Handle app lifecycle changes

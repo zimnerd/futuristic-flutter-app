@@ -4,6 +4,8 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 
 import '../repositories/chat_repository.dart';
 import '../services/message_database_service.dart';
+import '../../services/discovery_prefetch_manager.dart';
+import '../../domain/entities/message.dart'; // For MessageType enum
 
 /// Service to handle background synchronization of messages and conversations
 class BackgroundSyncService {
@@ -166,16 +168,19 @@ class BackgroundSyncService {
       _isSyncInProgress = true;
       _logger.d('Starting background sync for all conversations');
 
-      // Get all conversations that have local data
+      // PRIORITY 1: Process outbox first (send pending messages)
+      await _processOutbox();
+
+      // PRIORITY 2: Get all conversations that have local data
       final localConversations = await _databaseService.getAllConversations();
-      
+
       _logger.d('Found ${localConversations.length} local conversations to sync');
 
-      // Sync each conversation
+      // PRIORITY 3: Sync each conversation
       for (final conversation in localConversations) {
         try {
           await _syncConversationMessages(conversation.id);
-          
+
           // Small delay between syncs to avoid overwhelming the server
           await Future.delayed(const Duration(milliseconds: 100));
         } catch (e) {
@@ -185,10 +190,89 @@ class BackgroundSyncService {
       }
 
       _logger.i('Background sync completed for ${localConversations.length} conversations');
+      
+      // PRIORITY 4: Prefetch discovery profiles (low priority, no images)
+      // This happens in background so profiles are ready when user opens discovery
+      await _prefetchDiscoveryProfiles();
     } catch (e) {
       _logger.e('Error during background sync: $e');
     } finally {
       _isSyncInProgress = false;
+    }
+  }
+
+  /// Prefetch discovery profiles during background sync
+  ///
+  /// This pre-populates the discovery feed cache so profiles are instantly
+  /// available when user opens the discovery screen.
+  Future<void> _prefetchDiscoveryProfiles() async {
+    try {
+      _logger.d('Starting discovery profile prefetch');
+
+      await DiscoveryPrefetchManager.instance.prefetchProfilesBackground();
+
+      _logger.d('Discovery profile prefetch complete');
+    } catch (e) {
+      _logger.e('Error prefetching discovery profiles: $e');
+      // Don't fail the entire sync if discovery prefetch fails
+    }
+  }
+
+  /// Process outbox - retry sending queued messages
+  Future<void> _processOutbox() async {
+    try {
+      final pending = await _databaseService.getPendingOutbox();
+
+      if (pending.isEmpty) {
+        _logger.d('No pending outbox messages to process');
+        return;
+      }
+
+      _logger.d('Processing ${pending.length} pending outbox messages');
+
+      for (final item in pending) {
+        try {
+          final tempId = item['temp_id'] as String;
+          final conversationId = item['conversation_id'] as String;
+          final content = item['content'] as String;
+          final type = item['type'] as String;
+          final mediaLocalPath = item['media_local_path'] as String?;
+
+          _logger.d('Attempting to send queued message: $tempId');
+
+          // Convert string type to MessageType enum
+          final messageType = _parseMessageType(type);
+
+          // Send via API
+          final sentMessage = await _chatRepository.sendMessage(
+            conversationId: conversationId,
+            content: content,
+            type: messageType,
+            mediaIds: mediaLocalPath != null ? [mediaLocalPath] : null,
+          );
+
+          // Remove from outbox on success
+          await _databaseService.removeFromOutbox(tempId);
+
+          _logger.i(
+            'Successfully sent queued message: $tempId -> ${sentMessage.id}',
+          );
+
+          // Small delay to avoid overwhelming the server
+          await Future.delayed(const Duration(milliseconds: 200));
+        } catch (e) {
+          final tempId = item['temp_id'] as String;
+          _logger.e('Failed to send queued message $tempId: $e');
+
+          // Increment retry count
+          await _databaseService.incrementRetryCount(tempId, e.toString());
+        }
+      }
+
+      // Clean up failed messages (exceeded max retries)
+      await _databaseService.clearFailedOutbox();
+    } catch (e) {
+      _logger.e('Error processing outbox: $e');
     }
   }
 
@@ -276,13 +360,59 @@ class BackgroundSyncService {
   }
 
   /// Get sync status information
-  Map<String, dynamic> getSyncStatus() {
+  Future<Map<String, dynamic>> getSyncStatus() async {
+    final outboxStats = await _databaseService.getOutboxStats();
+
     return {
       'isOnline': _isOnline,
       'isSyncInProgress': _isSyncInProgress,
       'periodicSyncEnabled': _periodicSyncTimer?.isActive ?? false,
       'syncInterval': _periodicSyncInterval.inMinutes,
+      'outboxPending': outboxStats['pending'] ?? 0,
+      'outboxFailed': outboxStats['failed'] ?? 0,
+      'outboxTotal': outboxStats['total'] ?? 0,
     };
+  }
+
+  /// Trigger manual outbox processing
+  Future<void> retryFailedMessages() async {
+    if (!_isOnline) {
+      _logger.w('Cannot retry failed messages - offline');
+      return;
+    }
+
+    _logger.d('Manual retry of failed messages triggered');
+    await _processOutbox();
+  }
+
+  /// Parse string type to MessageType enum
+  MessageType _parseMessageType(String type) {
+    switch (type.toLowerCase()) {
+      case 'text':
+        return MessageType.text;
+      case 'image':
+        return MessageType.image;
+      case 'video':
+        return MessageType.video;
+      case 'audio':
+        return MessageType.audio;
+      case 'gif':
+        return MessageType.gif;
+      case 'sticker':
+        return MessageType.sticker;
+      case 'location':
+        return MessageType.location;
+      case 'contact':
+        return MessageType.contact;
+      case 'file':
+        return MessageType.file;
+      case 'system':
+        return MessageType.system;
+      case 'call':
+        return MessageType.call;
+      default:
+        return MessageType.text; // Default to text
+    }
   }
 }
 

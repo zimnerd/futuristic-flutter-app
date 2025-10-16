@@ -467,6 +467,17 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper>
                   ),
                   _buildDivider(),
                   _buildSimpleMenuTile(
+                    icon: LineIcons.history,
+                    title: 'Call History',
+                    subtitle: 'View past calls',
+                    onTap: () {
+                      Navigator.of(context).pop();
+                      context.push('/call-history');
+                    },
+                    isDark: isDark,
+                  ),
+                  _buildDivider(),
+                  _buildSimpleMenuTile(
                     icon: LineIcons.robot,
                     title: 'AI Companion',
                     subtitle: 'Your virtual dating coach',

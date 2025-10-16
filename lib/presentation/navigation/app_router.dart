@@ -60,6 +60,10 @@ import '../screens/profile/profile_edit_screen.dart';
 import '../screens/chat/chat_screen.dart';
 import '../screens/call/video_call_screen.dart';
 import '../screens/call/audio_call_screen.dart';
+import '../screens/calls/call_history_screen.dart';
+import '../screens/calls/call_details_screen.dart';
+import '../blocs/call_history/call_history_barrel.dart';
+import '../../../data/repositories/call_history_repository.dart';
 import '../screens/discovery/discovery_screen.dart';
 import '../screens/features/advanced_features_screen.dart';
 import '../screens/heat_map_screen.dart';
@@ -672,6 +676,37 @@ class AppRouter {
           builder: (context, state) => const NotificationScreen(),
         ),
 
+        // Call History routes
+        GoRoute(
+          path: AppRoutes.callHistory,
+          name: 'callHistory',
+          builder: (context, state) {
+            // Create CallHistoryBloc with repository
+            final repository = CallHistoryRepository();
+            final bloc = CallHistoryBloc(repository: repository);
+
+            return BlocProvider<CallHistoryBloc>.value(
+              value: bloc,
+              child: const CallHistoryScreen(),
+            );
+          },
+        ),
+        GoRoute(
+          path: AppRoutes.callDetails,
+          name: 'callDetails',
+          builder: (context, state) {
+            final callId = state.pathParameters['callId'] ?? '';
+            // Create CallHistoryBloc with repository for details screen
+            final repository = CallHistoryRepository();
+            final bloc = CallHistoryBloc(repository: repository);
+
+            return BlocProvider<CallHistoryBloc>.value(
+              value: bloc,
+              child: CallDetailsScreen(callId: callId),
+            );
+          },
+        ),
+
         // Payment routes
         GoRoute(
           path: AppRoutes.paymentMethods,
@@ -867,6 +902,10 @@ class AppRoutes {
 
   // Notification route
   static const String notifications = '/notifications';
+
+  // Call history routes
+  static const String callHistory = '/call-history';
+  static const String callDetails = '/call-details/:callId';
 
   // Payment routes
   static const String paymentMethods = '/payment-methods';

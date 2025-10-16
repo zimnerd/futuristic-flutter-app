@@ -3,6 +3,7 @@ import '../../../domain/entities/user_profile.dart';
 import '../../../domain/entities/discovery_types.dart';
 import '../../../data/services/discovery_service.dart';
 import '../../../data/services/preferences_service.dart';
+import '../../../services/media_prefetch_service.dart';
 import '../../../core/utils/logger.dart';
 import 'discovery_event.dart';
 import 'discovery_state.dart';
@@ -15,12 +16,15 @@ import 'discovery_state.dart';
 /// - Managing filters and preferences
 /// - Handling matches and boost features
 /// - Undo functionality for premium users
+/// - Media prefetching for smooth scrolling experience
 class DiscoveryBloc extends Bloc<DiscoveryEvent, DiscoveryState> {
   DiscoveryBloc({
     required DiscoveryService discoveryService,
     required PreferencesService preferencesService,
+    MediaPrefetchService? prefetchService,
   })  : _discoveryService = discoveryService,
        _preferencesService = preferencesService,
+       _prefetchService = prefetchService ?? MediaPrefetchService(),
         super(const DiscoveryInitial()) {
     // Register event handlers
     on<LoadDiscoverableUsers>(_onLoadDiscoverableUsers);
@@ -42,6 +46,7 @@ class DiscoveryBloc extends Bloc<DiscoveryEvent, DiscoveryState> {
 
   final DiscoveryService _discoveryService;
   final PreferencesService _preferencesService;
+  final MediaPrefetchService _prefetchService;
 
   /// Load initial discoverable users with optional filters
   Future<void> _onLoadDiscoverableUsers(
@@ -68,6 +73,12 @@ class DiscoveryBloc extends Bloc<DiscoveryEvent, DiscoveryState> {
         canUndo: false,
         hasMoreUsers: users.length >= 10, // Assume more if we got a full batch
       ));
+
+      // 🚀 Trigger prefetch for upcoming profiles
+      _prefetchService.prefetchProfiles(
+        profiles: users,
+        currentIndex: 0, // Start prefetching from the first profile
+      );
     } catch (error) {
       emit(DiscoveryError(
         message: 'Failed to load users: ${error.toString()}',
@@ -115,6 +126,9 @@ class DiscoveryBloc extends Bloc<DiscoveryEvent, DiscoveryState> {
           hasMoreUsers: users.length >= 10,
         ),
       );
+
+      // 🚀 Trigger prefetch for upcoming profiles
+      _prefetchService.prefetchProfiles(profiles: users, currentIndex: 0);
     } catch (error) {
       // Fallback to loading without filters if preferences fail
       AppLogger.debug('Error loading with preferences, falling back: $error');
@@ -148,6 +162,14 @@ class DiscoveryBloc extends Bloc<DiscoveryEvent, DiscoveryState> {
         lastSwipeAction: SwipeAction.left,
         canUndo: true,
       ));
+
+      // 🚀 Prefetch next profiles after swipe
+      if (updatedStack.isNotEmpty) {
+        _prefetchService.prefetchProfiles(
+          profiles: updatedStack,
+          currentIndex: 0, // Always start from current top profile
+        );
+      }
 
       // Load more users if stack is getting low
       if (updatedStack.length <= 3) {
@@ -199,7 +221,15 @@ class DiscoveryBloc extends Bloc<DiscoveryEvent, DiscoveryState> {
         emit(updatedState);
       }
 
-      // Load more users if needed
+      // 🚀 Prefetch next profiles after swipe
+      if (updatedStack.isNotEmpty) {
+        _prefetchService.prefetchProfiles(
+          profiles: updatedStack,
+          currentIndex: 0,
+        );
+      }
+
+      // Load more users if stack is getting low
       if (updatedStack.length <= 3) {
         add(const LoadMoreUsers());
       }
@@ -247,6 +277,14 @@ class DiscoveryBloc extends Bloc<DiscoveryEvent, DiscoveryState> {
         ));
       } else {
         emit(updatedState);
+      }
+
+      // 🚀 Prefetch next profiles after super like
+      if (updatedStack.isNotEmpty) {
+        _prefetchService.prefetchProfiles(
+          profiles: updatedStack,
+          currentIndex: 0,
+        );
       }
 
       // Load more users if needed

@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'photo.dart';
 
 /// User model for the application
 class User extends Equatable {
@@ -9,14 +10,14 @@ class User extends Equatable {
   final String? lastName;
   final String? displayName;
   final String? profileImageUrl;
+  final String? avatarBlurhash; // BluHash for avatar progressive loading
   final String? bio;
   final DateTime? birthDate;
   final int? age; // Added from API spec
   final String? gender; // Added from API spec
   final String? location;
   final List<String> interests;
-  final List<dynamic>
-  photos; // Changed to dynamic to handle both string URLs and Photo objects
+  final List<Photo> photos; // Photo objects with blurhash support
   final bool isOnline;
   final DateTime? lastSeen;
   final bool isVerified;
@@ -34,6 +35,7 @@ class User extends Equatable {
     this.lastName,
     this.displayName,
     this.profileImageUrl,
+    this.avatarBlurhash,
     this.bio,
     this.birthDate,
     this.age,
@@ -61,6 +63,7 @@ class User extends Equatable {
       lastName: json['lastName'] as String?,
       displayName: json['displayName'] as String?,
       profileImageUrl: json['profileImageUrl'] as String?,
+      avatarBlurhash: json['avatarBlurhash'] as String?,
       bio: json['bio'] as String?,
       birthDate: json['birthDate'] != null
           ? DateTime.parse(json['birthDate'] as String)
@@ -77,7 +80,18 @@ class User extends Equatable {
         }
         return item.toString();
       }).where((name) => name.isNotEmpty).toList() ?? [],
-      photos: (json['photos'] as List?)?.map((photo) => photo).toList() ?? [],
+      photos:
+          (json['photos'] as List?)?.map((photo) {
+            // Handle both string URLs (backward compatibility) and Photo objects
+            if (photo is String) {
+              return Photo.fromUrl(photo);
+            }
+            if (photo is Map<String, dynamic>) {
+              return Photo.fromJson(photo);
+            }
+            return Photo.fromUrl(photo.toString());
+          }).toList() ??
+          [],
       isOnline: json['isOnline'] as bool? ?? false,
       lastSeen: json['lastSeen'] != null
           ? DateTime.parse(json['lastSeen'] as String)
@@ -101,13 +115,14 @@ class User extends Equatable {
       'lastName': lastName,
       'displayName': displayName,
       'profileImageUrl': profileImageUrl,
+      if (avatarBlurhash != null) 'avatarBlurhash': avatarBlurhash,
       'bio': bio,
       'birthDate': birthDate?.toIso8601String(),
       'age': age,
       'gender': gender,
       'location': location,
       'interests': interests,
-      'photos': photos,
+      'photos': photos.map((photo) => photo.toJson()).toList(),
       'isOnline': isOnline,
       'lastSeen': lastSeen?.toIso8601String(),
       'isVerified': isVerified,
@@ -186,7 +201,8 @@ class User extends Equatable {
     String? gender,
     String? location,
     List<String>? interests,
-    List<String>? photos,
+    List<Photo>? photos,
+    String? avatarBlurhash,
     bool? isOnline,
     DateTime? lastSeen,
     bool? isVerified,
@@ -204,6 +220,7 @@ class User extends Equatable {
       lastName: lastName ?? this.lastName,
       displayName: displayName ?? this.displayName,
       profileImageUrl: profileImageUrl ?? this.profileImageUrl,
+      avatarBlurhash: avatarBlurhash ?? this.avatarBlurhash,
       bio: bio ?? this.bio,
       birthDate: birthDate ?? this.birthDate,
       age: age ?? this.age,

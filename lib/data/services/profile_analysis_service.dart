@@ -39,7 +39,11 @@ class ProfileAnalysisService {
 
       // Analyze photos for visual conversation starters
       if (matchProfile.photos.isNotEmpty) {
-        starters.addAll(await _analyzePhotosForStarters(matchProfile.photos));
+        starters.addAll(
+          await _analyzePhotosForStarters(
+            matchProfile.photos.map((photo) => photo.url).toList(),
+          ),
+        );
       }
 
       // Analyze location for local conversation topics
@@ -84,7 +88,9 @@ class ProfileAnalysisService {
       suggestions.addAll(bioAnalysis.suggestions);
 
       // Analyze photos
-      final photoAnalysis = _analyzePhotos(userProfile.photos);
+      final photoAnalysis = _analyzePhotos(
+        userProfile.photos.map((photo) => photo.url).toList(),
+      );
       strengths.addAll(photoAnalysis.strengths);
       weaknesses.addAll(photoAnalysis.weaknesses);
       suggestions.addAll(photoAnalysis.suggestions);

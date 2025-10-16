@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/pulse_design_system.dart';
 import '../../../domain/entities/discovery_types.dart';
+import '../../../services/discovery_prefetch_manager.dart';
 import '../../blocs/discovery/discovery_bloc.dart';
 import '../../blocs/discovery/discovery_event.dart';
 import '../../blocs/discovery/discovery_state.dart';
@@ -110,6 +111,27 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _headerController.forward();
       _loadDiscoveryWithPreferences();
+      
+      // Prefetch discovery images on screen entry for instant loading
+      // This will use cached profiles from app launch and prefetch images
+      _prefetchDiscoveryImages();
+    });
+  }
+
+  /// Prefetch discovery profile images when screen is entered
+  ///
+  /// This ensures that discovery profile images are cached and ready,
+  /// providing zero-wait-time experience when swiping through profiles.
+  void _prefetchDiscoveryImages() {
+    if (!mounted) return;
+
+    // Prefetch with context for image caching
+    // This will use cached profiles from app launch/background sync
+    DiscoveryPrefetchManager.instance
+        .prefetchProfilesWithImages(context)
+        .catchError((error) {
+          // Silently fail - this is a performance optimization, not critical
+          debugPrint('Discovery image prefetch error: $error');
     });
   }
 

@@ -11,6 +11,7 @@ import 'package:permission_handler/permission_handler.dart';
 import '../../../blocs/chat_bloc.dart';
 import '../../../data/models/chat_model.dart';
 import '../../../data/services/service_locator.dart';
+import '../../../data/services/background_sync_manager.dart';
 import '../../../data/services/audio_call_service.dart';
 import '../../../services/media_upload_service.dart' as media_service;
 import '../../../domain/entities/message.dart' show MessageType;
@@ -207,6 +208,21 @@ class _ChatScreenState extends State<ChatScreen> {
         }
       }
     }
+  }
+
+  void _retryFailedMessage(MessageModel message) {
+    AppLogger.debug('Retrying failed message: ${message.id}');
+
+    // Show loading indicator
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Retrying message...'),
+        duration: Duration(seconds: 1),
+      ),
+    );
+
+    // Trigger background sync to retry messages in outbox
+    BackgroundSyncManager.instance.startSync();
   }
 
   void _sendMessage() {
@@ -1053,6 +1069,7 @@ class _ChatScreenState extends State<ChatScreen> {
                   isCurrentUser: isCurrentUser,
                   currentUserId: currentUserId,
                   onLongPress: () => _onLongPress(message),
+                  onRetry: () => _retryFailedMessage(message),
                   onReaction: (emoji) => _onReaction(message, emoji),
                   onReply: () => _onReply(message),
                   onMediaTap: () => _onMediaTap(message),
@@ -1093,6 +1110,7 @@ class _ChatScreenState extends State<ChatScreen> {
                         true, // MessageSent is always from current user
                     currentUserId: _currentUserId ?? '',
                     onLongPress: () => _onLongPress(state.message),
+                    onRetry: () => _retryFailedMessage(state.message),
                     onReaction: (emoji) => _onReaction(state.message, emoji),
                     onReply: () => _onReply(state.message),
                     onMediaTap: () => _onMediaTap(state.message),

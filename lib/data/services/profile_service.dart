@@ -125,6 +125,8 @@ class ProfileService {
               id: photo['id'] as String? ?? _uuid.v4(),
               url: photo['url'] as String,
               order: photo['order'] as int? ?? 0,
+              blurhash:
+                  photo['blurhash'] as String?, // ✅ Parse blurhash from API
               isVerified:
                   photo['isVerified'] as bool? ??
                   (userData['verified'] as bool? ?? false),

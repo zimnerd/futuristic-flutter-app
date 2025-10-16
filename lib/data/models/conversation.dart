@@ -177,16 +177,9 @@ class Conversation extends Equatable {
       // Fallback to first photo if available
       if (targetUser.photos.isNotEmpty) {
         final firstPhoto = targetUser.photos.first;
-        // Handle both string URLs and Photo objects
-        if (firstPhoto is String) {
-          debugPrint('🐛 Using first photo (string): $firstPhoto');
-          return firstPhoto;
-        } else if (firstPhoto is Map<String, dynamic>) {
-          final photoUrl = firstPhoto['url'] as String?;
-          debugPrint('🐛 Using first photo (object): $photoUrl');
-          return photoUrl ?? '';
-        }
-        debugPrint('🐛 Unknown photo format: $firstPhoto');
+        // Photos are now Photo objects with url property
+        debugPrint('🐛 Using first photo: ${firstPhoto.url}');
+        return firstPhoto.url;
       }
 
       debugPrint('🐛 No avatar found for user: ${targetUser.name}');

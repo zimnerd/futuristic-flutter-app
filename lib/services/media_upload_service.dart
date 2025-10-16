@@ -620,6 +620,7 @@ class MediaUploadResult {
   final String? category;
   final int? fileSize;
   final String? mimeType;
+  final String? blurhash;
   final Map<String, dynamic>? metadata;
   final String? error;
 
@@ -632,6 +633,7 @@ class MediaUploadResult {
     this.category,
     this.fileSize,
     this.mimeType,
+    this.blurhash,
     this.metadata,
     this.error,
   });
@@ -654,6 +656,7 @@ class MediaUploadResult {
       category: dataObject['category'],
       fileSize: dataObject['fileSize'],
       mimeType: dataObject['mimeType'],
+      blurhash: dataObject['blurhash'], // ✅ Parse blurhash from backend
       metadata: dataObject['metadata'],
       error: json['error'],
     );

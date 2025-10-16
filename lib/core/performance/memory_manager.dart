@@ -124,9 +124,9 @@ class MemoryManager {
   }
   
   /// Check if memory usage is healthy
-  bool isMemoryUsageHealthy() {
+  Future<bool> isMemoryUsageHealthy() async {
     final messageStats = _messageOptimizer.getMemoryInfo();
-    final mediaStats = _mediaOptimizer.getCacheStats();
+    final mediaStats = await _mediaOptimizer.getCacheStats();
     
     final messageCount = messageStats['totalMessages'] as int;
     final mediaCacheCount = mediaStats['totalCachedMedia'] as int;
@@ -139,8 +139,8 @@ class MemoryManager {
   }
   
   /// Get memory usage recommendation
-  String getMemoryRecommendation() {
-    if (isMemoryUsageHealthy()) {
+  Future<String> getMemoryRecommendation() async {
+    if (await isMemoryUsageHealthy()) {
       return 'Memory usage is healthy';
     }
     

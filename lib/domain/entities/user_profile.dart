@@ -461,6 +461,7 @@ class ProfilePhoto extends Equatable {
     required this.url,
     required this.order,
     this.description,
+    this.blurhash,
     this.isMain = false,
     this.isVerified = false,
     this.uploadedAt,
@@ -470,6 +471,7 @@ class ProfilePhoto extends Equatable {
   final String url;
   final int order;
   final String? description;
+  final String? blurhash;
   final bool isMain;
   final bool isVerified;
   final DateTime? uploadedAt;
@@ -479,6 +481,7 @@ class ProfilePhoto extends Equatable {
     String? url,
     int? order,
     String? description,
+    String? blurhash,
     bool? isMain,
     bool? isVerified,
     DateTime? uploadedAt,
@@ -488,6 +491,7 @@ class ProfilePhoto extends Equatable {
       url: url ?? this.url,
       order: order ?? this.order,
       description: description ?? this.description,
+      blurhash: blurhash ?? this.blurhash,
       isMain: isMain ?? this.isMain,
       isVerified: isVerified ?? this.isVerified,
       uploadedAt: uploadedAt ?? this.uploadedAt,
@@ -501,6 +505,7 @@ class ProfilePhoto extends Equatable {
       url: json['url'] as String,
       order: json['order'] as int,
       description: json['description'] as String?,
+      blurhash: json['blurhash'] as String?, // ✅ Parse blurhash from backend
       isMain: json['isMain'] as bool? ?? false,
       isVerified: json['isVerified'] as bool? ?? false,
       uploadedAt: json['uploadedAt'] != null
@@ -518,6 +523,7 @@ class ProfilePhoto extends Equatable {
       'url': url,
       'order': order,
       'description': description,
+      'blurhash': blurhash,
       'isMain': isMain,
       'isVerified': isVerified,
       'uploadedAt': uploadedAt?.toIso8601String(),
@@ -530,6 +536,7 @@ class ProfilePhoto extends Equatable {
     url,
     order,
     description,
+    blurhash,
     isMain,
     isVerified,
     uploadedAt,

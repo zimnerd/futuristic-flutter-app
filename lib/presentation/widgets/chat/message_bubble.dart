@@ -11,11 +11,13 @@ import '../../../domain/entities/message.dart' as entities;
 import '../media/media_grid.dart';
 import '../media/media_viewer.dart';
 import 'voice_message_bubble.dart';
+import '../messaging/message_status_indicator.dart';
 
 class MessageBubble extends StatelessWidget {
   final MessageModel message;
   final bool isCurrentUser;
   final VoidCallback? onLongPress;
+  final VoidCallback? onRetry;
   final Function(String)? onReaction;
   final VoidCallback? onReply;
   final VoidCallback? onMediaTap;
@@ -28,6 +30,7 @@ class MessageBubble extends StatelessWidget {
     required this.message,
     required this.isCurrentUser,
     this.onLongPress,
+    this.onRetry,
     this.onReaction,
     this.onReply,
     this.onMediaTap,
@@ -221,17 +224,14 @@ class MessageBubble extends StatelessWidget {
                                     ),
                                     if (isCurrentUser) ...[
                                       const SizedBox(width: 4),
-                                      Icon(
-                                        message.status == MessageStatus.read
-                                            ? Icons.done_all
-                                            : Icons.done,
+                                      MessageStatusIndicator(
+                                        status: message.status,
+                                        onRetry: onRetry,
                                         size: 16,
-                                        color:
-                                            message.status == MessageStatus.read
-                                            ? Colors.blue[300]
-                                            : Colors.white.withValues(
-                                                alpha: 0.7,
-                                              ),
+                                        color: Colors.white.withValues(
+                                          alpha: 0.7,
+                                        ),
+                                        readColor: Colors.blue.shade300,
                                       ),
                                     ],
                                   ],
@@ -264,14 +264,12 @@ class MessageBubble extends StatelessWidget {
                               ),
                               if (isCurrentUser) ...[
                                 const SizedBox(width: 4),
-                                Icon(
-                                  message.status == MessageStatus.read
-                                      ? Icons.done_all
-                                      : Icons.done,
+                                MessageStatusIndicator(
+                                  status: message.status,
+                                  onRetry: onRetry,
                                   size: 16,
-                                  color: message.status == MessageStatus.read
-                                      ? Colors.blue[300]
-                                      : Colors.white.withValues(alpha: 0.7),
+                                  color: Colors.white.withValues(alpha: 0.7),
+                                  readColor: Colors.blue.shade300,
                                 ),
                               ],
                             ],
@@ -311,16 +309,12 @@ class MessageBubble extends StatelessWidget {
                                       ),
                                       if (isCurrentUser) ...[
                                         const SizedBox(width: 4),
-                                        Icon(
-                                          message.status == MessageStatus.read
-                                              ? Icons.done_all
-                                              : Icons.done,
+                                        MessageStatusIndicator(
+                                          status: message.status,
+                                          onRetry: onRetry,
                                           size: 14,
-                                          color:
-                                              message.status ==
-                                                  MessageStatus.read
-                                              ? Colors.blue[300]
-                                              : Colors.white,
+                                          color: Colors.white,
+                                          readColor: Colors.blue.shade300,
                                         ),
                                       ],
                                     ],

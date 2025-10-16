@@ -269,6 +269,8 @@ class _SwipeCardState extends State<SwipeCard>
           ? RobustNetworkImage(
               key: ValueKey(currentPhoto.url),
               imageUrl: currentPhoto.url,
+              blurhash:
+                  currentPhoto.blurhash, // ✅ Pass blurhash for smooth loading
               fit: BoxFit.cover,
               width: double.infinity,
               height: double.infinity,

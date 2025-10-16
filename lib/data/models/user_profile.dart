@@ -1,4 +1,5 @@
 import '../models/user.dart';
+import 'photo.dart';
 
 /// Extended user profile for AI analysis
 class UserProfile {
@@ -9,7 +10,7 @@ class UserProfile {
   final String? gender;
   final String? location;
   final List<String> interests;
-  final List<String> photos;
+  final List<Photo> photos;
   final Map<String, dynamic>? preferences;
   final ProfilePersonality? personality;
   final List<String> lifestyle;
@@ -40,7 +41,7 @@ class UserProfile {
       gender: user.gender,
       location: user.location,
       interests: user.interests,
-      photos: user.photos.whereType<String>().toList(),
+      photos: user.photos, // Already Photo objects
       preferences: user.preferences,
       personality: user.metadata != null ? ProfilePersonality.fromJson(user.metadata!) : null,
       lifestyle: user.metadata?['lifestyle'] != null ? List<String>.from(user.metadata!['lifestyle']) : [],
@@ -57,7 +58,7 @@ class UserProfile {
       'gender': gender,
       'location': location,
       'interests': interests,
-      'photos': photos,
+      'photos': photos.map((photo) => photo.toJson()).toList(),
       'preferences': preferences,
       'personality': personality?.toJson(),
       'lifestyle': lifestyle,
@@ -85,17 +86,15 @@ class UserProfile {
       photos:
           (json['photos'] as List?)
               ?.map((photo) {
-                // Handle new nested structure: {id, url, ...}
+            // Handle both string URLs (backward compatibility) and Photo objects
                 if (photo is String) {
-                  return photo; // Backward compatibility with URLs
+              return Photo.fromUrl(photo);
                 }
                 if (photo is Map<String, dynamic>) {
-                  // Extract url from photo object
-                  return photo['url'] as String? ?? '';
+              return Photo.fromJson(photo);
                 }
-                return photo.toString();
-              })
-              .where((url) => url.isNotEmpty)
+            return Photo.fromUrl(photo.toString());
+          })
               .toList() ??
           [],
       preferences: json['preferences'],

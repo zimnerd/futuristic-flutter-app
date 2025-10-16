@@ -51,6 +51,7 @@ import 'presentation/navigation/app_router.dart';
 import 'presentation/theme/pulse_theme.dart';
 import 'presentation/widgets/auto_login_wrapper.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'services/discovery_prefetch_manager.dart';
 
 /// Background message handler (must be top-level function)
 @pragma('vm:entry-point')
@@ -131,6 +132,9 @@ void main() async {
   // Initialize authentication tokens
   await _initializeStoredTokens();
 
+  // Prefetch discovery profiles (background, no images yet)
+  await _prefetchDiscoveryProfilesOnLaunch();
+
   runApp(PulseDatingApp(hiveStorage: hiveStorage));
 }
 
@@ -174,6 +178,34 @@ Future<void> _initializeStoredTokens() async {
     } catch (clearError) {
       AppLogger.error('❌ Failed to clear invalid tokens: $clearError');
     }
+  }
+}
+
+/// Prefetch discovery profiles on app launch (background, no images)
+///
+/// This pre-populates the discovery feed cache during app initialization,
+/// so profiles are instantly available when user navigates to discovery screen.
+Future<void> _prefetchDiscoveryProfilesOnLaunch() async {
+  try {
+    // Only prefetch if user is authenticated
+    final hasToken = await TokenService().getAccessToken();
+    if (hasToken == null) {
+      AppLogger.info(
+        '⏭️  Skipping discovery prefetch - user not authenticated',
+      );
+      return;
+    }
+
+    AppLogger.info('🚀 Prefetching discovery profiles on app launch');
+
+    // Prefetch profiles in background (no images, context not available yet)
+    // Images will be prefetched when user enters discovery screen
+    await DiscoveryPrefetchManager.instance.prefetchProfilesBackground();
+
+    AppLogger.info('✅ Discovery profiles prefetched');
+  } catch (e) {
+    AppLogger.error('❌ Failed to prefetch discovery profiles: $e');
+    // Don't fail app launch if prefetch fails
   }
 }
 
