@@ -1,8 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:shimmer/shimmer.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../theme/pulse_colors.dart';
@@ -10,6 +8,7 @@ import '../../../data/models/chat_model.dart';
 import '../../../domain/entities/message.dart' as entities;
 import '../media/media_grid.dart';
 import '../media/media_viewer.dart';
+import '../common/robust_network_image.dart';
 import 'voice_message_bubble.dart';
 import '../messaging/message_status_indicator.dart';
 
@@ -348,7 +347,7 @@ class MessageBubble extends StatelessWidget {
         radius: 16,
         backgroundColor: Colors.grey[300],
         backgroundImage: message.senderAvatar != null
-            ? CachedNetworkImageProvider(message.senderAvatar!)
+            ? NetworkImage(message.senderAvatar!) // ✅ Use NetworkImage instead
             : null,
         child: message.senderAvatar == null
             ? Text(
@@ -773,6 +772,9 @@ class MessageBubble extends StatelessWidget {
   ) {
     // Add cache buster for recently uploaded images
     final cacheBustedUrl = _addCacheBuster(imageUrl);
+    final blurhash =
+        message.metadata?['blurhash']
+            as String?; // ✅ Extract blurhash from metadata
 
     return GestureDetector(
       onTap: () => _openMediaViewer(context, [imageUrl], 0, heroTag),
@@ -782,13 +784,12 @@ class MessageBubble extends StatelessWidget {
           constraints: const BoxConstraints(maxWidth: 280, maxHeight: 300),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(12),
-            child: CachedNetworkImage(
+            child: RobustNetworkImage(
               imageUrl: cacheBustedUrl, // Use cache-busted URL
+              blurhash: blurhash, // ✅ Progressive loading with blurhash
               fit: BoxFit.cover,
-              placeholder: (context, url) => _buildImagePlaceholder(),
-              errorWidget: (context, url, error) => _buildImageError(),
-              fadeInDuration: const Duration(milliseconds: 200),
-              fadeOutDuration: const Duration(milliseconds: 100),
+              width: 280,
+              height: 300,
             ),
           ),
         ),
@@ -815,44 +816,6 @@ class MessageBubble extends StatelessWidget {
       // If URL parsing fails, return original
       return url;
     }
-  }
-
-  /// Build shimmer placeholder for loading images
-  Widget _buildImagePlaceholder() {
-    return AspectRatio(
-      aspectRatio: 4 / 3,
-      child: Shimmer.fromColors(
-        baseColor: Colors.grey[300]!,
-        highlightColor: Colors.grey[100]!,
-        child: Container(
-          color: Colors.grey[300],
-          child: const Center(
-            child: Icon(Icons.image_outlined, color: Colors.grey, size: 32),
-          ),
-        ),
-      ),
-    );
-  }
-
-  /// Build error widget for failed image loading
-  Widget _buildImageError() {
-    return AspectRatio(
-      aspectRatio: 4 / 3,
-      child: Container(
-        color: Colors.grey[100],
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.broken_image_rounded, color: Colors.grey[400], size: 32),
-            const SizedBox(height: 8),
-            Text(
-              'Image unavailable',
-              style: TextStyle(color: Colors.grey[600], fontSize: 12),
-            ),
-          ],
-        ),
-      ),
-    );
   }
 
   /// Open media viewer for full-screen viewing

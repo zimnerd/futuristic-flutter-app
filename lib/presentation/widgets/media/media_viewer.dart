@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:video_player/video_player.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -8,6 +7,7 @@ import 'package:permission_handler/permission_handler.dart';
 import '../../theme/pulse_colors.dart';
 import '../../../domain/entities/message.dart';
 import '../../../core/network/api_client.dart';
+import '../common/robust_network_image.dart';
 
 /// Full-screen media viewer with modern UX - simplified version using InteractiveViewer
 class MediaViewer extends StatefulWidget {
@@ -112,34 +112,9 @@ class _MediaViewerState extends State<MediaViewer>
                           minScale: 0.5,
                           maxScale: 3.0,
                           child: Center(
-                            child: CachedNetworkImage(
+                            child: RobustNetworkImage(
                               imageUrl: mediaUrl,
                               fit: BoxFit.contain,
-                              placeholder: (context, url) => const Center(
-                                child: CircularProgressIndicator(
-                                  valueColor: AlwaysStoppedAnimation<Color>(PulseColors.primary),
-                                ),
-                              ),
-                              errorWidget: (context, url, error) => Center(
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(
-                                      Icons.broken_image_rounded,
-                                      size: 64,
-                                      color: Colors.white.withValues(alpha: 0.6),
-                                    ),
-                                    const SizedBox(height: 16),
-                                    Text(
-                                      'Failed to load image',
-                                      style: TextStyle(
-                                        color: Colors.white.withValues(alpha: 0.8),
-                                        fontSize: 16,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
                             ),
                           ),
                         ),
@@ -304,16 +279,11 @@ class _MediaViewerState extends State<MediaViewer>
                                   ),
                                   child: ClipRRect(
                                     borderRadius: BorderRadius.circular(8),
-                                    child: CachedNetworkImage(
+                                    child: RobustNetworkImage(
                                       imageUrl: widget.mediaUrls[index],
                                       fit: BoxFit.cover,
-                                      placeholder: (context, url) => Container(
-                                        color: Colors.grey[800],
-                                        child: const Icon(
-                                          Icons.image,
-                                          color: Colors.white54,
-                                        ),
-                                      ),
+                                      width: 60,
+                                      height: 60,
                                     ),
                                   ),
                                 ),

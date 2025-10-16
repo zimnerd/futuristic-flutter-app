@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'dart:io';
 
 import '../../theme/pulse_colors.dart';
 import '../../../domain/entities/user_profile.dart';
+import '../common/robust_network_image.dart';
 
 /// Widget that shows how the profile will appear to other users
 class ProfilePreview extends StatelessWidget {
@@ -244,24 +244,11 @@ class ProfilePreview extends StatelessWidget {
                 return _buildErrorPlaceholder();
               },
             )
-          : CachedNetworkImage(
+          : RobustNetworkImage(
               imageUrl: photo.url,
+              blurhash: photo.blurhash,
               fit: BoxFit.cover,
-              placeholder: (context, url) => _buildLoadingPlaceholder(),
-              errorWidget: (context, url, error) => _buildErrorPlaceholder(),
             ),
-    );
-  }
-
-  Widget _buildLoadingPlaceholder() {
-    return Container(
-      color: Colors.grey[800],
-      child: const Center(
-        child: CircularProgressIndicator(
-          color: Colors.white,
-          strokeWidth: 2,
-        ),
-      ),
     );
   }
 

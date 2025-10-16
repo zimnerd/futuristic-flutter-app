@@ -174,7 +174,7 @@ class NetworkStatsOverlay extends StatelessWidget {
                         width: double.infinity,
                         padding: const EdgeInsets.all(20),
                         decoration: BoxDecoration(
-                          color: qualityColor.withOpacity(0.1),
+                          color: qualityColor.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(color: qualityColor, width: 2),
                         ),

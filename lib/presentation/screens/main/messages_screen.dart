@@ -1,4 +1,3 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -8,6 +7,7 @@ import '../../../core/utils/logger.dart';
 import '../../../core/constants/api_constants.dart';
 import '../../theme/pulse_colors.dart';
 import '../../widgets/common/common_widgets.dart';
+import '../../widgets/common/robust_network_image.dart';
 import '../../widgets/messaging/message_filters.dart';
 import '../../widgets/messaging/message_search.dart';
 import '../../widgets/messaging/match_stories_section.dart';
@@ -112,6 +112,8 @@ class _MessagesScreenState extends State<MessagesScreen> {
         );
 
         final avatarUrl = otherParticipant.profileImageUrl ?? '';
+        final avatarBlurhash = otherParticipant
+            .avatarBlurhash; // ✅ Get blurhash from other participant
         AppLogger.debug(
           '🐛 Avatar URL for ${otherParticipant.name}: "$avatarUrl"',
         );
@@ -141,6 +143,8 @@ class _MessagesScreenState extends State<MessagesScreen> {
           name: otherParticipant
               .name, // Use computed name getter (displayName || fullName || fallback)
           avatar: avatarUrl,
+          avatarBlurhash:
+              avatarBlurhash, // ✅ Pass blurhash from other participant
           lastMessage: lastMessagePreview,
           timestamp: _formatTimestamp(lastMessageDateTime),
           lastMessageTime: lastMessageDateTime,
@@ -472,6 +476,8 @@ class _MessagesScreenState extends State<MessagesScreen> {
                           id: '',
                           name: '',
                           avatar: '',
+                          avatarBlurhash:
+                              null, // No blurhash for empty conversation
                           lastMessage: '',
                           timestamp: '',
                           lastMessageTime: DateTime.now(),
@@ -869,36 +875,13 @@ class _MessagesScreenState extends State<MessagesScreen> {
                       ),
                       child: ClipOval(
                         child: conversation.avatar.isNotEmpty
-                            ? CachedNetworkImage(
+                            ? RobustNetworkImage(
                                 imageUrl: conversation.avatar,
+                                blurhash: conversation
+                                    .avatarBlurhash, // ✅ Progressive loading
                                 fit: BoxFit.cover,
-                                placeholder: (context, url) => Container(
-                                  color: PulseColors.surfaceVariant,
-                                  child: const Icon(
-                                    Icons.person,
-                                    color: PulseColors.onSurfaceVariant,
-                                  ),
-                                ),
-                                errorWidget: (context, url, error) {
-                                  AppLogger.debug(
-                                    '🐛 Avatar loading error for ${conversation.name}: $error',
-                                  );
-                                  return Container(
-                                    color: PulseColors.surfaceVariant,
-                                    child: Center(
-                                      child: Text(
-                                        conversation.name.isNotEmpty
-                                            ? conversation.name[0].toUpperCase()
-                                            : '?',
-                                        style: const TextStyle(
-                                          color: PulseColors.onSurfaceVariant,
-                                          fontSize: 24,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ),
-                                  );
-                                },
+                                width: 56,
+                                height: 56,
                               )
                             : Container(
                                 color: PulseColors.primary.withValues(alpha: 0.1),
@@ -1255,6 +1238,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
           id: conversation.id,
           name: conversation.name,
           avatar: conversation.avatar,
+          avatarBlurhash: conversation.avatarBlurhash, // ✅ Preserve blurhash
           lastMessage: conversation.lastMessage,
           timestamp: conversation.timestamp,
           lastMessageTime: conversation.lastMessageTime,
@@ -1282,6 +1266,7 @@ class ConversationData {
     required this.id,
     required this.name,
     required this.avatar,
+    this.avatarBlurhash, // ✅ Add blurhash for progressive loading
     required this.lastMessage,
     required this.timestamp,
     required this.lastMessageTime,
@@ -1294,6 +1279,7 @@ class ConversationData {
   final String id;
   final String name;
   final String avatar;
+  final String? avatarBlurhash; // ✅ Add blurhash field
   final String lastMessage;
   final String timestamp;
   final DateTime lastMessageTime;

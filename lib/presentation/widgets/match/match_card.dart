@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:pulse_dating_app/core/utils/logger.dart';
 import '../../../data/models/match_model.dart';
 import '../../../domain/entities/user_profile.dart';
+import '../common/robust_network_image.dart';
 
 /// Card widget for displaying match information with user details
 class MatchCard extends StatelessWidget {
@@ -278,25 +278,12 @@ class MatchCard extends StatelessWidget {
     // For now, use userProfile if available, otherwise show placeholder
     if (userProfile?.photos.isNotEmpty == true) {
       return ClipOval(
-        child: CachedNetworkImage(
+        child: RobustNetworkImage(
           imageUrl: userProfile!.photos.first.url,
+          blurhash: userProfile!.photos.first.blurhash,
           width: 60,
           height: 60,
           fit: BoxFit.cover,
-          placeholder: (context, url) => Container(
-            width: 60,
-            height: 60,
-            decoration: BoxDecoration(
-              color: Colors.grey[300],
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(Icons.person, size: 30),
-          ),
-          errorWidget: (context, url, error) => CircleAvatar(
-            radius: 30,
-            backgroundColor: Colors.grey[300],
-            child: Icon(Icons.person, size: 30, color: Colors.grey[600]),
-          ),
         ),
       );
     }

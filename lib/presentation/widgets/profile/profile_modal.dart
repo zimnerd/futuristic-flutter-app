@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import '../../../domain/entities/user_profile.dart';
 import '../../theme/pulse_colors.dart';
+import '../common/robust_network_image.dart';
 
 /// Modal widget for displaying user profile details
 class ProfileModal extends StatelessWidget {
@@ -79,23 +79,12 @@ class ProfileModal extends StatelessWidget {
                           final photo = userProfile.photos[index];
                           return ClipRRect(
                             borderRadius: BorderRadius.circular(16),
-                            child: CachedNetworkImage(
+                            child: RobustNetworkImage(
                               imageUrl: photo.url,
+                              blurhash: photo.blurhash,
                               fit: BoxFit.cover,
-                              placeholder: (context, url) => Container(
-                                color: Colors.grey[200],
-                                child: const Center(
-                                  child: CircularProgressIndicator(),
-                                ),
-                              ),
-                              errorWidget: (context, url, error) => Container(
-                                color: Colors.grey[200],
-                                child: Icon(
-                                  Icons.person,
-                                  size: 80,
-                                  color: Colors.grey[400],
-                                ),
-                              ),
+                              width: double.infinity,
+                              height: 400,
                             ),
                           );
                         },

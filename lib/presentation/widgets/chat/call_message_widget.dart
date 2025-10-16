@@ -41,10 +41,10 @@ class CallMessageWidget extends StatelessWidget {
       ),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: isMe ? PulseColors.primary.withOpacity(0.1) : Colors.grey[100],
+        color: isMe ? PulseColors.primary.withValues(alpha: 0.1) : Colors.grey[100],
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: statusColor.withOpacity(0.3),
+          color: statusColor.withValues(alpha: 0.3),
           width: 1,
         ),
       ),
@@ -98,7 +98,7 @@ class CallMessageWidget extends StatelessWidget {
                     vertical: 4,
                   ),
                   decoration: BoxDecoration(
-                    color: statusColor.withOpacity(0.1),
+                    color: statusColor.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
@@ -294,7 +294,7 @@ class _ActionButton extends StatelessWidget {
             vertical: 8,
           ),
           decoration: BoxDecoration(
-            border: Border.all(color: color.withOpacity(0.3)),
+            border: Border.all(color: color.withValues(alpha: 0.3)),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Row(

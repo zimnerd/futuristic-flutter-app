@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:pulse_dating_app/core/utils/logger.dart';
 import '../../../domain/entities/user_profile.dart';
 import '../../../data/models/match_model.dart';
 import '../../theme/pulse_colors.dart';
+import '../common/robust_network_image.dart';
 
 /// Stories-like horizontal scrollable match thumbnails
 /// Shows matches that haven't been chatted with yet
@@ -165,25 +165,12 @@ class _MatchStoryAvatar extends StatelessWidget {
                     border: Border.all(color: Colors.white, width: 2),
                   ),
                   child: ClipOval(
-                    child: CachedNetworkImage(
+                    child: RobustNetworkImage(
                       imageUrl: match.avatarUrl,
+                      blurhash: match.avatarBlurhash,
                       fit: BoxFit.cover,
-                      placeholder: (context, url) => Container(
-                        color: PulseColors.surfaceVariant,
-                        child: const Icon(
-                          Icons.person,
-                          color: PulseColors.onSurfaceVariant,
-                          size: 30,
-                        ),
-                      ),
-                      errorWidget: (context, url, error) => Container(
-                        color: PulseColors.surfaceVariant,
-                        child: const Icon(
-                          Icons.person,
-                          color: PulseColors.onSurfaceVariant,
-                          size: 30,
-                        ),
-                      ),
+                      width: 62,
+                      height: 62,
                     ),
                   ),
                 ),
@@ -262,6 +249,7 @@ class MatchStoryData {
   final String userId;
   final String name;
   final String avatarUrl;
+  final String? avatarBlurhash;
   final bool isSuperLike;
   final DateTime? matchedTime;
   final UserProfile? userProfile;
@@ -272,6 +260,7 @@ class MatchStoryData {
     required this.userId,
     required this.name,
     required this.avatarUrl,
+    this.avatarBlurhash,
     this.isSuperLike = false,
     this.matchedTime,
     this.userProfile,
@@ -291,6 +280,9 @@ class MatchStoryData {
       avatarUrl: userProfile.photos.isNotEmpty 
           ? userProfile.photos.first.url 
           : '',
+      avatarBlurhash: userProfile.photos.isNotEmpty
+          ? userProfile.photos.first.blurhash
+          : null,
       isSuperLike: isSuperLike,
       matchedTime: match.matchedAt,
       userProfile: userProfile,

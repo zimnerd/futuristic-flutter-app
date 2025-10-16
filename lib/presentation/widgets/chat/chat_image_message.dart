@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:shimmer/shimmer.dart';
 
 import '../../../domain/entities/message.dart';
 import '../../theme/pulse_colors.dart';
 import 'chat_image_viewer.dart';
+import '../common/robust_network_image.dart';
 
 /// Enhanced chat image message widget with upload status, captions, and actions
 class ChatImageMessage extends StatelessWidget {
@@ -103,51 +102,11 @@ class ChatImageMessage extends StatelessWidget {
         ? (attachment.thumbnailUrl ?? attachment.url)
         : attachment.url;
 
-    return CachedNetworkImage(
+    return RobustNetworkImage(
       imageUrl: imageUrl,
       fit: BoxFit.cover,
       width: attachment.width?.toDouble() ?? 280,
       height: attachment.height?.toDouble() ?? 280,
-      placeholder: (context, url) => _buildPlaceholder(),
-      errorWidget: (context, url, error) => _buildError(),
-      fadeInDuration: const Duration(milliseconds: 200),
-      fadeOutDuration: const Duration(milliseconds: 100),
-    );
-  }
-
-  Widget _buildPlaceholder() {
-    return AspectRatio(
-      aspectRatio: 4 / 3,
-      child: Shimmer.fromColors(
-        baseColor: Colors.grey[300]!,
-        highlightColor: Colors.grey[100]!,
-        child: Container(
-          color: Colors.grey[300],
-          child: const Center(
-            child: Icon(Icons.image_outlined, color: Colors.grey, size: 32),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildError() {
-    return AspectRatio(
-      aspectRatio: 4 / 3,
-      child: Container(
-        color: Colors.grey[100],
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.broken_image_rounded, color: Colors.grey[400], size: 32),
-            const SizedBox(height: 8),
-            Text(
-              'Image unavailable',
-              style: TextStyle(color: Colors.grey[600], fontSize: 12),
-            ),
-          ],
-        ),
-      ),
     );
   }
 

@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 
-import '../../theme/pulse_colors.dart';
 import '../../../domain/entities/message.dart';
 import 'media_viewer.dart';
+import '../common/robust_network_image.dart';
 
 /// Modern grid widget for displaying multiple media items in chat messages
 class MediaGrid extends StatelessWidget {
@@ -63,13 +62,11 @@ class MediaGrid extends StatelessWidget {
           child: Stack(
             fit: StackFit.expand,
             children: [
-              CachedNetworkImage(
+              RobustNetworkImage(
                 imageUrl: messageType == MessageType.video
                     ? _getVideoThumbnailUrl(mediaUrls[index])
                     : mediaUrls[index],
                 fit: BoxFit.cover,
-                placeholder: (context, url) => _buildPlaceholder(),
-                errorWidget: (context, url, error) => _buildErrorWidget(),
               ),
               // Video play button overlay
               if (messageType == MessageType.video) _buildVideoOverlay(),
@@ -228,42 +225,15 @@ class MediaGrid extends StatelessWidget {
         child: Stack(
           fit: StackFit.expand,
           children: [
-            CachedNetworkImage(
+            RobustNetworkImage(
               imageUrl: messageType == MessageType.video
                   ? _getVideoThumbnailUrl(mediaUrls[index])
                   : mediaUrls[index],
               fit: BoxFit.cover,
-              placeholder: (context, url) => _buildPlaceholder(),
-              errorWidget: (context, url, error) => _buildErrorWidget(),
             ),
             // Video play button overlay
             if (messageType == MessageType.video) _buildVideoOverlay(),
           ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPlaceholder() {
-    return Container(
-      color: Colors.grey[200],
-      child: Center(
-        child: CircularProgressIndicator(
-          valueColor: const AlwaysStoppedAnimation<Color>(PulseColors.primary),
-          strokeWidth: 2,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildErrorWidget() {
-    return Container(
-      color: Colors.grey[100],
-      child: const Center(
-        child: Icon(
-          Icons.broken_image_rounded,
-          color: Colors.grey,
-          size: 32,
         ),
       ),
     );

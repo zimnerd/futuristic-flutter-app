@@ -193,8 +193,8 @@ class _IncomingCallScreenState extends State<IncomingCallScreen>
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            const Color(0xFF6E3BFF).withOpacity(0.3), // Pulse primary
-            const Color(0xFF00C2FF).withOpacity(0.2), // Pulse accent
+            const Color(0xFF6E3BFF).withValues(alpha: 0.3), // Pulse primary
+            const Color(0xFF00C2FF).withValues(alpha: 0.2), // Pulse accent
             Colors.black87,
           ],
           stops: const [0.0, 0.4, 1.0],
@@ -208,16 +208,16 @@ class _IncomingCallScreenState extends State<IncomingCallScreen>
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.1),
+        color: Colors.white.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
-          color: Colors.white.withOpacity(0.2),
+          color: Colors.white.withValues(alpha: 0.2),
           width: 1,
         ),
         // Glassmorphism
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -269,7 +269,7 @@ class _IncomingCallScreenState extends State<IncomingCallScreen>
             ),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF6E3BFF).withOpacity(0.5),
+                color: const Color(0xFF6E3BFF).withValues(alpha: 0.5),
                 blurRadius: 30,
                 spreadRadius: 5,
               ),
@@ -305,7 +305,7 @@ class _IncomingCallScreenState extends State<IncomingCallScreen>
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               border: Border.all(
-                color: const Color(0xFF6E3BFF).withOpacity(0.5 - value * 0.5),
+                color: const Color(0xFF6E3BFF).withValues(alpha: 0.5 - value * 0.5),
                 width: 2,
               ),
             ),
@@ -350,7 +350,7 @@ class _IncomingCallScreenState extends State<IncomingCallScreen>
     return Text(
       'Incoming ${widget.invitation.callTypeEmoji}',
       style: TextStyle(
-        color: Colors.white.withOpacity(0.8),
+        color: Colors.white.withValues(alpha: 0.8),
         fontSize: 18,
         fontWeight: FontWeight.w500,
       ),
@@ -363,13 +363,13 @@ class _IncomingCallScreenState extends State<IncomingCallScreen>
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
       decoration: BoxDecoration(
         color: _remainingSeconds <= 10
-            ? Colors.red.withOpacity(0.2)
-            : Colors.white.withOpacity(0.1),
+            ? Colors.red.withValues(alpha: 0.2)
+            : Colors.white.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: _remainingSeconds <= 10
-              ? Colors.red.withOpacity(0.5)
-              : Colors.white.withOpacity(0.2),
+              ? Colors.red.withValues(alpha: 0.5)
+              : Colors.white.withValues(alpha: 0.2),
           width: 1,
         ),
       ),
@@ -442,7 +442,7 @@ class _IncomingCallScreenState extends State<IncomingCallScreen>
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
-                  color: color.withOpacity(0.5),
+                  color: color.withValues(alpha: 0.5),
                   blurRadius: 20,
                   spreadRadius: 2,
                 ),

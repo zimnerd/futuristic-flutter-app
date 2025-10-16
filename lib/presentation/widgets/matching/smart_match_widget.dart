@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import '../../../core/network/api_client.dart';
 import '../../../data/models/match_model.dart';
 import '../../../data/models/user_model.dart';
 import '../../../data/services/ai_matching_service.dart';
 import '../../theme/pulse_colors.dart';
 import 'compatibility_score_widget.dart';
+import '../common/robust_network_image.dart';
 
 /// Smart matching widget with AI-powered recommendations and insights
 class SmartMatchWidget extends StatefulWidget {
@@ -344,19 +344,16 @@ class _SmartMatchWidgetState extends State<SmartMatchWidget>
                 // Profile Photo
                 ClipRRect(
                   borderRadius: BorderRadius.circular(12),
-                  child: CachedNetworkImage(
+                  child: RobustNetworkImage(
                     imageUrl: match.userProfile?.photos.isNotEmpty == true 
                         ? match.userProfile!.photos.first.url 
                         : 'https://via.placeholder.com/80',
+                    blurhash: match.userProfile?.photos.isNotEmpty == true 
+                        ? match.userProfile!.photos.first.blurhash 
+                        : null,
                     width: 80,
                     height: 80,
                     fit: BoxFit.cover,
-                    placeholder: (context, url) => Container(
-                      width: 80,
-                      height: 80,
-                      color: Theme.of(context).cardColor,
-                      child: const Icon(Icons.person),
-                    ),
                   ),
                 ),
                 

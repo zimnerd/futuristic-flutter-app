@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:logger/logger.dart';
 import 'dart:io';
 
 import '../../theme/pulse_colors.dart';
 import '../../../domain/entities/user_profile.dart';
 import '../../blocs/profile/profile_bloc.dart';
+import '../common/robust_network_image.dart';
 
 final _logger = Logger();
 
@@ -372,28 +372,10 @@ class _PhotoGridState extends State<PhotoGrid> {
                     _logger.d('   - Photo ID: ${photo.id}');
                     _logger.d('   - Cache key: ${photo.id}');
                     
-                    return CachedNetworkImage(
-                      // Use fresh backend URL (no cache busting needed - photo ID changes on re-upload)
+                    return RobustNetworkImage(
                       imageUrl: photo.url,
+                      blurhash: photo.blurhash,
                       fit: BoxFit.cover,
-                      placeholder: (context, url) {
-                        _logger.d('⏳ Loading placeholder for: $url');
-                        return _buildLoadingPlaceholder();
-                      },
-                      errorWidget: (context, url, error) {
-                        _logger.e('❌ Failed to load image at index $index:');
-                        _logger.e('   - URL: $url');
-                        _logger.e('   - Error: $error');
-                        _logger.e('   - Photo ID: ${photo.id}');
-                        return _buildErrorPlaceholder();
-                      },
-                      // Use photo ID as cache key for proper invalidation
-                      cacheKey: photo.id,
-                      // Force fresh fetch on error (network-first strategy)
-                      maxHeightDiskCache: 1000,
-                      maxWidthDiskCache: 1000,
-                      memCacheHeight: 1000,
-                      memCacheWidth: 1000,
                     );
                   },
                 ),
@@ -565,7 +547,10 @@ class _PhotoGridState extends State<PhotoGrid> {
                   File(progress.localPath),
                   fit: BoxFit.cover,
                   errorBuilder: (context, error, stackTrace) {
-                    return _buildErrorPlaceholder();
+                    return Container(
+                      color: Colors.grey[200],
+                      child: Icon(Icons.error_outline, color: Colors.grey[500]),
+                    );
                   },
                 ),
               ),
@@ -791,41 +776,6 @@ class _PhotoGridState extends State<PhotoGrid> {
           color: Colors.white,
           size: 16,
         ),
-      ),
-    );
-  }
-
-  Widget _buildLoadingPlaceholder() {
-    return Container(
-      color: Colors.grey[200],
-      child: const Center(
-        child: CircularProgressIndicator(
-          strokeWidth: 2,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildErrorPlaceholder() {
-    return Container(
-      color: Colors.grey[200],
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.error_outline,
-            color: Colors.grey[500],
-            size: 24,
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'Failed to load',
-            style: TextStyle(
-              fontSize: 10,
-              color: Colors.grey[600],
-            ),
-          ),
-        ],
       ),
     );
   }

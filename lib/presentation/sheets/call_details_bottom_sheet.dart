@@ -66,7 +66,7 @@ class CallDetailsBottomSheet extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: PulseColors.primary.withOpacity(0.1),
+                      color: PulseColors.primary.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Icon(

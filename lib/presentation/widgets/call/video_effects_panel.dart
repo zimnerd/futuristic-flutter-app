@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import '../../../data/services/video_effects_service.dart';
 import '../../theme/pulse_colors.dart';
+import '../common/robust_network_image.dart';
 
 /// Video Effects Panel for managing filters and virtual backgrounds during calls
 class VideoEffectsPanel extends StatefulWidget {
@@ -416,21 +416,11 @@ class _VideoEffectsPanelState extends State<VideoEffectsPanel>
             ClipRRect(
               borderRadius: BorderRadius.circular(6),
               child: background.thumbnail != null
-                  ? CachedNetworkImage(
+                  ? RobustNetworkImage(
                       imageUrl: background.thumbnail!,
                       width: double.infinity,
                       height: double.infinity,
                       fit: BoxFit.cover,
-                      placeholder: (context, url) => Container(
-                        color: Theme.of(context).cardColor,
-                        child: const Center(
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        ),
-                      ),
-                      errorWidget: (context, url, error) => Container(
-                        color: Theme.of(context).cardColor,
-                        child: const Icon(Icons.image_not_supported),
-                      ),
                     )
                   : Container(
                       color: Theme.of(context).cardColor,
