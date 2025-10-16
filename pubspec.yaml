@@ -44,6 +44,7 @@ dependencies:
   sqlite3_flutter_libs: ^0.5.40
   socket_io_client: ^3.1.2
   cached_network_image: ^3.4.1
+  flutter_blurhash: ^0.8.2
   intl: ^0.20.2
   uuid: ^4.5.1
   logger: ^2.6.2
@@ -70,6 +71,7 @@ dependencies:
   firebase_core: ^4.1.1
   firebase_messaging: ^16.0.2
   flutter_local_notifications: ^19.4.2
+  flutter_callkit_incoming: ^2.0.0+2
 
   # Authentication
   local_auth: ^2.1.8

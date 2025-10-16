@@ -7,6 +7,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import '../core/network/api_client.dart';
 import '../core/utils/logger.dart';
+import '../core/services/call_notification_service.dart';
 import '../presentation/navigation/app_router.dart';
 
 /// Firebase Cloud Messaging service for real-time push notifications
@@ -176,6 +177,11 @@ class FirebaseNotificationService {
       // Check if this is an incoming call notification
       if (data['type'] == 'incoming_call') {
         AppLogger.info('📞 Incoming call notification received');
+        
+        // Use CallNotificationService for native call UI (CallKit/full-screen intent)
+        await CallNotificationService.instance.handleIncomingCallPush(data);
+
+        // Also show fallback notification for older Android versions
         await _showIncomingCallNotification(message);
       } else {
         // Show regular local notification for foreground messages

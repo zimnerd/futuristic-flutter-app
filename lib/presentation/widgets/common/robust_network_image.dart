@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter_blurhash/flutter_blurhash.dart';
 
 /// A robust image widget that gracefully handles network failures,
-/// 404 errors, and provides fallback placeholder images
+/// 404 errors, and provides fallback placeholder images.
+/// Now supports blurhash for progressive image loading.
 class RobustNetworkImage extends StatelessWidget {
   final String? imageUrl;
   final double? width;
@@ -12,6 +14,7 @@ class RobustNetworkImage extends StatelessWidget {
   final Widget? errorWidget;
   final BorderRadius? borderRadius;
   final String? fallbackAsset;
+  final String? blurhash; // Blurhash string for progressive loading
 
   const RobustNetworkImage({
     super.key,
@@ -23,6 +26,7 @@ class RobustNetworkImage extends StatelessWidget {
     this.errorWidget,
     this.borderRadius,
     this.fallbackAsset,
+    this.blurhash,
   });
 
   @override
@@ -57,10 +61,43 @@ class RobustNetworkImage extends StatelessWidget {
   }
 
   Widget _buildPlaceholder() {
+    // If custom placeholder provided, use it
     if (placeholder != null) {
       return placeholder!;
     }
 
+    // If blurhash provided, show blurred placeholder
+    if (blurhash != null && blurhash!.isNotEmpty) {
+      return Stack(
+        fit: StackFit.expand,
+        children: [
+          BlurHash(
+            hash: blurhash!,
+            imageFit: fit,
+          ),
+          // Small loading indicator over blurhash
+          Center(
+            child: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.black26,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: const SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                ),
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+
+    // Default placeholder with loading indicator
     return Container(
       width: width,
       height: height,

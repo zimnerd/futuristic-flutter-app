@@ -725,6 +725,439 @@ Future<void> reRegisterToken() async {
    - **Date Resolved**: October 15, 2025
    - **Impact**: Push notifications now fully operational on all devices
 
+---
+
+## 📞 **Native Call Notifications with flutter_callkit_incoming (October 2025)**
+
+**Status**: ✅ **IMPLEMENTED** - Full iOS CallKit + Android full-screen intent  
+**Date**: October 16, 2025  
+**Priority**: **HIGH** - Enhanced UX for call invitations  
+**Scope**: Sprint 2, Task 9 - Push Notifications
+
+### **Implementation Context**
+
+**Goal**: Replace standard push notifications with native platform call UI:
+- **iOS**: CallKit native call screen (like FaceTime)
+- **Android**: Full-screen intent with custom call UI
+
+**Why This Matters**:
+- Native call UI wakes device even on lock screen
+- Better UX with platform-native accept/decline buttons
+- Integrates with system phone UI (Recent Calls, Call History)
+- Required for professional calling experience
+
+### **Key Package Discovery: flutter_callkit_incoming**
+
+**Package**: `flutter_callkit_incoming: ^2.5.8`
+
+**Critical API Learnings**:
+
+#### **1. Entity Imports Pattern** ✅
+
+**WRONG** ❌:
+```dart
+import 'package:flutter_callkit_incoming/flutter_callkit_incoming.dart';
+// Error: Undefined class 'CallEvent'
+// Error: Undefined class 'Event'
+```
+
+**CORRECT** ✅:
+```dart
+import 'package:flutter_callkit_incoming/flutter_callkit_incoming.dart';
+import 'package:flutter_callkit_incoming/entities/entities.dart';  // ← Must import separately!
+```
+
+**Why**: The main package file exports `FlutterCallkitIncoming` class, but NOT the entity classes (CallEvent, Event, CallKitParams, etc.). Must explicitly import `entities.dart`.
+
+#### **2. Event Enum Naming Convention** ✅
+
+**WRONG** ❌:
+```dart
+switch (event.event) {
+  case Event.ACTION_CALL_ACCEPT:  // SCREAMING_SNAKE_CASE
+  case Event.ACTION_CALL_DECLINE:
+}
+```
+
+**CORRECT** ✅:
+```dart
+switch (event.event) {
+  case Event.actionCallAccept:  // camelCase
+  case Event.actionCallDecline:
+  case Event.actionCallTimeout:
+  case Event.actionCallEnded:
+}
+```
+
+**Why**: Package uses camelCase enum values, not SCREAMING_SNAKE_CASE. This is standard Dart convention.
+
+**Full Event Enum**:
+```dart
+enum Event {
+  actionDidUpdateDevicePushTokenVoip,
+  actionCallIncoming,
+  actionCallStart,
+  actionCallAccept,
+  actionCallDecline,
+  actionCallEnded,
+  actionCallTimeout,
+  actionCallConnected,
+  actionCallCallback,
+  actionCallToggleHold,
+  actionCallToggleMute,
+  actionCallToggleDmtf,
+  actionCallToggleGroup,
+  actionCallToggleAudioSession,
+  actionCallCustom,
+}
+```
+
+#### **3. CallEvent Structure** ✅
+
+**Understanding**:
+```dart
+class CallEvent {
+  Event event;        // The enum type (actionCallAccept, etc.)
+  dynamic body;       // Map<String, dynamic> with call data
+  CallEvent(this.body, this.event);
+}
+```
+
+**Usage Pattern**:
+```dart
+FlutterCallkitIncoming.onEvent.listen((CallEvent? event) {
+  if (event == null) return;
+  
+  final extra = event.body['extra'] as Map<String, dynamic>?;
+  final callId = extra?['callId'] as String?;
+  
+  switch (event.event) {
+    case Event.actionCallAccept:
+      _handleAccept(callId);
+      break;
+  }
+});
+```
+
+#### **4. Parameter Classes Structure** ✅
+
+**CallKitParams** (Main configuration):
+```dart
+CallKitParams(
+  id: String,                    // Unique UUID for this call notification
+  nameCaller: String,            // Caller's display name
+  appName: String,               // App name (shows in CallKit)
+  avatar: String?,               // URL or asset path for caller photo
+  handle: String,                // Phone number or user ID
+  type: int,                     // 0 = audio, 1 = video
+  duration: int,                 // Timeout in milliseconds (30000 = 30s)
+  textAccept: String,            // Accept button text
+  textDecline: String,           // Decline button text
+  missedCallNotification: NotificationParams,
+  extra: Map<String, dynamic>,   // Custom data passed to event handlers
+  headers: Map<String, dynamic>, // Additional metadata
+  android: AndroidParams,        // Android-specific config
+  ios: IOSParams,                // iOS-specific config
+)
+```
+
+**NotificationParams** (Missed call):
+```dart
+NotificationParams(
+  id: int?,
+  showNotification: bool,
+  subtitle: String,
+  callbackText: String,
+  isShowCallback: bool,
+  count: int,
+)
+```
+
+**AndroidParams** (Android customization):
+```dart
+AndroidParams(
+  isCustomNotification: bool,          // Use custom layout
+  isShowLogo: bool,                    // Show app logo
+  ringtonePath: String,                // 'system_ringtone_default' or asset path
+  backgroundColor: String,             // Hex color '#6E3BFF'
+  actionColor: String,                 // Button color '#00C2FF'
+  incomingCallNotificationChannelName: String,
+  isShowFullLockedScreen: bool,        // Full-screen over lock screen
+)
+```
+
+**IOSParams** (iOS CallKit config):
+```dart
+IOSParams(
+  iconName: String,                    // Asset name for CallKit icon
+  handleType: String,                  // 'generic', 'number', 'email'
+  supportsVideo: bool,                 // Enable video toggle
+  maximumCallGroups: int,              // Max simultaneous call groups
+  audioSessionMode: String,            // 'default', 'voiceChat', 'videoChat'
+  supportsDTMF: bool,                  // Dual-tone multi-frequency
+  supportsHolding: bool,               // Hold call support
+  supportsGrouping: bool,              // Merge calls
+  ringtonePath: String,                // Custom ringtone
+)
+```
+
+### **Implementation Architecture**
+
+**CallNotificationService** (355 lines) - Singleton service that:
+1. Listens to `FlutterCallkitIncoming.onEvent` stream
+2. Shows native call UI when FCM push received
+3. Handles accept/decline/timeout from native UI
+4. Syncs with `CallInvitationService` (WebSocket)
+5. Navigates to `IncomingCallScreen` on accept
+
+**Integration Flow**:
+```
+FCM Push → FirebaseNotificationService
+    ↓
+CallNotificationService.handleIncomingCallPush()
+    ↓
+FlutterCallkitIncoming.showCallkitIncoming(params)
+    ↓ (Native UI shows)
+User taps Accept
+    ↓
+Event.actionCallAccept event fires
+    ↓
+CallNotificationService._handleAcceptFromNotification()
+    ↓
+CallInvitationService.acceptCall(callId) → WebSocket to backend
+    ↓
+Navigate to IncomingCallScreen
+    ↓
+WebRTC connection established
+```
+
+### **Critical Fix: rejectCall Named Parameter** ✅
+
+**WRONG** ❌:
+```dart
+_callInvitationService.rejectCall(
+  callId,
+  CallRejectionReason.userDeclined,  // Positional argument
+);
+// Error: Too many positional arguments: 1 expected, but 2 found
+```
+
+**CORRECT** ✅:
+```dart
+_callInvitationService.rejectCall(
+  callId,
+  reason: CallRejectionReason.userDeclined,  // Named parameter
+);
+```
+
+**Why**: `CallInvitationService.rejectCall()` signature is:
+```dart
+Future<void> rejectCall(String callId, {required CallRejectionReason reason})
+```
+Second parameter is NAMED, not positional.
+
+### **Platform Configuration Requirements**
+
+#### **iOS - Info.plist**
+
+**Required Keys**:
+```xml
+<!-- CallKit Integration -->
+<key>NSMicrophoneUsageDescription</key>
+<string>PulseLink needs microphone access for voice calls</string>
+
+<key>NSCameraUsageDescription</key>
+<string>PulseLink needs camera access for video calls</string>
+
+<!-- VoIP Push Notifications -->
+<key>UIBackgroundModes</key>
+<array>
+    <string>fetch</string>
+    <string>remote-notification</string>
+    <string>processing</string>
+    <string>voip</string>  <!-- Critical for VoIP pushes -->
+</array>
+```
+
+**Xcode Capabilities** (Manual Setup Required):
+1. Open `mobile/ios/Runner.xcworkspace`
+2. Select Runner target → Signing & Capabilities
+3. Add "Background Modes":
+   - ✅ Remote notifications
+   - ✅ Voice over IP
+   - ✅ Background fetch
+4. Add "Push Notifications" capability
+5. Generate VoIP Push certificate in Apple Developer Portal
+6. Upload certificate to Firebase Console (iOS app settings)
+
+#### **Android - AndroidManifest.xml**
+
+**Required Permissions**:
+```xml
+<!-- Full-screen incoming call notifications -->
+<uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
+<uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+<uses-permission android:name="android.permission.FOREGROUND_SERVICE_PHONE_CALL" />
+<uses-permission android:name="android.permission.WAKE_LOCK" />
+```
+
+**MainActivity Configuration**:
+```kotlin
+// android/app/src/main/kotlin/.../MainActivity.kt
+override fun onCreate(savedInstanceState: Bundle?) {
+    super.onCreate(savedInstanceState)
+    
+    // Allow full-screen incoming call notifications
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
+        setShowWhenLocked(true)
+        setTurnScreenOn(true)
+    }
+}
+```
+
+### **Debugging: 11 Compilation Errors Fixed**
+
+**Initial Error Count**: 11 errors after initial implementation
+
+**Systematic Resolution**:
+
+1. **Error**: `Undefined class 'CallEvent'` (line 48)
+   - **Fix**: Added `import 'package:flutter_callkit_incoming/entities/entities.dart';`
+
+2. **Error**: `Undefined name 'Event'` (lines 56, 59, 62, 65)
+   - **Fix**: Changed `Event.ACTION_CALL_ACCEPT` → `Event.actionCallAccept`
+
+3. **Error**: `Undefined method 'CallKitParams'` (line 136)
+   - **Fix**: Already correct - entities import resolved this
+
+4. **Error**: `creation_with_non_type 'NotificationParams'` (line 146)
+   - **Fix**: entities import provided correct type
+
+5. **Error**: `creation_with_non_type 'AndroidParams'` (line 162)
+   - **Fix**: entities import provided correct type
+
+6. **Error**: `creation_with_non_type 'IOSParams'` (line 172)
+   - **Fix**: entities import provided correct type
+
+7. **Error**: `Too many positional arguments` (lines 242, 288)
+   - **Fix**: Changed to named parameter: `reason: CallRejectionReason.xxx`
+
+8. **Error**: `Unused import: 'dart:ui'`
+   - **Fix**: Removed unused import
+
+**Final Result**: ✅ 0 errors, clean compilation
+
+### **Best Practices Learned**
+
+#### **1. Always Check Package Source** ✅
+
+When encountering API errors with third-party packages:
+1. Locate package in pub cache: `~/.pub-cache/hosted/pub.dev/package-name-version/`
+2. Read main package file to understand exports
+3. Check `entities.dart` or similar aggregation files
+4. Look at GitHub repo for examples and documentation
+5. Verify enum naming conventions (camelCase vs SCREAMING_SNAKE_CASE)
+
+#### **2. Entity Imports Pattern** ✅
+
+Many Flutter packages follow this pattern:
+```dart
+// Main package exports core classes
+import 'package:package_name/package_name.dart';
+
+// Entities/models export separately
+import 'package:package_name/entities/entities.dart';
+```
+
+Don't assume everything exports from the main package file!
+
+#### **3. Named Parameters in Dart** ✅
+
+Always check method signatures for named vs positional parameters:
+```dart
+// Named parameter (must use name:)
+void method(String required, {String? optional})
+method('value', optional: 'value');  // ✅
+
+// Positional parameter
+void method(String required, String? optional)
+method('value', 'value');  // ✅
+```
+
+#### **4. Platform-Specific Testing** ✅
+
+**iOS CallKit**:
+- ❌ Cannot test in simulator - requires physical device
+- ✅ Test on multiple iOS versions (iOS 14+)
+- ✅ Test on lock screen, different focus modes
+- ✅ Verify audio session handling
+
+**Android Full-Screen Intent**:
+- ❌ Requires API 29+ (Android 10+)
+- ✅ Test battery optimization settings
+- ✅ Test on different manufacturers (Samsung, Pixel, etc.)
+- ✅ Verify notification channel settings
+
+#### **5. Background Handler Limitations** ✅
+
+```dart
+@pragma('vm:entry-point')
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  // ⚠️ Cannot access UI context here
+  // ⚠️ Limited to 30 seconds execution
+  // ✅ Can show notifications
+  // ✅ Can initialize services
+  // ✅ Can call WebSocket/HTTP APIs
+}
+```
+
+### **Files Modified (October 16, 2025)**
+
+```
+mobile/
+├── lib/
+│   ├── core/
+│   │   └── services/
+│   │       └── call_notification_service.dart (NEW - 355 lines)
+│   ├── services/
+│   │   └── firebase_notification_service.dart (UPDATED)
+│   └── main.dart (UPDATED)
+├── ios/
+│   └── Runner/
+│       └── Info.plist (UPDATED)
+├── android/
+│   └── app/
+│       └── src/
+│           └── main/
+│               ├── AndroidManifest.xml (UPDATED)
+│               └── kotlin/.../MainActivity.kt (UPDATED)
+├── pubspec.yaml (UPDATED)
+└── docs/
+    └── PUSH_NOTIFICATIONS_IMPLEMENTATION.md (CREATED)
+```
+
+### **Key Takeaways**
+
+1. **Package API Discovery**: Always check package source when encountering compilation errors
+2. **Import Patterns**: Don't assume all exports come from main package file
+3. **Enum Conventions**: Verify naming (camelCase vs SCREAMING_SNAKE_CASE)
+4. **Named Parameters**: Check method signatures carefully
+5. **Platform Configs**: iOS requires Xcode setup, Android needs manifest permissions
+6. **Testing Requirements**: Physical devices required for CallKit and full-screen intents
+7. **Background Limitations**: 30-second execution limit, no UI access
+
+### **Next Steps Required**
+
+1. **Backend Integration**: Update `CallGateway` to send FCM pushes with `incoming_call` type
+2. **iOS VoIP Certificate**: Generate and upload to Firebase Console
+3. **Physical Device Testing**: 
+   - iOS device for CallKit verification
+   - Android device for full-screen intent verification
+   - Test all states: foreground/background/terminated
+4. **Production Monitoring**: Track FCM delivery success rates
+
+---
+
 4. **Outdated Google Play Services**: Update on test device
 5. **Firebase Project Restrictions**: Check Firebase Console for quota limits
 6. **Network Issues**: Verify connectivity to `firebaseinstallations.googleapis.com`

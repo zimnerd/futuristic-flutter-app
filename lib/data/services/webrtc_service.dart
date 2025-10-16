@@ -7,6 +7,7 @@ import '../models/call_model.dart';
 import '../../domain/services/websocket_service.dart';
 import '../../core/network/api_client.dart';
 import '../../core/constants/api_constants.dart';
+import '../../core/services/network_quality_service.dart';
 
 class WebRTCService {
   static final WebRTCService _instance = WebRTCService._internal();
@@ -16,6 +17,7 @@ class WebRTCService {
   final Logger _logger = Logger();
   RtcEngine? _engine;
   WebSocketService? _webSocketService;
+  final NetworkQualityService _networkQualityService = NetworkQualityService();
   
   // Call state
   CallModel? _currentCall;
@@ -51,6 +53,9 @@ class WebRTCService {
   // ✅ ADDED: Track remote users
   List<int> _remoteUsers = [];
   List<int> get remoteUsers => _remoteUsers;
+  
+  // ✅ Network quality monitoring
+  NetworkQualityService get networkQualityService => _networkQualityService;
 
   /// Initialize WebRTC service with Agora App ID
   Future<void> initialize({
@@ -97,6 +102,52 @@ class WebRTCService {
           _logger.e('Agora error: $err - $msg');
           _updateCallStatus(CallStatus.failed);
         },
+          // ✅ Network quality monitoring callbacks
+          onNetworkQuality:
+              (
+                RtcConnection connection,
+                int uid,
+                QualityType txQuality,
+                QualityType rxQuality,
+              ) {
+                _networkQualityService.updateNetworkQuality(
+                  txQuality: txQuality.index,
+                  rxQuality: rxQuality.index,
+                );
+              },
+          onRtcStats: (RtcConnection connection, RtcStats stats) {
+            _networkQualityService.updateRtcStats(
+              cpuTotalUsage: stats.cpuTotalUsage?.toInt() ?? 0,
+              memoryUsageRatio:
+                  0, // Memory stats not available in this Agora SDK version
+              txBytes: stats.txBytes ?? 0,
+              rxBytes: stats.rxBytes ?? 0,
+              txAudioBytes: stats.txAudioBytes ?? 0,
+              rxAudioBytes: stats.rxAudioBytes ?? 0,
+              txVideoBytes: stats.txVideoBytes ?? 0,
+              rxVideoBytes: stats.rxVideoBytes ?? 0,
+            );
+          },
+          onRemoteVideoStats:
+              (RtcConnection connection, RemoteVideoStats stats) {
+                _networkQualityService.updateRemoteVideoStats(
+                  uid: stats.uid ?? 0,
+                  delay: stats.delay ?? 0,
+                  receivedBitrate: stats.receivedBitrate ?? 0,
+                  decoderOutputFrameRate: stats.decoderOutputFrameRate ?? 0,
+                  packetLossRate: stats.packetLossRate ?? 0,
+                );
+              },
+          onRemoteAudioStats:
+              (RtcConnection connection, RemoteAudioStats stats) {
+                _networkQualityService.updateRemoteAudioStats(
+                  uid: stats.uid ?? 0,
+                  quality: stats.quality ?? 0,
+                  networkTransportDelay: stats.networkTransportDelay ?? 0,
+                  jitterBufferDelay: stats.jitterBufferDelay ?? 0,
+                  audioLossRate: stats.audioLossRate ?? 0,
+                );
+              },
       ));
 
       _logger.i('WebRTC service initialized successfully');
@@ -185,6 +236,12 @@ class WebRTCService {
         ),
       );
 
+      // ✅ Start network quality monitoring
+      _networkQualityService.startMonitoring(
+        callId: _currentCall!.id,
+        webSocketService: _webSocketService,
+      );
+
       // Send call signal through WebSocket
       _sendCallSignal(CallSignalType.offer);
 
@@ -228,6 +285,12 @@ class WebRTCService {
         ),
       );
 
+      // ✅ Start network quality monitoring
+      _networkQualityService.startMonitoring(
+        callId: _currentCall!.id,
+        webSocketService: _webSocketService,
+      );
+
       // Send answer signal
       _sendCallSignal(CallSignalType.answer);
 
@@ -246,6 +309,9 @@ class WebRTCService {
 
       // Send hangup signal
       _sendCallSignal(CallSignalType.hangup);
+
+      // ✅ Stop network quality monitoring
+      _networkQualityService.stopMonitoring();
 
       // Leave channel
       await _engine?.leaveChannel();

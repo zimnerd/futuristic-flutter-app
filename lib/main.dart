@@ -15,6 +15,7 @@ import 'core/constants/app_constants.dart';
 import 'core/storage/hive_storage_service.dart';
 import 'core/utils/logger.dart';
 import 'core/services/service_locator.dart';
+import 'core/services/call_notification_service.dart';
 import 'data/datasources/local/user_local_data_source.dart';
 import 'data/datasources/remote/chat_remote_data_source.dart';
 import 'data/datasources/remote/notification_remote_data_source.dart';
@@ -60,7 +61,20 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
       options: DefaultFirebaseOptions.currentPlatform,
     );
   }
+  
   AppLogger.info('Background message received: ${message.messageId}');
+  
+  // Handle incoming call notifications with native UI
+  if (message.data['type'] == 'incoming_call') {
+    AppLogger.info('📞 Background incoming call notification received');
+    try {
+      await CallNotificationService.instance.handleIncomingCallPush(
+        message.data,
+      );
+    } catch (e) {
+      AppLogger.error('❌ Error handling background call notification: $e');
+    }
+  }
 }
 
 void main() async {
@@ -111,6 +125,9 @@ void main() async {
   // Initialize Firebase notifications
   await _initializeFirebaseNotifications();
 
+  // Initialize call notification service (native CallKit/full-screen intent)
+  await _initializeCallNotifications();
+
   // Initialize authentication tokens
   await _initializeStoredTokens();
 
@@ -125,6 +142,16 @@ Future<void> _initializeFirebaseNotifications() async {
     AppLogger.info('✅ Firebase notifications initialized');
   } catch (e) {
     AppLogger.error('❌ Failed to initialize Firebase notifications: $e');
+  }
+}
+
+/// Initialize call notification service (native CallKit/full-screen intent)
+Future<void> _initializeCallNotifications() async {
+  try {
+    await CallNotificationService.instance.initialize();
+    AppLogger.info('✅ Call notification service initialized');
+  } catch (e) {
+    AppLogger.error('❌ Failed to initialize call notification service: $e');
   }
 }
 

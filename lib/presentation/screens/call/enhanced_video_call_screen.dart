@@ -5,6 +5,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 
 import '../../blocs/call/call_bloc.dart';
 import '../../widgets/call/enhanced_call_controls.dart';
+import '../../widgets/network_quality_indicator.dart';
+import '../../widgets/network_stats_overlay.dart';
 import '../../theme/pulse_colors.dart';
 import '../../../domain/entities/user_profile.dart';
 import '../../../domain/entities/call.dart';
@@ -99,6 +101,21 @@ class _EnhancedVideoCallScreenState extends State<EnhancedVideoCallScreen> {
                 // Connection status overlay
                 if (state.connectionState != CallConnectionState.connected)
                   _buildConnectionStatusOverlay(state),
+                
+                // ✅ Network quality indicator (top-right)
+                if (state.connectionState == CallConnectionState.connected)
+                  Positioned(
+                    top: 60,
+                    right: 20,
+                    child: NetworkQualityIndicator(
+                      autoHide: true,
+                      size: 40.0,
+                      onTap: () {
+                        // Show detailed stats overlay
+                        NetworkStatsOverlay.show(context);
+                      },
+                    ),
+                  ),
                 
                 // Tap detector to show/hide controls
                 GestureDetector(

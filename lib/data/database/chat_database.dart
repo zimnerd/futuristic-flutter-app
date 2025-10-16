@@ -1,12 +1,13 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'package:logger/logger.dart';
+import '../services/cache_ttl_service.dart';
 
 /// Local SQLite database for chat messages and conversations
 /// Optimized for WhatsApp-style messaging with pagination and offline support
 class ChatDatabase {
   static const String _databaseName = 'pulse_chat.db';
-  static const int _databaseVersion = 1;
+  static const int _databaseVersion = 3;
   
   static Database? _database;
   static final Logger _logger = Logger();
@@ -25,15 +26,37 @@ class ChatDatabase {
   Future<Database> _initDatabase() async {
     final databasesPath = await getDatabasesPath();
     final path = join(databasesPath, _databaseName);
-    
+
     _logger.d('Initializing chat database at: $path');
-    
+
     return await openDatabase(
       path,
       version: _databaseVersion,
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
+      onConfigure: _onConfigure,
     );
+  }
+
+  /// Configure database for optimal performance
+  Future<void> _onConfigure(Database db) async {
+    _logger.d('Configuring database for optimal performance...');
+
+    // Enable Write-Ahead Logging for better concurrency
+    // WAL mode allows readers and writers to work simultaneously
+    await db.execute('PRAGMA journal_mode = WAL');
+
+    // Set cache size to 10MB for better performance
+    await db.execute('PRAGMA cache_size = -10000');
+
+    // Set synchronous mode to NORMAL for balance between safety and speed
+    // NORMAL is safe for most use cases and much faster than FULL
+    await db.execute('PRAGMA synchronous = NORMAL');
+
+    // Enable foreign key constraints
+    await db.execute('PRAGMA foreign_keys = ON');
+
+    _logger.d('Database configuration complete (WAL mode enabled)');
   }
 
   /// Create database tables with proper indexing
@@ -142,11 +165,47 @@ class ChatDatabase {
   /// Handle database upgrades
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
     _logger.d('Upgrading database from version $oldVersion to $newVersion');
-    
-    // Handle future schema migrations here
+
+    // Migration to version 2: Add outbox table for offline message sending
     if (oldVersion < 2) {
-      // Example migration for version 2
-      // await db.execute('ALTER TABLE messages ADD COLUMN new_field TEXT');
+      _logger.d('Adding message_outbox table for offline send retry...');
+
+      // Outbox table for queuing messages when offline
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS message_outbox (
+          temp_id TEXT PRIMARY KEY,
+          conversation_id TEXT NOT NULL,
+          content TEXT NOT NULL,
+          type TEXT DEFAULT 'text',
+          media_local_path TEXT,
+          created_at INTEGER NOT NULL,
+          retry_count INTEGER DEFAULT 0,
+          last_error TEXT,
+          last_retry_at INTEGER,
+          FOREIGN KEY (conversation_id) REFERENCES conversations(id) ON DELETE CASCADE
+        )
+      ''');
+
+      // Index for efficient outbox queries
+      await db.execute('''
+        CREATE INDEX idx_outbox_conversation
+        ON message_outbox(conversation_id)
+      ''');
+
+      // Index for retry processing
+      await db.execute('''
+        CREATE INDEX idx_outbox_retry
+        ON message_outbox(retry_count, created_at)
+      ''');
+
+      _logger.d('Message outbox table created successfully');
+    }
+
+    // Migration to version 3: Add cache metadata table for TTL tracking
+    if (oldVersion < 3) {
+      _logger.d('Adding cache_metadata table for cache TTL tracking...');
+      await CacheTTLService.createCacheMetadataTable(db);
+      _logger.d('Cache metadata table created successfully');
     }
   }
 
@@ -165,24 +224,98 @@ class ChatDatabase {
     await db.delete('messages');
     await db.delete('conversations');
     await db.delete('pagination_metadata');
+    await db.delete('message_outbox');
+    await db.delete('cache_metadata');
     _logger.d('All chat data cleared');
   }
 
   /// Get database statistics
   Future<Map<String, int>> getStats() async {
     final db = await database;
-    
+
     final conversationsCount = Sqflite.firstIntValue(
       await db.rawQuery('SELECT COUNT(*) FROM conversations'),
     ) ?? 0;
-    
+
     final messagesCount = Sqflite.firstIntValue(
       await db.rawQuery('SELECT COUNT(*) FROM messages'),
     ) ?? 0;
-    
+
+    final outboxCount = Sqflite.firstIntValue(
+      await db.rawQuery('SELECT COUNT(*) FROM message_outbox'),
+    ) ?? 0;
+
+    final cacheCount = Sqflite.firstIntValue(
+      await db.rawQuery('SELECT COUNT(*) FROM cache_metadata'),
+    ) ?? 0;
+
     return {
       'conversations': conversationsCount,
       'messages': messagesCount,
+      'outbox_pending': outboxCount,
+      'cached_items': cacheCount,
     };
+  }
+
+  /// Perform database maintenance (VACUUM, ANALYZE, WAL checkpoint)
+  /// Should be run periodically (e.g., weekly) to optimize performance
+  Future<void> performMaintenance() async {
+    try {
+      final db = await database;
+
+      _logger.d('Starting database maintenance...');
+
+      // Checkpoint WAL file (merge WAL into main database)
+      await db.execute('PRAGMA wal_checkpoint(TRUNCATE)');
+      _logger.d('WAL checkpoint completed');
+
+      // Run VACUUM to reclaim unused space and defragment
+      await db.execute('VACUUM');
+      _logger.d('VACUUM completed');
+
+      // Run ANALYZE to update query planner statistics
+      await db.execute('ANALYZE');
+      _logger.d('ANALYZE completed');
+
+      _logger.i('Database maintenance completed successfully');
+    } catch (e, stackTrace) {
+      _logger.e('Database maintenance failed', error: e, stackTrace: stackTrace);
+      rethrow;
+    }
+  }
+
+  /// Get detailed database information for debugging
+  Future<Map<String, dynamic>> getDatabaseInfo() async {
+    try {
+      final db = await database;
+
+      // Get journal mode
+      final journalModeResult = await db.rawQuery('PRAGMA journal_mode');
+      final journalMode = journalModeResult.first.values.first;
+
+      // Get page count and size
+      final pageCountResult = await db.rawQuery('PRAGMA page_count');
+      final pageCount = pageCountResult.first.values.first as int;
+
+      final pageSizeResult = await db.rawQuery('PRAGMA page_size');
+      final pageSize = pageSizeResult.first.values.first as int;
+
+      final dbSizeMB = (pageCount * pageSize) / (1024 * 1024);
+
+      // Get cache size
+      final cacheSizeResult = await db.rawQuery('PRAGMA cache_size');
+      final cacheSize = cacheSizeResult.first.values.first;
+
+      return {
+        'journalMode': journalMode,
+        'dbSizeMB': dbSizeMB.toStringAsFixed(2),
+        'pageCount': pageCount,
+        'pageSize': pageSize,
+        'cacheSize': cacheSize,
+      };
+    } catch (e, stackTrace) {
+      _logger.e('Failed to get database info', error: e, stackTrace: stackTrace);
+      return {};
+    }
   }
 }

@@ -468,6 +468,143 @@ class MessageDatabaseService {
     }
   }
 
+  // ================== OUTBOX OPERATIONS (OFFLINE MESSAGE QUEUE) ==================
+
+  /// Add message to outbox for retry when offline
+  Future<void> addToOutbox(MessageDbModel message) async {
+    try {
+      final db = await _db;
+      await db.insert('message_outbox', {
+        'temp_id': message.tempId ?? message.id,
+        'conversation_id': message.conversationId,
+        'content': message.content ?? '',
+        'type': message.type,
+        'media_local_path': message.mediaUrls,
+        'created_at': message.createdAt.millisecondsSinceEpoch,
+        'retry_count': 0,
+        'last_error': null,
+        'last_retry_at': null,
+      });
+
+      _logger.d('Message added to outbox: ${message.tempId ?? message.id}');
+    } catch (e, stackTrace) {
+      _logger.e('Error adding message to outbox', error: e, stackTrace: stackTrace);
+      rethrow;
+    }
+  }
+
+  /// Get all pending messages from outbox (max 3 retries)
+  Future<List<Map<String, dynamic>>> getPendingOutbox() async {
+    try {
+      final db = await _db;
+      final result = await db.query(
+        'message_outbox',
+        where: 'retry_count < ?',
+        whereArgs: [3], // Max 3 retries
+        orderBy: 'created_at ASC',
+      );
+
+      _logger.d('Retrieved ${result.length} pending outbox messages');
+      return result;
+    } catch (e, stackTrace) {
+      _logger.e('Error retrieving pending outbox', error: e, stackTrace: stackTrace);
+      return [];
+    }
+  }
+
+  /// Get outbox messages for a specific conversation
+  Future<List<Map<String, dynamic>>> getConversationOutbox(String conversationId) async {
+    try {
+      final db = await _db;
+      final result = await db.query(
+        'message_outbox',
+        where: 'conversation_id = ?',
+        whereArgs: [conversationId],
+        orderBy: 'created_at ASC',
+      );
+
+      return result;
+    } catch (e, stackTrace) {
+      _logger.e('Error retrieving conversation outbox', error: e, stackTrace: stackTrace);
+      return [];
+    }
+  }
+
+  /// Remove message from outbox after successful send
+  Future<void> removeFromOutbox(String tempId) async {
+    try {
+      final db = await _db;
+      await db.delete('message_outbox', where: 'temp_id = ?', whereArgs: [tempId]);
+
+      _logger.d('Removed message from outbox: $tempId');
+    } catch (e, stackTrace) {
+      _logger.e('Error removing message from outbox', error: e, stackTrace: stackTrace);
+      rethrow;
+    }
+  }
+
+  /// Increment retry count for failed send attempt
+  Future<void> incrementRetryCount(String tempId, String? error) async {
+    try {
+      final db = await _db;
+      await db.rawUpdate(
+        '''UPDATE message_outbox
+           SET retry_count = retry_count + 1,
+               last_error = ?,
+               last_retry_at = ?
+           WHERE temp_id = ?''',
+        [error ?? 'Unknown error', DateTime.now().millisecondsSinceEpoch, tempId],
+      );
+
+      _logger.d('Incremented retry count for outbox message: $tempId');
+    } catch (e, stackTrace) {
+      _logger.e('Error incrementing retry count', error: e, stackTrace: stackTrace);
+      rethrow;
+    }
+  }
+
+  /// Clear all failed messages from outbox (exceeded max retries)
+  Future<void> clearFailedOutbox() async {
+    try {
+      final db = await _db;
+      final deletedCount = await db.delete(
+        'message_outbox',
+        where: 'retry_count >= ?',
+        whereArgs: [3],
+      );
+
+      _logger.d('Cleared $deletedCount failed outbox messages');
+    } catch (e, stackTrace) {
+      _logger.e('Error clearing failed outbox', error: e, stackTrace: stackTrace);
+      rethrow;
+    }
+  }
+
+  /// Get outbox statistics
+  Future<Map<String, int>> getOutboxStats() async {
+    try {
+      final db = await _db;
+
+      final totalResult = await db.rawQuery('SELECT COUNT(*) as count FROM message_outbox');
+      final total = totalResult.first['count'] as int;
+
+      final failedResult = await db.rawQuery(
+        'SELECT COUNT(*) as count FROM message_outbox WHERE retry_count >= ?',
+        [3],
+      );
+      final failed = failedResult.first['count'] as int;
+
+      return {
+        'total': total,
+        'pending': total - failed,
+        'failed': failed,
+      };
+    } catch (e, stackTrace) {
+      _logger.e('Error getting outbox stats', error: e, stackTrace: stackTrace);
+      return {'total': 0, 'pending': 0, 'failed': 0};
+    }
+  }
+
   // ================== BACKGROUND SYNC SUPPORT METHODS ==================
 
   /// Get all conversations (alias for getConversations for background sync)
