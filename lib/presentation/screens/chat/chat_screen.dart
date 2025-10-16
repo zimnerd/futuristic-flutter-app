@@ -2231,9 +2231,18 @@ class _ChatScreenState extends State<ChatScreen> {
                 _copyMessage(message);
               },
             ),
+            _buildOptionTile(
+              icon: Icons.bookmark_outline,
+              title: message.isBookmarked ? 'Remove Bookmark' : 'Bookmark',
+              color: message.isBookmarked ? PulseColors.primary : null,
+              onTap: () {
+                Navigator.pop(context);
+                _toggleBookmark(message);
+              },
+            ),
             if (message.type == MessageType.image ||
                 message.type == MessageType.video ||
-                message.type == MessageType.gif) 
+                message.type == MessageType.gif)
               _buildOptionTile(
                 icon: Icons.download,
                 title: 'Save to Gallery',
@@ -2461,6 +2470,37 @@ class _ChatScreenState extends State<ChatScreen> {
   void _reportMessage(MessageModel message) {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Report feature will be implemented')),
+    );
+  }
+
+  void _toggleBookmark(MessageModel message) {
+    // Dispatch BookmarkMessage event to BLoC
+    context.read<ChatBloc>().add(
+      BookmarkMessage(
+        messageId: message.id,
+        isBookmarked: !message.isBookmarked,
+      ),
+    );
+
+    // Show confirmation
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          message.isBookmarked
+              ? 'Removed from bookmarks'
+              : 'Message bookmarked',
+        ),
+        duration: const Duration(seconds: 2),
+        action: message.isBookmarked
+            ? null
+            : SnackBarAction(
+                label: 'View',
+                onPressed: () {
+                  // Navigate to saved messages screen
+                  Navigator.pushNamed(context, '/saved-messages');
+                },
+              ),
+      ),
     );
   }
 

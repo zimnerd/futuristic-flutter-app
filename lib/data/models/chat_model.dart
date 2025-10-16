@@ -172,6 +172,7 @@ class MessageModel extends Equatable {
     this.editedAt,
     this.isForwarded = false,
     this.forwardedFromConversationId,
+    this.isBookmarked = false,
     required this.createdAt,
     required this.updatedAt,
     this.tempId, // Temporary ID for optimistic message correlation
@@ -192,6 +193,7 @@ class MessageModel extends Equatable {
   final DateTime? editedAt;
   final bool isForwarded;
   final String? forwardedFromConversationId;
+  final bool isBookmarked;
   final DateTime createdAt;
   final DateTime updatedAt;
   final String? tempId; // Temporary ID for optimistic message correlation
@@ -224,6 +226,7 @@ class MessageModel extends Equatable {
       isForwarded: json['isForwarded'] as bool? ?? false,
       forwardedFromConversationId:
           json['forwardedFromConversationId'] as String?,
+      isBookmarked: json['isBookmarked'] as bool? ?? false,
       createdAt: DateTime.parse(json['createdAt'] as String),
       updatedAt: DateTime.parse(json['updatedAt'] as String),
       tempId: json['tempId'] as String?,
@@ -353,6 +356,7 @@ class MessageModel extends Equatable {
     DateTime? editedAt,
     bool? isForwarded,
     String? forwardedFromConversationId,
+    bool? isBookmarked,
     DateTime? createdAt,
     DateTime? updatedAt,
     String? tempId,
@@ -373,6 +377,7 @@ class MessageModel extends Equatable {
       editedAt: editedAt ?? this.editedAt,
       isForwarded: isForwarded ?? this.isForwarded,
       forwardedFromConversationId: forwardedFromConversationId ?? this.forwardedFromConversationId,
+      isBookmarked: isBookmarked ?? this.isBookmarked,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       tempId: tempId ?? this.tempId,
@@ -396,6 +401,7 @@ class MessageModel extends Equatable {
         editedAt,
         isForwarded,
         forwardedFromConversationId,
+        isBookmarked,
         createdAt,
         updatedAt,
     tempId,
