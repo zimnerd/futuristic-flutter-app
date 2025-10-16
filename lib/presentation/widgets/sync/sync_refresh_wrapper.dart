@@ -89,46 +89,51 @@ class _SyncRefreshWrapperState extends State<SyncRefreshWrapper> {
 
   /// Build sync status indicator
   Widget _buildSyncStatusIndicator() {
-    final syncStatus = BackgroundSyncManager.instance.getSyncStatus();
-    
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Row(
-        children: [
-          // Sync status icon
-          Icon(
-            _getSyncStatusIcon(syncStatus),
-            size: 16,
-            color: _getSyncStatusColor(syncStatus),
-          ),
-          const SizedBox(width: 8),
-          
-          // Sync status text
-          Expanded(
-            child: Text(
-              _getSyncStatusText(syncStatus),
-              style: TextStyle(
-                fontSize: 12,
+    return FutureBuilder<Map<String, dynamic>>(
+      future: BackgroundSyncManager.instance.getSyncStatus(),
+      builder: (context, snapshot) {
+        final syncStatus = snapshot.data ?? {};
+
+        return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: Row(
+            children: [
+              // Sync status icon
+              Icon(
+                _getSyncStatusIcon(syncStatus),
+                size: 16,
                 color: _getSyncStatusColor(syncStatus),
               ),
-            ),
+              const SizedBox(width: 8),
+
+              // Sync status text
+              Expanded(
+                child: Text(
+                  _getSyncStatusText(syncStatus),
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: _getSyncStatusColor(syncStatus),
+                  ),
+                ),
+              ),
+
+              // Manual sync button
+              if (!_isManualSyncing)
+                IconButton(
+                  icon: const Icon(Icons.refresh, size: 18),
+                  onPressed: _handleRefresh,
+                  tooltip: 'Manual sync',
+                )
+              else
+                const SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+            ],
           ),
-          
-          // Manual sync button
-          if (!_isManualSyncing)
-            IconButton(
-              icon: const Icon(Icons.refresh, size: 18),
-              onPressed: _handleRefresh,
-              tooltip: 'Manual sync',
-            )
-          else
-            const SizedBox(
-              width: 18,
-              height: 18,
-              child: CircularProgressIndicator(strokeWidth: 2),
-            ),
-        ],
-      ),
+        );
+      },
     );
   }
 

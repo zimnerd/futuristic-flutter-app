@@ -231,13 +231,43 @@ class DiscoveryService {
       bio: user['bio'] as String? ?? '',
       photos:
           (user['photos'] as List<dynamic>?)
-              ?.map(
-                (photoUrl) => ProfilePhoto(
-                  id: photoUrl.hashCode.toString(),
-                  url: photoUrl as String,
-                  order: 0,
-                  isVerified: false,
-                ),
+              ?.asMap().entries.map((entry) {
+            final index = entry.key;
+            final photo = entry.value;
+
+            // Handle both string URLs (legacy) and Photo objects (new format)
+            if (photo is String) {
+              return ProfilePhoto(
+                id: photo.hashCode.toString(),
+                url: photo,
+                order: index,
+                isVerified: false,
+              );
+            } else if (photo is Map<String, dynamic>) {
+              return ProfilePhoto(
+                id: photo['id']?.toString() ?? photo['url'].hashCode.toString(),
+                url:
+                    photo['url'] as String? ??
+                    photo['processedUrl'] as String? ??
+                    '',
+                order: photo['displayOrder'] as int? ?? index,
+                blurhash: photo['blurhash'] as String?, // 🎯 Parse blurhash
+                isMain: photo['isMain'] as bool? ?? (index == 0),
+                isVerified: photo['verified'] as bool? ?? false,
+                uploadedAt: photo['createdAt'] != null
+                    ? DateTime.tryParse(photo['createdAt'] as String)
+                    : null,
+              );
+            }
+
+            // Fallback for unexpected formats
+            return ProfilePhoto(
+              id: photo.toString().hashCode.toString(),
+              url: photo.toString(),
+              order: index,
+              isVerified: false,
+            );
+          },
               )
               .toList() ??
           [],

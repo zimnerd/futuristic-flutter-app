@@ -8,6 +8,7 @@ class Conversation extends Equatable {
     required this.otherUserId,
     required this.otherUserName,
     required this.otherUserAvatar,
+    this.otherUserAvatarBlurhash, // 🎯 Add blurhash for progressive avatar loading
     required this.lastMessage,
     required this.lastMessageTime,
     this.unreadCount = 0,
@@ -24,6 +25,7 @@ class Conversation extends Equatable {
   final String otherUserId;
   final String otherUserName;
   final String otherUserAvatar;
+  final String? otherUserAvatarBlurhash;
   final String lastMessage;
   final DateTime lastMessageTime;
   final int unreadCount;
@@ -91,6 +93,7 @@ class Conversation extends Equatable {
     String? otherUserId,
     String? otherUserName,
     String? otherUserAvatar,
+    String? otherUserAvatarBlurhash,
     String? lastMessage,
     DateTime? lastMessageTime,
     int? unreadCount,
@@ -107,6 +110,8 @@ class Conversation extends Equatable {
       otherUserId: otherUserId ?? this.otherUserId,
       otherUserName: otherUserName ?? this.otherUserName,
       otherUserAvatar: otherUserAvatar ?? this.otherUserAvatar,
+      otherUserAvatarBlurhash:
+          otherUserAvatarBlurhash ?? this.otherUserAvatarBlurhash,
       lastMessage: lastMessage ?? this.lastMessage,
       lastMessageTime: lastMessageTime ?? this.lastMessageTime,
       unreadCount: unreadCount ?? this.unreadCount,
@@ -126,6 +131,7 @@ class Conversation extends Equatable {
         otherUserId,
         otherUserName,
         otherUserAvatar,
+    otherUserAvatarBlurhash,
         lastMessage,
         lastMessageTime,
         unreadCount,

@@ -356,6 +356,8 @@ class ChatRepositoryImpl implements ChatRepository {
               otherUserId: conversation.otherUserId,
               otherUserName: conversation.otherUserName,
               otherUserAvatar: conversation.otherUserAvatar,
+              otherUserAvatarBlurhash:
+                  conversation.otherUserAvatarBlurhash, // 🎯 Preserve blurhash
               lastMessage: latestMessage.content ?? 'No message content',
               lastMessageTime: latestMessage.createdAt,
               unreadCount: conversation.unreadCount,
@@ -625,6 +627,8 @@ class ChatRepositoryImpl implements ChatRepository {
       otherUserId: data['otherUserId']?.toString() ?? 'unknown',
       otherUserName: data['otherUserName']?.toString() ?? 'Unknown User',
       otherUserAvatar: data['otherUserAvatar']?.toString() ?? '',
+      otherUserAvatarBlurhash:
+          data['otherUserAvatarBlurhash'] as String?, // 🎯 Parse blurhash
       lastMessage: data['lastMessage']?.toString() ?? 'No messages yet',
       lastMessageTime: data['lastMessageTime'] != null
           ? DateTime.tryParse(data['lastMessageTime'].toString()) ??

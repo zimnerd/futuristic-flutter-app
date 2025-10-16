@@ -9,6 +9,7 @@ class ConversationModel extends Conversation {
     required super.otherUserId,
     required super.otherUserName,
     required super.otherUserAvatar,
+    super.otherUserAvatarBlurhash, // 🎯 Pass blurhash to parent
     required super.lastMessage,
     required super.lastMessageTime,
     super.unreadCount = 0,
@@ -27,6 +28,7 @@ class ConversationModel extends Conversation {
       otherUserId: json['otherUserId'] as String,
       otherUserName: json['otherUserName'] as String,
       otherUserAvatar: json['otherUserAvatar'] as String,
+      otherUserAvatarBlurhash: json['otherUserAvatarBlurhash'] as String?,
       lastMessage: json['lastMessage'] as String,
       lastMessageTime: DateTime.parse(json['lastMessageTime'] as String),
       unreadCount: json['unreadCount'] as int? ?? 0,
@@ -172,6 +174,8 @@ class ConversationModel extends Conversation {
       otherUserId: otherParticipant?['userId'] as String? ?? '',
       otherUserName: otherUserDisplayName,
       otherUserAvatar: otherParticipant?['avatar'] as String? ?? '',
+      otherUserAvatarBlurhash:
+          otherParticipant?['avatarBlurhash'] as String?, // 🎯 Parse blurhash
       lastMessage: lastMessageContent,
       lastMessageTime: lastMessageTime,
       unreadCount: json['unreadCount'] as int? ?? 0,
@@ -195,6 +199,7 @@ class ConversationModel extends Conversation {
       'otherUserId': otherUserId,
       'otherUserName': otherUserName,
       'otherUserAvatar': otherUserAvatar,
+      'otherUserAvatarBlurhash': otherUserAvatarBlurhash, // 🎯 Include blurhash
       'lastMessage': lastMessage,
       'lastMessageTime': lastMessageTime.toIso8601String(),
       'unreadCount': unreadCount,
@@ -214,6 +219,7 @@ class ConversationModel extends Conversation {
       otherUserId: otherUserId,
       otherUserName: otherUserName,
       otherUserAvatar: otherUserAvatar,
+      otherUserAvatarBlurhash: otherUserAvatarBlurhash, // 🎯 Include blurhash
       lastMessage: lastMessage,
       lastMessageTime: lastMessageTime,
       unreadCount: unreadCount,

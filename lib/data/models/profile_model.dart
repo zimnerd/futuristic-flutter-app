@@ -128,6 +128,7 @@ class ProfilePhoto extends Equatable {
   final bool isPrimary;
   final bool isVerified;
   final int order;
+  final String? blurhash; // 🎯 Add blurhash field for progressive loading
   final DateTime createdAt;
 
   const ProfilePhoto({
@@ -136,6 +137,7 @@ class ProfilePhoto extends Equatable {
     this.isPrimary = false,
     this.isVerified = false,
     required this.order,
+    this.blurhash,
     required this.createdAt,
   });
 
@@ -146,6 +148,7 @@ class ProfilePhoto extends Equatable {
       isPrimary: json['isPrimary'] ?? false,
       isVerified: json['isVerified'] ?? false,
       order: json['order'] ?? 0,
+      blurhash: json['blurhash'] as String?,
       createdAt: DateTime.parse(json['createdAt']),
     );
   }
@@ -157,6 +160,7 @@ class ProfilePhoto extends Equatable {
       'isPrimary': isPrimary,
       'isVerified': isVerified,
       'order': order,
+      'blurhash': blurhash,
       'createdAt': createdAt.toIso8601String(),
     };
   }
@@ -167,6 +171,7 @@ class ProfilePhoto extends Equatable {
     bool? isPrimary,
     bool? isVerified,
     int? order,
+    String? blurhash,
     DateTime? createdAt,
   }) {
     return ProfilePhoto(
@@ -175,12 +180,21 @@ class ProfilePhoto extends Equatable {
       isPrimary: isPrimary ?? this.isPrimary,
       isVerified: isVerified ?? this.isVerified,
       order: order ?? this.order,
+      blurhash: blurhash ?? this.blurhash,
       createdAt: createdAt ?? this.createdAt,
     );
   }
 
   @override
-  List<Object?> get props => [id, url, isPrimary, isVerified, order, createdAt];
+  List<Object?> get props => [
+    id,
+    url,
+    isPrimary,
+    isVerified,
+    order,
+    blurhash,
+    createdAt,
+  ];
 }
 
 /// User preferences for matching and discovery

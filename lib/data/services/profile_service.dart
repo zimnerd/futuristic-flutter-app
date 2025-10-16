@@ -887,14 +887,15 @@ class ProfileService {
         _logger.i('✅ Photo uploaded successfully: ${mediaData['url']}');
         
         // Convert MediaResponseDto to ProfilePhoto (from profile_model.dart)
-        // Backend MediaResponseDto: { id, userId, url, mimeType, fileSize, createdAt, ... }
-        // ProfilePhoto model: { id, url, isPrimary, isVerified, order, createdAt }
+        // Backend MediaResponseDto: { id, userId, url, mimeType, fileSize, blurhash, createdAt, ... }
+        // ProfilePhoto model: { id, url, isPrimary, isVerified, order, blurhash, createdAt }
         final photo = ProfilePhoto(
           id: mediaData['id'] as String,
           url: mediaData['url'] as String,
           isPrimary: isPrimary,
           isVerified: false,
           order: order,
+          blurhash: mediaData['blurhash'] as String?, // 🎯 Parse blurhash
           createdAt: DateTime.parse(mediaData['createdAt'] as String),
         );
         
@@ -1124,6 +1125,7 @@ class ProfileService {
                   id: p['id'] as String,
                   url: p['url'] as String,
                   order: p['order'] as int? ?? 0,
+                blurhash: p['blurhash'] as String?, // 🎯 Parse blurhash
                   isVerified: p['isVerified'] as bool? ?? false,
                   description: p['description'] as String?,
                 ))
