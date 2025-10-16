@@ -11,6 +11,7 @@ import 'package:permission_handler/permission_handler.dart';
 import '../../../blocs/chat_bloc.dart';
 import '../../../data/models/chat_model.dart';
 import '../../../data/services/service_locator.dart';
+import '../../../data/services/audio_call_service.dart';
 import '../../../services/media_upload_service.dart' as media_service;
 import '../../../domain/entities/message.dart' show MessageType;
 import '../../../presentation/blocs/auth/auth_bloc.dart';
@@ -1198,23 +1199,80 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
-  void _initiateCall(BuildContext context, bool isVideo) {
-    // Show a placeholder dialog since call functionality needs to be implemented
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(isVideo ? 'Video Call' : 'Voice Call'),
-        content: Text(
-          '${isVideo ? 'Video' : 'Voice'} calling ${widget.otherUserName}...',
+  Future<void> _initiateCall(BuildContext context, bool isVideo) async {
+    try {
+      // Show loading indicator
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(child: CircularProgressIndicator(),
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+      );
+
+      // Create call on backend first
+      final audioService = AudioCallService.instance;
+      final callId = await audioService.initiateAudioCall(
+        recipientId: widget.otherUserId,
+        recipientName: widget.otherUserName,
+        isVideo: isVideo,
+      );
+
+      // Close loading dialog
+      if (context.mounted) {
+        Navigator.of(context).pop();
+      }
+
+      if (callId == null) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Failed to initiate call'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+        return;
+      }
+
+      // Create UserModel from available data
+      final remoteUser = UserModel(
+        id: widget.otherUserId,
+        email: '', // Not available in chat context
+        username: widget.otherUserName,
+        firstName: widget.otherUserName.split(' ').first,
+        lastName: widget.otherUserName.split(' ').length > 1
+            ? widget.otherUserName.split(' ').last
+            : null,
+        photos: widget.otherUserPhoto != null ? [widget.otherUserPhoto!] : [],
+        createdAt: DateTime.now(),
+      );
+
+      // Navigate to audio call screen with backend-generated call ID
+      if (context.mounted) {
+        context.push(
+          '/audio-call/$callId',
+          extra: {
+            'remoteUser': remoteUser,
+            'isIncoming': false,
+            'isVideo': isVideo,
+          },
+        );
+      }
+    } catch (e) {
+      // Close loading dialog if still open
+      if (context.mounted && Navigator.of(context).canPop()) {
+        Navigator.of(context).pop();
+      }
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error initiating call: $e'),
+            backgroundColor: Colors.red,
           ),
-        ],
-      ),
-    );
+        );
+      }
+    }
   }
 
   void _handleMenuAction(BuildContext context, String action) {

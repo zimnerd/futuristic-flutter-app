@@ -289,7 +289,10 @@ class WebRTCService {
       if (_currentCall?.type != CallType.video) return;
 
       _isVideoEnabled = !_isVideoEnabled;
-      await _engine?.muteLocalVideoStream(!_isVideoEnabled);
+      
+      // ✅ FIXED: Use enableLocalVideo instead of muteLocalVideoStream
+      // enableLocalVideo actually stops the camera, muteLocalVideoStream just stops sending
+      await _engine?.enableLocalVideo(_isVideoEnabled);
       _videoStateController.add(_isVideoEnabled);
 
       // Send camera signal

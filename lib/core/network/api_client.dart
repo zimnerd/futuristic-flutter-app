@@ -988,6 +988,17 @@ class ApiClient {
   // WEBRTC ENDPOINTS
   // ===========================================
 
+  /// Get Agora RTC token for a call
+  Future<Response> getCallToken({
+    required String callId,
+    bool audioOnly = false,
+  }) async {
+    return await _dio.post(
+      '/webrtc/calls/$callId/token',
+      queryParameters: {'audioOnly': audioOnly.toString()},
+    );
+  }
+
   /// Initiate a video/audio call
   Future<Response> initiateCall({
     required List<String> participantIds,
@@ -1007,6 +1018,19 @@ class ApiClient {
   /// End a call
   Future<Response> endCall(String callId) async {
     return await _dio.post('/webrtc/calls/$callId/end');
+  }
+
+  /// Accept an incoming call
+  Future<Response> acceptCall(String callId) async {
+    return await _dio.post('/webrtc/calls/$callId/accept');
+  }
+
+  /// Reject an incoming call
+  Future<Response> rejectCall(String callId, {String? reason}) async {
+    return await _dio.post(
+      '/webrtc/calls/$callId/reject',
+      data: {'reason': reason ?? 'User declined'},
+    );
   }
 
   /// Get call history

@@ -3,8 +3,7 @@ import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:logger/logger.dart';
 
-import 'api_service_impl.dart';
-import '../../core/constants/api_constants.dart';
+import '../../core/network/api_client.dart';
 import '../../domain/services/websocket_service.dart';
 
 /// Service for managing audio-only calls
@@ -16,13 +15,14 @@ class AudioCallService {
   AudioCallService._();
 
   final Logger _logger = Logger();
-  final ApiServiceImpl _apiService = ApiServiceImpl();
+  final ApiClient _apiClient = ApiClient.instance;
   
   RtcEngine? _engine;
   WebSocketService? _webSocketService;
   
   // Call state
   String? _currentCallId;
+  String? _currentChannelName;
   int? _currentRemoteUid;
   bool _isInCall = false;
   bool _isMuted = false;
@@ -76,23 +76,36 @@ class AudioCallService {
     try {
       _webSocketService = webSocketService;
       
+      _logger.i('🔧 Creating Agora RTC engine...');
+      
       // Create Agora RTC engine
       _engine = createAgoraRtcEngine();
+      
+      _logger.i(
+        '🔧 Initializing Agora engine with appId: ${appId.substring(0, 8)}...',
+      );
       await _engine!.initialize(RtcEngineContext(
         appId: appId,
         channelProfile: ChannelProfileType.channelProfileCommunication,
         audioScenario: AudioScenarioType.audioScenarioChatroom,
       ));
 
-      // Configure for audio-only mode
-      await _engine!.disableVideo();
+      _logger.i('🔧 Enabling audio module...');
+      // Enable audio explicitly (don't disable video, just don't enable it)
+      await _engine!.enableAudio();
       
+      _logger.i('🔧 Enabling local audio capture...');
+      // Enable local audio capture (microphone)
+      await _engine!.enableLocalAudio(true);
+
+      _logger.i('🔧 Setting audio profile...');
       // Set audio profile for high quality voice
       await _engine!.setAudioProfile(
         profile: AudioProfileType.audioProfileMusicStandard,
         scenario: AudioScenarioType.audioScenarioChatroom,
       );
 
+      _logger.i('🔧 Registering event handlers...');
       // Set event handlers
       _engine!.registerEventHandler(RtcEngineEventHandler(
         onJoinChannelSuccess: (RtcConnection connection, int elapsed) {
@@ -155,6 +168,53 @@ class AudioCallService {
             _handleCallEnded('Connection failed');
           }
         },
+          onTokenPrivilegeWillExpire: (RtcConnection connection, String token) {
+            _logger.w('⚠️ Token will expire in 30 seconds, refreshing...');
+            _refreshToken();
+          },
+          onRequestToken: (RtcConnection connection) {
+            _logger.e('❌ Token expired! Requesting new token...');
+            _refreshToken();
+          },
+          onConnectionLost: (RtcConnection connection) {
+            _logger.w('⚠️ Connection lost, will attempt auto-reconnect');
+            _callErrorController.add('Connection lost, reconnecting...');
+          },
+          onRejoinChannelSuccess: (RtcConnection connection, int elapsed) {
+            _logger.i(
+              '✅ Rejoined channel after connection loss: ${connection.channelId}',
+            );
+            _callErrorController.add('Reconnected successfully');
+          },
+          onLocalAudioStateChanged:
+              (
+                RtcConnection connection,
+                LocalAudioStreamState state,
+                LocalAudioStreamReason reason,
+              ) {
+                _logger.i('🎤 Local audio state: $state, reason: $reason');
+                if (reason ==
+                    LocalAudioStreamReason
+                        .localAudioStreamReasonRecordFailure) {
+                  _logger.e('❌ Microphone recording failed');
+                  _callErrorController.add('Microphone error');
+                }
+              },
+          onRemoteAudioStateChanged:
+              (
+                RtcConnection connection,
+                int remoteUid,
+                RemoteAudioState state,
+                RemoteAudioStateReason reason,
+                int elapsed,
+              ) {
+                _logger.i(
+                  '🔊 Remote audio state for $remoteUid: $state, reason: $reason',
+                );
+                if (state == RemoteAudioState.remoteAudioStateFailed) {
+                  _logger.w('⚠️ Remote user $remoteUid audio failed');
+                }
+              },
       ));
 
       _logger.i('✅ Audio call service initialized successfully');
@@ -189,6 +249,38 @@ class AudioCallService {
     String? token,
   }) async {
     try {
+      // Get app ID from environment or config
+      const appId = String.fromEnvironment(
+        'AGORA_APP_ID',
+        defaultValue:
+            '0bb5c5b508884aa4bfc25381d51fa329', // Correct from Agora Console
+      );
+
+      // Force re-initialization to ensure clean state
+      if (_engine != null) {
+        _logger.w(
+          '⚠️ Agora engine exists but may be in invalid state, releasing...',
+        );
+        try {
+          await _engine!.release();
+        } catch (e) {
+          _logger.w('⚠️ Error releasing engine (may already be released): $e');
+        }
+        _engine = null;
+      }
+
+      // Always initialize fresh for each call
+      _logger.i('🔧 Initializing Agora engine for call...');
+      await initialize(appId: appId);
+
+      // Wait a moment for engine to fully initialize
+      await Future.delayed(const Duration(milliseconds: 500));
+
+      // Verify engine is ready
+      if (_engine == null) {
+        throw Exception('Failed to initialize Agora engine');
+      }
+
       // Check microphone permission
       final hasPermission = await requestMicrophonePermission();
       if (!hasPermission) {
@@ -199,12 +291,13 @@ class AudioCallService {
       // Get RTC token from backend if not provided
       String agoraToken = token ?? '';
       String agoraChannel = channelName ?? '';
+      int tokenUid = 0; // UID from token response
       
       if (token == null || channelName == null) {
         _logger.i('🔑 Requesting audio call token for call: $callId');
-        final response = await _apiService.post(
-          '${ApiConstants.webrtc}/calls/$callId/token',
-          queryParameters: {'audioOnly': 'true'},
+        final response = await _apiClient.getCallToken(
+          callId: callId,
+          audioOnly: true,
         );
 
         if (response.data['success'] != true) {
@@ -215,16 +308,23 @@ class AudioCallService {
         final tokenData = response.data['data'];
         agoraToken = tokenData['token'] as String;
         agoraChannel = tokenData['channelName'] as String;
+        tokenUid = tokenData['uid'] as int; // ✅ Extract UID from token response
+
+        _logger.i('🔑 Token received - Channel: $agoraChannel, UID: $tokenUid');
       }
 
       _currentCallId = callId;
+      _currentChannelName = agoraChannel; // ✅ Store for token refresh
 
       // Join Agora channel
-      _logger.i('🎤 Joining audio channel: $agoraChannel');
+      _logger.i(
+        '🎤 Joining audio channel: $agoraChannel with token: ${agoraToken.substring(0, 20)}... (UID: $tokenUid)',
+      );
       await _engine!.joinChannel(
-        token: agoraToken,
+        token: agoraToken, // Use token from backend
         channelId: agoraChannel,
-        uid: 0, // Agora assigns UID automatically
+        uid:
+            tokenUid, // ✅ CRITICAL: Use UID from token - must match for validation
         options: const ChannelMediaOptions(
           channelProfile: ChannelProfileType.channelProfileCommunication,
           clientRoleType: ClientRoleType.clientRoleBroadcaster,
@@ -234,6 +334,8 @@ class AudioCallService {
           autoSubscribeVideo: false, // Audio-only
         ),
       );
+      
+      _logger.i('✅ Join channel request sent successfully');
 
       return true;
     } catch (e) {
@@ -282,21 +384,20 @@ class AudioCallService {
     }
   }
 
-  /// Initiate an audio call to another user
+  /// Initiate an audio/video call to another user
   Future<String?> initiateAudioCall({
     required String recipientId,
     required String recipientName,
+    bool isVideo = false,
   }) async {
     try {
-      _logger.i('📞 Initiating audio call to: $recipientId');
+      final callType = isVideo ? 'VIDEO' : 'AUDIO';
+      _logger.i('📞 Initiating $callType call to: $recipientId');
       
       // Create call through backend API
-      final response = await _apiService.post(
-        '${ApiConstants.webrtc}/calls',
-        data: {
-          'participantIds': [recipientId],
-          'type': 'audio',
-        },
+      final response = await _apiClient.initiateCall(
+        participantIds: [recipientId],
+        type: callType,
       );
 
       if (response.data['success'] != true) {
@@ -311,10 +412,10 @@ class AudioCallService {
       _webSocketService?.emit('call:initiate', {
         'callId': callId,
         'recipientId': recipientId,
-        'type': 'audio',
+        'type': isVideo ? 'video' : 'audio',
       });
 
-      // Join the audio call
+      // Join the call
       final success = await joinAudioCall(
         callId: callId,
         recipientId: recipientId,
@@ -322,7 +423,7 @@ class AudioCallService {
 
       return success ? callId : null;
     } catch (e) {
-      _logger.e('❌ Failed to initiate audio call: $e');
+      _logger.e('❌ Failed to initiate call: $e');
       _callErrorController.add('Failed to initiate call: $e');
       return null;
     }
@@ -337,9 +438,7 @@ class AudioCallService {
       _logger.i('✅ Accepting incoming audio call: $callId');
       
       // Notify backend of call acceptance
-      await _apiService.post(
-        '${ApiConstants.webrtc}/calls/$callId/accept',
-      );
+      await _apiClient.acceptCall(callId);
 
       // Send acceptance through WebSocket
       _webSocketService?.emit('call:accept', {
@@ -367,10 +466,7 @@ class AudioCallService {
       _logger.i('❌ Rejecting call: $callId');
       
       // Notify backend
-      await _apiService.post(
-        '${ApiConstants.webrtc}/calls/$callId/reject',
-        data: {'reason': reason ?? 'User declined'},
-      );
+      await _apiClient.rejectCall(callId, reason: reason ?? 'User declined');
 
       // Send rejection through WebSocket
       _webSocketService?.emit('call:reject', {
@@ -404,6 +500,41 @@ class AudioCallService {
     _callDuration = Duration.zero;
   }
 
+  /// Refresh Agora token when it's about to expire
+  Future<void> _refreshToken() async {
+    if (_currentCallId == null || _currentChannelName == null) {
+      _logger.w('⚠️ Cannot refresh token: missing call ID or channel name');
+      return;
+    }
+
+    try {
+      _logger.i('🔄 Refreshing token for call: $_currentCallId');
+
+      final response = await _apiClient.getCallToken(
+        callId: _currentCallId!,
+        audioOnly: true,
+      );
+
+      if (response.data['success'] != true) {
+        _logger.e('❌ Failed to refresh token');
+        return;
+      }
+
+      final tokenData = response.data['data'];
+      final newToken = tokenData['token'] as String;
+
+      _logger.i('✅ Token refreshed, updating RTC engine...');
+
+      // Update token without rejoining channel
+      await _engine?.renewToken(newToken);
+
+      _logger.i('✅ Token updated successfully');
+    } catch (e) {
+      _logger.e('❌ Error refreshing token: $e');
+      // Don't end call, let Agora handle reconnection
+    }
+  }
+
   /// Handle call ended event
   void _handleCallEnded(String reason) {
     _logger.i('📞 Call ended: $reason');
@@ -413,6 +544,7 @@ class AudioCallService {
   /// Reset call state
   void _resetCallState() {
     _currentCallId = null;
+    _currentChannelName = null;
     _currentRemoteUid = null;
     _isInCall = false;
     _isMuted = false;

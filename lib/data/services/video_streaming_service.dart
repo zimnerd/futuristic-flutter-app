@@ -3,6 +3,8 @@ import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import 'package:logger/logger.dart';
 import 'package:permission_handler/permission_handler.dart';
 
+import 'service_locator.dart';
+
 /// Streaming state enum
 enum StreamState {
   idle,
@@ -173,6 +175,54 @@ class VideoStreamingService {
           final quality = txQuality.index > rxQuality.index ? txQuality : rxQuality;
           _connectionQualityController.add(quality);
         },
+        // ✅ NEW - Token expiry handling (production-critical)
+        onTokenPrivilegeWillExpire: (RtcConnection connection, String token) {
+          _logger.w('⚠️ Token expiring in 30 seconds, refreshing...');
+          _refreshToken();
+        },
+        onRequestToken: (RtcConnection connection) {
+          _logger.e('❌ Token expired, must refresh immediately');
+          _refreshToken();
+        },
+        // ✅ NEW - Connection recovery
+        onConnectionLost: (RtcConnection connection) {
+          _logger.w('⚠️ Connection lost, attempting to reconnect...');
+          _streamErrorController.add('Connection lost, reconnecting...');
+        },
+        onRejoinChannelSuccess: (RtcConnection connection, int elapsed) {
+          _logger.i('✅ Successfully rejoined channel after disconnection');
+        },
+        // ✅ NEW - Local video state monitoring
+        onLocalVideoStateChanged:
+            (
+              VideoSourceType source,
+              LocalVideoStreamState state,
+              LocalVideoStreamReason reason,
+            ) {
+              _logger.i('📹 Local video state: $state, reason: $reason');
+            },
+        // ✅ NEW - Local audio state monitoring
+        onLocalAudioStateChanged:
+            (
+              RtcConnection connection,
+              LocalAudioStreamState state,
+              LocalAudioStreamReason reason,
+            ) {
+              _logger.i('🎤 Local audio state: $state, reason: $reason');
+            },
+        // ✅ NEW - Remote audio state monitoring
+        onRemoteAudioStateChanged:
+            (
+              RtcConnection connection,
+              int remoteUid,
+              RemoteAudioState state,
+              RemoteAudioStateReason reason,
+              int elapsed,
+            ) {
+              _logger.i(
+                '🔊 Remote audio state (uid: $remoteUid): $state, reason: $reason',
+              );
+            },
       ),
     );
   }
@@ -332,6 +382,44 @@ class VideoStreamingService {
     } catch (e) {
       _logger.e('Error switching camera: $e');
       _streamErrorController.add('Failed to switch camera: $e');
+    }
+  }
+
+  /// Refresh token when expiring or expired
+  Future<void> _refreshToken() async {
+    if (_currentStreamId == null || _currentChannelName == null) {
+      _logger.w('⚠️ Cannot refresh token: missing stream context');
+      return;
+    }
+
+    try {
+      _logger.i('🔄 Refreshing Agora token for stream: $_currentStreamId');
+
+      final liveStreamingService = ServiceLocator().liveStreamingService;
+      final role = _isBroadcaster ? 'broadcaster' : 'audience';
+
+      final tokenData = await liveStreamingService.generateStreamRtcToken(
+        streamId: _currentStreamId!,
+        role: role,
+      );
+
+      if (tokenData == null) {
+        _logger.e('❌ Failed to refresh token');
+        _streamErrorController.add('Failed to refresh authentication');
+        return;
+      }
+
+      final newToken = tokenData['token'] as String;
+
+      _logger.i('✅ Token refreshed successfully');
+
+      // Update token without rejoining channel
+      await _engine?.renewToken(newToken);
+
+      _logger.i('✅ Token renewed in Agora engine');
+    } catch (e) {
+      _logger.e('❌ Error refreshing token: $e');
+      _streamErrorController.add('Authentication refresh failed');
     }
   }
 

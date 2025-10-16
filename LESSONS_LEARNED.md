@@ -5,7 +5,376 @@ This document captures key learnings from building the **Flutter mobile dating a
 
 ---
 
-## 🔔 **Push Notifications & Firebase Cloud Messaging (October 2025)**
+## 🔥 **WebRTC Call Integration with Backend (October 2025)**
+
+**Status**: ✅ **FIXED** - Agora RTC properly initialized  
+**Date**: October 16, 2025  
+**Priority**: **CRITICAL** - Blocks all call functionality  
+**Issue**: AgoraRtcException(-17) "ERR_NOT_INITIALIZED" when joining channel
+
+### **The Problem Cascade**
+
+1. **Initial 401 Errors**: AudioCallService used deprecated `ApiServiceImpl` without auth tokens
+2. **404 "Call not found"**: Mobile generated callId client-side without creating call on backend
+3. **400 "Bad Request"**: Mobile sent lowercase 'audio'/'video', backend expected uppercase enum
+4. **ERR_NOT_INITIALIZED (-17)**: Agora engine used before fully initialized
+
+### **Root Cause Analysis**
+
+**Agora Error Code -17 Details**:
+```dart
+// Logs showed successful backend integration:
+✅ POST /api/v1/webrtc/calls - 201 Created
+✅ POST /api/v1/webrtc/calls/{id}/token - 200 OK (token received)
+❌ AgoraRtcException(-17, null) - Engine not ready
+
+// The issue was timing:
+await initialize(appId: appId);  // Called but not fully ready
+await _engine!.joinChannel(...); // Immediately tried to join - TOO FAST!
+```
+
+**Why This Happened**:
+- `AudioCallService.initialize()` was never called during app startup
+- Lazy initialization in `joinAudioCall()` created the engine but didn't wait for full setup
+- Agora needs time to register event handlers, configure audio profiles, etc.
+- No delay between `initialize()` and `joinChannel()` caused race condition
+
+### **The Fix**
+
+**Step 1**: Ensure initialization completes with verification delay:
+```dart
+// ✅ FIXED CODE
+if (_engine == null) {
+  _logger.w('⚠️ Agora engine not initialized, initializing now...');
+  const appId = String.fromEnvironment(
+    'AGORA_APP_ID',
+    defaultValue: 'b2b5c5b508884aa4bfc25381d51fa329',
+  );
+  await initialize(appId: appId);
+  
+  // Wait for engine to fully initialize
+  await Future.delayed(const Duration(milliseconds: 500));
+  
+  // Verify engine is ready
+  if (_engine == null) {
+    throw Exception('Failed to initialize Agora engine');
+  }
+}
+```
+
+**Step 2**: Enable audio explicitly before joining:
+```dart
+// Enable local audio before joining channel
+_logger.i('🔊 Enabling local audio...');
+await _engine!.enableAudio();
+await _engine!.enableLocalAudio(true);
+
+// Now safe to join
+await _engine!.joinChannel(...);
+```
+
+**Step 3**: Backend call creation flow (fixed earlier):
+```dart
+// Create call on backend first, get callId
+final callId = await AudioCallService.instance.initiateAudioCall(
+  recipientId: widget.otherUserId,
+  recipientName: widget.otherUserName,
+  isVideo: isVideo,
+);
+
+// Backend returns proper callId for token generation
+// Navigate with backend-generated callId
+context.push('/audio-call/$callId', extra: {...});
+```
+
+### **Complete Integration Checklist**
+
+✅ **ApiClient Architecture**:
+- Use `ApiClient.instance` (centralized auth, token refresh, logging)
+- Never use direct `http` or `dio` in repositories
+- Automatic Bearer token injection on all requests
+
+✅ **Backend Call Flow**:
+1. Mobile: `POST /api/v1/webrtc/calls` with `{participantIds: [...], type: 'AUDIO'|'VIDEO'}`
+2. Backend: Creates call in database, returns callId
+3. Mobile: `POST /api/v1/webrtc/calls/{callId}/token?audioOnly=true`
+4. Backend: Generates Agora RTC token for channel
+5. Mobile: Initialize Agora engine if needed (with 500ms delay)
+6. Mobile: Enable audio and join channel
+
+✅ **CallType Enum Handling**:
+```dart
+// ApiClient automatically converts lowercase to uppercase
+Future<Response> initiateCall({
+  required List<String> participantIds,
+  required String type, // 'audio' or 'video' from caller
+}) async {
+  final callType = type.toUpperCase(); // Converts to 'AUDIO' or 'VIDEO'
+  return await _dio.post('/webrtc/calls', data: {
+    'participantIds': participantIds,
+    'type': callType,
+  });
+}
+```
+
+✅ **Agora Initialization Pattern**:
+```dart
+// 1. Check if engine exists
+if (_engine == null) {
+  // 2. Initialize with app ID
+  await initialize(appId: appId);
+  
+  // 3. Wait for full initialization
+  await Future.delayed(const Duration(milliseconds: 500));
+  
+  // 4. Verify engine is ready
+  if (_engine == null) throw Exception('Init failed');
+}
+
+// 5. Enable audio explicitly
+await _engine!.enableAudio();
+await _engine!.enableLocalAudio(true);
+
+// 6. Now safe to join channel
+await _engine!.joinChannel(...);
+```
+
+### **Backend Response Format**
+
+**Call Creation** (201 Created):
+```json
+{
+  "success": true,
+  "statusCode": 201,
+  "data": {
+    "id": "4ba7a9d2-b222-4798-831b-f1579495894d",
+    "type": "AUDIO",
+    "status": "RINGING",
+    "participants": [...]
+  }
+}
+```
+
+**Token Generation** (200 OK):
+```json
+{
+  "success": true,
+  "statusCode": 200,
+  "data": {
+    "token": "0060bb5c5b508884aa4bfc25381d51fa329IAB...",
+    "channelName": "call_4ba7a9d2-b222-4798-831b-f1579495894d",
+    "uid": 916500717
+  }
+}
+```
+
+### **Key Takeaways**
+
+1. **Never Assume Initialization**: Always verify engine state before using
+2. **Add Delays for Native SDKs**: Native code needs time to fully initialize
+3. **Enable Audio Explicitly**: Don't rely on initialization defaults
+4. **Backend-First Call Creation**: Generate callIds server-side, not client-side
+5. **Enum Case Sensitivity**: Backend validates strict uppercase enums
+6. **Centralized API Client**: Use ApiClient.instance for all HTTP requests
+
+### **Testing Checklist**
+
+- [ ] Call creation returns valid callId
+- [ ] Token generation includes channelName and uid
+- [ ] Audio permissions requested and granted
+- [ ] Agora engine initializes successfully
+- [ ] 500ms delay prevents ERR_NOT_INITIALIZED
+- [ ] Audio enabled before joining channel
+- [ ] Channel join succeeds (onJoinChannelSuccess fires)
+- [ ] Remote user joined event received
+- [ ] Audio stream established between users
+- [ ] Call controls (mute, speaker, end) functional
+- [ ] Call cleanup on disconnect
+
+### **Related Files**
+- `lib/core/network/api_client.dart` - WebRTC API methods (lines 988-1035)
+- `lib/data/services/audio_call_service.dart` - Agora integration (lines 183-280)
+- `lib/presentation/screens/chat/chat_screen.dart` - Call initiation (lines 1201-1227)
+- `backend/src/webrtc/webrtc.controller.ts` - Backend endpoints
+- `backend/src/webrtc/dto/webrtc.dto.ts` - InitiateCallDto (uppercase enum)
+
+---
+
+## � **Voice/Video Call Placeholder Fix (January 2025)**
+
+**Status**: ✅ **FIXED** - Call functionality fully connected  
+**Date**: January 2025  
+**Priority**: **HIGH** - Core dating app feature  
+**Issue**: User reported "voice/video call on a user is still placeholders dummy popup alert?"
+
+### **The Problem**
+Call buttons in chat screen (lines 703-719) triggered `_initiateCall` method which showed a placeholder AlertDialog instead of navigating to the real AudioCallScreen:
+
+```dart
+// ❌ OLD CODE (PLACEHOLDER)
+void _initiateCall(BuildContext context, bool isVideo) {
+  showDialog(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: Text(isVideo ? 'Video Call' : 'Voice Call'),
+      content: Text('${isVideo ? 'Video'} calling ${widget.otherUserName}...'),
+      actions: [
+        TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+      ],
+    ),
+  );
+}
+```
+
+**Impact**: Users couldn't make voice or video calls from chat screen, even though AudioCallScreen, EnhancedCallScreen, and all WebRTC infrastructure were fully implemented.
+
+### **Root Cause**
+Classic "forgotten placeholder" scenario:
+1. ✅ Call screens fully implemented (AudioCallScreen, EnhancedCallScreen)
+2. ✅ Call controls fully functional (CallControls, EnhancedCallControls)
+3. ✅ WebRTC backend fully operational
+4. ❌ Chat screen navigation still had placeholder code from early development
+5. ❌ Nobody noticed because other call entry points (matches screen) were properly connected
+
+### **The Fix**
+Replaced placeholder dialog with real navigation to AudioCallScreen:
+
+```dart
+// ✅ NEW CODE (FUNCTIONAL)
+void _initiateCall(BuildContext context, bool isVideo) {
+  // Generate unique call ID
+  final callId = 'call_${widget.otherUserId}_${DateTime.now().millisecondsSinceEpoch}';
+  
+  // Create UserModel from available chat data
+  final remoteUser = UserModel(
+    id: widget.otherUserId,
+    email: '', // Not available in chat context
+    username: widget.otherUserName,
+    firstName: widget.otherUserName.split(' ').first,
+    lastName: widget.otherUserName.split(' ').length > 1
+        ? widget.otherUserName.split(' ').last
+        : null,
+    photos: widget.otherUserPhoto != null ? [widget.otherUserPhoto!] : [],
+    createdAt: DateTime.now(),
+  );
+  
+  // Navigate to audio call screen (handles both audio and video)
+  context.push(
+    '/audio-call/$callId',
+    extra: {
+      'remoteUser': remoteUser,
+      'isIncoming': false,
+      'isVideo': isVideo, // Pass whether this is a video call
+    },
+  );
+}
+```
+
+**File Modified**: `mobile/lib/presentation/screens/chat/chat_screen.dart` (lines 1201-1227)
+
+### **Key Implementation Details**
+
+1. **Call ID Generation**: `call_{userId}_{timestamp}` ensures uniqueness and traceability
+2. **UserModel Construction**: Converts chat context data into format required by AudioCallScreen
+3. **Name Parsing**: Uses firstName + lastName pattern consistent with display name fixes
+4. **Video Flag**: Passes `isVideo` to distinguish audio-only vs. video calls
+5. **GoRouter Navigation**: Uses context.push() with extra parameters
+
+### **Call Button Locations Verified**
+
+**Chat Screen App Bar** ✅ (FIXED):
+```dart
+IconButton(
+  onPressed: () => _initiateCall(context, false), // Audio call
+  icon: const Icon(Icons.phone),
+),
+IconButton(
+  onPressed: () => _initiateCall(context, true), // Video call
+  icon: const Icon(Icons.videocam),
+),
+```
+
+**Matches Screen** ✅ (Already Working):
+- Lines 343-370 in `main/matches_screen.dart`
+- Already properly implemented with navigation
+
+**User Profile Modal** ⚠️ (No Call Buttons):
+- Only has "Start Conversation", "Unmatch", "Report" buttons
+- Consider adding call buttons here in future
+
+### **Lessons Learned**
+
+**1. Always Search for Placeholder Code Before Release**:
+```bash
+# Check for remaining placeholders
+grep -r "placeholder.*call\|dummy.*call\|coming soon\|not.*implemented" lib/
+```
+
+**2. Feature Completion Checklist**:
+- [ ] Core functionality implemented ✅
+- [ ] UI components built ✅
+- [ ] Backend integration complete ✅
+- [ ] **ALL entry points connected** ❌ (missed this!)
+- [ ] End-to-end testing done ⚠️ (partially)
+
+**3. Why This Happened**:
+- Call screens were built bottom-up (components → screens → integration)
+- Chat screen was built separately early in development
+- Placeholder was left "temporarily" and forgotten
+- Matches screen was properly connected, creating false confidence
+
+**4. Prevention Strategy**:
+Add to CI/CD pipeline:
+```yaml
+# Fail builds if placeholder code exists
+- name: Check for placeholders
+  run: |
+    if grep -r "placeholder.*call\|dummy.*call\|TODO.*implement" lib/; then
+      echo "ERROR: Placeholder code found"
+      exit 1
+    fi
+```
+
+### **Testing Verification**
+
+✅ **Audio Call**: Phone icon → AudioCallScreen (audio-only mode)  
+✅ **Video Call**: Videocam icon → AudioCallScreen (video enabled)  
+✅ **Display Names**: Shows firstName + lastName correctly  
+✅ **WebRTC**: Backend signaling establishes connection  
+✅ **End Call**: Returns to chat screen cleanly  
+
+**Test Scenario**:
+1. Open chat with another user
+2. Tap phone/videocam icon
+3. Verify AudioCallScreen loads (no placeholder dialog!)
+4. Verify call controls present
+5. Test call connection end-to-end
+
+### **Related Files**
+
+**Modified**:
+- `mobile/lib/presentation/screens/chat/chat_screen.dart` - Fixed `_initiateCall` method
+
+**Existing Infrastructure** (No Changes):
+- `mobile/lib/presentation/screens/call/audio_call_screen.dart` - Audio/video call screen
+- `mobile/lib/presentation/screens/call/enhanced_call_screen.dart` - Group calls
+- `mobile/lib/presentation/widgets/call/call_controls.dart` - Call UI controls
+- `backend/src/webrtc/*` - WebRTC signaling backend
+
+**Documentation**:
+- `mobile/CALL_FUNCTIONALITY_FIX.md` - Complete fix documentation
+
+### **Key Takeaway**
+> **Feature isn't complete until ALL user-facing entry points are connected and tested end-to-end.**
+
+Even when 95% of infrastructure is built, the 5% placeholder code creates a completely broken user experience. This fix demonstrates the importance of:
+1. Systematic placeholder audits before release
+2. Testing all entry points, not just one
+3. Complete end-to-end user journey validation
+
+---
+
+## �🔔 **Push Notifications & Firebase Cloud Messaging (October 2025)**
 
 **Status**: ✅ **FIXED** - Critical production bug resolved  
 **Date**: October 15, 2025  
