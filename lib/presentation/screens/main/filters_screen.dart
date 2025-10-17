@@ -309,7 +309,7 @@ class _FiltersScreenState extends State<FiltersScreen> {
         Text('Occupation', style: PulseTextStyles.titleMedium),
         const SizedBox(height: 16),
         DropdownButtonFormField<String>(
-          value: state.preferences.occupation,
+          initialValue: state.preferences.occupation,
           decoration: InputDecoration(
             hintText: 'Any occupation',
             border: OutlineInputBorder(
@@ -351,7 +351,7 @@ class _FiltersScreenState extends State<FiltersScreen> {
         Text('Relationship Goals', style: PulseTextStyles.titleMedium),
         const SizedBox(height: 16),
         DropdownButtonFormField<String>(
-          value: state.preferences.relationshipType,
+          initialValue: state.preferences.relationshipType,
           decoration: InputDecoration(
             hintText: 'Any relationship type',
             border: OutlineInputBorder(
@@ -389,7 +389,7 @@ class _FiltersScreenState extends State<FiltersScreen> {
 
         // Drinking Habits
         DropdownButtonFormField<String>(
-          value: state.preferences.drinkingHabits,
+          initialValue: state.preferences.drinkingHabits,
           decoration: InputDecoration(
             labelText: 'Drinking Habits',
             hintText: 'Any',
@@ -419,7 +419,7 @@ class _FiltersScreenState extends State<FiltersScreen> {
 
         // Smoking Habits
         DropdownButtonFormField<String>(
-          value: state.preferences.smokingHabits,
+          initialValue: state.preferences.smokingHabits,
           decoration: InputDecoration(
             labelText: 'Smoking Habits',
             hintText: 'Any',
@@ -449,7 +449,7 @@ class _FiltersScreenState extends State<FiltersScreen> {
 
         // Exercise Frequency
         DropdownButtonFormField<String>(
-          value: state.preferences.exercise,
+          initialValue: state.preferences.exercise,
           decoration: InputDecoration(
             labelText: 'Exercise Frequency',
             hintText: 'Any',

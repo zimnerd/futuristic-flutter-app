@@ -62,6 +62,7 @@ import '../screens/profile/privacy_settings_screen.dart';
 import '../screens/verification/photo_verification_screen.dart';
 import '../screens/verification/id_verification_screen.dart';
 import '../screens/verification/verification_status_screen.dart';
+import '../screens/profile/photo_gallery_screen.dart';
 import '../screens/chat/chat_screen.dart';
 import '../screens/call/video_call_screen.dart';
 import '../screens/call/audio_call_screen.dart';
@@ -784,6 +785,21 @@ class AppRouter {
           name: 'verificationStatus',
           builder: (context, state) => const VerificationStatusScreen(),
         ),
+
+        // Photo management routes
+        GoRoute(
+          path: AppRoutes.photoGallery,
+          name: 'photoGallery',
+          builder: (context, state) {
+            final extra = state.extra as Map<String, dynamic>?;
+            return PhotoGalleryScreen(
+              photos: extra?['photos'] as List<ProfilePhoto>? ?? [],
+              initialIndex: extra?['initialIndex'] as int? ?? 0,
+              heroTag: extra?['heroTag'] as String?,
+              showDetails: extra?['showDetails'] as bool? ?? false,
+            );
+          },
+        ),
     ],
     errorBuilder: (context, state) => Scaffold(
       body: Center(
@@ -959,4 +975,7 @@ class AppRoutes {
   static const String photoVerification = '/photo-verification';
   static const String idVerification = '/id-verification';
   static const String verificationStatus = '/verification-status';
+
+  // Photo management routes
+  static const String photoGallery = '/photo-gallery';
 }

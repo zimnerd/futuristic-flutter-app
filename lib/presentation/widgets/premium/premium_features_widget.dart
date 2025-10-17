@@ -215,6 +215,13 @@ class PremiumFeaturesWidget extends StatelessWidget {
           icon: Icons.card_giftcard,
           coinCost: 15,
         );
+      case PremiumFeatureType.profileViewers:
+        return _FeatureInfo(
+          title: 'Profile Viewers',
+          description: 'See who viewed your profile',
+          icon: Icons.remove_red_eye,
+          coinCost: 0,
+        );
       case PremiumFeatureType.aiCompanion:
         return _FeatureInfo(
           title: 'AI Dating Coach',

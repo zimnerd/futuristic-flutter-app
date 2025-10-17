@@ -32,7 +32,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
   List<PaymentTransaction> _filteredTransactions = [];
   bool _isLoading = true;
   String? _error;
-  int _currentBalance = 0; // TODO: Fetch from user profile
+  final int _currentBalance = 0; // TODO: Fetch from user profile
 
   // Filter state
   PaymentTransactionType? _selectedType;
@@ -207,7 +207,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
         gradient: LinearGradient(
           colors: [
             PulseColors.primary,
-            PulseColors.primary.withOpacity(0.8),
+            PulseColors.primary.withValues(alpha: 0.8),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -215,7 +215,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: PulseColors.primary.withOpacity(0.3),
+            color: PulseColors.primary.withValues(alpha: 0.3),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -230,7 +230,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
               Text(
                 'Current Balance',
                 style: TextStyle(
-                  color: Colors.white.withOpacity(0.9),
+                  color: Colors.white.withValues(alpha: 0.9),
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
                 ),
@@ -256,7 +256,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                   Text(
                     'coins',
                     style: TextStyle(
-                      color: Colors.white.withOpacity(0.8),
+                      color: Colors.white.withValues(alpha: 0.8),
                       fontSize: 16,
                     ),
                   ),
@@ -267,7 +267,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
+              color: Colors.white.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(12),
             ),
             child: const Icon(
@@ -306,7 +306,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -482,7 +482,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
         });
       },
       backgroundColor: Colors.grey[100],
-      selectedColor: PulseColors.primary.withOpacity(0.2),
+      selectedColor: PulseColors.primary.withValues(alpha: 0.2),
       checkmarkColor: PulseColors.primary,
       labelStyle: TextStyle(
         color: isSelected ? PulseColors.primary : Colors.black87,
@@ -511,7 +511,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
         }
       },
       backgroundColor: Colors.grey[100],
-      selectedColor: PulseColors.primary.withOpacity(0.2),
+      selectedColor: PulseColors.primary.withValues(alpha: 0.2),
       checkmarkColor: PulseColors.primary,
       labelStyle: TextStyle(
         color: isSelected ? PulseColors.primary : Colors.black87,
@@ -585,7 +585,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
               leading: Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Colors.red.withOpacity(0.1),
+                  color: Colors.red.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: const Icon(Icons.picture_as_pdf, color: Colors.red),
@@ -603,7 +603,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
               leading: Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Colors.green.withOpacity(0.1),
+                  color: Colors.green.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: const Icon(Icons.table_chart, color: Colors.green),
@@ -737,7 +737,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
               pw.SizedBox(height: 20),
 
               // Transactions Table
-              pw.Table.fromTextArray(
+              pw.TableHelper.fromTextArray(
                 headerStyle: pw.TextStyle(
                   fontWeight: pw.FontWeight.bold,
                   fontSize: 10,
@@ -776,6 +776,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).hideCurrentSnackBar();
+        // ignore: deprecated_member_use
         await Share.shareXFiles(
           [XFile(file.path)],
           subject: 'Transaction History - Pulse Dating',
@@ -848,6 +849,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).hideCurrentSnackBar();
+        // ignore: deprecated_member_use
         await Share.shareXFiles(
           [XFile(file.path)],
           subject: 'Transaction History - Pulse Dating',
@@ -963,7 +965,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),
@@ -1085,7 +1087,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
     return Container(
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(10),
       ),
       child: Icon(
@@ -1130,7 +1132,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(4),
       ),
       child: Text(

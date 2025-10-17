@@ -740,7 +740,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen>
           Switch(
             value: value,
             onChanged: (newValue) => _updateSetting(key, newValue),
-            activeColor: PulseColors.primary,
+            activeThumbColor: PulseColors.primary,
           ),
         ],
       ),

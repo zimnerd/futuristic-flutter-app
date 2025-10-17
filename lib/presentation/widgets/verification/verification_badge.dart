@@ -20,14 +20,14 @@ class VerificationBadge extends StatelessWidget {
   final Color? iconColor;
 
   const VerificationBadge({
-    Key? key,
+    super.key,
     required this.isVerified,
     this.size = VerificationBadgeSize.medium,
     this.showLabel = false,
     this.customLabel,
     this.backgroundColor,
     this.iconColor,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -53,7 +53,9 @@ class VerificationBadge extends StatelessWidget {
         shape: BoxShape.circle,
         boxShadow: [
           BoxShadow(
-            color: (backgroundColor ?? AppColors.primary).withOpacity(0.3),
+            color: (backgroundColor ?? AppColors.primary).withValues(
+              alpha: 0.3,
+            ),
             blurRadius: config.shadowBlur,
             offset: const Offset(0, 2),
           ),
@@ -74,10 +76,10 @@ class VerificationBadge extends StatelessWidget {
         vertical: config.paddingVertical,
       ),
       decoration: BoxDecoration(
-        color: backgroundColor ?? AppColors.primary.withOpacity(0.1),
+        color: backgroundColor ?? AppColors.primary.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(config.borderRadius),
         border: Border.all(
-          color: backgroundColor ?? AppColors.primary.withOpacity(0.3),
+          color: backgroundColor ?? AppColors.primary.withValues(alpha: 0.3),
           width: 1,
         ),
       ),

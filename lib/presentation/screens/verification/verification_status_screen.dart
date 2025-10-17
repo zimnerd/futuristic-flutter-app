@@ -4,7 +4,7 @@ import '../../../core/theme/app_colors.dart';
 /// Verification status screen showing pending/approved/rejected states
 /// Displays verification requests and their current status
 class VerificationStatusScreen extends StatefulWidget {
-  const VerificationStatusScreen({Key? key}) : super(key: key);
+  const VerificationStatusScreen({super.key});
 
   @override
   State<VerificationStatusScreen> createState() =>
@@ -106,7 +106,7 @@ class _VerificationStatusScreenState extends State<VerificationStatusScreen> {
                       ),
                       const SizedBox(height: 16),
                       ..._requests.map((request) =>
-                          _buildRequestCard(request)).toList(),
+                          _buildRequestCard(request)),
                     ],
                   ],
                 ),
@@ -121,7 +121,7 @@ class _VerificationStatusScreenState extends State<VerificationStatusScreen> {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            AppColors.success.withOpacity(0.8),
+            AppColors.success.withValues(alpha: 0.8),
             AppColors.success,
           ],
           begin: Alignment.topLeft,
@@ -130,7 +130,7 @@ class _VerificationStatusScreenState extends State<VerificationStatusScreen> {
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: AppColors.success.withOpacity(0.3),
+            color: AppColors.success.withValues(alpha: 0.3),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -142,7 +142,7 @@ class _VerificationStatusScreenState extends State<VerificationStatusScreen> {
             width: 80,
             height: 80,
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
+              color: Colors.white.withValues(alpha: 0.2),
               shape: BoxShape.circle,
             ),
             child: const Icon(
@@ -195,7 +195,7 @@ class _VerificationStatusScreenState extends State<VerificationStatusScreen> {
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
-          color: AppColors.warning.withOpacity(0.3),
+          color: AppColors.warning.withValues(alpha: 0.3),
           width: 2,
         ),
       ),
@@ -205,7 +205,7 @@ class _VerificationStatusScreenState extends State<VerificationStatusScreen> {
             width: 80,
             height: 80,
             decoration: BoxDecoration(
-              color: AppColors.warning.withOpacity(0.1),
+              color: AppColors.warning.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: const Icon(
@@ -237,7 +237,7 @@ class _VerificationStatusScreenState extends State<VerificationStatusScreen> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: AppColors.warning.withOpacity(0.1),
+              color: AppColors.warning.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Row(
@@ -275,7 +275,7 @@ class _VerificationStatusScreenState extends State<VerificationStatusScreen> {
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
-          color: AppColors.error.withOpacity(0.3),
+          color: AppColors.error.withValues(alpha: 0.3),
           width: 2,
         ),
       ),
@@ -285,7 +285,7 @@ class _VerificationStatusScreenState extends State<VerificationStatusScreen> {
             width: 80,
             height: 80,
             decoration: BoxDecoration(
-              color: AppColors.error.withOpacity(0.1),
+              color: AppColors.error.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: const Icon(
@@ -371,7 +371,7 @@ class _VerificationStatusScreenState extends State<VerificationStatusScreen> {
             width: 80,
             height: 80,
             decoration: BoxDecoration(
-              color: AppColors.primary.withOpacity(0.1),
+              color: AppColors.primary.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: const Icon(

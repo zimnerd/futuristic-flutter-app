@@ -6,7 +6,7 @@ import '../../../core/theme/app_colors.dart';
 /// Multi-step photo verification wizard
 /// Steps: 1) Instructions, 2) Camera Capture, 3) Photo Review, 4) Submission
 class PhotoVerificationScreen extends StatefulWidget {
-  const PhotoVerificationScreen({Key? key}) : super(key: key);
+  const PhotoVerificationScreen({super.key});
 
   @override
   State<PhotoVerificationScreen> createState() =>
@@ -64,7 +64,7 @@ class _PhotoVerificationScreenState extends State<PhotoVerificationScreen> {
               decoration: BoxDecoration(
                 color: index <= _currentStep
                     ? AppColors.primary
-                    : AppColors.border.withOpacity(0.3),
+                    : AppColors.border.withValues(alpha: 0.3),
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -188,7 +188,7 @@ class _PhotoVerificationScreenState extends State<PhotoVerificationScreen> {
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: AppColors.primary.withOpacity(0.1),
+              color: AppColors.primary.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(

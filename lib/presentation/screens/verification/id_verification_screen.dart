@@ -6,7 +6,7 @@ import '../../../core/theme/app_colors.dart';
 /// Document verification screen for ID/Passport/Driver's License
 /// Steps: 1) Select document type, 2) Capture front, 3) Capture back, 4) Review, 5) Submit
 class IdVerificationScreen extends StatefulWidget {
-  const IdVerificationScreen({Key? key}) : super(key: key);
+  const IdVerificationScreen({super.key});
 
   @override
   State<IdVerificationScreen> createState() => _IdVerificationScreenState();
@@ -91,7 +91,7 @@ class _IdVerificationScreenState extends State<IdVerificationScreen> {
               decoration: BoxDecoration(
                 color: index <= _currentStep
                     ? AppColors.primary
-                    : AppColors.border.withOpacity(0.3),
+                    : AppColors.border.withValues(alpha: 0.3),
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -162,15 +162,15 @@ class _IdVerificationScreenState extends State<IdVerificationScreen> {
               icon: value['icon']!,
               description: value['description']!,
             );
-          }).toList(),
+          }),
           const SizedBox(height: 24),
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: AppColors.primary.withOpacity(0.1),
+              color: AppColors.primary.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                color: AppColors.primary.withOpacity(0.3),
+                color: AppColors.primary.withValues(alpha: 0.3),
                 width: 1,
               ),
             ),
@@ -222,7 +222,7 @@ class _IdVerificationScreenState extends State<IdVerificationScreen> {
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
           color: isSelected
-              ? AppColors.primary.withOpacity(0.1)
+              ? AppColors.primary.withValues(alpha: 0.1)
               : AppColors.surface,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
@@ -238,7 +238,7 @@ class _IdVerificationScreenState extends State<IdVerificationScreen> {
               decoration: BoxDecoration(
                 color: isSelected
                     ? AppColors.primary
-                    : AppColors.primary.withOpacity(0.1),
+                    : AppColors.primary.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(

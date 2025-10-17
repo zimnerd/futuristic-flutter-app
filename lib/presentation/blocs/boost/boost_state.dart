@@ -1,3 +1,5 @@
+import 'package:equatable/equatable.dart';
+
 /// Boost feature states for BLoC pattern
 /// 
 /// Represents the various states of the profile boost feature:
@@ -6,9 +8,6 @@
 /// - Active boost state with remaining time
 /// - Inactive boost state
 /// - Error state with error message
-
-import 'package:equatable/equatable.dart';
-
 abstract class BoostState extends Equatable {
   @override
   List<Object?> get props => [];
