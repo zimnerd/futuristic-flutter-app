@@ -137,14 +137,19 @@ class BoostBloc extends Bloc<BoostEvent, BoostState> {
       emit(BoostLoading());
       _logger.d('Canceling boost...');
 
-      // For now, just set to inactive
-      // TODO: Implement backend endpoint for cancellation if needed
-      emit(BoostInactive());
-      _cancelStatusCheckTimer();
-      _logger.i('Boost canceled successfully');
+      // Call backend to cancel the active boost
+      final result = await _boostService.cancelBoost();
+
+      if (result['success'] == true) {
+        emit(BoostInactive());
+        _cancelStatusCheckTimer();
+        _logger.i('Boost canceled successfully: ${result['message']}');
+      } else {
+        throw Exception('Failed to cancel boost');
+      }
     } catch (e) {
       _logger.e('Error canceling boost: $e');
-      emit(BoostError('Failed to cancel boost'));
+      emit(BoostError('Failed to cancel boost: ${e.toString()}'));
     }
   }
 

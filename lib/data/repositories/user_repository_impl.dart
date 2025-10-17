@@ -446,8 +446,7 @@ class UserRepositoryImpl implements UserRepository {
     try {
       _logger.i('Deleting photo $photoId for user: $userId');
 
-      // TODO: Update remote data source to support photoId
-      // For now, use the existing deleteProfilePhoto method
+      // Call backend DELETE /media/files/:photoId endpoint
       await _remoteDataSource.deleteProfilePhoto(userId, photoId);
 
       _logger.i('Photo $photoId deleted successfully');
@@ -463,8 +462,8 @@ class UserRepositoryImpl implements UserRepository {
     try {
       _logger.i('Reordering photos for user: $userId');
 
-      // TODO: Implement backend API call for photo reordering
-      // POST /api/v1/profile/photos/reorder with photoIds array
+      // Call backend POST /users/me/photos/reorder via remote data source
+      await _remoteDataSource.reorderPhotos(photoIds);
 
       _logger.i('Photos reordered successfully');
     } catch (e) {

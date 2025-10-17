@@ -93,4 +93,37 @@ class BoostService {
       return null;
     }
   }
+
+  /// Cancel active boost
+  ///
+  /// Returns cancellation result:
+  /// - success: Whether cancellation was successful
+  /// - message: Confirmation message
+  /// - boostId: ID of cancelled boost
+  /// - cancelledAt: When it was cancelled
+  ///
+  /// Throws exception if:
+  /// - No active boost to cancel
+  /// - Network error
+  Future<Map<String, dynamic>> cancelBoost() async {
+    try {
+      _logger.d('BoostService: Cancelling active boost...');
+
+      final response = await _apiClient.delete(ApiConstants.premiumBoost);
+
+      _logger.d('BoostService: Boost cancellation response: ${response.data}');
+
+      final Map<String, dynamic> result = response.data as Map<String, dynamic>;
+
+      return {
+        'success': result['success'] ?? true,
+        'message': result['message'] as String,
+        'boostId': result['boostId'] as String,
+        'cancelledAt': result['cancelledAt'] as String,
+      };
+    } catch (e) {
+      _logger.e('BoostService: Error cancelling boost: $e');
+      rethrow;
+    }
+  }
 }

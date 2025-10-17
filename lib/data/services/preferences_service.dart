@@ -265,5 +265,74 @@ class PreferencesService {
     'Rarely',
     'Never',
   ];
+
+  /// Get user privacy settings
+  ///
+  /// Returns privacy settings:
+  /// - showAge: Display age on profile
+  /// - showDistance: Display distance from other users
+  /// - showLastActive: Display last active timestamp
+  /// - showOnlineStatus: Display online/offline status
+  /// - incognitoMode: Browse anonymously
+  ///
+  /// Throws exception if:
+  /// - Network error
+  /// - User not authenticated
+  Future<Map<String, bool>> getPrivacySettings() async {
+    try {
+      _logger.d('PreferencesService: Fetching privacy settings');
+
+      final response = await _apiClient.get(ApiConstants.usersPrivacy);
+
+      _logger.d(
+        'PreferencesService: Privacy settings response: ${response.data}',
+      );
+
+      final result = response.data as Map<String, dynamic>;
+
+      // Return privacy settings with defaults
+      return {
+        'showAge': result['showAge'] as bool? ?? true,
+        'showDistance': result['showDistance'] as bool? ?? true,
+        'showLastActive': result['showLastActive'] as bool? ?? true,
+        'showOnlineStatus': result['showOnlineStatus'] as bool? ?? true,
+        'incognitoMode': result['incognitoMode'] as bool? ?? false,
+      };
+    } catch (e) {
+      _logger.e('PreferencesService: Error fetching privacy settings: $e');
+      rethrow;
+    }
+  }
+
+  /// Update user privacy settings
+  ///
+  /// Parameters:
+  /// - settings: Map of privacy settings to update
+  ///
+  /// Returns true if update successful
+  ///
+  /// Throws exception if:
+  /// - Network error
+  /// - User not authenticated
+  /// - Invalid settings
+  Future<bool> updatePrivacySettings(Map<String, bool> settings) async {
+    try {
+      _logger.d('PreferencesService: Updating privacy settings: $settings');
+
+      final response = await _apiClient.post(
+        ApiConstants.usersPrivacy,
+        data: settings,
+      );
+
+      _logger.i('PreferencesService: Privacy settings updated successfully');
+
+      // Check for success in response
+      final result = response.data as Map<String, dynamic>?;
+      return result?['success'] as bool? ?? true;
+    } catch (e) {
+      _logger.e('PreferencesService: Error updating privacy settings: $e');
+      rethrow;
+    }
+  }
 }
 

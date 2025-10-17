@@ -60,6 +60,8 @@ abstract class UserRemoteDataSource {
   );
   Future<String> uploadProfilePhoto(String userId, String photoPath);
   Future<void> deleteProfilePhoto(String userId, String photoUrl);
+  Future<void> reorderPhotos(List<String> photoIds);
+  Future<void> syncPhotos(List<Map<String, dynamic>> photos);
   Future<void> updateUserLocation(String userId, double latitude, double longitude);
 
   // User Discovery
@@ -720,6 +722,52 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
       _logger.e('Delete profile photo error: $e');
       if (e is ApiException) rethrow;
       throw ApiException('Failed to delete photo: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<void> reorderPhotos(List<String> photoIds) async {
+    try {
+      _logger.i('Reordering photos: ${photoIds.length} photos');
+
+      final response = await _apiClient.post(
+        '/users/me/photos/reorder',
+        data: {'photoIds': photoIds},
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        _logger.i('Photos reordered successfully');
+      } else {
+        throw ApiException(
+          'Failed to reorder photos: ${response.statusMessage}',
+        );
+      }
+    } catch (e) {
+      _logger.e('Reorder photos error: $e');
+      if (e is ApiException) rethrow;
+      throw ApiException('Failed to reorder photos: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<void> syncPhotos(List<Map<String, dynamic>> photos) async {
+    try {
+      _logger.i('Syncing photos: ${photos.length} photos');
+
+      final response = await _apiClient.put(
+        '/users/me/photos',
+        data: {'photos': photos},
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        _logger.i('Photos synced successfully');
+      } else {
+        throw ApiException('Failed to sync photos: ${response.statusMessage}');
+      }
+    } catch (e) {
+      _logger.e('Sync photos error: $e');
+      if (e is ApiException) rethrow;
+      throw ApiException('Failed to sync photos: ${e.toString()}');
     }
   }
 

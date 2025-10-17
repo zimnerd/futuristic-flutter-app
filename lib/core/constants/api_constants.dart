@@ -35,7 +35,8 @@ class ApiConstants {
   static const String usersLocation =
       '$users/me/location'; // Fixed: was /users/location, now /me/location
   static const String usersPreferences = '$users/preferences';
-  static const String usersPrivacy = '$users/privacy';
+  static const String usersPrivacy =
+      '$users/me/privacy'; // Fixed: now /me/privacy
   static const String usersDiscovery = '$users/discovery';
   static const String usersVerification = '$users/verification';
 
@@ -64,6 +65,12 @@ class ApiConstants {
   static const String mediaUpload = '$media/upload';
   static const String mediaFiles = '$media/files';
   static const String mediaDelete = '$media/delete';
+
+  // Photo management endpoints
+  static const String usersPhotos = '$users/me/photos';
+  static const String usersPhotosReorder = '$users/me/photos/reorder';
+  static const String usersPhotosSyncPhotos =
+      '$users/me/photos'; // PUT for sync
 
   // Statistics endpoints (statistics.controller.ts)
   static const String statistics = '/statistics';

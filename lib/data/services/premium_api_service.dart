@@ -287,4 +287,27 @@ class PremiumApiService {
       rethrow;
     }
   }
+
+  /// Cancel active boost
+  Future<Map<String, dynamic>> cancelBoost() async {
+    try {
+      final response = await http.delete(
+        Uri.parse('${ApiConstants.baseUrl}${ApiConstants.premium}/boost'),
+        headers: {
+          'Authorization': 'Bearer $_authToken',
+          'Content-Type': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        return json.decode(response.body);
+      } else {
+        final errorData = json.decode(response.body);
+        throw Exception(errorData['message'] ?? 'Failed to cancel boost');
+      }
+    } catch (e) {
+      AppLogger.error('Error canceling boost: $e');
+      rethrow;
+    }
+  }
 }
