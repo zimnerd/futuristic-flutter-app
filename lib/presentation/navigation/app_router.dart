@@ -67,6 +67,7 @@ import '../screens/verification/verification_status_screen.dart';
 import '../screens/profile/photo_gallery_screen.dart';
 import '../screens/settings/notification_settings_screen.dart';
 import '../screens/settings/blocked_users_screen.dart';
+import '../screens/safety/safety_center_screen.dart';
 import '../blocs/notification/notification_bloc.dart';
 import '../blocs/block_report/block_report_bloc.dart';
 import '../blocs/auth/auth_state.dart';
@@ -846,6 +847,13 @@ class AppRouter {
 
         // Safety & Security routes
         GoRoute(
+          path: AppRoutes.safetyCenter,
+          name: 'safetyCenter',
+          builder: (context, state) {
+            return const SafetyCenterScreen();
+          },
+        ),
+        GoRoute(
           path: AppRoutes.blockedUsers,
           name: 'blockedUsers',
           builder: (context, state) {
@@ -1047,5 +1055,6 @@ class AppRoutes {
   static const String notificationSettings = '/notification-settings';
 
   // Safety & Security routes
+  static const String safetyCenter = '/safety-center';
   static const String blockedUsers = '/blocked-users';
 }

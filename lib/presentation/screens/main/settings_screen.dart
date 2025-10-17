@@ -85,6 +85,12 @@ class SettingsScreen extends StatelessWidget {
             onTap: () => context.go('/verification-status'),
           ),
           _buildSettingsTile(
+            icon: Icons.security,
+            title: 'Safety Center',
+            subtitle: 'Privacy, security, and safety settings',
+            onTap: () => context.push('/safety-center'),
+          ),
+          _buildSettingsTile(
             icon: Icons.lock,
             title: 'Privacy & Security',
             subtitle: 'Manage your privacy settings',

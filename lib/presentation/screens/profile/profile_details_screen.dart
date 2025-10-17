@@ -8,9 +8,12 @@ import '../../../domain/entities/user_profile.dart';
 import '../../../data/models/user_model.dart';
 import '../../../blocs/chat_bloc.dart';
 import '../../blocs/profile/profile_bloc.dart';
+import '../../blocs/block_report/block_report_bloc.dart';
 import '../../theme/pulse_colors.dart';
 import '../../widgets/common/pulse_button.dart';
 import '../../widgets/verification/verification_badge.dart';
+import '../../widgets/dialogs/block_user_dialog.dart';
+import '../../widgets/dialogs/report_user_dialog.dart';
 import '../../../core/utils/time_format_utils.dart';
 
 /// Context for profile viewing - determines which actions to show
@@ -2625,43 +2628,35 @@ Join PulseLink to connect!''';
   void _reportProfile() {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Report Profile'),
-        content: const Text('Are you sure you want to report this profile?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+      builder: (dialogContext) => BlocProvider.value(
+        value: context.read<BlockReportBloc>(),
+        child: BlocListener<BlockReportBloc, BlockReportState>(
+          listener: (context, state) {
+            if (state is UserReported) {
+              Navigator.pop(dialogContext);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text(
+                    'Report submitted. Thank you for keeping PulseLink safe.',
+                  ),
+                  duration: Duration(seconds: 3),
+                  backgroundColor: Colors.green,
+                ),
+              );
+            } else if (state is BlockReportError) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Failed to report: ${state.message}'),
+                  backgroundColor: Colors.red,
+                ),
+              );
+            }
+          },
+          child: ReportUserDialog(
+            userId: widget.profile.id,
+            userName: widget.profile.name,
           ),
-          TextButton(
-            onPressed: () async {
-              Navigator.pop(context);
-              try {
-                // Report functionality is prepared
-                // Integration with SafetyService.reportUser() ready when service is injected
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text(
-                        'Report submitted. Thank you for keeping PulseLink safe.',
-                      ),
-                      duration: Duration(seconds: 3),
-                    ),
-                  );
-                }
-              } catch (e) {
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Failed to report: ${e.toString()}'),
-                    ),
-                  );
-                }
-              }
-            },
-            child: const Text('Report', style: TextStyle(color: Colors.red)),
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -2669,42 +2664,35 @@ Join PulseLink to connect!''';
   void _blockUser() {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Block User'),
-        content: const Text(
-          'Are you sure you want to block this user? You won\'t see each other anymore.',
+      builder: (dialogContext) => BlocProvider.value(
+        value: context.read<BlockReportBloc>(),
+        child: BlocListener<BlockReportBloc, BlockReportState>(
+          listener: (context, state) {
+            if (state is UserBlocked) {
+              Navigator.pop(dialogContext);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('User blocked successfully'),
+                  duration: Duration(seconds: 2),
+                  backgroundColor: Colors.green,
+                ),
+              );
+              // Close profile after blocking
+              this.context.pop();
+            } else if (state is BlockReportError) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Failed to block user: ${state.message}'),
+                  backgroundColor: Colors.red,
+                ),
+              );
+            }
+          },
+          child: BlockUserDialog(
+            userId: widget.profile.id,
+            userName: widget.profile.name,
+          ),
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () async {
-              Navigator.pop(context);
-              try {
-                // Block functionality is prepared
-                // Integration with SafetyService.blockUser() ready when service is injected
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('User blocked successfully')),
-                  );
-                  // Close profile after blocking
-                  context.pop();
-                }
-              } catch (e) {
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Failed to block user: ${e.toString()}'),
-                    ),
-                  );
-                }
-              }
-            },
-            child: const Text('Block', style: TextStyle(color: Colors.red)),
-          ),
-        ],
       ),
     );
   }

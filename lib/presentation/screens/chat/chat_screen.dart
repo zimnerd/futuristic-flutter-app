@@ -17,10 +17,13 @@ import '../../../services/media_upload_service.dart' as media_service;
 import '../../../domain/entities/message.dart' show MessageType;
 import '../../../presentation/blocs/auth/auth_bloc.dart';
 import '../../../presentation/blocs/auth/auth_state.dart';
+import '../../../presentation/blocs/block_report/block_report_bloc.dart';
 import '../../../data/models/user_model.dart';
 import '../../../core/utils/logger.dart';
 import '../../../data/models/voice_message.dart';
 import '../../widgets/chat/compact_voice_recorder.dart';
+import '../../widgets/dialogs/block_user_dialog.dart';
+import '../../widgets/dialogs/report_user_dialog.dart';
 
 import '../../../core/performance/message_pagination_optimizer.dart';
 import '../../../core/performance/media_loading_optimizer.dart';
@@ -1328,30 +1331,34 @@ class _ChatScreenState extends State<ChatScreen> {
   void _showBlockDialog(BuildContext context) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Block User'),
-        content: Text(
-          'Are you sure you want to block ${widget.otherUserName}?',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () {
-              // Implement block functionality
-              Navigator.pop(context);
+      builder: (dialogContext) => BlocProvider.value(
+        value: context.read<BlockReportBloc>(),
+        child: BlocListener<BlockReportBloc, BlockReportState>(
+          listener: (context, state) {
+            if (state is UserBlocked) {
+              Navigator.pop(dialogContext);
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text('${widget.otherUserName} has been blocked'),
+                  backgroundColor: Colors.green,
                 ),
               );
-            },
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Block'),
+              // Close chat after blocking
+              this.context.pop();
+            } else if (state is BlockReportError) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Failed to block: ${state.message}'),
+                  backgroundColor: Colors.red,
+                ),
+              );
+            }
+          },
+          child: BlockUserDialog(
+            userId: widget.otherUserId,
+            userName: widget.otherUserName,
           ),
-        ],
+        ),
       ),
     );
   }
@@ -1393,30 +1400,32 @@ class _ChatScreenState extends State<ChatScreen> {
   void _showReportDialog(BuildContext context) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Report User'),
-        content: Text(
-          'Report ${widget.otherUserName} for inappropriate behavior?',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () {
-              // Implement report functionality
-              Navigator.pop(context);
+      builder: (dialogContext) => BlocProvider.value(
+        value: context.read<BlockReportBloc>(),
+        child: BlocListener<BlockReportBloc, BlockReportState>(
+          listener: (context, state) {
+            if (state is UserReported) {
+              Navigator.pop(dialogContext);
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text('${widget.otherUserName} has been reported'),
+                  backgroundColor: Colors.green,
                 ),
               );
-            },
-            style: TextButton.styleFrom(foregroundColor: Colors.orange),
-            child: const Text('Report'),
+            } else if (state is BlockReportError) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Failed to report: ${state.message}'),
+                  backgroundColor: Colors.red,
+                ),
+              );
+            }
+          },
+          child: ReportUserDialog(
+            userId: widget.otherUserId,
+            userName: widget.otherUserName,
           ),
-        ],
+        ),
       ),
     );
   }
