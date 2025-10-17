@@ -40,11 +40,22 @@ class FilterBLoC extends Bloc<FilterEvent, FilterState> {
       final preferences = await _preferencesService.getFilterPreferences();
       final interests = await _preferencesService.getAvailableInterests();
       final educationLevels = await _preferencesService.getEducationLevels();
+      final occupations = await _preferencesService.getOccupations();
+      final relationshipTypes = await _preferencesService
+          .getRelationshipTypes();
+      final drinkingOptions = await _preferencesService.getDrinkingOptions();
+      final smokingOptions = await _preferencesService.getSmokingOptions();
+      final exerciseOptions = await _preferencesService.getExerciseOptions();
 
       emit(FilterLoaded(
         preferences: preferences,
         availableInterests: interests,
         availableEducationLevels: educationLevels,
+          availableOccupations: occupations,
+          availableRelationshipTypes: relationshipTypes,
+          availableDrinkingOptions: drinkingOptions,
+          availableSmokingOptions: smokingOptions,
+          availableExerciseOptions: exerciseOptions,
       ));
 
       _logger.d('Filter preferences loaded successfully');
@@ -306,10 +317,21 @@ class FilterBLoC extends Bloc<FilterEvent, FilterState> {
 
         final interests = await _preferencesService.getAvailableInterests();
         final educationLevels = await _preferencesService.getEducationLevels();
+        final occupations = await _preferencesService.getOccupations();
+        final relationshipTypes = await _preferencesService
+            .getRelationshipTypes();
+        final drinkingOptions = await _preferencesService.getDrinkingOptions();
+        final smokingOptions = await _preferencesService.getSmokingOptions();
+        final exerciseOptions = await _preferencesService.getExerciseOptions();
 
         emit(currentState.copyWith(
           availableInterests: interests,
           availableEducationLevels: educationLevels,
+            availableOccupations: occupations,
+            availableRelationshipTypes: relationshipTypes,
+            availableDrinkingOptions: drinkingOptions,
+            availableSmokingOptions: smokingOptions,
+            availableExerciseOptions: exerciseOptions,
         ));
 
         _logger.d('Filter options loaded successfully');

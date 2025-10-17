@@ -114,6 +114,12 @@ class _FiltersScreenState extends State<FiltersScreen> {
                 const SizedBox(height: 32),
                 _buildEducationSection(context, state),
                 const SizedBox(height: 32),
+                _buildOccupationSection(context, state),
+                const SizedBox(height: 32),
+                _buildRelationshipTypeSection(context, state),
+                const SizedBox(height: 32),
+                _buildLifestyleSection(context, state),
+                const SizedBox(height: 32),
                 _buildPreferencesSection(context, state),
                 const SizedBox(height: 48),
               ],
@@ -290,6 +296,183 @@ class _FiltersScreenState extends State<FiltersScreen> {
           ],
           onChanged: (String? value) {
             context.read<FilterBLoC>().add(UpdateEducation(value));
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildOccupationSection(BuildContext context, FilterLoaded state) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Occupation', style: PulseTextStyles.titleMedium),
+        const SizedBox(height: 16),
+        DropdownButtonFormField<String>(
+          value: state.preferences.occupation,
+          decoration: InputDecoration(
+            hintText: 'Any occupation',
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: PulseColors.outline),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: PulseColors.primary),
+            ),
+          ),
+          items: [
+            const DropdownMenuItem<String>(
+              value: null,
+              child: Text('Any occupation'),
+            ),
+            ...state.availableOccupations.map((occupation) {
+              return DropdownMenuItem<String>(
+                value: occupation,
+                child: Text(occupation),
+              );
+            }),
+          ],
+          onChanged: (String? value) {
+            context.read<FilterBLoC>().add(UpdateOccupation(value));
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildRelationshipTypeSection(
+    BuildContext context,
+    FilterLoaded state,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Relationship Goals', style: PulseTextStyles.titleMedium),
+        const SizedBox(height: 16),
+        DropdownButtonFormField<String>(
+          value: state.preferences.relationshipType,
+          decoration: InputDecoration(
+            hintText: 'Any relationship type',
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: PulseColors.outline),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: PulseColors.primary),
+            ),
+          ),
+          items: [
+            const DropdownMenuItem<String>(
+              value: null,
+              child: Text('Any relationship type'),
+            ),
+            ...state.availableRelationshipTypes.map((type) {
+              return DropdownMenuItem<String>(value: type, child: Text(type));
+            }),
+          ],
+          onChanged: (String? value) {
+            context.read<FilterBLoC>().add(UpdateRelationshipType(value));
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildLifestyleSection(BuildContext context, FilterLoaded state) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Lifestyle Preferences', style: PulseTextStyles.titleMedium),
+        const SizedBox(height: 16),
+
+        // Drinking Habits
+        DropdownButtonFormField<String>(
+          value: state.preferences.drinkingHabits,
+          decoration: InputDecoration(
+            labelText: 'Drinking Habits',
+            hintText: 'Any',
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: PulseColors.outline),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: PulseColors.primary),
+            ),
+          ),
+          items: [
+            const DropdownMenuItem<String>(value: null, child: Text('Any')),
+            ...state.availableDrinkingOptions.map((option) {
+              return DropdownMenuItem<String>(
+                value: option,
+                child: Text(option),
+              );
+            }),
+          ],
+          onChanged: (String? value) {
+            context.read<FilterBLoC>().add(UpdateDrinkingHabits(value));
+          },
+        ),
+        const SizedBox(height: 16),
+
+        // Smoking Habits
+        DropdownButtonFormField<String>(
+          value: state.preferences.smokingHabits,
+          decoration: InputDecoration(
+            labelText: 'Smoking Habits',
+            hintText: 'Any',
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: PulseColors.outline),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: PulseColors.primary),
+            ),
+          ),
+          items: [
+            const DropdownMenuItem<String>(value: null, child: Text('Any')),
+            ...state.availableSmokingOptions.map((option) {
+              return DropdownMenuItem<String>(
+                value: option,
+                child: Text(option),
+              );
+            }),
+          ],
+          onChanged: (String? value) {
+            context.read<FilterBLoC>().add(UpdateSmokingHabits(value));
+          },
+        ),
+        const SizedBox(height: 16),
+
+        // Exercise Frequency
+        DropdownButtonFormField<String>(
+          value: state.preferences.exercise,
+          decoration: InputDecoration(
+            labelText: 'Exercise Frequency',
+            hintText: 'Any',
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: PulseColors.outline),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: PulseColors.primary),
+            ),
+          ),
+          items: [
+            const DropdownMenuItem<String>(value: null, child: Text('Any')),
+            ...state.availableExerciseOptions.map((option) {
+              return DropdownMenuItem<String>(
+                value: option,
+                child: Text(option),
+              );
+            }),
+          ],
+          onChanged: (String? value) {
+            context.read<FilterBLoC>().add(UpdateExercise(value));
           },
         ),
       ],

@@ -105,6 +105,46 @@ class PreferencesService {
     }
   }
 
+  /// Get available occupations
+  Future<List<String>> getOccupations() async {
+    // For now, return default occupations
+    // TODO: Implement backend API call when available
+    _logger.d('Using default occupations');
+    return _defaultOccupations;
+  }
+
+  /// Get available relationship types
+  Future<List<String>> getRelationshipTypes() async {
+    // For now, return default relationship types
+    // TODO: Implement backend API call when available
+    _logger.d('Using default relationship types');
+    return _defaultRelationshipTypes;
+  }
+
+  /// Get available drinking options
+  Future<List<String>> getDrinkingOptions() async {
+    // For now, return default drinking options
+    // TODO: Implement backend API call when available
+    _logger.d('Using default drinking options');
+    return _defaultDrinkingOptions;
+  }
+
+  /// Get available smoking options
+  Future<List<String>> getSmokingOptions() async {
+    // For now, return default smoking options
+    // TODO: Implement backend API call when available
+    _logger.d('Using default smoking options');
+    return _defaultSmokingOptions;
+  }
+
+  /// Get available exercise options
+  Future<List<String>> getExerciseOptions() async {
+    // For now, return default exercise options
+    // TODO: Implement backend API call when available
+    _logger.d('Using default exercise options');
+    return _defaultExerciseOptions;
+  }
+
   /// Reset filters to default values
   Future<bool> resetFilters() async {
     try {
@@ -170,6 +210,60 @@ class PreferencesService {
     'PhD',
     'Trade School',
     'Other',
+  ];
+
+  /// Default occupations if backend is unavailable
+  static const List<String> _defaultOccupations = [
+    'Student',
+    'Engineer',
+    'Teacher',
+    'Doctor',
+    'Nurse',
+    'Artist',
+    'Designer',
+    'Developer',
+    'Manager',
+    'Entrepreneur',
+    'Marketing',
+    'Sales',
+    'Finance',
+    'Healthcare',
+    'Hospitality',
+    'Retail',
+    'Other',
+  ];
+
+  /// Default relationship types
+  static const List<String> _defaultRelationshipTypes = [
+    'Serious Relationship',
+    'Casual Dating',
+    'Friendship',
+    'Not Sure Yet',
+  ];
+
+  /// Default drinking options
+  static const List<String> _defaultDrinkingOptions = [
+    'Never',
+    'Socially',
+    'Regularly',
+    'Prefer Not to Say',
+  ];
+
+  /// Default smoking options
+  static const List<String> _defaultSmokingOptions = [
+    'Never',
+    'Socially',
+    'Regularly',
+    'Trying to Quit',
+  ];
+
+  /// Default exercise options
+  static const List<String> _defaultExerciseOptions = [
+    'Daily',
+    'Several Times a Week',
+    'Once a Week',
+    'Rarely',
+    'Never',
   ];
 }
 
