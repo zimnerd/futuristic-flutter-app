@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../blocs/auth/auth_bloc.dart';
 import '../blocs/photo/photo_bloc.dart';
 import '../../domain/repositories/user_repository.dart';
+import '../../domain/entities/user_profile.dart';
 import '../screens/auth/forgot_password_screen.dart';
 import '../screens/auth/login_screen.dart' as simple_login;
 import '../screens/auth/otp_verification_screen.dart';
@@ -68,6 +69,7 @@ import '../screens/profile/photo_gallery_screen.dart';
 import '../screens/settings/notification_settings_screen.dart';
 import '../screens/settings/blocked_users_screen.dart';
 import '../screens/safety/safety_center_screen.dart';
+import '../screens/matching/match_explanation_screen.dart';
 import '../blocs/notification/notification_bloc.dart';
 import '../blocs/block_report/block_report_bloc.dart';
 import '../blocs/auth/auth_state.dart';
@@ -83,7 +85,6 @@ import '../screens/discovery/who_liked_you_screen.dart';
 import '../screens/features/advanced_features_screen.dart';
 import '../screens/explore/explore_screen.dart';
 import '../screens/heat_map_screen.dart';
-import '../../../domain/entities/user_profile.dart';
 import '../../../data/models/user_model.dart';
 import '../../../data/models/ai_companion.dart';
 import '../../../features/group_chat/data/models.dart';
@@ -854,6 +855,18 @@ class AppRouter {
           },
         ),
         GoRoute(
+          path: AppRoutes.matchExplanation,
+          name: 'matchExplanation',
+          builder: (context, state) {
+            final extra = state.extra as Map<String, dynamic>;
+            return MatchExplanationScreen(
+              profile: extra['profile'] as UserProfile,
+              compatibilityScore: extra['compatibilityScore'] as double,
+              matchReasons: extra['matchReasons'] as Map<String, dynamic>?,
+            );
+          },
+        ),
+        GoRoute(
           path: AppRoutes.blockedUsers,
           name: 'blockedUsers',
           builder: (context, state) {
@@ -1057,4 +1070,7 @@ class AppRoutes {
   // Safety & Security routes
   static const String safetyCenter = '/safety-center';
   static const String blockedUsers = '/blocked-users';
+
+  // Matching routes
+  static const String matchExplanation = '/match-explanation';
 }

@@ -117,6 +117,7 @@ class SwipeCard extends StatefulWidget {
     this.swipeDirection,
     this.showDetails = true,
     this.isSuperLike = false,
+    this.compatibilityScore,
   });
 
   final UserProfile user;
@@ -129,6 +130,7 @@ class SwipeCard extends StatefulWidget {
   final SwipeDirection? swipeDirection;
   final bool showDetails;
   final bool isSuperLike; // Indicates if this is a super like action
+  final double? compatibilityScore; // Compatibility percentage (0-100)
 
   @override
   State<SwipeCard> createState() => _SwipeCardState();
@@ -249,7 +251,10 @@ class _SwipeCardState extends State<SwipeCard>
                 photoCount: widget.user.photos.length,
                 currentIndex: _currentPhotoIndex,
               ),
-              userInfoOverlay: _UserInfoOverlay(user: widget.user),
+              userInfoOverlay: _UserInfoOverlay(
+                user: widget.user,
+                compatibilityScore: widget.compatibilityScore,
+              ),
               swipeOverlay: _SwipeOverlay(
                 swipeProgress: widget.swipeProgress,
                 swipeDirection: widget.swipeDirection,
@@ -303,9 +308,10 @@ class _SwipeCardState extends State<SwipeCard>
 
 /// User information overlay widget with glassmorphism effect
 class _UserInfoOverlay extends StatelessWidget {
-  const _UserInfoOverlay({required this.user});
+  const _UserInfoOverlay({required this.user, this.compatibilityScore});
 
   final UserProfile user;
+  final double? compatibilityScore;
 
   @override
   Widget build(BuildContext context) {
@@ -348,6 +354,54 @@ class _UserInfoOverlay extends StatelessWidget {
                     ),
                   ),
                 ),
+                if (compatibilityScore != null) ...[
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          _getCompatibilityColor(compatibilityScore!),
+                          _getCompatibilityColor(
+                            compatibilityScore!,
+                          ).withValues(alpha: 0.8),
+                        ],
+                      ),
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: _getCompatibilityColor(
+                            compatibilityScore!,
+                          ).withValues(alpha: 0.4),
+                          blurRadius: 8,
+                          spreadRadius: 1,
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.favorite,
+                          color: Colors.white,
+                          size: 14,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          '${compatibilityScore!.toInt()}%',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                ],
                 VerificationBadge(
                   isVerified: user.isVerified,
                   size: VerificationBadgeSize.small,
@@ -408,6 +462,56 @@ class _UserInfoOverlay extends StatelessWidget {
                 ],
               ),
             ],
+            // "Why matched?" button
+            if (compatibilityScore != null) ...[
+              const SizedBox(height: 12),
+              GestureDetector(
+                onTap: () {
+                  // Navigate to match explanation screen
+                  context.push(
+                    AppRoutes.matchExplanation,
+                    extra: {
+                      'profile': user,
+                      'compatibilityScore': compatibilityScore,
+                      'matchReasons': <String, dynamic>{
+                        'sharedInterests': [],
+                        'locationMatch': user.distanceKm != null,
+                        'ageMatch': true,
+                      },
+                    },
+                  );
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.3),
+                      width: 1,
+                    ),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.info_outline, color: Colors.white, size: 14),
+                      SizedBox(width: 6),
+                      Text(
+                        'Why matched?',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ],
         ),
       ),
@@ -456,6 +560,19 @@ class _UserInfoOverlay extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  /// Get color based on compatibility score
+  Color _getCompatibilityColor(double score) {
+    if (score >= 80) {
+      return const Color(0xFF4CAF50); // Green for high compatibility
+    } else if (score >= 60) {
+      return const Color(0xFFFFC107); // Amber for medium-high compatibility
+    } else if (score >= 40) {
+      return const Color(0xFFFF9800); // Orange for medium compatibility
+    } else {
+      return const Color(0xFFFF5722); // Red for low compatibility
+    }
   }
 }
 
