@@ -70,6 +70,7 @@ import '../screens/settings/notification_settings_screen.dart';
 import '../screens/settings/blocked_users_screen.dart';
 import '../screens/safety/safety_center_screen.dart';
 import '../screens/matching/match_explanation_screen.dart';
+import '../screens/analytics/advanced_analytics_screen.dart';
 import '../blocs/notification/notification_bloc.dart';
 import '../blocs/block_report/block_report_bloc.dart';
 import '../blocs/auth/auth_state.dart';
@@ -867,6 +868,13 @@ class AppRouter {
           },
         ),
         GoRoute(
+          path: AppRoutes.advancedAnalytics,
+          name: 'advancedAnalytics',
+          builder: (context, state) {
+            return const AdvancedAnalyticsScreen();
+          },
+        ),
+        GoRoute(
           path: AppRoutes.blockedUsers,
           name: 'blockedUsers',
           builder: (context, state) {
@@ -1073,4 +1081,7 @@ class AppRoutes {
 
   // Matching routes
   static const String matchExplanation = '/match-explanation';
+
+  // Analytics routes
+  static const String advancedAnalytics = '/advanced-analytics';
 }

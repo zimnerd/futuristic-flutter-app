@@ -137,4 +137,10 @@ class MessageModel {
   @override
   String toString() =>
       'MessageModel(id: $id, senderId: $senderId, type: $type)';
+
+  // Helper methods for forwarded messages
+  bool get isForwarded => metadata?['isForwarded'] == true;
+
+  String? get forwardedFromConversationId =>
+      metadata?['forwardedFromConversationId'] as String?;
 }

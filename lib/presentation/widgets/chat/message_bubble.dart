@@ -49,6 +49,9 @@ class MessageBubble extends StatelessWidget {
             // Reply preview (if replying to another message)
             if (message.replyTo != null) _buildReplyPreview(context),
 
+            // Forwarded message indicator
+            if (message.isForwarded) _buildForwardedIndicator(context),
+
             // Main message row
             Row(
               mainAxisAlignment: isCurrentUser
@@ -419,6 +422,32 @@ class MessageBubble extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildForwardedIndicator(BuildContext context) {
+    return Container(
+      margin: EdgeInsets.only(
+        left: isCurrentUser ? 60 : 40,
+        right: isCurrentUser ? 16 : 60,
+        bottom: 2,
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.forward, size: 14, color: Colors.grey[600]),
+          const SizedBox(width: 4),
+          Text(
+            'Forwarded',
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+              color: Colors.grey[600],
+              fontStyle: FontStyle.italic,
+            ),
+          ),
+        ],
       ),
     );
   }
