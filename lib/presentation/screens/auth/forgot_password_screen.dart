@@ -9,6 +9,7 @@ import '../../navigation/app_router.dart';
 import '../../theme/pulse_colors.dart';
 import '../../widgets/common/common_widgets.dart';
 import '../../widgets/common/keyboard_dismissible_scaffold.dart';
+import '../../widgets/common/pulse_toast.dart';
 
 /// Enhanced forgot password screen
 class ForgotPasswordScreen extends StatefulWidget {
@@ -50,18 +51,14 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
             setState(() {
               _emailSent = true;
             });
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: PulseColors.success,
-              ),
+            PulseToast.success(
+              context,
+              message: state.message,
             );
           } else if (state is AuthFailure) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.error),
-                backgroundColor: PulseColors.error,
-              ),
+            PulseToast.error(
+              context,
+              message: state.error,
             );
           }
         },

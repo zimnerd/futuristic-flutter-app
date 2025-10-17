@@ -44,6 +44,8 @@ import '../screens/speed_dating/speed_dating_event_details_screen.dart';
 import '../screens/live_streaming/start_stream_screen.dart';
 import '../screens/live_streaming/live_stream_viewer_screen.dart';
 import '../screens/live_streaming/live_stream_broadcaster_screen.dart';
+import '../screens/live_streaming/schedule_stream_screen.dart';
+import '../screens/live_streaming/scheduled_streams_screen.dart';
 import '../screens/ai_companion/ai_companion_chat_screen.dart';
 import '../../../features/group_chat/presentation/screens/group_chat_screen.dart';
 import '../../../features/group_chat/presentation/screens/create_group_screen.dart';
@@ -599,6 +601,16 @@ class AppRouter {
             );
           },
         ),
+        GoRoute(
+          path: AppRoutes.scheduledStreams,
+          name: 'scheduledStreams',
+          builder: (context, state) => const ScheduledStreamsScreen(),
+        ),
+        GoRoute(
+          path: AppRoutes.scheduleStream,
+          name: 'scheduleStream',
+          builder: (context, state) => const ScheduleStreamScreen(),
+        ),
 
         // AI Companion routes
         GoRoute(
@@ -1047,6 +1059,8 @@ class AppRoutes {
   static const String startStream = '/start-stream';
   static const String liveStreamViewer = '/live-stream-viewer';
   static const String liveStreamBroadcaster = '/live-stream-broadcaster';
+  static const String scheduledStreams = '/scheduled-streams';
+  static const String scheduleStream = '/schedule-stream';
 
   // AI Companion routes
   static const String aiCompanionChat = '/ai-companion-chat';

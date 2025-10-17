@@ -10,6 +10,7 @@ import '../../navigation/app_router.dart';
 import '../../theme/pulse_colors.dart';
 import '../../widgets/common/common_widgets.dart';
 import '../../widgets/common/keyboard_dismissible_scaffold.dart';
+import '../../widgets/common/pulse_toast.dart';
 import '../../widgets/error_widgets.dart';
 import '../../widgets/phone_input.dart';
 
@@ -162,21 +163,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
           });
 
           if (state is AuthError) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: PulseColors.error,
-              ),
+            PulseToast.error(
+              context,
+              message: state.message,
             );
           } else if (state is AuthPhoneValidationSuccess && state.isValid) {
             // Phone validation successful, proceed with registration
             _proceedWithRegistration();
           } else if (state is AuthPhoneValidationError) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: PulseColors.error,
-              ),
+            PulseToast.error(
+              context,
+              message: state.message,
             );
           } else if (state is AuthRegistrationSuccess) {
             context.go(AppRoutes.home);

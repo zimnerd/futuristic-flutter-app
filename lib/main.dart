@@ -33,6 +33,7 @@ import 'data/services/event_service.dart';
 import 'data/services/matching_service.dart';
 import 'data/services/preferences_service.dart';
 import 'data/services/discovery_service.dart';
+import 'data/services/live_streaming_service.dart';
 import 'data/services/token_service.dart';
 import 'data/services/message_database_service.dart';
 import 'data/services/background_sync_manager.dart';
@@ -47,6 +48,7 @@ import 'presentation/blocs/matching/matching_bloc.dart';
 import 'presentation/blocs/match/match_bloc.dart';
 import 'presentation/blocs/filters/filter_bloc.dart';
 import 'presentation/blocs/discovery/discovery_bloc.dart';
+import 'presentation/blocs/live_streaming/live_streaming_bloc.dart';
 import 'presentation/navigation/app_router.dart';
 import 'presentation/theme/pulse_theme.dart';
 import 'presentation/widgets/auto_login_wrapper.dart';
@@ -334,6 +336,11 @@ class PulseDatingApp extends StatelessWidget {
                 apiClient: context.read<ApiClient>(),
               ),
               preferencesService: PreferencesService(context.read<ApiClient>()),
+            ),
+          ),
+          BlocProvider<LiveStreamingBloc>(
+            create: (context) => LiveStreamingBloc(
+              LiveStreamingService(context.read<ApiClient>()),
             ),
           ),
         ],
