@@ -108,13 +108,17 @@ class _ScheduledStreamsScreenState extends State<ScheduledStreamsScreen> {
     );
   }
 
-  void _handleEdit(Map<String, dynamic> stream) {
-    // TODO: Navigate to edit screen with initial values
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Edit functionality coming soon'),
+  Future<void> _handleEdit(Map<String, dynamic> stream) async {
+    final result = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(
+        builder: (context) => ScheduleStreamScreen(streamToEdit: stream),
       ),
     );
+
+    // Refresh list if stream was updated
+    if (result == true && mounted) {
+      _loadScheduledStreams();
+    }
   }
 
   String _formatCountdown(DateTime scheduledTime) {

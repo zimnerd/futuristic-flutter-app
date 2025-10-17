@@ -494,6 +494,9 @@ class LiveStreamingService {
     DateTime? scheduledStartTime,
     String? type,
     int? maxViewers,
+    String? thumbnailUrl,
+    List<String>? tags,
+    bool? isAdultsOnly,
   }) async {
     try {
       final data = <String, dynamic>{};
@@ -505,6 +508,9 @@ class LiveStreamingService {
       }
       if (type != null) data['type'] = type;
       if (maxViewers != null) data['maxViewers'] = maxViewers;
+      if (thumbnailUrl != null) data['thumbnailUrl'] = thumbnailUrl;
+      if (tags != null) data['tags'] = tags;
+      if (isAdultsOnly != null) data['isAdultsOnly'] = isAdultsOnly;
 
       final response = await _apiClient.patch(
         '/api/v1/live-streaming/streams/$streamId',
@@ -520,6 +526,32 @@ class LiveStreamingService {
       }
     } catch (e) {
       _logger.e('Error updating stream: $e');
+      return null;
+    }
+  }
+
+  /// Upload stream thumbnail
+  /// Returns the URL of the uploaded thumbnail
+  Future<String?> uploadThumbnail(String localFilePath) async {
+    try {
+      _logger.d('Uploading thumbnail from: $localFilePath');
+
+      final response = await _apiClient.uploadMedia(
+        filePath: localFilePath,
+        type: 'stream_thumbnail',
+        description: 'Live stream thumbnail',
+      );
+
+      if (response.statusCode == 200 && response.data != null) {
+        final url = response.data['data']?['url'] ?? response.data['url'];
+        _logger.d('Successfully uploaded thumbnail: $url');
+        return url;
+      } else {
+        _logger.e('Failed to upload thumbnail: ${response.statusMessage}');
+        return null;
+      }
+    } catch (e) {
+      _logger.e('Error uploading thumbnail: $e');
       return null;
     }
   }

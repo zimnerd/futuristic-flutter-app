@@ -244,6 +244,10 @@ class PulseDatingApp extends StatelessWidget {
           RepositoryProvider<LocationService>(
             create: (context) => LocationService(),
           ),
+          RepositoryProvider<LiveStreamingService>(
+            create: (context) =>
+                LiveStreamingService(context.read<ApiClient>()),
+          ),
 
           // Initialize data sources
           RepositoryProvider<UserRemoteDataSource>(
@@ -340,7 +344,7 @@ class PulseDatingApp extends StatelessWidget {
           ),
           BlocProvider<LiveStreamingBloc>(
             create: (context) => LiveStreamingBloc(
-              LiveStreamingService(context.read<ApiClient>()),
+              context.read<LiveStreamingService>(),
             ),
           ),
         ],

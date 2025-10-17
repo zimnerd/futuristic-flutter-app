@@ -477,6 +477,9 @@ class LiveStreamingBloc extends Bloc<LiveStreamingEvent, LiveStreamingState> {
         scheduledStartTime: event.scheduledStartTime,
         type: event.type,
         maxViewers: event.maxViewers,
+        thumbnailUrl: event.thumbnailUrl,
+        tags: event.tags,
+        isAdultsOnly: event.isAdultsOnly,
       );
 
       if (updatedStream != null) {

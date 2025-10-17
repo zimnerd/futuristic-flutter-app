@@ -609,7 +609,10 @@ class AppRouter {
         GoRoute(
           path: AppRoutes.scheduleStream,
           name: 'scheduleStream',
-          builder: (context, state) => const ScheduleStreamScreen(),
+          builder: (context, state) {
+            final streamData = state.extra as Map<String, dynamic>?;
+            return ScheduleStreamScreen(streamToEdit: streamData);
+          },
         ),
 
         // AI Companion routes

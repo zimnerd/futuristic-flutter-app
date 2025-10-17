@@ -1,15 +1,21 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 
+import '../../../data/services/live_streaming_service.dart';
 import '../../blocs/live_streaming/live_streaming_bloc.dart';
 import '../../blocs/live_streaming/live_streaming_event.dart';
 import '../../blocs/live_streaming/live_streaming_state.dart';
 
 /// Screen for scheduling a future live stream
+/// Can also be used to edit an existing scheduled stream
 class ScheduleStreamScreen extends StatefulWidget {
-  const ScheduleStreamScreen({super.key});
+  final Map<String, dynamic>? streamToEdit;
+
+  const ScheduleStreamScreen({super.key, this.streamToEdit});
 
   @override
   State<ScheduleStreamScreen> createState() => _ScheduleStreamScreenState();
@@ -25,12 +31,55 @@ class _ScheduleStreamScreenState extends State<ScheduleStreamScreen> {
   String _streamType = 'public';
   double _maxViewers = 100;
   String? _thumbnailUrl;
+  String? _localThumbnailPath;
   bool _isAdultsOnly = false;
   bool _isLoading = false;
+  bool _isUploadingThumbnail = false;
 
   // Theme constants for DRY code
   static const _fieldFillColor = Color(0x0DFFFFFF); // white with alpha 0.05
   static const _borderColor = Color(0x33FFFFFF); // white with alpha 0.2
+
+  @override
+  void initState() {
+    super.initState();
+    _loadExistingStreamData();
+  }
+
+  /// Load existing stream data if editing
+  void _loadExistingStreamData() {
+    final streamData = widget.streamToEdit;
+    if (streamData == null) return;
+
+    // Pre-fill form fields
+    _titleController.text = streamData['title'] ?? '';
+    _descriptionController.text = streamData['description'] ?? '';
+
+    // Parse and set scheduled date/time
+    if (streamData['scheduledStartTime'] != null) {
+      _selectedDateTime = DateTime.parse(streamData['scheduledStartTime']);
+    }
+
+    // Set stream type
+    _streamType = streamData['type'] ?? 'public';
+
+    // Set max viewers
+    if (streamData['maxViewers'] != null) {
+      _maxViewers = (streamData['maxViewers'] as num).toDouble();
+    }
+
+    // Set thumbnail URL if exists
+    _thumbnailUrl = streamData['thumbnailUrl'];
+
+    // Set adults only flag
+    _isAdultsOnly = streamData['isAdultsOnly'] ?? false;
+
+    // Parse tags
+    if (streamData['tags'] != null && streamData['tags'] is List) {
+      final tags = (streamData['tags'] as List).join(', ');
+      _tagsController.text = tags;
+    }
+  }
 
   @override
   void dispose() {
@@ -107,14 +156,45 @@ class _ScheduleStreamScreenState extends State<ScheduleStreamScreen> {
     );
 
     if (pickedFile != null) {
-      // In a real app, upload to server and get URL
       setState(() {
-        _thumbnailUrl = pickedFile.path;
+        _localThumbnailPath = pickedFile.path;
+        _thumbnailUrl = null; // Clear previous URL
       });
     }
   }
 
-  void _scheduleStream() {
+  /// Upload thumbnail to server and return URL
+  Future<String?> _uploadThumbnail(LiveStreamingService service) async {
+    if (_localThumbnailPath == null) return null;
+
+    setState(() => _isUploadingThumbnail = true);
+
+    try {
+      final url = await service.uploadThumbnail(_localThumbnailPath!);
+
+      if (url != null) {
+        setState(() {
+          _thumbnailUrl = url;
+          _isUploadingThumbnail = false;
+        });
+        return url;
+      } else {
+        setState(() => _isUploadingThumbnail = false);
+        if (mounted) {
+          _showError('Failed to upload thumbnail. Please try again.');
+        }
+        return null;
+      }
+    } catch (e) {
+      setState(() => _isUploadingThumbnail = false);
+      if (mounted) {
+        _showError('Error uploading thumbnail: $e');
+      }
+      return null;
+    }
+  }
+
+  Future<void> _scheduleStream() async {
     if (!_formKey.currentState!.validate()) {
       return;
     }
@@ -129,26 +209,63 @@ class _ScheduleStreamScreenState extends State<ScheduleStreamScreen> {
       return;
     }
 
+    // Upload thumbnail if user selected a local file
+    String? finalThumbnailUrl = _thumbnailUrl;
+    if (_localThumbnailPath != null && _thumbnailUrl == null) {
+      final service = context.read<LiveStreamingService>();
+      finalThumbnailUrl = await _uploadThumbnail(service);
+
+      // If upload failed and user had selected a thumbnail, don't proceed
+      if (finalThumbnailUrl == null && _localThumbnailPath != null) {
+        return; // Error already shown in _uploadThumbnail
+      }
+    }
+
     final tags = _tagsController.text
         .split(',')
         .map((t) => t.trim())
         .where((t) => t.isNotEmpty)
         .toList();
 
-    context.read<LiveStreamingBloc>().add(
-          ScheduleLiveStream(
-            title: _titleController.text.trim(),
-            description: _descriptionController.text.trim().isEmpty
-                ? null
-                : _descriptionController.text.trim(),
-            scheduledStartTime: _selectedDateTime!,
-            type: _streamType,
-            maxViewers: _maxViewers.toInt(),
-            thumbnailUrl: _thumbnailUrl,
-            tags: tags.isEmpty ? null : tags,
-            isAdultsOnly: _isAdultsOnly,
-          ),
-        );
+    if (!mounted) return;
+
+    // Check if editing existing stream or creating new one
+    final isEditing = widget.streamToEdit != null;
+
+    if (isEditing) {
+      // Update existing scheduled stream
+      context.read<LiveStreamingBloc>().add(
+        UpdateScheduledStream(
+          streamId: widget.streamToEdit!['id'],
+          title: _titleController.text.trim(),
+          description: _descriptionController.text.trim().isEmpty
+              ? null
+              : _descriptionController.text.trim(),
+          scheduledStartTime: _selectedDateTime!,
+          type: _streamType,
+          maxViewers: _maxViewers.toInt(),
+          thumbnailUrl: finalThumbnailUrl,
+          tags: tags.isEmpty ? null : tags,
+          isAdultsOnly: _isAdultsOnly,
+        ),
+      );
+    } else {
+      // Create new scheduled stream
+      context.read<LiveStreamingBloc>().add(
+        ScheduleLiveStream(
+          title: _titleController.text.trim(),
+          description: _descriptionController.text.trim().isEmpty
+              ? null
+              : _descriptionController.text.trim(),
+          scheduledStartTime: _selectedDateTime!,
+          type: _streamType,
+          maxViewers: _maxViewers.toInt(),
+          thumbnailUrl: finalThumbnailUrl,
+          tags: tags.isEmpty ? null : tags,
+          isAdultsOnly: _isAdultsOnly,
+        ),
+      );
+    }
   }
 
   void _showError(String message) {
@@ -161,9 +278,11 @@ class _ScheduleStreamScreenState extends State<ScheduleStreamScreen> {
   }
 
   void _showSuccess() {
+    final message = widget.streamToEdit != null
+        ? 'Stream updated successfully!'
+        : 'Stream scheduled successfully!';
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Stream scheduled successfully!'),
+      SnackBar(content: Text(message),
         backgroundColor: Colors.green,
       ),
     );
@@ -175,7 +294,8 @@ class _ScheduleStreamScreenState extends State<ScheduleStreamScreen> {
       listener: (context, state) {
         if (state is SchedulingStream) {
           setState(() => _isLoading = true);
-        } else if (state is StreamScheduled) {
+        } else if (state is StreamScheduled ||
+            state is ScheduledStreamUpdated) {
           setState(() => _isLoading = false);
           _showSuccess();
           Navigator.of(context).pop(true); // Return true to indicate success
@@ -193,9 +313,11 @@ class _ScheduleStreamScreenState extends State<ScheduleStreamScreen> {
             icon: const Icon(Icons.arrow_back, color: Colors.white),
             onPressed: () => Navigator.of(context).pop(),
           ),
-          title: const Text(
-            'Schedule Stream',
-            style: TextStyle(
+          title: Text(
+            widget.streamToEdit != null
+                ? 'Edit Scheduled Stream'
+                : 'Schedule Stream',
+            style: const TextStyle(
               color: Colors.white,
               fontSize: 20,
               fontWeight: FontWeight.w600,
@@ -442,7 +564,8 @@ class _ScheduleStreamScreenState extends State<ScheduleStreamScreen> {
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(color: _borderColor),
                       ),
-                      child: _thumbnailUrl == null
+                      child:
+                          _localThumbnailPath == null && _thumbnailUrl == null
                           ? const Center(
                               child: Column(
                                 mainAxisSize: MainAxisSize.min,
@@ -467,42 +590,98 @@ class _ScheduleStreamScreenState extends State<ScheduleStreamScreen> {
                               children: [
                                 ClipRRect(
                                   borderRadius: BorderRadius.circular(12),
-                                  child: Image.asset(
-                                    _thumbnailUrl!,
-                                    width: double.infinity,
-                                    height: double.infinity,
-                                    fit: BoxFit.cover,
-                                    errorBuilder: (context, error, stackTrace) {
-                                      return const Center(
-                                        child: Icon(
-                                          Icons.broken_image,
-                                          color: Colors.grey,
-                                          size: 48,
+                                  child: _localThumbnailPath != null
+                                      ? Image.file(
+                                          File(_localThumbnailPath!),
+                                          width: double.infinity,
+                                          height: double.infinity,
+                                          fit: BoxFit.cover,
+                                          errorBuilder:
+                                              (context, error, stackTrace) {
+                                                return const Center(
+                                                  child: Icon(
+                                                    Icons.broken_image,
+                                                    color: Colors.grey,
+                                                    size: 48,
+                                                  ),
+                                                );
+                                              },
+                                        )
+                                      : Image.network(
+                                          _thumbnailUrl!,
+                                          width: double.infinity,
+                                          height: double.infinity,
+                                          fit: BoxFit.cover,
+                                          errorBuilder:
+                                              (context, error, stackTrace) {
+                                                return const Center(
+                                                  child: Icon(
+                                                    Icons.broken_image,
+                                                    color: Colors.grey,
+                                                    size: 48,
+                                                  ),
+                                                );
+                                              },
                                         ),
-                                      );
-                                    },
-                                  ),
                                 ),
-                                Positioned(
-                                  top: 8,
-                                  right: 8,
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      color: Colors.black.withOpacity(0.6),
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: IconButton(
-                                      icon: const Icon(
-                                        Icons.close,
-                                        color: Colors.white,
-                                        size: 20,
+                                if (_isUploadingThumbnail)
+                                  Positioned.fill(
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        color: Colors.black.withValues(
+                                          alpha: 0.7,
+                                        ),
+                                        borderRadius: BorderRadius.circular(12),
                                       ),
-                                      onPressed: () {
-                                        setState(() => _thumbnailUrl = null);
-                                      },
+                                      child: const Center(
+                                        child: Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            CircularProgressIndicator(
+                                              valueColor:
+                                                  AlwaysStoppedAnimation<Color>(
+                                                    Colors.white,
+                                                  ),
+                                            ),
+                                            SizedBox(height: 12),
+                                            Text(
+                                              'Uploading thumbnail...',
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 14,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
                                     ),
                                   ),
-                                ),
+                                if (!_isUploadingThumbnail)
+                                  Positioned(
+                                    top: 8,
+                                    right: 8,
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        color: Colors.black.withValues(
+                                          alpha: 0.6,
+                                        ),
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: IconButton(
+                                        icon: const Icon(
+                                          Icons.close,
+                                          color: Colors.white,
+                                          size: 20,
+                                        ),
+                                        onPressed: () {
+                                          setState(() {
+                                            _thumbnailUrl = null;
+                                            _localThumbnailPath = null;
+                                          });
+                                        },
+                                      ),
+                                    ),
+                                  ),
                               ],
                             ),
                     ),
@@ -574,7 +753,9 @@ class _ScheduleStreamScreenState extends State<ScheduleStreamScreen> {
 
                   // Schedule button
                   ElevatedButton(
-                    onPressed: _isLoading ? null : _scheduleStream,
+                    onPressed: (_isLoading || _isUploadingThumbnail)
+                        ? null
+                        : _scheduleStream,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Theme.of(context).primaryColor,
                       foregroundColor: Colors.white,
@@ -583,13 +764,39 @@ class _ScheduleStreamScreenState extends State<ScheduleStreamScreen> {
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                    child: const Text(
-                      'Schedule Stream',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
+                    child: _isUploadingThumbnail
+                        ? const Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    Colors.white,
+                                  ),
+                                ),
+                              ),
+                              SizedBox(width: 12),
+                              Text(
+                                'Uploading...',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          )
+                        : Text(
+                            widget.streamToEdit != null
+                                ? 'Update Stream'
+                                : 'Schedule Stream',
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
                   ),
                 ],
               ),

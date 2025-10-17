@@ -228,6 +228,9 @@ class UpdateScheduledStream extends LiveStreamingEvent {
   final DateTime? scheduledStartTime;
   final String? type;
   final int? maxViewers;
+  final String? thumbnailUrl;
+  final List<String>? tags;
+  final bool? isAdultsOnly;
 
   const UpdateScheduledStream({
     required this.streamId,
@@ -236,6 +239,9 @@ class UpdateScheduledStream extends LiveStreamingEvent {
     this.scheduledStartTime,
     this.type,
     this.maxViewers,
+    this.thumbnailUrl,
+    this.tags,
+    this.isAdultsOnly,
   });
 
   @override
@@ -246,5 +252,8 @@ class UpdateScheduledStream extends LiveStreamingEvent {
     scheduledStartTime,
     type,
     maxViewers,
+    thumbnailUrl,
+    tags,
+    isAdultsOnly,
   ];
 }
