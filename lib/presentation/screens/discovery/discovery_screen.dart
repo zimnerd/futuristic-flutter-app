@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/pulse_design_system.dart';
+import '../../../core/utils/haptic_feedback_utils.dart';
 import '../../../data/services/boost_service.dart';
 import '../../../domain/entities/discovery_types.dart';
 import '../../../services/discovery_prefetch_manager.dart';
@@ -212,10 +213,23 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
     if (!mounted) return;
     final discoveryBloc = context.read<DiscoveryBloc>();
     final state = discoveryBloc.state;
-    
+
     if (state is DiscoveryLoaded && state.currentUser != null) {
       final user = state.currentUser!;
-      
+
+      // Haptic feedback for swipe action
+      switch (direction) {
+        case SwipeAction.left:
+          PulseHaptics.swipeLeft();
+          break;
+        case SwipeAction.right:
+          PulseHaptics.swipeRight();
+          break;
+        case SwipeAction.up:
+          PulseHaptics.swipeUp();
+          break;
+      }
+
       // Add to rewind history
       _rewindHistory.add(direction);
       if (_rewindHistory.length > 10) {
@@ -225,7 +239,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
       // Configure direction-specific animation with smoother curves
       late Animation<Offset> directionAnimation;
       late Animation<double> rotationAnimation;
-      
+
       switch (direction) {
         case SwipeAction.left:
           directionAnimation =

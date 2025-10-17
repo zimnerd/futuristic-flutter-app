@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:just_audio/just_audio.dart';
 import 'dart:async';
 
 import '../../theme/pulse_colors.dart';
 
-/// Compact voice message bubble for chat
+/// Compact voice message bubble for chat with enhanced playback controls
 class VoiceMessageBubble extends StatefulWidget {
   final String audioUrl;
   final int duration;
@@ -31,8 +32,11 @@ class _VoiceMessageBubbleState extends State<VoiceMessageBubble>
   bool _isLoading = false;
   Duration _currentPosition = Duration.zero;
   Duration _totalDuration = Duration.zero;
+  double _playbackSpeed = 1.0;
   
   late AnimationController _waveController;
+  late AnimationController _speedChangeController;
+  late Animation<double> _speedChangeAnimation;
   StreamSubscription? _positionSubscription;
   StreamSubscription? _playerStateSubscription;
 
@@ -47,6 +51,15 @@ class _VoiceMessageBubbleState extends State<VoiceMessageBubble>
     _waveController = AnimationController(
       duration: const Duration(milliseconds: 1000),
       vsync: this,
+    );
+    
+    _speedChangeController = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
+
+    _speedChangeAnimation = Tween<double>(begin: 1.0, end: 1.2).animate(
+      CurvedAnimation(parent: _speedChangeController, curve: Curves.easeOut),
     );
   }
 
@@ -85,6 +98,7 @@ class _VoiceMessageBubbleState extends State<VoiceMessageBubble>
   void dispose() {
     _audioPlayer.dispose();
     _waveController.dispose();
+    _speedChangeController.dispose();
     _positionSubscription?.cancel();
     _playerStateSubscription?.cancel();
     super.dispose();
@@ -102,8 +116,51 @@ class _VoiceMessageBubbleState extends State<VoiceMessageBubble>
     }
   }
 
+  Future<void> _cyclePlaybackSpeed() async {
+    try {
+      // Cycle through speeds: 1.0x → 1.5x → 2.0x → 1.0x
+      double newSpeed;
+      if (_playbackSpeed == 1.0) {
+        newSpeed = 1.5;
+      } else if (_playbackSpeed == 1.5) {
+        newSpeed = 2.0;
+      } else {
+        newSpeed = 1.0;
+      }
+
+      await _audioPlayer.setSpeed(newSpeed);
+      setState(() => _playbackSpeed = newSpeed);
+
+      // Haptic feedback
+      HapticFeedback.selectionClick();
+
+      // Animate speed change
+      _speedChangeController.forward(from: 0);
+    } catch (e) {
+      // Handle error silently
+    }
+  }
+
+  Future<void> _seekToPosition(double position) async {
+    try {
+      final seekPosition = Duration(
+        milliseconds: (position * _totalDuration.inMilliseconds).toInt(),
+      );
+      await _audioPlayer.seek(seekPosition);
+
+      // Haptic feedback
+      HapticFeedback.lightImpact();
+    } catch (e) {
+      // Handle error silently
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final progress = _totalDuration.inMilliseconds > 0
+        ? _currentPosition.inMilliseconds / _totalDuration.inMilliseconds
+        : 0.0;
+    
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       child: Row(
@@ -148,46 +205,129 @@ class _VoiceMessageBubbleState extends State<VoiceMessageBubble>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Waveform visualization
-                SizedBox(
-                  height: 24,
-                  child: AnimatedBuilder(
-                    animation: _waveController,
-                    builder: (context, child) {
-                      return Row(
-                        children: widget.waveformData.take(20).map((amplitude) {
-                          final height = 4 + (amplitude * 16);
-                          return Container(
-                            margin: const EdgeInsets.symmetric(horizontal: 1),
-                            width: 2,
-                            height: height * (_isPlaying ? (0.7 + _waveController.value * 0.3) : 1.0),
-                            decoration: BoxDecoration(
-                              color: widget.isCurrentUser 
-                                  ? Colors.white.withValues(alpha: 0.8)
-                                  : PulseColors.primary.withValues(alpha: 0.6),
-                              borderRadius: BorderRadius.circular(1),
-                            ),
-                          );
-                        }).toList(),
-                      );
-                    },
+                // Interactive Waveform visualization with progress
+                GestureDetector(
+                  onTapDown: (details) {
+                    final RenderBox box =
+                        context.findRenderObject() as RenderBox;
+                    final localPosition = box.globalToLocal(
+                      details.globalPosition,
+                    );
+                    final waveformWidth =
+                        box.size.width - 60; // Subtract button + spacing
+                    final relativePosition =
+                        (localPosition.dx - 44) / waveformWidth;
+                    _seekToPosition(relativePosition.clamp(0.0, 1.0));
+                  },
+                  child: SizedBox(
+                    height: 28,
+                    child: AnimatedBuilder(
+                      animation: _waveController,
+                      builder: (context, child) {
+                        return Row(
+                          children: List.generate(
+                            widget.waveformData.length.clamp(0, 40),
+                            (index) {
+                              final amplitude =
+                                  index < widget.waveformData.length
+                                  ? widget.waveformData[index]
+                                  : 0.2;
+                              final height = 4 + (amplitude * 20);
+                              final barProgress =
+                                  index / widget.waveformData.length;
+                              final isPlayed = barProgress <= progress;
+
+                              return Container(
+                                margin: const EdgeInsets.symmetric(
+                                  horizontal: 0.5,
+                                ),
+                                width: 2,
+                                height:
+                                    height *
+                                    (_isPlaying
+                                        ? (0.7 + _waveController.value * 0.3)
+                                        : 1.0),
+                                decoration: BoxDecoration(
+                                  color: isPlayed
+                                      ? (widget.isCurrentUser
+                                            ? Colors.white
+                                            : PulseColors.primary)
+                                      : (widget.isCurrentUser
+                                            ? Colors.white.withValues(
+                                                alpha: 0.4,
+                                              )
+                                            : PulseColors.primary.withValues(
+                                                alpha: 0.3,
+                                              )),
+                                  borderRadius: BorderRadius.circular(1),
+                                ),
+                              );
+                            },
+                          ),
+                        );
+                      },
+                    ),
                   ),
                 ),
                 
                 const SizedBox(height: 4),
                 
-                // Duration
-                Text(
-                  _formatDuration(_isPlaying ? _currentPosition : _totalDuration),
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: widget.isCurrentUser 
-                        ? Colors.white.withValues(alpha: 0.8)
-                        : Colors.grey[600],
-                    fontWeight: FontWeight.w500,
-                  ),
+                // Duration and playback speed
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      _formatDuration(
+                        _isPlaying ? _currentPosition : _totalDuration,
+                      ),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: widget.isCurrentUser
+                            ? Colors.white.withValues(alpha: 0.8)
+                            : Colors.grey[600],
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
                 ),
               ],
+            ),
+          ),
+          
+          const SizedBox(width: 8),
+
+          // Playback speed button
+          GestureDetector(
+            onTap: _cyclePlaybackSpeed,
+            child: AnimatedBuilder(
+              animation: _speedChangeAnimation,
+              builder: (context, child) {
+                return Transform.scale(
+                  scale: _speedChangeAnimation.value,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 3,
+                    ),
+                    decoration: BoxDecoration(
+                      color: widget.isCurrentUser
+                          ? Colors.white.withValues(alpha: 0.2)
+                          : PulseColors.primary.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Text(
+                      '${_playbackSpeed}x',
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                        color: widget.isCurrentUser
+                            ? Colors.white
+                            : PulseColors.primary,
+                      ),
+                    ),
+                  ),
+                );
+              },
             ),
           ),
         ],

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../core/utils/haptic_feedback_utils.dart';
 import '../../blocs/match/match_bloc.dart';
 import '../../blocs/match/match_state.dart';
 import '../../blocs/messaging/messaging_bloc.dart';
@@ -8,7 +9,7 @@ import '../../../data/models/match_model.dart';
 import '../../screens/matches/matches_screen.dart';
 
 /// Widget showing match success and conversation options
-class MatchSuccessWidget extends StatelessWidget {
+class MatchSuccessWidget extends StatefulWidget {
   const MatchSuccessWidget({
     super.key,
     required this.match,
@@ -19,6 +20,18 @@ class MatchSuccessWidget extends StatelessWidget {
   final MatchModel match;
   final VoidCallback? onStartChat;
   final VoidCallback? onKeepSwiping;
+
+  @override
+  State<MatchSuccessWidget> createState() => _MatchSuccessWidgetState();
+}
+
+class _MatchSuccessWidgetState extends State<MatchSuccessWidget> {
+  @override
+  void initState() {
+    super.initState();
+    // Trigger match celebration haptic pattern
+    PulseHaptics.match();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -78,7 +91,7 @@ class MatchSuccessWidget extends StatelessWidget {
           const SizedBox(height: 16),
           
           // Compatibility score
-          if (match.compatibilityScore > 0)
+          if (widget.match.compatibilityScore > 0)
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
               decoration: BoxDecoration(
@@ -86,7 +99,7 @@ class MatchSuccessWidget extends StatelessWidget {
                 borderRadius: BorderRadius.circular(25),
               ),
               child: Text(
-                '${(match.compatibilityScore * 100).round()}% Compatible',
+                '${(widget.match.compatibilityScore * 100).round()}% Compatible',
                 style: const TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.w600,
@@ -132,7 +145,7 @@ class MatchSuccessWidget extends StatelessWidget {
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton.icon(
-                    onPressed: onStartChat ?? () => _startChat(context),
+                    onPressed: widget.onStartChat ?? () => _startChat(context),
                     icon: const Icon(Icons.chat_bubble),
                     label: const Text('Start Chatting'),
                     style: ElevatedButton.styleFrom(
@@ -153,7 +166,7 @@ class MatchSuccessWidget extends StatelessWidget {
                 SizedBox(
                   width: double.infinity,
                   child: OutlinedButton.icon(
-                    onPressed: onKeepSwiping ?? () => Navigator.of(context).pop(),
+                    onPressed: widget.onKeepSwiping ?? () => Navigator.of(context).pop(),
                     icon: const Icon(Icons.explore),
                     label: const Text('Keep Swiping'),
                     style: OutlinedButton.styleFrom(

@@ -114,40 +114,99 @@ class _ConversationPickerSheetState extends State<ConversationPickerSheet> {
       _isForwarding = true;
     });
 
-    // Dispatch ForwardMessage event
+    // Dispatch ForwardMessage event - BlocListener will handle success/error
     context.read<ChatBloc>().add(
           ForwardMessage(
             messageId: widget.messageId,
             targetConversationIds: _selectedConversationIds.toList(),
           ),
         );
-
-    // Close the sheet
-    if (mounted) {
-      Navigator.of(context).pop();
-
-      // Show success snackbar
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Message forwarded to ${_selectedConversationIds.length} conversation${_selectedConversationIds.length > 1 ? 's' : ''}',
-          ),
-          duration: const Duration(seconds: 2),
-          backgroundColor: AppColors.primary,
-        ),
-      );
-    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: MediaQuery.of(context).size.height * 0.7,
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      child: Column(
+    return BlocListener<ChatBloc, ChatState>(
+      listener: (context, state) {
+        if (state is MessageForwarded) {
+          // Close the sheet on success
+          if (mounted) {
+            Navigator.of(context).pop();
+            
+            // Show success snackbar with conversation names
+            final selectedNames = _allConversations
+                .where((c) => _selectedConversationIds.contains(c.id))
+                .map((c) => c.otherUserName)
+                .take(3)
+                .toList();
+
+            String successMessage;
+            if (selectedNames.length == 1) {
+              successMessage = 'Message forwarded to ${selectedNames[0]}';
+            } else if (selectedNames.length == 2) {
+              successMessage =
+                  'Message forwarded to ${selectedNames[0]} and ${selectedNames[1]}';
+            } else if (selectedNames.length == 3 &&
+                _selectedConversationIds.length == 3) {
+              successMessage =
+                  'Message forwarded to ${selectedNames[0]}, ${selectedNames[1]}, and ${selectedNames[2]}';
+            } else {
+              successMessage =
+                  'Message forwarded to ${selectedNames[0]}, ${selectedNames[1]}, and ${_selectedConversationIds.length - 2} others';
+            }
+
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(successMessage),
+                duration: const Duration(seconds: 3),
+                backgroundColor: AppColors.primary,
+              ),
+            );
+          }
+        } else if (state is ChatError) {
+          // Show error dialog on failure
+          setState(() {
+            _isForwarding = false;
+          });
+
+          if (mounted) {
+            showDialog(
+              context: context,
+              builder: (context) => AlertDialog(
+                title: const Text('Forward Failed'),
+                content: const Text(
+                  'Failed to forward message. Please try again.',
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: const Text('Cancel'),
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                      _handleForward();
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                    ),
+                    child: const Text(
+                      'Retry',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }
+        }
+      },
+      child: Container(
+        height: MediaQuery.of(context).size.height * 0.7,
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: Column(
         children: [
           // Header
           Container(
@@ -475,6 +534,7 @@ class _ConversationPickerSheetState extends State<ConversationPickerSheet> {
             ),
           ),
         ],
+      ),
       ),
     );
   }

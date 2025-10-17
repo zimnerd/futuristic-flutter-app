@@ -20,6 +20,7 @@ import '../../../presentation/blocs/auth/auth_state.dart';
 import '../../../presentation/blocs/block_report/block_report_bloc.dart';
 import '../../../data/models/user_model.dart';
 import '../../../core/utils/logger.dart';
+import '../../../core/utils/haptic_feedback_utils.dart';
 import '../../../data/services/analytics_service.dart';
 import '../../../data/models/voice_message.dart';
 import '../../widgets/chat/compact_voice_recorder.dart';
@@ -259,6 +260,9 @@ class _ChatScreenState extends State<ChatScreen> {
 
     final currentUserId = _currentUserId;
     AppLogger.debug('Sending message with currentUserId: $currentUserId');
+
+    // Haptic feedback for sending message
+    PulseHaptics.messageSent();
 
     context.read<ChatBloc>().add(
       SendMessage(

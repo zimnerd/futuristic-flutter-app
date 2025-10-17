@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/utils/phone_utils.dart';
+import '../../../core/utils/haptic_feedback_utils.dart';
 import '../../blocs/auth/auth_bloc.dart';
 import '../../blocs/auth/auth_event.dart';
 import '../../blocs/auth/auth_state.dart';
@@ -62,6 +63,9 @@ class _LoginScreenState extends State<LoginScreen> {
 
   void _handleLogin() {
     if (_formKey.currentState?.validate() == true) {
+      // Haptic feedback for button press
+      PulseHaptics.medium();
+
       if (_isPhoneMode) {
         // Show confirmation dialog before sending OTP
         _showPhoneConfirmationDialog();
