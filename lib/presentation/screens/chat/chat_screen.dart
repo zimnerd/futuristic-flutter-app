@@ -234,11 +234,10 @@ class _ChatScreenState extends State<ChatScreen> {
     AppLogger.debug('Retrying failed message: ${message.id}');
 
     // Show loading indicator
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Retrying message...'),
-        duration: Duration(seconds: 1),
-      ),
+    PulseToast.info(
+      context,
+      message: 'Retrying message...',
+      duration: const Duration(seconds: 1),
     );
 
     // Trigger background sync to retry messages in outbox

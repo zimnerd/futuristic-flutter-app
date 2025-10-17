@@ -204,6 +204,55 @@ class StreamingHistoryLoaded extends LiveStreamingState {
   List<Object?> get props => [history, hasMoreHistory, currentPage];
 }
 
+/// Scheduling a stream
+class SchedulingStream extends LiveStreamingState {
+  const SchedulingStream();
+}
+
+/// Stream scheduled successfully
+class StreamScheduled extends LiveStreamingState {
+  final Map<String, dynamic> scheduledStream;
+
+  const StreamScheduled(this.scheduledStream);
+
+  @override
+  List<Object> get props => [scheduledStream];
+}
+
+/// Scheduled streams loaded
+class ScheduledStreamsLoaded extends LiveStreamingState {
+  final List<Map<String, dynamic>> scheduledStreams;
+
+  const ScheduledStreamsLoaded(this.scheduledStreams);
+
+  @override
+  List<Object> get props => [scheduledStreams];
+}
+
+/// Scheduled stream canceled
+class ScheduledStreamCanceled extends LiveStreamingState {
+  final String streamId;
+
+  const ScheduledStreamCanceled(this.streamId);
+
+  @override
+  List<Object> get props => [streamId];
+}
+
+/// Scheduled stream updated
+class ScheduledStreamUpdated extends LiveStreamingState {
+  final String streamId;
+  final Map<String, dynamic> updatedStream;
+
+  const ScheduledStreamUpdated({
+    required this.streamId,
+    required this.updatedStream,
+  });
+
+  @override
+  List<Object> get props => [streamId, updatedStream];
+}
+
 /// Error state
 class LiveStreamingError extends LiveStreamingState {
   final String message;

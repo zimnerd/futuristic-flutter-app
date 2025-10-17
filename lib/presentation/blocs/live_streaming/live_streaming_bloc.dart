@@ -24,6 +24,11 @@ class LiveStreamingBloc extends Bloc<LiveStreamingEvent, LiveStreamingState> {
     on<UpdateStreamSettings>(_onUpdateStreamSettings);
     on<LoadFollowedStreamers>(_onLoadFollowedStreamers);
     on<LoadStreamingHistory>(_onLoadStreamingHistory);
+    on<ScheduleLiveStream>(_onScheduleLiveStream);
+    on<LoadScheduledStreams>(_onLoadScheduledStreams);
+    on<LoadMyScheduledStreams>(_onLoadMyScheduledStreams);
+    on<CancelScheduledStream>(_onCancelScheduledStream);
+    on<UpdateScheduledStream>(_onUpdateScheduledStream);
   }
 
   Future<void> _onLoadLiveStreams(
@@ -337,6 +342,161 @@ class LiveStreamingBloc extends Bloc<LiveStreamingEvent, LiveStreamingState> {
     } catch (e, stackTrace) {
       _logger.e('$_tag: Failed to load streaming history', error: e, stackTrace: stackTrace);
       emit(LiveStreamingError('Failed to load streaming history: ${e.toString()}'));
+    }
+  }
+
+  Future<void> _onScheduleLiveStream(
+    ScheduleLiveStream event,
+    Emitter<LiveStreamingState> emit,
+  ) async {
+    try {
+      emit(const SchedulingStream());
+      _logger.d('$_tag: Scheduling live stream: ${event.title}');
+
+      final scheduledStream = await _liveStreamingService.scheduleStream(
+        title: event.title,
+        description: event.description,
+        scheduledStartTime: event.scheduledStartTime,
+        type: event.type,
+        maxViewers: event.maxViewers,
+        thumbnailUrl: event.thumbnailUrl,
+        tags: event.tags,
+        isAdultsOnly: event.isAdultsOnly,
+      );
+
+      if (scheduledStream != null) {
+        emit(StreamScheduled(scheduledStream));
+        _logger.d('$_tag: Stream scheduled successfully');
+      } else {
+        emit(const LiveStreamingError('Failed to schedule stream'));
+      }
+    } catch (e, stackTrace) {
+      _logger.e(
+        '$_tag: Failed to schedule stream',
+        error: e,
+        stackTrace: stackTrace,
+      );
+      emit(LiveStreamingError('Failed to schedule stream: ${e.toString()}'));
+    }
+  }
+
+  Future<void> _onLoadScheduledStreams(
+    LoadScheduledStreams event,
+    Emitter<LiveStreamingState> emit,
+  ) async {
+    try {
+      emit(const LiveStreamingLoading());
+      _logger.d('$_tag: Loading scheduled streams');
+
+      final scheduledStreams = await _liveStreamingService
+          .getScheduledStreams();
+
+      emit(ScheduledStreamsLoaded(scheduledStreams));
+      _logger.d('$_tag: Loaded ${scheduledStreams.length} scheduled streams');
+    } catch (e, stackTrace) {
+      _logger.e(
+        '$_tag: Failed to load scheduled streams',
+        error: e,
+        stackTrace: stackTrace,
+      );
+      emit(
+        LiveStreamingError('Failed to load scheduled streams: ${e.toString()}'),
+      );
+    }
+  }
+
+  Future<void> _onLoadMyScheduledStreams(
+    LoadMyScheduledStreams event,
+    Emitter<LiveStreamingState> emit,
+  ) async {
+    try {
+      emit(const LiveStreamingLoading());
+      _logger.d('$_tag: Loading my scheduled streams');
+
+      final myScheduledStreams = await _liveStreamingService
+          .getMyScheduledStreams();
+
+      emit(ScheduledStreamsLoaded(myScheduledStreams));
+      _logger.d(
+        '$_tag: Loaded ${myScheduledStreams.length} my scheduled streams',
+      );
+    } catch (e, stackTrace) {
+      _logger.e(
+        '$_tag: Failed to load my scheduled streams',
+        error: e,
+        stackTrace: stackTrace,
+      );
+      emit(
+        LiveStreamingError(
+          'Failed to load my scheduled streams: ${e.toString()}',
+        ),
+      );
+    }
+  }
+
+  Future<void> _onCancelScheduledStream(
+    CancelScheduledStream event,
+    Emitter<LiveStreamingState> emit,
+  ) async {
+    try {
+      emit(const LiveStreamingLoading());
+      _logger.d('$_tag: Canceling scheduled stream: ${event.streamId}');
+
+      final success = await _liveStreamingService.cancelScheduledStream(
+        event.streamId,
+      );
+
+      if (success) {
+        emit(ScheduledStreamCanceled(event.streamId));
+        _logger.d('$_tag: Stream canceled successfully');
+      } else {
+        emit(const LiveStreamingError('Failed to cancel stream'));
+      }
+    } catch (e, stackTrace) {
+      _logger.e(
+        '$_tag: Failed to cancel stream',
+        error: e,
+        stackTrace: stackTrace,
+      );
+      emit(LiveStreamingError('Failed to cancel stream: ${e.toString()}'));
+    }
+  }
+
+  Future<void> _onUpdateScheduledStream(
+    UpdateScheduledStream event,
+    Emitter<LiveStreamingState> emit,
+  ) async {
+    try {
+      emit(const LiveStreamingLoading());
+      _logger.d('$_tag: Updating scheduled stream: ${event.streamId}');
+
+      final updatedStream = await _liveStreamingService.updateScheduledStream(
+        streamId: event.streamId,
+        title: event.title,
+        description: event.description,
+        scheduledStartTime: event.scheduledStartTime,
+        type: event.type,
+        maxViewers: event.maxViewers,
+      );
+
+      if (updatedStream != null) {
+        emit(
+          ScheduledStreamUpdated(
+            streamId: event.streamId,
+            updatedStream: updatedStream,
+          ),
+        );
+        _logger.d('$_tag: Stream updated successfully');
+      } else {
+        emit(const LiveStreamingError('Failed to update stream'));
+      }
+    } catch (e, stackTrace) {
+      _logger.e(
+        '$_tag: Failed to update stream',
+        error: e,
+        stackTrace: stackTrace,
+      );
+      emit(LiveStreamingError('Failed to update stream: ${e.toString()}'));
     }
   }
 }

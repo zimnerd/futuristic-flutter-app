@@ -366,4 +366,161 @@ class LiveStreamingService {
       return null;
     }
   }
+
+  /// Schedule a future live stream
+  Future<Map<String, dynamic>?> scheduleStream({
+    required String title,
+    String? description,
+    required DateTime scheduledStartTime,
+    required String type,
+    int maxViewers = 100,
+    String? thumbnailUrl,
+    List<String>? tags,
+    bool isAdultsOnly = false,
+  }) async {
+    try {
+      final response = await _apiClient.post(
+        '/api/v1/live-streaming/streams/schedule',
+        data: {
+          'title': title,
+          'description': description,
+          'scheduledStartTime': scheduledStartTime.toIso8601String(),
+          'type': type,
+          'maxViewers': maxViewers,
+          'thumbnailUrl': thumbnailUrl,
+          'tags': tags ?? [],
+          'isAdultsOnly': isAdultsOnly,
+        },
+      );
+
+      if (response.statusCode == 201 && response.data != null) {
+        _logger.d('Successfully scheduled stream: ${response.data['id']}');
+        return response.data['data'];
+      } else {
+        _logger.e('Failed to schedule stream: ${response.statusMessage}');
+        return null;
+      }
+    } catch (e) {
+      _logger.e('Error scheduling stream: $e');
+      return null;
+    }
+  }
+
+  /// Get all scheduled streams
+  Future<List<Map<String, dynamic>>> getScheduledStreams() async {
+    try {
+      final response = await _apiClient.get(
+        '/api/v1/live-streaming/streams/scheduled',
+      );
+
+      if (response.statusCode == 200 && response.data != null) {
+        final data = response.data['data'];
+        if (data is List) {
+          _logger.d('Successfully fetched ${data.length} scheduled streams');
+          return List<Map<String, dynamic>>.from(data);
+        } else if (data is Map && data['streams'] is List) {
+          _logger.d(
+            'Successfully fetched ${data['streams'].length} scheduled streams',
+          );
+          return List<Map<String, dynamic>>.from(data['streams']);
+        }
+        return [];
+      } else {
+        _logger.e('Failed to get scheduled streams: ${response.statusMessage}');
+        return [];
+      }
+    } catch (e) {
+      _logger.e('Error getting scheduled streams: $e');
+      return [];
+    }
+  }
+
+  /// Get my scheduled streams
+  Future<List<Map<String, dynamic>>> getMyScheduledStreams() async {
+    try {
+      final response = await _apiClient.get(
+        '/api/v1/live-streaming/streams/scheduled/my',
+      );
+
+      if (response.statusCode == 200 && response.data != null) {
+        final data = response.data['data'];
+        if (data is List) {
+          _logger.d('Successfully fetched ${data.length} my scheduled streams');
+          return List<Map<String, dynamic>>.from(data);
+        } else if (data is Map && data['streams'] is List) {
+          _logger.d(
+            'Successfully fetched ${data['streams'].length} my scheduled streams',
+          );
+          return List<Map<String, dynamic>>.from(data['streams']);
+        }
+        return [];
+      } else {
+        _logger.e(
+          'Failed to get my scheduled streams: ${response.statusMessage}',
+        );
+        return [];
+      }
+    } catch (e) {
+      _logger.e('Error getting my scheduled streams: $e');
+      return [];
+    }
+  }
+
+  /// Cancel a scheduled stream
+  Future<bool> cancelScheduledStream(String streamId) async {
+    try {
+      final response = await _apiClient.patch(
+        '/api/v1/live-streaming/streams/$streamId/cancel',
+      );
+
+      if (response.statusCode == 200) {
+        _logger.d('Successfully canceled scheduled stream: $streamId');
+        return true;
+      } else {
+        _logger.e('Failed to cancel stream: ${response.statusMessage}');
+        return false;
+      }
+    } catch (e) {
+      _logger.e('Error canceling stream: $e');
+      return false;
+    }
+  }
+
+  /// Update a scheduled stream
+  Future<Map<String, dynamic>?> updateScheduledStream({
+    required String streamId,
+    String? title,
+    String? description,
+    DateTime? scheduledStartTime,
+    String? type,
+    int? maxViewers,
+  }) async {
+    try {
+      final data = <String, dynamic>{};
+
+      if (title != null) data['title'] = title;
+      if (description != null) data['description'] = description;
+      if (scheduledStartTime != null) {
+        data['scheduledStartTime'] = scheduledStartTime.toIso8601String();
+      }
+      if (type != null) data['type'] = type;
+      if (maxViewers != null) data['maxViewers'] = maxViewers;
+
+      final response = await _apiClient.patch(
+        '/api/v1/live-streaming/streams/$streamId',
+        data: data,
+      );
+
+      if (response.statusCode == 200 && response.data != null) {
+        _logger.d('Successfully updated scheduled stream: $streamId');
+        return response.data['data'];
+      } else {
+        _logger.e('Failed to update stream: ${response.statusMessage}');
+        return null;
+      }
+    } catch (e) {
+      _logger.e('Error updating stream: $e');
+      return null;
+    }
+  }
 }
