@@ -346,7 +346,31 @@ class PaymentHistoryService {
     );
   }
 
-  /// Dispose resources
+  /// Get user's coin balance
+  Future<Map<String, dynamic>> getCoinBalance(String accessToken) async {
+    try {
+      final uri = Uri.parse('$baseUrl/premium/coins/balance');
+      final response = await http.get(
+        uri,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $accessToken',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body) as Map<String, dynamic>;
+      } else {
+        AppLogger.error('Failed to get coin balance: ${response.statusCode}');
+        return {'totalCoins': 0};
+      }
+    } catch (e) {
+      AppLogger.error('Error getting coin balance: $e');
+      return {'totalCoins': 0};
+    }
+  }
+
+  /// Dispose of resources
   void dispose() {
     _historyController.close();
   }

@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../core/network/api_client.dart';
 import '../../../domain/entities/notification_preferences.dart';
 import '../../../domain/repositories/user_repository.dart';
 import '../auth/auth_bloc.dart';
@@ -121,14 +122,20 @@ class NotificationBloc extends Bloc<NotificationEvent, NotificationState> {
     emit(const SendingTestNotification());
 
     try {
-      // TODO: Implement actual test notification API call
-      // For now, simulate a successful test notification
-      await Future.delayed(const Duration(seconds: 1));
-      
-      emit(const TestNotificationSent(
-        'Test notification sent successfully! Check your notification tray.',
-      ));
-      
+      // Send test notification via API
+      final apiClient = ApiClient.instance;
+      final response = await apiClient.post('/notifications/test');
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        emit(
+          const TestNotificationSent(
+            'Test notification sent successfully! Check your notification tray.',
+          ),
+        );
+      } else {
+        throw Exception('Failed to send test notification');
+      }
+
       // Return to loaded state after brief delay
       await Future.delayed(const Duration(seconds: 2));
       if (state is TestNotificationSent) {

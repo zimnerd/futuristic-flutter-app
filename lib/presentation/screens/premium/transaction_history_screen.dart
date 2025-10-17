@@ -32,7 +32,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
   List<PaymentTransaction> _filteredTransactions = [];
   bool _isLoading = true;
   String? _error;
-  final int _currentBalance = 0; // TODO: Fetch from user profile
+  int _currentBalance = 0;
 
   // Filter state
   PaymentTransactionType? _selectedType;
@@ -45,6 +45,26 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
     super.initState();
     _initializeService();
     _loadTransactions();
+    _loadBalance();
+  }
+
+  Future<void> _loadBalance() async {
+    try {
+      final accessToken = await _tokenService.getAccessToken();
+      if (accessToken == null) {
+        throw Exception('Not authenticated');
+      }
+
+      final response = await _paymentHistoryService.getCoinBalance(accessToken);
+
+      setState(() {
+        _currentBalance = response['totalCoins'] ?? 0;
+      });
+    } catch (e) {
+      setState(() {
+        _error = 'Failed to load balance: $e';
+      });
+    }
   }
 
   Future<void> _initializeService() async {

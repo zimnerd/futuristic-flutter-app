@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/network/api_client.dart';
 
 /// Verification status screen showing pending/approved/rejected states
 /// Displays verification requests and their current status
@@ -28,23 +30,38 @@ class _VerificationStatusScreenState extends State<VerificationStatusScreen> {
     });
 
     try {
-      // TODO: Call GET /users/me/verification-status
-      await Future.delayed(const Duration(seconds: 1));
+      // Call verification status API
+      final apiClient = ApiClient.instance;
+      final response = await apiClient.get('/users/me/verification-status');
 
-      // Mock data for development
-      setState(() {
-        _isVerified = false;
-        _requests = [
-          VerificationRequest(
-            id: '1',
-            type: 'photo',
-            status: 'pending',
-            createdAt: DateTime.now().subtract(const Duration(hours: 2)),
-            submittedAt: DateTime.now().subtract(const Duration(hours: 2)),
-          ),
-        ];
-        _isLoading = false;
-      });
+      if (response.statusCode == 200 && response.data['data'] != null) {
+        final data = response.data['data'];
+        final requestsList = data['requests'] as List<dynamic>? ?? [];
+
+        setState(() {
+          _isVerified = data['isVerified'] as bool? ?? false;
+          _requests = requestsList.map((req) {
+            return VerificationRequest(
+              id: req['id'] as String? ?? '',
+              type: req['type'] as String? ?? '',
+              status: req['status'] as String? ?? '',
+              createdAt: req['createdAt'] != null
+                  ? DateTime.parse(req['createdAt'] as String)
+                  : DateTime.now(),
+              submittedAt: req['submittedAt'] != null
+                  ? DateTime.parse(req['submittedAt'] as String)
+                  : DateTime.now(),
+              reviewedAt: req['reviewedAt'] != null
+                  ? DateTime.parse(req['reviewedAt'] as String)
+                  : null,
+              rejectionReason: req['rejectionReason'] as String?,
+            );
+          }).toList();
+          _isLoading = false;
+        });
+      } else {
+        throw Exception('Failed to load verification status');
+      }
     } catch (e) {
       if (mounted) {
         setState(() {
@@ -607,9 +624,28 @@ class _VerificationStatusScreenState extends State<VerificationStatusScreen> {
     Navigator.of(context).pushNamed('/photo-verification');
   }
 
-  void _contactSupport() {
-    // TODO: Navigate to support screen or open email
-    _showError('Support contact feature coming soon');
+  void _contactSupport() async {
+    // Open support email
+    final Uri emailUri = Uri(
+      scheme: 'mailto',
+      path: 'support@pulselink.com',
+      query:
+          'subject=Verification Support Request&body=Please describe your verification issue:',
+    );
+
+    try {
+      if (await canLaunchUrl(emailUri)) {
+        await launchUrl(emailUri);
+      } else {
+        if (mounted) {
+          _showError('Could not open email client');
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        _showError('Failed to contact support: $e');
+      }
+    }
   }
 
   void _showError(String message) {
