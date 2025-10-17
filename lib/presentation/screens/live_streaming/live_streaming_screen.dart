@@ -64,6 +64,13 @@ class _LiveStreamingScreenState extends State<LiveStreamingScreen>
     return Scaffold(
       appBar: AppBar(
         title: const Text('Live Streaming'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.schedule),
+            tooltip: 'Scheduled Streams',
+            onPressed: () => context.push(AppRoutes.scheduledStreams),
+          ),
+        ],
         bottom: TabBar(
           controller: _tabController,
           tabs: const [

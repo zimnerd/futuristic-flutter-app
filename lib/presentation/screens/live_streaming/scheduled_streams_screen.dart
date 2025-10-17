@@ -22,7 +22,14 @@ class _ScheduledStreamsScreenState extends State<ScheduledStreamsScreen> {
 
   // Theme constants for DRY code
   static const _cardBackgroundColor = Color(0xFF1E1E1E);
-  static const _badgeLightOpacity = Color(0x1AFFFFFF); // white with alpha 0.1
+  static const _lightBackgroundOpacity = Color(
+    0x1AFFFFFF,
+  ); // white with alpha 0.1
+  static const _veryLightBackground = Color(
+    0x0DFFFFFF,
+  ); // white with alpha 0.05
+  static const _redBackground = Color(0x1AFF0000); // red with alpha 0.1
+  static const _greenBackground = Color(0x1A00FF00); // green with alpha 0.1
 
   @override
   void initState() {
@@ -63,7 +70,7 @@ class _ScheduledStreamsScreenState extends State<ScheduledStreamsScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF1E1E1E),
+        backgroundColor: _cardBackgroundColor,
         title: const Text(
           'Cancel Stream',
           style: TextStyle(color: Colors.white),
@@ -306,9 +313,7 @@ class _ScheduledStreamsScreenState extends State<ScheduledStreamsScreen> {
                     vertical: 6,
                   ),
                   decoration: BoxDecoration(
-                    color: isPast
-                        ? Colors.red.withOpacity(0.1)
-                        : Colors.green.withOpacity(0.1),
+                    color: isPast ? _redBackground : _greenBackground,
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Row(
@@ -364,7 +369,7 @@ class _ScheduledStreamsScreenState extends State<ScheduledStreamsScreen> {
                         vertical: 4,
                       ),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.05),
+                        color: _veryLightBackground,
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Row(
@@ -403,7 +408,9 @@ class _ScheduledStreamsScreenState extends State<ScheduledStreamsScreen> {
                                   vertical: 4,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: Theme.of(context).primaryColor.withOpacity(0.1),
+                                color: Theme.of(
+                                  context,
+                                ).primaryColor.withValues(alpha: 0.1),
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: Text(
@@ -436,7 +443,7 @@ class _ScheduledStreamsScreenState extends State<ScheduledStreamsScreen> {
                         style: TextStyle(color: Colors.white),
                       ),
                       style: TextButton.styleFrom(
-                        backgroundColor: Colors.white.withOpacity(0.1),
+                        backgroundColor: _lightBackgroundOpacity,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
                         ),
@@ -455,7 +462,7 @@ class _ScheduledStreamsScreenState extends State<ScheduledStreamsScreen> {
                         style: TextStyle(color: Colors.red),
                       ),
                       style: TextButton.styleFrom(
-                        backgroundColor: Colors.red.withOpacity(0.1),
+                        backgroundColor: _redBackground,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
                         ),
@@ -495,7 +502,7 @@ class _ScheduledStreamsScreenState extends State<ScheduledStreamsScreen> {
         vertical: 4,
       ),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(

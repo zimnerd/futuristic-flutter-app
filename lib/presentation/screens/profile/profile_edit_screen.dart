@@ -10,6 +10,7 @@ import '../../blocs/profile/profile_bloc.dart';
 import '../../theme/pulse_colors.dart';
 import '../../widgets/common/keyboard_dismissible_scaffold.dart';
 import '../../widgets/common/pulse_button.dart';
+import '../../widgets/common/pulse_toast.dart';
 import '../../widgets/profile/photo_grid.dart';
 import '../../widgets/profile/profile_completion_card.dart';
 import '../../widgets/profile/profile_privacy_settings.dart';
@@ -353,12 +354,10 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
 
       // Show a subtle loading indicator
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Refreshing profile...'),
-            duration: Duration(seconds: 1),
-            backgroundColor: PulseColors.primary,
-          ),
+        PulseToast.info(
+          context,
+          message: 'Refreshing profile...',
+          duration: const Duration(seconds: 1),
         );
       }
       
@@ -992,23 +991,19 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
               // Show appropriate toast based on action
               if (_hasShownInitialToast) {
                 if (wasPhotoAdded && _photos.length > previousPhotoCount) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Photo uploaded successfully!'),
-                      backgroundColor: PulseColors.success,
-                      duration: Duration(seconds: 2),
-                    ),
+                  PulseToast.success(
+                    context,
+                    message: 'Photo uploaded successfully!',
+                    duration: const Duration(seconds: 2),
                   );
                 } else if (wasPhotoDeleted) {
                   logger.i(
                     '🗑️ Photo deleted, UI synced with ${_photos.length} remaining photos',
                   );
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Photo deleted successfully'),
-                      backgroundColor: PulseColors.success,
-                      duration: Duration(seconds: 2),
-                    ),
+                  PulseToast.success(
+                    context,
+                    message: 'Photo deleted successfully',
+                    duration: const Duration(seconds: 2),
                   );
                 }
               }
@@ -1038,12 +1033,10 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
               // Privacy tab (index 4) - show success, refresh, but DON'T navigate
               if (_currentPageIndex == 4) {
                 logger.i('🔒 Privacy settings saved - staying on tab');
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Privacy settings saved successfully!'),
-                    backgroundColor: PulseColors.success,
-                    duration: Duration(seconds: 2),
-                  ),
+                PulseToast.success(
+                  context,
+                  message: 'Privacy settings saved successfully!',
+                  duration: const Duration(seconds: 2),
                 );
                 // Force reload profile from server to get updated privacy settings
                 logger.i(
@@ -1055,11 +1048,9 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
                 _isFinalSave = false;
               } else {
                 // Other tabs - show success and navigate to profile
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Profile saved successfully!'),
-                    backgroundColor: PulseColors.success,
-                  ),
+                PulseToast.success(
+                  context,
+                  message: 'Profile saved successfully!',
                 );
                 // Navigate explicitly to profile screen (not discover page)
                 logger.i('🚀 Executing context.go("/profile")');
@@ -1080,12 +1071,10 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
 
               // Only show toast if not initial load
               if (_hasShownInitialToast) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('Section saved!'),
-                    backgroundColor: PulseColors.success,
-                    duration: const Duration(seconds: 1),
-                  ),
+                PulseToast.success(
+                  context,
+                  message: 'Section saved!',
+                  duration: const Duration(seconds: 1),
                 );
               }
             }

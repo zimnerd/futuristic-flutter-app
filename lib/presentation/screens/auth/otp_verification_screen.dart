@@ -8,6 +8,7 @@ import '../../blocs/auth/auth_event.dart';
 import '../../blocs/auth/auth_state.dart';
 import '../../theme/pulse_colors.dart';
 import '../../widgets/common/keyboard_dismissible_scaffold.dart';
+import '../../widgets/common/pulse_toast.dart';
 
 /// Screen for verifying OTP code sent via WhatsApp/SMS
 class OTPVerificationScreen extends StatefulWidget {
@@ -136,25 +137,19 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
             context.go('/register', extra: {'phoneNumber': state.phoneNumber});
           } else if (state is AuthOTPSent) {
             // OTP resent successfully
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('OTP resent successfully'),
-                backgroundColor: PulseColors.success,
-              ),
+            PulseToast.success(
+              context,
+              message: 'OTP resent successfully',
             );
           } else if (state is AuthOTPVerificationFailed) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: PulseColors.error,
-              ),
+            PulseToast.error(
+              context,
+              message: state.message,
             );
           } else if (state is AuthError) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: PulseColors.error,
-              ),
+            PulseToast.error(
+              context,
+              message: state.message,
             );
           }
         },
