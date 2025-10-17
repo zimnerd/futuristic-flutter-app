@@ -748,6 +748,11 @@ class MessageBubble extends StatelessWidget {
     final mediaUrls = message.mediaUrls!;
     final heroTag = 'message_${message.id}';
 
+    // Video message with thumbnail
+    if (message.type == entities.MessageType.video && mediaUrls.length == 1) {
+      return _buildVideoThumbnail(context, mediaUrls.first, heroTag);
+    }
+
     // Single image with optimized display
     if (mediaUrls.length == 1) {
       return _buildSingleImage(context, mediaUrls.first, heroTag);
@@ -824,6 +829,117 @@ class MessageBubble extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  /// Build video thumbnail with play button overlay
+  Widget _buildVideoThumbnail(
+    BuildContext context,
+    String videoUrl,
+    String heroTag,
+  ) {
+    // Extract thumbnail URL from metadata (backend generates thumbnails)
+    final thumbnailUrl = message.metadata?['thumbnailUrl'] as String?;
+    final cacheBustedUrl = _addCacheBuster(thumbnailUrl ?? videoUrl);
+
+    return GestureDetector(
+      onTap: () => _openMediaViewer(context, [videoUrl], 0, heroTag),
+      child: Hero(
+        tag: '${heroTag}_0',
+        child: Container(
+          constraints: const BoxConstraints(maxWidth: 280, maxHeight: 300),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: Stack(
+              fit: StackFit.passthrough,
+              children: [
+                // Video thumbnail or placeholder
+                thumbnailUrl != null
+                    ? RobustNetworkImage(
+                        imageUrl: cacheBustedUrl,
+                        fit: BoxFit.cover,
+                        width: 280,
+                        height: 300,
+                      )
+                    : Container(
+                        width: 280,
+                        height: 300,
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [
+                              PulseColors.primary.withValues(alpha: 0.3),
+                              PulseColors.secondary.withValues(alpha: 0.3),
+                            ],
+                          ),
+                        ),
+                        child: const Icon(
+                          Icons.videocam_rounded,
+                          size: 64,
+                          color: Colors.white70,
+                        ),
+                      ),
+
+                // Play button overlay
+                Positioned.fill(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.3),
+                    ),
+                    child: Center(
+                      child: Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withValues(alpha: 0.7),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.play_arrow_rounded,
+                          size: 40,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+
+                // Duration badge (if available in metadata)
+                if (message.metadata?['duration'] != null)
+                  Positioned(
+                    bottom: 8,
+                    right: 8,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.8),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        _formatDuration(message.metadata!['duration'] as int),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Format duration in seconds to MM:SS
+  String _formatDuration(int seconds) {
+    final minutes = seconds ~/ 60;
+    final remainingSeconds = seconds % 60;
+    return '${minutes.toString().padLeft(1, '0')}:${remainingSeconds.toString().padLeft(2, '0')}';
   }
 
   /// Add cache buster to URL for recently uploaded images

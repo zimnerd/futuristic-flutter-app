@@ -1964,7 +1964,7 @@ class _ChatScreenState extends State<ChatScreen> {
       final picker = ImagePicker();
       final videoFile = await picker.pickVideo(
         source: ImageSource.camera,
-        maxDuration: const Duration(minutes: 5),
+        maxDuration: const Duration(seconds: 30),
       );
 
       if (videoFile != null) {
@@ -1993,7 +1993,7 @@ class _ChatScreenState extends State<ChatScreen> {
       final picker = ImagePicker();
       final videoFile = await picker.pickVideo(
         source: ImageSource.gallery,
-        maxDuration: const Duration(minutes: 5),
+        maxDuration: const Duration(seconds: 30),
       );
 
       if (videoFile != null) {

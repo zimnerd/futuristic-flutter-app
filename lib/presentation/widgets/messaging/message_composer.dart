@@ -820,7 +820,7 @@ class _MessageComposerState extends State<MessageComposer>
         if (result == 'record') {
           video = await _imagePicker.pickVideo(
             source: ImageSource.camera,
-            maxDuration: const Duration(minutes: 1), // Limit to 1 minute
+            maxDuration: const Duration(seconds: 30), // Limit to 30 seconds
           );
         } else {
           video = await _imagePicker.pickVideo(
