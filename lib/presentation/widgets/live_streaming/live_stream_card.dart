@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:shimmer/shimmer.dart';
 import '../../theme/pulse_colors.dart';
 
 /// Widget to display a live stream card with animated LIVE badge
@@ -70,33 +72,56 @@ class _LiveStreamCardState extends State<LiveStreamCard>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Thumbnail
+            // Thumbnail with optimized caching
             Stack(
               children: [
-                Container(
-                  height: 200,
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    borderRadius: const BorderRadius.vertical(
-                      top: Radius.circular(12),
-                    ),
-                    color: Colors.grey[300],
-                    image: thumbnailUrl.isNotEmpty
-                        ? DecorationImage(
-                            image: NetworkImage(thumbnailUrl),
-                            fit: BoxFit.cover,
-                          )
-                        : null,
+                ClipRRect(
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(12),
                   ),
-                  child: thumbnailUrl.isEmpty
-                      ? const Center(
-                          child: Icon(
-                            Icons.videocam,
-                            size: 50,
-                            color: Colors.grey,
+                  child: thumbnailUrl.isNotEmpty
+                      ? CachedNetworkImage(
+                          imageUrl: thumbnailUrl,
+                          height: 200,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                          memCacheWidth: 400,
+                          memCacheHeight: 300,
+                          fadeInDuration: const Duration(milliseconds: 200),
+                          placeholder: (context, url) => Shimmer.fromColors(
+                            baseColor: Colors.grey[300]!,
+                            highlightColor: Colors.grey[100]!,
+                            child: Container(
+                              height: 200,
+                              width: double.infinity,
+                              color: Colors.white,
+                            ),
+                          ),
+                          errorWidget: (context, url, error) => Container(
+                            height: 200,
+                            width: double.infinity,
+                            color: Colors.grey[300],
+                            child: const Center(
+                              child: Icon(
+                                Icons.error_outline,
+                                size: 50,
+                                color: Colors.grey,
+                              ),
+                            ),
                           ),
                         )
-                      : null,
+                      : Container(
+                          height: 200,
+                          width: double.infinity,
+                          color: Colors.grey[300],
+                          child: const Center(
+                            child: Icon(
+                              Icons.videocam,
+                              size: 50,
+                              color: Colors.grey,
+                            ),
+                          ),
+                        ),
                 ),
                 // Animated Live indicator
                 if (isLive)

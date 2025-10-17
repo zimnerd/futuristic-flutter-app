@@ -1,7 +1,10 @@
 import 'dart:async';
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../navigation/app_router.dart';
 import '../../blocs/live_streaming/live_streaming_bloc.dart';
@@ -34,18 +37,65 @@ class _LiveStreamingScreenState extends State<LiveStreamingScreen>
   bool _isSearching = false;
   final TextEditingController _searchController = TextEditingController();
   Timer? _searchDebounce;
+  
+  // Retry backoff state
+  int _retryCount = 0;
+  Timer? _retryTimer;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
-    context.read<LiveStreamingBloc>().add(const LoadLiveStreams());
+    
+    // Load saved category filter before loading streams
+    _loadSavedCategory();
     
     // Add scroll listener for pagination
     _scrollController.addListener(_onScroll);
     
     // Setup real-time viewer count updates
     _setupViewerCountListener();
+  }
+
+  /// Load saved category filter from shared preferences
+  Future<void> _loadSavedCategory() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final savedCategory = prefs.getString('live_stream_category_filter');
+
+      if (savedCategory != null && mounted) {
+        setState(() {
+          _selectedCategory = savedCategory;
+        });
+      }
+
+      // Load streams with saved category
+      if (mounted) {
+        context.read<LiveStreamingBloc>().add(
+          LoadLiveStreams(category: _selectedCategory),
+        );
+      }
+    } catch (e) {
+      debugPrint('Failed to load saved category: $e');
+      // Fallback to loading all streams
+      if (mounted) {
+        context.read<LiveStreamingBloc>().add(const LoadLiveStreams());
+      }
+    }
+  }
+
+  /// Save category filter to shared preferences
+  Future<void> _saveCategory(String? category) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      if (category != null) {
+        await prefs.setString('live_stream_category_filter', category);
+      } else {
+        await prefs.remove('live_stream_category_filter');
+      }
+    } catch (e) {
+      debugPrint('Failed to save category: $e');
+    }
   }
 
   void _setupViewerCountListener() {
@@ -77,6 +127,7 @@ class _LiveStreamingScreenState extends State<LiveStreamingScreen>
     _scrollController.dispose();
     _searchController.dispose();
     _searchDebounce?.cancel();
+    _retryTimer?.cancel();
     super.dispose();
   }
 
@@ -127,6 +178,28 @@ class _LiveStreamingScreenState extends State<LiveStreamingScreen>
     });
   }
 
+  Future<void> _retryWithBackoff() async {
+    // Exponential backoff: 1s, 2s, 4s, 8s, 16s, max 30s
+    final delay = Duration(
+      seconds: math.pow(2, _retryCount).toInt().clamp(1, 30),
+    );
+
+    _retryTimer?.cancel();
+    _retryTimer = Timer(delay, () {
+      if (mounted) {
+        _retryCount++;
+        context.read<LiveStreamingBloc>().add(
+          LoadLiveStreams(category: _selectedCategory),
+        );
+      }
+    });
+  }
+
+  void _resetRetryCount() {
+    _retryCount = 0;
+    _retryTimer?.cancel();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -143,7 +216,31 @@ class _LiveStreamingScreenState extends State<LiveStreamingScreen>
                 ),
                 onChanged: _onSearchChanged,
               )
-            : const Text('Live Streaming'),
+            : BlocBuilder<LiveStreamingBloc, LiveStreamingState>(
+                builder: (context, state) {
+                  String subtitle = '';
+                  if (state is LiveStreamsLoaded) {
+                    final count = state.streams.length;
+                    subtitle = '$count stream${count == 1 ? '' : 's'} live';
+                  }
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text('Live Streaming'),
+                      if (subtitle.isNotEmpty)
+                        Text(
+                          subtitle,
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.normal,
+                            color: Colors.white70,
+                          ),
+                        ),
+                    ],
+                  );
+                },
+              ),
         actions: [
           IconButton(
             icon: Icon(_isSearching ? Icons.close : Icons.search),
@@ -197,6 +294,9 @@ class _LiveStreamingScreenState extends State<LiveStreamingScreen>
             setState(() {
               _selectedCategory = category;
             });
+            // Save category preference
+            _saveCategory(category);
+            // Load streams with new category
             context.read<LiveStreamingBloc>().add(
               LoadLiveStreams(category: category),
             );
@@ -205,8 +305,14 @@ class _LiveStreamingScreenState extends State<LiveStreamingScreen>
         
         // Streams list
         Expanded(
-          child: BlocBuilder<LiveStreamingBloc, LiveStreamingState>(
-            builder: (context, state) {
+          child: BlocListener<LiveStreamingBloc, LiveStreamingState>(
+            listener: (context, state) {
+              if (state is LiveStreamsLoaded) {
+                _resetRetryCount();
+              }
+            },
+            child: BlocBuilder<LiveStreamingBloc, LiveStreamingState>(
+              builder: (context, state) {
               if (state is LiveStreamingLoading && _selectedCategory == null) {
                 // Show skeleton loading cards
                 return ListView.builder(
@@ -225,9 +331,7 @@ class _LiveStreamingScreenState extends State<LiveStreamingScreen>
                 return PulseErrorWidget(
                   message: state.message,
                   onRetry: () {
-                    context.read<LiveStreamingBloc>().add(
-                      const LoadLiveStreams(),
-                    );
+                      _retryWithBackoff();
                   },
                 );
               }              if (state is LiveStreamsLoaded) {
@@ -245,7 +349,8 @@ class _LiveStreamingScreenState extends State<LiveStreamingScreen>
                   );
                 },
               );
-            },
+              },
+            ),
           ),
         ),
       ],
@@ -273,7 +378,7 @@ class _LiveStreamingScreenState extends State<LiveStreamingScreen>
           return PulseErrorWidget(
             message: state.message,
             onRetry: () {
-              context.read<LiveStreamingBloc>().add(const LoadLiveStreams());
+              _retryWithBackoff();
             },
           );
         }
@@ -300,6 +405,9 @@ class _LiveStreamingScreenState extends State<LiveStreamingScreen>
           LoadLiveStreams(category: _selectedCategory),
         );
       },
+      color: PulseColors.primary,
+      backgroundColor: Colors.white,
+      strokeWidth: 3.0,
       child: ListView.builder(
         controller: _scrollController,
         padding: const EdgeInsets.all(16),
