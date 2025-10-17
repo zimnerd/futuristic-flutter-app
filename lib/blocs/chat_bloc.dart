@@ -9,6 +9,7 @@ import '../data/models/message.dart'
     show MessageDeliveryUpdate, MessageReadUpdate;
 import '../domain/entities/message.dart' show MessageType;
 import '../data/repositories/chat_repository.dart';
+import '../domain/repositories/user_repository.dart';
 import '../data/services/background_sync_manager.dart';
 import '../data/services/service_locator.dart';
 
@@ -542,6 +543,7 @@ class MessageSearchError extends ChatState {
 // BLoC
 class ChatBloc extends Bloc<ChatEvent, ChatState> {
   final ChatRepository _chatRepository;
+  final UserRepository _userRepository;
   final Logger _logger = Logger();
   
   // Stream subscriptions
@@ -550,8 +552,11 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
   late StreamSubscription<MessageReadUpdate> _messageReadSubscription;
   late StreamSubscription<Map<String, dynamic>> _typingEventsSubscription;
 
-  ChatBloc({required ChatRepository chatRepository})
-      : _chatRepository = chatRepository,
+  ChatBloc({
+    required ChatRepository chatRepository,
+    required UserRepository userRepository,
+  }) : _chatRepository = chatRepository,
+       _userRepository = userRepository,
         super(const ChatInitial()) {
     on<LoadConversations>(_onLoadConversations);
     on<LoadMessages>(_onLoadMessages);
@@ -1070,6 +1075,24 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     Emitter<ChatState> emit,
   ) async {
     try {
+      // 🔒 Check user's privacy setting for read receipts
+      final currentUser = await _userRepository.getCurrentUser();
+      if (currentUser != null) {
+        // Get user preferences - readReceipts defaults to true if not set
+        final preferences = await _userRepository.getUserPreferences(
+          currentUser.id,
+        );
+        final sendReadReceipts = preferences?['readReceipts'] as bool? ?? true;
+
+        if (!sendReadReceipts) {
+          _logger.d(
+            '🔒 Read receipts disabled in privacy settings - skipping mark as read for conversation: ${event.conversationId}',
+          );
+          // Don't send read receipt to backend
+          return;
+        }
+      }
+      
       // Get current message IDs to mark as read
       List<String> messageIds = [];
       if (state is MessagesLoaded) {

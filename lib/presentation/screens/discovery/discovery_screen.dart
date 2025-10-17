@@ -16,6 +16,8 @@ import '../../widgets/boost/boost_banner_widget.dart';
 import '../../widgets/boost/boost_confirmation_dialog.dart';
 import '../../widgets/discovery/swipe_card.dart' as swipe_widget;
 import '../../widgets/ai/floating_ai_button.dart';
+import '../../widgets/common/empty_state_widget.dart';
+import '../../widgets/common/skeleton_loading.dart';
 import '../ai_companion/ai_companion_screen.dart';
 
 /// Modern Discovery Screen - PulseLink's unique swipe interface
@@ -520,8 +522,14 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
 
   Widget _buildMainContent(DiscoveryState state) {
     if (state is DiscoveryLoading) {
-      return const Center(
-        child: CircularProgressIndicator(color: PulseColors.primary),
+      return Padding(
+        padding: const EdgeInsets.fromLTRB(
+          PulseSpacing.lg,
+          PulseSpacing.xl,
+          PulseSpacing.lg,
+          100,
+        ),
+        child: const ProfileCardSkeleton(),
       );
     } else if (state is DiscoveryLoaded && state.hasUsers) {
       return _buildCardStack(state);
@@ -761,54 +769,21 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
   }
 
   Widget _buildEmptyState() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            width: 120,
-            height: 120,
-            decoration: BoxDecoration(
-              gradient: PulseGradients.primary,
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(
-              Icons.explore_off,
-              size: 60,
-              color: PulseColors.white,
-            ),
+    return RefreshIndicator(
+      onRefresh: () async {
+        context.read<DiscoveryBloc>().add(
+          const LoadDiscoverableUsers(resetStack: true),
+        );
+        await Future.delayed(const Duration(milliseconds: 500));
+      },
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        child: SizedBox(
+          height: MediaQuery.of(context).size.height - 100,
+          child: EmptyStates.noMoreProfiles(
+            onAdjustFilters: () => context.push('/filters'),
           ),
-          const SizedBox(height: PulseSpacing.xl),
-          Text(
-            'No more profiles',
-            style: PulseTypography.h3.copyWith(color: PulseColors.grey900),
-          ),
-          const SizedBox(height: PulseSpacing.sm),
-          Text(
-            'Check back later for new matches!',
-            style: PulseTypography.bodyMedium.copyWith(
-              color: PulseColors.grey600,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: PulseSpacing.xl),
-          ElevatedButton(
-            onPressed: () {
-              context.read<DiscoveryBloc>().add(
-                const LoadDiscoverableUsers(resetStack: true),
-              );
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: PulseColors.primary,
-              foregroundColor: PulseColors.white,
-              padding: const EdgeInsets.symmetric(
-                horizontal: PulseSpacing.xl,
-                vertical: PulseSpacing.md,
-              ),
-            ),
-            child: const Text('Refresh'),
-          ),
-        ],
+        ),
       ),
     );
   }

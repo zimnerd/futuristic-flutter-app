@@ -20,8 +20,11 @@ import '../../../presentation/blocs/auth/auth_state.dart';
 import '../../../presentation/blocs/block_report/block_report_bloc.dart';
 import '../../../data/models/user_model.dart';
 import '../../../core/utils/logger.dart';
+import '../../../data/services/analytics_service.dart';
 import '../../../data/models/voice_message.dart';
 import '../../widgets/chat/compact_voice_recorder.dart';
+import '../../widgets/chat/animated_typing_indicator.dart';
+import '../../widgets/chat/quick_reply_chip_bar.dart';
 import '../../widgets/dialogs/block_user_dialog.dart';
 import '../../widgets/dialogs/report_user_dialog.dart';
 
@@ -63,6 +66,7 @@ class _ChatScreenState extends State<ChatScreen> {
   final TextEditingController _messageController = TextEditingController();
   final FocusNode _messageInputFocusNode = FocusNode();
   Timer? _typingTimer;
+  Timer? _smartReplyDebounceTimer;
   bool _isCurrentlyTyping = false;
   bool _hasMarkedAsRead =
       false; // Track if we've already marked this conversation as read
@@ -77,6 +81,12 @@ class _ChatScreenState extends State<ChatScreen> {
   
   // Reply functionality state
   MessageModel? _replyToMessage;
+  
+  // Smart replies state
+  List<String> _smartReplySuggestions = [];
+  bool _isLoadingSmartReplies = false;
+  DateTime? _smartReplyCacheTimestamp;
+  static const Duration _smartReplyCacheDuration = Duration(minutes: 5);
   
   // Performance optimizers
   late final MessagePaginationOptimizer _paginationOptimizer;
@@ -115,6 +125,9 @@ class _ChatScreenState extends State<ChatScreen> {
       context.read<ChatBloc>().add(
         LoadLatestMessages(conversationId: widget.conversationId),
       );
+
+      // Load smart reply suggestions when conversation opens
+      _loadSmartReplySuggestions();
 
       // ✅ We'll mark as read later only if there are actually unread messages
       // This will be handled when we receive MessagesLoaded state
@@ -158,6 +171,7 @@ class _ChatScreenState extends State<ChatScreen> {
     _searchController.dispose();
     _searchFocusNode.dispose();
     _typingTimer?.cancel();
+    _smartReplyDebounceTimer?.cancel();
 
     // Cleanup performance optimizers
     _paginationOptimizer.dispose();
@@ -266,6 +280,105 @@ class _ChatScreenState extends State<ChatScreen> {
     _scrollToBottom();
   }
 
+  /// Load smart reply suggestions based on conversation context
+  Future<void> _loadSmartReplySuggestions({
+    String? lastMessage,
+    int retryCount = 0,
+  }) async {
+    if (widget.conversationId == 'new') return;
+
+    // Check cache validity (5 minutes)
+    if (_smartReplyCacheTimestamp != null &&
+        _smartReplySuggestions.isNotEmpty) {
+      final cacheAge = DateTime.now().difference(_smartReplyCacheTimestamp!);
+      if (cacheAge < _smartReplyCacheDuration) {
+        AppLogger.debug(
+          'Using cached smart reply suggestions (age: ${cacheAge.inMinutes}m)',
+        );
+        return; // Use cached suggestions
+      }
+    }
+
+    setState(() {
+      _isLoadingSmartReplies = true;
+    });
+
+    try {
+      final autoReplyService = ServiceLocator().autoReplyService;
+
+      // Get the last message from the conversation if not provided
+      String? messageContext = lastMessage;
+      if (messageContext == null) {
+        final chatState = context.read<ChatBloc>().state;
+        if (chatState is MessagesLoaded && chatState.messages.isNotEmpty) {
+          final lastMsg = chatState.messages.first;
+          messageContext = lastMsg.content;
+        }
+      }
+
+      if (messageContext != null && messageContext.isNotEmpty) {
+        final suggestions = await autoReplyService.generateReplySuggestions(
+          conversationId: widget.conversationId,
+          lastMessage: messageContext,
+          count: 5, // Request 5 suggestions, show best 3-5
+        );
+
+        setState(() {
+          _smartReplySuggestions = suggestions;
+          _smartReplyCacheTimestamp = DateTime.now();
+          _isLoadingSmartReplies = false;
+        });
+
+        AppLogger.debug('Loaded ${suggestions.length} smart reply suggestions');
+      } else {
+        setState(() {
+          _smartReplySuggestions = [];
+          _smartReplyCacheTimestamp = null;
+          _isLoadingSmartReplies = false;
+        });
+      }
+    } catch (e) {
+      AppLogger.error('Failed to load smart reply suggestions: $e');
+
+      // Retry logic (max 2 retries with exponential backoff)
+      if (retryCount < 2) {
+        final delaySeconds = 2 * (retryCount + 1); // 2s, 4s
+        AppLogger.debug(
+          'Retrying smart reply suggestions in ${delaySeconds}s (attempt ${retryCount + 1}/2)',
+        );
+        await Future.delayed(Duration(seconds: delaySeconds));
+        return _loadSmartReplySuggestions(
+          lastMessage: lastMessage,
+          retryCount: retryCount + 1,
+        );
+      }
+
+      // Show user-friendly error with retry option after max retries
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text(
+              'Unable to load smart suggestions. Tap refresh to try again.',
+            ),
+            action: SnackBarAction(
+              label: 'Refresh',
+              onPressed: () {
+                setState(() => _smartReplyCacheTimestamp = null);
+                _loadSmartReplySuggestions();
+              },
+            ),
+            duration: const Duration(seconds: 4),
+          ),
+        );
+      }
+
+      setState(() {
+        _smartReplySuggestions = [];
+        _isLoadingSmartReplies = false;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return PopScope(
@@ -307,6 +420,16 @@ class _ChatScreenState extends State<ChatScreen> {
                     _paginationOptimizer.setLoadingMore(
                       widget.conversationId,
                       false,
+                    );
+                  
+                    // Debounced smart reply refresh when new message received
+                    // Cancel previous timer if exists
+                    _smartReplyDebounceTimer?.cancel();
+                    _smartReplyDebounceTimer = Timer(
+                      const Duration(seconds: 2),
+                      () {
+                        _loadSmartReplySuggestions();
+                      },
                     );
                   
                     // ✅ Only mark as read if we haven't done so yet and there are unread messages
@@ -406,6 +529,73 @@ class _ChatScreenState extends State<ChatScreen> {
             ),
           ),
           _buildTypingIndicator(),
+            QuickReplyChipBar(
+              suggestions: _smartReplySuggestions,
+              isLoading: _isLoadingSmartReplies,
+              onChipTap: (suggestion) {
+                // Track smart reply usage (edit mode)
+                AnalyticsService.instance.trackFeatureUsage(
+                  featureName: 'smart_reply_edit',
+                  properties: {
+                    'conversationId': widget.conversationId,
+                    'suggestion_length': suggestion.length,
+                    'action': 'populate_for_edit',
+                  },
+                );
+                // Populate message field with suggestion for editing
+                _messageController.text = suggestion;
+                _messageInputFocusNode.requestFocus();
+              },
+              onChipLongPress: (suggestion) {
+                // Track smart reply usage (direct send)
+                AnalyticsService.instance.trackFeatureUsage(
+                  featureName: 'smart_reply_send',
+                  properties: {
+                    'conversationId': widget.conversationId,
+                    'suggestion_length': suggestion.length,
+                    'action': 'direct_send',
+                  },
+                );
+                // Send suggestion directly without editing
+                _messageController.text = suggestion;
+                _sendMessage();
+              },
+              onChipDismiss: (suggestion) {
+                // Track dismissed suggestion
+                AnalyticsService.instance.trackFeatureUsage(
+                  featureName: 'smart_reply_dismiss',
+                  properties: {
+                    'conversationId': widget.conversationId,
+                    'suggestion_length': suggestion.length,
+                  },
+                );
+                // Remove dismissed suggestion from list
+                setState(() {
+                  _smartReplySuggestions.remove(suggestion);
+                });
+              },
+              onRefresh: () {
+                // Track manual refresh
+                AnalyticsService.instance.trackButtonClick(
+                  buttonName: 'smart_reply_refresh',
+                  screenName: 'chat_screen',
+                  properties: {
+                    'conversationId': widget.conversationId,
+                    'cache_age_minutes': _smartReplyCacheTimestamp != null
+                        ? DateTime.now()
+                              .difference(_smartReplyCacheTimestamp!)
+                              .inMinutes
+                        : null,
+                  },
+                );
+                // Force refresh suggestions by invalidating cache
+                setState(() {
+                  _smartReplyCacheTimestamp = null;
+                });
+                _loadSmartReplySuggestions();
+                AppLogger.debug('Manual smart reply refresh triggered');
+              },
+            ),
           AiMessageInput(
             controller: _messageController,
             chatId: widget.conversationId,
@@ -1143,6 +1333,16 @@ class _ChatScreenState extends State<ChatScreen> {
         if (state is MessagesLoaded &&
             state.conversationId == widget.conversationId &&
             state.typingUsers.isNotEmpty) {
+          // Extract typing user names from the map (keys where value is true)
+          final typingUserNames = state.typingUsers.entries
+              .where((entry) => entry.value == true)
+              .map((entry) => entry.key)
+              .toList();
+
+          if (typingUserNames.isEmpty) {
+            return const SizedBox.shrink();
+          }
+
           return Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: Row(
@@ -1165,24 +1365,8 @@ class _ChatScreenState extends State<ChatScreen> {
                       : null,
                 ),
                 const SizedBox(width: 8),
-                Text(
-                  '${widget.otherUserName} is typing...',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey[600],
-                    fontStyle: FontStyle.italic,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                      Colors.grey[400]!,
-                    ),
-                  ),
+                // Use the new animated typing indicator widget
+                AnimatedTypingIndicator(typingUsers: typingUserNames,
                 ),
               ],
             ),

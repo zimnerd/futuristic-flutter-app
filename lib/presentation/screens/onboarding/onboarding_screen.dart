@@ -5,6 +5,7 @@ import '../../theme/pulse_colors.dart';
 import '../../widgets/common/common_widgets.dart';
 
 /// Enhanced onboarding screen with profile setup flow
+/// IMPORTANT: Skip functionality removed - users must complete onboarding
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
 
@@ -30,13 +31,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         curve: Curves.easeInOut,
       );
     } else {
-      // Complete onboarding
-      context.go('/home');
+      // Complete onboarding - navigate to intent selection
+      context.go('/intent-selection');
     }
-  }
-
-  void _skipOnboarding() {
-    context.go('/home');
   }
 
   @override
@@ -56,24 +53,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         child: SafeArea(
           child: Column(
             children: [
-              // Skip button
-              Align(
-                alignment: Alignment.topRight,
-                child: Padding(
-                  padding: const EdgeInsets.all(PulseSpacing.lg),
-                  child: TextButton(
-                    onPressed: _skipOnboarding,
-                    child: Text(
-                      'Skip',
-                      style: PulseTextStyles.bodyLarge.copyWith(
-                        color: PulseColors.primary,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-
               // Page content
               Expanded(
                 child: PageView(

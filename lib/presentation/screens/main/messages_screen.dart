@@ -6,8 +6,9 @@ import 'package:go_router/go_router.dart';
 import '../../../core/utils/logger.dart';
 import '../../../core/constants/api_constants.dart';
 import '../../theme/pulse_colors.dart';
-import '../../widgets/common/common_widgets.dart';
 import '../../widgets/common/robust_network_image.dart';
+import '../../widgets/common/empty_state_widget.dart';
+import '../../widgets/common/skeleton_loading.dart';
 import '../../widgets/messaging/message_filters.dart';
 import '../../widgets/messaging/message_search.dart';
 import '../../widgets/messaging/match_stories_section.dart';
@@ -513,7 +514,18 @@ class _MessagesScreenState extends State<MessagesScreen> {
                   return Container(
                     height: 120,
                     padding: const EdgeInsets.symmetric(vertical: 8),
-                    child: const Center(child: CircularProgressIndicator()),
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: 5,
+                      itemBuilder: (context, index) => Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 4),
+                        child: SkeletonLoader(
+                          width: 80,
+                          height: 100,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
                   );
                 }
 
@@ -1000,8 +1012,9 @@ class _MessagesScreenState extends State<MessagesScreen> {
   }
 
   Widget _buildLoadingState() {
-    return const Center(
-      child: CircularProgressIndicator(),
+    return const SkeletonList(
+      skeletonItem: MessageCardSkeleton(),
+      itemCount: 8,
     );
   }
 
@@ -1042,40 +1055,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
   }
 
   Widget _buildEmptyState() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.chat_bubble_outline,
-            size: 64,
-            color: PulseColors.onSurfaceVariant,
-          ),
-          const SizedBox(height: PulseSpacing.lg),
-          Text(
-            'No messages yet',
-            style: PulseTextStyles.headlineMedium.copyWith(
-              color: PulseColors.onSurface,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: PulseSpacing.sm),
-          Text(
-            'Start matching to begin conversations',
-            style: PulseTextStyles.bodyLarge.copyWith(
-              color: PulseColors.onSurfaceVariant,
-            ),
-          ),
-          const SizedBox(height: PulseSpacing.xl),
-          PulseButton(
-            text: 'Start Matching',
-            onPressed: () {
-              context.go('/discovery');
-            },
-            variant: PulseButtonVariant.secondary,
-          ),
-        ],
-      ),
+    return EmptyStates.noMessages(onExplore: () => context.go('/matches'),
     );
   }
 

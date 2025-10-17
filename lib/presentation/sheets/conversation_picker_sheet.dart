@@ -36,6 +36,53 @@ class _ConversationPickerSheetState extends State<ConversationPickerSheet> {
     context.read<ChatBloc>().add(const LoadConversations());
   }
 
+  String _formatRelativeTime(DateTime dateTime) {
+    final now = DateTime.now();
+    final difference = now.difference(dateTime);
+
+    if (difference.inSeconds < 60) {
+      return 'Just now';
+    } else if (difference.inMinutes < 60) {
+      return '${difference.inMinutes}m ago';
+    } else if (difference.inHours < 24) {
+      return '${difference.inHours}h ago';
+    } else if (difference.inDays == 1) {
+      return 'Yesterday';
+    } else if (difference.inDays < 7) {
+      return '${difference.inDays}d ago';
+    } else {
+      // Format as "Jan 15" or "Dec 25"
+      final months = [
+        'Jan',
+        'Feb',
+        'Mar',
+        'Apr',
+        'May',
+        'Jun',
+        'Jul',
+        'Aug',
+        'Sep',
+        'Oct',
+        'Nov',
+        'Dec',
+      ];
+      return '${months[dateTime.month - 1]} ${dateTime.day}';
+    }
+  }
+
+  void _selectAll() {
+    setState(() {
+      _selectedConversationIds.clear();
+      _selectedConversationIds.addAll(_filteredConversations.map((c) => c.id));
+    });
+  }
+
+  void _deselectAll() {
+    setState(() {
+      _selectedConversationIds.clear();
+    });
+  }
+
   void _filterConversations(String query) {
     setState(() {
       _searchQuery = query.toLowerCase();
@@ -136,6 +183,33 @@ class _ConversationPickerSheetState extends State<ConversationPickerSheet> {
                     ),
                   ),
                 ),
+                // Select All / Deselect All button
+                if (_filteredConversations.isNotEmpty)
+                  TextButton(
+                    onPressed:
+                        _selectedConversationIds.length ==
+                            _filteredConversations.length
+                        ? _deselectAll
+                        : _selectAll,
+                    style: TextButton.styleFrom(
+                      foregroundColor: AppColors.primary,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
+                    ),
+                    child: Text(
+                      _selectedConversationIds.length ==
+                              _filteredConversations.length
+                          ? 'Deselect All'
+                          : 'Select All',
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                const SizedBox(width: 4),
                 // Forward button
                 TextButton(
                   onPressed: _selectedConversationIds.isEmpty || _isForwarding
@@ -309,21 +383,38 @@ class _ConversationPickerSheetState extends State<ConversationPickerSheet> {
                                   size: 48,
                                 ),
                                 const SizedBox(width: 12),
-                                // Name and last message
+                                // Name, last message, and timestamp
                                 Expanded(
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      Text(
-                                        conversation.otherUserName.isEmpty
-                                            ? 'Unknown'
-                                            : conversation.otherUserName,
-                                        style: const TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
+                                      Row(
+                                        children: [
+                                          Expanded(
+                                            child: Text(
+                                              conversation.otherUserName.isEmpty
+                                                  ? 'Unknown'
+                                                  : conversation.otherUserName,
+                                              style: const TextStyle(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 8),
+                                          Text(
+                                            _formatRelativeTime(
+                                              conversation.lastMessageTime,
+                                            ),
+                                            style: TextStyle(
+                                              fontSize: 12,
+                                              color: Colors.grey.shade500,
+                                              fontWeight: FontWeight.w400,
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                       if (conversation.lastMessage.isNotEmpty) ...[
                                         const SizedBox(height: 4),

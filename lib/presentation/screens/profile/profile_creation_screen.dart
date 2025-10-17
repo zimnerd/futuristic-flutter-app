@@ -14,6 +14,7 @@ import '../../widgets/profile/photo_picker_grid.dart';
 import '../../widgets/profile/profile_exit_dialog.dart';
 
 /// Profile creation screen for new users
+/// IMPORTANT: Core fields (name, age, gender, 1 photo) are now required and non-skippable
 class ProfileCreationScreen extends StatefulWidget {
   const ProfileCreationScreen({super.key});
 
@@ -92,7 +93,7 @@ class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
       _selectedLookingFor = draft.lookingFor;
       _currentStep = draft.currentStep;
     });
-    
+
     if (_currentStep > 0) {
       _pageController.animateToPage(
         _currentStep,
@@ -260,7 +261,7 @@ class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
             TextFormField(
               controller: _nameController,
               decoration: InputDecoration(
-                labelText: 'Full Name',
+                labelText: 'Full Name *',
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -280,7 +281,7 @@ class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
                   child: TextFormField(
                     controller: _ageController,
                     decoration: InputDecoration(
-                      labelText: 'Age',
+                      labelText: 'Age *',
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -330,7 +331,7 @@ class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
             DropdownButtonFormField<String>(
               initialValue: _selectedGender,
               decoration: InputDecoration(
-                labelText: 'Gender',
+                labelText: 'Gender *',
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -371,35 +372,16 @@ class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Add Photos',
-                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: PulseColors.primary,
-                ),
-              ),
-              TextButton(
-                onPressed: () {
-                  // Skip photos - show confirmation dialog
-                  _showSkipDialog(
-                    'Skip Photos?',
-                    'Adding photos greatly increases your chances of getting matches. Are you sure you want to skip this step?',
-                    () => _goToNextStep(),
-                  );
-                },
-                child: Text(
-                  'Skip for now',
-                  style: TextStyle(color: Colors.grey[600]),
-                ),
-              ),
-            ],
+          Text(
+            'Add Photos',
+            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+              fontWeight: FontWeight.bold,
+              color: PulseColors.primary,
+            ),
           ),
           const SizedBox(height: 8),
           Text(
-            'Upload photos to increase your match potential',
+            'Upload at least one photo to continue *',
             style: Theme.of(
               context,
             ).textTheme.bodyLarge?.copyWith(color: Colors.grey[600]),
@@ -415,9 +397,34 @@ class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
                 });
               },
               maxPhotos: 6,
-              isRequired: false, // No longer required since it can be skipped
+              isRequired: true,
             ),
           ),
+          if (_selectedPhotos.isEmpty)
+            Padding(
+              padding: const EdgeInsets.only(top: 16),
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: PulseColors.primary.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.info_outline, color: PulseColors.primary),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        'At least one photo is required to create your profile',
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: PulseColors.primary,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
         ],
       ),
     );
@@ -590,7 +597,7 @@ class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
           DropdownButtonFormField<String>(
             initialValue: _selectedLookingFor,
             decoration: InputDecoration(
-              labelText: 'Looking for',
+              labelText: 'Looking for *',
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
@@ -726,16 +733,21 @@ class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
   bool _canProceed() {
     switch (_currentStep) {
       case 0:
+        // Step 1: Basic Info - REQUIRED: name, age, gender
         return _nameController.text.trim().isNotEmpty &&
             _ageController.text.trim().isNotEmpty &&
             _selectedGender != null;
       case 1:
-        return true; // Photos are now optional (can be skipped)
+        // Step 2: Photos - REQUIRED: at least 1 photo
+        return _selectedPhotos.isNotEmpty;
       case 2:
-        return true; // Bio is optional
+        // Step 3: Bio - OPTIONAL
+        return true;
       case 3:
-        return true; // Interests are now optional (can be skipped)
+        // Step 4: Interests - OPTIONAL
+        return true;
       case 4:
+        // Step 5: Preferences - REQUIRED: lookingFor
         return _selectedLookingFor != null;
       default:
         return false;
@@ -778,6 +790,17 @@ class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Please fill in all required fields'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    // Validate required fields before submission
+    if (_selectedPhotos.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please add at least one photo'),
           backgroundColor: Colors.red,
         ),
       );
@@ -838,7 +861,7 @@ class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
 
     // For new profile creation, show exit dialog
     final currentDraft = _getCurrentDraft();
-    
+
     final shouldExit = await showDialog<bool>(
       context: context,
       barrierDismissible: false,
@@ -859,7 +882,7 @@ class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
         },
       ),
     );
-    
+
     return shouldExit ?? false;
   }
 
@@ -937,7 +960,7 @@ class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
       case 0:
         return 'Continue';
       case 1:
-        return _selectedPhotos.isNotEmpty ? 'Continue with Photos' : 'Continue';
+        return _selectedPhotos.isNotEmpty ? 'Continue with Photos' : 'Add at least 1 photo';
       case 2:
         return _bioController.text.trim().isNotEmpty
             ? 'Continue with Bio'

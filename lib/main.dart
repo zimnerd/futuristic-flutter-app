@@ -290,8 +290,10 @@ class PulseDatingApp extends StatelessWidget {
                 UserBloc(userRepository: context.read<UserRepository>()),
           ),
           BlocProvider<ChatBloc>(
-            create: (context) =>
-                ChatBloc(chatRepository: context.read<ChatRepository>()),
+            create: (context) => ChatBloc(
+              chatRepository: context.read<ChatRepository>(),
+              userRepository: context.read<UserRepository>(),
+            ),
           ),
           BlocProvider<NotificationBloc>(
             create: (context) => NotificationBloc(

@@ -16,6 +16,8 @@ import '../../../core/theme/pulse_design_system.dart';
 import '../../widgets/match/match_card.dart';
 import '../../navigation/app_router.dart';
 import '../../widgets/common/keyboard_dismissible_scaffold.dart';
+import '../../widgets/common/empty_state_widget.dart';
+import '../../widgets/common/skeleton_loading.dart';
 
 /// Actual Matches Screen - Shows mutual matches and people who liked you
 ///
@@ -263,7 +265,10 @@ class _MatchesScreenState extends State<MatchesScreen>
 
   Widget _buildContent(MatchState state) {
     if (state is MatchLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return const SkeletonList(
+        skeletonItem: MatchCardSkeleton(),
+        itemCount: 5,
+      );
     }
 
     if (state is MatchError) {
@@ -303,40 +308,43 @@ class _MatchesScreenState extends State<MatchesScreen>
 
     if (state is MatchesLoaded) {
       final matches = _getFilteredMatches(state.matches);
-      
+
       if (matches.isEmpty) {
-        return Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.favorite_border, size: 64, color: Colors.grey[400]),
-              const SizedBox(height: 16),
-              Text(
-                _searchQuery.isNotEmpty ? 'No matches found' : 'No matches yet',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.grey[600],
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                _searchQuery.isNotEmpty
-                    ? 'Try a different search term'
-                    : 'Start swiping in Discover to find matches!',
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 14, color: Colors.grey[500]),
-              ),
-            ],
+        return RefreshIndicator(
+          onRefresh: () async {
+            context.read<MatchBloc>().add(
+              const LoadMatches(excludeWithConversations: true),
+            );
+            // Wait a bit for the bloc to process
+            await Future.delayed(const Duration(milliseconds: 500));
+          },
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            child: SizedBox(
+              height: MediaQuery.of(context).size.height - 200,
+              child: _searchQuery.isNotEmpty
+                  ? EmptyStates.noSearchResults(query: _searchQuery)
+                  : EmptyStates.noMatches(
+                      onDiscover: () => context.go('/home'),
+                    ),
+            ),
           ),
         );
       }
 
-      return ListView.builder(
-        controller: _scrollController,
-        padding: const EdgeInsets.all(16),
-        itemCount: matches.length,
-        itemBuilder: (context, index) {
+      return RefreshIndicator(
+        onRefresh: () async {
+          context.read<MatchBloc>().add(
+            const LoadMatches(excludeWithConversations: true),
+          );
+          await Future.delayed(const Duration(milliseconds: 500));
+        },
+        child: ListView.builder(
+          controller: _scrollController,
+          padding: const EdgeInsets.all(16),
+          physics: const AlwaysScrollableScrollPhysics(),
+          itemCount: matches.length,
+          itemBuilder: (context, index) {
           final match = matches[index];
           return MatchCard(
             match: match,
@@ -403,6 +411,7 @@ class _MatchesScreenState extends State<MatchesScreen>
             },
           );
         },
+        ),
       );
     }
 

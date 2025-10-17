@@ -20,6 +20,7 @@ import '../screens/main/filters_screen.dart';
 import '../screens/statistics_screen.dart';
 import '../screens/onboarding/onboarding_screen.dart';
 import '../screens/onboarding/modern_landing_screen.dart';
+import '../screens/onboarding/intent_selection_screen.dart';
 import '../screens/subscription_management_screen.dart';
 import '../screens/payment/payment_methods_screen.dart';
 import '../../../presentation/payment/screens/saved_payment_methods_screen.dart';
@@ -136,6 +137,11 @@ class AppRouter {
         path: AppRoutes.onboarding,
         name: 'onboarding',
         builder: (context, state) => const OnboardingScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.intentSelection,
+        name: 'intentSelection',
+        builder: (context, state) => const IntentSelectionScreen(),
       ),
 
       // Authentication routes
@@ -984,6 +990,7 @@ class AppRouter {
 class AppRoutes {
   static const String welcome = '/';
   static const String onboarding = '/onboarding';
+  static const String intentSelection = '/intent-selection';
   static const String login = '/login';
   static const String register = '/register';
   static const String forgotPassword = '/forgot-password';

@@ -14,8 +14,13 @@ class ExploreScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: PulseColors.surface,
       body: SafeArea(
-        child: CustomScrollView(
-          slivers: [
+        child: RefreshIndicator(
+          onRefresh: () async {
+            // Simulate refresh - in real app would reload feature states
+            await Future.delayed(const Duration(milliseconds: 500));
+          },
+          child: CustomScrollView(
+            slivers: [
             // App Bar
             SliverAppBar(
               floating: true,
@@ -64,6 +69,7 @@ class ExploreScreen extends StatelessWidget {
               ),
             ),
           ],
+          ),
         ),
       ),
     );
