@@ -301,14 +301,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
             const SizedBox(width: PulseSpacing.sm),
             Expanded(
-              child: _buildStatCard(
-                icon: Icons.visibility,
-                value: '${stats.profileViews}',
-                label: 'Visits',
-                colors: [
-                  PulseColors.primary,
-                  PulseColors.primary.withValues(alpha: 0.7),
-                ],
+              child: GestureDetector(
+                onTap: () {
+                  // Navigate to profile viewers screen (premium feature)
+                  context.push('/profile-viewers');
+                },
+                child: _buildStatCard(
+                  icon: Icons.visibility,
+                  value: '${stats.profileViews}',
+                  label: 'Visits',
+                  colors: [
+                    PulseColors.primary,
+                    PulseColors.primary.withValues(alpha: 0.7),
+                  ],
+                  showTapHint: true,
+                  isPremium: true,  // Show premium badge
+                ),
               ),
             ),
           ],
@@ -322,6 +330,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
     required String value,
     required String label,
     required List<Color> colors,
+    bool showTapHint = false,
+    bool isPremium = false,
   }) {
     return Container(
       padding: const EdgeInsets.all(PulseSpacing.md),
@@ -341,17 +351,40 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
       child: Column(
         children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: colors,
+          Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: colors,
+                  ),
+                  borderRadius: BorderRadius.circular(PulseRadii.md),
+                ),
+                child: Icon(icon, color: Colors.white, size: 20),
               ),
-              borderRadius: BorderRadius.circular(PulseRadii.md),
-            ),
-            child: Icon(icon, color: Colors.white, size: 20),
+              if (isPremium)
+                Positioned(
+                  top: -4,
+                  right: -4,
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: Colors.amber,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white, width: 2),
+                    ),
+                    child: const Icon(
+                      Icons.workspace_premium,
+                      size: 12,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+            ],
           ),
           const SizedBox(height: PulseSpacing.xs),
           Text(
@@ -360,11 +393,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
               fontWeight: FontWeight.bold,
             ),
           ),
-          Text(
-            label,
-            style: PulseTextStyles.labelSmall.copyWith(
-              color: PulseColors.onSurfaceVariant,
-            ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                label,
+                style: PulseTextStyles.labelSmall.copyWith(
+                  color: PulseColors.onSurfaceVariant,
+                ),
+              ),
+              if (showTapHint) ...[
+                const SizedBox(width: 4),
+                Icon(
+                  Icons.arrow_forward_ios,
+                  size: 10,
+                  color: PulseColors.onSurfaceVariant,
+                ),
+              ],
+            ],
           ),
         ],
       ),

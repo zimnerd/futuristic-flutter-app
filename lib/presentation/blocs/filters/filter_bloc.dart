@@ -17,6 +17,11 @@ class FilterBLoC extends Bloc<FilterEvent, FilterState> {
     on<UpdateMaxDistance>(_onUpdateMaxDistance);
     on<UpdateInterests>(_onUpdateInterests);
     on<UpdateEducation>(_onUpdateEducation);
+    on<UpdateOccupation>(_onUpdateOccupation);
+    on<UpdateRelationshipType>(_onUpdateRelationshipType);
+    on<UpdateDrinkingHabits>(_onUpdateDrinkingHabits);
+    on<UpdateSmokingHabits>(_onUpdateSmokingHabits);
+    on<UpdateExercise>(_onUpdateExercise);
     on<UpdateVerificationPreference>(_onUpdateVerificationPreference);
     on<UpdatePhotosPreference>(_onUpdatePhotosPreference);
     on<SaveFilterPreferences>(_onSaveFilterPreferences);
@@ -127,6 +132,81 @@ class FilterBLoC extends Bloc<FilterEvent, FilterState> {
 
       emit(currentState.copyWith(preferences: updatedPreferences));
       _logger.d('Education preference updated: ${event.education}');
+    }
+  }
+
+  Future<void> _onUpdateOccupation(
+    UpdateOccupation event,
+    Emitter<FilterState> emit,
+  ) async {
+    if (state is FilterLoaded) {
+      final currentState = state as FilterLoaded;
+      final updatedPreferences = currentState.preferences.copyWith(
+        occupation: event.occupation,
+      );
+
+      emit(currentState.copyWith(preferences: updatedPreferences));
+      _logger.d('Occupation preference updated: ${event.occupation}');
+    }
+  }
+
+  Future<void> _onUpdateRelationshipType(
+    UpdateRelationshipType event,
+    Emitter<FilterState> emit,
+  ) async {
+    if (state is FilterLoaded) {
+      final currentState = state as FilterLoaded;
+      final updatedPreferences = currentState.preferences.copyWith(
+        relationshipType: event.relationshipType,
+      );
+
+      emit(currentState.copyWith(preferences: updatedPreferences));
+      _logger.d('Relationship type preference updated: ${event.relationshipType}');
+    }
+  }
+
+  Future<void> _onUpdateDrinkingHabits(
+    UpdateDrinkingHabits event,
+    Emitter<FilterState> emit,
+  ) async {
+    if (state is FilterLoaded) {
+      final currentState = state as FilterLoaded;
+      final updatedPreferences = currentState.preferences.copyWith(
+        drinkingHabits: event.drinkingHabits,
+      );
+
+      emit(currentState.copyWith(preferences: updatedPreferences));
+      _logger.d('Drinking habits preference updated: ${event.drinkingHabits}');
+    }
+  }
+
+  Future<void> _onUpdateSmokingHabits(
+    UpdateSmokingHabits event,
+    Emitter<FilterState> emit,
+  ) async {
+    if (state is FilterLoaded) {
+      final currentState = state as FilterLoaded;
+      final updatedPreferences = currentState.preferences.copyWith(
+        smokingHabits: event.smokingHabits,
+      );
+
+      emit(currentState.copyWith(preferences: updatedPreferences));
+      _logger.d('Smoking habits preference updated: ${event.smokingHabits}');
+    }
+  }
+
+  Future<void> _onUpdateExercise(
+    UpdateExercise event,
+    Emitter<FilterState> emit,
+  ) async {
+    if (state is FilterLoaded) {
+      final currentState = state as FilterLoaded;
+      final updatedPreferences = currentState.preferences.copyWith(
+        exercise: event.exercise,
+      );
+
+      emit(currentState.copyWith(preferences: updatedPreferences));
+      _logger.d('Exercise preference updated: ${event.exercise}');
     }
   }
 

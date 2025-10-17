@@ -35,6 +35,9 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     on<CancelProfileChanges>(_onCancelProfileChanges);
     on<UpdatePrivacySettings>(_onUpdatePrivacySettings);
     on<LoadProfileStats>(_onLoadProfileStats); // NEW: Stats handler
+    on<LoadProfileViewers>(
+      _onLoadProfileViewers,
+    ); // NEW: Profile viewers handler
   }
 
   Future<void> _onLoadProfile(
@@ -511,6 +514,56 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
       final errorMessage = ErrorHandler.handleError(e, showDialog: false);
       emit(
         state.copyWith(statsStatus: ProfileStatus.error, error: errorMessage),
+      );
+    }
+  }
+
+  Future<void> _onLoadProfileViewers(
+    LoadProfileViewers event,
+    Emitter<ProfileState> emit,
+  ) async {
+    try {
+      // Check if we have valid cached viewers (unless force refresh)
+      final hasValidCache =
+          state.viewers.isNotEmpty &&
+          state.viewersLastFetchTime != null &&
+          !state.isViewersCacheStale;
+
+      if (!event.forceRefresh && hasValidCache) {
+        _logger.d(
+          '✅ Using cached profile viewers (age: ${DateTime.now().difference(state.viewersLastFetchTime!).inSeconds} sec)',
+        );
+        return;
+      }
+
+      _logger.i(
+        '👀 Fetching profile viewers from server (limit: ${event.limit})',
+      );
+      emit(state.copyWith(viewersStatus: ProfileStatus.loading));
+
+      final viewers = await _profileService.getProfileViewers(
+        limit: event.limit,
+      );
+
+      _logger.i('📊 Profile viewers fetched from server:');
+      _logger.i('   - Total viewers: ${viewers.length}');
+      if (viewers.isNotEmpty) {
+        _logger.i('   - Most recent: ${viewers.first.name}');
+      }
+
+      emit(
+        state.copyWith(
+          viewersStatus: ProfileStatus.loaded,
+          viewers: viewers,
+          viewersTotalCount: viewers.length,
+          viewersLastFetchTime: DateTime.now(),
+        ),
+      );
+    } catch (e) {
+      _logger.e('❌ Failed to load profile viewers: $e');
+      final errorMessage = ErrorHandler.handleError(e, showDialog: false);
+      emit(
+        state.copyWith(viewersStatus: ProfileStatus.error, error: errorMessage),
       );
     }
   }

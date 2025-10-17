@@ -7,6 +7,10 @@ class FilterPreferences {
   final List<String> interests;
   final String? education;
   final String? occupation;
+  final String? relationshipType;
+  final String? drinkingHabits;
+  final String? smokingHabits;
+  final String? exercise;
   final bool showOnlyVerified;
   final bool showOnlyWithPhotos;
   final List<String> dealBreakers;
@@ -18,6 +22,10 @@ class FilterPreferences {
     this.interests = const [],
     this.education,
     this.occupation,
+    this.relationshipType,
+    this.drinkingHabits,
+    this.smokingHabits,
+    this.exercise,
     this.showOnlyVerified = false,
     this.showOnlyWithPhotos = true,
     this.dealBreakers = const [],
@@ -32,6 +40,10 @@ class FilterPreferences {
       interests: List<String>.from(json['interests'] as List? ?? []),
       education: json['education'] as String?,
       occupation: json['occupation'] as String?,
+      relationshipType: json['relationshipType'] as String?,
+      drinkingHabits: json['drinkingHabits'] as String?,
+      smokingHabits: json['smokingHabits'] as String?,
+      exercise: json['exercise'] as String?,
       showOnlyVerified: json['showOnlyVerified'] as bool? ?? false,
       showOnlyWithPhotos: json['showOnlyWithPhotos'] as bool? ?? true,
       dealBreakers: List<String>.from(json['dealBreakers'] as List? ?? []),
@@ -47,6 +59,10 @@ class FilterPreferences {
       'interests': interests,
       'education': education,
       'occupation': occupation,
+      'relationshipType': relationshipType,
+      'drinkingHabits': drinkingHabits,
+      'smokingHabits': smokingHabits,
+      'exercise': exercise,
       'showOnlyVerified': showOnlyVerified,
       'showOnlyWithPhotos': showOnlyWithPhotos,
       'dealBreakers': dealBreakers,
@@ -61,6 +77,10 @@ class FilterPreferences {
     List<String>? interests,
     String? education,
     String? occupation,
+    String? relationshipType,
+    String? drinkingHabits,
+    String? smokingHabits,
+    String? exercise,
     bool? showOnlyVerified,
     bool? showOnlyWithPhotos,
     List<String>? dealBreakers,
@@ -72,6 +92,10 @@ class FilterPreferences {
       interests: interests ?? this.interests,
       education: education ?? this.education,
       occupation: occupation ?? this.occupation,
+      relationshipType: relationshipType ?? this.relationshipType,
+      drinkingHabits: drinkingHabits ?? this.drinkingHabits,
+      smokingHabits: smokingHabits ?? this.smokingHabits,
+      exercise: exercise ?? this.exercise,
       showOnlyVerified: showOnlyVerified ?? this.showOnlyVerified,
       showOnlyWithPhotos: showOnlyWithPhotos ?? this.showOnlyWithPhotos,
       dealBreakers: dealBreakers ?? this.dealBreakers,
@@ -89,6 +113,10 @@ class FilterPreferences {
         other.interests.length == interests.length &&
         other.education == education &&
         other.occupation == occupation &&
+        other.relationshipType == relationshipType &&
+        other.drinkingHabits == drinkingHabits &&
+        other.smokingHabits == smokingHabits &&
+        other.exercise == exercise &&
         other.showOnlyVerified == showOnlyVerified &&
         other.showOnlyWithPhotos == showOnlyWithPhotos &&
         other.dealBreakers.length == dealBreakers.length;
@@ -103,6 +131,10 @@ class FilterPreferences {
       interests.length,
       education,
       occupation,
+      relationshipType,
+      drinkingHabits,
+      smokingHabits,
+      exercise,
       showOnlyVerified,
       showOnlyWithPhotos,
       dealBreakers.length,
@@ -118,6 +150,12 @@ class FilterPreferences {
       'interests': interests,
       'verifiedOnly': showOnlyVerified,
       'hasPhotos': showOnlyWithPhotos,
+      if (education != null) 'education': education,
+      if (occupation != null) 'occupation': occupation,
+      if (relationshipType != null) 'relationshipType': relationshipType,
+      if (drinkingHabits != null) 'drinkingHabits': drinkingHabits,
+      if (smokingHabits != null) 'smokingHabits': smokingHabits,
+      if (exercise != null) 'exercise': exercise,
     };
   }
 

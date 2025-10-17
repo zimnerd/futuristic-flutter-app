@@ -42,6 +42,41 @@ class UpdateEducation extends FilterEvent {
   UpdateEducation(this.education);
 }
 
+/// Update occupation preference
+class UpdateOccupation extends FilterEvent {
+  final String? occupation;
+
+  UpdateOccupation(this.occupation);
+}
+
+/// Update relationship type preference
+class UpdateRelationshipType extends FilterEvent {
+  final String? relationshipType;
+
+  UpdateRelationshipType(this.relationshipType);
+}
+
+/// Update drinking habits preference
+class UpdateDrinkingHabits extends FilterEvent {
+  final String? drinkingHabits;
+
+  UpdateDrinkingHabits(this.drinkingHabits);
+}
+
+/// Update smoking habits preference
+class UpdateSmokingHabits extends FilterEvent {
+  final String? smokingHabits;
+
+  UpdateSmokingHabits(this.smokingHabits);
+}
+
+/// Update exercise preference
+class UpdateExercise extends FilterEvent {
+  final String? exercise;
+
+  UpdateExercise(this.exercise);
+}
+
 /// Update verification preference
 class UpdateVerificationPreference extends FilterEvent {
   final bool showOnlyVerified;

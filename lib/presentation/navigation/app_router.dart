@@ -57,6 +57,7 @@ import '../screens/profile/profile_creation_screen.dart';
 import '../screens/profile/profile_section_edit_screen.dart';
 import '../screens/profile/profile_details_screen.dart';
 import '../screens/profile/profile_edit_screen.dart';
+import '../screens/profile/profile_viewers_screen.dart';
 import '../screens/chat/chat_screen.dart';
 import '../screens/call/video_call_screen.dart';
 import '../screens/call/audio_call_screen.dart';
@@ -473,6 +474,11 @@ class AppRouter {
           name: 'profileEdit',
           builder: (context, state) => const ProfileEditScreen(),
         ),
+        GoRoute(
+          path: AppRoutes.profileViewers,
+          name: 'profileViewers',
+          builder: (context, state) => const ProfileViewersScreen(),
+        ),
         
         // Date Planning routes
         GoRoute(
@@ -875,6 +881,7 @@ class AppRoutes {
   static const String profileSectionEdit = '/profile-section-edit';
   static const String profileDetails = '/profile-details/:profileId';
   static const String profileEdit = '/profile-edit';
+  static const String profileViewers = '/profile-viewers';
   static const String chat = '/chat/:conversationId';
   static const String videoCall = '/video-call/:callId';
   static const String groupVideoCall = '/group-video-call/:liveSessionId';

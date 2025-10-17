@@ -1257,3 +1257,72 @@ class ProfilePhotoSync {
     };
   }
 }
+
+/// Extension to ProfileService for profile viewers
+extension ProfileViewersExtension on ProfileService {
+  /// Get list of users who viewed the current user's profile
+  Future<List<domain.UserProfile>> getProfileViewers({int limit = 50}) async {
+    try {
+      _logger.i('👀 Fetching profile viewers (limit: $limit)');
+
+      final response = await _apiClient.get(
+        '/users/profile-viewers',
+        queryParameters: {'limit': limit},
+      );
+
+      if (response.statusCode == 200) {
+        final responseData = response.data as Map<String, dynamic>;
+        final data = responseData['data'] as Map<String, dynamic>;
+        final viewersData = data['viewers'] as List<dynamic>;
+        final totalCount = data['totalCount'] as int;
+
+        _logger.i('✅ Fetched $totalCount profile viewers');
+
+        final viewers = viewersData.map((json) {
+          // Map backend response to UserProfile format
+          final String firstName = json['firstName'] as String? ?? '';
+          final String lastName = json['lastName'] as String? ?? '';
+          final String fullName = '$firstName $lastName'.trim();
+          final String displayName = fullName.isNotEmpty
+              ? fullName
+              : json['username'] as String;
+
+          return domain.UserProfile(
+            id: json['id'] as String,
+            name: displayName,
+            age: (json['age'] as int?) ?? 18, // Default age if not provided
+            bio: json['bio'] as String? ?? '',
+            photos: [
+              if (json['mainPhotoUrl'] != null)
+                domain.ProfilePhoto(
+                  id: '${json['id']}_main',
+                  url: json['mainPhotoUrl'] as String,
+                  order: 0,
+                  isMain: true,
+                ),
+            ],
+            location: domain.UserLocation(
+              latitude: 0.0,
+              longitude: 0.0,
+              city: '',
+              country: '',
+            ),
+            isVerified: json['verified'] as bool? ?? false,
+            verified: json['verified'] as bool? ?? false,
+            distanceKm: json['distance'] as double?,
+          );
+        }).toList();
+
+        return viewers;
+      } else {
+        throw NetworkException('Failed to fetch profile viewers');
+      }
+    } on DioException catch (e) {
+      _logger.e('❌ Network error fetching profile viewers: ${e.message}');
+      throw NetworkException('Failed to fetch profile viewers: ${e.message}');
+    } catch (e) {
+      _logger.e('❌ Unexpected error fetching profile viewers: $e');
+      throw UserException('Failed to fetch profile viewers');
+    }
+  }
+}

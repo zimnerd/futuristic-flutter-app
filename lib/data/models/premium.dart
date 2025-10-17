@@ -516,6 +516,7 @@ enum PremiumFeatureType {
   readReceipts,
   unlimitedLikes,
   whoLikedYou,
+  profileViewers, // See who viewed your profile
   advancedFilters,
   prioritySupport,
   customGifts,

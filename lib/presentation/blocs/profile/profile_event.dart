@@ -93,3 +93,14 @@ class LoadProfileStats extends ProfileEvent {
   @override
   List<Object?> get props => [forceRefresh];
 }
+
+/// Load list of users who viewed the current user's profile
+class LoadProfileViewers extends ProfileEvent {
+  final int limit;
+  final bool forceRefresh;
+
+  const LoadProfileViewers({this.limit = 50, this.forceRefresh = false});
+
+  @override
+  List<Object> get props => [limit, forceRefresh];
+}
