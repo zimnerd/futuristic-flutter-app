@@ -678,4 +678,77 @@ class UserRepositorySimple implements UserRepository {
       throw Exception('Failed to get upload progress: ${e.toString()}');
     }
   }
+
+  // Notification Preferences Methods
+  @override
+  Future<Map<String, dynamic>> getNotificationPreferences(String userId) async {
+    try {
+      _logger.i('Getting notification preferences for user: $userId');
+
+      final response = await _apiService.get(
+        '/users/$userId/notification-preferences',
+      );
+
+      if (response.statusCode == 200) {
+        return response.data;
+      }
+      throw Exception(
+        'Failed to get notification preferences: ${response.statusCode}',
+      );
+    } catch (e) {
+      _logger.e('Get notification preferences error: $e');
+      throw Exception(
+        'Failed to get notification preferences: ${e.toString()}',
+      );
+    }
+  }
+
+  @override
+  Future<void> updateNotificationPreferences(
+    String userId,
+    Map<String, dynamic> preferences,
+  ) async {
+    try {
+      _logger.i('Updating notification preferences for user: $userId');
+
+      final response = await _apiService.put(
+        '/users/$userId/notification-preferences',
+        data: preferences,
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception(
+          'Failed to update notification preferences: ${response.statusCode}',
+        );
+      }
+      _logger.i('Notification preferences updated successfully');
+    } catch (e) {
+      _logger.e('Update notification preferences error: $e');
+      throw Exception(
+        'Failed to update notification preferences: ${e.toString()}',
+      );
+    }
+  }
+
+  @override
+  Future<void> testNotification(String userId, String type) async {
+    try {
+      _logger.i('Sending test notification to user: $userId, type: $type');
+
+      final response = await _apiService.post(
+        '/users/$userId/test-notification',
+        data: {'type': type},
+      );
+
+      if (response.statusCode != 200 && response.statusCode != 201) {
+        throw Exception(
+          'Failed to send test notification: ${response.statusCode}',
+        );
+      }
+      _logger.i('Test notification sent successfully');
+    } catch (e) {
+      _logger.e('Send test notification error: $e');
+      throw Exception('Failed to send test notification: ${e.toString()}');
+    }
+  }
 }

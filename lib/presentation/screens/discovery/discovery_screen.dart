@@ -15,6 +15,7 @@ import '../../blocs/discovery/discovery_state.dart';
 import '../../widgets/boost/boost_banner_widget.dart';
 import '../../widgets/boost/boost_confirmation_dialog.dart';
 import '../../widgets/discovery/swipe_card.dart' as swipe_widget;
+import '../../widgets/ai/floating_ai_button.dart';
 import '../ai_companion/ai_companion_screen.dart';
 
 /// Modern Discovery Screen - PulseLink's unique swipe interface
@@ -402,6 +403,14 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
                     // Floating boost button (bottom-right corner)
                     if (state is DiscoveryLoaded && state.hasUsers)
                       _buildFloatingBoostButton(),
+
+                  // Floating AI Companion button (QUICK WIN - Easy AI access)
+                  if (state is DiscoveryLoaded && state.hasUsers)
+                    const Positioned(
+                      left: 16,
+                      bottom: 140,
+                      child: FloatingAIButton(),
+                    ),
 
                   // Match celebration
                   if (state is DiscoveryMatchFound) _buildMatchDialog(state),

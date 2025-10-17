@@ -8,6 +8,7 @@ import 'package:permission_handler/permission_handler.dart';
 
 import '../../blocs/profile/profile_bloc.dart';
 import '../../blocs/photo/photo_bloc.dart';
+import '../../blocs/photo/photo_state.dart';
 import '../../blocs/photo/photo_event.dart' as photo_events;
 import '../../theme/pulse_colors.dart';
 import '../../widgets/common/keyboard_dismissible_scaffold.dart';
@@ -79,35 +80,57 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return KeyboardDismissibleScaffold(
-      appBar: AppBar(
-        title: Text(
-          _getSectionTitle(),
-          style: PulseTextStyles.titleLarge.copyWith(
-            color: PulseColors.onSurface,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: PulseColors.onSurface),
-          onPressed: () => context.pop(),
-        ),
-        actions: [
-          TextButton(
-            onPressed: _saveSection,
-            child: Text(
-              'Save',
-              style: PulseTextStyles.titleMedium.copyWith(
-                color: PulseColors.primary,
-                fontWeight: FontWeight.bold,
-              ),
+    return BlocListener<PhotoBloc, PhotoState>(
+      listener: (context, state) {
+        if (state is PhotoError) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(state.message),
+              backgroundColor: PulseColors.error,
+              duration: const Duration(seconds: 3),
+            ),
+          );
+        } else if (state is PhotoOperationSuccess) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(state.message),
+              backgroundColor: PulseColors.success,
+              duration: const Duration(seconds: 2),
+            ),
+          );
+          // Refresh profile data
+          context.read<ProfileBloc>().add(LoadProfile());
+        }
+      },
+      child: KeyboardDismissibleScaffold(
+        appBar: AppBar(
+          title: Text(
+            _getSectionTitle(),
+            style: PulseTextStyles.titleLarge.copyWith(
+              color: PulseColors.onSurface,
+              fontWeight: FontWeight.bold,
             ),
           ),
-        ],
-      ),
-      body: SafeArea(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back, color: PulseColors.onSurface),
+            onPressed: () => context.pop(),
+          ),
+          actions: [
+            TextButton(
+              onPressed: _saveSection,
+              child: Text(
+                'Save',
+                style: PulseTextStyles.titleMedium.copyWith(
+                  color: PulseColors.primary,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
+        ),
+        body: SafeArea(
         child: Form(
           key: _formKey,
           child: SingleChildScrollView(
@@ -131,7 +154,8 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
           ),
         ),
       ),
-    );
+      ), // KeyboardDismissibleScaffold
+    ); // BlocListener
   }
 
   Widget _buildSectionDescription() {

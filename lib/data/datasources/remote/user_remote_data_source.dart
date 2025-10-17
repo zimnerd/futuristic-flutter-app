@@ -96,6 +96,14 @@ abstract class UserRemoteDataSource {
   // User Status
   Future<void> updateOnlineStatus(String userId, bool isOnline);
   Future<void> updateLocation(String userId, double latitude, double longitude);
+
+  // Notification Preferences
+  Future<Map<String, dynamic>> getNotificationPreferences(String userId);
+  Future<void> updateNotificationPreferences(
+    String userId,
+    Map<String, dynamic> preferences,
+  );
+  Future<void> testNotification(String userId, String type);
 }
 
 /// Implementation of UserRemoteDataSource using API service
@@ -1047,6 +1055,72 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
       _logger.e('Update location error: $e');
       if (e is ApiException) rethrow;
       throw ApiException('Failed to update location: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>> getNotificationPreferences(String userId) async {
+    try {
+      _logger.i('Getting notification preferences for user: $userId');
+
+      final response = await _apiClient.get(
+        '/users/$userId/notification-preferences',
+      );
+
+      if (response.statusCode == 200) {
+        return response.data['preferences'] as Map<String, dynamic>;
+      } else {
+        throw ApiException(
+          'Failed to get notification preferences: ${response.statusMessage}',
+        );
+      }
+    } catch (e) {
+      _logger.e('Get notification preferences error: $e');
+      if (e is ApiException) rethrow;
+      throw ApiException(
+        'Failed to get notification preferences: ${e.toString()}',
+      );
+    }
+  }
+
+  @override
+  Future<void> updateNotificationPreferences(
+    String userId,
+    Map<String, dynamic> preferences,
+  ) async {
+    try {
+      _logger.i('Updating notification preferences for user: $userId');
+
+      await _apiClient.patch(
+        '/users/$userId/notification-preferences',
+        data: preferences,
+      );
+
+      _logger.i('Notification preferences updated successfully');
+    } catch (e) {
+      _logger.e('Update notification preferences error: $e');
+      if (e is ApiException) rethrow;
+      throw ApiException(
+        'Failed to update notification preferences: ${e.toString()}',
+      );
+    }
+  }
+
+  @override
+  Future<void> testNotification(String userId, String type) async {
+    try {
+      _logger.i('Sending test notification for user: $userId, type: $type');
+
+      await _apiClient.post(
+        '/users/$userId/test-notification',
+        data: {'type': type},
+      );
+
+      _logger.i('Test notification sent successfully');
+    } catch (e) {
+      _logger.e('Send test notification error: $e');
+      if (e is ApiException) rethrow;
+      throw ApiException('Failed to send test notification: ${e.toString()}');
     }
   }
 }

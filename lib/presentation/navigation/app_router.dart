@@ -65,6 +65,8 @@ import '../screens/verification/photo_verification_screen.dart';
 import '../screens/verification/id_verification_screen.dart';
 import '../screens/verification/verification_status_screen.dart';
 import '../screens/profile/photo_gallery_screen.dart';
+import '../screens/settings/notification_settings_screen.dart';
+import '../blocs/notification/notification_bloc.dart';
 import '../screens/chat/chat_screen.dart';
 import '../screens/call/video_call_screen.dart';
 import '../screens/call/audio_call_screen.dart';
@@ -824,6 +826,20 @@ class AppRouter {
             );
           },
         ),
+
+        // Notification settings routes
+        GoRoute(
+          path: AppRoutes.notificationSettings,
+          name: 'notificationSettings',
+          builder: (context, state) {
+            return BlocProvider(
+              create: (context) => NotificationBloc(
+                userRepository: context.read<UserRepository>(),
+              )..add(LoadNotificationPreferences()),
+              child: const NotificationSettingsScreen(),
+            );
+          },
+        ),
     ],
     errorBuilder: (context, state) => Scaffold(
       body: Center(
@@ -1003,4 +1019,7 @@ class AppRoutes {
 
   // Photo management routes
   static const String photoGallery = '/photo-gallery';
+
+  // Notification settings routes
+  static const String notificationSettings = '/notification-settings';
 }

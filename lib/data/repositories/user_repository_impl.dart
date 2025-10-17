@@ -794,4 +794,49 @@ class UserRepositoryImpl implements UserRepository {
       throw Exception('Failed to update user location: $e');
     }
   }
+
+  @override
+  Future<Map<String, dynamic>> getNotificationPreferences(String userId) async {
+    try {
+      _logger.i('Getting notification preferences for user: $userId');
+      final preferences = await _remoteDataSource.getNotificationPreferences(
+        userId,
+      );
+      _logger.i('Notification preferences retrieved successfully');
+      return preferences;
+    } catch (e) {
+      _logger.e('Failed to get notification preferences: $e');
+      throw Exception('Failed to get notification preferences: $e');
+    }
+  }
+
+  @override
+  Future<void> updateNotificationPreferences(
+    String userId,
+    Map<String, dynamic> preferences,
+  ) async {
+    try {
+      _logger.i('Updating notification preferences for user: $userId');
+      await _remoteDataSource.updateNotificationPreferences(
+        userId,
+        preferences,
+      );
+      _logger.i('Notification preferences updated successfully');
+    } catch (e) {
+      _logger.e('Failed to update notification preferences: $e');
+      throw Exception('Failed to update notification preferences: $e');
+    }
+  }
+
+  @override
+  Future<void> testNotification(String userId, String type) async {
+    try {
+      _logger.i('Sending test notification to user: $userId, type: $type');
+      await _remoteDataSource.testNotification(userId, type);
+      _logger.i('Test notification sent successfully');
+    } catch (e) {
+      _logger.e('Failed to send test notification: $e');
+      throw Exception('Failed to send test notification: $e');
+    }
+  }
 }

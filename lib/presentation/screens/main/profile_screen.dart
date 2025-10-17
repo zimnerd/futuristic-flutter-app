@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import '../../theme/pulse_colors.dart';
 import '../../../domain/entities/user_profile.dart';
 import '../../widgets/profile/profile_completion_widget.dart';
+import '../../widgets/profile/verification_cta_banner.dart';
 import '../../blocs/profile/profile_bloc.dart';
 import '../../widgets/common/pulse_loading_widget.dart';
 import '../../widgets/verification/verification_badge.dart';
@@ -92,6 +93,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   const SizedBox(height: PulseSpacing.md),
                   _buildCompactStats(userProfile),
                   const SizedBox(height: PulseSpacing.xl),
+
+                  // QUICK WIN: Verification CTA for unverified users
+                  if (userProfile != null && !userProfile.verified)
+                    const VerificationCTABanner(),
+
                   ProfileCompletionWidget(
                     profile: userProfile,
                     onTapIncomplete: () {
@@ -249,52 +255,79 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
         // Display real stats from API
         final stats = state.stats!;
-        return Row(
-          children: [
-            Expanded(
-              child: _buildStatCard(
-                icon: Icons.favorite,
-                value: '${stats.matchesCount}',
-                label: 'Matches',
-                colors: [
-                  PulseColors.error,
-                  PulseColors.error.withValues(alpha: 0.7),
+        // QUICK WIN: Make all stats tappable to view full statistics
+        return GestureDetector(
+          onTap: () => context.push('/statistics'),
+          child: Column(
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildStatCard(
+                      icon: Icons.favorite,
+                      value: '${stats.matchesCount}',
+                      label: 'Matches',
+                      colors: [
+                        PulseColors.error,
+                        PulseColors.error.withValues(alpha: 0.7),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: PulseSpacing.sm),
+                  Expanded(
+                    child: _buildStatCard(
+                      icon: Icons.thumb_up,
+                      value: '${stats.likesReceived}',
+                      label: 'Likes',
+                      colors: [
+                        PulseColors.secondary,
+                        PulseColors.secondary.withValues(alpha: 0.7),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: PulseSpacing.sm),
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () {
+                        // Navigate to profile viewers screen (premium feature)
+                        context.push('/profile-viewers');
+                      },
+                      child: _buildStatCard(
+                        icon: Icons.visibility,
+                        value: '${stats.profileViews}',
+                        label: 'Visits',
+                        colors: [
+                          PulseColors.primary,
+                          PulseColors.primary.withValues(alpha: 0.7),
+                        ],
+                        showTapHint: true,
+                        isPremium: true,  // Show premium badge
+                      ),
+                    ),
+                  ),
                 ],
               ),
-            ),
-            const SizedBox(width: PulseSpacing.sm),
-            Expanded(
-              child: _buildStatCard(
-                icon: Icons.thumb_up,
-                value: '${stats.likesReceived}',
-                label: 'Likes',
-                colors: [
-                  PulseColors.secondary,
-                  PulseColors.secondary.withValues(alpha: 0.7),
+              const SizedBox(height: PulseSpacing.sm),
+              // Tap hint
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.info_outline,
+                    size: 14,
+                    color: PulseColors.onSurfaceVariant,
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    'Tap to view full statistics',
+                    style: PulseTextStyles.labelSmall.copyWith(
+                      color: PulseColors.onSurfaceVariant,
+                    ),
+                  ),
                 ],
               ),
-            ),
-            const SizedBox(width: PulseSpacing.sm),
-            Expanded(
-              child: GestureDetector(
-                onTap: () {
-                  // Navigate to profile viewers screen (premium feature)
-                  context.push('/profile-viewers');
-                },
-                child: _buildStatCard(
-                  icon: Icons.visibility,
-                  value: '${stats.profileViews}',
-                  label: 'Visits',
-                  colors: [
-                    PulseColors.primary,
-                    PulseColors.primary.withValues(alpha: 0.7),
-                  ],
-                  showTapHint: true,
-                  isPremium: true,  // Show premium badge
-                ),
-              ),
-            ),
-          ],
+            ],
+          ),
         );
       },
     );

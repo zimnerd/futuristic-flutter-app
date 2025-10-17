@@ -103,4 +103,12 @@ abstract class UserRepository {
   Future<UserModel?> getCachedUser(String userId);
   Future<List<UserModel>> getCachedUsers();
   Future<void> clearUserCache();
+
+  // Notification Preferences
+  Future<Map<String, dynamic>> getNotificationPreferences(String userId);
+  Future<void> updateNotificationPreferences(
+    String userId,
+    Map<String, dynamic> preferences,
+  );
+  Future<void> testNotification(String userId, String type);
 }
