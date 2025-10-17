@@ -3,6 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../domain/entities/notification_preferences.dart';
 import '../../../domain/repositories/user_repository.dart';
+import '../auth/auth_bloc.dart';
+import '../auth/auth_state.dart';
 
 part 'notification_event.dart';
 part 'notification_state.dart';
@@ -10,16 +12,30 @@ part 'notification_state.dart';
 /// BLoC for managing notification settings
 class NotificationBloc extends Bloc<NotificationEvent, NotificationState> {
   final UserRepository _userRepository;
+  final AuthBloc _authBloc;
 
   NotificationBloc({
     required UserRepository userRepository,
+    required AuthBloc authBloc,
   })  : _userRepository = userRepository,
+       _authBloc = authBloc,
         super(const NotificationInitial()) {
     on<LoadNotificationPreferences>(_onLoadNotificationPreferences);
     on<UpdateNotificationPreferences>(_onUpdateNotificationPreferences);
     on<UpdateSinglePreference>(_onUpdateSinglePreference);
     on<SendTestNotification>(_onSendTestNotification);
     on<ResetNotificationPreferences>(_onResetNotificationPreferences);
+  }
+
+  /// Get current user ID from auth context
+  String _getCurrentUserId() {
+    final authState = _authBloc.state;
+    if (authState is AuthAuthenticated) {
+      return authState.user.id;
+    }
+    throw Exception(
+      'User not authenticated. Please log in to access notifications.',
+    );
   }
 
   /// Load notification preferences from repository
@@ -30,9 +46,8 @@ class NotificationBloc extends Bloc<NotificationEvent, NotificationState> {
     emit(const NotificationLoading());
 
     try {
-      // Get userId from token or current user
-      // TODO: Get actual userId from auth
-      final userId = 'current-user-id';
+      // Get userId from auth context
+      final userId = _getCurrentUserId();
       
       final preferencesJson = await _userRepository.getNotificationPreferences(userId);
       final preferences = NotificationPreferences.fromJson(preferencesJson);
@@ -53,9 +68,8 @@ class NotificationBloc extends Bloc<NotificationEvent, NotificationState> {
     emit(NotificationUpdating(event.preferences));
 
     try {
-      // Get userId from token or current user
-      // TODO: Get actual userId from auth
-      final userId = 'current-user-id';
+      // Get userId from auth context
+      final userId = _getCurrentUserId();
       
       await _userRepository.updateNotificationPreferences(
         userId,
@@ -152,9 +166,8 @@ class NotificationBloc extends Bloc<NotificationEvent, NotificationState> {
         tipsTricks: true,
       );
 
-      // Get userId from token or current user
-      // TODO: Get actual userId from auth
-      final userId = 'current-user-id';
+      // Get userId from auth context
+      final userId = _getCurrentUserId();
       
       await _userRepository.updateNotificationPreferences(
         userId,

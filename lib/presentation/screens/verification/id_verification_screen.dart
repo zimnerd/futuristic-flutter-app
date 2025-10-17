@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/network/api_client.dart';
 
 /// Document verification screen for ID/Passport/Driver's License
 /// Steps: 1) Select document type, 2) Capture front, 3) Capture back, 4) Review, 5) Submit
@@ -756,17 +757,48 @@ class _IdVerificationScreenState extends State<IdVerificationScreen> {
     });
 
     try {
-      // TODO: Upload photos and call verification API
-      // For now, simulate API call
-      await Future.delayed(const Duration(seconds: 3));
+      // Upload photos to media service
+      final apiClient = ApiClient.instance;
 
-      // final repository = context.read<UsersRepository>();
-      // await repository.requestVerification({
-      //   'type': 'id',
-      //   'documentType': _selectedDocumentType,
-      //   'frontPhotoUrl': frontUploadedUrl,
-      //   'backPhotoUrl': backUploadedUrl,
-      // });
+      // Upload front photo
+      final frontResponse = await apiClient.uploadProfilePhoto(
+        _frontPhoto!.path,
+      );
+      if (frontResponse.statusCode != 200 ||
+          frontResponse.data['data'] == null) {
+        throw Exception('Failed to upload front photo');
+      }
+      final frontPhotoUrl = frontResponse.data['data']['url'] as String;
+
+      // Upload back photo if required
+      String? backPhotoUrl;
+      if (_backPhoto != null) {
+        final backResponse = await apiClient.uploadProfilePhoto(
+          _backPhoto!.path,
+        );
+        if (backResponse.statusCode != 200 ||
+            backResponse.data['data'] == null) {
+          throw Exception('Failed to upload back photo');
+        }
+        backPhotoUrl = backResponse.data['data']['url'] as String;
+      }
+
+      // Request verification with uploaded photo URLs
+      final verificationData = {
+        'type': 'id',
+        'documentType': _selectedDocumentType,
+        'photoUrl': frontPhotoUrl,
+        if (backPhotoUrl != null) 'backPhotoUrl': backPhotoUrl,
+      };
+
+      final verificationResponse = await apiClient.post(
+        '/users/me/verify',
+        data: verificationData,
+      );
+
+      if (verificationResponse.statusCode != 200) {
+        throw Exception('Verification request failed');
+      }
 
       if (mounted) {
         _showSuccess();

@@ -862,7 +862,8 @@ class AppRouter {
             return BlocProvider(
               create: (context) => NotificationBloc(
                 userRepository: context.read<UserRepository>(),
-              )..add(LoadNotificationPreferences()),
+                authBloc: context.read<AuthBloc>(),
+              )..add(const LoadNotificationPreferences()),
               child: const NotificationSettingsScreen(),
             );
           },

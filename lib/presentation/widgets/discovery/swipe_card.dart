@@ -10,6 +10,7 @@ import '../../screens/common/photo_preview_screen.dart';
 import '../../screens/profile/profile_details_screen.dart';
 import '../common/robust_network_image.dart';
 import '../verification/verification_badge.dart';
+import '../dialogs/report_user_dialog.dart';
 
 // Animation durations for consistent timing
 class _SwipeCardConstants {
@@ -286,8 +287,16 @@ class _SwipeCardState extends State<SwipeCard>
                 initialIndex: currentIndex,
                 showReport: true,
                 onReport: () {
-                  Navigator.pop(context);
-                  // TODO: Implement report functionality
+                  final dialogContext = context;
+                  Navigator.pop(dialogContext);
+                  // Show report dialog
+                  showDialog(
+                    context: dialogContext,
+                    builder: (_) => ReportUserDialog(
+                      userId: widget.user.id,
+                      userName: widget.user.name,
+                    ),
+                  );
                 },
               ),
             ),

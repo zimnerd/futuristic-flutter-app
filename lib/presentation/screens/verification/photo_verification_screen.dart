@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/network/api_client.dart';
 
 /// Multi-step photo verification wizard
 /// Steps: 1) Instructions, 2) Camera Capture, 3) Photo Review, 4) Submission
@@ -539,15 +540,30 @@ class _PhotoVerificationScreenState extends State<PhotoVerificationScreen> {
     });
 
     try {
-      // TODO: Upload photo and call verification API
-      // For now, simulate API call
-      await Future.delayed(const Duration(seconds: 2));
+      // Upload photo to media service
+      final apiClient = ApiClient.instance;
 
-      // final repository = context.read<UsersRepository>();
-      // await repository.requestVerification({
-      //   'type': 'photo',
-      //   'photoUrl': uploadedUrl,
-      // });
+      // Upload captured photo
+      final photoResponse = await apiClient.uploadProfilePhoto(
+        _capturedPhoto!.path,
+      );
+      if (photoResponse.statusCode != 200 ||
+          photoResponse.data['data'] == null) {
+        throw Exception('Failed to upload photo');
+      }
+      final photoUrl = photoResponse.data['data']['url'] as String;
+
+      // Request photo verification
+      final verificationData = {'type': 'photo', 'photoUrl': photoUrl};
+
+      final verificationResponse = await apiClient.post(
+        '/users/me/verify',
+        data: verificationData,
+      );
+
+      if (verificationResponse.statusCode != 200) {
+        throw Exception('Verification request failed');
+      }
 
       if (mounted) {
         _showSuccess();
