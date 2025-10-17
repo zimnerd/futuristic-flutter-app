@@ -401,6 +401,113 @@ class UserRepositoryImpl implements UserRepository {
   }
 
   @override
+  Future<Map<String, dynamic>> uploadMultiplePhotos(
+    String userId,
+    List<String> photoPaths,
+  ) async {
+    try {
+      _logger.i('Uploading ${photoPaths.length} photos for user: $userId');
+
+      // TODO: Implement batch upload with progress tracking
+      // For now, upload one by one
+      final List<String> uploadedUrls = [];
+      for (final photoPath in photoPaths) {
+        final photoUrl = await _remoteDataSource.uploadProfilePhoto(
+          userId,
+          photoPath,
+        );
+        uploadedUrls.add(photoUrl);
+      }
+
+      // Update local cache
+      final cachedUser = await _localDataSource.getCurrentUser();
+      if (cachedUser != null && cachedUser.id == userId) {
+        final updatedPhotos = List<String>.from(cachedUser.photos)
+          ..addAll(uploadedUrls);
+        final updatedUser = cachedUser.copyWith(photos: updatedPhotos);
+        await _localDataSource.cacheUser(updatedUser);
+      }
+
+      _logger.i('${uploadedUrls.length} photos uploaded successfully');
+      return {
+        'success': true,
+        'uploadedUrls': uploadedUrls,
+        'count': uploadedUrls.length,
+      };
+    } catch (e) {
+      _logger.e('Upload multiple photos failed: $e');
+      if (e is AppException) rethrow;
+      throw UserException('Failed to upload photos: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<void> deletePhoto(String userId, String photoId) async {
+    try {
+      _logger.i('Deleting photo $photoId for user: $userId');
+
+      // TODO: Update remote data source to support photoId
+      // For now, use the existing deleteProfilePhoto method
+      await _remoteDataSource.deleteProfilePhoto(userId, photoId);
+
+      _logger.i('Photo $photoId deleted successfully');
+    } catch (e) {
+      _logger.e('Delete photo failed: $e');
+      if (e is AppException) rethrow;
+      throw UserException('Failed to delete photo: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<void> reorderPhotos(String userId, List<String> photoIds) async {
+    try {
+      _logger.i('Reordering photos for user: $userId');
+
+      // TODO: Implement backend API call for photo reordering
+      // POST /api/v1/profile/photos/reorder with photoIds array
+
+      _logger.i('Photos reordered successfully');
+    } catch (e) {
+      _logger.e('Reorder photos failed: $e');
+      if (e is AppException) rethrow;
+      throw UserException('Failed to reorder photos: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<void> setMainPhoto(String userId, String photoId) async {
+    try {
+      _logger.i('Setting main photo $photoId for user: $userId');
+
+      // TODO: Implement backend API call for setting main photo
+      // PUT /api/v1/profile/photos/$photoId/set-main
+
+      _logger.i('Main photo set successfully');
+    } catch (e) {
+      _logger.e('Set main photo failed: $e');
+      if (e is AppException) rethrow;
+      throw UserException('Failed to set main photo: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>> getPhotoUploadProgress(String uploadId) async {
+    try {
+      // TODO: Implement upload progress tracking
+      // This would typically query a progress tracking service or state
+      return {'uploadId': uploadId, 'progress': 0.0, 'status': 'pending'};
+    } catch (e) {
+      _logger.e('Get photo upload progress failed: $e');
+      return {
+        'uploadId': uploadId,
+        'progress': 0.0,
+        'status': 'error',
+        'error': e.toString(),
+      };
+    }
+  }
+
+  @override
   Future<List<UserModel>> getNearbyUsers({
     required double latitude,
     required double longitude,

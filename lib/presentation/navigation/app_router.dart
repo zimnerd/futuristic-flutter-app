@@ -4,6 +4,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../blocs/auth/auth_bloc.dart';
+import '../blocs/photo/photo_bloc.dart';
+import '../../domain/repositories/user_repository.dart';
 import '../screens/auth/forgot_password_screen.dart';
 import '../screens/auth/login_screen.dart' as simple_login;
 import '../screens/auth/otp_verification_screen.dart';
@@ -73,6 +75,7 @@ import '../../../data/repositories/call_history_repository.dart';
 import '../screens/discovery/discovery_screen.dart';
 import '../screens/discovery/who_liked_you_screen.dart';
 import '../screens/features/advanced_features_screen.dart';
+import '../screens/explore/explore_screen.dart';
 import '../screens/heat_map_screen.dart';
 import '../../../domain/entities/user_profile.dart';
 import '../../../data/models/user_model.dart';
@@ -188,7 +191,18 @@ class AppRouter {
               ],
             ),
 
-            // Branch 2: Events Tab
+            // Branch 2: Explore Tab (NEW - Feature Hub)
+            StatefulShellBranch(
+              routes: [
+                GoRoute(
+                  path: AppRoutes.explore,
+                  name: 'explore',
+                  builder: (context, state) => const ExploreScreen(),
+                ),
+              ],
+            ),
+
+            // Branch 4: Events Tab
             StatefulShellBranch(
               routes: [
                 GoRoute(
@@ -199,7 +213,7 @@ class AppRouter {
               ],
             ),
 
-            // Branch 3: DMs/Messages Tab
+            // Branch 5: DMs/Messages Tab
             StatefulShellBranch(
               routes: [
                 GoRoute(
@@ -209,15 +223,21 @@ class AppRouter {
                 ),
               ],
             ),
+
+            // Branch 6: Profile Tab (FIXED - now shows actual profile)
+            StatefulShellBranch(
+              routes: [
+                GoRoute(
+                  path: AppRoutes.profile,
+                  name: 'profile',
+                  builder: (context, state) => const ProfileScreen(),
+                ),
+              ],
+            ),
           ],
         ),
 
         // Detail screens (outside tabs - no bottom nav)
-        GoRoute(
-          path: AppRoutes.profile,
-          name: 'profile',
-          builder: (context, state) => const ProfileScreen(),
-        ),
         GoRoute(
           path: AppRoutes.settings,
           name: 'settings',
@@ -356,9 +376,13 @@ class AppRouter {
           final sectionType = extra?['sectionType'] as String? ?? 'basic_info';
           final initialData = extra?['initialData'] as Map<String, dynamic>?;
           
-          return ProfileSectionEditScreen(
-            sectionType: sectionType,
-            initialData: initialData,
+            return BlocProvider(
+              create: (context) =>
+                  PhotoBloc(userRepository: context.read<UserRepository>()),
+              child: ProfileSectionEditScreen(
+                sectionType: sectionType,
+                initialData: initialData,
+              ),
           );
         },
       ),
@@ -898,6 +922,7 @@ class AppRoutes {
   static const String otpVerify = '/otp-verify';
   static const String home = '/home';
   static const String matches = '/matches';
+  static const String explore = '/explore';
   static const String messages = '/messages';
   static const String profile = '/profile';
   static const String settings = '/settings';

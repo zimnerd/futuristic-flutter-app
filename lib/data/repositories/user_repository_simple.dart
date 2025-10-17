@@ -597,4 +597,85 @@ class UserRepositorySimple implements UserRepository {
       throw Exception('Phone validation failed: ${e.toString()}');
     }
   }
+
+  // Photo Management Methods
+  @override
+  Future<Map<String, dynamic>> uploadMultiplePhotos(
+    String userId,
+    List<String> photoPaths,
+  ) async {
+    try {
+      _logger.i('Uploading ${photoPaths.length} photos for user: $userId');
+
+      // TODO: Implement actual photo upload with multipart/form-data
+      final response = await _apiService.post(
+        '/users/$userId/photos',
+        data: {'photoPaths': photoPaths},
+      );
+
+      if (response.statusCode == 200) {
+        return response.data;
+      }
+      throw Exception('Failed to upload photos: ${response.statusCode}');
+    } catch (e) {
+      _logger.e('Photo upload error: $e');
+      throw Exception('Failed to upload photos: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<void> deletePhoto(String userId, String photoId) async {
+    try {
+      _logger.i('Deleting photo $photoId for user: $userId');
+
+      await _apiService.delete('/users/$userId/photos/$photoId');
+    } catch (e) {
+      _logger.e('Photo deletion error: $e');
+      throw Exception('Failed to delete photo: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<void> setMainPhoto(String userId, String photoId) async {
+    try {
+      _logger.i('Setting main photo $photoId for user: $userId');
+
+      await _apiService.put('/users/$userId/photos/$photoId/main', data: {});
+    } catch (e) {
+      _logger.e('Set main photo error: $e');
+      throw Exception('Failed to set main photo: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<void> reorderPhotos(String userId, List<String> photoIds) async {
+    try {
+      _logger.i('Reordering photos for user: $userId');
+
+      await _apiService.put(
+        '/users/$userId/photos/reorder',
+        data: {'photoIds': photoIds},
+      );
+    } catch (e) {
+      _logger.e('Photo reorder error: $e');
+      throw Exception('Failed to reorder photos: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>> getPhotoUploadProgress(String uploadId) async {
+    try {
+      _logger.i('Getting upload progress for: $uploadId');
+
+      final response = await _apiService.get('/uploads/$uploadId/progress');
+
+      if (response.statusCode == 200) {
+        return response.data;
+      }
+      throw Exception('Failed to get upload progress: ${response.statusCode}');
+    } catch (e) {
+      _logger.e('Get upload progress error: $e');
+      throw Exception('Failed to get upload progress: ${e.toString()}');
+    }
+  }
 }

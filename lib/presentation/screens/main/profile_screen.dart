@@ -73,16 +73,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
             backgroundColor: Colors.transparent,
             elevation: 0,
-            leading: IconButton(
-              icon: const Icon(Icons.arrow_back, color: PulseColors.onSurface),
-              onPressed: () {
-                if (context.canPop()) {
-                  context.pop();
-                } else {
-                  context.go('/home');
-                }
-              },
-            ),
+            automaticallyImplyLeading: false,
+            actions: [
+              // Settings icon - access to settings, filters, premium, etc.
+              IconButton(
+                icon: const Icon(Icons.settings, color: PulseColors.onSurface),
+                onPressed: () => context.push('/settings'),
+                tooltip: 'Settings',
+              ),
+            ],
           ),
           body: SafeArea(
             child: SingleChildScrollView(

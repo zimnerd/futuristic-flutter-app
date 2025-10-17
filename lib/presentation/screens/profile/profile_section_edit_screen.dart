@@ -7,9 +7,15 @@ import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 import '../../blocs/profile/profile_bloc.dart';
+import '../../blocs/photo/photo_bloc.dart';
+import '../../blocs/photo/photo_event.dart' as photo_events;
 import '../../theme/pulse_colors.dart';
 import '../../widgets/common/keyboard_dismissible_scaffold.dart';
 import '../../widgets/common/pulse_button.dart';
+import '../../dialogs/photo_details_dialog.dart';
+import '../../sheets/photo_reorder_sheet.dart';
+import '../../../domain/entities/user_profile.dart';
+import '../../navigation/app_router.dart';
 
 /// Profile section edit screen for editing individual profile sections
 class ProfileSectionEditScreen extends StatefulWidget {
@@ -276,6 +282,22 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
         ),
         const SizedBox(height: PulseSpacing.lg),
 
+        // Reorder photos button (show only if there are 2+ photos)
+        if (totalPhotos >= 2)
+          Padding(
+            padding: const EdgeInsets.only(bottom: PulseSpacing.md),
+            child: OutlinedButton.icon(
+              onPressed: _showPhotoReorderSheet,
+              icon: const Icon(Icons.reorder),
+              label: const Text('Reorder Photos'),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: PulseColors.primary,
+                side: BorderSide(color: PulseColors.primary),
+                minimumSize: const Size(double.infinity, 44),
+              ),
+            ),
+          ),
+
         // Combined photo grid (existing + new photos)
         GridView.builder(
           shrinkWrap: true,
@@ -320,26 +342,29 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
         ? (photo['isMain'] ?? photo['isPrimary'] ?? displayIndex == 0)
         : displayIndex == 0;
 
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(PulseRadii.md),
-        border: Border.all(
-          color: isMain
-              ? PulseColors.primary
-              : PulseColors.outline.withValues(alpha: 0.3),
-          width: isMain ? 2 : 1,
+    return GestureDetector(
+      onTap: () => _showPhotoDetails(photo, displayIndex),
+      onLongPress: () => _navigateToPhotoGallery(displayIndex),
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(PulseRadii.md),
+          border: Border.all(
+            color: isMain
+                ? PulseColors.primary
+                : PulseColors.outline.withValues(alpha: 0.3),
+            width: isMain ? 2 : 1,
+          ),
         ),
-      ),
-      child: Stack(
-        children: [
-          // Photo image
-          ClipRRect(
-            borderRadius: BorderRadius.circular(PulseRadii.md - 1),
-            child: Image.network(
-              photoUrl,
-              fit: BoxFit.cover,
-              width: double.infinity,
-              height: double.infinity,
+        child: Stack(
+          children: [
+            // Photo image
+            ClipRRect(
+              borderRadius: BorderRadius.circular(PulseRadii.md - 1),
+              child: Image.network(
+                photoUrl,
+                fit: BoxFit.cover,
+                width: double.infinity,
+                height: double.infinity,
               loadingBuilder: (context, child, loadingProgress) {
                 if (loadingProgress == null) return child;
                 return Container(
@@ -432,7 +457,8 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
               ),
             ),
           ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -699,6 +725,161 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
         ],
       ),
     );
+  }
+
+  /// Show photo details dialog with options to view full screen, set as main, delete, etc.
+  void _showPhotoDetails(dynamic photo, int index) {
+    final String photoUrl = photo is Map
+        ? (photo['url'] ?? photo['photo_url'] ?? '')
+        : photo.toString();
+    final String? photoId = photo is Map ? photo['id'] : null;
+    final bool isMain = photo is Map
+        ? (photo['isMain'] ?? photo['isPrimary'] ?? index == 0)
+        : index == 0;
+
+    final List<dynamic> existingPhotos =
+        _formData['photos'] as List<dynamic>? ?? [];
+
+    // Convert to ProfilePhoto for the dialog
+    final profilePhoto = ProfilePhoto(
+      id: photoId ?? '',
+      url: photoUrl,
+      order: index,
+      isMain: isMain,
+    );
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) => PhotoDetailsDialog(
+        photo: profilePhoto,
+        isPrimary: isMain,
+        canSetPrimary: !isMain,
+        onSetPrimary: isMain
+            ? null
+            : () {
+                Navigator.pop(dialogContext);
+
+                // Dispatch PhotoBloc event to set main photo
+                if (photoId != null) {
+                  context.read<PhotoBloc>().add(
+                    photo_events.SetMainPhoto(photoId),
+                  );
+                }
+
+                // Also update local state for immediate UI feedback
+                setState(() {
+                  // Set all photos as not main
+                  for (var p in existingPhotos) {
+                    if (p is Map) {
+                      p['isMain'] = false;
+                      p['isPrimary'] = false;
+                    }
+                  }
+                  // Set this photo as main
+                  if (photo is Map) {
+                    photo['isMain'] = true;
+                    photo['isPrimary'] = true;
+                  }
+                });
+
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Main photo updated')),
+                );
+              },
+        onDelete: () {
+          Navigator.pop(dialogContext);
+
+          // Dispatch PhotoBloc event to delete photo
+          if (photoId != null) {
+            context.read<PhotoBloc>().add(photo_events.DeletePhoto(photoId));
+          }
+
+          // Show local deletion dialog for immediate feedback
+          _showDeletePhotoDialog(index, isExisting: true);
+        },
+      ),
+    );
+  }
+
+  /// Navigate to full-screen photo gallery
+  void _navigateToPhotoGallery(int initialIndex) {
+    final List<dynamic> existingPhotos =
+        _formData['photos'] as List<dynamic>? ?? [];
+    final List<ProfilePhoto> photoList = existingPhotos.map((photo) {
+      if (photo is Map) {
+        return ProfilePhoto(
+          id: photo['id'] ?? '',
+          url: photo['url'] ?? photo['photo_url'] ?? '',
+          order: existingPhotos.indexOf(photo),
+          isMain: photo['isMain'] ?? photo['isPrimary'] ?? false,
+        );
+      }
+      return ProfilePhoto(
+        id: '',
+        url: photo.toString(),
+        order: existingPhotos.indexOf(photo),
+        isMain: false,
+      );
+    }).toList();
+
+    context.push(
+      AppRoutes.photoGallery,
+      extra: {'photos': photoList, 'initialIndex': initialIndex},
+    );
+  }
+
+  /// Show photo reorder bottom sheet
+  void _showPhotoReorderSheet() async {
+    final List<dynamic> existingPhotos =
+        _formData['photos'] as List<dynamic>? ?? [];
+    final List<ProfilePhoto> photoList = existingPhotos.map((photo) {
+      if (photo is Map) {
+        return ProfilePhoto(
+          id: photo['id'] ?? '',
+          url: photo['url'] ?? photo['photo_url'] ?? '',
+          order: existingPhotos.indexOf(photo),
+          isMain: photo['isMain'] ?? photo['isPrimary'] ?? false,
+        );
+      }
+      return ProfilePhoto(
+        id: '',
+        url: photo.toString(),
+        order: existingPhotos.indexOf(photo),
+        isMain: false,
+      );
+    }).toList();
+
+    final reorderedPhotos = await showModalBottomSheet<List<ProfilePhoto>>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => PhotoReorderSheet(
+        photos: photoList,
+        onReorder: (reordered) {
+          Navigator.pop(context, reordered);
+        },
+      ),
+    );
+
+    if (reorderedPhotos != null) {
+      setState(() {
+        // Update the photos order in _formData
+        final updatedPhotos = reorderedPhotos.map((photo) {
+          return {
+            'id': photo.id,
+            'url': photo.url,
+            'photo_url': photo.url,
+            'isMain': photo.isMain,
+            'isPrimary': photo.isMain,
+          };
+        }).toList();
+        _formData['photos'] = updatedPhotos;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Photos reordered successfully')),
+      );
+    }
   }
 
   Widget _buildWorkEducationSection() {
@@ -1324,14 +1505,28 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
         try {
           final newPhotos = _formData['newPhotos'] as List<File>;
 
-          // Upload each new photo using ProfileBloc
+          // Check if there are existing photos
+          final hasExistingPhotos =
+              (_formData['photos'] as List<dynamic>?)?.isNotEmpty ?? false;
+
+          // Upload each new photo using ProfileBloc and PhotoBloc
           for (int i = 0; i < newPhotos.length; i++) {
             debugPrint(
               '📸 Uploading photo ${i + 1}/${newPhotos.length}: ${newPhotos[i].path}',
             );
 
+            // Dispatch to ProfileBloc (existing implementation)
             context.read<ProfileBloc>().add(
               UploadPhoto(photoPath: newPhotos[i].path),
+            );
+            
+            // Also dispatch to PhotoBloc for photo-specific state management
+            context.read<PhotoBloc>().add(
+              photo_events.UploadPhoto(
+                photoFile: newPhotos[i],
+                setAsMain:
+                    !hasExistingPhotos && i == 0, // First photo if no existing
+              ),
             );
           }
 

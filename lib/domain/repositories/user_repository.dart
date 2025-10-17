@@ -55,6 +55,16 @@ abstract class UserRepository {
   Future<void> deleteProfilePhoto(String userId, String photoUrl);
   Future<void> updateUserLocation(String userId, double latitude, double longitude);
 
+  // Photo Management
+  Future<Map<String, dynamic>> uploadMultiplePhotos(
+    String userId,
+    List<String> photoPaths,
+  );
+  Future<void> deletePhoto(String userId, String photoId);
+  Future<void> reorderPhotos(String userId, List<String> photoIds);
+  Future<void> setMainPhoto(String userId, String photoId);
+  Future<Map<String, dynamic>> getPhotoUploadProgress(String uploadId);
+
   // User Discovery
   Future<List<UserModel>> getNearbyUsers({
     required double latitude,
