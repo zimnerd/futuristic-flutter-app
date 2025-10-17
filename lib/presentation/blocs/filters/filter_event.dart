@@ -77,6 +77,13 @@ class UpdateExercise extends FilterEvent {
   UpdateExercise(this.exercise);
 }
 
+/// Update pet preference
+class UpdatePetPreference extends FilterEvent {
+  final String? petPreference;
+
+  UpdatePetPreference(this.petPreference);
+}
+
 /// Update verification preference
 class UpdateVerificationPreference extends FilterEvent {
   final bool showOnlyVerified;

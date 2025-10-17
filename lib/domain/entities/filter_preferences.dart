@@ -11,6 +11,7 @@ class FilterPreferences {
   final String? drinkingHabits;
   final String? smokingHabits;
   final String? exercise;
+  final String? petPreference;
   final bool showOnlyVerified;
   final bool showOnlyWithPhotos;
   final List<String> dealBreakers;
@@ -26,6 +27,7 @@ class FilterPreferences {
     this.drinkingHabits,
     this.smokingHabits,
     this.exercise,
+    this.petPreference,
     this.showOnlyVerified = false,
     this.showOnlyWithPhotos = true,
     this.dealBreakers = const [],
@@ -44,6 +46,7 @@ class FilterPreferences {
       drinkingHabits: json['drinkingHabits'] as String?,
       smokingHabits: json['smokingHabits'] as String?,
       exercise: json['exercise'] as String?,
+      petPreference: json['petPreference'] as String?,
       showOnlyVerified: json['showOnlyVerified'] as bool? ?? false,
       showOnlyWithPhotos: json['showOnlyWithPhotos'] as bool? ?? true,
       dealBreakers: List<String>.from(json['dealBreakers'] as List? ?? []),
@@ -63,6 +66,7 @@ class FilterPreferences {
       'drinkingHabits': drinkingHabits,
       'smokingHabits': smokingHabits,
       'exercise': exercise,
+      'petPreference': petPreference,
       'showOnlyVerified': showOnlyVerified,
       'showOnlyWithPhotos': showOnlyWithPhotos,
       'dealBreakers': dealBreakers,
@@ -81,6 +85,7 @@ class FilterPreferences {
     String? drinkingHabits,
     String? smokingHabits,
     String? exercise,
+    String? petPreference,
     bool? showOnlyVerified,
     bool? showOnlyWithPhotos,
     List<String>? dealBreakers,
@@ -96,6 +101,7 @@ class FilterPreferences {
       drinkingHabits: drinkingHabits ?? this.drinkingHabits,
       smokingHabits: smokingHabits ?? this.smokingHabits,
       exercise: exercise ?? this.exercise,
+      petPreference: petPreference ?? this.petPreference,
       showOnlyVerified: showOnlyVerified ?? this.showOnlyVerified,
       showOnlyWithPhotos: showOnlyWithPhotos ?? this.showOnlyWithPhotos,
       dealBreakers: dealBreakers ?? this.dealBreakers,
@@ -117,6 +123,7 @@ class FilterPreferences {
         other.drinkingHabits == drinkingHabits &&
         other.smokingHabits == smokingHabits &&
         other.exercise == exercise &&
+        other.petPreference == petPreference &&
         other.showOnlyVerified == showOnlyVerified &&
         other.showOnlyWithPhotos == showOnlyWithPhotos &&
         other.dealBreakers.length == dealBreakers.length;
@@ -135,6 +142,7 @@ class FilterPreferences {
       drinkingHabits,
       smokingHabits,
       exercise,
+      petPreference,
       showOnlyVerified,
       showOnlyWithPhotos,
       dealBreakers.length,
@@ -156,11 +164,12 @@ class FilterPreferences {
       if (drinkingHabits != null) 'drinkingHabits': drinkingHabits,
       if (smokingHabits != null) 'smokingHabits': smokingHabits,
       if (exercise != null) 'exercise': exercise,
+      if (petPreference != null) 'petPreference': petPreference,
     };
   }
 
   @override
   String toString() {
-    return 'FilterPreferences(minAge: $minAge, maxAge: $maxAge, maxDistance: $maxDistance, interests: $interests, education: $education, occupation: $occupation, showOnlyVerified: $showOnlyVerified, showOnlyWithPhotos: $showOnlyWithPhotos, dealBreakers: $dealBreakers)';
+    return 'FilterPreferences(minAge: $minAge, maxAge: $maxAge, maxDistance: $maxDistance, interests: $interests, education: $education, occupation: $occupation, petPreference: $petPreference, showOnlyVerified: $showOnlyVerified, showOnlyWithPhotos: $showOnlyWithPhotos, dealBreakers: $dealBreakers)';
   }
 }

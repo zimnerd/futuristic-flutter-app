@@ -22,6 +22,7 @@ class FilterBLoC extends Bloc<FilterEvent, FilterState> {
     on<UpdateDrinkingHabits>(_onUpdateDrinkingHabits);
     on<UpdateSmokingHabits>(_onUpdateSmokingHabits);
     on<UpdateExercise>(_onUpdateExercise);
+    on<UpdatePetPreference>(_onUpdatePetPreference);
     on<UpdateVerificationPreference>(_onUpdateVerificationPreference);
     on<UpdatePhotosPreference>(_onUpdatePhotosPreference);
     on<SaveFilterPreferences>(_onSaveFilterPreferences);
@@ -218,6 +219,21 @@ class FilterBLoC extends Bloc<FilterEvent, FilterState> {
 
       emit(currentState.copyWith(preferences: updatedPreferences));
       _logger.d('Exercise preference updated: ${event.exercise}');
+    }
+  }
+
+  Future<void> _onUpdatePetPreference(
+    UpdatePetPreference event,
+    Emitter<FilterState> emit,
+  ) async {
+    if (state is FilterLoaded) {
+      final currentState = state as FilterLoaded;
+      final updatedPreferences = currentState.preferences.copyWith(
+        petPreference: event.petPreference,
+      );
+
+      emit(currentState.copyWith(preferences: updatedPreferences));
+      _logger.d('Pet preference updated: ${event.petPreference}');
     }
   }
 

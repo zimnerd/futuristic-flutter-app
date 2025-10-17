@@ -475,6 +475,50 @@ class _FiltersScreenState extends State<FiltersScreen> {
             context.read<FilterBLoC>().add(UpdateExercise(value));
           },
         ),
+        const SizedBox(height: 16),
+
+        // Pet Preferences
+        DropdownButtonFormField<String>(
+          initialValue: state.preferences.petPreference,
+          decoration: InputDecoration(
+            labelText: 'Pet Preferences',
+            hintText: 'Any',
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: PulseColors.outline),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: PulseColors.primary),
+            ),
+          ),
+          items: const [
+            DropdownMenuItem<String>(value: null, child: Text('Any')),
+            DropdownMenuItem<String>(
+              value: 'LOVE_PETS',
+              child: Text('Love Pets'),
+            ),
+            DropdownMenuItem<String>(
+              value: 'LIKE_PETS',
+              child: Text('Like Pets'),
+            ),
+            DropdownMenuItem<String>(
+              value: 'HAVE_PETS',
+              child: Text('Have Pets'),
+            ),
+            DropdownMenuItem<String>(
+              value: 'ALLERGIC',
+              child: Text('Allergic to Pets'),
+            ),
+            DropdownMenuItem<String>(
+              value: 'NOT_A_PET_PERSON',
+              child: Text('Not a Pet Person'),
+            ),
+          ],
+          onChanged: (String? value) {
+            context.read<FilterBLoC>().add(UpdatePetPreference(value));
+          },
+        ),
       ],
     );
   }
