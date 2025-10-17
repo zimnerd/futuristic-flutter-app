@@ -185,6 +185,42 @@ class LiveStreamingService {
     }
   }
 
+  /// Search live streams
+  Future<List<Map<String, dynamic>>> searchStreams({
+    required String query,
+    int page = 1,
+    int limit = 20,
+    String? category,
+  }) async {
+    try {
+      final response = await _apiClient.get(
+        '/api/v1/live-streaming/streams/search',
+        queryParameters: {
+          'query': query,
+          'page': page.toString(),
+          'limit': limit.toString(),
+          if (category != null) 'category': category,
+        },
+      );
+
+      if (response.statusCode == 200 && response.data != null) {
+        final List<dynamic> data = response.data['streams'] ?? [];
+        final streams = data
+            .map((stream) => Map<String, dynamic>.from(stream))
+            .toList();
+
+        _logger.d('Search found ${streams.length} streams for query: "$query"');
+        return streams;
+      } else {
+        _logger.e('Failed to search streams: ${response.statusMessage}');
+        return [];
+      }
+    } catch (e) {
+      _logger.e('Error searching streams: $e');
+      return [];
+    }
+  }
+
   /// Send message in live stream chat
   Future<bool> sendChatMessage({
     required String streamId,

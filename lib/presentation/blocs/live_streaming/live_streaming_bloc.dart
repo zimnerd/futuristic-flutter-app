@@ -13,6 +13,8 @@ class LiveStreamingBloc extends Bloc<LiveStreamingEvent, LiveStreamingState> {
 
   LiveStreamingBloc(this._liveStreamingService) : super(const LiveStreamingInitial()) {
     on<LoadLiveStreams>(_onLoadLiveStreams);
+    on<SearchStreams>(_onSearchStreams);
+    on<UpdateStreamViewers>(_onUpdateStreamViewers);
     on<StartLiveStream>(_onStartLiveStream);
     on<JoinLiveStream>(_onJoinLiveStream);
     on<LeaveLiveStream>(_onLeaveLiveStream);
@@ -70,6 +72,103 @@ class LiveStreamingBloc extends Bloc<LiveStreamingEvent, LiveStreamingState> {
     } catch (e, stackTrace) {
       _logger.e('$_tag: Failed to load live streams', error: e, stackTrace: stackTrace);
       emit(LiveStreamingError('Failed to load live streams: ${e.toString()}'));
+    }
+  }
+
+  Future<void> _onSearchStreams(
+    SearchStreams event,
+    Emitter<LiveStreamingState> emit,
+  ) async {
+    try {
+      if (event.page == 1) {
+        emit(const LiveStreamingLoading());
+      }
+
+      _logger.d(
+        '$_tag: Searching streams with query: "${event.query}" (page: ${event.page}, limit: ${event.limit})',
+      );
+
+      final streams = await _liveStreamingService.searchStreams(
+        query: event.query,
+        category: event.category,
+        page: event.page,
+        limit: event.limit,
+      );
+
+      final hasMoreStreams = streams.length == event.limit;
+
+      if (state is LiveStreamsLoaded && event.page > 1) {
+        final currentState = state as LiveStreamsLoaded;
+        final allStreams = [...currentState.streams, ...streams];
+        emit(
+          LiveStreamsLoaded(
+            streams: allStreams,
+            hasMoreStreams: hasMoreStreams,
+            currentPage: event.page,
+          ),
+        );
+      } else {
+        emit(
+          LiveStreamsLoaded(
+            streams: streams,
+            hasMoreStreams: hasMoreStreams,
+            currentPage: event.page,
+          ),
+        );
+      }
+
+      _logger.d('$_tag: Found ${streams.length} streams matching query');
+    } catch (e, stackTrace) {
+      _logger.e(
+        '$_tag: Failed to search streams',
+        error: e,
+        stackTrace: stackTrace,
+      );
+      emit(LiveStreamingError('Failed to search streams: ${e.toString()}'));
+    }
+  }
+
+  void _onUpdateStreamViewers(
+    UpdateStreamViewers event,
+    Emitter<LiveStreamingState> emit,
+  ) {
+    try {
+      // Only update if we have streams loaded
+      if (state is LiveStreamsLoaded) {
+        final currentState = state as LiveStreamsLoaded;
+
+        // Find and update the stream with matching ID
+        final updatedStreams = currentState.streams.map((stream) {
+          if (stream['id'] == event.streamId ||
+              stream['streamId'] == event.streamId) {
+            return {
+              ...stream,
+              'viewerCount': event.viewerCount,
+              'currentViewers': event.viewerCount,
+            };
+          }
+          return stream;
+        }).toList();
+
+        // Emit updated state
+        emit(
+          LiveStreamsLoaded(
+            streams: updatedStreams,
+            hasMoreStreams: currentState.hasMoreStreams,
+            currentPage: currentState.currentPage,
+          ),
+        );
+
+        _logger.d(
+          '$_tag: Updated viewer count for stream ${event.streamId}: ${event.viewerCount}',
+        );
+      }
+    } catch (e, stackTrace) {
+      _logger.e(
+        '$_tag: Failed to update stream viewers',
+        error: e,
+        stackTrace: stackTrace,
+      );
     }
   }
 

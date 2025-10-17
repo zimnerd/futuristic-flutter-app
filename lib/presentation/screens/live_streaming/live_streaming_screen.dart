@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -9,9 +10,11 @@ import '../../blocs/live_streaming/live_streaming_state.dart';
 import '../../widgets/common/pulse_loading_widget.dart';
 import '../../widgets/common/pulse_error_widget.dart';
 import '../../widgets/live_streaming/live_stream_card.dart';
+import '../../widgets/live_streaming/stream_card_skeleton.dart';
 import '../../widgets/live_streaming/stream_category_filter.dart';
 import '../../theme/pulse_colors.dart';
 import '../../../data/services/service_locator.dart';
+import '../../../data/services/websocket_service_impl.dart';
 
 /// Main screen for live streaming functionality
 class LiveStreamingScreen extends StatefulWidget {
@@ -26,6 +29,11 @@ class _LiveStreamingScreenState extends State<LiveStreamingScreen>
   late TabController _tabController;
   String? _selectedCategory;
   final ScrollController _scrollController = ScrollController();
+  
+  // Search state
+  bool _isSearching = false;
+  final TextEditingController _searchController = TextEditingController();
+  Timer? _searchDebounce;
 
   @override
   void initState() {
@@ -35,12 +43,40 @@ class _LiveStreamingScreenState extends State<LiveStreamingScreen>
     
     // Add scroll listener for pagination
     _scrollController.addListener(_onScroll);
+    
+    // Setup real-time viewer count updates
+    _setupViewerCountListener();
+  }
+
+  void _setupViewerCountListener() {
+    try {
+      final webSocketService = WebSocketServiceImpl.instance;
+
+      // Listen for stream viewer count updates
+      webSocketService.on('stream:viewer_count', (data) {
+        if (data != null && data is Map<String, dynamic>) {
+          final streamId = data['streamId'] as String?;
+          final viewerCount = data['viewerCount'] as int?;
+
+          if (streamId != null && viewerCount != null && mounted) {
+            context.read<LiveStreamingBloc>().add(
+              UpdateStreamViewers(streamId: streamId, viewerCount: viewerCount),
+            );
+          }
+        }
+      });
+    } catch (e) {
+      // Handle WebSocket connection errors gracefully
+      debugPrint('Failed to setup viewer count listener: $e');
+    }
   }
 
   @override
   void dispose() {
     _tabController.dispose();
     _scrollController.dispose();
+    _searchController.dispose();
+    _searchDebounce?.cancel();
     super.dispose();
   }
 
@@ -59,12 +95,61 @@ class _LiveStreamingScreenState extends State<LiveStreamingScreen>
     }
   }
 
+  void _onSearchChanged(String query) {
+    // Cancel previous timer
+    _searchDebounce?.cancel();
+
+    // Create new timer with 300ms delay
+    _searchDebounce = Timer(const Duration(milliseconds: 300), () {
+      if (query.isEmpty) {
+        // Load all streams if search is cleared
+        context.read<LiveStreamingBloc>().add(
+          LoadLiveStreams(category: _selectedCategory),
+        );
+      } else {
+        // Search streams with query
+        context.read<LiveStreamingBloc>().add(
+          SearchStreams(query: query, category: _selectedCategory),
+        );
+      }
+    });
+  }
+
+  void _toggleSearch() {
+    setState(() {
+      _isSearching = !_isSearching;
+      if (!_isSearching) {
+        _searchController.clear();
+        context.read<LiveStreamingBloc>().add(
+          LoadLiveStreams(category: _selectedCategory),
+        );
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Live Streaming'),
+        title: _isSearching
+            ? TextField(
+                controller: _searchController,
+                autofocus: true,
+                style: const TextStyle(color: Colors.white),
+                decoration: const InputDecoration(
+                  hintText: 'Search streams...',
+                  hintStyle: TextStyle(color: Colors.white70),
+                  border: InputBorder.none,
+                ),
+                onChanged: _onSearchChanged,
+              )
+            : const Text('Live Streaming'),
         actions: [
+          IconButton(
+            icon: Icon(_isSearching ? Icons.close : Icons.search),
+            tooltip: _isSearching ? 'Close Search' : 'Search',
+            onPressed: _toggleSearch,
+          ),
           IconButton(
             icon: const Icon(Icons.schedule),
             tooltip: 'Scheduled Streams',
@@ -123,7 +208,17 @@ class _LiveStreamingScreenState extends State<LiveStreamingScreen>
           child: BlocBuilder<LiveStreamingBloc, LiveStreamingState>(
             builder: (context, state) {
               if (state is LiveStreamingLoading && _selectedCategory == null) {
-                return const PulseLoadingWidget();
+                // Show skeleton loading cards
+                return ListView.builder(
+                  padding: const EdgeInsets.all(16),
+                  itemCount: 5,
+                  itemBuilder: (context, index) {
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 16),
+                      child: const StreamCardSkeleton(),
+                    );
+                  },
+                );
               }
               
               if (state is LiveStreamingError) {
@@ -139,7 +234,17 @@ class _LiveStreamingScreenState extends State<LiveStreamingScreen>
                 return _buildStreamsList(state);
               }
 
-              return const Center(child: PulseLoadingWidget());
+              // Default loading state
+              return ListView.builder(
+                padding: const EdgeInsets.all(16),
+                itemCount: 5,
+                itemBuilder: (context, index) {
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 16),
+                    child: const StreamCardSkeleton(),
+                  );
+                },
+              );
             },
           ),
         ),
@@ -151,7 +256,17 @@ class _LiveStreamingScreenState extends State<LiveStreamingScreen>
     return BlocBuilder<LiveStreamingBloc, LiveStreamingState>(
       builder: (context, state) {
         if (state is LiveStreamingLoading) {
-          return const PulseLoadingWidget();
+          // Show skeleton loading cards
+          return ListView.builder(
+            padding: const EdgeInsets.all(16),
+            itemCount: 5,
+            itemBuilder: (context, index) {
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 16),
+                child: const StreamCardSkeleton(),
+              );
+            },
+          );
         }
 
         if (state is LiveStreamingError) {

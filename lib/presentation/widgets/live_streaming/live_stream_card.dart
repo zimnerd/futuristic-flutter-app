@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../theme/pulse_colors.dart';
 
-/// Widget to display a live stream card
-class LiveStreamCard extends StatelessWidget {
+/// Widget to display a live stream card with animated LIVE badge
+class LiveStreamCard extends StatefulWidget {
   final Map<String, dynamic> stream;
   final VoidCallback onTap;
   final VoidCallback? onReport;
@@ -21,13 +21,43 @@ class LiveStreamCard extends StatelessWidget {
   });
 
   @override
+  State<LiveStreamCard> createState() => _LiveStreamCardState();
+}
+
+class _LiveStreamCardState extends State<LiveStreamCard>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _animationController;
+  late Animation<double> _scaleAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Setup pulsing animation for LIVE badge
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 1000),
+      vsync: this,
+    )..repeat(reverse: true);
+
+    _scaleAnimation = Tween<double>(begin: 0.9, end: 1.1).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final String title = stream['title'] ?? 'Live Stream';
-    final String streamerName = stream['streamerName'] ?? 'Unknown';
-    final int viewerCount = stream['viewerCount'] ?? 0;
-    final String category = stream['category'] ?? 'General';
-    final bool isLive = stream['isLive'] ?? true;
-    final String thumbnailUrl = stream['thumbnailUrl'] ?? '';
+    final String title = widget.stream['title'] ?? 'Live Stream';
+    final String streamerName = widget.stream['streamerName'] ?? 'Unknown';
+    final int viewerCount = widget.stream['viewerCount'] ?? 0;
+    final String category = widget.stream['category'] ?? 'General';
+    final bool isLive = widget.stream['isLive'] ?? true;
+    final String thumbnailUrl = widget.stream['thumbnailUrl'] ?? '';
 
     return Card(
       elevation: 4,
@@ -35,7 +65,7 @@ class LiveStreamCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
       ),
       child: InkWell(
-        onTap: onTap,
+        onTap: widget.onTap,
         borderRadius: BorderRadius.circular(12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -68,41 +98,57 @@ class LiveStreamCard extends StatelessWidget {
                         )
                       : null,
                 ),
-                // Live indicator
+                // Animated Live indicator
                 if (isLive)
                   Positioned(
                     top: 12,
                     left: 12,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.red,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Container(
-                            width: 8,
-                            height: 8,
-                            decoration: const BoxDecoration(
-                              color: Colors.white,
-                              shape: BoxShape.circle,
+                    child: AnimatedBuilder(
+                      animation: _scaleAnimation,
+                      builder: (context, child) {
+                        return Transform.scale(
+                          scale: _scaleAnimation.value,
+                          child: child,
+                        );
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.red,
+                          borderRadius: BorderRadius.circular(12),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.red.withValues(alpha: 0.4),
+                              blurRadius: 8,
+                              spreadRadius: 2,
                             ),
-                          ),
-                          const SizedBox(width: 4),
-                          const Text(
-                            'LIVE',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
+                          ],
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              width: 8,
+                              height: 8,
+                              decoration: const BoxDecoration(
+                                color: Colors.white,
+                                shape: BoxShape.circle,
+                              ),
                             ),
-                          ),
-                        ],
+                            const SizedBox(width: 4),
+                            const Text(
+                              'LIVE',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
@@ -141,7 +187,7 @@ class LiveStreamCard extends StatelessWidget {
                   ),
                 ),
                 // Menu button for owner
-                if (isOwner)
+                if (widget.isOwner)
                   Positioned(
                     bottom: 12,
                     right: 12,
@@ -149,15 +195,15 @@ class LiveStreamCard extends StatelessWidget {
                       onSelected: (value) {
                         switch (value) {
                           case 'edit':
-                            onEdit?.call();
+                            widget.onEdit?.call();
                             break;
                           case 'delete':
-                            onDelete?.call();
+                            widget.onDelete?.call();
                             break;
                         }
                       },
                       itemBuilder: (context) => [
-                        if (onEdit != null)
+                        if (widget.onEdit != null)
                           const PopupMenuItem(
                             value: 'edit',
                             child: Row(
@@ -168,7 +214,7 @@ class LiveStreamCard extends StatelessWidget {
                               ],
                             ),
                           ),
-                        if (onDelete != null)
+                        if (widget.onDelete != null)
                           const PopupMenuItem(
                             value: 'delete',
                             child: Row(
@@ -216,9 +262,9 @@ class LiveStreamCard extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      if (!isOwner && onReport != null)
+                      if (!widget.isOwner && widget.onReport != null)
                         IconButton(
-                          onPressed: onReport,
+                          onPressed: widget.onReport,
                           icon: const Icon(
                             Icons.flag_outlined,
                             size: 20,

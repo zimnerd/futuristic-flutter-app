@@ -24,6 +24,38 @@ class LoadLiveStreams extends LiveStreamingEvent {
   List<Object?> get props => [category, page, limit];
 }
 
+/// Search live streams
+class SearchStreams extends LiveStreamingEvent {
+  final String query;
+  final String? category;
+  final int page;
+  final int limit;
+
+  const SearchStreams({
+    required this.query,
+    this.category,
+    this.page = 1,
+    this.limit = 20,
+  });
+
+  @override
+  List<Object?> get props => [query, category, page, limit];
+}
+
+/// Update stream viewer count (real-time)
+class UpdateStreamViewers extends LiveStreamingEvent {
+  final String streamId;
+  final int viewerCount;
+
+  const UpdateStreamViewers({
+    required this.streamId,
+    required this.viewerCount,
+  });
+
+  @override
+  List<Object> get props => [streamId, viewerCount];
+}
+
 /// Start a new live stream
 class StartLiveStream extends LiveStreamingEvent {
   final String title;
