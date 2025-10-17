@@ -66,7 +66,10 @@ import '../screens/verification/id_verification_screen.dart';
 import '../screens/verification/verification_status_screen.dart';
 import '../screens/profile/photo_gallery_screen.dart';
 import '../screens/settings/notification_settings_screen.dart';
+import '../screens/settings/blocked_users_screen.dart';
 import '../blocs/notification/notification_bloc.dart';
+import '../blocs/block_report/block_report_bloc.dart';
+import '../blocs/auth/auth_state.dart';
 import '../screens/chat/chat_screen.dart';
 import '../screens/call/video_call_screen.dart';
 import '../screens/call/audio_call_screen.dart';
@@ -840,6 +843,26 @@ class AppRouter {
             );
           },
         ),
+
+        // Safety & Security routes
+        GoRoute(
+          path: AppRoutes.blockedUsers,
+          name: 'blockedUsers',
+          builder: (context, state) {
+            final authState = context.read<AuthBloc>().state;
+            final currentUserId = authState is AuthAuthenticated
+                ? authState.user.id
+                : '';
+
+            return BlocProvider(
+              create: (context) => BlockReportBloc(
+                userRepository: context.read<UserRepository>(),
+                currentUserId: currentUserId,
+              ),
+              child: const SafetyBlockedUsersScreen(),
+            );
+          },
+        ),
     ],
     errorBuilder: (context, state) => Scaffold(
       body: Center(
@@ -1022,4 +1045,7 @@ class AppRoutes {
 
   // Notification settings routes
   static const String notificationSettings = '/notification-settings';
+
+  // Safety & Security routes
+  static const String blockedUsers = '/blocked-users';
 }
