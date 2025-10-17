@@ -26,6 +26,7 @@ import '../../../data/models/voice_message.dart';
 import '../../widgets/chat/compact_voice_recorder.dart';
 import '../../widgets/chat/animated_typing_indicator.dart';
 import '../../widgets/chat/quick_reply_chip_bar.dart';
+import '../../widgets/common/pulse_toast.dart';
 import '../../widgets/dialogs/block_user_dialog.dart';
 import '../../widgets/dialogs/report_user_dialog.dart';
 
@@ -250,10 +251,9 @@ class _ChatScreenState extends State<ChatScreen> {
 
     // Don't allow sending messages to "new" conversation
     if (widget.conversationId == 'new') {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please wait for conversation to be created'),
-        ),
+      PulseToast.warning(
+        context,
+        message: 'Please wait for conversation to be created',
       );
       return;
     }

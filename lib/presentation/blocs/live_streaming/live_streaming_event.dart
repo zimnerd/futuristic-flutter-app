@@ -164,3 +164,87 @@ class LoadStreamingHistory extends LiveStreamingEvent {
   @override
   List<Object> get props => [page, limit];
 }
+
+/// Schedule a future live stream
+class ScheduleLiveStream extends LiveStreamingEvent {
+  final String title;
+  final String? description;
+  final DateTime scheduledStartTime;
+  final String type;
+  final int maxViewers;
+  final String? thumbnailUrl;
+  final List<String>? tags;
+  final bool isAdultsOnly;
+
+  const ScheduleLiveStream({
+    required this.title,
+    this.description,
+    required this.scheduledStartTime,
+    required this.type,
+    this.maxViewers = 100,
+    this.thumbnailUrl,
+    this.tags,
+    this.isAdultsOnly = false,
+  });
+
+  @override
+  List<Object?> get props => [
+    title,
+    description,
+    scheduledStartTime,
+    type,
+    maxViewers,
+    thumbnailUrl,
+    tags,
+    isAdultsOnly,
+  ];
+}
+
+/// Load scheduled streams
+class LoadScheduledStreams extends LiveStreamingEvent {
+  const LoadScheduledStreams();
+}
+
+/// Load my scheduled streams
+class LoadMyScheduledStreams extends LiveStreamingEvent {
+  const LoadMyScheduledStreams();
+}
+
+/// Cancel a scheduled stream
+class CancelScheduledStream extends LiveStreamingEvent {
+  final String streamId;
+
+  const CancelScheduledStream(this.streamId);
+
+  @override
+  List<Object> get props => [streamId];
+}
+
+/// Update a scheduled stream
+class UpdateScheduledStream extends LiveStreamingEvent {
+  final String streamId;
+  final String? title;
+  final String? description;
+  final DateTime? scheduledStartTime;
+  final String? type;
+  final int? maxViewers;
+
+  const UpdateScheduledStream({
+    required this.streamId,
+    this.title,
+    this.description,
+    this.scheduledStartTime,
+    this.type,
+    this.maxViewers,
+  });
+
+  @override
+  List<Object?> get props => [
+    streamId,
+    title,
+    description,
+    scheduledStartTime,
+    type,
+    maxViewers,
+  ];
+}

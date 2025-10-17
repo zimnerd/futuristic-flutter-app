@@ -40,7 +40,20 @@ class PulseColors {
   static const Color reject = Color(0xFFFF4458);
   static const Color rejectLight = Color(0xFFFF6B7A);
   static const Color rejectDark = Color(0xFFCC2233);
-  
+
+  // add error, warning, info colors
+  static const Color error = Color(0xFFFF3B30);
+  static const Color errorLight = Color(0xFFFF6659);
+  static const Color errorDark = Color(0xFFCC2E24);
+
+  static const Color warning = Color(0xFFFFC107);
+  static const Color warningLight = Color(0xFFFFD54F);
+  static const Color warningDark = Color(0xFFF57F17);
+
+  static const Color info = Color(0xFF2196F3);
+  static const Color infoLight = Color(0xFF64B5F6);
+  static const Color infoDark = Color(0xFF1976D2);
+
   static const Color superLike = Color(0xFF4FC3F7);
   static const Color superLikeLight = Color(0xFF7DD3FF);
   static const Color superLikeDark = Color(0xFF29B6F6);

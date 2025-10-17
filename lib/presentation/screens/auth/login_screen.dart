@@ -9,6 +9,7 @@ import '../../blocs/auth/auth_event.dart';
 import '../../blocs/auth/auth_state.dart';
 import '../../theme/pulse_colors.dart';
 import '../../widgets/common/keyboard_dismissible_scaffold.dart';
+import '../../widgets/common/pulse_toast.dart';
 import '../../widgets/developer_auto_login_fab.dart';
 import '../../widgets/phone_input.dart';
 
@@ -288,11 +289,9 @@ class _LoginScreenState extends State<LoginScreen> {
               },
             );
           } else if (state is AuthError) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: PulseColors.error,
-              ),
+            PulseToast.error(
+              context,
+              message: state.message,
             );
           }
         },

@@ -3,8 +3,10 @@ import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../domain/entities/user_profile.dart';
+import '../../../core/utils/haptic_feedback_utils.dart';
 import '../../animations/pulse_animations.dart';
 import '../../navigation/app_router.dart';
+import '../../screens/common/photo_preview_screen.dart';
 import '../../screens/profile/profile_details_screen.dart';
 import '../common/robust_network_image.dart';
 import '../verification/verification_badge.dart';
@@ -269,19 +271,43 @@ class _SwipeCardState extends State<SwipeCard>
 
   /// Enhanced photo section with shimmer loading and smooth transitions
   Widget _buildEnhancedPhotoSection(ProfilePhoto? currentPhoto) {
-    return AnimatedSwitcher(
-      duration: _SwipeCardConstants.photoSwitchDuration,
-      child: currentPhoto != null
-          ? RobustNetworkImage(
-              key: ValueKey(currentPhoto.url),
-              imageUrl: currentPhoto.url,
-              blurhash:
-                  currentPhoto.blurhash, // ✅ Pass blurhash for smooth loading
-              fit: BoxFit.cover,
-              width: double.infinity,
-              height: double.infinity,
-            )
-          : _buildErrorPlaceholder(),
+    return GestureDetector(
+      onTap: () {
+        if (currentPhoto != null) {
+          PulseHaptics.light();
+          final allPhotoUrls = widget.user.photos.map((p) => p.url).toList();
+          final currentIndex = widget.user.photos.indexOf(currentPhoto);
+
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => PhotoPreviewScreen(
+                images: allPhotoUrls,
+                initialIndex: currentIndex,
+                showReport: true,
+                onReport: () {
+                  Navigator.pop(context);
+                  // TODO: Implement report functionality
+                },
+              ),
+            ),
+          );
+        }
+      },
+      child: AnimatedSwitcher(
+        duration: _SwipeCardConstants.photoSwitchDuration,
+        child: currentPhoto != null
+            ? RobustNetworkImage(
+                key: ValueKey(currentPhoto.url),
+                imageUrl: currentPhoto.url,
+                blurhash:
+                    currentPhoto.blurhash, // ✅ Pass blurhash for smooth loading
+                fit: BoxFit.cover,
+                width: double.infinity,
+                height: double.infinity,
+              )
+            : _buildErrorPlaceholder(),
+      ),
     );
   }
 

@@ -47,6 +47,8 @@ PODS:
   - AgoraRtcEngine_iOS/VQA (4.5.2)
   - audio_session (0.0.1):
     - Flutter
+  - audio_waveforms (0.0.1):
+    - Flutter
   - camera_avfoundation (0.0.1):
     - Flutter
   - connectivity_plus (0.0.1):
@@ -278,6 +280,7 @@ PODS:
 DEPENDENCIES:
   - agora_rtc_engine (from `.symlinks/plugins/agora_rtc_engine/ios`)
   - audio_session (from `.symlinks/plugins/audio_session/ios`)
+  - audio_waveforms (from `.symlinks/plugins/audio_waveforms/ios`)
   - camera_avfoundation (from `.symlinks/plugins/camera_avfoundation/ios`)
   - connectivity_plus (from `.symlinks/plugins/connectivity_plus/ios`)
   - device_info_plus (from `.symlinks/plugins/device_info_plus/ios`)
@@ -345,6 +348,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/agora_rtc_engine/ios"
   audio_session:
     :path: ".symlinks/plugins/audio_session/ios"
+  audio_waveforms:
+    :path: ".symlinks/plugins/audio_waveforms/ios"
   camera_avfoundation:
     :path: ".symlinks/plugins/camera_avfoundation/ios"
   connectivity_plus:
@@ -416,6 +421,7 @@ SPEC CHECKSUMS:
   AgoraIrisRTC_iOS: eab58c126439adf5ec99632828a558ea216860da
   AgoraRtcEngine_iOS: 97e2398a2addda9057815a2a583a658e36796ff6
   audio_session: 9bb7f6c970f21241b19f5a3658097ae459681ba0
+  audio_waveforms: a6dde7fe7c0ea05f06ffbdb0f7c1b2b2ba6cedcf
   camera_avfoundation: 5675ca25298b6f81fa0a325188e7df62cc217741
   connectivity_plus: cb623214f4e1f6ef8fe7403d580fdad517d2f7dd
   CryptoSwift: e64e11850ede528a02a0f3e768cec8e9d92ecb90
@@ -445,7 +451,7 @@ SPEC CHECKSUMS:
   GoogleUtilities: 00c88b9a86066ef77f0da2fab05f65d7768ed8e1
   image_cropper: 64567491beea6cd1bc4b11948e2babb590de5826
   image_picker_ios: 7fe1ff8e34c1790d6fff70a32484959f563a928a
-  in_app_purchase_storekit: 22cca7d08eebca9babdf4d07d0baccb73325d3c8
+  in_app_purchase_storekit: d1a48cb0f8b29dbf5f85f782f5dd79b21b90a5e6
   iris_method_channel: 7d661cf3259b3009ae423508470dbeb9374446ee
   just_audio: 4e391f57b79cad2b0674030a00453ca5ce817eed
   libwebp: 02b23773aedb6ff1fd38cec7a77b81414c6842a8
