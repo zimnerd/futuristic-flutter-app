@@ -82,6 +82,7 @@ class ApiConstants {
   static const String premiumSubscription = '$premium/subscription';
   static const String premiumStats = '$premium/stats';
   static const String premiumBoost = '$premium/boost';
+  static const String premiumBoostStatus = '$premium/boost/status';
   static const String premiumCancel = '$premium/cancel';
   static const String premiumPause = '$premium/pause';
   static const String premiumResume = '$premium/resume';
@@ -96,6 +97,7 @@ class ApiConstants {
   static const String paymentRefunds = '$payment/refunds';
   static const String paymentCreateIntent = '$payment/create-intent';
   static const String paymentWebhook = '$payment/webhook';
+  static const String paymentHistory = '$payment/history';
 
   // Virtual Gifts endpoints (virtual-gifts.controller.ts)
   static const String virtualGifts = '/virtual-gifts';

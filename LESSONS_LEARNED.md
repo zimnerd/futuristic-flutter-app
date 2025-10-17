@@ -5,6 +5,287 @@ This document captures key learnings from building the **Flutter mobile dating a
 
 ---
 
+## ✅ **Transaction History with Filtering & Export (January 2025)**
+
+**Status**: ✅ **COMPLETE** - Full transaction history with advanced filtering, PDF/CSV export, running balance  
+**Date**: January 2025  
+**Files**: `transaction_history_screen.dart` (1,206 lines), `payment_history_service.dart`, `payment_transaction.dart`  
+**Documentation**: `docs/features/SPRINT_1_WEEK_3_FEATURE_5_COMPLETE.md`
+
+### **What We Built**
+
+Comprehensive transaction history screen with advanced filtering (type + date range), dual export formats (PDF/CSV), financial summary metrics, and per-transaction running balance display. Showcases modern Flutter patterns and Material Design 3.
+
+**Benefits:**
+- ✅ Advanced filtering with custom date range picker
+- ✅ PDF export with professional formatting
+- ✅ CSV export for Excel compatibility
+- ✅ Running balance transparency per transaction
+- ✅ Financial summary (spent/purchased/net)
+- ✅ Modern Material Design 3 UI
+
+### **Key Implementation Patterns**
+
+**✅ Modern Date Picker (Non-Deprecated)**:
+```dart
+// ✅ CORRECT: Use DateRangePicker with builder theme
+Future<void> _showCustomDatePicker() async {
+  final DateTimeRange? picked = await showDateRangePicker(
+    context: context,
+    firstDate: DateTime(2020),
+    lastDate: DateTime.now(),
+    builder: (context, child) {
+      return Theme(
+        data: Theme.of(context).copyWith(
+          colorScheme: ColorScheme.light(
+            primary: PulseColors.primary,
+            onPrimary: Colors.white,
+          ),
+        ),
+        child: child!,
+      );
+    },
+  );
+}
+
+// ❌ WRONG: Old deprecated showDatePicker
+```
+
+**✅ FilterChip Best Practices**:
+```dart
+// Horizontal scrollable chips for responsive design
+SingleChildScrollView(
+  scrollDirection: Axis.horizontal,
+  child: Row(
+    children: [
+      FilterChip(
+        label: Text('All'),
+        selected: _selectedType == null,
+        onSelected: (selected) {
+          setState(() {
+            _selectedType = null;
+            _applyFilters();
+          });
+        },
+        backgroundColor: Colors.grey[100],
+        selectedColor: PulseColors.primary.withOpacity(0.2),
+        checkmarkColor: PulseColors.primary,
+      ),
+      // More chips...
+    ],
+  ),
+)
+```
+
+**✅ Filter State Management Pattern**:
+```dart
+// Maintain both original and filtered data
+List<PaymentTransaction> _transactions = [];        // Original
+List<PaymentTransaction> _filteredTransactions = []; // Filtered
+
+void _applyFilters() {
+  List<PaymentTransaction> filtered = List.from(_transactions);
+  
+  // Apply type filter
+  if (_selectedType != null) {
+    filtered = filtered.where((t) => t.type == _selectedType).toList();
+  }
+  
+  // Apply date range filter
+  if (startDate != null) {
+    filtered = filtered.where((t) => t.processedAt.isAfter(startDate!)).toList();
+  }
+  
+  setState(() { _filteredTransactions = filtered; });
+}
+
+// Easy reset: Just clear filters and call _applyFilters()
+```
+
+**✅ PDF Generation with `pdf` Package**:
+```dart
+Future<void> _exportToPDF() async {
+  final pdf = pw.Document();
+  
+  pdf.addPage(
+    pw.MultiPage(
+      pageFormat: PdfPageFormat.a4,
+      margin: const pw.EdgeInsets.all(32),
+      build: (pw.Context context) {
+        return [
+          // Header with timestamp
+          pw.Header(
+            child: pw.Column(children: [
+              pw.Text('Transaction History', style: pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold)),
+              pw.Text('Generated on ${DateFormat('MMMM dd, yyyy at HH:mm').format(DateTime.now())}'),
+              pw.Divider(thickness: 2),
+            ]),
+          ),
+          
+          // Summary metrics
+          pw.Container(
+            padding: const pw.EdgeInsets.all(16),
+            decoration: pw.BoxDecoration(color: PdfColors.grey200),
+            child: pw.Row(children: [
+              pw.Column(children: [
+                pw.Text('Total Transactions'),
+                pw.Text('${transactions.length}', style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold)),
+              ]),
+              // More metrics...
+            ]),
+          ),
+          
+          // Transaction table
+          pw.Table.fromTextArray(
+            headers: ['Date', 'Description', 'Amount', 'Type', 'Status'],
+            data: transactions.map((t) => [
+              DateFormat('MMM dd, yyyy').format(t.processedAt),
+              t.description,
+              '${t.type == PaymentTransactionType.payment ? '+' : '-'}${t.amount.toStringAsFixed(0)} coins',
+              _getTypeLabel(t.type),
+              _getStatusLabel(t.status),
+            ]).toList(),
+          ),
+        ];
+      },
+    ),
+  );
+  
+  // Save to temp directory and share
+  final output = await getTemporaryDirectory();
+  final file = File('${output.path}/pulse_transactions_${DateTime.now().millisecondsSinceEpoch}.pdf');
+  await file.writeAsBytes(await pdf.save());
+  
+  await Share.shareXFiles([XFile(file.path)]);
+}
+```
+
+**✅ CSV Export with Proper Escaping**:
+```dart
+Future<void> _exportToCSV() async {
+  final StringBuffer csvContent = StringBuffer();
+  
+  // Header
+  csvContent.writeln('Date,Time,Description,Type,Status,Amount,Currency');
+  
+  // Data rows with quote escaping
+  for (var transaction in transactions) {
+    final date = DateFormat('yyyy-MM-dd').format(transaction.processedAt);
+    final time = DateFormat('HH:mm:ss').format(transaction.processedAt);
+    
+    // ✅ CRITICAL: Escape quotes for Excel compatibility
+    final description = '"${transaction.description.replaceAll('"', '""')}"';
+    
+    final amount = transaction.type == PaymentTransactionType.payment 
+        ? '+${transaction.amount.toStringAsFixed(2)}' 
+        : '-${transaction.amount.toStringAsFixed(2)}';
+    
+    csvContent.writeln('$date,$time,$description,$type,$status,$amount,$currency');
+  }
+  
+  final output = await getTemporaryDirectory();
+  final file = File('${output.path}/pulse_transactions_${DateTime.now().millisecondsSinceEpoch}.csv');
+  await file.writeAsString(csvContent.toString());
+  
+  await Share.shareXFiles([XFile(file.path)]);
+}
+```
+
+**✅ Running Balance Calculation**:
+```dart
+int _calculateRunningBalance(PaymentTransaction transaction, List<PaymentTransaction> allTransactions) {
+  final index = allTransactions.indexOf(transaction);
+  if (index == -1) return _currentBalance;
+  
+  int balance = _currentBalance;
+  
+  // ✅ CRITICAL: Process in reverse (oldest to newest) for accurate running balance
+  final reversedTransactions = allTransactions.reversed.toList();
+  final reversedIndex = reversedTransactions.length - 1 - index;
+  
+  for (int i = reversedTransactions.length - 1; i > reversedIndex; i--) {
+    final t = reversedTransactions[i];
+    if (t.type == PaymentTransactionType.payment) {
+      balance -= t.amount.toInt();
+    } else {
+      balance += t.amount.toInt();
+    }
+  }
+  
+  return balance;
+}
+
+// Display in transaction item
+Container(
+  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+  decoration: BoxDecoration(
+    color: Colors.grey[100],
+    borderRadius: BorderRadius.circular(8),
+  ),
+  child: Row(
+    children: [
+      Icon(Icons.account_balance_wallet_outlined, size: 12, color: Colors.grey[600]),
+      SizedBox(width: 4),
+      Text('$runningBalance', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+    ],
+  ),
+)
+```
+
+**✅ Summary Card with Financial Metrics**:
+```dart
+Widget _buildSummaryCard() {
+  final transactions = _filteredTransactions.isEmpty ? _transactions : _filteredTransactions;
+  
+  double totalSpent = 0;
+  double totalPurchased = 0;
+  
+  for (var transaction in transactions) {
+    if (transaction.type == PaymentTransactionType.payment) {
+      totalPurchased += transaction.amount;
+    } else {
+      totalSpent += transaction.amount;
+    }
+  }
+  
+  final netBalance = totalPurchased - totalSpent;
+  
+  return Container(
+    margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+    padding: const EdgeInsets.all(16),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(12),
+      boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 8)],
+    ),
+    child: Row(
+      children: [
+        Expanded(child: _buildSummaryItem('Total Spent', totalSpent, Icons.arrow_downward_rounded, Colors.red)),
+        Container(width: 1, height: 40, color: Colors.grey[300]),
+        Expanded(child: _buildSummaryItem('Purchased', totalPurchased, Icons.arrow_upward_rounded, Colors.green)),
+        Container(width: 1, height: 40, color: Colors.grey[300]),
+        Expanded(child: _buildSummaryItem('Net', netBalance, Icons.account_balance_wallet_rounded, netBalance >= 0 ? Colors.green : Colors.red)),
+      ],
+    ),
+  );
+}
+```
+
+### **What to Remember**
+
+1. **Date Pickers**: Use `showDateRangePicker()` with builder theme, not deprecated `showDatePicker()`
+2. **Filter Chips**: Use `FilterChip` (modern) with horizontal `SingleChildScrollView` for responsiveness
+3. **Filter State**: Maintain both original and filtered data for easy reset without re-fetching
+4. **PDF Export**: Use `pdf` package with proper formatting (header, summary, table)
+5. **CSV Export**: Always escape quotes with `replaceAll('"', '""')` for Excel compatibility
+6. **Running Balance**: Calculate in reverse order (oldest to newest) for accuracy
+7. **Share Files**: Use `Share.shareXFiles([XFile(path)])` for file sharing
+8. **Loading States**: Show `CircularProgressIndicator` in snackbar during long operations
+9. **Error Handling**: Provide retry actions in error snackbars
+10. **Material Design 3**: Use `ColorScheme` for theming, not direct color properties
+
+---
+
 ## ✅ **BluHash Progressive Loading (September 2025)**
 
 **Status**: ✅ **PHASE 5 COMPLETE** - All 14 UI widgets updated for progressive image loading  

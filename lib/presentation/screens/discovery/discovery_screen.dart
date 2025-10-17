@@ -3,11 +3,17 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/pulse_design_system.dart';
+import '../../../data/services/boost_service.dart';
 import '../../../domain/entities/discovery_types.dart';
 import '../../../services/discovery_prefetch_manager.dart';
+import '../../blocs/boost/boost_bloc.dart';
+import '../../blocs/boost/boost_event.dart';
+import '../../blocs/boost/boost_state.dart';
 import '../../blocs/discovery/discovery_bloc.dart';
 import '../../blocs/discovery/discovery_event.dart';
 import '../../blocs/discovery/discovery_state.dart';
+import '../../widgets/boost/boost_banner_widget.dart';
+import '../../widgets/boost/boost_confirmation_dialog.dart';
 import '../../widgets/discovery/swipe_card.dart' as swipe_widget;
 import '../ai_companion/ai_companion_screen.dart';
 
@@ -325,13 +331,15 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(gradient: PulseGradients.background),
-        child: BlocListener<DiscoveryBloc, DiscoveryState>(
-          listener: (context, state) {
-            // Handle rewind success/error feedback
-            if (state is DiscoveryLoaded && state.rewindJustCompleted) {
+    return BlocProvider(
+      create: (context) => BoostBloc(BoostService())..add(CheckBoostStatus()),
+      child: Scaffold(
+        body: Container(
+          decoration: const BoxDecoration(gradient: PulseGradients.background),
+          child: BlocListener<DiscoveryBloc, DiscoveryState>(
+            listener: (context, state) {
+              // Handle rewind success/error feedback
+              if (state is DiscoveryLoaded && state.rewindJustCompleted) {
               // Rewind was successful
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
@@ -376,6 +384,14 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
                   // Modern curved header
                   _buildModernHeader(),
 
+                    // Boost banner (appears below header when boost is active)
+                    Positioned(
+                      top: 120,
+                      left: 0,
+                      right: 0,
+                      child: const BoostBannerWidget(),
+                    ),
+
                   // Main content area
                   Positioned.fill(top: 120, child: _buildMainContent(state)),
 
@@ -383,15 +399,20 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
                   if (state is DiscoveryLoaded && state.hasUsers)
                     _buildModernActionButtons(),
 
+                    // Floating boost button (bottom-right corner)
+                    if (state is DiscoveryLoaded && state.hasUsers)
+                      _buildFloatingBoostButton(),
+
                   // Match celebration
                   if (state is DiscoveryMatchFound) _buildMatchDialog(state),
                 ],
-              );
-            },
-          ),
-        ),
-      ),
-    );
+                ); // Stack
+              }, // BlocBuilder builder
+            ), // BlocBuilder
+          ), // BlocListener child
+        ), // Container (Scaffold body)
+      ), // Scaffold
+    ); // BlocProvider child
   }
 
   Widget _buildModernHeader() {
@@ -835,6 +856,60 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
           ],
         ),
       ),
+    );
+  }
+
+  /// Build floating boost button for profile visibility boost
+  Widget _buildFloatingBoostButton() {
+    return BlocBuilder<BoostBloc, BoostState>(
+      builder: (context, boostState) {
+        // Hide button if boost is already active
+        if (boostState is BoostActive) {
+          return const SizedBox.shrink();
+        }
+
+        return Positioned(
+          bottom: 120, // Above action buttons
+          right: 20,
+          child: GestureDetector(
+            onTap: () async {
+              HapticFeedback.mediumImpact();
+
+              // Show confirmation dialog
+              final confirmed = await BoostConfirmationDialog.show(context);
+
+              if (confirmed == true && context.mounted) {
+                // Activate boost
+                context.read<BoostBloc>().add(ActivateBoost());
+              }
+            },
+            child: Container(
+              width: 60,
+              height: 60,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: const [PulseColors.primary, PulseColors.accent],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: PulseColors.primary.withValues(alpha: 0.4),
+                    blurRadius: 16,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
+              ),
+              child: const Icon(
+                Icons.rocket_launch,
+                color: Colors.white,
+                size: 28,
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 
