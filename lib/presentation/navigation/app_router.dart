@@ -58,6 +58,10 @@ import '../screens/profile/profile_section_edit_screen.dart';
 import '../screens/profile/profile_details_screen.dart';
 import '../screens/profile/profile_edit_screen.dart';
 import '../screens/profile/profile_viewers_screen.dart';
+import '../screens/profile/privacy_settings_screen.dart';
+import '../screens/verification/photo_verification_screen.dart';
+import '../screens/verification/id_verification_screen.dart';
+import '../screens/verification/verification_status_screen.dart';
 import '../screens/chat/chat_screen.dart';
 import '../screens/call/video_call_screen.dart';
 import '../screens/call/audio_call_screen.dart';
@@ -479,6 +483,11 @@ class AppRouter {
           name: 'profileViewers',
           builder: (context, state) => const ProfileViewersScreen(),
         ),
+        GoRoute(
+          path: AppRoutes.privacySettings,
+          name: 'privacySettings',
+          builder: (context, state) => const PrivacySettingsScreen(),
+        ),
         
         // Date Planning routes
         GoRoute(
@@ -758,6 +767,23 @@ class AppRouter {
             );
           },
         ),
+
+        // Verification routes
+        GoRoute(
+          path: AppRoutes.photoVerification,
+          name: 'photoVerification',
+          builder: (context, state) => const PhotoVerificationScreen(),
+        ),
+        GoRoute(
+          path: AppRoutes.idVerification,
+          name: 'idVerification',
+          builder: (context, state) => const IdVerificationScreen(),
+        ),
+        GoRoute(
+          path: AppRoutes.verificationStatus,
+          name: 'verificationStatus',
+          builder: (context, state) => const VerificationStatusScreen(),
+        ),
     ],
     errorBuilder: (context, state) => Scaffold(
       body: Center(
@@ -882,6 +908,7 @@ class AppRoutes {
   static const String profileDetails = '/profile-details/:profileId';
   static const String profileEdit = '/profile-edit';
   static const String profileViewers = '/profile-viewers';
+  static const String privacySettings = '/privacy-settings';
   static const String chat = '/chat/:conversationId';
   static const String videoCall = '/video-call/:callId';
   static const String groupVideoCall = '/group-video-call/:liveSessionId';
@@ -927,4 +954,9 @@ class AppRoutes {
   static const String addPaymentMethod = '/add-payment-method';
   static const String paymentHistory = '/payment-history';
   static const String paymentProcessing = '/payment-processing';
+
+  // Verification routes
+  static const String photoVerification = '/photo-verification';
+  static const String idVerification = '/id-verification';
+  static const String verificationStatus = '/verification-status';
 }

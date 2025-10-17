@@ -4,6 +4,7 @@ import 'dart:io';
 import '../../theme/pulse_colors.dart';
 import '../../../domain/entities/user_profile.dart';
 import '../common/robust_network_image.dart';
+import '../verification/verification_badge.dart';
 
 /// Widget that shows how the profile will appear to other users
 class ProfilePreview extends StatelessWidget {
@@ -65,19 +66,10 @@ class ProfilePreview extends StatelessWidget {
                           ),
                         ),
                       ),
-                      if (profile.verified)
-                        Container(
-                          padding: const EdgeInsets.all(4),
-                          decoration: const BoxDecoration(
-                            color: PulseColors.primary,
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(
-                            Icons.verified,
-                            color: Colors.white,
-                            size: 20,
-                          ),
-                        ),
+                      VerificationBadge(
+                        isVerified: profile.verified,
+                        size: VerificationBadgeSize.medium,
+                      ),
                     ],
                   ),
 

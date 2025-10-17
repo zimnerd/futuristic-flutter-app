@@ -79,6 +79,12 @@ class SettingsScreen extends StatelessWidget {
           // App & Support Section
           _buildSectionHeader('App & Support'),
           _buildSettingsTile(
+            icon: Icons.verified_user,
+            title: 'Get Verified',
+            subtitle: 'Verify your profile to build trust',
+            onTap: () => context.go('/verification-status'),
+          ),
+          _buildSettingsTile(
             icon: Icons.lock,
             title: 'Privacy & Security',
             subtitle: 'Manage your privacy settings',

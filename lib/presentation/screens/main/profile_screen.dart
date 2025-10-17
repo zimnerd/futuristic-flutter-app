@@ -9,6 +9,7 @@ import '../../../domain/entities/user_profile.dart';
 import '../../widgets/profile/profile_completion_widget.dart';
 import '../../blocs/profile/profile_bloc.dart';
 import '../../widgets/common/pulse_loading_widget.dart';
+import '../../widgets/verification/verification_badge.dart';
 
 /// Main profile screen - Landing page when user clicks profile from menu
 class ProfileScreen extends StatefulWidget {
@@ -195,37 +196,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
           
           // Verification Badge
-          if (userProfile.verified) ...[
-            const SizedBox(height: PulseSpacing.sm),
-            Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: PulseSpacing.sm,
-                vertical: PulseSpacing.xs,
-              ),
-              decoration: BoxDecoration(
-                color: PulseColors.success,
-                borderRadius: BorderRadius.circular(PulseRadii.sm),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(
-                    Icons.verified,
-                    size: 16,
-                    color: Colors.white,
-                  ),
-                  const SizedBox(width: PulseSpacing.xs),
-                  Text(
-                    'Verified',
-                    style: PulseTextStyles.labelSmall.copyWith(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
+          const SizedBox(height: PulseSpacing.sm),
+          VerificationBadge(
+            isVerified: userProfile.verified,
+            size: VerificationBadgeSize.medium,
+            showLabel: true,
+          ),
           
           // Edit Profile Button
           const SizedBox(height: PulseSpacing.md),

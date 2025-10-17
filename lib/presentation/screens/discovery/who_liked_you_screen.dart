@@ -8,6 +8,7 @@ import '../../blocs/discovery/discovery_bloc.dart';
 import '../../blocs/discovery/discovery_event.dart';
 import '../../blocs/discovery/discovery_state.dart';
 import '../../widgets/common/robust_network_image.dart';
+import '../../widgets/verification/verification_badge.dart';
 
 /// Who Liked You Screen - Premium Feature
 /// 
@@ -360,12 +361,10 @@ class _UserGridCard extends StatelessWidget {
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
-                        if (user.isVerified)
-                          const Icon(
-                            Icons.verified,
-                            color: PulseColors.accent,
-                            size: 18,
-                          ),
+                        VerificationBadge(
+                          isVerified: user.isVerified,
+                          size: VerificationBadgeSize.small,
+                        ),
                       ],
                     ),
                     if (user.distanceKm != null) ...[

@@ -5,6 +5,236 @@ This document captures key learnings from building the **Flutter mobile dating a
 
 ---
 
+## ✅ **Privacy Settings with Preset System (January 2025)**
+
+**Status**: ✅ **COMPLETE** - Standalone privacy settings with 4 presets, visual comparison, granular controls  
+**Date**: January 2025  
+**Files**: `privacy_preset.dart` (236 lines), `privacy_settings_screen.dart` (870 lines)  
+**Documentation**: `docs/SPRINT_1_WEEK_3_FEATURE_6_COMPLETE.md`
+
+### **What We Built**
+
+Modern privacy settings enhancement with preset system (Public/Balanced/Private/Stealth), visual feature comparison table, TabBar with Presets/Custom tabs, and automatic preset detection. Demonstrates reusable preset pattern for complex settings screens.
+
+**Benefits:**
+- ✅ 4 privacy presets for quick configuration
+- ✅ Visual comparison table showing preset differences
+- ✅ Auto-detection of current preset from settings
+- ✅ Unsaved changes protection with discard dialog
+- ✅ Modern Material Design 3 UI with sections
+- ✅ Seamless BLoC integration for backend sync
+
+### **Key Implementation Patterns**
+
+**✅ Reusable Preset Pattern**:
+```dart
+// Define preset model with detection logic
+class PrivacyPreset {
+  static const PrivacyPreset public = PrivacyPreset(
+    level: PrivacyPresetLevel.public,
+    title: 'Public',
+    icon: Icons.public,
+    color: Colors.green,
+    settings: {'showAge': true, 'showDistance': true, ...},
+  );
+  
+  // Auto-detect which preset matches current settings
+  static PrivacyPresetLevel? detectPreset(Map<String, dynamic> settings) {
+    for (final preset in [public, balanced, private, stealth]) {
+      bool matches = preset.settings.keys.every((key) {
+        return settings[key] == preset.settings[key];
+      });
+      if (matches) return preset.level;
+    }
+    return null; // Custom configuration
+  }
+}
+
+// ✅ Pattern is reusable for:
+// - Notification presets (All/Important/Off)
+// - Search filter presets (Nearby/Popular/Recent)
+// - Match preference presets (Open/Selective/Strict)
+```
+
+**✅ TabBar with Different Content Types**:
+```dart
+// Tab 1: Quick actions (presets), Tab 2: Detailed controls (custom)
+TabBarView(
+  controller: _tabController,
+  children: [
+    _buildPresetsTab(),    // Preset cards + comparison table
+    _buildCustomTab(),     // Granular toggles + dropdowns
+  ],
+)
+
+// Pattern works well for:
+// - Settings: Quick presets vs Advanced controls
+// - Filters: Templates vs Custom criteria
+// - Profile edit: Quick sections vs Full form
+```
+
+**✅ Unsaved Changes with PopScope (Flutter 3.16+)**:
+```dart
+// ✅ CORRECT: Modern PopScope pattern
+PopScope(
+  canPop: !_hasUnsavedChanges,
+  onPopInvoked: (didPop) {
+    if (!didPop && _hasUnsavedChanges) {
+      _showDiscardDialog();
+    }
+  },
+  child: Scaffold(...),
+)
+
+// ❌ DEPRECATED: Don't use WillPopScope
+```
+
+**✅ Comparison Table with Table Widget**:
+```dart
+// Visual feature matrix for preset comparison
+Widget _buildComparisonTable() {
+  final comparison = PrivacyPreset.getComparison();
+  
+  return Table(
+    border: TableBorder.all(color: Colors.grey[300]!),
+    columnWidths: {
+      0: FlexColumnWidth(2),  // Feature name column wider
+      1: FlexColumnWidth(1),
+      2: FlexColumnWidth(1),
+      3: FlexColumnWidth(1),
+      4: FlexColumnWidth(1),
+    },
+    children: [
+      // Header row with preset icons
+      TableRow(
+        decoration: BoxDecoration(color: Colors.grey[100]),
+        children: [
+          _buildTableHeader('Feature'),
+          _buildTableHeader('🌍', true),  // Public
+          _buildTableHeader('⚖️', true),  // Balanced
+          _buildTableHeader('🔒', true),  // Private
+          _buildTableHeader('🕵️', true),  // Stealth
+        ],
+      ),
+      // Feature rows
+      ...comparison.entries.map((entry) {
+        return TableRow(
+          children: [
+            _buildTableCell(PrivacyPreset.featureLabels[entry.key]!),
+            _buildFeatureValue(entry.value[PrivacyPresetLevel.public]),
+            _buildFeatureValue(entry.value[PrivacyPresetLevel.balanced]),
+            _buildFeatureValue(entry.value[PrivacyPresetLevel.private]),
+            _buildFeatureValue(entry.value[PrivacyPresetLevel.stealth]),
+          ],
+        );
+      }),
+    ],
+  );
+}
+
+// ✅ Use for: Feature comparisons, pricing tables, plan comparisons
+```
+
+**✅ Toggle vs Dropdown Decision Logic**:
+```dart
+// ✅ RULE: Use toggles for boolean, dropdowns for 3+ options
+Widget _buildToggleSetting({
+  required String title,
+  required bool value,
+  required ValueChanged<bool> onChanged,
+}) {
+  // For: showAge, showDistance, incognitoMode (boolean)
+}
+
+Widget _buildDropdownSetting({
+  required String title,
+  required String value,
+  required ValueChanged<String> onChanged,
+  required List<String> options,
+}) {
+  // For: whoCanSeeMyProfile (Everyone/Matches/None)
+}
+```
+
+**✅ Section Pattern for Settings**:
+```dart
+// Clean Material Design 3 section grouping
+Widget _buildSection(String title, List<Widget> children) {
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Text(
+        title,
+        style: TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
+          color: Colors.grey[600],
+          letterSpacing: 0.5,
+        ),
+      ),
+      SizedBox(height: 8),
+      Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 8,
+              offset: Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Column(children: children),
+      ),
+    ],
+  );
+}
+```
+
+**✅ Auto-Detection Pattern**:
+```dart
+// Re-detect preset after every setting change
+void _updateSetting(String key, dynamic value) {
+  setState(() {
+    _currentSettings[key] = value;
+    _selectedPreset = PrivacyPreset.detectPreset(_currentSettings);
+    _hasUnsavedChanges = true;
+  });
+}
+
+// Benefits:
+// - Preset auto-deselects when user modifies custom settings
+// - "Custom" banner appears automatically
+// - UI stays in sync with state
+```
+
+### **Lessons Learned**
+
+1. **Preset Pattern is Highly Reusable**: The preset + custom tabs pattern works excellently for any complex settings screen. Consider using for notification settings, search filters, match preferences.
+
+2. **PopScope Replaces WillPopScope**: Flutter 3.16+ uses `PopScope` with `canPop` and `onPopInvoked`. The old `WillPopScope` is deprecated.
+
+3. **Table Widget for Comparisons**: The `Table` widget with `TableRow` is perfect for feature comparison matrices. Much better than manual Column/Row nesting.
+
+4. **Auto-Detection Improves UX**: Automatically detecting which preset matches current settings provides excellent user feedback and state transparency.
+
+5. **Section Pattern Scales**: The section pattern with title + white card + shadow creates clean, scannable settings screens that scale to many options.
+
+6. **TabBar for Settings Categories**: Using TabBar to separate "quick actions" (presets) from "detailed controls" (custom) significantly improves UX for complex settings.
+
+7. **Toggle/Dropdown Decision Rule**: Simple rule: Boolean values get toggles, multi-value options get dropdowns. Makes UI consistent and predictable.
+
+### **Anti-Patterns to Avoid**
+
+❌ **Don't Use WillPopScope**: Deprecated in Flutter 3.16+, use `PopScope` instead  
+❌ **Don't Nest Manual Layouts for Tables**: Use `Table` widget for comparison matrices  
+❌ **Don't Skip Preset Detection**: Re-run detection after every change to keep UI in sync  
+❌ **Don't Mix Toggle/Dropdown Logic**: Stick to the rule (boolean=toggle, multi=dropdown)  
+❌ **Don't Forget Unsaved Changes**: Always implement protection for forms with edits
+
+---
+
 ## ✅ **Transaction History with Filtering & Export (January 2025)**
 
 **Status**: ✅ **COMPLETE** - Full transaction history with advanced filtering, PDF/CSV export, running balance  

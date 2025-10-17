@@ -7,6 +7,7 @@ import '../../animations/pulse_animations.dart';
 import '../../navigation/app_router.dart';
 import '../../screens/profile/profile_details_screen.dart';
 import '../common/robust_network_image.dart';
+import '../verification/verification_badge.dart';
 
 // Animation durations for consistent timing
 class _SwipeCardConstants {
@@ -347,12 +348,10 @@ class _UserInfoOverlay extends StatelessWidget {
                     ),
                   ),
                 ),
-                if (user.isVerified)
-                  const Icon(
-                    Icons.verified,
-                    color: Colors.blue,
-                    size: 20,
-                  ),
+                VerificationBadge(
+                  isVerified: user.isVerified,
+                  size: VerificationBadgeSize.small,
+                ),
               ],
             ),
             if (user.bio.isNotEmpty) ...[

@@ -10,6 +10,7 @@ import '../../../blocs/chat_bloc.dart';
 import '../../blocs/profile/profile_bloc.dart';
 import '../../theme/pulse_colors.dart';
 import '../../widgets/common/pulse_button.dart';
+import '../../widgets/verification/verification_badge.dart';
 import '../../../core/utils/time_format_utils.dart';
 
 /// Context for profile viewing - determines which actions to show
@@ -442,33 +443,10 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
                             ),
                           ),
                         const SizedBox(width: 8),
-                        if (widget.profile.verified)
-                          Container(
-                            padding: const EdgeInsets.all(4),
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: [
-                                  PulseColors.primary,
-                                  PulseColors.secondary,
-                                ],
-                              ),
-                              shape: BoxShape.circle,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: PulseColors.primary.withValues(
-                                    alpha: 0.5,
-                                  ),
-                                  blurRadius: 8,
-                                  spreadRadius: 2,
-                                ),
-                              ],
-                            ),
-                            child: const Icon(
-                              Icons.verified,
-                              color: Colors.white,
-                          size: 20,
+                        VerificationBadge(
+                          isVerified: widget.profile.verified,
+                          size: VerificationBadgeSize.medium,
                         ),
-                      ),
                   ],
                 ),
                 const SizedBox(height: 8),
@@ -806,33 +784,10 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
                           ),
                         ),
                         const SizedBox(width: 8),
-                        if (widget.profile.verified)
-                          Container(
-                            padding: const EdgeInsets.all(6),
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: [
-                                  PulseColors.primary,
-                                  PulseColors.secondary,
-                                ],
-                              ),
-                              shape: BoxShape.circle,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: PulseColors.primary.withValues(
-                                    alpha: 0.3,
-                                  ),
-                                  blurRadius: 8,
-                                  offset: const Offset(0, 2),
-                                ),
-                              ],
-                            ),
-                            child: const Icon(
-                              Icons.verified,
-                              color: Colors.white,
-                              size: 16,
-                            ),
-                          ),
+                        VerificationBadge(
+                          isVerified: widget.profile.verified,
+                          size: VerificationBadgeSize.small,
+                        ),
                       ],
                     ),
                     const SizedBox(height: 8),

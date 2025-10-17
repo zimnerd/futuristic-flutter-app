@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../domain/entities/user_profile.dart';
 import '../../theme/pulse_colors.dart';
 import '../common/robust_network_image.dart';
+import '../verification/verification_badge.dart';
 
 /// Modal widget for displaying user profile details
 class ProfileModal extends StatelessWidget {
@@ -103,14 +104,11 @@ class ProfileModal extends StatelessWidget {
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      if (userProfile.isVerified) ...[
-                        const SizedBox(width: 8),
-                        Icon(
-                          Icons.verified,
-                          color: PulseColors.primary,
-                          size: 24,
-                        ),
-                      ],
+                      const SizedBox(width: 8),
+                      VerificationBadge(
+                        isVerified: userProfile.isVerified,
+                        size: VerificationBadgeSize.medium,
+                      ),
                     ],
                   ),
                   const SizedBox(height: 8),

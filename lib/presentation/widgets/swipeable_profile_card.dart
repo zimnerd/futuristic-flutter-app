@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'common/robust_network_image.dart';
+import 'verification/verification_badge.dart';
 
 /// Enhanced swipeable card for dating profiles with gesture recognition
 /// Supports like, pass, and super like actions with smooth animations
@@ -348,14 +349,11 @@ class _SwipeableProfileCardState extends State<SwipeableProfileCard>
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  if (widget.profile.isVerified) ...[
-                    const SizedBox(width: 8),
-                    const Icon(
-                      Icons.verified,
-                      color: Colors.blue,
-                      size: 24,
-                    ),
-                  ],
+                  const SizedBox(width: 8),
+                  VerificationBadge(
+                    isVerified: widget.profile.isVerified,
+                    size: VerificationBadgeSize.medium,
+                  ),
                 ],
               ),
               const SizedBox(height: 8),

@@ -791,6 +791,17 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
         actions: [
           IconButton(
             icon: Icon(
+              Icons.privacy_tip_rounded,
+              color: PulseColors.primary,
+              size: 26,
+            ),
+            onPressed: () {
+              Navigator.of(context).pushNamed('/privacy-settings');
+            },
+            tooltip: 'Privacy Settings',
+          ),
+          IconButton(
+            icon: Icon(
               Icons.visibility_outlined,
               color: PulseColors.primary,
               size: 28,
