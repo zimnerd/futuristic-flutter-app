@@ -12,11 +12,13 @@ import '../../blocs/live_streaming/live_streaming_event.dart';
 import '../../blocs/live_streaming/live_streaming_state.dart';
 import '../../widgets/common/pulse_loading_widget.dart';
 import '../../widgets/common/pulse_error_widget.dart';
+import '../../widgets/common/pulse_toast.dart';
 import '../../widgets/live_streaming/live_stream_card.dart';
 import '../../widgets/live_streaming/stream_card_skeleton.dart';
 import '../../widgets/live_streaming/stream_category_filter.dart';
 import '../../theme/pulse_colors.dart';
-import '../../../data/services/service_locator.dart';
+import '../../../core/network/api_client.dart';
+import '../../../data/services/live_streaming_service.dart';
 import '../../../data/services/websocket_service_impl.dart';
 
 /// Main screen for live streaming functionality
@@ -614,7 +616,9 @@ class _LiveStreamingScreenState extends State<LiveStreamingScreen>
               // Call the service to delete the stream
               try {
                 final liveStreamingService =
-                    ServiceLocator().liveStreamingService;
+                    LiveStreamingService(
+                  ApiClient.instance,
+                );
                 final streamId = stream['id'] ?? '';
                 final success = await liveStreamingService.endLiveStream(
                   streamId,
@@ -623,28 +627,23 @@ class _LiveStreamingScreenState extends State<LiveStreamingScreen>
                 if (!mounted) return;
 
                 if (success) {
-                  scaffoldMessenger.showSnackBar(
-                    const SnackBar(content: Text('Stream ended successfully')),
+                  PulseToast.success(
+                    context,
+                    message: 'Stream ended successfully',
                   );
                   // Refresh the streams list
                   liveStreamingBloc.add(
                     const LoadLiveStreams(),
                   );
                 } else {
-                  scaffoldMessenger.showSnackBar(
-                    const SnackBar(
-                      content: Text('Failed to end stream. Please try again.'),
-                      backgroundColor: Colors.red,
-                    ),
+                  PulseToast.error(
+                    context,
+                    message: 'Failed to end stream. Please try again.',
                   );
                 }
               } catch (e) {
                 if (!mounted) return;
-                scaffoldMessenger.showSnackBar(
-                  SnackBar(
-                    content: Text('Error: ${e.toString()}'),
-                    backgroundColor: Colors.red,
-                  ),
+                PulseToast.error(context, message: 'Error: ${e.toString()}',
                 );
               }
             },
@@ -715,8 +714,9 @@ class _LiveStreamingScreenState extends State<LiveStreamingScreen>
                 
                 // Call the service to report the stream
                 try {
-                  final liveStreamingService =
-                      ServiceLocator().liveStreamingService;
+                  final liveStreamingService = LiveStreamingService(
+                    ApiClient.instance,
+                  );
                   final streamId = stream['id'] ?? '';
                   final success = await liveStreamingService.reportStream(
                     streamId: streamId,
@@ -726,19 +726,14 @@ class _LiveStreamingScreenState extends State<LiveStreamingScreen>
                   if (!mounted) return;
 
                   if (success) {
-                    scaffoldMessenger.showSnackBar(
-                      const SnackBar(
-                        content: Text('Stream reported successfully'),
-                      ),
+                    PulseToast.success(
+                      context,
+                      message: 'Stream reported successfully',
                     );
                   } else {
-                    scaffoldMessenger.showSnackBar(
-                      const SnackBar(
-                        content: Text(
-                          'Failed to report stream. Please try again.',
-                        ),
-                        backgroundColor: Colors.red,
-                      ),
+                    PulseToast.error(
+                      context,
+                      message: 'Failed to report stream. Please try again.',
                     );
                   }
                 } catch (e) {

@@ -10,9 +10,10 @@ import 'package:permission_handler/permission_handler.dart';
 
 import '../../../blocs/chat_bloc.dart';
 import '../../../data/models/chat_model.dart';
-import '../../../data/services/service_locator.dart';
 import '../../../data/services/background_sync_manager.dart';
 import '../../../data/services/audio_call_service.dart';
+import '../../../data/services/auto_reply_service.dart';
+import '../../../core/network/api_client.dart';
 import '../../../services/media_upload_service.dart' as media_service;
 import '../../../domain/entities/message.dart' show MessageType;
 import '../../../presentation/blocs/auth/auth_bloc.dart';
@@ -148,11 +149,9 @@ class _ChatScreenState extends State<ChatScreen> {
     if (widget.otherUserId.isEmpty || widget.otherUserId == 'current_user_id') {
       // Handle error - no valid other user ID provided
       AppLogger.warning('Error: Invalid otherUserId: ${widget.otherUserId}');
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Error: Cannot create conversation - invalid user ID'),
-          backgroundColor: Colors.red,
-        ),
+      PulseToast.error(
+        context,
+        message: 'Error: Cannot create conversation - invalid user ID',
       );
       Navigator.of(context).pop(); // Go back
       return;
@@ -307,7 +306,7 @@ class _ChatScreenState extends State<ChatScreen> {
     });
 
     try {
-      final autoReplyService = ServiceLocator().autoReplyService;
+      final autoReplyService = AutoReplyService(ApiClient.instance);
 
       // Get the last message from the conversation if not provided
       String? messageContext = lastMessage;
@@ -358,20 +357,18 @@ class _ChatScreenState extends State<ChatScreen> {
 
       // Show user-friendly error with retry option after max retries
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text(
+        PulseToast.error(
+          context,
+          message:
               'Unable to load smart suggestions. Tap refresh to try again.',
-            ),
-            action: SnackBarAction(
-              label: 'Refresh',
-              onPressed: () {
-                setState(() => _smartReplyCacheTimestamp = null);
-                _loadSmartReplySuggestions();
-              },
-            ),
-            duration: const Duration(seconds: 4),
+          action: ToastAction(
+            label: 'Refresh',
+            onPressed: () {
+              setState(() => _smartReplyCacheTimestamp = null);
+              _loadSmartReplySuggestions();
+            },
           ),
+          duration: const Duration(seconds: 4),
         );
       }
 
@@ -502,19 +499,13 @@ class _ChatScreenState extends State<ChatScreen> {
                     AppLogger.error(
                       'ChatScreen - MessageSearchError: ${state.error}',
                     );
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Search failed: ${state.error}'),
-                        backgroundColor: Colors.red,
-                      ),
+                    PulseToast.error(
+                      context,
+                      message: 'Search failed: ${state.error}',
                     );
                   } else if (state is ChatError) {
                     AppLogger.error('ChatScreen - ChatError: ${state.message}');
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(state.message),
-                        backgroundColor: Colors.red,
-                      ),
+                    PulseToast.error(context, message: state.message,
                     );
                 }
               },
@@ -1447,11 +1438,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
       if (callId == null) {
         if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Failed to initiate call'),
-              backgroundColor: Colors.red,
-            ),
+          PulseToast.error(context, message: 'Failed to initiate call',
           );
         }
         return;
@@ -1488,11 +1475,7 @@ class _ChatScreenState extends State<ChatScreen> {
       }
 
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error initiating call: $e'),
-            backgroundColor: Colors.red,
-          ),
+        PulseToast.error(context, message: 'Error initiating call: $e',
         );
       }
     }
@@ -1524,20 +1507,16 @@ class _ChatScreenState extends State<ChatScreen> {
           listener: (context, state) {
             if (state is UserBlocked) {
               Navigator.pop(dialogContext);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('${widget.otherUserName} has been blocked'),
-                  backgroundColor: Colors.green,
-                ),
+              PulseToast.success(
+                context,
+                message: '${widget.otherUserName} has been blocked',
               );
               // Close chat after blocking
               this.context.pop();
             } else if (state is BlockReportError) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Failed to block: ${state.message}'),
-                  backgroundColor: Colors.red,
-                ),
+              PulseToast.error(
+                context,
+                message: 'Failed to block: ${state.message}',
               );
             }
           },
@@ -1569,11 +1548,9 @@ class _ChatScreenState extends State<ChatScreen> {
               Navigator.pop(context);
               // Close the chat screen and go back
               Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Unmatched with ${widget.otherUserName}'),
-                  backgroundColor: Colors.red,
-                ),
+              PulseToast.info(
+                context,
+                message: 'Unmatched with ${widget.otherUserName}',
               );
             },
             style: TextButton.styleFrom(foregroundColor: Colors.red),
@@ -1593,18 +1570,14 @@ class _ChatScreenState extends State<ChatScreen> {
           listener: (context, state) {
             if (state is UserReported) {
               Navigator.pop(dialogContext);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('${widget.otherUserName} has been reported'),
-                  backgroundColor: Colors.green,
-                ),
+              PulseToast.success(
+                context,
+                message: '${widget.otherUserName} has been reported',
               );
             } else if (state is BlockReportError) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Failed to report: ${state.message}'),
-                  backgroundColor: Colors.red,
-                ),
+              PulseToast.error(
+                context,
+                message: 'Failed to report: ${state.message}',
               );
             }
           },
@@ -1632,12 +1605,9 @@ class _ChatScreenState extends State<ChatScreen> {
                 onTap: () {
                   Navigator.pop(context);
                   // Navigate to profile screen
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        'Opening ${widget.otherUserName}\'s profile',
-                      ),
-                    ),
+                  PulseToast.info(
+                    context,
+                    message: 'Opening ${widget.otherUserName}\'s profile',
                   );
                 },
               ),
@@ -1646,8 +1616,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 title: const Text('Mute Notifications'),
                 onTap: () {
                   Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Notifications muted')),
+                  PulseToast.success(context, message: 'Notifications muted',
                   );
                 },
               ),
@@ -1705,10 +1674,9 @@ class _ChatScreenState extends State<ChatScreen> {
             TextButton(
               onPressed: () {
                 Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('${widget.otherUserName} has been blocked'),
-                  ),
+                PulseToast.success(
+                  context,
+                  message: '${widget.otherUserName} has been blocked',
                 );
               },
               child: const Text('Block', style: TextStyle(color: Colors.red)),
@@ -1734,10 +1702,9 @@ class _ChatScreenState extends State<ChatScreen> {
             TextButton(
               onPressed: () {
                 Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('${widget.otherUserName} has been reported'),
-                  ),
+                PulseToast.success(
+                  context,
+                  message: '${widget.otherUserName} has been reported',
                 );
               },
               child: const Text('Report', style: TextStyle(color: Colors.red)),
@@ -1766,8 +1733,7 @@ class _ChatScreenState extends State<ChatScreen> {
               onPressed: () {
                 Navigator.pop(context);
                 Navigator.pop(context); // Close chat screen
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Conversation deleted')),
+                PulseToast.success(context, message: 'Conversation deleted',
                 );
               },
               child: const Text('Delete', style: TextStyle(color: Colors.red)),
@@ -1797,32 +1763,24 @@ class _ChatScreenState extends State<ChatScreen> {
       if (cameraPermission.isDenied) {
         AppLogger.warning('Camera permission denied');
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text(
-                'Camera permission is required to take photos.',
-              ),
-              backgroundColor: Colors.orange,
-            ),
+          PulseToast.warning(
+            context,
+            message: 'Camera permission is required to take photos.',
           );
         }
         return;
       }
-      
+
       if (cameraPermission.isPermanentlyDenied) {
         AppLogger.warning('Camera permission permanently denied');
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: const Text(
+          PulseToast.error(
+            context,
+            message:
                 'Camera permission is permanently denied. Please enable it in settings.',
-              ),
-              backgroundColor: Colors.red,
-              action: SnackBarAction(
-                label: 'Settings',
-                textColor: Colors.white,
-                onPressed: () => openAppSettings(),
-              ),
+            action: ToastAction(
+              label: 'Settings',
+              onPressed: () => openAppSettings(),
             ),
           );
         }
@@ -1851,13 +1809,10 @@ class _ChatScreenState extends State<ChatScreen> {
     } catch (e) {
       AppLogger.error('Error capturing image from camera: $e');
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
+        PulseToast.error(
+          context,
+          message:
               'Failed to capture image. Please check camera permissions and try again.',
-            ),
-            backgroundColor: Colors.red,
-          ),
         );
       }
     }
@@ -1884,11 +1839,9 @@ class _ChatScreenState extends State<ChatScreen> {
     } catch (e) {
       AppLogger.error('Error selecting image from gallery: $e');
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Failed to select image. Please try again.'),
-            backgroundColor: Colors.red,
-          ),
+        PulseToast.error(
+          context,
+          message: 'Failed to select image. Please try again.',
         );
       }
     }
@@ -1923,32 +1876,25 @@ class _ChatScreenState extends State<ChatScreen> {
       if (cameraPermission.isDenied || microphonePermission.isDenied) {
         AppLogger.warning('Camera or microphone permission denied');
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text(
+          PulseToast.warning(
+            context,
+            message:
                 'Camera and microphone permissions are required to record videos.',
-              ),
-              backgroundColor: Colors.orange,
-            ),
           );
         }
         return;
       }
-      
+
       if (cameraPermission.isPermanentlyDenied || microphonePermission.isPermanentlyDenied) {
         AppLogger.warning('Camera or microphone permission permanently denied');
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: const Text(
+          PulseToast.error(
+            context,
+            message:
                 'Permissions are permanently denied. Please enable them in settings.',
-              ),
-              backgroundColor: Colors.red,
-              action: SnackBarAction(
-                label: 'Settings',
-                textColor: Colors.white,
-                onPressed: () => openAppSettings(),
-              ),
+            action: ToastAction(
+              label: 'Settings',
+              onPressed: () => openAppSettings(),
             ),
           );
         }
@@ -1975,11 +1921,9 @@ class _ChatScreenState extends State<ChatScreen> {
     } catch (e) {
       AppLogger.error('Error capturing video from camera: $e');
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Failed to capture video. Please try again.'),
-            backgroundColor: Colors.red,
-          ),
+        PulseToast.error(
+          context,
+          message: 'Failed to capture video. Please try again.',
         );
       }
     }
@@ -2004,11 +1948,9 @@ class _ChatScreenState extends State<ChatScreen> {
     } catch (e) {
       AppLogger.error('Error selecting video from gallery: $e');
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Failed to select video. Please try again.'),
-            backgroundColor: Colors.red,
-          ),
+        PulseToast.error(
+          context,
+          message: 'Failed to select video. Please try again.',
         );
       }
     }
@@ -2019,13 +1961,9 @@ class _ChatScreenState extends State<ChatScreen> {
     final permission = await Permission.microphone.request();
     if (permission != PermissionStatus.granted) {
       if (mounted && context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              'Microphone permission is required for voice messages',
-            ),
-            backgroundColor: Colors.red,
-          ),
+        PulseToast.error(
+          context,
+          message: 'Microphone permission is required for voice messages',
         );
       }
       return;
@@ -2067,16 +2005,16 @@ class _ChatScreenState extends State<ChatScreen> {
 
     try {
       // Show uploading indicator
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Uploading voice message...'),
-          backgroundColor: PulseColors.primary,
-          duration: Duration(seconds: 2),
-        ),
+      PulseToast.info(
+        context,
+        message: 'Uploading voice message...',
+        duration: const Duration(seconds: 2),
       );
 
       // Upload voice message file
-      final mediaUploadService = ServiceLocator().mediaUploadService;
+      final mediaUploadService = media_service.MediaUploadService(
+        httpClient: ApiClient.instance.dio,
+      );
       final uploadResult = await mediaUploadService.uploadMedia(
         filePath: voiceMessage.audioUrl,
         category: media_service.MediaCategory.chatMessage,
@@ -2117,12 +2055,10 @@ class _ChatScreenState extends State<ChatScreen> {
           // Scroll to bottom
           _scrollToBottom();
 
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Voice message sent!'),
-              backgroundColor: PulseColors.primary,
-              duration: Duration(seconds: 2),
-            ),
+          PulseToast.success(
+            context,
+            message: 'Voice message sent!',
+            duration: const Duration(seconds: 2),
           );
         }
       } else {
@@ -2133,11 +2069,7 @@ class _ChatScreenState extends State<ChatScreen> {
     } catch (e) {
       AppLogger.error('Failed to send voice message: $e');
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Failed to send voice message'),
-            backgroundColor: Colors.red,
-          ),
+        PulseToast.error(context, message: 'Failed to send voice message',
         );
       }
     }
@@ -2149,10 +2081,9 @@ class _ChatScreenState extends State<ChatScreen> {
 
       // Don't allow sending messages to "new" conversation
       if (widget.conversationId == 'new') {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Please wait for conversation to be created'),
-          ),
+        PulseToast.info(
+          context,
+          message: 'Please wait for conversation to be created',
         );
         return;
       }
@@ -2169,26 +2100,17 @@ class _ChatScreenState extends State<ChatScreen> {
 
       // Show uploading indicator
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Row(
-              children: [
-                SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                ),
-                SizedBox(width: 16),
-                Text('Uploading image...'),
-              ],
-            ),
-            duration: Duration(seconds: 30),
-          ),
+        PulseToast.info(
+          context,
+          message: 'Uploading image...',
+          duration: const Duration(seconds: 30),
         );
       }
 
       // Upload image using MediaUploadService
-      final mediaUploadService = ServiceLocator().mediaUploadService;
+      final mediaUploadService = media_service.MediaUploadService(
+        httpClient: ApiClient.instance.dio,
+      );
       final uploadResult = await mediaUploadService.uploadMedia(
         filePath: imageFile.path,
         category: media_service.MediaCategory.chatMessage,
@@ -2217,13 +2139,10 @@ class _ChatScreenState extends State<ChatScreen> {
 
         // Show success feedback
         if (mounted) {
-          ScaffoldMessenger.of(context).clearSnackBars();
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Image sent successfully!'),
-              backgroundColor: Colors.green,
-              duration: Duration(seconds: 2),
-            ),
+          PulseToast.success(
+            context,
+            message: 'Image sent successfully!',
+            duration: const Duration(seconds: 2),
           );
         }
       } else {
@@ -2232,12 +2151,9 @@ class _ChatScreenState extends State<ChatScreen> {
     } catch (e) {
       AppLogger.error('Error sending image message: $e');
       if (mounted) {
-        ScaffoldMessenger.of(context).clearSnackBars();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to send image: ${e.toString()}'),
-            backgroundColor: Colors.red,
-          ),
+        PulseToast.error(
+          context,
+          message: 'Failed to send image: ${e.toString()}',
         );
       }
     }
@@ -2249,10 +2165,9 @@ class _ChatScreenState extends State<ChatScreen> {
 
       // Don't allow sending messages to "new" conversation
       if (widget.conversationId == 'new') {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Please wait for conversation to be created'),
-          ),
+        PulseToast.info(
+          context,
+          message: 'Please wait for conversation to be created',
         );
         return;
       }
@@ -2269,26 +2184,17 @@ class _ChatScreenState extends State<ChatScreen> {
 
       // Show uploading indicator
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Row(
-              children: [
-                SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                ),
-                SizedBox(width: 16),
-                Text('Uploading video...'),
-              ],
-            ),
-            duration: Duration(seconds: 60), // Longer for videos
-          ),
+        PulseToast.info(
+          context,
+          message: 'Uploading video...',
+          duration: const Duration(seconds: 60), // Longer for videos
         );
       }
 
       // Upload video using MediaUploadService
-      final mediaUploadService = ServiceLocator().mediaUploadService;
+      final mediaUploadService = media_service.MediaUploadService(
+        httpClient: ApiClient.instance.dio,
+      );
       final uploadResult = await mediaUploadService.uploadMedia(
         filePath: videoFile.path,
         category: media_service.MediaCategory.chatMessage,
@@ -2317,13 +2223,10 @@ class _ChatScreenState extends State<ChatScreen> {
 
         // Show success feedback
         if (mounted) {
-          ScaffoldMessenger.of(context).clearSnackBars();
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Video sent successfully!'),
-              backgroundColor: Colors.green,
-              duration: Duration(seconds: 2),
-            ),
+          PulseToast.success(
+            context,
+            message: 'Video sent successfully!',
+            duration: const Duration(seconds: 2),
           );
         }
       } else {
@@ -2334,12 +2237,9 @@ class _ChatScreenState extends State<ChatScreen> {
     } catch (e) {
       AppLogger.error('Error sending video message: $e');
       if (mounted) {
-        ScaffoldMessenger.of(context).clearSnackBars();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to send video: ${e.toString()}'),
-            backgroundColor: Colors.red,
-          ),
+        PulseToast.error(
+          context,
+          message: 'Failed to send video: ${e.toString()}',
         );
       }
     }
@@ -2542,8 +2442,10 @@ class _ChatScreenState extends State<ChatScreen> {
   void _openMedia(MessageModel message) {
     if (message.mediaUrls?.isNotEmpty == true) {
       // Open media viewer
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Opening media viewer...')),
+      PulseToast.info(
+        context,
+        message: 'Opening media viewer...',
+        duration: const Duration(seconds: 1),
       );
     }
   }
@@ -2551,15 +2453,19 @@ class _ChatScreenState extends State<ChatScreen> {
   void _copyMessage(MessageModel message) {
     if (message.content?.isNotEmpty == true) {
       Clipboard.setData(ClipboardData(text: message.content!));
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Message copied to clipboard')),
+      PulseToast.success(
+        context,
+        message: 'Message copied to clipboard',
+        duration: const Duration(seconds: 1),
       );
     }
   }
 
   void _saveMedia(MessageModel message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Saving media to gallery...')),
+    PulseToast.info(
+      context,
+      message: 'Saving media to gallery...',
+      duration: const Duration(seconds: 2),
     );
   }
 
@@ -2578,8 +2484,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
   void _editMessage(MessageModel message) {
     if (message.type != MessageType.text) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Can only edit text messages')),
+      PulseToast.info(context, message: 'Can only edit text messages',
       );
       return;
     }
@@ -2649,8 +2554,7 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   void _reportMessage(MessageModel message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Report feature will be implemented')),
+    PulseToast.info(context, message: 'Report feature will be implemented',
     );
   }
 
@@ -2664,24 +2568,21 @@ class _ChatScreenState extends State<ChatScreen> {
     );
 
     // Show confirmation
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          message.isBookmarked
-              ? 'Removed from bookmarks'
-              : 'Message bookmarked',
-        ),
-        duration: const Duration(seconds: 2),
-        action: message.isBookmarked
-            ? null
-            : SnackBarAction(
-                label: 'View',
-                onPressed: () {
-                  // Navigate to saved messages screen
-                  Navigator.pushNamed(context, '/saved-messages');
-                },
-              ),
-      ),
+    PulseToast.success(
+      context,
+      message: message.isBookmarked
+          ? 'Removed from bookmarks'
+          : 'Message bookmarked',
+      duration: const Duration(seconds: 2),
+      action: message.isBookmarked
+          ? null
+          : ToastAction(
+              label: 'View',
+              onPressed: () {
+                // Navigate to saved messages screen
+                Navigator.pushNamed(context, '/saved-messages');
+              },
+            ),
     );
   }
 
@@ -2844,8 +2745,10 @@ class _ChatScreenState extends State<ChatScreen> {
 
   void _onReaction(MessageModel message, String emoji) {
     // Add reaction to message
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Added reaction: $emoji')),
+    PulseToast.success(
+      context,
+      message: 'Added reaction: $emoji',
+      duration: const Duration(seconds: 1),
     );
   }
 
