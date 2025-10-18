@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../theme/pulse_colors.dart';
+import 'pulse_toast.dart';
 
 /// Reusable card widget with Pulse branding
 class PulseCard extends StatelessWidget {
@@ -180,30 +181,14 @@ class PulseSnackBar {
     required IconData iconData,
     Duration duration = const Duration(seconds: 3),
   }) {
-    ScaffoldMessenger.of(context).hideCurrentSnackBar();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            Icon(iconData, color: Colors.white, size: 20),
-            const SizedBox(width: PulseSpacing.sm),
-            Expanded(
-              child: Text(
-                message,
-                style: PulseTextStyles.bodyMedium.copyWith(color: Colors.white),
-              ),
-            ),
-          ],
-        ),
-        backgroundColor: backgroundColor,
-        duration: duration,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(PulseRadii.sm),
-        ),
-        margin: const EdgeInsets.all(PulseSpacing.md),
-      ),
-    );
+    // Use PulseToast based on background color
+    if (backgroundColor == PulseColors.success) {
+      PulseToast.success(context, message: message);
+    } else if (backgroundColor == PulseColors.error) {
+      PulseToast.error(context, message: message);
+    } else {
+      PulseToast.info(context, message: message);
+    }
   }
 }
 

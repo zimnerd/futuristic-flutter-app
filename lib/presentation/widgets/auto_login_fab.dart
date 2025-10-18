@@ -6,6 +6,7 @@ import '../blocs/auth/auth_bloc.dart';
 import '../blocs/auth/auth_event.dart';
 import '../blocs/auth/auth_state.dart';
 import '../theme/pulse_colors.dart';
+import 'common/pulse_toast.dart';
 
 /// Floating auto-login button for quick development access
 /// Shows a fab with developer options when in debug mode
@@ -273,12 +274,7 @@ class _AutoLoginCard extends StatelessWidget {
     Navigator.of(context).pop();
 
     // Show feedback
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Signing in as ${account.name}...'),
-        backgroundColor: PulseColors.success,
-        duration: const Duration(seconds: 2),
-      ),
+    PulseToast.success(context, message: 'Signing in as ${account.name}...',
     );
   }
 }

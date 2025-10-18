@@ -4,6 +4,7 @@ import 'package:logger/logger.dart';
 
 import '../../../blocs/chat_bloc.dart';
 import '../../../data/services/background_sync_manager.dart';
+import '../common/pulse_toast.dart';
 
 /// A widget that provides pull-to-refresh functionality with background sync
 /// This can be wrapped around conversation lists or message lists
@@ -71,14 +72,9 @@ class _SyncRefreshWrapperState extends State<SyncRefreshWrapper> {
     } catch (e, stackTrace) {
       _logger.e('SyncRefreshWrapper: Manual refresh failed', error: e, stackTrace: stackTrace);
       
-      // Show error snackbar
+      // Show error toast
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Failed to sync. Please try again.'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        PulseToast.error(context, message: 'Failed to sync. Please try again.');
       }
     } finally {
       if (mounted) {

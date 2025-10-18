@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../theme/pulse_colors.dart' hide PulseTextStyles;
 import '../../theme/pulse_theme.dart';
 import '../../blocs/block_report/block_report_bloc.dart';
+import '../common/pulse_toast.dart';
 
 /// Dialog for reporting a user
 class ReportUserDialog extends StatefulWidget {
@@ -43,11 +44,9 @@ class _ReportUserDialogState extends State<ReportUserDialog> {
 
   Future<void> _handleReport() async {
     if (_selectedReason == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Please select a reason for reporting'),
-          backgroundColor: PulseColors.error,
-        ),
+      PulseToast.error(
+        context,
+        message: 'Please select a reason for reporting',
       );
       return;
     }

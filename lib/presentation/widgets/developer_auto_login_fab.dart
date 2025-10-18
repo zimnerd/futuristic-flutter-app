@@ -7,6 +7,7 @@ import '../blocs/auth/auth_bloc.dart';
 import '../blocs/auth/auth_event.dart';
 import '../blocs/auth/auth_state.dart';
 import '../theme/pulse_colors.dart';
+import 'common/pulse_toast.dart';
 
 /// Development FAB for auto-login functionality
 /// Only shown in debug mode for developer convenience
@@ -236,12 +237,9 @@ class _DeveloperAutoLoginFABState extends State<DeveloperAutoLoginFAB>
         }
       });
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Auto-login failed: $e'),
-          backgroundColor: PulseColors.error,
-        ),
-      );
+      if (mounted) {
+        PulseToast.error(context, message: 'Auto-login failed: $e');
+      }
     }
   }
 

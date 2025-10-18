@@ -12,6 +12,7 @@ import '../blocs/auth/auth_bloc.dart';
 import '../blocs/auth/auth_state.dart';
 import '../blocs/auth/auth_event.dart';
 import '../navigation/app_router.dart';
+import '../widgets/common/pulse_toast.dart';
 
 /// Widget that handles automatic login on app startup in development mode
 class AutoLoginWrapper extends StatefulWidget {
@@ -82,23 +83,17 @@ class _AutoLoginWrapperState extends State<AutoLoginWrapper> {
               '📱 Showing in-app notification popup: ${notification['title']}',
             );
 
-            // Show SnackBar for in-app message notification
+            // Show toast for in-app message notification
             if (mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(
+              PulseToast.info(
+                context,
+                message:
                     '${notification['title']}: ${notification['body']}',
-                  ),
-                  duration: const Duration(seconds: 4),
-                  action: SnackBarAction(
-                    label: 'View',
-                    onPressed: () {
-                      // Navigate to messages screen when user taps "View"
-                      _navigateToMessages(notification['data']);
-                    },
-                  ),
-                ),
               );
+              // Auto-navigate to messages after a delay
+              Future.delayed(const Duration(seconds: 2), () {
+                _navigateToMessages(notification['data']);
+              });
             }
           },
           onError: (error) {
