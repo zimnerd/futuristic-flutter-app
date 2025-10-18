@@ -5,6 +5,7 @@ import '../../navigation/app_router.dart';
 import '../../theme/pulse_colors.dart';
 import '../../blocs/date_planning/date_planning_bloc.dart';
 import '../../blocs/date_planning/date_planning_event.dart';
+import '../../widgets/common/pulse_toast.dart';
 
 /// Screen showing detailed view of a date plan
 class DatePlanDetailsScreen extends StatefulWidget {
@@ -234,8 +235,7 @@ class _DatePlanDetailsScreenState extends State<DatePlanDetailsScreen> {
 
   void _sharePlan() {
     // Share plan functionality
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Plan shared!')),
+    PulseToast.success(context, message: 'Plan shared!',
     );
   }
 
@@ -305,8 +305,7 @@ class _DatePlanDetailsScreenState extends State<DatePlanDetailsScreen> {
           TextButton(
             onPressed: () {
               Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Invitation sent!')),
+              PulseToast.success(context, message: 'Invitation sent!',
               );
             },
             child: const Text('Send'),
@@ -318,16 +317,7 @@ class _DatePlanDetailsScreenState extends State<DatePlanDetailsScreen> {
 
   void _openLocation(String location) {
     // Open location in maps app (would use url_launcher in real implementation)
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Opening $location in maps...'),
-        action: SnackBarAction(
-          label: 'Open Maps',
-          onPressed: () {
-            // In real implementation: launch('https://maps.google.com/?q=$location');
-          },
-        ),
-      ),
+    PulseToast.info(context, message: 'Opening $location in maps...',
     );
   }
 }

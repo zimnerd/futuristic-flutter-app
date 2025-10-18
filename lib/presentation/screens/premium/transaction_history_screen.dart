@@ -10,6 +10,7 @@ import '../../../core/constants/api_constants.dart';
 import '../../../data/models/payment_transaction.dart';
 import '../../../data/services/payment_history_service.dart';
 import '../../../data/services/token_service.dart';
+import '../../widgets/common/pulse_toast.dart';
 
 /// Transaction History Screen
 /// 
@@ -647,17 +648,10 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
     try {
       // Show loading indicator
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Row(
-              children: [
-                CircularProgressIndicator(strokeWidth: 2, valueColor: AlwaysStoppedAnimation(Colors.white)),
-                SizedBox(width: 16),
-                Text('Generating PDF...'),
-              ],
-            ),
-            duration: Duration(seconds: 10),
-          ),
+        PulseToast.info(
+          context,
+          message: 'Generating PDF...',
+          duration: const Duration(seconds: 10),
         );
       }
 
@@ -805,17 +799,9 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).hideCurrentSnackBar();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to export PDF: ${e.toString()}'),
-            backgroundColor: Colors.red,
-            action: SnackBarAction(
-              label: 'Retry',
-              textColor: Colors.white,
-              onPressed: _exportToPDF,
-            ),
-          ),
+        PulseToast.error(
+          context,
+          message: 'Failed to export PDF: ${e.toString()}',
         );
       }
     }
@@ -825,17 +811,10 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
     try {
       // Show loading indicator
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Row(
-              children: [
-                CircularProgressIndicator(strokeWidth: 2, valueColor: AlwaysStoppedAnimation(Colors.white)),
-                SizedBox(width: 16),
-                Text('Generating CSV...'),
-              ],
-            ),
-            duration: Duration(seconds: 10),
-          ),
+        PulseToast.info(
+          context,
+          message: 'Generating CSV...',
+          duration: const Duration(seconds: 10),
         );
       }
 
@@ -878,17 +857,9 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).hideCurrentSnackBar();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to export CSV: ${e.toString()}'),
-            backgroundColor: Colors.red,
-            action: SnackBarAction(
-              label: 'Retry',
-              textColor: Colors.white,
-              onPressed: _exportToCSV,
-            ),
-          ),
+        PulseToast.error(
+          context,
+          message: 'Failed to export CSV: ${e.toString()}',
         );
       }
     }

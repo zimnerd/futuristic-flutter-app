@@ -10,6 +10,7 @@ import '../../widgets/common/pulse_loading_widget.dart';
 import '../../widgets/common/pulse_error_widget.dart';
 import '../../widgets/date_planning/date_plan_card.dart';
 import '../../widgets/date_planning/date_suggestion_card.dart';
+import '../../widgets/common/pulse_toast.dart';
 
 /// Main screen for date planning functionality
 class DatePlanningScreen extends StatefulWidget {
@@ -323,10 +324,9 @@ class _DatePlanningScreenState extends State<DatePlanningScreen>
             onPressed: () {
               Navigator.pop(context);
               // Delete the date plan - would need to add DeleteDatePlan event to bloc
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Date plan deleted successfully'),
-                ),
+              PulseToast.success(
+                context,
+                message: 'Date plan deleted successfully',
               );
             },
             style: TextButton.styleFrom(
@@ -354,10 +354,7 @@ class _DatePlanningScreenState extends State<DatePlanningScreen>
         updates: {'status': 'accepted'},
       ),
     );
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Invitation accepted'),
-      ),
+    PulseToast.success(context, message: 'Invitation accepted',
     );
   }
 
@@ -369,10 +366,7 @@ class _DatePlanningScreenState extends State<DatePlanningScreen>
         updates: {'status': 'declined'},
       ),
     );
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Invitation declined'),
-      ),
+    PulseToast.info(context, message: 'Invitation declined',
     );
   }
 }
@@ -431,10 +425,10 @@ class _FilterDialogState extends State<_FilterDialog> {
           onPressed: () {
             Navigator.pop(context);
             // Apply filters to date suggestions
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('Filters applied: $selectedPrice, $selectedTime, $selectedType'),
-              ),
+            PulseToast.info(
+              context,
+              message:
+                  'Filters applied: $selectedPrice, $selectedTime, $selectedType',
             );
           },
           child: const Text('Apply'),

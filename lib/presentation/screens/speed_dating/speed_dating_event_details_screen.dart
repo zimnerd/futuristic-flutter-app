@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../theme/pulse_colors.dart';
 import '../../blocs/speed_dating/speed_dating_bloc.dart';
 import '../../blocs/speed_dating/speed_dating_event.dart';
+import '../../widgets/common/pulse_toast.dart';
 
 /// Screen showing detailed view of a speed dating event
 class SpeedDatingEventDetailsScreen extends StatefulWidget {
@@ -208,8 +209,7 @@ class _SpeedDatingEventDetailsScreenState extends State<SpeedDatingEventDetailsS
     final eventId = widget.event['id'] as String?;
     if (eventId != null) {
       context.read<SpeedDatingBloc>().add(JoinSpeedDatingEvent(eventId));
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Joining event...')),
+      PulseToast.info(context, message: 'Joining event...',
       );
     }
   }
@@ -247,8 +247,7 @@ class _SpeedDatingEventDetailsScreenState extends State<SpeedDatingEventDetailsS
   }
 
   void _openLocation(String location) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Opening location: $location')),
+    PulseToast.info(context, message: 'Opening location: $location',
     );
   }
 }

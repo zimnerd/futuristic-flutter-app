@@ -6,6 +6,7 @@ import '../../../data/services/speed_dating_service.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../blocs/auth/auth_bloc.dart';
 import '../../blocs/auth/auth_state.dart';
+import '../../widgets/common/pulse_toast.dart';
 import 'active_round_screen.dart';
 
 /// Speed Dating Lobby Screen
@@ -91,8 +92,7 @@ class _SpeedDatingLobbyScreenState extends State<SpeedDatingLobbyScreen> {
             ),
           );
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Event has started!')),
+          PulseToast.info(context, message: 'Event has started!',
           );
         }
       }
@@ -129,11 +129,9 @@ class _SpeedDatingLobbyScreenState extends State<SpeedDatingLobbyScreen> {
         await _loadEventData();
         
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Successfully joined the event!'),
-              backgroundColor: Colors.green,
-            ),
+          PulseToast.success(
+            context,
+            message: 'Successfully joined the event!',
           );
         }
       } else if (mounted) {
@@ -195,10 +193,7 @@ class _SpeedDatingLobbyScreenState extends State<SpeedDatingLobbyScreen> {
         await _loadEventData();
         
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Left the event'),
-            ),
+          PulseToast.info(context, message: 'Left the event',
           );
         }
       } else if (mounted) {

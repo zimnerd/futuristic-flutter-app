@@ -7,6 +7,7 @@ import '../../../data/services/audio_call_service.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../blocs/auth/auth_bloc.dart';
 import '../../blocs/auth/auth_state.dart';
+import '../../widgets/common/pulse_toast.dart';
 import 'round_transition_screen.dart';
 
 /// Active Round Screen for Speed Dating
@@ -229,15 +230,13 @@ class _ActiveRoundScreenState extends State<ActiveRoundScreen>
           _isCallActive = true;
         });
       } else if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to start audio call')),
+        PulseToast.error(context, message: 'Failed to start audio call',
         );
       }
     } catch (e) {
       debugPrint('Failed to start audio call: $e');
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to start call: $e')),
+        PulseToast.error(context, message: 'Failed to start call: $e',
         );
       }
     }

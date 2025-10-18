@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../theme/pulse_colors.dart';
 import '../../widgets/common/common_widgets.dart';
+import '../../widgets/common/pulse_toast.dart';
 
 /// User intent selection screen
 /// Allows users to select their primary purpose for using the app
@@ -75,11 +76,7 @@ class _IntentSelectionScreenState extends State<IntentSelectionScreen> {
 
   Future<void> _continue() async {
     if (_selectedIntent == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please select your primary intent'),
-          backgroundColor: Colors.red,
-        ),
+      PulseToast.error(context, message: 'Please select your primary intent',
       );
       return;
     }
@@ -100,11 +97,7 @@ class _IntentSelectionScreenState extends State<IntentSelectionScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to save preferences: $e'),
-            backgroundColor: Colors.red,
-          ),
+        PulseToast.error(context, message: 'Failed to save preferences: $e',
         );
       }
     }

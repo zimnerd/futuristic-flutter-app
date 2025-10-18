@@ -8,6 +8,7 @@ import '../../../presentation/blocs/auth/auth_bloc.dart';
 import '../../../presentation/blocs/auth/auth_state.dart';
 import '../../theme/pulse_colors.dart';
 import '../../widgets/common/keyboard_dismissible_scaffold.dart';
+import '../../widgets/common/pulse_toast.dart';
 import 'chat_screen.dart';
 
 class ChatListScreen extends StatefulWidget {
@@ -555,11 +556,9 @@ class _ChatListScreenState extends State<ChatListScreen> {
             );
           } else {
             // Show error if no valid participant
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Unable to open conversation: Invalid user data'),
-                backgroundColor: Colors.red,
-              ),
+            PulseToast.error(
+              context,
+              message: 'Unable to open conversation: Invalid user data',
             );
           }
         },

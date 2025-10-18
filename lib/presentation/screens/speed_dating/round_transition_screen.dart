@@ -6,6 +6,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../blocs/auth/auth_bloc.dart';
 import '../../blocs/auth/auth_state.dart';
 import '../../widgets/common/keyboard_dismissible_scaffold.dart';
+import '../../widgets/common/pulse_toast.dart';
 import 'active_round_screen.dart';
 import 'speed_dating_matches_screen.dart';
 
@@ -72,11 +73,9 @@ class _RoundTransitionScreenState extends State<RoundTransitionScreen>
 
   Future<void> _submitRating() async {
     if (_selectedRating == 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please select a rating before continuing'),
-          backgroundColor: Colors.orange,
-        ),
+      PulseToast.error(
+        context,
+        message: 'Please select a rating before continuing',
       );
       return;
     }

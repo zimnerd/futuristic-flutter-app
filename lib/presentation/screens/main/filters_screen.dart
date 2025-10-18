@@ -12,6 +12,7 @@ import '../../../domain/entities/filter_preferences.dart';
 import '../../../domain/entities/discovery_types.dart';
 import '../../theme/pulse_colors.dart';
 import '../../widgets/common/pulse_button.dart';
+import '../../widgets/common/pulse_toast.dart';
 
 /// Screen for managing dating filter preferences
 class FiltersScreen extends StatefulWidget {
@@ -56,18 +57,10 @@ class _FiltersScreenState extends State<FiltersScreen> {
       body: BlocConsumer<FilterBLoC, FilterState>(
         listener: (context, state) {
           if (state is FilterError) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: PulseColors.error,
-              ),
+            PulseToast.error(context, message: state.message,
             );
           } else if (state is FilterSaved) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Filter preferences saved!'),
-                backgroundColor: PulseColors.success,
-              ),
+            PulseToast.success(context, message: 'Filter preferences saved!',
             );
             
             // ✅ Apply saved filters to discovery automatically

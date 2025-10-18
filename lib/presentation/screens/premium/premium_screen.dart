@@ -14,6 +14,7 @@ import '../../widgets/premium/subscription_plans_widget.dart';
 import '../../widgets/premium/current_subscription_widget.dart';
 import '../../widgets/premium/coin_balance_widget.dart';
 import '../../widgets/premium/premium_features_widget.dart';
+import '../../widgets/common/pulse_toast.dart';
 
 /// Main screen for premium subscription management
 class PremiumScreen extends StatefulWidget {
@@ -64,20 +65,14 @@ class _PremiumScreenState extends State<PremiumScreen>
       body: BlocConsumer<PremiumBloc, PremiumState>(
         listener: (context, state) {
           if (state is PremiumError) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: context.errorColor,
-              ),
+            PulseToast.error(context, message: state.message,
             );
           }
           
           if (state is PremiumSubscriptionSuccess) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('Subscription updated successfully!'),
-                backgroundColor: context.successColor,
-              ),
+            PulseToast.success(
+              context,
+              message: 'Subscription updated successfully!',
             );
           }
         },

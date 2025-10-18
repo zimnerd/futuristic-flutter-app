@@ -12,6 +12,7 @@ import '../../widgets/events/event_card.dart';
 import '../../widgets/events/category_chip.dart';
 import '../../widgets/events/advanced_filters_modal.dart';
 import '../../widgets/common/keyboard_dismissible_scaffold.dart';
+import '../../widgets/common/pulse_toast.dart';
 
 class EventsScreen extends StatefulWidget {
   const EventsScreen({super.key});
@@ -184,19 +185,19 @@ class _EventsScreenState extends State<EventsScreen>
             });
           }
           
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                state.isAttending
-                    ? 'Successfully joined the event!'
-                    : 'Left the event',
-              ),
-              backgroundColor: state.isAttending
-                  ? PulseColors.success
-                  : PulseColors.onSurfaceVariant,
+          if (state.isAttending) {
+            PulseToast.success(
+              context,
+              message: 'Successfully joined the event!',
               duration: const Duration(seconds: 2),
-            ),
-          );
+            );
+          } else {
+            PulseToast.info(
+              context,
+              message: 'Left the event',
+              duration: const Duration(seconds: 2),
+            );
+          }
         }
 
         // Clear joining state when events are loaded
@@ -224,12 +225,10 @@ class _EventsScreenState extends State<EventsScreen>
             errorMessage = 'You have already joined this event!';
           }
           
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(errorMessage),
-              backgroundColor: PulseColors.error,
-              duration: const Duration(seconds: 3),
-            ),
+          PulseToast.error(
+            context,
+            message: errorMessage,
+            duration: const Duration(seconds: 3),
           );
         }
       },
