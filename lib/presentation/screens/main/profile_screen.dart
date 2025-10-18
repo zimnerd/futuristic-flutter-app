@@ -11,6 +11,7 @@ import '../../widgets/profile/verification_cta_banner.dart';
 import '../../blocs/profile/profile_bloc.dart';
 import '../../widgets/common/pulse_loading_widget.dart';
 import '../../widgets/verification/verification_badge.dart';
+import '../../widgets/profile/profile_analytics_indicators.dart';
 
 /// Main profile screen - Landing page when user clicks profile from menu
 class ProfileScreen extends StatefulWidget {
@@ -206,6 +207,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
             isVerified: userProfile.verified,
             size: VerificationBadgeSize.medium,
             showLabel: true,
+          ),
+          
+          // Analytics Indicators (engagement level & profile quality)
+          const SizedBox(height: PulseSpacing.sm),
+          ProfileAnalyticsIndicators(
+            profile: userProfile,
+            showEngagementLevel: true,
+            showProfileQuality: true,
+            compact: false,
           ),
           
           // Edit Profile Button

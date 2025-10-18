@@ -191,6 +191,129 @@ class UserProfile extends Equatable {
     return preferences[key] as T?;
   }
 
+  // Computed Properties - Analytics & Quality Metrics
+
+  /// Calculate profile strength score (0-100)
+  /// Based on: completion (40pts), photos (20pts), bio (15pts), verification (15pts), interests (10pts)
+  double get profileStrengthScore {
+    double score = 0;
+
+    // Base completion (40 points)
+    score += profileCompletionPercentage * 0.4;
+
+    // Photos (20 points: 5 points per photo, max 4 photos)
+    score += (photos.length.clamp(0, 4) * 5).toDouble();
+
+    // Bio quality (15 points)
+    if (bio.isNotEmpty) {
+      if (bio.length >= 50) {
+        score += 15;
+      } else if (bio.length >= 20) {
+        score += 10;
+      } else {
+        score += 5;
+      }
+    }
+
+    // Verification (15 points)
+    if (verified) score += 5; // Legacy verification
+    if (verificationStatus == 'VERIFIED') {
+      score += 5; // New verification status
+      // Additional points based on verification method
+      if (verificationMethod == 'IDENTITY') {
+        score += 5;
+      } else if (verificationMethod == 'PHOTO') {
+        score += 3;
+      } else if (verificationMethod == 'PHONE' ||
+          verificationMethod == 'EMAIL') {
+        score += 2;
+      }
+    }
+
+    // Interests (10 points: 1 point per interest, max 10)
+    score += (interests.length.clamp(0, 10)).toDouble();
+
+    return score.clamp(0, 100);
+  }
+
+  /// Calculate match rate percentage
+  /// Formula: (matchesCount / likesReceived) * 100
+  double get matchRate {
+    if (likesReceived == 0) return 0;
+    return (matchesCount / likesReceived * 100).clamp(0, 100);
+  }
+
+  /// Calculate visibility score (0-100)
+  /// Combines activity level, profile strength, and engagement
+  double get visibilityScore {
+    double score = 0;
+
+    // Activity contribution (40 points)
+    if (isRecentlyActive) {
+      score += 20;
+    } else if (lastActiveAt != null) {
+      final daysSinceActive = DateTime.now().difference(lastActiveAt!).inDays;
+      if (daysSinceActive <= 3) {
+        score += 15;
+      } else if (daysSinceActive <= 7) {
+        score += 10;
+      } else if (daysSinceActive <= 14) {
+        score += 5;
+      }
+    }
+
+    // Profile completeness (20 points for online status)
+    if (isOnline) score += 20;
+
+    // Profile strength contribution (40 points)
+    score += profileStrengthScore * 0.4;
+
+    return score.clamp(0, 100);
+  }
+
+  /// Get engagement level classification
+  /// Based on profile views and likes received
+  String get engagementLevel {
+    final totalEngagement = profileViews + (likesReceived * 2);
+
+    if (totalEngagement >= 1000) return 'influencer';
+    if (totalEngagement >= 500) return 'popular';
+    if (totalEngagement >= 100) return 'active';
+    if (totalEngagement >= 20) return 'growing';
+    return 'new';
+  }
+
+  /// Check if profile meets high quality criteria
+  /// Threshold: profileStrengthScore >= 70
+  bool get isHighQualityProfile {
+    return profileStrengthScore >= 70;
+  }
+
+  /// Get verification display status
+  /// Combines legacy and new verification systems
+  String get verificationDisplay {
+    if (verificationStatus == 'VERIFIED') {
+      return verificationMethod ?? 'verified';
+    }
+    if (verified) return 'verified'; // Legacy
+    if (verificationStatus == 'PENDING') return 'pending';
+    return 'unverified';
+  }
+
+  /// Check if profile is moderation approved
+  bool get isModerationApproved {
+    return moderationStatus == null ||
+        moderationStatus == 'APPROVED' ||
+        moderationStatus!.isEmpty;
+  }
+
+  /// Get match success rate percentage
+  /// Formula: (matchesCount / likesSent) * 100
+  double get matchSuccessRate {
+    if (likesSent == 0) return 0;
+    return (matchesCount / likesSent * 100).clamp(0, 100);
+  }
+
   UserProfile copyWith({
     String? id,
     String? name,
@@ -242,6 +365,22 @@ class UserProfile extends Equatable {
     bool? readReceipts,
     String? whoCanMessageMe,
     String? whoCanSeeMyProfile,
+    // Analytics fields
+    int? profileViews,
+    int? likesReceived,
+    int? likesSent,
+    int? matchesCount,
+    int? messagesCount,
+    int? sessionCount,
+    int? totalLoginTime,
+    DateTime? lastSeenAt,
+    // Metadata fields
+    String? moderationStatus,
+    DateTime? moderatedAt,
+    String? verificationMethod,
+    String? verificationStatus,
+    DateTime? verifiedAt,
+    int? profileCompletionPercentage,
   }) {
     return UserProfile(
       id: id ?? this.id,
@@ -295,6 +434,23 @@ class UserProfile extends Equatable {
       readReceipts: readReceipts ?? this.readReceipts,
       whoCanMessageMe: whoCanMessageMe ?? this.whoCanMessageMe,
       whoCanSeeMyProfile: whoCanSeeMyProfile ?? this.whoCanSeeMyProfile,
+      // Analytics fields
+      profileViews: profileViews ?? this.profileViews,
+      likesReceived: likesReceived ?? this.likesReceived,
+      likesSent: likesSent ?? this.likesSent,
+      matchesCount: matchesCount ?? this.matchesCount,
+      messagesCount: messagesCount ?? this.messagesCount,
+      sessionCount: sessionCount ?? this.sessionCount,
+      totalLoginTime: totalLoginTime ?? this.totalLoginTime,
+      lastSeenAt: lastSeenAt ?? this.lastSeenAt,
+      // Metadata fields
+      moderationStatus: moderationStatus ?? this.moderationStatus,
+      moderatedAt: moderatedAt ?? this.moderatedAt,
+      verificationMethod: verificationMethod ?? this.verificationMethod,
+      verificationStatus: verificationStatus ?? this.verificationStatus,
+      verifiedAt: verifiedAt ?? this.verifiedAt,
+      profileCompletionPercentage:
+          profileCompletionPercentage ?? this.profileCompletionPercentage,
     );
   }
 
@@ -367,6 +523,29 @@ class UserProfile extends Equatable {
       readReceipts: json['readReceipts'] as bool?,
       whoCanMessageMe: json['whoCanMessageMe'] as String?,
       whoCanSeeMyProfile: json['whoCanSeeMyProfile'] as String?,
+      // Analytics fields
+      profileViews: json['profileViews'] as int? ?? 0,
+      likesReceived: json['likesReceived'] as int? ?? 0,
+      likesSent: json['likesSent'] as int? ?? 0,
+      matchesCount: json['matchesCount'] as int? ?? 0,
+      messagesCount: json['messagesCount'] as int? ?? 0,
+      sessionCount: json['sessionCount'] as int? ?? 0,
+      totalLoginTime: json['totalLoginTime'] as int? ?? 0,
+      lastSeenAt: json['lastSeenAt'] != null
+          ? DateTime.parse(json['lastSeenAt'] as String)
+          : null,
+      // Metadata fields
+      moderationStatus: json['moderationStatus'] as String?,
+      moderatedAt: json['moderatedAt'] != null
+          ? DateTime.parse(json['moderatedAt'] as String)
+          : null,
+      verificationMethod: json['verificationMethod'] as String?,
+      verificationStatus: json['verificationStatus'] as String?,
+      verifiedAt: json['verifiedAt'] != null
+          ? DateTime.parse(json['verifiedAt'] as String)
+          : null,
+      profileCompletionPercentage:
+          json['profileCompletionPercentage'] as int? ?? 0,
     ).._logReadReceipts('fromJson');
   }
 
@@ -429,6 +608,22 @@ class UserProfile extends Equatable {
       'readReceipts': readReceipts,
       'whoCanMessageMe': whoCanMessageMe,
       'whoCanSeeMyProfile': whoCanSeeMyProfile,
+      // Analytics fields
+      'profileViews': profileViews,
+      'likesReceived': likesReceived,
+      'likesSent': likesSent,
+      'matchesCount': matchesCount,
+      'messagesCount': messagesCount,
+      'sessionCount': sessionCount,
+      'totalLoginTime': totalLoginTime,
+      'lastSeenAt': lastSeenAt?.toIso8601String(),
+      // Metadata fields
+      'moderationStatus': moderationStatus,
+      'moderatedAt': moderatedAt?.toIso8601String(),
+      'verificationMethod': verificationMethod,
+      'verificationStatus': verificationStatus,
+      'verifiedAt': verifiedAt?.toIso8601String(),
+      'profileCompletionPercentage': profileCompletionPercentage,
     };
   }
 
@@ -485,6 +680,22 @@ class UserProfile extends Equatable {
     readReceipts,
     whoCanMessageMe,
     whoCanSeeMyProfile,
+    // Analytics fields
+    profileViews,
+    likesReceived,
+    likesSent,
+    matchesCount,
+    messagesCount,
+    sessionCount,
+    totalLoginTime,
+    lastSeenAt,
+    // Metadata fields
+    moderationStatus,
+    moderatedAt,
+    verificationMethod,
+    verificationStatus,
+    verifiedAt,
+    profileCompletionPercentage,
       ];
 }
 

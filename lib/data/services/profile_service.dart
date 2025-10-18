@@ -256,6 +256,29 @@ class ProfileService {
       readReceipts: userData['readReceipts'] as bool?,
       whoCanMessageMe: userData['whoCanMessageMe'] as String?,
       whoCanSeeMyProfile: userData['whoCanSeeMyProfile'] as String?,
+      // Analytics fields from User model - engagement metrics
+      profileViews: userData['profileViews'] as int? ?? 0,
+      likesReceived: userData['likesReceived'] as int? ?? 0,
+      likesSent: userData['likesSent'] as int? ?? 0,
+      matchesCount: userData['matchesCount'] as int? ?? 0,
+      messagesCount: userData['messagesCount'] as int? ?? 0,
+      sessionCount: userData['sessionCount'] as int? ?? 0,
+      totalLoginTime: userData['totalLoginTime'] as int? ?? 0,
+      lastSeenAt: userData['lastSeenAt'] != null
+          ? DateTime.parse(userData['lastSeenAt'] as String)
+          : null,
+      // Metadata fields - moderation and verification
+      moderationStatus: userData['moderationStatus'] as String?,
+      moderatedAt: userData['moderatedAt'] != null
+          ? DateTime.parse(userData['moderatedAt'] as String)
+          : null,
+      verificationMethod: userData['verificationMethod'] as String?,
+      verificationStatus: userData['verificationStatus'] as String?,
+      verifiedAt: userData['verifiedAt'] != null
+          ? DateTime.parse(userData['verifiedAt'] as String)
+          : null,
+      profileCompletionPercentage:
+          userData['profileCompletionPercentage'] as int? ?? 0,
     );
   }
 
