@@ -97,6 +97,12 @@ class SettingsScreen extends StatelessWidget {
             onTap: () => context.push('/safety-center'),
           ),
           _buildSettingsTile(
+            icon: Icons.contact_emergency,
+            title: 'Emergency Contacts',
+            subtitle: 'Manage your emergency contacts for dates',
+            onTap: () => context.push('/safety/emergency-contacts'),
+          ),
+          _buildSettingsTile(
             icon: Icons.lock,
             title: 'Privacy & Security',
             subtitle: 'Manage your privacy settings',

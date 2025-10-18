@@ -7,71 +7,120 @@ class CoinPackageCard extends StatelessWidget {
   final CoinPackage package;
   final VoidCallback onTap;
   final bool isLoading;
+  final bool isSelected;
 
   const CoinPackageCard({
     super.key,
     required this.package,
     required this.onTap,
     this.isLoading = false,
+    this.isSelected = false,
   });
 
   @override
   Widget build(BuildContext context) {
+    // Determine border color based on selection and special badges
+    Color borderColor = AppColors.border;
+    double borderWidth = 1;
+
+    if (isSelected) {
+      borderColor = AppColors.primary;
+      borderWidth = 3;
+    } else if (package.isBestValue) {
+      borderColor = AppColors.success;
+      borderWidth = 2;
+    } else if (package.isMostPopular) {
+      borderColor = AppColors.primary;
+      borderWidth = 2;
+    }
+
     return Material(
       color: Colors.transparent,
       child: InkWell(
         onTap: isLoading ? null : onTap,
         borderRadius: BorderRadius.circular(16),
-        child: Container(
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: isSelected
+                ? AppColors.primary.withValues(alpha: 0.05)
+                : AppColors.surfaceVariant,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: package.isMostPopular || package.isBestValue
-                  ? AppColors.primary
-                  : Colors.grey.shade300,
-              width: package.isMostPopular || package.isBestValue ? 2 : 1,
+              color: borderColor,
+              width: borderWidth,
             ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.05),
-                blurRadius: 4,
-                offset: const Offset(0, 2),
-              ),
-            ],
+            boxShadow: isSelected
+                ? [
+                    BoxShadow(
+                      color: AppColors.primary.withValues(alpha: 0.3),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ]
+                : [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.1),
+                      blurRadius: 4,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
           ),
           child: Row(
             children: [
               // Coin icon with count
-              Container(
-                width: 56,
-                height: 56,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      Colors.amber.shade400,
-                      Colors.amber.shade600,
-                    ],
-                  ),
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.amber.withValues(alpha: 0.3),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
+              Stack(
+                children: [
+                  Container(
+                    width: 56,
+                    height: 56,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          Colors.amber.shade400,
+                          Colors.amber.shade600,
+                        ],
+                      ),
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.amber.withValues(alpha: 0.4),
+                          blurRadius: 12,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-                child: Center(
-                  child: Icon(
-                    Icons.monetization_on,
-                    color: Colors.white,
-                    size: 32,
+                    child: Center(
+                      child: Icon(
+                        Icons.monetization_on,
+                        color: Colors.white,
+                        size: 32,
+                      ),
+                    ),
                   ),
-                ),
+                  if (isSelected)
+                    Positioned(
+                      right: 0,
+                      top: 0,
+                      child: Container(
+                        width: 20,
+                        height: 20,
+                        decoration: BoxDecoration(
+                          color: AppColors.primary,
+                          shape: BoxShape.circle,
+                          border: Border.all(color: AppColors.surface, width: 2),
+                        ),
+                        child: const Icon(
+                          Icons.check,
+                          color: Colors.white,
+                          size: 12,
+                        ),
+                      ),
+                    ),
+                ],
               ),
               const SizedBox(width: 16),
 
@@ -87,6 +136,7 @@ class CoinPackageCard extends StatelessWidget {
                           style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
+                            color: AppColors.textPrimary,
                           ),
                         ),
                         if (package.bonusCoins > 0) ...[
@@ -97,7 +147,7 @@ class CoinPackageCard extends StatelessWidget {
                               vertical: 2,
                             ),
                             decoration: BoxDecoration(
-                              color: Colors.green,
+                              gradient: AppColors.successGradient,
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Text(
@@ -114,49 +164,71 @@ class CoinPackageCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     if (package.isMostPopular)
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.star,
-                            size: 14,
-                            color: AppColors.primary,
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            'Most Popular',
-                            style: TextStyle(
-                              fontSize: 12,
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 3,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.star,
+                              size: 12,
                               color: AppColors.primary,
-                              fontWeight: FontWeight.w600,
                             ),
-                          ),
-                        ],
+                            const SizedBox(width: 4),
+                            Text(
+                              'Most Popular',
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: AppColors.primary,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
                       )
                     else if (package.isBestValue)
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.local_offer,
-                            size: 14,
-                            color: Colors.green,
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            'Best Value',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.green,
-                              fontWeight: FontWeight.w600,
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 3,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.success.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.local_offer,
+                              size: 12,
+                              color: AppColors.success,
                             ),
-                          ),
-                        ],
+                            const SizedBox(width: 4),
+                            Text(
+                              'Best Value',
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: AppColors.success,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
                       )
                     else
                       Text(
                         '${package.totalCoins} total coins',
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 12,
-                          color: Colors.grey.shade600,
+                          color: AppColors.textSecondary,
                         ),
                       ),
                   ],
@@ -170,7 +242,7 @@ class CoinPackageCard extends StatelessWidget {
                   Text(
                     package.priceDisplay,
                     style: const TextStyle(
-                      fontSize: 20,
+                      fontSize: 22,
                       fontWeight: FontWeight.bold,
                       color: AppColors.primary,
                     ),
@@ -178,18 +250,27 @@ class CoinPackageCard extends StatelessWidget {
                   if (package.bonusCoins > 0)
                     Text(
                       '${package.discountPercent}% bonus',
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: Colors.grey.shade600,
+                      style: const TextStyle(
+                        fontSize: 10,
+                        color: AppColors.success,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    )
+                  else
+                    Text(
+                      '\$${(package.price / package.coins).toStringAsFixed(2)}/coin',
+                      style: const TextStyle(
+                        fontSize: 10,
+                        color: AppColors.textTertiary,
                       ),
                     ),
                 ],
               ),
               const SizedBox(width: 8),
               Icon(
-                Icons.arrow_forward_ios,
-                size: 16,
-                color: Colors.grey.shade400,
+                isSelected ? Icons.check_circle : Icons.circle_outlined,
+                size: 24,
+                color: isSelected ? AppColors.primary : AppColors.border,
               ),
             ],
           ),

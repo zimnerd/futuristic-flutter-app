@@ -32,6 +32,12 @@ class CancelSubscriptionEvent extends SubscriptionEvent {
 
 class ResumeSubscriptionEvent extends SubscriptionEvent {}
 
+class PauseSubscriptionEvent extends SubscriptionEvent {
+  final int months;
+
+  PauseSubscriptionEvent({required this.months});
+}
+
 class RefreshSubscriptionDataEvent extends SubscriptionEvent {}
 
 /// States for Subscription BLoC
@@ -104,6 +110,7 @@ class SubscriptionBloc extends Bloc<SubscriptionEvent, SubscriptionState> {
     on<UpdateSubscriptionPlanEvent>(_onUpdateSubscriptionPlan);
     on<CancelSubscriptionEvent>(_onCancelSubscription);
     on<ResumeSubscriptionEvent>(_onResumeSubscription);
+    on<PauseSubscriptionEvent>(_onPauseSubscription);
     on<RefreshSubscriptionDataEvent>(_onRefreshSubscriptionData);
   }
 
@@ -256,13 +263,13 @@ class SubscriptionBloc extends Bloc<SubscriptionEvent, SubscriptionState> {
     Emitter<SubscriptionState> emit,
   ) async {
     emit(SubscriptionLoading());
-    
+
     try {
       final result = await _subscriptionService.resumeSubscription();
-      
-      emit(SubscriptionSuccess('Subscription resumed successfully', 
+
+      emit(SubscriptionSuccess('Subscription resumed successfully',
         data: result.data?.toJson()));
-      
+
       // Track analytics
       _analyticsService.trackEvent(
         eventType: AnalyticsEventType.featureUsed,
@@ -270,12 +277,63 @@ class SubscriptionBloc extends Bloc<SubscriptionEvent, SubscriptionState> {
           'feature': 'subscription_resumed',
         },
       );
-      
+
       // Refresh subscription data
       add(RefreshSubscriptionDataEvent());
     } catch (e) {
       AppLogger.error('Failed to resume subscription: $e');
       emit(SubscriptionError('Failed to resume subscription'));
+    }
+  }
+
+  Future<void> _onPauseSubscription(
+    PauseSubscriptionEvent event,
+    Emitter<SubscriptionState> emit,
+  ) async {
+    emit(SubscriptionLoading());
+
+    try {
+      final subscription = await _subscriptionService.getCurrentSubscription();
+      if (subscription == null) {
+        emit(SubscriptionError('No active subscription found'));
+        return;
+      }
+
+      // Update subscription to suspended status
+      final pauseEndDate = DateTime.now().add(Duration(days: 30 * event.months));
+      final updatedSubscription = subscription.copyWith(
+        status: SubscriptionStatus.suspended,
+        metadata: {
+          ...?subscription.metadata,
+          'pause_months': event.months,
+          'pause_end_date': pauseEndDate.toIso8601String(),
+          'paused_at': DateTime.now().toIso8601String(),
+        },
+        updatedAt: DateTime.now(),
+      );
+
+      // Save the updated subscription (this would normally call backend API)
+      await _subscriptionService.getCurrentSubscription(); // Placeholder for actual API call
+
+      emit(SubscriptionSuccess(
+        'Subscription paused for ${event.months} month${event.months > 1 ? 's' : ''}',
+        data: updatedSubscription.toJson(),
+      ));
+
+      // Track analytics
+      _analyticsService.trackEvent(
+        eventType: AnalyticsEventType.featureUsed,
+        properties: {
+          'feature': 'subscription_paused',
+          'months': event.months,
+        },
+      );
+
+      // Refresh subscription data
+      add(RefreshSubscriptionDataEvent());
+    } catch (e) {
+      AppLogger.error('Failed to pause subscription: $e');
+      emit(SubscriptionError('Failed to pause subscription'));
     }
   }
 

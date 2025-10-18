@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/network/api_client.dart';
 import '../../../core/theme/pulse_design_system.dart';
 import '../../../core/utils/haptic_feedback_utils.dart';
 import '../../../data/services/boost_service.dart';
+import '../../../data/services/premium_service.dart';
 import '../../../domain/entities/discovery_types.dart';
 import '../../../services/discovery_prefetch_manager.dart';
 import '../../blocs/boost/boost_bloc.dart';
@@ -13,6 +15,10 @@ import '../../blocs/boost/boost_state.dart';
 import '../../blocs/discovery/discovery_bloc.dart';
 import '../../blocs/discovery/discovery_event.dart';
 import '../../blocs/discovery/discovery_state.dart';
+import '../../blocs/premium/premium_bloc.dart';
+import '../../blocs/premium/premium_event.dart';
+import '../../blocs/premium/premium_state.dart';
+import '../../blocs/auth/auth_bloc.dart';
 import '../../widgets/boost/boost_banner_widget.dart';
 import '../../widgets/boost/boost_confirmation_dialog.dart';
 import '../../widgets/discovery/swipe_card.dart' as swipe_widget;
@@ -20,6 +26,7 @@ import '../../widgets/ai/floating_ai_button.dart';
 import '../../widgets/common/empty_state_widget.dart';
 import '../../widgets/common/pulse_toast.dart';
 import '../../widgets/common/skeleton_loading.dart';
+import '../../widgets/common/sync_status_indicator.dart';
 import '../ai_companion/ai_companion_screen.dart';
 
 /// Modern Discovery Screen - PulseLink's unique swipe interface
@@ -341,16 +348,210 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
     if (_rewindHistory.isNotEmpty) {
       HapticFeedback.heavyImpact();
       _rewindHistory.removeLast();
-      
+
       // Trigger rewind event through DiscoveryBloc
       context.read<DiscoveryBloc>().add(const UndoLastSwipe());
     }
   }
 
+  /// Build prominent undo button (QUICK WIN - Feature 1)
+  Widget _buildProminentUndoButton() {
+    return Positioned(
+      bottom: 100, // Above action buttons
+      left: 0,
+      right: 0,
+      child: Center(
+        child: BlocBuilder<PremiumBloc, PremiumState>(
+          builder: (context, premiumState) {
+            final isPremium = premiumState is PremiumLoaded &&
+                premiumState.subscription != null &&
+                premiumState.subscription!.isActive;
+
+            return GestureDetector(
+              onTap: () {
+                if (isPremium) {
+                  _handleRewind();
+                } else {
+                  // Show premium gate
+                  _showPremiumGateDialog();
+                }
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 12,
+                ),
+                decoration: BoxDecoration(
+                  gradient: isPremium
+                      ? LinearGradient(
+                          colors: [
+                            PulseColors.accent,
+                            PulseColors.accent.withValues(alpha: 0.8),
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        )
+                      : LinearGradient(
+                          colors: [
+                            PulseColors.grey400,
+                            PulseColors.grey500,
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                  borderRadius: BorderRadius.circular(30),
+                  boxShadow: [
+                    BoxShadow(
+                      color: (isPremium ? PulseColors.accent : PulseColors.grey500)
+                          .withValues(alpha: 0.3),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.undo,
+                      color: Colors.white,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      isPremium ? 'Undo last action' : 'Undo (Premium)',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    if (!isPremium) ...[
+                      const SizedBox(width: 4),
+                      Icon(
+                        Icons.lock,
+                        color: Colors.white,
+                        size: 16,
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  /// Show premium gate dialog for free users
+  void _showPremiumGateDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [PulseColors.primary, PulseColors.accent],
+                ),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.workspace_premium,
+                color: Colors.white,
+                size: 24,
+              ),
+            ),
+            const SizedBox(width: 12),
+            const Text('Premium Feature'),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Undo your last swipe with Premium!',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 12),
+            const Text(
+              'Take back accidental swipes and get unlimited undos with PulseLink Premium.',
+              style: TextStyle(fontSize: 14),
+            ),
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: PulseColors.primary.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.check_circle,
+                    color: PulseColors.primary,
+                    size: 20,
+                  ),
+                  const SizedBox(width: 8),
+                  const Expanded(
+                    child: Text(
+                      'Unlimited rewinds',
+                      style: TextStyle(fontWeight: FontWeight.w500),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Maybe Later'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              context.push('/premium');
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: PulseColors.primary,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            child: const Text('Upgrade Now'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => BoostBloc(BoostService())..add(CheckBoostStatus()),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (context) => BoostBloc(BoostService())..add(CheckBoostStatus()),
+        ),
+        BlocProvider(
+          create: (context) => PremiumBloc(
+            premiumService: PremiumService(ApiClient.instance),
+            authBloc: context.read<AuthBloc>(),
+          )..add(LoadCurrentSubscription()),
+        ),
+      ],
       child: Scaffold(
         body: Container(
           decoration: const BoxDecoration(gradient: PulseGradients.background),
@@ -368,7 +569,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
               // Reset the flag to prevent showing the toast again
               context.read<DiscoveryBloc>().add(const ClearRewindFlag());
             }
-            
+
             // Handle boost success feedback
             if (state is DiscoveryBoostActivated) {
               PulseToast.success(
@@ -377,7 +578,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
                 duration: const Duration(seconds: 3),
               );
             }
-            
+
             // Handle errors
             if (state is DiscoveryError) {
               PulseToast.error(
@@ -405,6 +606,10 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
                   // Main content area
                   Positioned.fill(top: 120, child: _buildMainContent(state)),
 
+                  // Prominent undo button (below card stack)
+                  if (state is DiscoveryLoaded && state.hasUsers && _rewindHistory.isNotEmpty)
+                    _buildProminentUndoButton(),
+
                   // Enhanced action buttons
                   if (state is DiscoveryLoaded && state.hasUsers)
                     _buildModernActionButtons(),
@@ -430,7 +635,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
           ), // BlocListener child
         ), // Container (Scaffold body)
       ), // Scaffold
-    ); // BlocProvider child
+    ); // MultiBlocProvider child
   }
 
   Widget _buildModernHeader() {
@@ -475,8 +680,14 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
                         ],
                       ),
                     ),
-                    
+
+                    // Sync status indicator
+                    const SyncStatusIndicator(),
+                    const SizedBox(width: PulseSpacing.sm),
+
                     // Header action buttons
+                    _buildWhoLikedYouButton(),
+                    const SizedBox(width: PulseSpacing.sm),
                     _buildHeaderButton(
                       icon: PulseIcons.filters,
                       color: PulseColors.primary,
@@ -500,6 +711,108 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
             ),
           ),
         );
+      },
+    );
+  }
+
+  /// Build "Who Liked You" button with pulse animation and count badge
+  Widget _buildWhoLikedYouButton() {
+    // Mock count - in real app, this would come from a backend API or bloc state
+    const int likeCount = 12;
+
+    return TweenAnimationBuilder<double>(
+      tween: Tween(begin: 1.0, end: 1.1),
+      duration: const Duration(milliseconds: 800),
+      curve: Curves.easeInOut,
+      builder: (context, scale, child) {
+        return Transform.scale(
+          scale: likeCount > 0 ? scale : 1.0,
+          child: GestureDetector(
+            onTap: () {
+              HapticFeedback.mediumImpact();
+              context.push('/who-liked-you');
+            },
+            child: Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                gradient: likeCount > 0
+                    ? PulseGradients.primary
+                    : LinearGradient(
+                        colors: [
+                          PulseColors.grey400.withValues(alpha: 0.1),
+                          PulseColors.grey400.withValues(alpha: 0.1),
+                        ],
+                      ),
+                borderRadius: BorderRadius.circular(PulseBorderRadius.md),
+                border: Border.all(
+                  color: likeCount > 0
+                      ? PulseColors.primary.withValues(alpha: 0.3)
+                      : PulseColors.grey400.withValues(alpha: 0.2),
+                  width: 1,
+                ),
+                boxShadow: likeCount > 0
+                    ? [
+                        BoxShadow(
+                          color: PulseColors.primary.withValues(alpha: 0.3),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ]
+                    : null,
+              ),
+              child: Stack(
+                children: [
+                  Center(
+                    child: Icon(
+                      Icons.favorite,
+                      color: likeCount > 0
+                          ? PulseColors.white
+                          : PulseColors.grey600,
+                      size: 20,
+                    ),
+                  ),
+                  if (likeCount > 0)
+                    Positioned(
+                      top: 6,
+                      right: 6,
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          color: PulseColors.success,
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: PulseColors.white,
+                            width: 1.5,
+                          ),
+                        ),
+                        constraints: const BoxConstraints(
+                          minWidth: 18,
+                          minHeight: 18,
+                        ),
+                        child: Center(
+                          child: Text(
+                            likeCount > 99 ? '99+' : '$likeCount',
+                            style: const TextStyle(
+                              color: PulseColors.white,
+                              fontSize: 9,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+      onEnd: () {
+        // Repeat the pulse animation when it ends (for new likes)
+        if (likeCount > 0 && mounted) {
+          setState(() {});
+        }
       },
     );
   }
@@ -689,34 +1002,27 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            // Rewind button
-            _buildActionButton(
-              config: ActionButtonConfig.rewind,
-              isActive: _currentSwipeDirection == null,
-              onTap: _handleRewind,
-            ),
-            
             // Pass button
             _buildActionButton(
               config: ActionButtonConfig.pass,
               isActive: _currentSwipeDirection == SwipeAction.left,
               onTap: () => _handleActionTap(SwipeAction.left),
             ),
-            
+
             // Super like button
             _buildActionButton(
               config: ActionButtonConfig.superLike,
               isActive: _currentSwipeDirection == SwipeAction.up,
               onTap: () => _handleActionTap(SwipeAction.up),
             ),
-            
+
             // Like button
             _buildActionButton(
               config: ActionButtonConfig.like,
               isActive: _currentSwipeDirection == SwipeAction.right,
               onTap: () => _handleActionTap(SwipeAction.right),
             ),
-            
+
             // Boost button
             _buildActionButton(
               config: ActionButtonConfig.boost,
@@ -778,10 +1084,20 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
   Widget _buildEmptyState() {
     return RefreshIndicator(
       onRefresh: () async {
+        HapticFeedback.mediumImpact();
         context.read<DiscoveryBloc>().add(
           const LoadDiscoverableUsers(resetStack: true),
         );
         await Future.delayed(const Duration(milliseconds: 500));
+
+        // Show success toast
+        if (mounted) {
+          PulseToast.success(
+            context,
+            message: 'Profiles refreshed',
+            duration: const Duration(seconds: 1),
+          );
+        }
       },
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),

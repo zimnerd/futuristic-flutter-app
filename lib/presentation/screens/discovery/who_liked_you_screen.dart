@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -7,19 +8,23 @@ import '../../../domain/entities/user_profile.dart';
 import '../../blocs/discovery/discovery_bloc.dart';
 import '../../blocs/discovery/discovery_event.dart';
 import '../../blocs/discovery/discovery_state.dart';
+import '../../blocs/premium/premium_bloc.dart';
+import '../../blocs/premium/premium_state.dart';
 import '../../widgets/common/robust_network_image.dart';
 import '../../widgets/verification/verification_badge.dart';
 
 /// Who Liked You Screen - Premium Feature
-/// 
+///
 /// Displays users who have liked the current user in a grid layout.
 /// Features:
-/// - 2-column grid of user cards
-/// - Filter options (verified users only, super likes only)
-/// - Tap to view full profile in carousel
-/// - Empty state when no likes
-/// - Loading state with shimmer effect
-/// - Premium subscription required
+/// - 2-column grid of user cards with blur effect for free users
+/// - Profile cards with photo, name, age, location
+/// - Premium gate with upgrade prompt
+/// - Filter options (All, Recent 24h, Verified Only, Super Likes)
+/// - Empty state when no one has liked you
+/// - Pull-to-refresh functionality
+/// - Loading skeleton while fetching
+/// - Action buttons for premium users (like back, view profile)
 class WhoLikedYouScreen extends StatefulWidget {
   const WhoLikedYouScreen({super.key});
 
@@ -28,6 +33,7 @@ class WhoLikedYouScreen extends StatefulWidget {
 }
 
 class _WhoLikedYouScreenState extends State<WhoLikedYouScreen> {
+  WhoLikedYouFilter _currentFilter = WhoLikedYouFilter.all;
   bool _verifiedOnly = false;
   bool _superLikesOnly = false;
   final ScrollController _scrollController = ScrollController();
@@ -54,36 +60,29 @@ class _WhoLikedYouScreenState extends State<WhoLikedYouScreen> {
         );
   }
 
-  void _showFilters() {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-      builder: (context) => _FilterBottomSheet(
-        verifiedOnly: _verifiedOnly,
-        superLikesOnly: _superLikesOnly,
-        onApply: (verified, superLikes) {
-          setState(() {
-            _verifiedOnly = verified;
-            _superLikesOnly = superLikes;
-          });
-          _loadWhoLikedYou();
-        },
-      ),
-    );
+  bool _isPremiumUser(BuildContext context) {
+    final premiumState = context.watch<PremiumBloc>().state;
+    if (premiumState is PremiumLoaded) {
+      return premiumState.subscription?.isActive ?? false;
+    }
+    return false;
   }
 
   @override
   Widget build(BuildContext context) {
+    final isPremium = _isPremiumUser(context);
+
     return Scaffold(
+      backgroundColor: PulseColors.backgroundLight,
       appBar: AppBar(
         title: const Text('Who Liked You'),
-        backgroundColor: PulseColors.backgroundLight,
+        backgroundColor: PulseColors.white,
         elevation: 0,
         actions: [
           IconButton(
             icon: Badge(
-              isLabelVisible: _verifiedOnly || _superLikesOnly,
+              isLabelVisible: _currentFilter != WhoLikedYouFilter.all,
+              label: const Text('!'),
               child: const Icon(Icons.filter_list),
             ),
             onPressed: _showFilters,
@@ -109,7 +108,7 @@ class _WhoLikedYouScreenState extends State<WhoLikedYouScreen> {
             if (state.userStack.isEmpty) {
               return _buildEmptyState();
             }
-            return _buildUserGrid(state.userStack);
+            return _buildUserGrid(state.userStack, isPremium);
           }
 
           return _buildEmptyState();
@@ -118,31 +117,145 @@ class _WhoLikedYouScreenState extends State<WhoLikedYouScreen> {
     );
   }
 
-  Widget _buildUserGrid(List<UserProfile> users) {
+  Widget _buildUserGrid(List<UserProfile> users, bool isPremium) {
     return RefreshIndicator(
       onRefresh: () async {
         _loadWhoLikedYou();
         await Future.delayed(const Duration(seconds: 1));
       },
-      child: GridView.builder(
-        controller: _scrollController,
-        padding: const EdgeInsets.all(16),
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          crossAxisSpacing: 12,
-          mainAxisSpacing: 12,
-          childAspectRatio: 0.7,
-        ),
-        itemCount: users.length,
-        itemBuilder: (context, index) {
-          return _UserGridCard(
-            user: users[index],
-            onTap: () {
-              // Navigate to profile view or open carousel
-              context.push('/profile/${users[index].id}');
-            },
-          );
+      child: Column(
+        children: [
+          // Filter tabs
+          _buildFilterTabs(),
+
+          // Grid of users
+          Expanded(
+            child: GridView.builder(
+              controller: _scrollController,
+              padding: const EdgeInsets.all(16),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                crossAxisSpacing: 12,
+                mainAxisSpacing: 12,
+                childAspectRatio: 0.7,
+              ),
+              itemCount: users.length,
+              itemBuilder: (context, index) {
+                return _UserGridCard(
+                  user: users[index],
+                  isPremium: isPremium,
+                  onTap: () {
+                    if (isPremium) {
+                      // Navigate to profile view
+                      context.push('/profile/${users[index].id}');
+                    } else {
+                      // Show premium upgrade prompt
+                      _showPremiumPrompt();
+                    }
+                  },
+                  onLikeBack: isPremium
+                      ? () => _likeBack(users[index])
+                      : null,
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFilterTabs() {
+    return Container(
+      margin: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: PulseColors.grey100,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        children: [
+          _buildFilterTab(
+            label: 'All',
+            filter: WhoLikedYouFilter.all,
+          ),
+          _buildFilterTab(
+            label: 'Recent',
+            filter: WhoLikedYouFilter.recent24h,
+          ),
+          _buildFilterTab(
+            label: 'Verified',
+            filter: WhoLikedYouFilter.verifiedOnly,
+          ),
+          _buildFilterTab(
+            label: 'Super',
+            filter: WhoLikedYouFilter.superLikes,
+            icon: Icons.star,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFilterTab({
+    required String label,
+    required WhoLikedYouFilter filter,
+    IconData? icon,
+  }) {
+    final isSelected = _currentFilter == filter;
+
+    return Expanded(
+      child: GestureDetector(
+        onTap: () {
+          setState(() {
+            _currentFilter = filter;
+            _verifiedOnly = filter == WhoLikedYouFilter.verifiedOnly;
+            _superLikesOnly = filter == WhoLikedYouFilter.superLikes;
+          });
+          _loadWhoLikedYou();
         },
+        child: AnimatedContainer(
+          duration: PulseAnimations.fast,
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          decoration: BoxDecoration(
+            color: isSelected ? PulseColors.white : Colors.transparent,
+            borderRadius: BorderRadius.circular(8),
+            boxShadow: isSelected
+                ? [
+                    BoxShadow(
+                      color: PulseColors.primary.withValues(alpha: 0.1),
+                      blurRadius: 4,
+                      offset: const Offset(0, 2),
+                    ),
+                  ]
+                : null,
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              if (icon != null) ...[
+                Icon(
+                  icon,
+                  size: 14,
+                  color: isSelected
+                      ? PulseColors.primary
+                      : PulseColors.grey600,
+                ),
+                const SizedBox(width: 4),
+              ],
+              Text(
+                label,
+                style: PulseTypography.labelMedium.copyWith(
+                  color: isSelected
+                      ? PulseColors.primary
+                      : PulseColors.grey600,
+                  fontWeight:
+                      isSelected ? FontWeight.w600 : FontWeight.normal,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -170,25 +283,39 @@ class _WhoLikedYouScreenState extends State<WhoLikedYouScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.favorite_border,
-              size: 80,
-              color: Colors.grey[400],
+            Container(
+              width: 120,
+              height: 120,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: LinearGradient(
+                  colors: [
+                    PulseColors.primary.withValues(alpha: 0.1),
+                    PulseColors.accent.withValues(alpha: 0.1),
+                  ],
+                ),
+              ),
+              child: Icon(
+                Icons.favorite_border,
+                size: 60,
+                color: PulseColors.grey400,
+              ),
             ),
             const SizedBox(height: 24),
             Text(
               'No one has liked you yet',
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+              style: PulseTypography.h3.copyWith(
+                fontWeight: FontWeight.bold,
+                color: PulseColors.grey900,
+              ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 12),
             Text(
               'Keep swiping and someone will like you soon!',
-              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    color: Colors.grey[600],
-                  ),
+              style: PulseTypography.bodyLarge.copyWith(
+                color: PulseColors.grey600,
+              ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 32),
@@ -200,6 +327,7 @@ class _WhoLikedYouScreenState extends State<WhoLikedYouScreen> {
               label: const Text('Start Swiping'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: PulseColors.primary,
+                foregroundColor: PulseColors.white,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 32,
                   vertical: 16,
@@ -225,22 +353,23 @@ class _WhoLikedYouScreenState extends State<WhoLikedYouScreen> {
             Icon(
               Icons.error_outline,
               size: 80,
-              color: Colors.grey[400],
+              color: PulseColors.error,
             ),
             const SizedBox(height: 24),
             Text(
               'Something went wrong',
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+              style: PulseTypography.h3.copyWith(
+                fontWeight: FontWeight.bold,
+                color: PulseColors.grey900,
+              ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 12),
             Text(
               message,
-              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    color: Colors.grey[600],
-                  ),
+              style: PulseTypography.bodyLarge.copyWith(
+                color: PulseColors.grey600,
+              ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 32),
@@ -250,6 +379,7 @@ class _WhoLikedYouScreenState extends State<WhoLikedYouScreen> {
               label: const Text('Try Again'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: PulseColors.primary,
+                foregroundColor: PulseColors.white,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 32,
                   vertical: 16,
@@ -264,17 +394,226 @@ class _WhoLikedYouScreenState extends State<WhoLikedYouScreen> {
       ),
     );
   }
+
+  void _showFilters() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) => _FilterBottomSheet(
+        verifiedOnly: _verifiedOnly,
+        superLikesOnly: _superLikesOnly,
+        onApply: (verified, superLikes) {
+          setState(() {
+            _verifiedOnly = verified;
+            _superLikesOnly = superLikes;
+
+            // Update filter based on selections
+            if (superLikes) {
+              _currentFilter = WhoLikedYouFilter.superLikes;
+            } else if (verified) {
+              _currentFilter = WhoLikedYouFilter.verifiedOnly;
+            } else {
+              _currentFilter = WhoLikedYouFilter.all;
+            }
+          });
+          _loadWhoLikedYou();
+        },
+      ),
+    );
+  }
+
+  void _showPremiumPrompt() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) => Container(
+        decoration: const BoxDecoration(
+          color: PulseColors.white,
+          borderRadius: BorderRadius.vertical(
+            top: Radius.circular(24),
+          ),
+        ),
+        padding: const EdgeInsets.all(24),
+        child: SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Premium icon
+              Container(
+                width: 80,
+                height: 80,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: PulseGradients.primary,
+                ),
+                child: const Icon(
+                  Icons.workspace_premium,
+                  size: 40,
+                  color: PulseColors.white,
+                ),
+              ),
+              const SizedBox(height: 24),
+
+              // Title
+              Text(
+                'Unlock Who Liked You',
+                style: PulseTypography.h2.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: PulseColors.grey900,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 12),
+
+              // Description
+              Text(
+                'Upgrade to Premium to see who liked you and match instantly!',
+                style: PulseTypography.bodyLarge.copyWith(
+                  color: PulseColors.grey600,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 32),
+
+              // Premium features
+              _buildPremiumFeature(
+                icon: Icons.visibility,
+                title: 'See Who Likes You',
+                description: 'View all profiles of people who liked you',
+              ),
+              const SizedBox(height: 16),
+              _buildPremiumFeature(
+                icon: Icons.bolt,
+                title: 'Instant Matches',
+                description: 'Like them back for instant matches',
+              ),
+              const SizedBox(height: 16),
+              _buildPremiumFeature(
+                icon: Icons.filter_alt,
+                title: 'Advanced Filters',
+                description: 'Filter by verified users and super likes',
+              ),
+              const SizedBox(height: 32),
+
+              // Upgrade button
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    context.push('/premium');
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: PulseColors.primary,
+                    foregroundColor: PulseColors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text(
+                    'Upgrade to Premium',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+
+              // Close button
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Maybe Later'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPremiumFeature({
+    required IconData icon,
+    required String title,
+    required String description,
+  }) {
+    return Row(
+      children: [
+        Container(
+          width: 48,
+          height: 48,
+          decoration: BoxDecoration(
+            color: PulseColors.primary.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Icon(
+            icon,
+            color: PulseColors.primary,
+            size: 24,
+          ),
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: PulseTypography.bodyLarge.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: PulseColors.grey900,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                description,
+                style: PulseTypography.bodyMedium.copyWith(
+                  color: PulseColors.grey600,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _likeBack(UserProfile user) {
+    // Like the user back
+    context.read<DiscoveryBloc>().add(SwipeRight(user));
+
+    // Show success message
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Liked ${user.name} back!'),
+        backgroundColor: PulseColors.success,
+        duration: const Duration(seconds: 2),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+
+    // Reload the list
+    _loadWhoLikedYou();
+  }
 }
 
 /// User Grid Card - Displays user photo and basic info
 class _UserGridCard extends StatelessWidget {
   const _UserGridCard({
     required this.user,
+    required this.isPremium,
     required this.onTap,
+    this.onLikeBack,
   });
 
   final UserProfile user;
+  final bool isPremium;
   final VoidCallback onTap;
+  final VoidCallback? onLikeBack;
 
   @override
   Widget build(BuildContext context) {
@@ -303,20 +642,29 @@ class _UserGridCard extends StatelessWidget {
                 width: double.infinity,
                 height: double.infinity,
                 placeholder: Container(
-                  color: Colors.grey[300],
+                  color: PulseColors.grey300,
                   child: const Center(
                     child: CircularProgressIndicator(),
                   ),
                 ),
                 errorWidget: Container(
-                  color: Colors.grey[300],
+                  color: PulseColors.grey300,
                   child: const Icon(
                     Icons.person,
                     size: 60,
-                    color: Colors.white,
+                    color: PulseColors.white,
                   ),
                 ),
               ),
+
+              // Blur effect for non-premium users
+              if (!isPremium)
+                BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+                  child: Container(
+                    color: Colors.black.withValues(alpha: 0.3),
+                  ),
+                ),
 
               // Gradient overlay
               Positioned(
@@ -331,14 +679,66 @@ class _UserGridCard extends StatelessWidget {
                       end: Alignment.bottomCenter,
                       colors: [
                         Colors.transparent,
-                        Colors.black.withValues(alpha: 0.8),
+                        Colors.black.withValues(alpha: isPremium ? 0.8 : 0.5),
                       ],
                     ),
                   ),
                 ),
               ),
 
-              // User info
+              // Premium upgrade overlay
+              if (!isPremium)
+                Positioned.fill(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          PulseColors.primary.withValues(alpha: 0.3),
+                          PulseColors.primary.withValues(alpha: 0.6),
+                        ],
+                      ),
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: PulseColors.white.withValues(alpha: 0.9),
+                          ),
+                          child: const Icon(
+                            Icons.lock,
+                            color: PulseColors.primary,
+                            size: 24,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: PulseColors.white.withValues(alpha: 0.9),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            'Upgrade to see',
+                            style: PulseTypography.labelSmall.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: PulseColors.primary,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+              // User info (always visible but blurred for non-premium)
               Positioned(
                 bottom: 12,
                 left: 12,
@@ -351,9 +751,9 @@ class _UserGridCard extends StatelessWidget {
                       children: [
                         Expanded(
                           child: Text(
-                            user.nameWithAge,
+                            isPremium ? user.nameWithAge : '•••',
                             style: const TextStyle(
-                              color: Colors.white,
+                              color: PulseColors.white,
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
                             ),
@@ -361,13 +761,14 @@ class _UserGridCard extends StatelessWidget {
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
-                        VerificationBadge(
-                          isVerified: user.isVerified,
-                          size: VerificationBadgeSize.small,
-                        ),
+                        if (isPremium)
+                          VerificationBadge(
+                            isVerified: user.isVerified,
+                            size: VerificationBadgeSize.small,
+                          ),
                       ],
                     ),
-                    if (user.distanceKm != null) ...[
+                    if (user.distanceKm != null && isPremium) ...[
                       const SizedBox(height: 4),
                       Row(
                         children: [
@@ -394,6 +795,38 @@ class _UserGridCard extends StatelessWidget {
                   ],
                 ),
               ),
+
+              // Like back button (premium only)
+              if (isPremium && onLikeBack != null)
+                Positioned(
+                  top: 8,
+                  right: 8,
+                  child: GestureDetector(
+                    onTap: () {
+                      onLikeBack?.call();
+                    },
+                    child: Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        color: PulseColors.white.withValues(alpha: 0.9),
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.2),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: const Icon(
+                        Icons.favorite,
+                        color: PulseColors.success,
+                        size: 20,
+                      ),
+                    ),
+                  ),
+                ),
             ],
           ),
         ),
@@ -403,54 +836,61 @@ class _UserGridCard extends StatelessWidget {
 }
 
 /// Loading Card - Shimmer placeholder
-class _LoadingCard extends StatelessWidget {
+class _LoadingCard extends StatefulWidget {
   const _LoadingCard();
+
+  @override
+  State<_LoadingCard> createState() => _LoadingCardState();
+}
+
+class _LoadingCardState extends State<_LoadingCard>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 1500),
+      vsync: this,
+    )..repeat();
+    _animation = Tween<double>(begin: -1.0, end: 2.0).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
-        color: Colors.grey[300],
+        color: PulseColors.grey200,
       ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(16),
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            Container(
-              color: Colors.grey[300],
-            ),
-            Positioned(
-              bottom: 12,
-              left: 12,
-              right: 12,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    height: 16,
-                    width: 120,
-                    decoration: BoxDecoration(
-                      color: Colors.grey[400],
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Container(
-                    height: 12,
-                    width: 80,
-                    decoration: BoxDecoration(
-                      color: Colors.grey[400],
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                  ),
+      child: AnimatedBuilder(
+        animation: _animation,
+        builder: (context, child) {
+          return Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              gradient: LinearGradient(
+                begin: Alignment(_animation.value - 1, 0),
+                end: Alignment(_animation.value, 0),
+                colors: [
+                  PulseColors.grey200,
+                  PulseColors.grey300,
+                  PulseColors.grey200,
                 ],
               ),
             ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
@@ -487,7 +927,7 @@ class _FilterBottomSheetState extends State<_FilterBottomSheet> {
   Widget build(BuildContext context) {
     return Container(
       decoration: const BoxDecoration(
-        color: Colors.white,
+        color: PulseColors.white,
         borderRadius: BorderRadius.vertical(
           top: Radius.circular(24),
         ),
@@ -505,7 +945,7 @@ class _FilterBottomSheetState extends State<_FilterBottomSheet> {
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: Colors.grey[300],
+                color: PulseColors.grey300,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -517,9 +957,10 @@ class _FilterBottomSheetState extends State<_FilterBottomSheet> {
                 children: [
                   Text(
                     'Filters',
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                    style: PulseTypography.h3.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: PulseColors.grey900,
+                    ),
                   ),
                   const Spacer(),
                   TextButton(
@@ -576,6 +1017,7 @@ class _FilterBottomSheetState extends State<_FilterBottomSheet> {
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: PulseColors.primary,
+                    foregroundColor: PulseColors.white,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -598,4 +1040,12 @@ class _FilterBottomSheetState extends State<_FilterBottomSheet> {
       ),
     );
   }
+}
+
+/// Filter options for Who Liked You
+enum WhoLikedYouFilter {
+  all,
+  recent24h,
+  verifiedOnly,
+  superLikes,
 }

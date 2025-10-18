@@ -2,12 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import '../../../data/models/premium.dart';
+import '../../../data/models/subscription.dart' as sub_model;
 import '../../../core/theme/app_colors.dart';
 import '../../blocs/premium/premium_bloc.dart';
 import '../../blocs/premium/premium_event.dart';
 import '../../blocs/premium/premium_state.dart';
+import '../../blocs/subscription/subscription_bloc.dart';
 import '../../widgets/common/loading_indicator.dart';
 import '../../widgets/common/pulse_toast.dart';
+import '../../sheets/subscription_management_sheet.dart';
 
 /// Screen for managing user subscriptions
 class SubscriptionManagementScreen extends StatefulWidget {
@@ -90,6 +93,28 @@ class _SubscriptionManagementScreenState extends State<SubscriptionManagementScr
 
                 // Subscription actions
                 if (hasSubscription) _buildSubscriptionActions(state.subscription!),
+
+                const SizedBox(height: 16),
+
+                // Manage subscription button - opens detailed sheet
+                if (hasSubscription)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: ElevatedButton.icon(
+                      onPressed: () => _openSubscriptionManagementSheet(state.subscription!),
+                      icon: const Icon(Icons.settings),
+                      label: const Text('Manage Subscription Details'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        foregroundColor: AppColors.primary,
+                        minimumSize: const Size(double.infinity, 48),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          side: const BorderSide(color: AppColors.primary),
+                        ),
+                      ),
+                    ),
+                  ),
 
                 const SizedBox(height: 32),
               ],
@@ -607,6 +632,66 @@ class _SubscriptionManagementScreenState extends State<SubscriptionManagementScr
           ),
         ],
       ),
+    );
+  }
+
+  void _openSubscriptionManagementSheet(UserSubscription userSubscription) {
+    // Convert UserSubscription to Subscription model for the sheet
+    // This is a temporary conversion until models are unified
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => BlocProvider.value(
+        value: context.read<SubscriptionBloc>(),
+        child: SubscriptionManagementSheet(
+          subscription: _convertToSubscription(userSubscription),
+        ),
+      ),
+    );
+  }
+
+  // Convert UserSubscription to Subscription model
+  sub_model.Subscription _convertToSubscription(UserSubscription userSub) {
+    // Convert SubscriptionStatus from premium model to subscription model
+    sub_model.SubscriptionStatus convertedStatus;
+    switch (userSub.status.name) {
+      case 'active':
+        convertedStatus = sub_model.SubscriptionStatus.active;
+        break;
+      case 'canceled':
+      case 'cancelled':
+        convertedStatus = sub_model.SubscriptionStatus.cancelled;
+        break;
+      case 'expired':
+        convertedStatus = sub_model.SubscriptionStatus.expired;
+        break;
+      case 'paused':
+      case 'suspended':
+        convertedStatus = sub_model.SubscriptionStatus.suspended;
+        break;
+      case 'inactive':
+        convertedStatus = sub_model.SubscriptionStatus.inactive;
+        break;
+      default:
+        convertedStatus = sub_model.SubscriptionStatus.active;
+    }
+
+    return sub_model.Subscription(
+      id: userSub.id,
+      userId: userSub.userId,
+      planId: userSub.planId,
+      status: convertedStatus,
+      startDate: userSub.startDate,
+      endDate: userSub.endDate ?? userSub.nextBillingDate,
+      autoRenew: userSub.autoRenew,
+      paymentMethodId: userSub.paymentMethodId,
+      amountPaid: userSub.priceInCents / 100,
+      currency: userSub.currency,
+      createdAt: userSub.startDate,
+      updatedAt: DateTime.now(),
+      cancelledAt: userSub.cancelledAt,
+      cancellationReason: userSub.cancelReason,
     );
   }
 }

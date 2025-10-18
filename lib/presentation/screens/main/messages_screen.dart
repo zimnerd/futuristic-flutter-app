@@ -13,6 +13,7 @@ import '../../widgets/common/pulse_toast.dart';
 import '../../widgets/messaging/message_filters.dart';
 import '../../widgets/messaging/message_search.dart';
 import '../../widgets/messaging/match_stories_section.dart';
+import '../../widgets/common/sync_status_indicator.dart';
 import '../../../data/services/conversation_service.dart';
 import '../../../data/models/user.dart';
 import '../../../domain/entities/message.dart' show MessageType;
@@ -617,6 +618,8 @@ class _MessagesScreenState extends State<MessagesScreen> {
               fontWeight: FontWeight.bold,
             ),
           ),
+          const SizedBox(width: 12),
+          const SyncStatusIndicator(),
           const Spacer(),
           // Group Chat button
           IconButton(

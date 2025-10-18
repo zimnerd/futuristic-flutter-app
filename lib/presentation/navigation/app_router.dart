@@ -31,6 +31,7 @@ import '../../../domain/entities/payment_entities.dart';
 // Advanced feature screens
 import '../screens/virtual_gifts/virtual_gifts_screen.dart';
 import '../screens/premium/premium_screen.dart';
+import '../screens/premium/premium_showcase_screen.dart';
 import '../screens/safety/safety_screen.dart';
 import '../screens/ai_companion/ai_companion_screen.dart';
 import '../screens/speed_dating/speed_dating_screen.dart';
@@ -72,6 +73,7 @@ import '../screens/profile/photo_gallery_screen.dart';
 import '../screens/settings/notification_settings_screen.dart';
 import '../screens/settings/blocked_users_screen.dart';
 import '../screens/safety/safety_center_screen.dart';
+import '../screens/safety/emergency_contacts_screen.dart';
 import '../screens/matching/match_explanation_screen.dart';
 import '../screens/analytics/advanced_analytics_screen.dart';
 import '../blocs/notification/notification_bloc.dart';
@@ -348,6 +350,20 @@ class AppRouter {
         path: AppRoutes.premium,
         name: 'premium',
         builder: (context, state) => const PremiumScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.premiumShowcase,
+        name: 'premiumShowcase',
+        builder: (context, state) {
+          final highlightFeature = state.uri.queryParameters['feature'];
+          final selectedPlanId = state.uri.queryParameters['plan'];
+          final source = state.uri.queryParameters['source'];
+          return PremiumShowcaseScreen(
+            highlightFeature: highlightFeature,
+            selectedPlanId: selectedPlanId,
+            source: source,
+          );
+        },
       ),
       GoRoute(
         path: AppRoutes.safety,
@@ -878,6 +894,13 @@ class AppRouter {
           },
         ),
         GoRoute(
+          path: '/safety/emergency-contacts',
+          name: 'emergencyContacts',
+          builder: (context, state) {
+            return const EmergencyContactsScreen();
+          },
+        ),
+        GoRoute(
           path: AppRoutes.matchExplanation,
           name: 'matchExplanation',
           builder: (context, state) {
@@ -1029,6 +1052,7 @@ class AppRoutes {
   static const String advancedFeatures = '/advanced-features';
   static const String virtualGifts = '/virtual-gifts';
   static const String premium = '/premium';
+  static const String premiumShowcase = '/premium-showcase';
   static const String safety = '/safety';
   static const String aiCompanion = '/ai-companion';
   static const String speedDating = '/speed-dating';

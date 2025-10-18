@@ -36,7 +36,12 @@ class ProcessBoostPaymentEvent extends PaymentEvent {
   ProcessBoostPaymentEvent({required this.boostType, required this.paymentMethodId});
 }
 
-class LoadPaymentHistoryEvent extends PaymentEvent {}
+class LoadPaymentHistoryEvent extends PaymentEvent {
+  final String? subscriptionId;
+  final int? limit;
+
+  LoadPaymentHistoryEvent({this.subscriptionId, this.limit});
+}
 
 class RequestRefundEvent extends PaymentEvent {
   final String transactionId;
@@ -59,8 +64,8 @@ class PaymentMethodsLoaded extends PaymentState {
 }
 
 class PaymentHistoryLoaded extends PaymentState {
-  final List<Map<String, dynamic>> transactions;
-  
+  final List<dynamic> transactions;
+
   PaymentHistoryLoaded(this.transactions);
 }
 

@@ -50,33 +50,33 @@ class CoinPackages {
     id: 'coins_10',
     coins: 10,
     bonusCoins: 0,
-    price: 4.99,
-    priceDisplay: '\$4.99',
+    price: 5.00,
+    priceDisplay: '\$5',
   );
 
   static const popular = CoinPackage(
     id: 'coins_30',
     coins: 30,
-    bonusCoins: 5,
-    price: 12.99,
-    priceDisplay: '\$12.99',
+    bonusCoins: 0,
+    price: 12.00,
+    priceDisplay: '\$12',
     isMostPopular: true,
   );
 
   static const value = CoinPackage(
     id: 'coins_60',
     coins: 60,
-    bonusCoins: 15,
-    price: 22.99,
-    priceDisplay: '\$22.99',
+    bonusCoins: 5,
+    price: 20.00,
+    priceDisplay: '\$20',
   );
 
   static const mega = CoinPackage(
     id: 'coins_120',
     coins: 120,
-    bonusCoins: 40,
-    price: 39.99,
-    priceDisplay: '\$39.99',
+    bonusCoins: 0,
+    price: 35.00,
+    priceDisplay: '\$35',
     isBestValue: true,
   );
 
