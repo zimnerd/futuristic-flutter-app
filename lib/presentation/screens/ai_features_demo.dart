@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../widgets/chat/ai_message_input.dart';
 import '../theme/pulse_colors.dart';
+import '../widgets/common/pulse_toast.dart';
 
 /// Demo screen showcasing all AI features in the mobile app
 class AiFeaturesDemo extends StatefulWidget {
@@ -372,18 +373,17 @@ class _AiFeaturesDemoState extends State<AiFeaturesDemo>
           // Handle typing indicator
         },
         onCamera: () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Camera feature coming soon!')),
+          PulseToast.info(context, message: 'Camera feature coming soon!',
           );
         },
         onGallery: () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Gallery feature coming soon!')),
+          PulseToast.info(context, message: 'Gallery feature coming soon!',
           );
         },
         onVoice: () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Voice message feature coming soon!')),
+          PulseToast.info(
+            context,
+            message: 'Voice message feature coming soon!',
           );
         },
       ),

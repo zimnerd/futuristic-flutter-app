@@ -7,6 +7,7 @@ import '../../../data/services/websocket_service_impl.dart';
 import '../../blocs/auth/auth_bloc.dart';
 import '../../blocs/auth/auth_state.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../widgets/common/pulse_toast.dart';
 import '../chat/chat_screen.dart';
 
 class SpeedDatingMatchesScreen extends StatefulWidget {
@@ -112,11 +113,7 @@ class _SpeedDatingMatchesScreenState extends State<SpeedDatingMatchesScreen> {
       );
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Failed to start chat: $e'),
-          backgroundColor: Colors.red,
-        ),
+      PulseToast.error(context, message: 'Failed to start chat: $e',
       );
     }
   }

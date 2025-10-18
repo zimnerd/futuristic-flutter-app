@@ -3,6 +3,7 @@ import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import 'package:logger/logger.dart';
 import '../../theme/pulse_colors.dart';
 import '../../../data/services/audio_call_service.dart';
+import '../../widgets/common/pulse_toast.dart';
 
 /// Speed dating room screen for audio chat
 /// Integrates Agora RTC Engine for real-time audio communication
@@ -128,12 +129,10 @@ class _SpeedDatingRoomScreenState extends State<SpeedDatingRoomScreen> {
   void _showError(String message) {
     if (!mounted) return;
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.red,
-        duration: const Duration(seconds: 3),
-      ),
+    PulseToast.error(
+      context,
+      message: message,
+      duration: const Duration(seconds: 3),
     );
   }
 

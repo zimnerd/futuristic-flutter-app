@@ -9,6 +9,7 @@ import '../../theme/pulse_colors.dart';
 import '../../widgets/common/robust_network_image.dart';
 import '../../widgets/common/empty_state_widget.dart';
 import '../../widgets/common/skeleton_loading.dart';
+import '../../widgets/common/pulse_toast.dart';
 import '../../widgets/messaging/message_filters.dart';
 import '../../widgets/messaging/message_search.dart';
 import '../../widgets/messaging/match_stories_section.dart';
@@ -1231,12 +1232,10 @@ class _MessagesScreenState extends State<MessagesScreen> {
       _applyFilters();
     });
     
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('All conversations marked as read'),
-        behavior: SnackBarBehavior.floating,
-        duration: Duration(seconds: 2),
-      ),
+    PulseToast.success(
+      context,
+      message: 'All conversations marked as read',
+      duration: const Duration(seconds: 2),
     );
   }
 }

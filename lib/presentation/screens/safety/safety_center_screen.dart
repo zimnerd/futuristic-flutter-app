@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../theme/pulse_colors.dart' hide PulseTextStyles;
 import '../../theme/pulse_theme.dart';
+import '../../widgets/common/pulse_toast.dart';
 
 /// Main Safety Center screen with links to all safety features
 class SafetyCenterScreen extends StatelessWidget {
@@ -41,10 +42,9 @@ class SafetyCenterScreen extends StatelessWidget {
             subtitle: 'Manage your password and security options',
             onTap: () {
               // Navigate to account security (can be implemented later)
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Account Security coming soon'),
-                ),
+              PulseToast.info(
+                context,
+                message: 'Account Security coming soon',
               );
             },
             color: Colors.blue,
@@ -90,10 +90,9 @@ class SafetyCenterScreen extends StatelessWidget {
             subtitle: 'Read our community guidelines',
             onTap: () {
               // Navigate to guidelines (can be implemented later)
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Safety Guidelines coming soon'),
-                ),
+              PulseToast.info(
+                context,
+                message: 'Safety Guidelines coming soon',
               );
             },
             color: PulseColors.secondary,
