@@ -209,6 +209,10 @@ class ApiConstants {
   static const String safetyTips = '$safety/tips';
   static const String safetyReportDateConcern = '$safety/report-date-concern';
   static const String safetyEmergencyContact = '$safety/emergency-contact';
+  static const String safetyEmergencyContacts =
+      '$safety/emergency-contacts'; // GET/POST
+  static const String safetyEmergencyContactsTest =
+      '$safety/emergency-contacts/test'; // POST test notification
   static const String safetyCheckUser = '$safety/check-user';
   static const String safetyMyReports = '$safety/my-reports';
   static const String safetyStats = '$safety/stats';

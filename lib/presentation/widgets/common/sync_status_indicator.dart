@@ -1,5 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+
 import '../../../core/theme/pulse_design_system.dart';
+import '../../../data/services/websocket_service_impl.dart';
 
 /// Sync Status Indicator Widget
 ///
@@ -10,6 +14,9 @@ import '../../../core/theme/pulse_design_system.dart';
 /// - Reconnecting (orange spinner)
 ///
 /// Tap to show connection details
+///
+/// A widget that displays the current sync/connection status
+/// Shows a colored indicator that can be displayed with or without a label
 class SyncStatusIndicator extends StatefulWidget {
   final bool showLabel;
   final double size;
@@ -28,7 +35,9 @@ class _SyncStatusIndicatorState extends State<SyncStatusIndicator>
     with SingleTickerProviderStateMixin {
   late AnimationController _pulseController;
   late Animation<double> _pulseAnimation;
-  ConnectionStatus _status = ConnectionStatus.connected;
+  late WebSocketServiceImpl _webSocketService;
+  StreamSubscription<String>? _connectionStateSubscription;
+  ConnectionStatus _status = ConnectionStatus.disconnected;
   DateTime? _lastSyncTime;
 
   @override
@@ -43,29 +52,60 @@ class _SyncStatusIndicatorState extends State<SyncStatusIndicator>
       CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
     );
 
+    // Initialize WebSocket service
+    _webSocketService = WebSocketServiceImpl.instance;
     _listenToConnectionStatus();
   }
 
   void _listenToConnectionStatus() {
-    // TODO: Integrate with actual WebSocket service
-    // For now, assume we're connected
-    setState(() {
-      _status = ConnectionStatus.connected;
-      _lastSyncTime = DateTime.now();
-    });
+    // Listen to WebSocket connection state changes
+    _connectionStateSubscription = _webSocketService.connectionState.listen(
+      (state) {
+        if (!mounted) return;
 
-    // Simulate periodic status checks
-    Stream.periodic(const Duration(seconds: 30)).listen((_) {
-      if (mounted) {
         setState(() {
-          _lastSyncTime = DateTime.now();
+          // Map WebSocket state strings to ConnectionStatus enum
+          switch (state) {
+            case 'connected':
+              _status = ConnectionStatus.connected;
+              _lastSyncTime = DateTime.now();
+              break;
+            case 'connecting':
+              _status = ConnectionStatus.connecting;
+              break;
+            case 'disconnected':
+              _status = ConnectionStatus.disconnected;
+              break;
+            case 'error':
+              _status = ConnectionStatus.disconnected;
+              break;
+            default:
+              _status = ConnectionStatus.disconnected;
+          }
         });
+      },
+      onError: (error) {
+        if (!mounted) return;
+        setState(() {
+          _status = ConnectionStatus.disconnected;
+        });
+      },
+    );
+
+    // Set initial status based on current connection state
+    setState(() {
+      if (_webSocketService.isConnected) {
+        _status = ConnectionStatus.connected;
+        _lastSyncTime = DateTime.now();
+      } else {
+        _status = ConnectionStatus.disconnected;
       }
     });
   }
 
   @override
   void dispose() {
+    _connectionStateSubscription?.cancel();
     _pulseController.dispose();
     super.dispose();
   }
@@ -161,9 +201,18 @@ class _SyncStatusIndicatorState extends State<SyncStatusIndicator>
         actions: [
           if (_status == ConnectionStatus.disconnected)
             TextButton(
-              onPressed: () {
-                // TODO: Trigger reconnection
+              onPressed: () async {
                 Navigator.pop(context);
+                // Trigger WebSocket reconnection
+                try {
+                  setState(() {
+                    _status = ConnectionStatus.connecting;
+                  });
+                  await _webSocketService.connect();
+                } catch (e) {
+                  // Connection will update through the stream listener
+                  // Error state is handled by the connectionState stream
+                }
               },
               child: const Text('Retry Connection'),
             ),

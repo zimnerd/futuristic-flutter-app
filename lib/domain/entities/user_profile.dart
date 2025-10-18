@@ -54,6 +54,22 @@ class UserProfile extends Equatable {
     this.readReceipts,
     this.whoCanMessageMe,
     this.whoCanSeeMyProfile,
+    // Analytics fields with safe defaults
+    this.profileViews = 0,
+    this.likesReceived = 0,
+    this.likesSent = 0,
+    this.matchesCount = 0,
+    this.messagesCount = 0,
+    this.sessionCount = 0,
+    this.totalLoginTime = 0,
+    this.lastSeenAt,
+    // Metadata fields
+    this.moderationStatus,
+    this.moderatedAt,
+    this.verificationMethod,
+    this.verificationStatus,
+    this.verifiedAt,
+    this.profileCompletionPercentage = 0,
   });
 
   final String id;
@@ -114,6 +130,24 @@ class UserProfile extends Equatable {
   final bool? readReceipts;
   final String? whoCanMessageMe;
   final String? whoCanSeeMyProfile;
+
+  // Analytics fields - profile engagement metrics
+  final int profileViews;
+  final int likesReceived;
+  final int likesSent;
+  final int matchesCount;
+  final int messagesCount;
+  final int sessionCount;
+  final int totalLoginTime; // in minutes
+  final DateTime? lastSeenAt;
+
+  // Metadata fields - moderation and verification
+  final String? moderationStatus; // APPROVED, PENDING, FLAGGED, SUSPENDED
+  final DateTime? moderatedAt;
+  final String? verificationMethod; // PHOTO, PHONE, EMAIL, IDENTITY
+  final String? verificationStatus; // VERIFIED, PENDING, REJECTED
+  final DateTime? verifiedAt;
+  final int profileCompletionPercentage;
 
   /// Get primary photo URL
   String get primaryPhotoUrl {

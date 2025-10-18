@@ -15,6 +15,23 @@ class UserProfile extends Equatable {
   final DateTime createdAt;
   final DateTime updatedAt;
 
+  // Analytics fields - profile engagement metrics
+  final int profileViews;
+  final int likesReceived;
+  final int likesSent;
+  final int matchesCount;
+  final int messagesCount;
+  final int sessionCount;
+  final int totalLoginTime; // in minutes
+  final DateTime? lastSeenAt;
+
+  // Metadata fields - moderation and verification
+  final String? moderationStatus; // APPROVED, PENDING, FLAGGED, SUSPENDED
+  final DateTime? moderatedAt;
+  final String? verificationMethod; // PHOTO, PHONE, EMAIL, IDENTITY
+  final String? verificationStatus; // VERIFIED, PENDING, REJECTED
+  final DateTime? verifiedAt;
+
   const UserProfile({
     required this.id,
     required this.userId,
@@ -28,6 +45,21 @@ class UserProfile extends Equatable {
     this.completionPercentage = 0,
     required this.createdAt,
     required this.updatedAt,
+    // Analytics fields with safe defaults
+    this.profileViews = 0,
+    this.likesReceived = 0,
+    this.likesSent = 0,
+    this.matchesCount = 0,
+    this.messagesCount = 0,
+    this.sessionCount = 0,
+    this.totalLoginTime = 0,
+    this.lastSeenAt,
+    // Metadata fields
+    this.moderationStatus,
+    this.moderatedAt,
+    this.verificationMethod,
+    this.verificationStatus,
+    this.verifiedAt,
   });
 
   factory UserProfile.fromJson(Map<String, dynamic> json) {
@@ -54,6 +86,27 @@ class UserProfile extends Equatable {
       completionPercentage: json['completionPercentage'] ?? 0,
       createdAt: DateTime.parse(json['createdAt']),
       updatedAt: DateTime.parse(json['updatedAt']),
+      // Analytics fields
+      profileViews: json['profileViews'] ?? 0,
+      likesReceived: json['likesReceived'] ?? 0,
+      likesSent: json['likesSent'] ?? 0,
+      matchesCount: json['matchesCount'] ?? 0,
+      messagesCount: json['messagesCount'] ?? 0,
+      sessionCount: json['sessionCount'] ?? 0,
+      totalLoginTime: json['totalLoginTime'] ?? 0,
+      lastSeenAt: json['lastSeenAt'] != null
+          ? DateTime.parse(json['lastSeenAt'])
+          : null,
+      // Metadata fields
+      moderationStatus: json['moderationStatus'],
+      moderatedAt: json['moderatedAt'] != null
+          ? DateTime.parse(json['moderatedAt'])
+          : null,
+      verificationMethod: json['verificationMethod'],
+      verificationStatus: json['verificationStatus'],
+      verifiedAt: json['verifiedAt'] != null
+          ? DateTime.parse(json['verifiedAt'])
+          : null,
     );
   }
 
@@ -71,6 +124,21 @@ class UserProfile extends Equatable {
       'completionPercentage': completionPercentage,
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
+      // Analytics fields
+      'profileViews': profileViews,
+      'likesReceived': likesReceived,
+      'likesSent': likesSent,
+      'matchesCount': matchesCount,
+      'messagesCount': messagesCount,
+      'sessionCount': sessionCount,
+      'totalLoginTime': totalLoginTime,
+      'lastSeenAt': lastSeenAt?.toIso8601String(),
+      // Metadata fields
+      'moderationStatus': moderationStatus,
+      'moderatedAt': moderatedAt?.toIso8601String(),
+      'verificationMethod': verificationMethod,
+      'verificationStatus': verificationStatus,
+      'verifiedAt': verifiedAt?.toIso8601String(),
     };
   }
 
@@ -87,6 +155,19 @@ class UserProfile extends Equatable {
     int? completionPercentage,
     DateTime? createdAt,
     DateTime? updatedAt,
+    int? profileViews,
+    int? likesReceived,
+    int? likesSent,
+    int? matchesCount,
+    int? messagesCount,
+    int? sessionCount,
+    int? totalLoginTime,
+    DateTime? lastSeenAt,
+    String? moderationStatus,
+    DateTime? moderatedAt,
+    String? verificationMethod,
+    String? verificationStatus,
+    DateTime? verifiedAt,
   }) {
     return UserProfile(
       id: id ?? this.id,
@@ -101,6 +182,19 @@ class UserProfile extends Equatable {
       completionPercentage: completionPercentage ?? this.completionPercentage,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      profileViews: profileViews ?? this.profileViews,
+      likesReceived: likesReceived ?? this.likesReceived,
+      likesSent: likesSent ?? this.likesSent,
+      matchesCount: matchesCount ?? this.matchesCount,
+      messagesCount: messagesCount ?? this.messagesCount,
+      sessionCount: sessionCount ?? this.sessionCount,
+      totalLoginTime: totalLoginTime ?? this.totalLoginTime,
+      lastSeenAt: lastSeenAt ?? this.lastSeenAt,
+      moderationStatus: moderationStatus ?? this.moderationStatus,
+      moderatedAt: moderatedAt ?? this.moderatedAt,
+      verificationMethod: verificationMethod ?? this.verificationMethod,
+      verificationStatus: verificationStatus ?? this.verificationStatus,
+      verifiedAt: verifiedAt ?? this.verifiedAt,
     );
   }
 
@@ -118,6 +212,19 @@ class UserProfile extends Equatable {
         completionPercentage,
         createdAt,
         updatedAt,
+    profileViews,
+    likesReceived,
+    likesSent,
+    matchesCount,
+    messagesCount,
+    sessionCount,
+    totalLoginTime,
+    lastSeenAt,
+    moderationStatus,
+    moderatedAt,
+    verificationMethod,
+    verificationStatus,
+    verifiedAt,
       ];
 }
 

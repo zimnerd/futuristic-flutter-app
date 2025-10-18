@@ -407,4 +407,119 @@ class SafetyService {
       return [];
     }
   }
+
+  // ================================
+  // EMERGENCY CONTACTS MANAGEMENT
+  // ================================
+
+  /// Get all emergency contacts for the current user
+  Future<List<EmergencyContact>> getEmergencyContacts() async {
+    try {
+      final response = await _apiClient.get(
+        ApiConstants.safetyEmergencyContacts,
+      );
+
+      if (response.statusCode == 200 && response.data != null) {
+        final List<dynamic> data = response.data is List
+            ? response.data
+            : response.data['data'] ?? [];
+        final contacts = data
+            .map((json) => EmergencyContact.fromJson(json))
+            .toList();
+
+        _logger.d('Retrieved ${contacts.length} emergency contacts');
+        return contacts;
+      } else {
+        _logger.e(
+          'Failed to get emergency contacts: ${response.statusMessage}',
+        );
+        return [];
+      }
+    } catch (e) {
+      _logger.e('Error getting emergency contacts: $e');
+      return [];
+    }
+  }
+
+  /// Add a new emergency contact
+  Future<EmergencyContact?> addEmergencyContact({
+    required String name,
+    required String phone,
+    String? email,
+    required String relationship,
+    bool isPrimary = false,
+  }) async {
+    try {
+      final response = await _apiClient.post(
+        ApiConstants.safetyEmergencyContacts,
+        data: {
+          'name': name,
+          'phone': phone,
+          'email': email,
+          'relationship': relationship,
+          'isPrimary': isPrimary,
+        },
+      );
+
+      if (response.statusCode == 200 && response.data != null) {
+        final contactData = response.data is Map
+            ? response.data['data'] ?? response.data
+            : response.data;
+        final contact = EmergencyContact.fromJson(contactData);
+        _logger.d('Emergency contact added successfully: ${contact.id}');
+        return contact;
+      } else {
+        _logger.e('Failed to add emergency contact: ${response.statusMessage}');
+        return null;
+      }
+    } catch (e) {
+      _logger.e('Error adding emergency contact: $e');
+      return null;
+    }
+  }
+
+  /// Delete an emergency contact
+  Future<bool> deleteEmergencyContact(String contactId) async {
+    try {
+      final response = await _apiClient.delete(
+        '${ApiConstants.safetyEmergencyContacts}/$contactId',
+      );
+
+      if (response.statusCode == 200) {
+        _logger.d('Emergency contact deleted successfully: $contactId');
+        return true;
+      } else {
+        _logger.e(
+          'Failed to delete emergency contact: ${response.statusMessage}',
+        );
+        return false;
+      }
+    } catch (e) {
+      _logger.e('Error deleting emergency contact: $e');
+      return false;
+    }
+  }
+
+  /// Send test notification to an emergency contact
+  Future<bool> sendTestNotification(String contactId) async {
+    try {
+      final response = await _apiClient.post(
+        ApiConstants.safetyEmergencyContactsTest,
+        data: {'contactId': contactId},
+      );
+
+      if (response.statusCode == 200) {
+        _logger.d('Test notification sent successfully to contact: $contactId');
+        return true;
+      } else {
+        _logger.e(
+          'Failed to send test notification: ${response.statusMessage}',
+        );
+        return false;
+      }
+    } catch (e) {
+      _logger.e('Error sending test notification: $e');
+      return false;
+    }
+  }
 }

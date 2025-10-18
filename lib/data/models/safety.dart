@@ -5,21 +5,25 @@ class EmergencyContact extends Equatable {
   final String id;
   final String userId;
   final String name;
-  final String phoneNumber;
-  final String email;
+  final String phone;
+  final String? email;
   final String relationship;
+  final bool isPrimary;
   final bool isActive;
   final DateTime createdAt;
+  final DateTime updatedAt;
 
   const EmergencyContact({
     required this.id,
     required this.userId,
     required this.name,
-    required this.phoneNumber,
-    required this.email,
+    required this.phone,
+    this.email,
     required this.relationship,
+    this.isPrimary = false,
     this.isActive = true,
     required this.createdAt,
+    required this.updatedAt,
   });
 
   factory EmergencyContact.fromJson(Map<String, dynamic> json) {
@@ -27,11 +31,13 @@ class EmergencyContact extends Equatable {
       id: json['id'] as String,
       userId: json['userId'] as String,
       name: json['name'] as String,
-      phoneNumber: json['phoneNumber'] as String,
-      email: json['email'] as String,
+      phone: json['phone'] as String,
+      email: json['email'] as String?,
       relationship: json['relationship'] as String,
+      isPrimary: json['isPrimary'] as bool? ?? false,
       isActive: json['isActive'] as bool? ?? true,
       createdAt: DateTime.parse(json['createdAt'] as String),
+      updatedAt: DateTime.parse(json['updatedAt'] as String),
     );
   }
 
@@ -40,11 +46,13 @@ class EmergencyContact extends Equatable {
       'id': id,
       'userId': userId,
       'name': name,
-      'phoneNumber': phoneNumber,
+      'phone': phone,
       'email': email,
       'relationship': relationship,
+      'isPrimary': isPrimary,
       'isActive': isActive,
       'createdAt': createdAt.toIso8601String(),
+      'updatedAt': updatedAt.toIso8601String(),
     };
   }
 
@@ -52,21 +60,25 @@ class EmergencyContact extends Equatable {
     String? id,
     String? userId,
     String? name,
-    String? phoneNumber,
+    String? phone,
     String? email,
     String? relationship,
+    bool? isPrimary,
     bool? isActive,
     DateTime? createdAt,
+    DateTime? updatedAt,
   }) {
     return EmergencyContact(
       id: id ?? this.id,
       userId: userId ?? this.userId,
       name: name ?? this.name,
-      phoneNumber: phoneNumber ?? this.phoneNumber,
+      phone: phone ?? this.phone,
       email: email ?? this.email,
       relationship: relationship ?? this.relationship,
+      isPrimary: isPrimary ?? this.isPrimary,
       isActive: isActive ?? this.isActive,
       createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
     );
   }
 
@@ -75,11 +87,13 @@ class EmergencyContact extends Equatable {
         id,
         userId,
         name,
-        phoneNumber,
+    phone,
         email,
         relationship,
+    isPrimary,
         isActive,
         createdAt,
+    updatedAt,
       ];
 }
 

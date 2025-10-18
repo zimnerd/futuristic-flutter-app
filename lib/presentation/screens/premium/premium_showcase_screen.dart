@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../data/models/premium.dart';
+import '../../../data/services/analytics_service.dart';
 import '../../blocs/premium/premium_bloc.dart';
 import '../../blocs/premium/premium_event.dart';
 import '../../blocs/premium/premium_state.dart';
@@ -56,6 +57,10 @@ class _PremiumShowcaseScreenState extends State<PremiumShowcaseScreen>
   final ScrollController _scrollController = ScrollController();
   bool _showStickyButton = false;
 
+  // Scroll tracking
+  final Set<int> _scrollMilestonesReached = {};
+  double _maxScrollPercentageReached = 0;
+
   @override
   void initState() {
     super.initState();
@@ -103,28 +108,96 @@ class _PremiumShowcaseScreenState extends State<PremiumShowcaseScreen>
   }
 
   void _onScroll() {
+    // Sticky button logic
     if (_scrollController.offset > 200 && !_showStickyButton) {
       setState(() => _showStickyButton = true);
     } else if (_scrollController.offset <= 200 && _showStickyButton) {
       setState(() => _showStickyButton = false);
     }
+
+    // Track scroll depth milestones
+    final maxScroll = _scrollController.position.maxScrollExtent;
+    if (maxScroll > 0) {
+      final scrollPercentage = (_scrollController.offset / maxScroll * 100)
+          .clamp(0.0, 100.0);
+
+      // Update max reached
+      if (scrollPercentage > _maxScrollPercentageReached) {
+        _maxScrollPercentageReached = scrollPercentage.toDouble();
+      }
+
+      // Track milestones: 25%, 50%, 75%, 100%
+      final milestones = [25, 50, 75, 100];
+      for (final milestone in milestones) {
+        if (scrollPercentage >= milestone &&
+            !_scrollMilestonesReached.contains(milestone)) {
+          _scrollMilestonesReached.add(milestone);
+          _trackScrollDepth(milestone.toDouble());
+        }
+      }
+    }
   }
 
   void _trackScreenView() {
-    // TODO: Implement analytics tracking
-    // Analytics.logEvent('premium_showcase_viewed', {
-    //   'source': widget.source ?? 'unknown',
-    //   'highlighted_feature': widget.highlightFeature,
-    // });
+    AnalyticsService.instance.trackScreenView(
+      screenName: 'premium_showcase',
+      properties: {
+        'source': widget.source ?? 'unknown',
+        'highlighted_feature': widget.highlightFeature,
+        'selected_plan_id': _selectedPlanId,
+      },
+    );
   }
 
   void _trackCTAClick(String planId, String ctaType) {
-    // TODO: Implement analytics tracking
-    // Analytics.logEvent('premium_cta_clicked', {
-    //   'plan_id': planId,
-    //   'cta_type': ctaType,
-    //   'source': widget.source ?? 'unknown',
-    // });
+    AnalyticsService.instance.trackButtonClick(
+      buttonName: 'premium_cta',
+      screenName: 'premium_showcase',
+      properties: {
+        'plan_id': planId,
+        'cta_type': ctaType,
+        'source': widget.source ?? 'unknown',
+        'selected_plan_id': _selectedPlanId,
+      },
+    );
+  }
+
+  void _trackPlanSelection(String planId, String? previousPlanId) {
+    AnalyticsService.instance.trackEvent(
+      eventType: AnalyticsEventType.featureUsed,
+      properties: {
+        'feature_name': 'premium_plan_selection',
+        'plan_id': planId,
+        'previous_plan_id': previousPlanId,
+        'screen_name': 'premium_showcase',
+        'source': widget.source ?? 'unknown',
+      },
+    );
+  }
+
+  void _trackFeatureCardTap(String featureName) {
+    AnalyticsService.instance.trackEvent(
+      eventType: AnalyticsEventType.featureUsed,
+      properties: {
+        'feature_name': 'premium_feature_card_tap',
+        'card_feature': featureName,
+        'screen_name': 'premium_showcase',
+        'source': widget.source ?? 'unknown',
+      },
+    );
+  }
+
+  void _trackScrollDepth(double scrollPercentage) {
+    // Track scroll milestones (25%, 50%, 75%, 100%)
+    AnalyticsService.instance.trackEvent(
+      eventType: AnalyticsEventType.featureUsed,
+      properties: {
+        'feature_name': 'premium_showcase_scroll',
+        'scroll_percentage': scrollPercentage.round(),
+        'screen_name': 'premium_showcase',
+        'source': widget.source ?? 'unknown',
+      },
+    );
   }
 
   @override
@@ -320,12 +393,18 @@ class _PremiumShowcaseScreenState extends State<PremiumShowcaseScreen>
                 description: feature['description'] as String,
                 isPremium: feature['isPremium'] as bool,
                 isHighlighted: widget.highlightFeature == feature['key'],
-                onTap: () => _showFeatureDetails(
-                  context,
-                  feature['title'] as String,
-                  feature['description'] as String,
-                  feature['details'] as String,
-                ),
+                  onTap: () {
+                    // Track feature card tap
+                    _trackFeatureCardTap(feature['key'] as String);
+
+                    // Show feature details modal
+                    _showFeatureDetails(
+                      context,
+                      feature['title'] as String,
+                      feature['description'] as String,
+                      feature['details'] as String,
+                    );
+                  },
               ),
             )),
           ],
@@ -370,7 +449,9 @@ class _PremiumShowcaseScreenState extends State<PremiumShowcaseScreen>
                 isMostPopular: _isMostPopularPlan(plan, sortedPlans),
                 isBestValue: _isBestValuePlan(plan, sortedPlans),
                 onSelect: () {
+                    final previousPlanId = _selectedPlanId;
                   setState(() => _selectedPlanId = plan.id);
+                    _trackPlanSelection(plan.id, previousPlanId);
                 },
               ),
             )),

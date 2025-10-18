@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../core/theme/pulse_design_system.dart';
+import '../../../core/network/api_client.dart';
+import '../../../data/services/safety_service.dart';
+import '../../../data/models/safety.dart' as safety_models;
 import '../../widgets/common/pulse_toast.dart';
 
 /// Emergency Contacts Screen
@@ -19,7 +22,8 @@ class EmergencyContactsScreen extends StatefulWidget {
 }
 
 class _EmergencyContactsScreenState extends State<EmergencyContactsScreen> {
-  final List<EmergencyContact> _contacts = [];
+  final SafetyService _safetyService = SafetyService(ApiClient.instance);
+  List<safety_models.EmergencyContact> _contacts = [];
   bool _isLoading = false;
 
   @override
@@ -31,33 +35,67 @@ class _EmergencyContactsScreenState extends State<EmergencyContactsScreen> {
   Future<void> _loadContacts() async {
     setState(() => _isLoading = true);
 
-    // TODO: Load from backend API
-    await Future.delayed(const Duration(seconds: 1));
-
-    setState(() => _isLoading = false);
+    try {
+      final contacts = await _safetyService.getEmergencyContacts();
+      setState(() {
+        _contacts = contacts;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() => _isLoading = false);
+      if (mounted) {
+        PulseToast.error(context, message: 'Failed to load emergency contacts');
+      }
+    }
   }
 
   Future<void> _addContact() async {
-    final result = await showDialog<EmergencyContact>(
+    final result = await showDialog<_ContactFormData>(
       context: context,
       builder: (context) => const _AddContactDialog(),
     );
 
     if (result != null) {
-      setState(() => _contacts.add(result));
+      setState(() => _isLoading = true);
 
-      // TODO: Save to backend
-      HapticFeedback.mediumImpact();
-      if (mounted) {
-        PulseToast.success(
-          context,
-          message: 'Emergency contact added',
+      try {
+        final contact = await _safetyService.addEmergencyContact(
+          name: result.name,
+          phone: result.phone,
+          email: result.email,
+          relationship: result.relationship,
+          isPrimary: result.isPrimary,
         );
+
+        if (contact != null) {
+          setState(() {
+            _contacts.add(contact);
+            _isLoading = false;
+          });
+
+          HapticFeedback.mediumImpact();
+          if (mounted) {
+            PulseToast.success(context, message: 'Emergency contact added');
+          }
+        } else {
+          setState(() => _isLoading = false);
+          if (mounted) {
+            PulseToast.error(
+              context,
+              message: 'Failed to add emergency contact',
+            );
+          }
+        }
+      } catch (e) {
+        setState(() => _isLoading = false);
+        if (mounted) {
+          PulseToast.error(context, message: 'Error adding emergency contact');
+        }
       }
     }
   }
 
-  Future<void> _removeContact(EmergencyContact contact) async {
+  Future<void> _removeContact(safety_models.EmergencyContact contact) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -80,15 +118,32 @@ class _EmergencyContactsScreenState extends State<EmergencyContactsScreen> {
     );
 
     if (confirmed == true) {
-      setState(() => _contacts.remove(contact));
+      setState(() => _isLoading = true);
 
-      // TODO: Remove from backend
-      HapticFeedback.lightImpact();
-      if (mounted) {
-        PulseToast.info(
-          context,
-          message: 'Contact removed',
-        );
+      try {
+        final success = await _safetyService.deleteEmergencyContact(contact.id);
+
+        if (success) {
+          setState(() {
+            _contacts.remove(contact);
+            _isLoading = false;
+          });
+
+          HapticFeedback.lightImpact();
+          if (mounted) {
+            PulseToast.info(context, message: 'Contact removed');
+          }
+        } else {
+          setState(() => _isLoading = false);
+          if (mounted) {
+            PulseToast.error(context, message: 'Failed to remove contact');
+          }
+        }
+      } catch (e) {
+        setState(() => _isLoading = false);
+        if (mounted) {
+          PulseToast.error(context, message: 'Error removing contact');
+        }
       }
     }
   }
@@ -223,7 +278,7 @@ class _EmergencyContactsScreenState extends State<EmergencyContactsScreen> {
     );
   }
 
-  Widget _buildContactCard(EmergencyContact contact) {
+  Widget _buildContactCard(safety_models.EmergencyContact contact) {
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       elevation: 0,
@@ -258,16 +313,11 @@ class _EmergencyContactsScreenState extends State<EmergencyContactsScreen> {
               contact.phone,
               style: TextStyle(color: Colors.grey[600]),
             ),
-            if (contact.relationship != null) ...[
-              const SizedBox(height: 4),
-              Text(
-                contact.relationship!,
-                style: TextStyle(
-                  color: Colors.grey[500],
-                  fontSize: 12,
-                ),
-              ),
-            ],
+            const SizedBox(height: 4),
+            Text(
+              contact.relationship,
+              style: TextStyle(color: Colors.grey[500], fontSize: 12),
+            ),
           ],
         ),
         trailing: PopupMenuButton<String>(
@@ -306,12 +356,33 @@ class _EmergencyContactsScreenState extends State<EmergencyContactsScreen> {
     );
   }
 
-  void _testNotification(EmergencyContact contact) {
-    // TODO: Send test notification
-    PulseToast.info(
-      context,
-      message: 'Test notification sent to ${contact.name}',
-    );
+  Future<void> _testNotification(safety_models.EmergencyContact contact) async {
+    setState(() => _isLoading = true);
+
+    try {
+      final success = await _safetyService.sendTestNotification(contact.id);
+
+      setState(() => _isLoading = false);
+
+      if (mounted) {
+        if (success) {
+          PulseToast.success(
+            context,
+            message: 'Test notification sent to ${contact.name}',
+          );
+        } else {
+          PulseToast.error(
+            context,
+            message: 'Failed to send test notification',
+          );
+        }
+      }
+    } catch (e) {
+      setState(() => _isLoading = false);
+      if (mounted) {
+        PulseToast.error(context, message: 'Error sending test notification');
+      }
+    }
   }
 }
 
@@ -327,12 +398,15 @@ class _AddContactDialogState extends State<_AddContactDialog> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _phoneController = TextEditingController();
+  final _emailController = TextEditingController();
   String? _relationship;
+  bool _isPrimary = false;
 
   @override
   void dispose() {
     _nameController.dispose();
     _phoneController.dispose();
+    _emailController.dispose();
     super.dispose();
   }
 
@@ -374,20 +448,46 @@ class _AddContactDialogState extends State<_AddContactDialog> {
               },
             ),
             const SizedBox(height: 16),
-            DropdownButtonFormField<String>(
-              initialValue: _relationship,
+            TextFormField(
+              controller: _emailController,
               decoration: const InputDecoration(
-                labelText: 'Relationship (Optional)',
+                labelText: 'Email (Optional)',
+                prefixIcon: Icon(Icons.email_outlined),
+              ),
+              keyboardType: TextInputType.emailAddress,
+            ),
+            const SizedBox(height: 16),
+            DropdownButtonFormField<String>(
+              value: _relationship,
+              decoration: const InputDecoration(
+                labelText: 'Relationship',
                 prefixIcon: Icon(Icons.people_outline),
               ),
               items: const [
-                DropdownMenuItem(value: 'Parent', child: Text('Parent')),
-                DropdownMenuItem(value: 'Sibling', child: Text('Sibling')),
-                DropdownMenuItem(value: 'Friend', child: Text('Friend')),
-                DropdownMenuItem(value: 'Partner', child: Text('Partner')),
-                DropdownMenuItem(value: 'Other', child: Text('Other')),
+                DropdownMenuItem(value: 'family', child: Text('Family')),
+                DropdownMenuItem(value: 'friend', child: Text('Friend')),
+                DropdownMenuItem(
+                  value: 'spouse',
+                  child: Text('Spouse/Partner'),
+                ),
+                DropdownMenuItem(value: 'colleague', child: Text('Colleague')),
+                DropdownMenuItem(value: 'other', child: Text('Other')),
               ],
               onChanged: (value) => setState(() => _relationship = value),
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please select a relationship';
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: 16),
+            CheckboxListTile(
+              title: const Text('Set as primary contact'),
+              value: _isPrimary,
+              onChanged: (value) => setState(() => _isPrimary = value ?? false),
+              contentPadding: EdgeInsets.zero,
+              controlAffinity: ListTileControlAffinity.leading,
             ),
           ],
         ),
@@ -402,10 +502,14 @@ class _AddContactDialogState extends State<_AddContactDialog> {
             if (_formKey.currentState!.validate()) {
               Navigator.pop(
                 context,
-                EmergencyContact(
+                _ContactFormData(
                   name: _nameController.text,
                   phone: _phoneController.text,
-                  relationship: _relationship,
+                  email: _emailController.text.isEmpty
+                      ? null
+                      : _emailController.text,
+                  relationship: _relationship ?? 'friend',
+                  isPrimary: _isPrimary,
                 ),
               );
             }
@@ -542,29 +646,19 @@ class _SafetyTipsSheet extends StatelessWidget {
   }
 }
 
-/// Emergency Contact Model
-class EmergencyContact {
+/// Contact Form Data for dialog result
+class _ContactFormData {
   final String name;
   final String phone;
-  final String? relationship;
+  final String? email;
+  final String relationship;
+  final bool isPrimary;
 
-  EmergencyContact({
+  _ContactFormData({
     required this.name,
     required this.phone,
-    this.relationship,
+    this.email,
+    required this.relationship,
+    this.isPrimary = false,
   });
-
-  Map<String, dynamic> toJson() => {
-        'name': name,
-        'phone': phone,
-        'relationship': relationship,
-      };
-
-  factory EmergencyContact.fromJson(Map<String, dynamic> json) {
-    return EmergencyContact(
-      name: json['name'] as String,
-      phone: json['phone'] as String,
-      relationship: json['relationship'] as String?,
-    );
-  }
 }
