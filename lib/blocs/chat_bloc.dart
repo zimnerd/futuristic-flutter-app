@@ -11,7 +11,7 @@ import '../domain/entities/message.dart' show MessageType;
 import '../data/repositories/chat_repository.dart';
 import '../domain/repositories/user_repository.dart';
 import '../data/services/background_sync_manager.dart';
-import '../data/services/service_locator.dart';
+import '../domain/services/websocket_service.dart';
 
 
 // Events
@@ -544,6 +544,7 @@ class MessageSearchError extends ChatState {
 class ChatBloc extends Bloc<ChatEvent, ChatState> {
   final ChatRepository _chatRepository;
   final UserRepository _userRepository;
+  final WebSocketService _webSocketService;
   final Logger _logger = Logger();
   
   // Stream subscriptions
@@ -555,8 +556,10 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
   ChatBloc({
     required ChatRepository chatRepository,
     required UserRepository userRepository,
+    required WebSocketService webSocketService,
   }) : _chatRepository = chatRepository,
        _userRepository = userRepository,
+       _webSocketService = webSocketService,
         super(const ChatInitial()) {
     on<LoadConversations>(_onLoadConversations);
     on<LoadMessages>(_onLoadMessages);
@@ -1545,9 +1548,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       _logger.d('Reaction persisted via API successfully');
 
       // Emit reaction via WebSocket for real-time update
-      final websocketService = ServiceLocator().webSocketService;
-      
-      websocketService.emit('performMessageAction', {
+      _webSocketService.emit('performMessageAction', {
         'action': 'react',
         'messageId': event.messageId,
         'conversationId': event.conversationId,

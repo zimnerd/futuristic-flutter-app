@@ -7,7 +7,6 @@ import '../../services/firebase_notification_service.dart';
 import '../../data/services/token_service.dart';
 import '../../data/services/matching_service.dart';
 import '../../data/services/ai_preferences_service.dart';
-import '../../data/services/service_locator.dart' as data_services;
 import '../network/api_client.dart';
 import 'package:logger/logger.dart';
 import '../utils/logger.dart';
@@ -92,23 +91,6 @@ class ServiceLocator {
       // Initialize Firebase notifications with auth token
       if (_firebaseNotificationService != null) {
         await _firebaseNotificationService!.initialize(authToken: authToken);
-      }
-
-      // Also set auth token for data services (including WebSocket)
-      try {
-        Logger().d(
-          '🔗 CoreServiceLocator: Calling data_services.ServiceLocator().setAuthToken...',
-        );
-        await data_services.ServiceLocator().setAuthToken(authToken);
-        Logger().d(
-          '✅ CoreServiceLocator: Auth token set for data services including WebSocket',
-        );
-        AppLogger.info('Auth token set for data services including WebSocket');
-      } catch (e) {
-        Logger().d(
-          '❌ CoreServiceLocator: Failed to set auth token for data services: $e',
-        );
-        AppLogger.error('Failed to set auth token for data services: $e');
       }
 
       // Get user ID from token (you might need to decode the JWT)
