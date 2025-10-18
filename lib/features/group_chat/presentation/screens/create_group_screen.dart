@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../presentation/blocs/group_chat/group_chat_bloc.dart';
 import '../../data/models.dart';
 import '../widgets/participant_picker_dialog.dart';
+import '../../../../presentation/widgets/common/pulse_toast.dart';
 
 class CreateGroupScreen extends StatefulWidget {
   const CreateGroupScreen({super.key});
@@ -65,20 +66,13 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
       body: BlocListener<GroupChatBloc, GroupChatState>(
         listener: (context, state) {
           if (state is GroupCreated) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Group created successfully!'),
-                backgroundColor: Colors.green,
-              ),
+            PulseToast.success(
+              context,
+              message: 'Group created successfully!',
             );
             Navigator.of(context).pop(state.group);
           } else if (state is GroupChatError) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: Colors.red,
-              ),
-            );
+            PulseToast.error(context, message: state.message);
           }
         },
         child: Form(
@@ -477,11 +471,9 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
     }
 
     if (_selectedParticipantIds.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please add at least one participant'),
-          backgroundColor: Colors.orange,
-        ),
+      PulseToast.info(
+        context,
+        message: 'Please add at least one participant',
       );
       return;
     }

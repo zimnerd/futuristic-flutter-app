@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../data/models.dart';
+import '../../../../presentation/widgets/common/pulse_toast.dart';
 
 class MessageBubble extends StatelessWidget {
   final GroupMessage message;
@@ -340,9 +341,7 @@ class MessageBubble extends StatelessWidget {
               onTap: () {
                 Clipboard.setData(ClipboardData(text: message.content));
                 Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Copied to clipboard')),
-                );
+                PulseToast.success(context, message: 'Copied to clipboard');
               },
             ),
             ListTile(

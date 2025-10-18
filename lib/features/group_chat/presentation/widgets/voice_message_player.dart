@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
+import '../../../../presentation/widgets/common/pulse_toast.dart';
 
 class VoiceMessagePlayer extends StatefulWidget {
   final String audioUrl;
@@ -87,9 +88,7 @@ class _VoiceMessagePlayerState extends State<VoiceMessagePlayer> {
         _isLoading = false;
       });
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to play audio: $e')),
-        );
+        PulseToast.error(context, message: 'Failed to play audio: $e');
       }
     }
   }

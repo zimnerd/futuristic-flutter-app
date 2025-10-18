@@ -4,6 +4,7 @@ import '../services/service_locator.dart';
 import '../../data/services/analytics_service.dart';
 import '../../presentation/navigation/app_router.dart';
 import '../utils/logger.dart';
+import '../../presentation/widgets/common/pulse_toast.dart';
 
 /// App service manager for coordinating all services
 class AppServiceManager {
@@ -125,22 +126,7 @@ class AppServiceManager {
     try {
       final context = AppRouter.navigatorKey.currentContext;
       if (context != null && context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(message, style: const TextStyle(color: Colors.white)),
-            backgroundColor: const Color(0xFF6E3BFF), // Pulse primary color
-            behavior: SnackBarBehavior.floating,
-            duration: const Duration(seconds: 4),
-            action: SnackBarAction(
-              label: 'View',
-              textColor: Colors.white,
-              onPressed: () {
-                // Navigate to messages screen
-                // This will be handled by the notification tap
-              },
-            ),
-          ),
-        );
+        PulseToast.info(context, message: message);
       }
     } catch (e) {
       AppLogger.error('Failed to show in-app notification: $e');

@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import '../../presentation/theme/pulse_colors.dart';
+import '../../presentation/widgets/common/pulse_toast.dart';
 
 /// Utility class for showing error dialogs with detailed error information
 class ErrorDialogUtils {
@@ -169,31 +170,7 @@ class ErrorDialogUtils {
     String message, {
     Duration duration = const Duration(seconds: 4),
   }) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            const Icon(
-              Icons.error_outline,
-              color: Colors.white,
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                message,
-                style: const TextStyle(fontSize: 15),
-              ),
-            ),
-          ],
-        ),
-        backgroundColor: PulseColors.error,
-        duration: duration,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
-      ),
-    );
+    PulseToast.error(context, message: message);
   }
 
   /// Parse error and extract relevant information

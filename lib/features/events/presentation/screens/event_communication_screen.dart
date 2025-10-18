@@ -8,6 +8,7 @@ import '../../../../domain/entities/event_message.dart';
 import '../../../../domain/entities/call.dart';
 import '../../../../data/services/call_service.dart';
 import '../bloc/event_chat_bloc.dart';
+import '../../../../presentation/widgets/common/pulse_toast.dart';
 
 class EventCommunicationScreen extends StatefulWidget {
   final Event event;
@@ -507,10 +508,9 @@ class _EventCommunicationScreenState extends State<EventCommunicationScreen>
 
                   if (participantIds.isEmpty) {
                     if (mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('No participants available for call'),
-                        ),
+                      PulseToast.info(
+                        context,
+                        message: 'No participants available for call',
                       );
                     }
                     return;
@@ -523,14 +523,16 @@ class _EventCommunicationScreenState extends State<EventCommunicationScreen>
                   );
 
                   if (mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Video call started: $callId')),
+                    PulseToast.success(
+                      context,
+                      message: 'Video call started: $callId',
                     );
                   }
                 } catch (e) {
                   if (mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Failed to start video call: $e')),
+                    PulseToast.error(
+                      context,
+                      message: 'Failed to start video call: $e',
                     );
                   }
                 }

@@ -5,6 +5,7 @@ import '../core/theme/app_colors.dart';
 import '../core/theme/app_text_styles.dart';
 import '../widgets/app_button.dart';
 import '../domain/entities/payment_entities.dart';
+import '../presentation/widgets/common/pulse_toast.dart';
 
 /// Payment history screen for viewing past transactions and refund requests
 class PaymentHistoryScreen extends StatefulWidget {
@@ -41,12 +42,7 @@ class _PaymentHistoryScreenState extends State<PaymentHistoryScreen> {
       body: BlocConsumer<PaymentBloc, PaymentState>(
         listener: (context, state) {
           if (state is PaymentError) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: AppColors.error,
-              ),
-            );
+            PulseToast.error(context, message: state.message);
           }
         },
         builder: (context, state) {
@@ -394,11 +390,9 @@ class _PaymentHistoryScreenState extends State<PaymentHistoryScreen> {
                     ),
                   );
                   Navigator.of(context).pop();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Refund request submitted successfully'),
-                      backgroundColor: AppColors.success,
-                    ),
+                  PulseToast.success(
+                    context,
+                    message: 'Refund request submitted successfully',
                   );
                 }
               },

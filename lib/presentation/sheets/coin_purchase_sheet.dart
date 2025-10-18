@@ -8,6 +8,7 @@ import '../blocs/premium/premium_bloc.dart';
 import '../blocs/premium/premium_event.dart';
 import '../blocs/premium/premium_state.dart';
 import '../widgets/premium/coin_package_card.dart';
+import '../widgets/common/pulse_toast.dart';
 
 /// Bottom sheet for purchasing coin packages
 class CoinPurchaseSheet extends StatefulWidget {
@@ -310,14 +311,9 @@ class _CoinPurchaseSheetState extends State<CoinPurchaseSheet> {
 
           // Show success message
           if (!mounted) return;
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                'Successfully purchased ${package.totalCoins} coins!',
-              ),
-              backgroundColor: AppColors.success,
-              duration: const Duration(seconds: 2),
-            ),
+          PulseToast.success(
+            context,
+            message: 'Successfully purchased ${package.totalCoins} coins!',
           );
 
           // Close the sheet
@@ -372,12 +368,7 @@ class _CoinPurchaseSheetState extends State<CoinPurchaseSheet> {
       
       if (!mounted) return;
       
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Checking for previous purchases...'),
-          duration: Duration(seconds: 2),
-        ),
-      );
+      PulseToast.info(context, message: 'Checking for previous purchases...');
 
       // Refresh coin balance after restore
       context.read<PremiumBloc>().add(LoadCoinBalance());

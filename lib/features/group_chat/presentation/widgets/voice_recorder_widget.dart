@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:record/record.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
+import '../../../../presentation/widgets/common/pulse_toast.dart';
 
 class VoiceRecorderWidget extends StatefulWidget {
   final Function(String filePath, int duration) onRecordComplete;
@@ -61,18 +62,14 @@ class _VoiceRecorderWidgetState extends State<VoiceRecorderWidget> {
         });
       } else {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Microphone permission denied'),
-            ),
+          PulseToast.error(context, message: 'Microphone permission denied',
           );
         }
         widget.onCancel?.call();
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to start recording: $e')),
+        PulseToast.error(context, message: 'Failed to start recording: $e',
         );
       }
       widget.onCancel?.call();
@@ -89,8 +86,7 @@ class _VoiceRecorderWidgetState extends State<VoiceRecorderWidget> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to stop recording: $e')),
+        PulseToast.error(context, message: 'Failed to stop recording: $e',
         );
       }
     }

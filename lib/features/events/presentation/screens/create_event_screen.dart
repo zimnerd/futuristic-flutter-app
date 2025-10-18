@@ -7,6 +7,7 @@ import '../../../../presentation/theme/pulse_colors.dart';
 import '../../../../domain/entities/event.dart';
 import '../bloc/event_bloc.dart';
 import '../../../../core/services/location_service.dart';
+import '../../../../presentation/widgets/common/pulse_toast.dart';
 
 class CreateEventScreen extends StatefulWidget {
   const CreateEventScreen({super.key});
@@ -52,20 +53,12 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
     return BlocListener<EventBloc, EventState>(
       listener: (context, state) {
         if (state is EventCreated) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Event created successfully!'),
-              backgroundColor: Colors.green,
-            ),
+          PulseToast.success(context, message: 'Event created successfully!',
           );
           // Navigate to the newly created event details
           context.go('/events/${state.event.id}');
         } else if (state is EventError) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Error: ${state.message}'),
-              backgroundColor: Colors.red,
-            ),
+          PulseToast.error(context, message: 'Error: ${state.message}',
           );
         }
       },
@@ -479,13 +472,10 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
 
     if (resolvedCoordinates == null) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
+        PulseToast.error(
+          context,
+          message:
               'Unable to determine location coordinates. Please enter a valid address or enable location services.',
-            ),
-            backgroundColor: Colors.red,
-          ),
         );
       }
       return;

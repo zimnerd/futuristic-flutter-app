@@ -7,6 +7,7 @@ import '../../../widgets/app_button.dart';
 import '../../../widgets/app_text_field.dart';
 import '../widgets/payment_method_card.dart';
 import 'add_payment_method_screen.dart';
+import '../../widgets/common/pulse_toast.dart';
 
 /// Screen for managing saved payment methods
 class SavedPaymentMethodsScreen extends StatefulWidget {
@@ -114,11 +115,7 @@ class _SavedPaymentMethodsScreenState extends State<SavedPaymentMethodsScreen> {
     try {
       final success = await _service.setDefaultPaymentMethod(method.id);
       if (success && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Default payment method updated'),
-            backgroundColor: AppColors.success,
-          ),
+        PulseToast.success(context, message: 'Default payment method updated',
         );
         await _loadSavedMethods();
       } else {
@@ -126,11 +123,7 @@ class _SavedPaymentMethodsScreenState extends State<SavedPaymentMethodsScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error updating default method: $e'),
-            backgroundColor: AppColors.error,
-          ),
+        PulseToast.error(context, message: 'Error updating default method: $e',
         );
       }
     }
@@ -149,11 +142,7 @@ class _SavedPaymentMethodsScreenState extends State<SavedPaymentMethodsScreen> {
           nickname: result,
         );
         if (success && mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Payment method updated'),
-              backgroundColor: AppColors.success,
-            ),
+          PulseToast.success(context, message: 'Payment method updated',
           );
           await _loadSavedMethods();
         } else {
@@ -161,11 +150,9 @@ class _SavedPaymentMethodsScreenState extends State<SavedPaymentMethodsScreen> {
         }
       } catch (e) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Error updating payment method: $e'),
-              backgroundColor: AppColors.error,
-            ),
+          PulseToast.error(
+            context,
+            message: 'Error updating payment method: $e',
           );
         }
       }

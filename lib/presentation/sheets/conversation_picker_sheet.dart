@@ -5,6 +5,7 @@ import '../../blocs/chat_bloc.dart';
 import '../../data/models/conversation_model.dart';
 import '../../core/theme/app_colors.dart';
 import '../widgets/common/robust_network_image.dart';
+import '../widgets/common/pulse_toast.dart';
 
 /// Bottom sheet for selecting conversations to forward a message to
 class ConversationPickerSheet extends StatefulWidget {
@@ -154,13 +155,7 @@ class _ConversationPickerSheetState extends State<ConversationPickerSheet> {
                   'Message forwarded to ${selectedNames[0]}, ${selectedNames[1]}, and ${_selectedConversationIds.length - 2} others';
             }
 
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(successMessage),
-                duration: const Duration(seconds: 3),
-                backgroundColor: AppColors.primary,
-              ),
-            );
+            PulseToast.success(context, message: successMessage);
           }
         } else if (state is ChatError) {
           // Show error dialog on failure
