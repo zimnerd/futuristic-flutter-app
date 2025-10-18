@@ -247,6 +247,9 @@ class _VoiceMessagePlayerWidgetState extends State<VoiceMessagePlayerWidget>
               trackHeight: 2,
               thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
               overlayShape: const RoundSliderOverlayShape(overlayRadius: 12),
+              activeTrackColor: context.primaryColor,
+              inactiveTrackColor: context.outlineColor,
+              thumbColor: context.primaryColor,
             ),
             child: Slider(
               value: _totalDuration.inMilliseconds > 0
@@ -258,8 +261,6 @@ class _VoiceMessagePlayerWidgetState extends State<VoiceMessagePlayerWidget>
                 );
                 _seek(position);
               },
-              activeColor: context.primaryColor,
-              inactiveColor: context.outlineColor,
             ),
           ),
           Padding(

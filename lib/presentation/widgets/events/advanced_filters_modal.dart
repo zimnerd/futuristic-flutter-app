@@ -308,7 +308,12 @@ class _AdvancedFiltersModalState extends State<AdvancedFiltersModal> {
               _hasAvailableSpots = value ?? false;
             });
           },
-          activeColor: PulseColors.primary,
+          fillColor: WidgetStateProperty.resolveWith((states) {
+            if (states.contains(WidgetState.selected)) {
+              return PulseColors.primary;
+            }
+            return null;
+          }),
           contentPadding: EdgeInsets.zero,
         ),
         const SizedBox(height: 8),
@@ -326,7 +331,12 @@ class _AdvancedFiltersModalState extends State<AdvancedFiltersModal> {
               _showJoinedOnly = value ?? false;
             });
           },
-          activeColor: PulseColors.primary,
+          fillColor: WidgetStateProperty.resolveWith((states) {
+            if (states.contains(WidgetState.selected)) {
+              return PulseColors.primary;
+            }
+            return null;
+          }),
           contentPadding: EdgeInsets.zero,
         ),
       ],

@@ -141,24 +141,29 @@ class _FiltersScreenState extends State<FiltersScreen> {
           ),
         ),
         const SizedBox(height: 8),
-        RangeSlider(
-          values: RangeValues(
-            state.preferences.minAge.toDouble(),
-            state.preferences.maxAge.toDouble(),
+        SliderTheme(
+          data: SliderTheme.of(context).copyWith(
+            activeTrackColor: PulseColors.primary,
+            inactiveTrackColor: PulseColors.primary.withValues(alpha: 0.3),
+            thumbColor: PulseColors.primary,
           ),
-          min: 18,
-          max: 99,
-          divisions: 81,
-          activeColor: PulseColors.primary,
-          inactiveColor: PulseColors.primary.withValues(alpha: 0.3),
-          onChanged: (RangeValues values) {
-            context.read<FilterBLoC>().add(
-              UpdateAgeRange(
-                values.start.round(),
-                values.end.round(),
-              ),
-            );
-          },
+          child: RangeSlider(
+            values: RangeValues(
+              state.preferences.minAge.toDouble(),
+              state.preferences.maxAge.toDouble(),
+            ),
+            min: 18,
+            max: 99,
+            divisions: 81,
+            onChanged: (RangeValues values) {
+              context.read<FilterBLoC>().add(
+                UpdateAgeRange(
+                  values.start.round(),
+                  values.end.round(),
+                ),
+              );
+            },
+          ),
         ),
       ],
     );
@@ -181,16 +186,21 @@ class _FiltersScreenState extends State<FiltersScreen> {
           ),
         ),
         const SizedBox(height: 8),
-        Slider(
-          value: state.preferences.maxDistance,
-          min: 1,
-          max: 500,
-          divisions: 99,
-          activeColor: PulseColors.primary,
-          inactiveColor: PulseColors.primary.withValues(alpha: 0.3),
-          onChanged: (double value) {
-            context.read<FilterBLoC>().add(UpdateMaxDistance(value));
-          },
+        SliderTheme(
+          data: SliderTheme.of(context).copyWith(
+            activeTrackColor: PulseColors.primary,
+            inactiveTrackColor: PulseColors.primary.withValues(alpha: 0.3),
+            thumbColor: PulseColors.primary,
+          ),
+          child: Slider(
+            value: state.preferences.maxDistance,
+            min: 1,
+            max: 500,
+            divisions: 99,
+            onChanged: (double value) {
+              context.read<FilterBLoC>().add(UpdateMaxDistance(value));
+            },
+          ),
         ),
       ],
     );

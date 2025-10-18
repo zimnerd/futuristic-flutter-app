@@ -530,16 +530,21 @@ class _ScheduleStreamScreenState extends State<ScheduleStreamScreen> {
                             ),
                           ],
                         ),
-                        Slider(
-                          value: _maxViewers,
-                          min: 10,
-                          max: 1000,
-                          divisions: 99,
-                          activeColor: Theme.of(context).primaryColor,
-                          inactiveColor: Colors.grey,
-                          onChanged: (value) {
-                            setState(() => _maxViewers = value);
-                          },
+                        SliderTheme(
+                          data: SliderTheme.of(context).copyWith(
+                            activeTrackColor: Theme.of(context).primaryColor,
+                            inactiveTrackColor: Colors.grey,
+                            thumbColor: Theme.of(context).primaryColor,
+                          ),
+                          child: Slider(
+                            value: _maxViewers,
+                            min: 10,
+                            max: 1000,
+                            divisions: 99,
+                            onChanged: (value) {
+                              setState(() => _maxViewers = value);
+                            },
+                          ),
                         ),
                       ],
                     ),
@@ -733,7 +738,13 @@ class _ScheduleStreamScreenState extends State<ScheduleStreamScreen> {
                         ),
                         Switch(
                           value: _isAdultsOnly,
-                          activeColor: Colors.orange,
+                          activeTrackColor: Colors.orange.withValues(alpha: 0.5),
+                          thumbColor: WidgetStateProperty.resolveWith((states) {
+                            if (states.contains(WidgetState.selected)) {
+                              return Colors.orange;
+                            }
+                            return null;
+                          }),
                           onChanged: (value) {
                             setState(() => _isAdultsOnly = value);
                           },
@@ -797,7 +808,7 @@ class _ScheduleStreamScreenState extends State<ScheduleStreamScreen> {
             // Loading overlay
             if (_isLoading)
               Container(
-                color: Colors.black.withOpacity(0.5),
+                color: Colors.black.withValues(alpha: 0.5),
                 child: const Center(
                   child: CircularProgressIndicator(),
                 ),
@@ -816,13 +827,13 @@ class _ScheduleStreamScreenState extends State<ScheduleStreamScreen> {
         padding: const EdgeInsets.symmetric(vertical: 12),
         decoration: BoxDecoration(
           color: isSelected
-              ? Theme.of(context).primaryColor.withOpacity(0.2)
+              ? Theme.of(context).primaryColor.withValues(alpha: 0.2)
               : Colors.transparent,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
             color: isSelected
                 ? Theme.of(context).primaryColor
-                : Colors.white.withOpacity(0.2),
+                : Colors.white.withValues(alpha: 0.2),
           ),
         ),
         child: Column(

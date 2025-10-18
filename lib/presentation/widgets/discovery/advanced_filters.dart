@@ -277,22 +277,27 @@ class _AdvancedFiltersState extends State<AdvancedFilters>
   Widget _buildAgeRangeSlider() {
     return Column(
       children: [
-        RangeSlider(
-          values: _ageRange,
-          min: 18,
-          max: 80,
-          divisions: 62,
-          activeColor: PulseColors.primary,
-          inactiveColor: PulseColors.primary.withValues(alpha: 0.3),
-          labels: RangeLabels(
-            _ageRange.start.round().toString(),
-            _ageRange.end.round().toString(),
+        SliderTheme(
+          data: SliderTheme.of(context).copyWith(
+            activeTrackColor: PulseColors.primary,
+            inactiveTrackColor: PulseColors.primary.withValues(alpha: 0.3),
+            thumbColor: PulseColors.primary,
           ),
-          onChanged: (values) {
-            setState(() {
-              _ageRange = values;
-            });
-          },
+          child: RangeSlider(
+            values: _ageRange,
+            min: 18,
+            max: 80,
+            divisions: 62,
+            labels: RangeLabels(
+              _ageRange.start.round().toString(),
+              _ageRange.end.round().toString(),
+            ),
+            onChanged: (values) {
+              setState(() {
+                _ageRange = values;
+              });
+            },
+          ),
         ),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -308,19 +313,24 @@ class _AdvancedFiltersState extends State<AdvancedFilters>
   Widget _buildDistanceSlider() {
     return Column(
       children: [
-        Slider(
-          value: _distance,
-          min: 1,
-          max: 100,
-          divisions: 99,
-          activeColor: PulseColors.primary,
-          inactiveColor: PulseColors.primary.withValues(alpha: 0.3),
-          label: '${_distance.round()} km',
-          onChanged: (value) {
-            setState(() {
-              _distance = value;
-            });
-          },
+        SliderTheme(
+          data: SliderTheme.of(context).copyWith(
+            activeTrackColor: PulseColors.primary,
+            inactiveTrackColor: PulseColors.primary.withValues(alpha: 0.3),
+            thumbColor: PulseColors.primary,
+          ),
+          child: Slider(
+            value: _distance,
+            min: 1,
+            max: 100,
+            divisions: 99,
+            label: '${_distance.round()} km',
+            onChanged: (value) {
+              setState(() {
+                _distance = value;
+              });
+            },
+          ),
         ),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -337,24 +347,29 @@ class _AdvancedFiltersState extends State<AdvancedFilters>
   Widget _buildHeightRangeSlider() {
     return Column(
       children: [
-        RangeSlider(
-          values: _heightRange ?? const RangeValues(150, 200),
-          min: 140,
-          max: 220,
-          divisions: 80,
-          activeColor: PulseColors.primary,
-          inactiveColor: PulseColors.primary.withValues(alpha: 0.3),
-          labels: _heightRange != null
-              ? RangeLabels(
-                  '${_heightRange!.start.round()} cm',
-                  '${_heightRange!.end.round()} cm',
-                )
-              : null,
-          onChanged: (values) {
-            setState(() {
-              _heightRange = values;
-            });
-          },
+        SliderTheme(
+          data: SliderTheme.of(context).copyWith(
+            activeTrackColor: PulseColors.primary,
+            inactiveTrackColor: PulseColors.primary.withValues(alpha: 0.3),
+            thumbColor: PulseColors.primary,
+          ),
+          child: RangeSlider(
+            values: _heightRange ?? const RangeValues(150, 200),
+            min: 140,
+            max: 220,
+            divisions: 80,
+            labels: _heightRange != null
+                ? RangeLabels(
+                    '${_heightRange!.start.round()} cm',
+                    '${_heightRange!.end.round()} cm',
+                  )
+                : null,
+            onChanged: (values) {
+              setState(() {
+                _heightRange = values;
+              });
+            },
+          ),
         ),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -374,7 +389,12 @@ class _AdvancedFiltersState extends State<AdvancedFilters>
           title: const Text('Verified profiles only'),
           subtitle: const Text('Show only verified users'),
           value: _verifiedOnly,
-          activeColor: PulseColors.primary,
+          fillColor: WidgetStateProperty.resolveWith((states) {
+            if (states.contains(WidgetState.selected)) {
+              return PulseColors.primary;
+            }
+            return null;
+          }),
           onChanged: (value) {
             setState(() {
               _verifiedOnly = value ?? false;
@@ -385,7 +405,12 @@ class _AdvancedFiltersState extends State<AdvancedFilters>
           title: const Text('Active recently'),
           subtitle: const Text('Show users active in the last 7 days'),
           value: _activeRecentlyOnly,
-          activeColor: PulseColors.primary,
+          fillColor: WidgetStateProperty.resolveWith((states) {
+            if (states.contains(WidgetState.selected)) {
+              return PulseColors.primary;
+            }
+            return null;
+          }),
           onChanged: (value) {
             setState(() {
               _activeRecentlyOnly = value ?? false;

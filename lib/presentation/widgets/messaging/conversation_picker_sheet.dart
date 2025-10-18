@@ -259,7 +259,12 @@ class _ConversationPickerSheetState extends State<ConversationPickerSheet> {
                                 Checkbox(
                                   value: isSelected,
                                   onChanged: (_) => _toggleConversation(conversation.id),
-                                  activeColor: PulseColors.primary,
+                                  fillColor: WidgetStateProperty.resolveWith((states) {
+                                    if (states.contains(WidgetState.selected)) {
+                                      return PulseColors.primary;
+                                    }
+                                    return null;
+                                  }),
                                   checkColor: Colors.white,
                                 ),
                             ],

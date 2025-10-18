@@ -296,7 +296,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                       _acceptedTerms = value ?? false;
                                     });
                                   },
-                                  activeColor: PulseColors.primary,
+                                  fillColor: WidgetStateProperty.resolveWith((states) {
+                                    if (states.contains(WidgetState.selected)) {
+                                      return PulseColors.primary;
+                                    }
+                                    return null;
+                                  }),
                                 ),
                                 const SizedBox(width: PulseSpacing.sm),
                                 Expanded(

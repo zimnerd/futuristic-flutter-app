@@ -860,14 +860,19 @@ class _GroupChatSettingsScreenState extends State<GroupChatSettingsScreen> {
             style: TextStyle(color: Colors.white.withValues(alpha: 0.6), fontSize: 12),
           ),
         ),
-        Slider(
-          value: value,
-          min: min,
-          max: max,
-          divisions: divisions,
-          activeColor: PulseColors.primary,
-          inactiveColor: Colors.white.withValues(alpha: 0.2),
-          onChanged: onChanged,
+        SliderTheme(
+          data: SliderTheme.of(context).copyWith(
+            activeTrackColor: PulseColors.primary,
+            inactiveTrackColor: Colors.white.withValues(alpha: 0.2),
+            thumbColor: PulseColors.primary,
+          ),
+          child: Slider(
+            value: value,
+            min: min,
+            max: max,
+            divisions: divisions,
+            onChanged: onChanged,
+          ),
         ),
       ],
     );
