@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'ai_feedback_widget.dart';
+import '../common/pulse_toast.dart';
 
 /// AI Suggestion Widget - displays AI-generated suggestions with feedback collection
 /// Used for conversation suggestions, profile improvements, and compatibility insights
@@ -402,43 +403,16 @@ class _AiSuggestionWidgetState extends State<AiSuggestionWidget>
     widget.onUse?.call();
     
     // Show success feedback
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            Icon(Icons.check_circle_rounded, color: Colors.green.shade300),
-            const SizedBox(width: 8),
-            const Text('Suggestion used! How did it work?'),
-          ],
-        ),
-        backgroundColor: Colors.green.shade800,
-        behavior: SnackBarBehavior.floating,
-        action: SnackBarAction(
-          label: 'Rate',
-          textColor: Colors.white,
-          onPressed: _showDetailedFeedback,
-        ),
-      ),
+    PulseToast.success(
+      context,
+      message: 'Suggestion used! How did it work? Tap to rate.',
     );
   }
 
   void _onCopySuggestion() {
     Clipboard.setData(ClipboardData(text: widget.suggestion));
     
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            Icon(Icons.copy_rounded, color: Colors.blue.shade300),
-            const SizedBox(width: 8),
-            const Text('Suggestion copied to clipboard'),
-          ],
-        ),
-        backgroundColor: Colors.blue.shade800,
-        behavior: SnackBarBehavior.floating,
-        duration: const Duration(seconds: 2),
-      ),
-    );
+    PulseToast.info(context, message: 'Suggestion copied to clipboard');
   }
 
   void _onDismissSuggestion() {

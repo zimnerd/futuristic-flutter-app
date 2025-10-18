@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pulse_dating_app/data/services/ai_feedback_service.dart';
+import '../common/pulse_toast.dart';
 
 /// AI Feedback Widget - collects user feedback and ratings for AI features
 /// Supports quick ratings, detailed feedback, and improvement suggestions
@@ -466,23 +467,11 @@ class _AiFeedbackWidgetState extends State<AiFeedbackWidget>
   }
 
   void _showSuccessMessage(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.green,
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
+    PulseToast.success(context, message: message);
   }
 
   void _showErrorMessage(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.red,
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
+    PulseToast.error(context, message: message);
   }
 }
 
@@ -550,24 +539,11 @@ class AiQuickFeedbackButton extends StatelessWidget {
       onPressed?.call();
       
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Feedback submitted!'),
-            backgroundColor: Colors.green,
-            behavior: SnackBarBehavior.floating,
-            duration: const Duration(seconds: 2),
-          ),
-        );
+        PulseToast.success(context, message: 'Feedback submitted!');
       }
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Failed to submit feedback'),
-            backgroundColor: Colors.red,
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
+        PulseToast.error(context, message: 'Failed to submit feedback');
       }
     }
   }

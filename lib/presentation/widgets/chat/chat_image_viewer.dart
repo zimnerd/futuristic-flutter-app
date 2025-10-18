@@ -9,6 +9,7 @@ import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
 
 import '../../../domain/entities/message.dart';
+import '../common/pulse_toast.dart';
 
 /// Full-screen image viewer with gesture navigation and caption support
 class ChatImageViewer extends StatefulWidget {
@@ -213,12 +214,7 @@ class _ChatImageViewerState extends State<ChatImageViewer> {
       final status = await Permission.photos.request();
       if (!status.isGranted) {
         if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Storage permission denied'),
-              backgroundColor: Colors.red,
-            ),
-          );
+          PulseToast.error(context, message: 'Storage permission denied');
         }
         return;
       }
@@ -242,22 +238,12 @@ class _ChatImageViewerState extends State<ChatImageViewer> {
       await file.writeAsBytes(response.bodyBytes);
 
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Image saved to ${file.path}'),
-            backgroundColor: Colors.green,
-            duration: const Duration(seconds: 3),
-          ),
+        PulseToast.success(context, message: 'Image saved to ${file.path}',
         );
       }
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to save image: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        PulseToast.error(context, message: 'Failed to save image: $e');
       }
     }
   }
@@ -289,21 +275,11 @@ class _ChatImageViewerState extends State<ChatImageViewer> {
       await Share.shareXFiles([xFile], text: 'Shared from Pulse Dating');
 
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Image shared successfully'),
-            backgroundColor: Colors.green,
-          ),
-        );
+        PulseToast.success(context, message: 'Image shared successfully');
       }
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to share image: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        PulseToast.error(context, message: 'Failed to share image: $e');
       }
     }
   }

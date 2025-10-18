@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../blocs/safety/safety_bloc.dart';
 import '../../../core/services/service_locator.dart';
 import '../../../core/services/permission_service.dart';
+import '../common/pulse_toast.dart';
 
 /// Emergency button widget for quick access to safety features
 class EmergencyButtonWidget extends StatelessWidget {
@@ -133,11 +134,9 @@ class EmergencyButtonWidget extends StatelessWidget {
               onPressed: () {
                 Navigator.of(context).pop();
                 context.read<SafetyBloc>().add(const CancelEmergencyAlert());
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Emergency alert cancelled'),
-                    backgroundColor: Colors.green,
-                  ),
+                PulseToast.success(
+                  context,
+                  message: 'Emergency alert cancelled',
                 );
               },
               child: const Text('Cancel Alert'),
@@ -150,7 +149,6 @@ class EmergencyButtonWidget extends StatelessWidget {
 
   Future<void> _triggerEmergency(BuildContext context) async {
     final safetyBloc = context.read<SafetyBloc>();
-    final scaffoldMessenger = ScaffoldMessenger.of(context);
 
     String location = "Location unavailable";
 
@@ -162,15 +160,13 @@ class EmergencyButtonWidget extends StatelessWidget {
 
       if (!hasPermission) {
         // For emergency situations, still try to get location but inform user
-        scaffoldMessenger.showSnackBar(
-          const SnackBar(
-            content: Text(
-              'Emergency alert sent! Location permission denied - emergency services will use available location data.',
-            ),
-            backgroundColor: Colors.orange,
-            duration: Duration(seconds: 3),
-          ),
-        );
+        if (context.mounted) {
+          PulseToast.error(
+            context,
+            message:
+                'Emergency alert sent! Location permission denied - emergency services will use available location data.',
+          );
+        }
       }
 
       // Use the location service from service locator
@@ -201,12 +197,11 @@ class EmergencyButtonWidget extends StatelessWidget {
       ),
     );
 
-    scaffoldMessenger.showSnackBar(
-      const SnackBar(
-        content: Text('Emergency alert sent! Help is on the way.'),
-        backgroundColor: Colors.red,
-        duration: Duration(seconds: 5),
-      ),
-    );
+    if (context.mounted) {
+      PulseToast.error(
+        context,
+        message: 'Emergency alert sent! Help is on the way.',
+      );
+    }
   }
 }

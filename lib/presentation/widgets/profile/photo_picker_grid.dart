@@ -4,6 +4,7 @@ import 'package:image_picker/image_picker.dart';
 import '../../../services/media_upload_service.dart';
 import '../../../core/network/api_client.dart';
 import '../../theme/pulse_colors.dart';
+import '../common/pulse_toast.dart';
 
 /// Widget for selecting and uploading profile photos
 class PhotoPickerGrid extends StatefulWidget {
@@ -516,22 +517,10 @@ class _PhotoPickerGridState extends State<PhotoPickerGrid> {
   }
 
   void _showErrorSnackBar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: PulseColors.error,
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
+    PulseToast.error(context, message: message);
   }
 
   void _showSuccessSnackBar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: PulseColors.success,
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
+    PulseToast.success(context, message: message);
   }
 }

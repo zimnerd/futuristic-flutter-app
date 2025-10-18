@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../theme/pulse_colors.dart';
 import '../../blocs/speed_dating/speed_dating_bloc.dart';
 import '../../blocs/speed_dating/speed_dating_event.dart';
+import '../common/pulse_toast.dart';
 
 /// Dialog for creating a new speed dating event
 class CreateSpeedDatingEventDialog extends StatefulWidget {
@@ -284,16 +285,12 @@ class _CreateSpeedDatingEventDialogState extends State<CreateSpeedDatingEventDia
     final fee = double.tryParse(_feeController.text) ?? 0.0;
 
     if (title.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter an event title')),
-      );
+      PulseToast.error(context, message: 'Please enter an event title');
       return;
     }
 
     if (location.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter a location')),
-      );
+      PulseToast.error(context, message: 'Please enter a location');
       return;
     }
 
@@ -322,8 +319,6 @@ class _CreateSpeedDatingEventDialogState extends State<CreateSpeedDatingEventDia
     ));
 
     Navigator.pop(context);
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Speed dating event created!')),
-    );
+    PulseToast.success(context, message: 'Speed dating event created!');
   }
 }

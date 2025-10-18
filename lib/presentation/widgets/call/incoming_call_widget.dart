@@ -7,6 +7,7 @@ import '../../../domain/entities/user_profile.dart';
 import '../../../data/services/messaging_service.dart';
 import '../../../core/network/api_client.dart';
 import '../common/robust_network_image.dart';
+import '../common/pulse_toast.dart';
 
 /// Widget for displaying incoming call UI
 class IncomingCallWidget extends StatefulWidget {
@@ -414,17 +415,13 @@ class _IncomingCallWidgetState extends State<IncomingCallWidget>
 
       // Show feedback
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Message sent: "$message"')));
+        PulseToast.info(context, message: 'Message sent: "$message"');
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to send message: ${e.toString()}'),
-            backgroundColor: Colors.red,
-          ),
+        PulseToast.error(
+          context,
+          message: 'Failed to send message: ${e.toString()}',
         );
       }
     } finally {
