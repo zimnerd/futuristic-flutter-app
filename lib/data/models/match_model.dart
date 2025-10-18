@@ -22,6 +22,27 @@ class MatchModel {
   final String? otherUserId;
   final String? conversationId;
 
+  // Analytics fields - Track interaction quality and engagement
+  final DateTime? firstMessageSentAt;
+  final DateTime? lastInteractionAt;
+  final int messageCount;
+  final int callCount;
+  final int totalCallDuration;
+  final bool meetupScheduled;
+  final DateTime? meetupDate;
+  final int responseTimeAvg;
+  final int mutualInterestsCount;
+
+  // Metadata fields - Track match source, quality, and user preferences
+  final String?
+  matchSource; // SWIPE, SUPER_LIKE, AI_SUGGESTED, EVENT_BASED, AR_PROXIMITY
+  final String? matchType; // MUTUAL_LIKE, SUPER_LIKE, BOOST
+  final double qualityScore;
+  final DateTime? unmatchedAt;
+  final String? unmatchReason;
+  final bool isFavorite;
+  final bool isPremiumMatch;
+
   const MatchModel({
     required this.id,
     required this.user1Id,
@@ -38,7 +59,141 @@ class MatchModel {
     this.userProfile,
     this.otherUserId,
     this.conversationId,
+    // Analytics fields
+    this.firstMessageSentAt,
+    this.lastInteractionAt,
+    this.messageCount = 0,
+    this.callCount = 0,
+    this.totalCallDuration = 0,
+    this.meetupScheduled = false,
+    this.meetupDate,
+    this.responseTimeAvg = 0,
+    this.mutualInterestsCount = 0,
+    // Metadata fields
+    this.matchSource,
+    this.matchType,
+    this.qualityScore = 0.0,
+    this.unmatchedAt,
+    this.unmatchReason,
+    this.isFavorite = false,
+    this.isPremiumMatch = false,
   });
+
+  // ==================== COMPUTED PROPERTIES ====================
+
+  /// Conversation health classification based on message activity and response times
+  /// Returns: "excellent", "good", "moderate", "poor", or "inactive"
+  String get conversationHealth {
+    // Check if match is inactive (no messages or no interaction in 7+ days)
+    if (messageCount == 0 ||
+        (lastInteractionAt != null &&
+            DateTime.now().difference(lastInteractionAt!).inDays > 7)) {
+      return 'inactive';
+    }
+
+    // Classify based on message count and response time
+    if (messageCount >= 20 && responseTimeAvg < 3600) {
+      return 'excellent'; // 20+ messages, response < 1 hour
+    }
+    if (messageCount >= 10 && responseTimeAvg < 14400) {
+      return 'good'; // 10+ messages, response < 4 hours
+    }
+    if (messageCount >= 5 && responseTimeAvg < 86400) {
+      return 'moderate'; // 5+ messages, response < 24 hours
+    }
+    return 'poor'; // Less than 5 messages or slow response
+  }
+
+  /// Engagement score on 0-100 scale based on multiple interaction factors
+  /// Components: Message frequency (40%), Response speed (30%), Multi-channel (20%), Recency (10%)
+  double get engagementScore {
+    double score = 0;
+
+    // 1. Message frequency (40 points max)
+    // Scale: 0-100 messages = 0-40 points
+    score += (messageCount.clamp(0, 100) * 0.4);
+
+    // 2. Response speed (30 points max)
+    // Faster response = higher score, max 24 hours considered
+    if (responseTimeAvg > 0) {
+      final responseScore = 30 * (1 - (responseTimeAvg / 86400).clamp(0, 1));
+      score += responseScore;
+    }
+
+    // 3. Multi-channel engagement (20 points max)
+    // 10 points for having calls, bonus 10 if both messages and calls
+    if (callCount > 0) {
+      score += 10;
+      if (messageCount > 0) {
+        score += 10; // Bonus for multi-channel engagement
+      }
+    }
+
+    // 4. Recency bonus (10 points max)
+    // Recent activity indicates active engagement
+    if (lastInteractionAt != null) {
+      final daysSinceInteraction = DateTime.now()
+          .difference(lastInteractionAt!)
+          .inDays;
+      if (daysSinceInteraction <= 1) {
+        score += 10; // Very recent
+      } else if (daysSinceInteraction <= 3) {
+        score += 7; // Recent
+      } else if (daysSinceInteraction <= 7) {
+        score += 4; // Somewhat recent
+      }
+      // No points for older activity
+    }
+
+    return score.clamp(0, 100);
+  }
+
+  /// Number of days since the match was created
+  int get daysActive {
+    return DateTime.now().difference(createdAt).inDays;
+  }
+
+  /// Whether this match is considered stale (no interaction for 14+ days)
+  bool get isStaleMatch {
+    // If never interacted and match is old
+    if (lastInteractionAt == null && daysActive > 14) {
+      return true;
+    }
+    // If last interaction was more than 14 days ago
+    if (lastInteractionAt != null &&
+        DateTime.now().difference(lastInteractionAt!).inDays > 14) {
+      return true;
+    }
+    return false;
+  }
+
+  /// Whether this match shows high potential for success
+  /// Based on high engagement, scheduled meetup, or sustained conversation
+  bool get isPotentialSuccess {
+    // High engagement score indicates success potential
+    if (engagementScore > 70) return true;
+
+    // Scheduled meetup is strong success indicator
+    if (meetupScheduled) return true;
+
+    // Sustained high-quality conversation
+    if (messageCount > 50 && responseTimeAvg < 3600) {
+      return true; // 50+ messages with fast response
+    }
+
+    return false;
+  }
+
+  /// Display-friendly match quality tier
+  /// Returns: "premium", "great", "good", or "standard"
+  String get matchQualityDisplay {
+    if (qualityScore >= 80) return 'premium';
+    if (qualityScore >= 60) return 'great';
+    if (qualityScore >= 40) return 'good';
+    return 'standard';
+  }
+
+  // ==================== JSON METHODS ====================
 
   // Simple JSON methods without code generation
   factory MatchModel.fromJson(Map<String, dynamic> json) {
@@ -114,6 +269,32 @@ class MatchModel {
       userProfile: userProfile,
       otherUserId: userProfile?.id,
       conversationId: json['conversationId'],
+      // Analytics fields
+      firstMessageSentAt: json['firstMessageSentAt'] != null
+          ? DateTime.tryParse(json['firstMessageSentAt'].toString())
+          : null,
+      lastInteractionAt: json['lastInteractionAt'] != null
+          ? DateTime.tryParse(json['lastInteractionAt'].toString())
+          : null,
+      messageCount: json['messageCount'] as int? ?? 0,
+      callCount: json['callCount'] as int? ?? 0,
+      totalCallDuration: json['totalCallDuration'] as int? ?? 0,
+      meetupScheduled: json['meetupScheduled'] as bool? ?? false,
+      meetupDate: json['meetupDate'] != null
+          ? DateTime.tryParse(json['meetupDate'].toString())
+          : null,
+      responseTimeAvg: json['responseTimeAvg'] as int? ?? 0,
+      mutualInterestsCount: json['mutualInterestsCount'] as int? ?? 0,
+      // Metadata fields
+      matchSource: json['matchSource'] as String?,
+      matchType: json['matchType'] as String?,
+      qualityScore: (json['qualityScore'] as num?)?.toDouble() ?? 0.0,
+      unmatchedAt: json['unmatchedAt'] != null
+          ? DateTime.tryParse(json['unmatchedAt'].toString())
+          : null,
+      unmatchReason: json['unmatchReason'] as String?,
+      isFavorite: json['isFavorite'] as bool? ?? false,
+      isPremiumMatch: json['isPremiumMatch'] as bool? ?? false,
     );
   }
 
@@ -214,6 +395,24 @@ class MatchModel {
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
       'conversationId': conversationId,
+      // Analytics fields
+      'firstMessageSentAt': firstMessageSentAt?.toIso8601String(),
+      'lastInteractionAt': lastInteractionAt?.toIso8601String(),
+      'messageCount': messageCount,
+      'callCount': callCount,
+      'totalCallDuration': totalCallDuration,
+      'meetupScheduled': meetupScheduled,
+      'meetupDate': meetupDate?.toIso8601String(),
+      'responseTimeAvg': responseTimeAvg,
+      'mutualInterestsCount': mutualInterestsCount,
+      // Metadata fields
+      'matchSource': matchSource,
+      'matchType': matchType,
+      'qualityScore': qualityScore,
+      'unmatchedAt': unmatchedAt?.toIso8601String(),
+      'unmatchReason': unmatchReason,
+      'isFavorite': isFavorite,
+      'isPremiumMatch': isPremiumMatch,
     };
   }
 
@@ -233,6 +432,24 @@ class MatchModel {
     UserProfile? userProfile,
     String? otherUserId,
     String? conversationId,
+    // Analytics fields
+    DateTime? firstMessageSentAt,
+    DateTime? lastInteractionAt,
+    int? messageCount,
+    int? callCount,
+    int? totalCallDuration,
+    bool? meetupScheduled,
+    DateTime? meetupDate,
+    int? responseTimeAvg,
+    int? mutualInterestsCount,
+    // Metadata fields
+    String? matchSource,
+    String? matchType,
+    double? qualityScore,
+    DateTime? unmatchedAt,
+    String? unmatchReason,
+    bool? isFavorite,
+    bool? isPremiumMatch,
   }) {
     return MatchModel(
       id: id ?? this.id,
@@ -250,6 +467,24 @@ class MatchModel {
       userProfile: userProfile ?? this.userProfile,
       otherUserId: otherUserId ?? this.otherUserId,
       conversationId: conversationId ?? this.conversationId,
+      // Analytics fields
+      firstMessageSentAt: firstMessageSentAt ?? this.firstMessageSentAt,
+      lastInteractionAt: lastInteractionAt ?? this.lastInteractionAt,
+      messageCount: messageCount ?? this.messageCount,
+      callCount: callCount ?? this.callCount,
+      totalCallDuration: totalCallDuration ?? this.totalCallDuration,
+      meetupScheduled: meetupScheduled ?? this.meetupScheduled,
+      meetupDate: meetupDate ?? this.meetupDate,
+      responseTimeAvg: responseTimeAvg ?? this.responseTimeAvg,
+      mutualInterestsCount: mutualInterestsCount ?? this.mutualInterestsCount,
+      // Metadata fields
+      matchSource: matchSource ?? this.matchSource,
+      matchType: matchType ?? this.matchType,
+      qualityScore: qualityScore ?? this.qualityScore,
+      unmatchedAt: unmatchedAt ?? this.unmatchedAt,
+      unmatchReason: unmatchReason ?? this.unmatchReason,
+      isFavorite: isFavorite ?? this.isFavorite,
+      isPremiumMatch: isPremiumMatch ?? this.isPremiumMatch,
     );
   }
 

@@ -659,6 +659,32 @@ class MatchingService {
       updatedAt: updatedAt,
       userProfile: userProfile,
       otherUserId: userId,
+      // Analytics fields - parse from API if available
+      firstMessageSentAt: apiMatch['firstMessageSentAt'] != null
+          ? DateTime.tryParse(apiMatch['firstMessageSentAt'].toString())
+          : null,
+      lastInteractionAt: apiMatch['lastInteractionAt'] != null
+          ? DateTime.tryParse(apiMatch['lastInteractionAt'].toString())
+          : null,
+      messageCount: apiMatch['messageCount'] as int? ?? 0,
+      callCount: apiMatch['callCount'] as int? ?? 0,
+      totalCallDuration: apiMatch['totalCallDuration'] as int? ?? 0,
+      meetupScheduled: apiMatch['meetupScheduled'] as bool? ?? false,
+      meetupDate: apiMatch['meetupDate'] != null
+          ? DateTime.tryParse(apiMatch['meetupDate'].toString())
+          : null,
+      responseTimeAvg: apiMatch['responseTimeAvg'] as int? ?? 0,
+      mutualInterestsCount: apiMatch['mutualInterestsCount'] as int? ?? 0,
+      // Metadata fields - parse from API if available
+      matchSource: apiMatch['matchSource'] as String?,
+      matchType: apiMatch['matchType'] as String?,
+      qualityScore: (apiMatch['qualityScore'] as num?)?.toDouble() ?? 0.0,
+      unmatchedAt: apiMatch['unmatchedAt'] != null
+          ? DateTime.tryParse(apiMatch['unmatchedAt'].toString())
+          : null,
+      unmatchReason: apiMatch['unmatchReason'] as String?,
+      isFavorite: apiMatch['isFavorite'] as bool? ?? false,
+      isPremiumMatch: apiMatch['isPremiumMatch'] as bool? ?? false,
     );
   }
 }

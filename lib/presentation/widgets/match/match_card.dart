@@ -3,6 +3,7 @@ import 'package:pulse_dating_app/core/utils/logger.dart';
 import '../../../data/models/match_model.dart';
 import '../../../domain/entities/user_profile.dart';
 import '../common/robust_network_image.dart';
+import 'match_quality_indicators.dart';
 
 /// Card widget for displaying match information with user details
 class MatchCard extends StatelessWidget {
@@ -115,6 +116,15 @@ class MatchCard extends StatelessWidget {
                             ),
                           ),
                       ],
+                    ),
+                    const SizedBox(height: 8),
+                    // Match quality indicators
+                    MatchQualityIndicators(
+                      match: match,
+                      showEngagement: true,
+                      showHealth: true,
+                      showQuality: false,
+                      compact: true,
                     ),
                     const SizedBox(height: 4),
                     // Match date
