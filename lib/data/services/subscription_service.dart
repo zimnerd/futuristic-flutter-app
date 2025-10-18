@@ -15,7 +15,7 @@ import 'saved_payment_methods_service.dart';
 class SubscriptionService {
   final SavedPaymentMethodsService _savedMethodsService;
   final ApiClient _apiClient;
-  final AuthService _authService;
+  final AuthService? _authService;
   
   // Logger instance
   final Logger _logger = Logger();
@@ -27,7 +27,7 @@ class SubscriptionService {
   SubscriptionService({
     required SavedPaymentMethodsService savedMethodsService,
     required ApiClient apiClient,
-    required AuthService authService,
+    AuthService? authService,
   }) : _savedMethodsService = savedMethodsService,
        _apiClient = apiClient,
        _authService = authService;
@@ -38,6 +38,9 @@ class SubscriptionService {
 
   /// Helper method to get current user ID
   Future<String> _getCurrentUserId() async {
+    if (_authService == null) {
+      throw Exception('AuthService not initialized');
+    }
     final currentUser = await _authService.getCurrentUser();
     if (currentUser == null) {
       throw Exception('No authenticated user found');

@@ -1,8 +1,8 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../core/services/service_locator.dart';
-import '../../../data/services/service_locator.dart' as data_services;
 import '../../../data/services/subscription_service.dart';
 import '../../../data/services/analytics_service.dart';
+import '../../../data/services/saved_payment_methods_service.dart';
+import '../../../core/network/api_client.dart';
 import '../../../data/models/subscription.dart';
 import '../../../data/models/subscription_plan.dart';
 import '../../../data/models/subscription_usage.dart';
@@ -87,10 +87,16 @@ class SubscriptionError extends SubscriptionState {
 /// Subscription BLoC for managing subscription operations
 class SubscriptionBloc extends Bloc<SubscriptionEvent, SubscriptionState> {
   late final SubscriptionService _subscriptionService;
+  final AnalyticsService _analyticsService = AnalyticsService.instance;
 
   SubscriptionBloc() : super(SubscriptionInitial()) {
     // Initialize the subscription service with required dependencies
-    _subscriptionService = data_services.ServiceLocator().subscriptionService;
+    // Note: AuthService removed temporarily - may need to be added back
+    // when subscription service requires user authentication
+    _subscriptionService = SubscriptionService(
+      savedMethodsService: SavedPaymentMethodsService.instance,
+      apiClient: ApiClient.instance,
+    );
     
     on<LoadSubscriptionEvent>(_onLoadSubscription);
     on<LoadSubscriptionPlansEvent>(_onLoadSubscriptionPlans);
@@ -113,7 +119,7 @@ class SubscriptionBloc extends Bloc<SubscriptionEvent, SubscriptionState> {
       
       // Track analytics
       if (subscription != null) {
-        ServiceLocator.instance.analytics.trackEvent(
+        _analyticsService.trackEvent(
           eventType: AnalyticsEventType.featureUsed,
           properties: {
             'feature': 'subscription_loaded',
@@ -140,7 +146,7 @@ class SubscriptionBloc extends Bloc<SubscriptionEvent, SubscriptionState> {
       emit(SubscriptionPlansLoaded(plans));
       
       // Track analytics
-      ServiceLocator.instance.analytics.trackEvent(
+      _analyticsService.trackEvent(
         eventType: AnalyticsEventType.featureUsed,
         properties: {
           'feature': 'subscription_plans_loaded',
@@ -164,7 +170,7 @@ class SubscriptionBloc extends Bloc<SubscriptionEvent, SubscriptionState> {
       emit(SubscriptionUsageLoaded(usage));
       
       // Track analytics
-      ServiceLocator.instance.analytics.trackEvent(
+      _analyticsService.trackEvent(
         eventType: AnalyticsEventType.featureUsed,
         properties: {
           'feature': 'subscription_usage_loaded',
@@ -198,7 +204,7 @@ class SubscriptionBloc extends Bloc<SubscriptionEvent, SubscriptionState> {
         data: result.data?.toJson()));
       
       // Track analytics
-      ServiceLocator.instance.analytics.trackEvent(
+      _analyticsService.trackEvent(
         eventType: AnalyticsEventType.featureUsed,
         properties: {
           'feature': 'subscription_plan_updated',
@@ -229,7 +235,7 @@ class SubscriptionBloc extends Bloc<SubscriptionEvent, SubscriptionState> {
         data: result.data?.toJson()));
       
       // Track analytics
-      ServiceLocator.instance.analytics.trackEvent(
+      _analyticsService.trackEvent(
         eventType: AnalyticsEventType.featureUsed,
         properties: {
           'feature': 'subscription_cancelled',
@@ -258,7 +264,7 @@ class SubscriptionBloc extends Bloc<SubscriptionEvent, SubscriptionState> {
         data: result.data?.toJson()));
       
       // Track analytics
-      ServiceLocator.instance.analytics.trackEvent(
+      _analyticsService.trackEvent(
         eventType: AnalyticsEventType.featureUsed,
         properties: {
           'feature': 'subscription_resumed',
@@ -298,7 +304,7 @@ class SubscriptionBloc extends Bloc<SubscriptionEvent, SubscriptionState> {
       ));
       
       // Track analytics
-      ServiceLocator.instance.analytics.trackEvent(
+      _analyticsService.trackEvent(
         eventType: AnalyticsEventType.featureUsed,
         properties: {
           'feature': 'subscription_data_refreshed',
