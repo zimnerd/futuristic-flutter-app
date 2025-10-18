@@ -13,10 +13,12 @@ import '../../data/services/discovery_service.dart';
 import '../../data/services/matching_service.dart';
 import '../../data/services/messaging_service.dart';
 import '../../data/services/preferences_service.dart';
-import '../../data/services/service_locator.dart';
 import '../../core/network/api_client.dart';
 import '../../core/di/service_locator.dart' as di;
 import '../../domain/repositories/user_repository.dart';
+import '../../domain/services/websocket_service.dart';
+import '../../data/services/profile_service.dart';
+import '../../data/services/photo_manager_service.dart';
 
 /// Provides all BLoCs to the widget tree with proper dependency injection
 /// 
@@ -38,7 +40,7 @@ class BlocProviders extends StatelessWidget {
         // Call Management BLoC - Real-time communication
         BlocProvider<CallBloc>(
           create: (context) =>
-              CallBloc(webSocketService: ServiceLocator().webSocketService),
+              CallBloc(webSocketService: di.sl<WebSocketService>()),
         ),
 
         // Discovery BLoC - User discovery and swiping
@@ -60,8 +62,8 @@ class BlocProviders extends StatelessWidget {
         // Profile Management BLoC - User profile customization
         BlocProvider<ProfileBloc>(
           create: (context) => ProfileBloc(
-            profileService: ServiceLocator().profileService,
-            photoManager: ServiceLocator().photoManagerService,
+            profileService: di.sl<ProfileService>(),
+            photoManager: di.sl<PhotoManagerService>(),
           ),
         ),
         

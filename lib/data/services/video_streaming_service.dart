@@ -3,7 +3,8 @@ import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import 'package:logger/logger.dart';
 import 'package:permission_handler/permission_handler.dart';
 
-import 'service_locator.dart';
+import '../../core/network/api_client.dart';
+import 'live_streaming_service.dart';
 
 /// Streaming state enum
 enum StreamState {
@@ -395,7 +396,7 @@ class VideoStreamingService {
     try {
       _logger.i('🔄 Refreshing Agora token for stream: $_currentStreamId');
 
-      final liveStreamingService = ServiceLocator().liveStreamingService;
+      final liveStreamingService = LiveStreamingService(ApiClient.instance);
       final role = _isBroadcaster ? 'broadcaster' : 'audience';
 
       final tokenData = await liveStreamingService.generateStreamRtcToken(

@@ -6,7 +6,7 @@ import '../../../../presentation/theme/pulse_colors.dart';
 import '../../../../domain/entities/event.dart';
 import '../../../../domain/entities/event_message.dart';
 import '../../../../domain/entities/call.dart';
-import '../../../../data/services/service_locator.dart';
+import '../../../../data/services/call_service.dart';
 import '../bloc/event_chat_bloc.dart';
 
 class EventCommunicationScreen extends StatefulWidget {
@@ -385,7 +385,7 @@ class _EventCommunicationScreenState extends State<EventCommunicationScreen>
             ElevatedButton.icon(
               onPressed: () async {
                 try {
-                  final callService = ServiceLocator().callService;
+                  final callService = CallService.instance;
                   await callService.initialize();
 
                   // For event communication, we need participant IDs
@@ -493,7 +493,7 @@ class _EventCommunicationScreenState extends State<EventCommunicationScreen>
             ElevatedButton.icon(
               onPressed: () async {
                 try {
-                  final callService = ServiceLocator().callService;
+                  final callService = CallService.instance;
                   await callService.initialize();
 
                   // For event communication, we need participant IDs
