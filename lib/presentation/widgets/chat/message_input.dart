@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../theme/theme_extensions.dart';
+import '../common/pulse_toast.dart';
 
 class MessageInput extends StatefulWidget {
   final TextEditingController controller;
@@ -174,12 +175,7 @@ class _MessageInputState extends State<MessageInput> {
               onTap: () {
                 // Implement location sharing
                 Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Sharing current location...'),
-                    duration: Duration(seconds: 2),
-                  ),
-                );
+                PulseToast.info(context, message: 'Sharing current location...');
                 // In real implementation: get current location and send as message
               },
             ),

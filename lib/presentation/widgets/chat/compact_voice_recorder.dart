@@ -5,6 +5,7 @@ import 'dart:io';
 
 import '../../../data/models/voice_message.dart';
 import '../../theme/pulse_colors.dart';
+import '../common/pulse_toast.dart';
 
 /// Compact voice recorder widget for chat input
 class CompactVoiceRecorder extends StatefulWidget {
@@ -203,12 +204,7 @@ class _CompactVoiceRecorderState extends State<CompactVoiceRecorder>
   }
 
   void _showError(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.red,
-      ),
-    );
+    PulseToast.error(context, message: message);
   }
 
   @override

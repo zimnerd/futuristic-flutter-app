@@ -6,6 +6,7 @@ import '../../../data/services/ai_matching_service.dart';
 import '../../theme/pulse_colors.dart';
 import 'compatibility_score_widget.dart';
 import '../common/robust_network_image.dart';
+import '../common/pulse_toast.dart';
 
 /// Smart matching widget with AI-powered recommendations and insights
 class SmartMatchWidget extends StatefulWidget {
@@ -98,13 +99,7 @@ class _SmartMatchWidgetState extends State<SmartMatchWidget>
   }
 
   void _showErrorMessage(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.red,
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
+    PulseToast.error(context, message: message);
   }
 
   Future<void> _handleMatchAction(MatchModel match, String action) async {

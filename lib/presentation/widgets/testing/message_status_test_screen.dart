@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../data/models/chat_model.dart';
 import '../messaging/message_status_indicator.dart';
+import '../common/pulse_toast.dart';
 
 /// Test screen for visually verifying MessageStatusIndicator states
 /// 
@@ -174,12 +175,9 @@ class MessageStatusTestScreen extends StatelessWidget {
                     size: 20,
                     errorColor: Colors.red,
                     onRetry: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('✓ Retry callback triggered!'),
-                          duration: Duration(seconds: 2),
-                          backgroundColor: Colors.green,
-                        ),
+                      PulseToast.success(
+                        context,
+                        message: '✓ Retry callback triggered!',
                       );
                     },
                   ),
@@ -224,11 +222,9 @@ class MessageStatusTestScreen extends StatelessWidget {
                   errorColor: Colors.red,
                   onRetry: hasRetry
                       ? () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('Retry triggered for $title'),
-                              duration: const Duration(seconds: 1),
-                            ),
+                          PulseToast.info(
+                            context,
+                            message: 'Retry triggered for $title',
                           );
                         }
                       : null,

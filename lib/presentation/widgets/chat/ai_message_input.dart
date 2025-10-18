@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../data/models/chat_model.dart';
 import '../../theme/pulse_colors.dart';
 import 'rich_ai_chat_assistant_modal.dart';
+import '../common/pulse_toast.dart';
 
 class AiMessageInput extends StatefulWidget {
   final TextEditingController controller;
@@ -632,13 +633,7 @@ class _AiMessageInputState extends State<AiMessageInput>
                       setState(() {
                         _showAttachments = false;
                       });
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Sharing current location...'),
-                          duration: Duration(seconds: 2),
-                          backgroundColor: PulseColors.primary,
-                        ),
-                      );
+                      PulseToast.info(context, message: 'Sharing current location...');
                     },
                   ),
                 ],

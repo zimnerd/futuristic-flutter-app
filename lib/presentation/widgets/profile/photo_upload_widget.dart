@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:pulse_dating_app/core/utils/logger.dart';
 import 'package:pulse_dating_app/presentation/theme/pulse_colors.dart';
+import '../common/pulse_toast.dart';
 
 /// Widget for uploading multiple photos with preview and validation
 class PhotoUploadWidget extends StatefulWidget {
@@ -414,14 +415,7 @@ class _PhotoUploadWidgetState extends State<PhotoUploadWidget> {
   void _showError(String message) {
     if (!mounted) return;
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.red,
-        behavior: SnackBarBehavior.floating,
-        duration: const Duration(seconds: 3),
-      ),
-    );
+    PulseToast.error(context, message: message);
   }
 }
 
