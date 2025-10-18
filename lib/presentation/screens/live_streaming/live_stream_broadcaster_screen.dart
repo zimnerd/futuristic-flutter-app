@@ -4,7 +4,7 @@ import 'dart:async';
 
 import '../../../data/services/video_streaming_service.dart';
 import '../../../data/services/live_streaming_service.dart';
-import '../../../data/services/service_locator.dart';
+import '../../../core/network/api_client.dart';
 import '../../theme/pulse_colors.dart';
 
 /// Screen for broadcasting a live stream (host view)
@@ -28,7 +28,9 @@ class LiveStreamBroadcasterScreen extends StatefulWidget {
 class _LiveStreamBroadcasterScreenState
     extends State<LiveStreamBroadcasterScreen> {
   final VideoStreamingService _streamingService = VideoStreamingService.instance;
-  final LiveStreamingService _apiService = ServiceLocator().liveStreamingService;
+  final LiveStreamingService _apiService = LiveStreamingService(
+    ApiClient.instance,
+  );
 
   bool _isInitialized = false;
   bool _isCameraOn = true;

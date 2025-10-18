@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../../data/services/ai_chat_assistant_service.dart';
-import '../../../data/services/service_locator.dart';
 import '../../../core/utils/logger.dart';
 import '../../theme/pulse_colors.dart';
 
@@ -1030,7 +1029,7 @@ class _RichAiChatAssistantModalState extends State<RichAiChatAssistantModal>
     });
 
     try {
-      final aiService = ServiceLocator().aiChatAssistantService;
+      final aiService = AiChatAssistantService();
       final contextOptions = AiContextOptions(
         includeMyProfile: _includeMyProfile,
         includeMatchProfile: _includeMatchProfile,
@@ -1124,7 +1123,7 @@ class _RichAiChatAssistantModalState extends State<RichAiChatAssistantModal>
     });
 
     try {
-      final aiService = ServiceLocator().aiChatAssistantService;
+      final aiService = AiChatAssistantService();
       
       final refinedMessage = await aiService.refineMessage(
         originalMessage: _currentResponse!.suggestion,

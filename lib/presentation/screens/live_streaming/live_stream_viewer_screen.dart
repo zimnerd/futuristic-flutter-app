@@ -4,7 +4,7 @@ import 'dart:async';
 
 import '../../../data/services/video_streaming_service.dart';
 import '../../../data/services/live_streaming_service.dart';
-import '../../../data/services/service_locator.dart';
+import '../../../core/network/api_client.dart';
 import '../../theme/pulse_colors.dart';
 import '../../widgets/common/keyboard_dismissible_scaffold.dart';
 
@@ -25,7 +25,9 @@ class _LiveStreamViewerScreenState extends State<LiveStreamViewerScreen> {
   final VideoStreamingService _streamingService =
       VideoStreamingService.instance;
   final LiveStreamingService _apiService =
-      ServiceLocator().liveStreamingService;
+      LiveStreamingService(
+    ApiClient.instance,
+  );
   final _messageController = TextEditingController();
 
   bool _isInitialized = false;

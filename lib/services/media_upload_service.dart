@@ -4,7 +4,6 @@ import 'package:dio/dio.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path/path.dart' as path;
 import 'package:permission_handler/permission_handler.dart';
-import '../data/services/service_locator.dart';
 
 /// Progress callback for upload operations
 typedef ProgressCallback = void Function(int sent, int total, double percentage);
@@ -208,12 +207,8 @@ class MediaUploadService {
 
   /// Internal method to perform the actual upload
   Future<MediaUploadResult> _performUpload(UploadTask task, CancelToken cancelToken) async {
-    final authService = ServiceLocator().authService;
-    final token = await authService.getAccessToken();
-    if (token == null) {
-      throw MediaUploadException('No authentication token available');
-    }
-
+    // Note: Authentication token is automatically added by Dio interceptors in httpClient
+    
     // Validate file before upload
     final validation = await validateMediaFile(task.filePath, task.type);
     if (!validation.isValid) {
@@ -237,14 +232,13 @@ class MediaUploadService {
         'processingOptions': task.metadata['processingOptions'].toJson(),
     });
 
-    // Upload with progress tracking
+    // Upload with progress tracking (auth token added automatically by interceptors)
     final response = await _httpClient.post(
       '/media/upload',
       data: formData,
       cancelToken: cancelToken,
       options: Options(
         headers: {
-          'Authorization': 'Bearer $token',
           'Content-Type': 'multipart/form-data',
         },
       ),

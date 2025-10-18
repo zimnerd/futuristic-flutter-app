@@ -3,7 +3,9 @@ import 'package:go_router/go_router.dart';
 import '../../navigation/app_router.dart';
 import '../../theme/pulse_colors.dart';
 import '../../widgets/common/keyboard_dismissible_scaffold.dart';
-import '../../../data/services/service_locator.dart';
+import '../../widgets/common/pulse_toast.dart';
+import '../../../data/services/live_streaming_service.dart';
+import '../../../core/network/api_client.dart';
 
 /// Screen for starting or editing a live stream
 class StartStreamScreen extends StatefulWidget {
@@ -185,16 +187,15 @@ class _StartStreamScreenState extends State<StartStreamScreen> {
     final title = _titleController.text.trim();
     
     if (title.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please enter a title for your stream'),
-        ),
+      PulseToast.warning(
+        context,
+        message: 'Please enter a title for your stream',
       );
       return;
     }
     
     try {
-      final liveStreamingService = ServiceLocator().liveStreamingService;
+      final liveStreamingService = LiveStreamingService(ApiClient.instance);
       final description = _descriptionController.text.trim();
       
       if (widget.streamToEdit != null) {
@@ -209,18 +210,17 @@ class _StartStreamScreenState extends State<StartStreamScreen> {
 
         if (result != null) {
           if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Stream updated successfully!')),
+            PulseToast.success(
+              context,
+              message: 'Stream updated successfully!',
             );
             Navigator.pop(context, result);
           }
         } else {
           if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Failed to update stream. Please try again.'),
-                backgroundColor: Colors.red,
-              ),
+            PulseToast.error(
+              context,
+              message: 'Failed to update stream. Please try again.',
             );
           }
         }
@@ -236,10 +236,9 @@ class _StartStreamScreenState extends State<StartStreamScreen> {
         
         if (result != null) {
           if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Live stream started successfully!'),
-              ),
+            PulseToast.success(
+              context,
+              message: 'Live stream started successfully!',
             );
             
             // Navigate to broadcaster screen
@@ -261,22 +260,16 @@ class _StartStreamScreenState extends State<StartStreamScreen> {
           }
         } else {
           if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Failed to start stream. Please try again.'),
-                backgroundColor: Colors.red,
-              ),
+            PulseToast.error(
+              context,
+              message: 'Failed to start stream. Please try again.',
             );
           }
         }
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error: ${e.toString()}'),
-            backgroundColor: Colors.red,
-          ),
+        PulseToast.error(context, message: 'Error: ${e.toString()}',
         );
       }
     }
