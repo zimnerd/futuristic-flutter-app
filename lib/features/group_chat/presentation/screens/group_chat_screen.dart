@@ -8,6 +8,7 @@ import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:get_it/get_it.dart';
 import '../../../../presentation/blocs/group_chat/group_chat_bloc.dart';
+import '../../../../presentation/widgets/common/pulse_toast.dart';
 import '../../data/models.dart';
 import '../../data/group_chat_service.dart';
 import 'video_call_screen.dart';
@@ -70,9 +71,7 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
     return BlocListener<GroupChatBloc, GroupChatState>(
       listener: (context, state) {
         if (state is GroupChatError) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(state.message), backgroundColor: Colors.red),
-          );
+          PulseToast.error(context, message: state.message);
         }
       },
       child: Scaffold(
@@ -567,12 +566,7 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
       }
 
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Failed to send voice message: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      PulseToast.error(context, message: 'Failed to send voice message: $e');
     }
   }
 
@@ -689,9 +683,7 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
       }
       
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to pick image: $e')),
-      );
+      PulseToast.error(context, message: 'Failed to pick image: $e');
     }
   }
 
@@ -763,12 +755,7 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
       }
 
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Failed to upload video: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      PulseToast.error(context, message: 'Failed to upload video: $e');
     }
   }
 
@@ -787,11 +774,9 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
       // Check file size (max 10MB for documents)
       if (file.size > 10 * 1024 * 1024) {
         if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('File too large. Maximum size is 10MB'),
-            backgroundColor: Colors.red,
-          ),
+        PulseToast.error(
+          context,
+          message: 'File too large. Maximum size is 10MB',
         );
         return;
       }
@@ -861,12 +846,7 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
       }
 
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Failed to upload file: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      PulseToast.error(context, message: 'Failed to upload file: $e');
     }
   }
 
@@ -1003,13 +983,7 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
   /// Show error snackbar
   void _showErrorSnackBar(String message) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.red,
-        duration: const Duration(seconds: 3),
-      ),
-    );
+    PulseToast.error(context, message: message);
   }
 
   void _handleMenuAction(String action) {
@@ -1210,9 +1184,7 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
             onPressed: () {
               Navigator.pop(context); // Close dialog
               Navigator.pop(context); // Exit chat screen
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Left ${widget.group.name}')),
-              );
+              PulseToast.info(context, message: 'Left ${widget.group.name}');
             },
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
             child: const Text('Leave'),

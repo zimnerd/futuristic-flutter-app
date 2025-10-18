@@ -1,7 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:logger/logger.dart';
 import '../constants/api_constants.dart';
-import '../config/app_config.dart';
 import '../../data/services/token_service.dart';
 import '../../data/services/global_auth_handler.dart';
 
@@ -62,19 +61,18 @@ class ApiClient {
   }
 
   void _setupDio({String? baseUrl}) {
-    // Use longer timeouts for production to handle network latency
-    final connectTimeout = AppConfig.isProduction 
-        ? const Duration(seconds: 60) 
-        : const Duration(seconds: 30);
-    final receiveTimeout = AppConfig.isProduction 
-        ? const Duration(seconds: 60) 
-        : const Duration(seconds: 30);
-        
+    // Use longer timeouts - 120 seconds for both dev and production to handle slow networks
+    // This is especially important for OTP sending which may take longer
+    const connectTimeout = Duration(seconds: 120);
+    const receiveTimeout = Duration(seconds: 120);
+    const sendTimeout = Duration(seconds: 120);
+
     _dio = Dio(
       BaseOptions(
         baseUrl: baseUrl ?? ApiConstants.baseUrl,
         connectTimeout: connectTimeout,
         receiveTimeout: receiveTimeout,
+        sendTimeout: sendTimeout,
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',

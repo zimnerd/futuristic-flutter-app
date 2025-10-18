@@ -400,10 +400,9 @@ class _EventCommunicationScreenState extends State<EventCommunicationScreen>
 
                   if (participantIds.isEmpty) {
                     if (mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('No participants available for call'),
-                        ),
+                      PulseToast.warning(
+                        context,
+                        message: 'No participants available for call',
                       );
                     }
                     return;
@@ -416,14 +415,16 @@ class _EventCommunicationScreenState extends State<EventCommunicationScreen>
                   );
 
                   if (mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Voice call started: $callId')),
+                    PulseToast.success(
+                      context,
+                      message: 'Voice call started: $callId',
                     );
                   }
                 } catch (e) {
                   if (mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Failed to start voice call: $e')),
+                    PulseToast.error(
+                      context,
+                      message: 'Failed to start voice call: $e',
                     );
                   }
                 }

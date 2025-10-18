@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../../presentation/blocs/group_chat/group_chat_bloc.dart';
+import '../../../../presentation/widgets/common/pulse_toast.dart';
 import '../../data/models.dart';
 
 class LiveSessionHostScreen extends StatefulWidget {
@@ -60,11 +61,9 @@ class _LiveSessionHostScreenState extends State<LiveSessionHostScreen> {
       body: BlocConsumer<GroupChatBloc, GroupChatState>(
         listener: (context, state) {
           if (state is GroupChatError) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: Colors.red,
-              ),
+            PulseToast.error(
+              context,
+              message: state.message,
             );
           }
         },
@@ -206,21 +205,17 @@ class _LiveSessionHostScreenState extends State<LiveSessionHostScreen> {
 
   void _approveRequest(JoinRequest request) {
     context.read<GroupChatBloc>().add(ApproveJoinRequest(request.id));
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Approved ${request.requesterName}'),
-        backgroundColor: Colors.green,
-      ),
+    PulseToast.success(
+      context,
+      message: 'Approved ${request.requesterName}',
     );
   }
 
   void _rejectRequest(JoinRequest request) {
     context.read<GroupChatBloc>().add(RejectJoinRequest(request.id));
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Rejected ${request.requesterName}'),
-        backgroundColor: Colors.red,
-      ),
+    PulseToast.info(
+      context,
+      message: 'Rejected ${request.requesterName}',
     );
   }
 
@@ -284,11 +279,9 @@ class _LiveSessionHostScreenState extends State<LiveSessionHostScreen> {
             onPressed: () {
               Navigator.of(dialogContext).pop();
               Navigator.of(context).pop(); // Go back to previous screen
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Live session ended'),
-                  backgroundColor: Colors.orange,
-                ),
+              PulseToast.success(
+                context,
+                message: 'Live session ended',
               );
             },
             style: ElevatedButton.styleFrom(

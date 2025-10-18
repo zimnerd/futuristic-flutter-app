@@ -56,11 +56,9 @@ class _SavedPaymentMethodsScreenState extends State<SavedPaymentMethodsScreen> {
     try {
       final success = await _service.deletePaymentMethod(method.id);
       if (success && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Payment method deleted'),
-            backgroundColor: AppColors.success,
-          ),
+        PulseToast.success(
+          context,
+          message: 'Payment method deleted',
         );
         await _loadSavedMethods();
       } else {
@@ -68,11 +66,9 @@ class _SavedPaymentMethodsScreenState extends State<SavedPaymentMethodsScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error deleting payment method: $e'),
-            backgroundColor: AppColors.error,
-          ),
+        PulseToast.error(
+          context,
+          message: 'Error deleting payment method: $e',
         );
       }
     }

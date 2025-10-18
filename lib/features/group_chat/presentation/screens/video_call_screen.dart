@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import '../../../../presentation/blocs/group_chat/group_chat_bloc.dart';
+import '../../../../presentation/widgets/common/pulse_toast.dart';
 import '../../data/group_chat_webrtc_service.dart';
 import '../../data/models.dart';
 
@@ -78,11 +79,9 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
   }
 
   void _showError(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.red,
-      ),
+    PulseToast.error(
+      context,
+      message: message,
     );
   }
 

@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../../core/models/call_invitation.dart';
 import '../../../../core/services/call_invitation_service.dart';
+import '../../../../presentation/widgets/common/pulse_toast.dart';
 
 /// Outgoing call screen shown when user initiates a call
 /// 
@@ -92,14 +93,20 @@ class _OutgoingCallScreenState extends State<OutgoingCallScreen>
 
   void _onCallRejected() {
     if (mounted) {
-      _showSnackBar('Call declined', Colors.orange);
+      PulseToast.warning(
+        context,
+        message: 'Call declined',
+      );
       Navigator.of(context).pop({'accepted': false});
     }
   }
 
   void _onCallTimeout() {
     if (mounted) {
-      _showSnackBar('No answer', Colors.grey);
+      PulseToast.info(
+        context,
+        message: 'No answer',
+      );
       Navigator.of(context).pop({'accepted': false});
     }
   }
@@ -112,15 +119,6 @@ class _OutgoingCallScreenState extends State<OutgoingCallScreen>
     }
   }
 
-  void _showSnackBar(String message, Color color) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: color,
-        duration: const Duration(seconds: 2),
-      ),
-    );
-  }
 
   @override
   void dispose() {

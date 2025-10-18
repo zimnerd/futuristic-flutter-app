@@ -5,6 +5,7 @@ import '../../../../presentation/blocs/group_chat/group_chat_bloc.dart';
 import '../../data/models.dart';
 import 'video_call_screen.dart';
 import '../../../../data/services/webrtc_service.dart';
+import '../../../../presentation/widgets/common/pulse_toast.dart';
 
 class LiveSessionsScreen extends StatefulWidget {
   const LiveSessionsScreen({super.key});
@@ -72,19 +73,9 @@ class _LiveSessionsScreenState extends State<LiveSessionsScreen> {
       body: BlocConsumer<GroupChatBloc, GroupChatState>(
         listener: (context, state) {
           if (state is GroupChatError) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: Colors.red,
-              ),
-            );
+            PulseToast.error(context, message: state.message);
           } else if (state is JoinRequestSent) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Join request sent! Waiting for approval...'),
-                backgroundColor: Colors.green,
-              ),
-            );
+            PulseToast.success(context, message: 'Join request sent! Waiting for approval...');
             _loadSessions(); // Reload to show updated state
           }
         },
@@ -249,12 +240,7 @@ class _LiveSessionsScreenState extends State<LiveSessionsScreen> {
             onPressed: () {
               Navigator.of(dialogContext).pop();
               // Navigate to chat screen (to be implemented)
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Joined ${session.title} chat'),
-                  backgroundColor: Colors.green,
-                ),
-              );
+              PulseToast.success(context, message: 'Joined ${session.title} chat');
             },
             child: const Text('Chat Only'),
           ),
@@ -316,12 +302,7 @@ class _LiveSessionsScreenState extends State<LiveSessionsScreen> {
 
       // Show error message
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Failed to join session: ${e.toString()}'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      PulseToast.error(context, message: 'Failed to join session: ${e.toString()}');
     }
   }
 }

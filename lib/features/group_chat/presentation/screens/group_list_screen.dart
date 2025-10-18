@@ -7,6 +7,7 @@ import '../../data/group_chat_service.dart';
 import '../../../../presentation/navigation/app_router.dart';
 import '../../../../data/services/webrtc_service.dart';
 import '../../../../presentation/widgets/common/initials_avatar.dart';
+import '../../../../presentation/widgets/common/pulse_toast.dart';
 
 class GroupListScreen extends StatefulWidget {
   final GroupChatBloc bloc;
@@ -154,12 +155,7 @@ class _GroupListScreenState extends State<GroupListScreen>
     return BlocConsumer<GroupChatBloc, GroupChatState>(
       listener: (context, state) {
         if (state is GroupChatError) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(state.message),
-              backgroundColor: Colors.red,
-            ),
-          );
+          PulseToast.error(context, message: state.message);
         }
       },
       builder: (context, state) {
@@ -742,11 +738,9 @@ class _GroupListScreenState extends State<GroupListScreen>
                               onPressed: () async {
                                 // Validation
                                 if (titleController.text.trim().isEmpty) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text('Please enter a title'),
-                                      backgroundColor: Colors.red,
-                                    ),
+                                  PulseToast.error(
+                                    context,
+                                    message: 'Please enter a title',
                                   );
                                   return;
                                 }
@@ -760,21 +754,17 @@ class _GroupListScreenState extends State<GroupListScreen>
                                     int.tryParse(durationController.text) ?? 30;
 
                                 if (maxPart < 2 || maxPart > 100) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text('Max participants: 2-100'),
-                                      backgroundColor: Colors.red,
-                                    ),
+                                  PulseToast.error(
+                                    context,
+                                    message: 'Max participants: 2-100',
                                   );
                                   return;
                                 }
 
                                 if (duration < 5 || duration > 180) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text('Duration: 5-180 minutes'),
-                                      backgroundColor: Colors.red,
-                                    ),
+                                  PulseToast.error(
+                                    context,
+                                    message: 'Duration: 5-180 minutes',
                                   );
                                   return;
                                 }
@@ -823,12 +813,9 @@ class _GroupListScreenState extends State<GroupListScreen>
                                   );
 
                                   if (mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      // ignore: use_build_context_synchronously
-                                      const SnackBar(
-                                        content: Text('Live session created!'),
-                                        backgroundColor: Colors.green,
-                                      ),
+                                    PulseToast.success(
+                                      context,
+                                      message: 'Live session created!',
                                     );
                                   }
 
@@ -842,15 +829,9 @@ class _GroupListScreenState extends State<GroupListScreen>
                                     ).pop(); // ignore: use_build_context_synchronously
                                   }
                                   if (mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      // ignore: use_build_context_synchronously
-                                      SnackBar(
-                                        content: Text(
-                                          'Failed: ${e.toString()}',
-                                        ),
-                                        backgroundColor: Colors.red,
-                                        duration: const Duration(seconds: 5),
-                                      ),
+                                    PulseToast.error(
+                                      context,
+                                      message: 'Failed: ${e.toString()}',
                                     );
                                   }
                                 }
@@ -935,13 +916,7 @@ class _GroupListScreenState extends State<GroupListScreen>
       );
 
       // Show success feedback
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Joined ${session.title}'),
-          backgroundColor: Colors.green,
-          duration: const Duration(seconds: 2),
-        ),
-      );
+      PulseToast.success(context, message: 'Joined ${session.title}');
     } catch (e) {
       // Close loading if still showing
       if (mounted && Navigator.of(context).canPop()) {
@@ -949,12 +924,9 @@ class _GroupListScreenState extends State<GroupListScreen>
       }
 
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Failed to join session: ${e.toString()}'),
-          backgroundColor: Colors.red,
-          duration: const Duration(seconds: 3),
-        ),
+      PulseToast.error(
+        context,
+        message: 'Failed to join session: ${e.toString()}',
       );
     }
   }
