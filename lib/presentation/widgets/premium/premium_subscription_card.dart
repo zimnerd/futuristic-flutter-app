@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../data/models/premium.dart';
 import '../../theme/pulse_colors.dart';
 import '../common/pulse_button.dart';
+import '../common/pulse_toast.dart';
 
 /// Premium subscription card with features and pricing
 class PremiumSubscriptionCard extends StatefulWidget {
@@ -447,13 +448,12 @@ class _PremiumSubscriptionCardState extends State<PremiumSubscriptionCard>
     Navigator.of(context).pop();
     
     // Show payment method selected feedback
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Selected payment method: $paymentType'),
-        behavior: SnackBarBehavior.floating,
-        duration: const Duration(seconds: 2),
-      ),
-    );
+    if (mounted) {
+      PulseToast.info(
+        context,
+        message: 'Selected payment method: $paymentType',
+      );
+    }
     
     // In a real implementation, this would proceed with the subscription process
     // using the selected payment method

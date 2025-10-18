@@ -4,6 +4,7 @@ import '../../../data/models/premium.dart';
 import '../../blocs/premium/premium_bloc.dart';
 import '../../blocs/premium/premium_event.dart';
 import '../../theme/pulse_colors.dart';
+import '../common/pulse_toast.dart';
 
 class CoinBalanceWidget extends StatelessWidget {
   final CoinBalance? coinBalance;
@@ -267,14 +268,9 @@ class CoinBalanceWidget extends StatelessWidget {
     final currentBalance = coinBalance?.totalCoins ?? 0;
     
     if (currentBalance < amount) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Insufficient coins. Need $amount coins for $purpose.'),
-          action: SnackBarAction(
-            label: 'Buy Coins',
-            onPressed: onBuyCoins ?? () {},
-          ),
-        ),
+      PulseToast.error(
+        context,
+        message: 'Insufficient coins. Need $amount coins for $purpose.',
       );
       return;
     }

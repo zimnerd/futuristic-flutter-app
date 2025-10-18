@@ -5,6 +5,7 @@ import 'dart:io';
 
 import '../../../data/models/voice_message.dart';
 import '../../theme/pulse_colors.dart';
+import '../common/pulse_toast.dart';
 
 /// Widget for recording voice messages
 class VoiceRecorderWidget extends StatefulWidget {
@@ -178,12 +179,9 @@ class _VoiceRecorderWidgetState extends State<VoiceRecorderWidget>
   }
 
   void _showError(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.red,
-      ),
-    );
+    if (mounted) {
+      PulseToast.error(context, message: message);
+    }
   }
 
   @override

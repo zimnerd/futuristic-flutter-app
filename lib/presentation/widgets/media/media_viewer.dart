@@ -8,6 +8,7 @@ import '../../theme/pulse_colors.dart';
 import '../../../domain/entities/message.dart';
 import '../../../core/network/api_client.dart';
 import '../common/robust_network_image.dart';
+import '../common/pulse_toast.dart';
 
 /// Full-screen media viewer with modern UX - simplified version using InteractiveViewer
 class MediaViewer extends StatefulWidget {
@@ -307,21 +308,11 @@ class _MediaViewerState extends State<MediaViewer>
     try {
       await Clipboard.setData(ClipboardData(text: currentMediaUrl));
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Image URL copied to clipboard'),
-            backgroundColor: PulseColors.primary,
-          ),
-        );
+        PulseToast.success(context, message: 'Image URL copied to clipboard');
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Failed to copy URL'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        PulseToast.error(context, message: 'Failed to copy URL');
       }
     }
   }
@@ -332,12 +323,7 @@ class _MediaViewerState extends State<MediaViewer>
       final status = await Permission.storage.request();
       if (!status.isGranted && !status.isLimited) {
         if (mounted && context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Storage permission denied'),
-              backgroundColor: Colors.red,
-            ),
-          );
+          PulseToast.error(context, message: 'Storage permission denied');
         }
         return;
       }
@@ -347,12 +333,7 @@ class _MediaViewerState extends State<MediaViewer>
 
       // Show loading indicator
       if (mounted && context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Downloading media...'),
-            duration: Duration(seconds: 2),
-          ),
-        );
+        PulseToast.info(context, message: 'Downloading media...');
       }
 
       // Download the media using ApiClient singleton
@@ -372,27 +353,13 @@ class _MediaViewerState extends State<MediaViewer>
       // For now, file is saved to app documents directory
 
       if (mounted && context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Media saved successfully'),
-            backgroundColor: PulseColors.success,
-            action: SnackBarAction(
-              label: 'Open',
-              textColor: Colors.white,
-              onPressed: () {
-                // Open file location - could implement with open_file package
-              },
-            ),
-          ),
-        );
+        PulseToast.success(context, message: 'Media saved successfully');
       }
     } catch (e) {
       if (mounted && context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to save media: ${e.toString()}'),
-            backgroundColor: Colors.red,
-          ),
+        PulseToast.error(
+          context,
+          message: 'Failed to save media: ${e.toString()}',
         );
       }
     }
@@ -442,8 +409,9 @@ class _MediaViewerState extends State<MediaViewer>
                   Clipboard.setData(
                     ClipboardData(text: widget.mediaUrls[_currentIndex]),
                   );
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Link copied to clipboard')),
+                  PulseToast.success(
+                    context,
+                    message: 'Link copied to clipboard',
                   );
                 },
               ),

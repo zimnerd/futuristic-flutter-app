@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../theme/pulse_colors.dart';
+import '../common/pulse_toast.dart';
 
 /// Notification preferences and settings widget
 class NotificationPreferencesWidget extends StatefulWidget {
@@ -337,14 +338,12 @@ class _NotificationPreferencesWidgetState
     widget.onPreferencesChanged?.call(_preferences);
     
     // Show feedback
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          value ? 'Notifications enabled' : 'Notifications disabled',
-        ),
-        duration: const Duration(seconds: 1),
-      ),
-    );
+    if (mounted) {
+      PulseToast.info(
+        context,
+        message: value ? 'Notifications enabled' : 'Notifications disabled',
+      );
+    }
   }
 
   void _muteAll() {
@@ -353,12 +352,9 @@ class _NotificationPreferencesWidgetState
     });
     widget.onPreferencesChanged?.call(_preferences);
     
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('All notifications muted'),
-        duration: Duration(seconds: 2),
-      ),
-    );
+    if (mounted) {
+      PulseToast.info(context, message: 'All notifications muted');
+    }
   }
 
   void _enableAll() {
@@ -367,12 +363,9 @@ class _NotificationPreferencesWidgetState
     });
     widget.onPreferencesChanged?.call(_preferences);
     
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('All notifications enabled'),
-        duration: Duration(seconds: 2),
-      ),
-    );
+    if (mounted) {
+      PulseToast.success(context, message: 'All notifications enabled');
+    }
   }
 
   void _resetToDefaults() {
@@ -390,12 +383,9 @@ class _NotificationPreferencesWidgetState
     });
     widget.onPreferencesChanged?.call(_preferences);
     
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Preferences reset to defaults'),
-        duration: Duration(seconds: 2),
-      ),
-    );
+    if (mounted) {
+      PulseToast.success(context, message: 'Preferences reset to defaults');
+    }
   }
 }
 

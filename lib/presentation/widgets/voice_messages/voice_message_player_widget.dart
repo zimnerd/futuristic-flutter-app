@@ -6,6 +6,7 @@ import 'dart:async';
 
 import '../../../data/models/voice_message.dart';
 import '../../theme/pulse_colors.dart';
+import '../common/pulse_toast.dart';
 
 /// Widget for playing voice messages with advanced controls
 class VoiceMessagePlayerWidget extends StatefulWidget {
@@ -129,12 +130,9 @@ class _VoiceMessagePlayerWidgetState extends State<VoiceMessagePlayerWidget>
   }
 
   void _showError(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: context.errorColor,
-      ),
-    );
+    if (mounted) {
+      PulseToast.error(context, message: message);
+    }
   }
 
   @override

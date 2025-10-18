@@ -8,6 +8,7 @@ import '../blocs/auth/auth_bloc.dart';
 import '../blocs/auth/auth_event.dart';
 import '../blocs/auth/auth_state.dart';
 import '../theme/pulse_colors.dart';
+import 'common/pulse_toast.dart';
 
 /// Development auto-login panel for easy testing
 /// Only shown in debug mode for developer convenience
@@ -211,11 +212,9 @@ class _TestApiButtonState extends State<_TestApiButton> {
       if (!hasToken) {
         _logger.w('⚠️ No auth token available. Please login first.');
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('❌ No auth token. Please login first.'),
-              backgroundColor: Colors.orange,
-            ),
+          PulseToast.error(
+            context,
+            message: '❌ No auth token. Please login first.',
           );
         }
         return;
@@ -236,35 +235,24 @@ class _TestApiButtonState extends State<_TestApiButton> {
         _logger.i('✅ Successfully retrieved ${suggestions.length} suggestions');
 
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                '✅ Auth working! Got ${suggestions.length} suggestions',
-              ),
-              backgroundColor: Colors.green,
-            ),
+          PulseToast.success(
+            context,
+            message: '✅ Auth working! Got ${suggestions.length} suggestions',
           );
         }
       } else {
         _logger.e('❌ API call failed with status: ${response.statusCode}');
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('❌ API call failed: ${response.statusCode}'),
-              backgroundColor: Colors.red,
-            ),
+          PulseToast.error(
+            context,
+            message: '❌ API call failed: ${response.statusCode}',
           );
         }
       }
     } catch (e) {
       _logger.e('❌ Test failed: $e');
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('❌ Test failed: ${e.toString()}'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        PulseToast.error(context, message: '❌ Test failed: ${e.toString()}');
       }
     } finally {
       if (mounted) {

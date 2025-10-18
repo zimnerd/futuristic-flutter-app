@@ -11,6 +11,7 @@ import '../../blocs/messaging/messaging_bloc.dart';
 import '../../theme/pulse_colors.dart';
 import '../../../core/services/service_locator.dart';
 import '../../../core/services/permission_service.dart';
+import '../common/pulse_toast.dart';
 
 /// Enhanced message composer with voice, attachments, and rich features
 class MessageComposer extends StatefulWidget {
@@ -165,14 +166,21 @@ class _MessageComposerState extends State<MessageComposer>
       if (!hasPermission) {
         final status = await Permission.microphone.request();
         if (!status.isGranted) {
-          _showSnackbar('Microphone permission required for voice recording');
+          if (mounted) {
+            PulseToast.error(
+              context,
+              message: 'Microphone permission required for voice recording',
+            );
+          }
           return;
         }
       }
 
       // Check if device can record
       if (!await _audioRecorder.hasPermission()) {
-        _showSnackbar('Recording permission denied');
+        if (mounted) {
+          PulseToast.error(context, message: 'Recording permission denied');
+        }
         return;
       }
 
@@ -208,9 +216,13 @@ class _MessageComposerState extends State<MessageComposer>
         });
       });
 
-      _showSnackbar('Voice recording started');
+      if (mounted) {
+        PulseToast.info(context, message: 'Voice recording started');
+      }
     } catch (e) {
-      _showSnackbar('Failed to start recording: $e');
+      if (mounted) {
+        PulseToast.error(context, message: 'Failed to start recording: $e');
+      }
     }
   }
 
@@ -243,15 +255,26 @@ class _MessageComposerState extends State<MessageComposer>
             );
           }
           
-          _showSnackbar('Voice message sent (${duration}s)');
+          if (mounted) {
+            PulseToast.success(
+              context,
+              message: 'Voice message sent (${duration}s)',
+            );
+          }
         } else {
-          _showSnackbar('Recording file not found');
+          if (mounted) {
+            PulseToast.error(context, message: 'Recording file not found');
+          }
         }
       } else {
-        _showSnackbar('Failed to save recording');
+        if (mounted) {
+          PulseToast.error(context, message: 'Failed to save recording');
+        }
       }
     } catch (e) {
-      _showSnackbar('Failed to stop recording: $e');
+      if (mounted) {
+        PulseToast.error(context, message: 'Failed to stop recording: $e');
+      }
     } finally {
       setState(() {
         _recordingPath = null;
@@ -281,9 +304,13 @@ class _MessageComposerState extends State<MessageComposer>
         _recordingPath = null;
       }
       
-      _showSnackbar('Voice recording cancelled');
+      if (mounted) {
+        PulseToast.info(context, message: 'Voice recording cancelled');
+      }
     } catch (e) {
-      _showSnackbar('Failed to cancel recording: $e');
+      if (mounted) {
+        PulseToast.error(context, message: 'Failed to cancel recording: $e');
+      }
     }
   }
 
@@ -683,13 +710,9 @@ class _MessageComposerState extends State<MessageComposer>
   }
 
   void _showSnackbar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        behavior: SnackBarBehavior.floating,
-        duration: const Duration(seconds: 2),
-      ),
-    );
+    if (mounted) {
+      PulseToast.info(context, message: message);
+    }
   }
 
   Future<void> _handleCameraAttachment() async {
@@ -699,7 +722,9 @@ class _MessageComposerState extends State<MessageComposer>
       if (!cameraStatus) {
         final status = await Permission.camera.request();
         if (!status.isGranted) {
-          _showSnackbar('Camera permission required');
+          if (mounted) {
+            PulseToast.error(context, message: 'Camera permission required');
+          }
           return;
         }
       }
@@ -727,11 +752,15 @@ class _MessageComposerState extends State<MessageComposer>
           );
         }
         
-        _showSnackbar('Photo sent');
+        if (mounted) {
+          PulseToast.success(context, message: 'Photo sent');
+        }
         _hideAttachments();
       }
     } catch (e) {
-      _showSnackbar('Failed to capture photo: $e');
+      if (mounted) {
+        PulseToast.error(context, message: 'Failed to capture photo: $e');
+      }
     }
   }
 

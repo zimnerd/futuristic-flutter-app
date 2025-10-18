@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../theme/pulse_colors.dart';
 import '../common/pulse_button.dart';
+import '../common/pulse_toast.dart';
 
 /// Boost and Super Like features for premium users
 class BoostSuperLikeWidget extends StatefulWidget {
@@ -396,19 +397,9 @@ class _BoostSuperLikeWidgetState extends State<BoostSuperLikeWidget>
     });
     
     // Show sent confirmation
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Row(
-          children: [
-            Icon(Icons.star, color: Colors.blue),
-            SizedBox(width: 8),
-            Text('Super Like sent!'),
-          ],
-        ),
-        backgroundColor: Colors.blue,
-        duration: const Duration(seconds: 2),
-      ),
-    );
+    if (mounted) {
+      PulseToast.info(context, message: 'Super Like sent!');
+    }
     
     widget.onSuperLikeSent?.call();
   }
