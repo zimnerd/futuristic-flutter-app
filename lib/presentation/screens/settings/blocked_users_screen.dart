@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../theme/pulse_colors.dart' hide PulseTextStyles;
 import '../../theme/pulse_theme.dart';
+import '../../widgets/common/pulse_toast.dart';
 import '../../blocs/block_report/block_report_bloc.dart';
 
 /// Screen displaying list of blocked users for safety
@@ -89,28 +90,12 @@ class _SafetyBlockedUsersScreenState extends State<SafetyBlockedUsersScreen> {
       body: BlocListener<BlockReportBloc, BlockReportState>(
         listener: (context, state) {
           if (state is UserUnblocked) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: const Text('User unblocked successfully'),
-                backgroundColor: PulseColors.success,
-                behavior: SnackBarBehavior.floating,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
+            PulseToast.success(context, message: 'User unblocked successfully',
             );
             // Reload the list
             context.read<BlockReportBloc>().add(LoadBlockedUsers());
           } else if (state is BlockReportError) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: PulseColors.error,
-                behavior: SnackBarBehavior.floating,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
+            PulseToast.error(context, message: state.message,
             );
           }
         },

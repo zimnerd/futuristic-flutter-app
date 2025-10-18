@@ -1,27 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:pulse_dating_app/core/utils/phone_utils.dart';
+import 'package:pulse_dating_app/presentation/widgets/common/pulse_toast.dart';
 
 /// Error handling widgets for displaying various types of errors
 /// Mobile equivalent of web's error handling system (toast, modal, notification)
 
 /// Utility class for showing different types of error notifications
 class ErrorNotification {
-  /// Show a snackbar error (equivalent to web's toast)
+  /// Show a toast error (using PulseToast system)
   static void showSnackbar(
     BuildContext context,
     String message, {
     Duration duration = const Duration(seconds: 4),
     SnackBarAction? action,
   }) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        duration: duration,
-        behavior: SnackBarBehavior.floating,
-        action: action,
-        backgroundColor: Theme.of(context).colorScheme.error,
-      ),
-    );
+    // Migrated to PulseToast.error() for consistency
+    PulseToast.error(context, message: message);
   }
 
   /// Show an error dialog (equivalent to web's error modal)

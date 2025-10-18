@@ -7,6 +7,7 @@ import '../../blocs/premium/premium_bloc.dart';
 import '../../blocs/premium/premium_event.dart';
 import '../../blocs/premium/premium_state.dart';
 import '../../widgets/common/loading_indicator.dart';
+import '../../widgets/common/pulse_toast.dart';
 
 /// Screen for managing user subscriptions
 class SubscriptionManagementScreen extends StatefulWidget {
@@ -43,11 +44,9 @@ class _SubscriptionManagementScreenState extends State<SubscriptionManagementScr
       body: BlocConsumer<PremiumBloc, PremiumState>(
         listener: (context, state) {
           if (state is PremiumSubscriptionCancelled) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Subscription cancelled successfully'),
-                backgroundColor: Colors.orange,
-              ),
+            PulseToast.info(
+              context,
+              message: 'Subscription cancelled successfully',
             );
             // Reload data
             context.read<PremiumBloc>().add(LoadCurrentSubscription());
@@ -513,10 +512,9 @@ class _SubscriptionManagementScreenState extends State<SubscriptionManagementScr
           ElevatedButton(
             onPressed: () {
               Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Subscription flow coming soon!'),
-                ),
+              PulseToast.info(
+                context,
+                message: 'Subscription flow coming soon!',
               );
             },
             style: ElevatedButton.styleFrom(
@@ -598,11 +596,7 @@ class _SubscriptionManagementScreenState extends State<SubscriptionManagementScr
             onPressed: () {
               Navigator.pop(context);
               context.read<PremiumBloc>().add(ReactivateSubscription());
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Subscription reactivated!'),
-                  backgroundColor: AppColors.success,
-                ),
+              PulseToast.success(context, message: 'Subscription reactivated!',
               );
             },
             style: ElevatedButton.styleFrom(

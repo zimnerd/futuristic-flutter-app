@@ -10,6 +10,7 @@ import '../../blocs/auth/auth_state.dart';
 import '../../theme/pulse_colors.dart';
 import '../../widgets/common/pulse_loading_widget.dart';
 import '../../widgets/common/pulse_error_widget.dart';
+import '../../widgets/common/pulse_toast.dart';
 import '../../widgets/virtual_gifts/gift_catalog_widget.dart';
 import '../../widgets/virtual_gifts/gift_history_widget.dart';
 
@@ -90,18 +91,12 @@ class _VirtualGiftsScreenState extends State<VirtualGiftsScreen>
       body: BlocConsumer<VirtualGiftBloc, VirtualGiftState>(
         listener: (context, state) {
           if (state.status == VirtualGiftStatus.error) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.errorMessage ?? 'An error occurred'),
-                backgroundColor: Colors.red,
-              ),
+            PulseToast.error(
+              context,
+              message: state.errorMessage ?? 'An error occurred',
             );
           } else if (state.status == VirtualGiftStatus.sent) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('Gift sent successfully!'),
-                backgroundColor: Colors.green,
-              ),
+            PulseToast.success(context, message: 'Gift sent successfully!',
             );
             if (widget.recipientId != null) {
               Navigator.of(context).pop();
