@@ -5,6 +5,7 @@ import '../../../data/services/payment_service.dart';
 import '../../../widgets/app_button.dart';
 import '../../../widgets/app_text_field.dart';
 import '../../widgets/common/keyboard_dismissible_scaffold.dart';
+import '../../widgets/common/pulse_toast.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../screens/payment_demo_screen.dart';
@@ -40,18 +41,10 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
       body: BlocConsumer<PaymentBloc, PaymentState>(
         listener: (context, state) {
           if (state is PaymentError) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: AppColors.error,
-              ),
+            PulseToast.error(context, message: state.message,
             );
           } else if (state is PaymentSuccess) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: AppColors.success,
-              ),
+            PulseToast.success(context, message: state.message,
             );
           }
         },

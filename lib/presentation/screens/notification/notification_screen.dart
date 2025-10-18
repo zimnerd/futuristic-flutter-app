@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import '../../navigation/app_router.dart';
 import '../../../blocs/notification_bloc.dart';
 import '../../theme/pulse_colors.dart';
+import '../../widgets/common/pulse_toast.dart';
 
 class NotificationScreen extends StatefulWidget {
   const NotificationScreen({super.key});
@@ -198,11 +199,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
             DeleteNotification(notificationId: notification.id),
           );
           
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Notification deleted'),
-              duration: Duration(seconds: 2),
-            ),
+          PulseToast.info(context, message: 'Notification deleted',
           );
         },
         child: ListTile(

@@ -9,6 +9,7 @@ import '../../../data/services/live_streaming_service.dart';
 import '../../blocs/live_streaming/live_streaming_bloc.dart';
 import '../../blocs/live_streaming/live_streaming_event.dart';
 import '../../blocs/live_streaming/live_streaming_state.dart';
+import '../../widgets/common/pulse_toast.dart';
 
 /// Screen for scheduling a future live stream
 /// Can also be used to edit an existing scheduled stream
@@ -269,23 +270,14 @@ class _ScheduleStreamScreenState extends State<ScheduleStreamScreen> {
   }
 
   void _showError(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.red,
-      ),
-    );
+    PulseToast.error(context, message: message);
   }
 
   void _showSuccess() {
     final message = widget.streamToEdit != null
         ? 'Stream updated successfully!'
         : 'Stream scheduled successfully!';
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message),
-        backgroundColor: Colors.green,
-      ),
-    );
+    PulseToast.success(context, message: message);
   }
 
   @override
