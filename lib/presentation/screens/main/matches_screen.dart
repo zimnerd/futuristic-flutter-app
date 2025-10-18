@@ -18,6 +18,7 @@ import '../../navigation/app_router.dart';
 import '../../widgets/common/keyboard_dismissible_scaffold.dart';
 import '../../widgets/common/empty_state_widget.dart';
 import '../../widgets/common/skeleton_loading.dart';
+import '../../widgets/common/pulse_toast.dart';
 
 /// Actual Matches Screen - Shows mutual matches and people who liked you
 ///
@@ -105,11 +106,9 @@ class _MatchesScreenState extends State<MatchesScreen>
           child: BlocConsumer<MatchBloc, MatchState>(
             listener: (context, state) {
               if (state is MatchError) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(state.message),
-                    backgroundColor: PulseColors.primary,
-                  ),
+                PulseToast.error(
+                  context,
+                  message: state.message,
                 );
               }
             },
@@ -438,12 +437,14 @@ class _MatchesScreenState extends State<MatchesScreen>
                 // Note: Unmatch API endpoint not yet available
                 // Future implementation: await matchRepository.unmatch(match.id);
 
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Unmatched successfully')),
+                PulseToast.success(
+                  context,
+                  message: 'Unmatched successfully',
                 );
               } catch (e) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Failed to unmatch: ${e.toString()}')),
+                PulseToast.error(
+                  context,
+                  message: 'Failed to unmatch: ${e.toString()}',
                 );
               }
             },
@@ -482,14 +483,14 @@ class _MatchesScreenState extends State<MatchesScreen>
                   BlockUser(userId: userId, reason: 'Blocked from matches'),
                 );
 
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('User blocked successfully')),
+                PulseToast.success(
+                  context,
+                  message: 'User blocked successfully',
                 );
               } catch (e) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('Failed to block user: ${e.toString()}'),
-                  ),
+                PulseToast.error(
+                  context,
+                  message: 'Failed to block user: ${e.toString()}',
                 );
               }
             },
@@ -532,18 +533,14 @@ class _MatchesScreenState extends State<MatchesScreen>
                   ),
                 );
 
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text(
-                      'Report submitted. Thank you for helping keep PulseLink safe.',
-                    ),
-                  ),
+                PulseToast.success(
+                  context,
+                  message: 'Report submitted. Thank you for helping keep PulseLink safe.',
                 );
               } catch (e) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('Failed to submit report: ${e.toString()}'),
-                  ),
+                PulseToast.error(
+                  context,
+                  message: 'Failed to submit report: ${e.toString()}',
                 );
               }
             },

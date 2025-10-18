@@ -4,6 +4,7 @@ import '../../theme/pulse_colors.dart';
 import '../../widgets/common/keyboard_dismissible_scaffold.dart';
 import '../../blocs/date_planning/date_planning_bloc.dart';
 import '../../blocs/date_planning/date_planning_event.dart';
+import '../../widgets/common/pulse_toast.dart';
 
 /// Screen for creating or editing a date plan
 class CreateDatePlanScreen extends StatefulWidget {
@@ -337,19 +338,17 @@ class _CreateDatePlanScreenState extends State<CreateDatePlanScreen> {
     final budget = _budgetController.text.trim();
     
     if (title.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please enter a title for your date plan'),
-        ),
+      PulseToast.error(
+        context,
+        message: 'Please enter a title for your date plan',
       );
       return;
     }
     
     if (location.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please enter a location for your date plan'),
-        ),
+      PulseToast.error(
+        context,
+        message: 'Please enter a location for your date plan',
       );
       return;
     }
@@ -365,10 +364,9 @@ class _CreateDatePlanScreenState extends State<CreateDatePlanScreen> {
 
     // Check if date is in the future
     if (scheduledDateTime.isBefore(DateTime.now())) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please select a future date and time'),
-        ),
+      PulseToast.error(
+        context,
+        message: 'Please select a future date and time',
       );
       return;
     }
@@ -404,14 +402,16 @@ class _CreateDatePlanScreenState extends State<CreateDatePlanScreen> {
           ? 'Date plan updated successfully!'
           : 'Date plan created successfully!';
       
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(message)),
+      PulseToast.success(
+        context,
+        message: message,
       );
       
       Navigator.pop(context);
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to save plan: $e')),
+      PulseToast.error(
+        context,
+        message: 'Failed to save plan: $e',
       );
     }
   }

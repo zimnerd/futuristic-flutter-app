@@ -8,6 +8,7 @@ import '../../blocs/event/event_bloc.dart';
 import '../../blocs/event/event_event.dart';
 import '../../blocs/event/event_state.dart';
 import '../../widgets/common/robust_network_image.dart';
+import '../../widgets/common/pulse_toast.dart';
 
 class EventDetailsScreen extends StatefulWidget {
   final String eventId;
@@ -474,17 +475,10 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
   void _openMap(Event event) {
     final lat = event.coordinates.lat;
     final lng = event.coordinates.lng;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('📍 Location: $lat, $lng\nTap to open in maps (coming soon)'),
-        duration: const Duration(seconds: 3),
-        action: SnackBarAction(
-          label: 'Close',
-          onPressed: () {
-            ScaffoldMessenger.of(context).hideCurrentSnackBar();
-          },
-        ),
-      ),
+    PulseToast.info(
+      context,
+      message: '📍 Location: $lat, $lng\nTap to open in maps (coming soon)',
+      duration: const Duration(seconds: 3),
     );
   }
 
@@ -591,21 +585,17 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
 
   void _joinEvent(BuildContext context, Event event) {
     context.read<EventBloc>().add(AttendEvent(event.id));
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Joined "${event.title}"'),
-        backgroundColor: Colors.green,
-      ),
+    PulseToast.success(
+      context,
+      message: 'Joined "${event.title}"',
     );
   }
 
   void _leaveEvent(BuildContext context, Event event) {
     context.read<EventBloc>().add(LeaveEvent(event.id));
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Left "${event.title}"'),
-        backgroundColor: Colors.orange,
-      ),
+    PulseToast.info(
+      context,
+      message: 'Left "${event.title}"',
     );
   }
 
@@ -615,11 +605,9 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
         '${event.title}\n\n${event.description}\n\nJoin me at this event!';
     Clipboard.setData(ClipboardData(text: shareText)).then((_) {
       if (mounted) {
-        ScaffoldMessenger.of(this.context).showSnackBar(
-          const SnackBar(
-            content: Text('Event details copied to clipboard'),
-            backgroundColor: Colors.green,
-          ),
+        PulseToast.success(
+          this.context,
+          message: 'Event details copied to clipboard',
         );
       }
     });
@@ -634,20 +622,16 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
       );
 
       if (mounted) {
-        ScaffoldMessenger.of(this.context).showSnackBar(
-          const SnackBar(
-            content: Text('Event reported successfully'),
-            backgroundColor: Colors.green,
-          ),
+        PulseToast.success(
+          this.context,
+          message: 'Event reported successfully',
         );
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(this.context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to report event: $e'),
-            backgroundColor: Colors.red,
-          ),
+        PulseToast.error(
+          this.context,
+          message: 'Failed to report event: $e',
         );
       }
     }
