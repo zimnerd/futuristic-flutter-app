@@ -20,6 +20,7 @@ import '../../../blocs/chat_bloc.dart' as chat_bloc;
 import '../../../presentation/theme/pulse_colors.dart';
 import '../../widgets/common/keyboard_dismissible_scaffold.dart';
 import '../../widgets/common/initials_avatar.dart';
+import '../../widgets/common/pulse_toast.dart';
 
 /// Comprehensive group chat screen with real-time messaging, participant management,
 /// media sharing, voice/video calls, typing indicators, message reactions, and admin controls
@@ -194,10 +195,9 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
                             }
                           } catch (e) {
                             if (mounted && context.mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text('Failed to send voice: $e'),
-                                ),
+                              PulseToast.error(
+                                context,
+                                message: 'Failed to send voice: $e',
                               );
                             }
                           }
@@ -877,8 +877,10 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
               onTap: () {
                 Clipboard.setData(ClipboardData(text: message.content ?? ''));
                 Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Message copied')),
+                PulseToast.success(
+                  context,
+                  message: 'Message copied',
+                  duration: const Duration(seconds: 1),
                 );
               },
             ),
@@ -1168,10 +1170,9 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
 
   void _makeParticipantAdmin(GroupParticipant participant) {
     // Implement make admin logic
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('${participant.fullName} is now an admin'),
-      ),
+    PulseToast.success(
+      context,
+      message: '${participant.fullName} is now an admin',
     );
   }
 
@@ -1256,8 +1257,9 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
                     } catch (e) {
                       setState(() => isSearching = false);
                       if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Search failed: $e')),
+                        PulseToast.error(
+                          context,
+                          message: 'Search failed: $e',
                         );
                       }
                     }
@@ -1295,16 +1297,16 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
                               );
                               if (context.mounted) {
                                 Navigator.pop(context);
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text('Participant added'),
-                                  ),
+                                PulseToast.success(
+                                  context,
+                                  message: 'Participant added',
                                 );
                               }
                             } catch (e) {
                               if (context.mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(content: Text('Failed to add: $e')),
+                                PulseToast.error(
+                                  context,
+                                  message: 'Failed to add: $e',
                                 );
                               }
                             }
@@ -1349,8 +1351,10 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
 
   void _toggleMute() {
     // Implement mute toggle
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Notifications muted')),
+    PulseToast.success(
+      context,
+      message: 'Notifications muted',
+      duration: const Duration(seconds: 1),
     );
   }
 
@@ -1403,8 +1407,9 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
                     } catch (e) {
                       setState(() => isSearching = false);
                       if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Search failed: $e')),
+                        PulseToast.error(
+                          context,
+                          message: 'Search failed: $e',
                         );
                       }
                     }
@@ -1591,8 +1596,9 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
       );
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to load media: $e')),
+        PulseToast.error(
+          context,
+          message: 'Failed to load media: $e',
         );
       }
     }
@@ -1646,14 +1652,16 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
                 );
                 if (context.mounted) {
                   Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Settings updated')),
+                  PulseToast.success(
+                    context,
+                    message: 'Settings updated',
                   );
                 }
               } catch (e) {
                 if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Failed to update: $e')),
+                  PulseToast.error(
+                    context,
+                    message: 'Failed to update: $e',
                   );
                 }
               }
@@ -1744,18 +1752,16 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
                         );
                         if (context.mounted) {
                           Navigator.pop(context);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text(
-                                'Report submitted. We\'ll review it shortly.',
-                              ),
-                            ),
+                          PulseToast.success(
+                            context,
+                            message: 'Report submitted. We\'ll review it shortly.',
                           );
                         }
                       } catch (e) {
                         if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Failed to report: $e')),
+                          PulseToast.error(
+                            context,
+                            message: 'Failed to report: $e',
                           );
                         }
                       }
@@ -1796,15 +1802,17 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
                 if (context.mounted) {
                   Navigator.pop(context); // Close dialog
                   Navigator.pop(context); // Close screen
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('You left the group')),
+                  PulseToast.info(
+                    context,
+                    message: 'You left the group',
                   );
                 }
               } catch (e) {
                 if (context.mounted) {
                   Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Failed to leave group: $e')),
+                  PulseToast.error(
+                    context,
+                    message: 'Failed to leave group: $e',
                   );
                 }
               }
@@ -1885,8 +1893,9 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
     } catch (e) {
       if (mounted) {
         Navigator.of(context).pop(); // Close loading dialog
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to start voice call: $e')),
+        PulseToast.error(
+          context,
+          message: 'Failed to start voice call: $e',
         );
       }
     }
@@ -1961,8 +1970,9 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
     } catch (e) {
       if (mounted) {
         Navigator.of(context).pop(); // Close loading dialog
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to start video call: $e')),
+        PulseToast.error(
+          context,
+          message: 'Failed to start video call: $e',
         );
       }
     }
@@ -1982,8 +1992,9 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
     final status = await permission.request();
     if (!status.isGranted) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Permission denied')),
+        PulseToast.warning(
+          context,
+          message: 'Permission denied',
         );
       }
       return;
@@ -1992,8 +2003,10 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
     final image = await _imagePicker.pickImage(source: source);
     if (image != null) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Uploading image...')),
+        PulseToast.info(
+          context,
+          message: 'Uploading image...',
+          duration: const Duration(seconds: 30),
         );
       }
 
@@ -2012,14 +2025,17 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
             type: 'image',
           );
 
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Image sent')),
+          PulseToast.success(
+            context,
+            message: 'Image sent',
+            duration: const Duration(seconds: 2),
           );
         }
       } catch (e) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Failed to upload image: $e')),
+          PulseToast.error(
+            context,
+            message: 'Failed to upload image: $e',
           );
         }
       }
@@ -2030,8 +2046,10 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
     final video = await _imagePicker.pickVideo(source: ImageSource.gallery);
     if (video != null) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Uploading video...')),
+        PulseToast.info(
+          context,
+          message: 'Uploading video...',
+          duration: const Duration(seconds: 60),
         );
       }
 
@@ -2049,14 +2067,17 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
             type: 'video',
           );
 
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Video sent')),
+          PulseToast.success(
+            context,
+            message: 'Video sent',
+            duration: const Duration(seconds: 2),
           );
         }
       } catch (e) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Failed to upload video: $e')),
+          PulseToast.error(
+            context,
+            message: 'Failed to upload video: $e',
           );
         }
       }
@@ -2082,9 +2103,11 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
       if (result != null && result.files.single.path != null) {
         final file = result.files.single;
         if (mounted) {
-          ScaffoldMessenger.of(
+          PulseToast.info(
             context,
-          ).showSnackBar(SnackBar(content: Text('Uploading ${file.name}...')));
+            message: 'Uploading ${file.name}...',
+            duration: const Duration(seconds: 30),
+          );
         }
 
         final uploadResult = await _groupChatService.uploadMedia(
@@ -2100,15 +2123,18 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
             type: 'document',
           );
 
-          ScaffoldMessenger.of(
+          PulseToast.success(
             context,
-          ).showSnackBar(SnackBar(content: Text('${file.name} sent')));
+            message: '${file.name} sent',
+            duration: const Duration(seconds: 2),
+          );
         }
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to upload document: $e')),
+        PulseToast.error(
+          context,
+          message: 'Failed to upload document: $e',
         );
       }
     }
@@ -2137,8 +2163,9 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
                 );
                 if (context.mounted) {
                   Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Message deleted')),
+                  PulseToast.success(
+                    context,
+                    message: 'Message deleted',
                   );
                   // Refresh messages
                   setState(() {
@@ -2148,8 +2175,9 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
               } catch (e) {
                 if (context.mounted) {
                   Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Failed to delete: $e')),
+                  PulseToast.error(
+                    context,
+                    message: 'Failed to delete: $e',
                   );
                 }
               }
@@ -2243,18 +2271,16 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
                         );
                         if (context.mounted) {
                           Navigator.pop(context);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text(
-                                'Report submitted. We\'ll review it shortly.',
-                              ),
-                            ),
+                          PulseToast.success(
+                            context,
+                            message: 'Report submitted. We\'ll review it shortly.',
                           );
                         }
                       } catch (e) {
                         if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Failed to report: $e')),
+                          PulseToast.error(
+                            context,
+                            message: 'Failed to report: $e',
                           );
                         }
                       }

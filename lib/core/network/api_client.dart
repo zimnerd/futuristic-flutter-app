@@ -452,6 +452,55 @@ class ApiClient {
   }
 
   // ===========================================
+  // PREFERENCES ENDPOINTS
+  // ===========================================
+
+  /// Get all available occupations
+  Future<Response> getOccupations() async {
+    return await _dio.get('/preferences/occupations');
+  }
+
+  /// Get all available relationship types
+  Future<Response> getRelationshipTypes() async {
+    return await _dio.get('/preferences/relationship-types');
+  }
+
+  /// Get all available languages
+  Future<Response> getLanguages() async {
+    return await _dio.get('/preferences/languages');
+  }
+
+  /// Get all available education levels
+  Future<Response> getEducationLevels() async {
+    return await _dio.get('/preferences/education-levels');
+  }
+
+  /// Get all available body types
+  Future<Response> getBodyTypes() async {
+    return await _dio.get('/preferences/body-types');
+  }
+
+  /// Get all available drinking options
+  Future<Response> getDrinkingOptions() async {
+    return await _dio.get('/preferences/drinking-options');
+  }
+
+  /// Get all available smoking options
+  Future<Response> getSmokingOptions() async {
+    return await _dio.get('/preferences/smoking-options');
+  }
+
+  /// Get all available exercise frequency options
+  Future<Response> getExerciseOptions() async {
+    return await _dio.get('/preferences/exercise-options');
+  }
+
+  /// Get all preferences in a single call (optional convenience method)
+  Future<Response> getAllPreferences() async {
+    return await _dio.get('/preferences/all');
+  }
+
+  // ===========================================
   // MATCHING ENDPOINTS (Actual backend paths)
   // ===========================================
 

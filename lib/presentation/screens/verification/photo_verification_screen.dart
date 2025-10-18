@@ -3,6 +3,7 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/network/api_client.dart';
+import '../../widgets/common/pulse_toast.dart';
 
 /// Multi-step photo verification wizard
 /// Steps: 1) Instructions, 2) Camera Capture, 3) Photo Review, 4) Submission
@@ -624,11 +625,9 @@ class _PhotoVerificationScreenState extends State<PhotoVerificationScreen> {
   }
 
   void _showError(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: AppColors.error,
-      ),
+    PulseToast.error(
+      context,
+      message: message,
     );
   }
 }

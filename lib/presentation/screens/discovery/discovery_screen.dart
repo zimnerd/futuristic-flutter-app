@@ -18,6 +18,7 @@ import '../../widgets/boost/boost_confirmation_dialog.dart';
 import '../../widgets/discovery/swipe_card.dart' as swipe_widget;
 import '../../widgets/ai/floating_ai_button.dart';
 import '../../widgets/common/empty_state_widget.dart';
+import '../../widgets/common/pulse_toast.dart';
 import '../../widgets/common/skeleton_loading.dart';
 import '../ai_companion/ai_companion_screen.dart';
 
@@ -358,39 +359,31 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
               // Handle rewind success/error feedback
               if (state is DiscoveryLoaded && state.rewindJustCompleted) {
               // Rewind was successful
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: const Text('Rewound last action'),
-                  backgroundColor: PulseColors.rewind,
-                  duration: const Duration(seconds: 2),
-                ),
+              PulseToast.success(
+                context,
+                message: 'Rewound last action',
+                duration: const Duration(seconds: 2),
               );
-              
+
               // Reset the flag to prevent showing the toast again
               context.read<DiscoveryBloc>().add(const ClearRewindFlag());
             }
             
             // Handle boost success feedback
             if (state is DiscoveryBoostActivated) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(
-                    'Boost activated for ${state.boostDuration.inMinutes} minutes!',
-                  ),
-                  backgroundColor: PulseColors.accent,
-                  duration: const Duration(seconds: 3),
-                ),
+              PulseToast.success(
+                context,
+                message: 'Boost activated for ${state.boostDuration.inMinutes} minutes!',
+                duration: const Duration(seconds: 3),
               );
             }
             
             // Handle errors
             if (state is DiscoveryError) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(state.message),
-                  backgroundColor: PulseColors.reject,
-                  duration: const Duration(seconds: 3),
-                ),
+              PulseToast.error(
+                context,
+                message: state.message,
+                duration: const Duration(seconds: 3),
               );
             }
           },

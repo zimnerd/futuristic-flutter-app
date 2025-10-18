@@ -11,6 +11,7 @@ import '../../blocs/profile/profile_bloc.dart';
 import '../../blocs/block_report/block_report_bloc.dart';
 import '../../theme/pulse_colors.dart';
 import '../../widgets/common/pulse_button.dart';
+import '../../widgets/common/pulse_toast.dart';
 import '../../widgets/verification/verification_badge.dart';
 import '../../widgets/dialogs/block_user_dialog.dart';
 import '../../widgets/dialogs/report_user_dialog.dart';
@@ -169,25 +170,22 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
               "You can only message people you've matched with. Try liking this profile first!";
         }
 
-        scaffoldMessenger.showSnackBar(
-          SnackBar(
-            content: Text(errorMessage),
-            backgroundColor: Colors.red,
-            duration: const Duration(seconds: 4),
-            action:
-                state.message.toLowerCase().contains('matched') ||
-                    state.message.toLowerCase().contains('403')
-                ? SnackBarAction(
-                    label: 'Like Profile',
-                    textColor: Colors.white,
-                    onPressed: () {
-                      if (widget.onLike != null) {
-                        widget.onLike!();
-                      }
-                    },
-                  )
-                : null,
-          ),
+        PulseToast.error(
+          context,
+          message: errorMessage,
+          duration: const Duration(seconds: 4),
+          action:
+              state.message.toLowerCase().contains('matched') ||
+                  state.message.toLowerCase().contains('403')
+              ? ToastAction(
+                  label: 'Like Profile',
+                  onPressed: () {
+                    if (widget.onLike != null) {
+                      widget.onLike!();
+                    }
+                  },
+                )
+              : null,
         );
       }
     });
@@ -2166,8 +2164,10 @@ Join PulseLink to connect!''';
     // Add to pubspec.yaml: share_plus: ^7.0.0
     // Then uncomment: Share.share(shareText, subject: '${profile.name} on PulseLink');
     
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Share text prepared:\n$shareText')),
+    PulseToast.info(
+      context,
+      message: 'Share text prepared:\n$shareText',
+      duration: const Duration(seconds: 3),
     );
   }
 
@@ -2634,21 +2634,15 @@ Join PulseLink to connect!''';
           listener: (context, state) {
             if (state is UserReported) {
               Navigator.pop(dialogContext);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text(
-                    'Report submitted. Thank you for keeping PulseLink safe.',
-                  ),
-                  duration: Duration(seconds: 3),
-                  backgroundColor: Colors.green,
-                ),
+              PulseToast.success(
+                context,
+                message: 'Report submitted. Thank you for keeping PulseLink safe.',
+                duration: const Duration(seconds: 3),
               );
             } else if (state is BlockReportError) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Failed to report: ${state.message}'),
-                  backgroundColor: Colors.red,
-                ),
+              PulseToast.error(
+                context,
+                message: 'Failed to report: ${state.message}',
               );
             }
           },
@@ -2670,21 +2664,17 @@ Join PulseLink to connect!''';
           listener: (context, state) {
             if (state is UserBlocked) {
               Navigator.pop(dialogContext);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('User blocked successfully'),
-                  duration: Duration(seconds: 2),
-                  backgroundColor: Colors.green,
-                ),
+              PulseToast.success(
+                context,
+                message: 'User blocked successfully',
+                duration: const Duration(seconds: 2),
               );
               // Close profile after blocking
               this.context.pop();
             } else if (state is BlockReportError) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Failed to block user: ${state.message}'),
-                  backgroundColor: Colors.red,
-                ),
+              PulseToast.error(
+                context,
+                message: 'Failed to block user: ${state.message}',
               );
             }
           },

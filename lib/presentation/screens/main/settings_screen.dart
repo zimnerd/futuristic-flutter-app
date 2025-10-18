@@ -9,6 +9,7 @@ import '../../blocs/auth/auth_bloc.dart';
 import '../../blocs/auth/auth_event.dart';
 import '../../theme/pulse_colors.dart';
 import '../../widgets/common/common_widgets.dart';
+import '../../widgets/common/pulse_toast.dart';
 
 /// Enhanced settings screen with full configuration options
 class SettingsScreen extends StatelessWidget {
@@ -39,10 +40,9 @@ class SettingsScreen extends StatelessWidget {
             title: 'Notifications',
             subtitle: 'Push notifications and email',
             onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Notifications settings coming soon!'),
-                ),
+              PulseToast.info(
+                context,
+                message: 'Notifications settings coming soon!',
               );
             },
           ),
@@ -51,8 +51,9 @@ class SettingsScreen extends StatelessWidget {
             title: 'Language',
             subtitle: 'App language and region',
             onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Language settings coming soon!')),
+              PulseToast.info(
+                context,
+                message: 'Language settings coming soon!',
               );
             },
           ),
@@ -67,10 +68,9 @@ class SettingsScreen extends StatelessWidget {
             title: 'AI Features',
             subtitle: 'Manage AI-powered features',
             onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('AI Features settings coming soon!'),
-                ),
+              PulseToast.info(
+                context,
+                message: 'AI Features settings coming soon!',
               );
             },
           ),
@@ -107,8 +107,9 @@ class SettingsScreen extends StatelessWidget {
             title: 'Help & Support',
             subtitle: 'FAQs and contact support',
             onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Help & Support coming soon!')),
+              PulseToast.info(
+                context,
+                message: 'Help & Support coming soon!',
               );
             },
           ),
@@ -131,8 +132,9 @@ class SettingsScreen extends StatelessWidget {
             title: 'Terms & Privacy',
             subtitle: 'Legal information',
             onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Terms & Privacy coming soon!')),
+              PulseToast.info(
+                context,
+                message: 'Terms & Privacy coming soon!',
               );
             },
           ),
@@ -332,8 +334,9 @@ class SettingsScreen extends StatelessWidget {
                         Navigator.pop(context);
                         // In real implementation, call AuthBloc to delete account
                         context.read<AuthBloc>().add(const AuthSignOutRequested());
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Account deleted')),
+                        PulseToast.success(
+                          context,
+                          message: 'Account deleted',
                         );
                       },
                       style: TextButton.styleFrom(foregroundColor: PulseColors.error),
@@ -363,9 +366,6 @@ class SettingsScreen extends StatelessWidget {
       final locationService = context.read<LocationService>();
       final locationTracker = LocationTrackingInitializer();
 
-      // Store messenger reference before any async operations
-      final messenger = ScaffoldMessenger.of(context);
-
       debugPrint(
         '🔧 SettingsScreen: Requesting location permissions with dialog...',
       );
@@ -378,32 +378,29 @@ class SettingsScreen extends StatelessWidget {
           '🔧 SettingsScreen: Location permissions granted, starting tracking...',
         );
         await locationTracker.initializeWithDialogs(context); // ignore: use_build_context_synchronously
-        messenger.showSnackBar(
-          const SnackBar(
-            content: Text(
-              '✅ Location permissions granted and tracking started!',
-            ),
-            backgroundColor: Colors.green,
-          ),
-        );
+        if (context.mounted) {
+          PulseToast.success(
+            context,
+            message: '✅ Location permissions granted and tracking started!',
+          );
+        }
       } else {
         debugPrint('🔧 SettingsScreen: Location permissions denied');
-        messenger.showSnackBar(
-          const SnackBar(
-            content: Text('❌ Location permissions denied or failed'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        if (context.mounted) {
+          PulseToast.error(
+            context,
+            message: '❌ Location permissions denied or failed',
+          );
+        }
       }
     } catch (e) {
       debugPrint('🔧 SettingsScreen: Error testing location permissions: $e');
-      final messenger = ScaffoldMessenger.of(context); // ignore: use_build_context_synchronously
-      messenger.showSnackBar(
-        SnackBar(
-          content: Text('❌ Error testing location permissions: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      if (context.mounted) {
+        PulseToast.error(
+          context,
+          message: '❌ Error testing location permissions: $e',
+        );
+      }
     }
   }
 }

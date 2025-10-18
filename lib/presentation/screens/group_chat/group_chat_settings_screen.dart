@@ -9,6 +9,7 @@ import '../../../features/group_chat/data/models.dart';
 import '../../../features/group_chat/data/group_chat_service.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../widgets/common/keyboard_dismissible_scaffold.dart';
+import '../../widgets/common/pulse_toast.dart';
 
 final sl = GetIt.instance;
 
@@ -908,24 +909,10 @@ class _GroupChatSettingsScreenState extends State<GroupChatSettingsScreen> {
     try {
       // Show loading indicator
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Row(
-              children: [
-                SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                  ),
-                ),
-                SizedBox(width: 16),
-                Text('Saving settings...'),
-              ],
-            ),
-            duration: Duration(seconds: 60),
-          ),
+        PulseToast.info(
+          context,
+          message: 'Saving settings...',
+          duration: const Duration(seconds: 60),
         );
       }
 
@@ -946,24 +933,13 @@ class _GroupChatSettingsScreenState extends State<GroupChatSettingsScreen> {
       );
 
       if (mounted) {
-        // Dismiss loading indicator
-        ScaffoldMessenger.of(context).hideCurrentSnackBar();
-
         // Show success message
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Row(
-              children: [
-                Icon(Icons.check_circle, color: Colors.white),
-                SizedBox(width: 16),
-                Text('Settings saved successfully'),
-              ],
-            ),
-            backgroundColor: Colors.green,
-            duration: Duration(seconds: 3),
-          ),
+        PulseToast.success(
+          context,
+          message: 'Settings saved successfully',
+          duration: const Duration(seconds: 3),
         );
-        
+
         setState(() {
           _hasUnsavedChanges = false;
         });
@@ -973,30 +949,14 @@ class _GroupChatSettingsScreenState extends State<GroupChatSettingsScreen> {
       }
     } catch (e) {
       if (mounted) {
-        // Dismiss loading indicator
-        ScaffoldMessenger.of(context).hideCurrentSnackBar();
-
         // Show error message
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Row(
-              children: [
-                const Icon(Icons.error_outline, color: Colors.white),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Text(
-                    'Failed to save settings: ${e.toString().replaceAll('Exception: ', '')}',
-                  ),
-                ),
-              ],
-            ),
-            backgroundColor: Colors.red,
-            duration: const Duration(seconds: 5),
-            action: SnackBarAction(
-              label: 'Retry',
-              textColor: Colors.white,
-              onPressed: _saveSettings,
-            ),
+        PulseToast.error(
+          context,
+          message: 'Failed to save settings: ${e.toString().replaceAll('Exception: ', '')}',
+          duration: const Duration(seconds: 5),
+          action: ToastAction(
+            label: 'Retry',
+            onPressed: _saveSettings,
           ),
         );
       }
@@ -1106,17 +1066,16 @@ class _GroupChatSettingsScreenState extends State<GroupChatSettingsScreen> {
       );
       
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Changed ${participant.fullName}\'s role to ${newRole.name}'),
-            backgroundColor: Colors.green,
-          ),
+        PulseToast.success(
+          context,
+          message: 'Changed ${participant.fullName}\'s role to ${newRole.name}',
         );
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to change role: $e'), backgroundColor: Colors.red),
+        PulseToast.error(
+          context,
+          message: 'Failed to change role: $e',
         );
       }
     }
@@ -1159,17 +1118,16 @@ class _GroupChatSettingsScreenState extends State<GroupChatSettingsScreen> {
       );
       
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('${participant.fullName} removed from group'),
-            backgroundColor: Colors.green,
-          ),
+        PulseToast.success(
+          context,
+          message: '${participant.fullName} removed from group',
         );
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to remove participant: $e'), backgroundColor: Colors.red),
+        PulseToast.error(
+          context,
+          message: 'Failed to remove participant: $e',
         );
       }
     }
@@ -1235,17 +1193,16 @@ class _GroupChatSettingsScreenState extends State<GroupChatSettingsScreen> {
       if (mounted) {
         Navigator.pop(context); // Close settings screen
         Navigator.pop(context); // Close chat screen
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('You left the group'),
-            backgroundColor: Colors.orange,
-          ),
+        PulseToast.info(
+          context,
+          message: 'You left the group',
         );
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to leave group: $e'), backgroundColor: Colors.red),
+        PulseToast.error(
+          context,
+          message: 'Failed to leave group: $e',
         );
       }
     }
@@ -1288,17 +1245,16 @@ class _GroupChatSettingsScreenState extends State<GroupChatSettingsScreen> {
       if (mounted) {
         Navigator.pop(context); // Close settings screen
         Navigator.pop(context); // Close chat screen
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Group deleted permanently'),
-            backgroundColor: Colors.red,
-          ),
+        PulseToast.error(
+          context,
+          message: 'Group deleted permanently',
         );
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to delete group: $e'), backgroundColor: Colors.red),
+        PulseToast.error(
+          context,
+          message: 'Failed to delete group: $e',
         );
       }
     }
@@ -1322,8 +1278,9 @@ class _GroupChatSettingsScreenState extends State<GroupChatSettingsScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to pick image: $e'), backgroundColor: Colors.red),
+        PulseToast.error(
+          context,
+          message: 'Failed to pick image: $e',
         );
       }
     }
@@ -1345,8 +1302,9 @@ class _GroupChatSettingsScreenState extends State<GroupChatSettingsScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to take photo: $e'), backgroundColor: Colors.red),
+        PulseToast.error(
+          context,
+          message: 'Failed to take photo: $e',
         );
       }
     }
@@ -1357,21 +1315,10 @@ class _GroupChatSettingsScreenState extends State<GroupChatSettingsScreen> {
     try {
       // Show loading indicator
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Row(
-              children: [
-                SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                ),
-                SizedBox(width: 16),
-                Text('Uploading photo...'),
-              ],
-            ),
-            duration: Duration(seconds: 60),
-          ),
+        PulseToast.info(
+          context,
+          message: 'Uploading photo...',
+          duration: const Duration(seconds: 60),
         );
       }
 
@@ -1382,22 +1329,19 @@ class _GroupChatSettingsScreenState extends State<GroupChatSettingsScreen> {
       );
 
       if (mounted) {
-        ScaffoldMessenger.of(context).hideCurrentSnackBar();
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Group photo updated successfully'),
-            backgroundColor: Colors.green,
-            duration: Duration(seconds: 2),
-          ),
+        PulseToast.success(
+          context,
+          message: 'Group photo updated successfully',
+          duration: const Duration(seconds: 2),
         );
         // Refresh the screen
         setState(() {});
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).hideCurrentSnackBar();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to upload photo: $e'), backgroundColor: Colors.red),
+        PulseToast.error(
+          context,
+          message: 'Failed to upload photo: $e',
         );
       }
     }
@@ -1433,11 +1377,9 @@ class _GroupChatSettingsScreenState extends State<GroupChatSettingsScreen> {
         await service.removeGroupPhoto(conversationId: widget.group.id);
 
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Group photo removed'),
-              backgroundColor: Colors.green,
-            ),
+          PulseToast.success(
+            context,
+            message: 'Group photo removed',
           );
           // Refresh the screen
           setState(() {});
@@ -1445,8 +1387,9 @@ class _GroupChatSettingsScreenState extends State<GroupChatSettingsScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to remove photo: $e'), backgroundColor: Colors.red),
+        PulseToast.error(
+          context,
+          message: 'Failed to remove photo: $e',
         );
       }
     }
@@ -1709,20 +1652,16 @@ class _AddParticipantsDialogState extends State<AddParticipantsDialog> {
       if (mounted) {
         Navigator.pop(context);
         widget.onParticipantsAdded();
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Participants added successfully'),
-            backgroundColor: Colors.green,
-          ),
+        PulseToast.success(
+          context,
+          message: 'Participants added successfully',
         );
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to add participants: $e'),
-            backgroundColor: Colors.red,
-          ),
+        PulseToast.error(
+          context,
+          message: 'Failed to add participants: $e',
         );
       }
     } finally {
@@ -1749,11 +1688,9 @@ class _AddParticipantsDialogState extends State<AddParticipantsDialog> {
     } catch (e) {
       if (mounted) {
         setState(() => _isSearching = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Search failed: $e'),
-            backgroundColor: Colors.red,
-          ),
+        PulseToast.error(
+          context,
+          message: 'Search failed: $e',
         );
       }
     }
@@ -1798,8 +1735,9 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
     } catch (e) {
       if (mounted) {
         setState(() => _isLoading = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to load blocked users: $e'), backgroundColor: Colors.red),
+        PulseToast.error(
+          context,
+          message: 'Failed to load blocked users: $e',
         );
       }
     }
@@ -1905,18 +1843,17 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
       );
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('${user.fullName} unblocked'),
-            backgroundColor: Colors.green,
-          ),
+        PulseToast.success(
+          context,
+          message: '${user.fullName} unblocked',
         );
         _loadBlockedUsers(); // Reload the list
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to unblock user: $e'), backgroundColor: Colors.red),
+        PulseToast.error(
+          context,
+          message: 'Failed to unblock user: $e',
         );
       }
     }
@@ -1963,11 +1900,9 @@ class _ReportedContentScreenState extends State<ReportedContentScreen> {
     } catch (e) {
       if (mounted) {
         setState(() => _isLoading = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to load reported content: $e'),
-            backgroundColor: Colors.red,
-          ),
+        PulseToast.error(
+          context,
+          message: 'Failed to load reported content: $e',
         );
       }
     }
@@ -2184,21 +2119,17 @@ class _ReportedContentScreenState extends State<ReportedContentScreen> {
       );
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Report $action successfully'),
-            backgroundColor: Colors.green,
-          ),
+        PulseToast.success(
+          context,
+          message: 'Report $action successfully',
         );
         _loadReportedContent(); // Reload the list
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to review report: $e'),
-            backgroundColor: Colors.red,
-          ),
+        PulseToast.error(
+          context,
+          message: 'Failed to review report: $e',
         );
       }
     }

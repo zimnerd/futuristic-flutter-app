@@ -1,6 +1,9 @@
 import 'package:logger/logger.dart';
+import 'package:uuid/uuid.dart';
 
 import '../../data/models/user_model.dart';
+import '../../data/models/photo_upload_progress.dart';
+import '../../data/services/photo_upload_service.dart';
 import '../../domain/repositories/user_repository.dart';
 import '../datasources/remote/user_remote_data_source.dart';
 import '../datasources/local/user_local_data_source.dart';
@@ -408,16 +411,99 @@ class UserRepositoryImpl implements UserRepository {
     try {
       _logger.i('Uploading ${photoPaths.length} photos for user: $userId');
 
-      // TODO: Implement batch upload with progress tracking
-      // For now, upload one by one
+      // Create batch upload with progress tracking
+      final batchId = const Uuid().v4();
+      final uploadService = PhotoUploadService();
       final List<String> uploadedUrls = [];
-      for (final photoPath in photoPaths) {
-        final photoUrl = await _remoteDataSource.uploadProfilePhoto(
-          userId,
-          photoPath,
+      final List<PhotoUploadProgress> photoProgresses = [];
+
+      // Initialize batch progress
+      for (int i = 0; i < photoPaths.length; i++) {
+        final uploadId = '${batchId}_photo_$i';
+        photoProgresses.add(
+          PhotoUploadProgress(
+            uploadId: uploadId,
+            photoPath: photoPaths[i],
+            progress: 0.0,
+            status: UploadStatus.pending,
+          ),
         );
-        uploadedUrls.add(photoUrl);
       }
+
+      // Update initial batch progress
+      uploadService.updateBatchProgress(
+        BatchUploadProgress(
+          batchId: batchId,
+          totalPhotos: photoPaths.length,
+          uploadedPhotos: 0,
+          photos: photoProgresses,
+          overallProgress: 0.0,
+        ),
+      );
+
+      // Upload photos with progress tracking
+      for (int i = 0; i < photoPaths.length; i++) {
+        final uploadId = '${batchId}_photo_$i';
+
+        try {
+          // Update to uploading status
+          uploadService.updateProgress(
+            PhotoUploadProgress(
+              uploadId: uploadId,
+              photoPath: photoPaths[i],
+              progress: 0.0,
+              status: UploadStatus.uploading,
+            ),
+          );
+
+          // Upload the photo
+          final photoUrl = await _remoteDataSource.uploadProfilePhoto(
+            userId,
+            photoPaths[i],
+          );
+          uploadedUrls.add(photoUrl);
+
+          // Update to completed status
+          uploadService.updateProgress(
+            PhotoUploadProgress(
+              uploadId: uploadId,
+              photoPath: photoPaths[i],
+              progress: 1.0,
+              status: UploadStatus.completed,
+              url: photoUrl,
+            ),
+          );
+
+          // Update batch progress
+          final overallProgress = (i + 1) / photoPaths.length;
+          uploadService.updateBatchProgress(
+            BatchUploadProgress(
+              batchId: batchId,
+              totalPhotos: photoPaths.length,
+              uploadedPhotos: i + 1,
+              photos: photoProgresses,
+              overallProgress: overallProgress,
+            ),
+          );
+        } catch (e) {
+          // Update to failed status
+          uploadService.updateProgress(
+            PhotoUploadProgress(
+              uploadId: uploadId,
+              photoPath: photoPaths[i],
+              progress: 0.0,
+              status: UploadStatus.failed,
+              error: e.toString(),
+            ),
+          );
+
+          _logger.e('Failed to upload photo ${i + 1}: $e');
+          // Continue with remaining photos
+        }
+      }
+
+      // Clean up batch tracking
+      uploadService.cleanupBatch(batchId);
 
       // Update local cache
       final cachedUser = await _localDataSource.getCurrentUser();
@@ -478,8 +564,11 @@ class UserRepositoryImpl implements UserRepository {
     try {
       _logger.i('Setting main photo $photoId for user: $userId');
 
-      // TODO: Implement backend API call for setting main photo
-      // PUT /api/v1/profile/photos/$photoId/set-main
+      // Use syncPhotos API to set main photo
+      // The backend PUT /users/me/photos endpoint accepts isMain flag
+      await _remoteDataSource.syncPhotos([
+        {'mediaId': photoId, 'isMain': true, 'order': 0},
+      ]);
 
       _logger.i('Main photo set successfully');
     } catch (e) {
@@ -492,8 +581,14 @@ class UserRepositoryImpl implements UserRepository {
   @override
   Future<Map<String, dynamic>> getPhotoUploadProgress(String uploadId) async {
     try {
-      // TODO: Implement upload progress tracking
-      // This would typically query a progress tracking service or state
+      final uploadService = PhotoUploadService();
+      final progress = uploadService.getUploadProgress(uploadId);
+
+      if (progress != null) {
+        return progress.toJson();
+      }
+
+      // No progress found, return pending status
       return {'uploadId': uploadId, 'progress': 0.0, 'status': 'pending'};
     } catch (e) {
       _logger.e('Get photo upload progress failed: $e');

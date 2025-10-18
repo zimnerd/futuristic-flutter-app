@@ -3,6 +3,7 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/network/api_client.dart';
+import '../../widgets/common/pulse_toast.dart';
 
 /// Document verification screen for ID/Passport/Driver's License
 /// Steps: 1) Select document type, 2) Capture front, 3) Capture back, 4) Review, 5) Submit
@@ -859,11 +860,9 @@ class _IdVerificationScreenState extends State<IdVerificationScreen> {
   }
 
   void _showError(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: AppColors.error,
-      ),
+    PulseToast.error(
+      context,
+      message: message,
     );
   }
 }

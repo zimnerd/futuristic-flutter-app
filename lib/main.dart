@@ -7,7 +7,6 @@ import 'package:google_maps_flutter_android/google_maps_flutter_android.dart';
 import 'package:google_maps_flutter_platform_interface/google_maps_flutter_platform_interface.dart';
 
 import 'firebase_options.dart';
-import 'app_providers.dart';
 import 'blocs/call_bloc.dart';
 import 'blocs/chat_bloc.dart';
 import 'blocs/notification_bloc.dart';
@@ -218,25 +217,19 @@ class PulseDatingApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AppProviders(
-      hiveStorageService: hiveStorage,
-      child: MultiBlocProvider(
-        providers: [
-          // Initialize services
-          RepositoryProvider<ApiClient>(
-            create: (context) => ApiClient.instance,
-          ),
-          RepositoryProvider<HiveStorageService>(
-            create: (context) => hiveStorage,
-          ),
-          RepositoryProvider<WebSocketService>(
-            create: (context) => WebSocketServiceImpl.instance,
-          ),
-          RepositoryProvider<WebRTCService>(
-            create: (context) => WebRTCService(),
-          ),
-          RepositoryProvider<StatisticsService>(
-            create: (context) => StatisticsService(context.read<ApiClient>()),
+    return MultiBlocProvider(
+      providers: [
+        // Initialize services
+        RepositoryProvider<ApiClient>(create: (context) => ApiClient.instance),
+        RepositoryProvider<HiveStorageService>(
+          create: (context) => hiveStorage,
+        ),
+        RepositoryProvider<WebSocketService>(
+          create: (context) => WebSocketServiceImpl.instance,
+        ),
+        RepositoryProvider<WebRTCService>(create: (context) => WebRTCService()),
+        RepositoryProvider<StatisticsService>(
+          create: (context) => StatisticsService(context.read<ApiClient>()),
           ),
           RepositoryProvider<HeatMapService>(
             create: (context) => HeatMapService(context.read<ApiClient>()),
@@ -372,8 +365,7 @@ class PulseDatingApp extends StatelessWidget {
                 ),
               ),
             );
-          },
-        ),
+        },
       ),
     );
   }

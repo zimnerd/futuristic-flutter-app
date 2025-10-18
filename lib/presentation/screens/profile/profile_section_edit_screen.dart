@@ -13,6 +13,7 @@ import '../../blocs/photo/photo_event.dart' as photo_events;
 import '../../theme/pulse_colors.dart';
 import '../../widgets/common/keyboard_dismissible_scaffold.dart';
 import '../../widgets/common/pulse_button.dart';
+import '../../widgets/common/pulse_toast.dart';
 import '../../dialogs/photo_details_dialog.dart';
 import '../../sheets/photo_reorder_sheet.dart';
 import '../../../domain/entities/user_profile.dart';
@@ -83,20 +84,16 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
     return BlocListener<PhotoBloc, PhotoState>(
       listener: (context, state) {
         if (state is PhotoError) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(state.message),
-              backgroundColor: PulseColors.error,
-              duration: const Duration(seconds: 3),
-            ),
+          PulseToast.error(
+            context,
+            message: state.message,
+            duration: const Duration(seconds: 3),
           );
         } else if (state is PhotoOperationSuccess) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(state.message),
-              backgroundColor: PulseColors.success,
-              duration: const Duration(seconds: 2),
-            ),
+          PulseToast.success(
+            context,
+            message: state.message,
+            duration: const Duration(seconds: 2),
           );
           // Refresh profile data
           context.read<ProfileBloc>().add(LoadProfile());
@@ -806,8 +803,9 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
                   }
                 });
 
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Main photo updated')),
+                PulseToast.success(
+                  context,
+                  message: 'Main photo updated',
                 );
               },
         onDelete: () {
@@ -900,8 +898,9 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
         _formData['photos'] = updatedPhotos;
       });
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Photos reordered successfully')),
+      PulseToast.success(
+        context,
+        message: 'Photos reordered successfully',
       );
     }
   }
@@ -1166,11 +1165,9 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
 
                     if (adjustedAge < 18) {
                       if (!mounted) return;
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('You must be at least 18 years old'),
-                          backgroundColor: PulseColors.error,
-                        ),
+                      PulseToast.error(
+                        context,
+                        message: 'You must be at least 18 years old',
                       );
                       return;
                     }
@@ -1559,12 +1556,10 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
 
           // Show success message
           if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('Uploading ${newPhotos.length} photo(s)...'),
-                backgroundColor: Colors.green,
-                duration: const Duration(seconds: 2),
-              ),
+            PulseToast.success(
+              context,
+              message: 'Uploading ${newPhotos.length} photo(s)...',
+              duration: const Duration(seconds: 2),
             );
           }
         } catch (e) {
@@ -1572,12 +1567,9 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
           if (mounted) Navigator.pop(context);
 
           // Show error
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Failed to upload photos: $e'),
-              backgroundColor: Colors.red,
-              behavior: SnackBarBehavior.floating,
-            ),
+          PulseToast.error(
+            context,
+            message: 'Failed to upload photos: $e',
           );
           return;
         }
@@ -1585,14 +1577,11 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
 
       // Navigate back with the updated data
       context.pop(_formData);
-      
+
       // Show success message
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('${_getSectionTitle()} updated successfully'),
-          backgroundColor: PulseColors.success,
-          behavior: SnackBarBehavior.floating,
-        ),
+      PulseToast.success(
+        context,
+        message: '${_getSectionTitle()} updated successfully',
       );
     }
   }

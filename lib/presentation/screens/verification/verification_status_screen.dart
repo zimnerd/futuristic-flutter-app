@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/network/api_client.dart';
+import '../../widgets/common/pulse_toast.dart';
 
 /// Verification status screen showing pending/approved/rejected states
 /// Displays verification requests and their current status
@@ -649,11 +650,9 @@ class _VerificationStatusScreenState extends State<VerificationStatusScreen> {
   }
 
   void _showError(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: AppColors.error,
-      ),
+    PulseToast.error(
+      context,
+      message: message,
     );
   }
 }

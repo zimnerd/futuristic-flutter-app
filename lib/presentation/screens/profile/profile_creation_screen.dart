@@ -9,6 +9,7 @@ import '../../blocs/user/user_event.dart';
 import '../../theme/pulse_colors.dart';
 import '../../widgets/common/keyboard_dismissible_scaffold.dart';
 import '../../widgets/common/pulse_loading_widget.dart';
+import '../../widgets/common/pulse_toast.dart';
 import '../../widgets/profile/interests_selector.dart';
 import '../../widgets/profile/photo_picker_grid.dart';
 import '../../widgets/profile/profile_exit_dialog.dart';
@@ -153,11 +154,9 @@ class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
         body: BlocConsumer<ProfileBloc, ProfileState>(
         listener: (context, state) {
           if (state.status == ProfileStatus.error) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.error ?? 'An error occurred'),
-                backgroundColor: Colors.red,
-              ),
+            PulseToast.error(
+              context,
+              message: state.error ?? 'An error occurred',
             );
           } else if (state.status == ProfileStatus.success) {
             // Profile created successfully, navigate to main app
@@ -787,22 +786,18 @@ class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
 
   void _createProfile() {
     if (!_formKey.currentState!.validate()) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please fill in all required fields'),
-          backgroundColor: Colors.red,
-        ),
+      PulseToast.error(
+        context,
+        message: 'Please fill in all required fields',
       );
       return;
     }
 
     // Validate required fields before submission
     if (_selectedPhotos.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please add at least one photo'),
-          backgroundColor: Colors.red,
-        ),
+      PulseToast.error(
+        context,
+        message: 'Please add at least one photo',
       );
       return;
     }
@@ -829,21 +824,17 @@ class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
         updates: profileData,
       ));
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Profile created successfully!'),
-          backgroundColor: Colors.green,
-        ),
+      PulseToast.success(
+        context,
+        message: 'Profile created successfully!',
       );
 
       // Navigate to main app
       context.go('/main');
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Failed to create profile: $e'),
-          backgroundColor: Colors.red,
-        ),
+      PulseToast.error(
+        context,
+        message: 'Failed to create profile: $e',
       );
     }
   }

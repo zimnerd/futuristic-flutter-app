@@ -9,6 +9,7 @@ import '../../blocs/match/match_state.dart';
 import '../../../data/models/match_model.dart';
 import '../../widgets/common/loading_indicator.dart';
 import '../../widgets/common/error_message.dart';
+import '../../widgets/common/pulse_toast.dart';
 import '../../widgets/match/match_card.dart';
 import '../../navigation/app_router.dart';
 import '../../widgets/common/keyboard_dismissible_scaffold.dart';
@@ -897,11 +898,9 @@ class _MatchesScreenState extends State<MatchesScreen>
     
     // Show success message only if widget is still mounted
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Match accepted! You can now start chatting.'),
-          backgroundColor: Colors.green,
-        ),
+      PulseToast.success(
+        context,
+        message: 'Match accepted! You can now start chatting.',
       );
     }
   }

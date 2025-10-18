@@ -107,42 +107,137 @@ class PreferencesService {
 
   /// Get available occupations
   Future<List<String>> getOccupations() async {
-    // For now, return default occupations
-    // TODO: Implement backend API call when available
-    _logger.d('Using default occupations');
-    return _defaultOccupations;
+    try {
+      _logger.d('Fetching occupations from backend');
+      final response = await _apiClient.getOccupations();
+
+      if (response.statusCode == 200 && response.data != null) {
+        final data = response.data;
+        if (data is Map && data['data'] != null) {
+          final occupations = (data['data']['occupations'] as List?)
+              ?.map((e) => e.toString())
+              .toList();
+          if (occupations != null && occupations.isNotEmpty) {
+            _logger.i('Loaded ${occupations.length} occupations from backend');
+            return occupations;
+          }
+        }
+      }
+
+      _logger.w('Backend returned invalid data, using defaults');
+      return _defaultOccupations;
+    } catch (e) {
+      _logger.e('Error loading occupations: $e');
+      return _defaultOccupations;
+    }
   }
 
   /// Get available relationship types
   Future<List<String>> getRelationshipTypes() async {
-    // For now, return default relationship types
-    // TODO: Implement backend API call when available
-    _logger.d('Using default relationship types');
-    return _defaultRelationshipTypes;
+    try {
+      _logger.d('Fetching relationship types from backend');
+      final response = await _apiClient.getRelationshipTypes();
+
+      if (response.statusCode == 200 && response.data != null) {
+        final data = response.data;
+        if (data is Map && data['data'] != null) {
+          final types = (data['data']['types'] as List?)
+              ?.map((e) => e.toString())
+              .toList();
+          if (types != null && types.isNotEmpty) {
+            _logger.i('Loaded ${types.length} relationship types from backend');
+            return types;
+          }
+        }
+      }
+
+      _logger.w('Backend returned invalid data, using defaults');
+      return _defaultRelationshipTypes;
+    } catch (e) {
+      _logger.e('Error loading relationship types: $e');
+      return _defaultRelationshipTypes;
+    }
   }
 
   /// Get available drinking options
   Future<List<String>> getDrinkingOptions() async {
-    // For now, return default drinking options
-    // TODO: Implement backend API call when available
-    _logger.d('Using default drinking options');
-    return _defaultDrinkingOptions;
+    try {
+      _logger.d('Fetching drinking options from backend');
+      final response = await _apiClient.getDrinkingOptions();
+
+      if (response.statusCode == 200 && response.data != null) {
+        final data = response.data;
+        if (data is Map && data['data'] != null) {
+          final options = (data['data']['options'] as List?)
+              ?.map((e) => e.toString())
+              .toList();
+          if (options != null && options.isNotEmpty) {
+            _logger.i('Loaded ${options.length} drinking options from backend');
+            return options;
+          }
+        }
+      }
+
+      _logger.w('Backend returned invalid data, using defaults');
+      return _defaultDrinkingOptions;
+    } catch (e) {
+      _logger.e('Error loading drinking options: $e');
+      return _defaultDrinkingOptions;
+    }
   }
 
   /// Get available smoking options
   Future<List<String>> getSmokingOptions() async {
-    // For now, return default smoking options
-    // TODO: Implement backend API call when available
-    _logger.d('Using default smoking options');
-    return _defaultSmokingOptions;
+    try {
+      _logger.d('Fetching smoking options from backend');
+      final response = await _apiClient.getSmokingOptions();
+
+      if (response.statusCode == 200 && response.data != null) {
+        final data = response.data;
+        if (data is Map && data['data'] != null) {
+          final options = (data['data']['options'] as List?)
+              ?.map((e) => e.toString())
+              .toList();
+          if (options != null && options.isNotEmpty) {
+            _logger.i('Loaded ${options.length} smoking options from backend');
+            return options;
+          }
+        }
+      }
+
+      _logger.w('Backend returned invalid data, using defaults');
+      return _defaultSmokingOptions;
+    } catch (e) {
+      _logger.e('Error loading smoking options: $e');
+      return _defaultSmokingOptions;
+    }
   }
 
   /// Get available exercise options
   Future<List<String>> getExerciseOptions() async {
-    // For now, return default exercise options
-    // TODO: Implement backend API call when available
-    _logger.d('Using default exercise options');
-    return _defaultExerciseOptions;
+    try {
+      _logger.d('Fetching exercise options from backend');
+      final response = await _apiClient.getExerciseOptions();
+
+      if (response.statusCode == 200 && response.data != null) {
+        final data = response.data;
+        if (data is Map && data['data'] != null) {
+          final options = (data['data']['options'] as List?)
+              ?.map((e) => e.toString())
+              .toList();
+          if (options != null && options.isNotEmpty) {
+            _logger.i('Loaded ${options.length} exercise options from backend');
+            return options;
+          }
+        }
+      }
+
+      _logger.w('Backend returned invalid data, using defaults');
+      return _defaultExerciseOptions;
+    } catch (e) {
+      _logger.e('Error loading exercise options: $e');
+      return _defaultExerciseOptions;
+    }
   }
 
   /// Reset filters to default values
