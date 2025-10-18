@@ -7,6 +7,7 @@ import '../../../data/services/live_streaming_service.dart';
 import '../../../core/network/api_client.dart';
 import '../../theme/pulse_colors.dart';
 import '../../widgets/common/keyboard_dismissible_scaffold.dart';
+import '../../widgets/common/pulse_toast.dart';
 
 /// Screen for viewing a live stream (audience view)
 class LiveStreamViewerScreen extends StatefulWidget {
@@ -157,11 +158,9 @@ class _LiveStreamViewerScreenState extends State<LiveStreamViewerScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error leaving stream: $e'),
-            backgroundColor: Colors.red,
-          ),
+        PulseToast.error(
+          context,
+          message: 'Error leaving stream: $e',
         );
       }
     }
@@ -181,19 +180,15 @@ class _LiveStreamViewerScreenState extends State<LiveStreamViewerScreen> {
           _messageController.clear();
         } else {
           if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Failed to send message'),
-                backgroundColor: Colors.red,
-              ),
+            PulseToast.error(
+              context,
+              message: 'Failed to send message',
             );
           }
         }
       } catch (e) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
-          );
+          PulseToast.error(context, message: 'Error: $e');
         }
       }
     }

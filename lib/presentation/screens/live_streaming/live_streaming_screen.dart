@@ -608,7 +608,6 @@ class _LiveStreamingScreenState extends State<LiveStreamingScreen>
           TextButton(
             onPressed: () async {
               final navigator = Navigator.of(context);
-              final scaffoldMessenger = ScaffoldMessenger.of(context);
               final liveStreamingBloc = context.read<LiveStreamingBloc>();
 
               navigator.pop();
@@ -708,7 +707,6 @@ class _LiveStreamingScreenState extends State<LiveStreamingScreen>
             TextButton(
               onPressed: () async {
                 final navigator = Navigator.of(context);
-                final scaffoldMessenger = ScaffoldMessenger.of(context);
 
                 navigator.pop();
                 
@@ -738,11 +736,7 @@ class _LiveStreamingScreenState extends State<LiveStreamingScreen>
                   }
                 } catch (e) {
                   if (!mounted) return;
-                  scaffoldMessenger.showSnackBar(
-                    SnackBar(
-                      content: Text('Error: ${e.toString()}'),
-                      backgroundColor: Colors.red,
-                    ),
+                  PulseToast.error(context, message: 'Error: ${e.toString()}',
                   );
                 }
               },

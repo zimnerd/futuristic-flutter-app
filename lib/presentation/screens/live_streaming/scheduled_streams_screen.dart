@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import '../../blocs/live_streaming/live_streaming_bloc.dart';
 import '../../blocs/live_streaming/live_streaming_event.dart';
 import '../../blocs/live_streaming/live_streaming_state.dart';
+import '../../widgets/common/pulse_toast.dart';
 import 'schedule_stream_screen.dart';
 
 /// Screen displaying list of scheduled streams with countdown timers
@@ -169,18 +170,12 @@ class _ScheduledStreamsScreenState extends State<ScheduledStreamsScreen> {
       body: BlocListener<LiveStreamingBloc, LiveStreamingState>(
         listener: (context, state) {
           if (state is ScheduledStreamCanceled) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Stream canceled successfully'),
-                backgroundColor: Colors.green,
-              ),
+            PulseToast.success(
+              context,
+              message: 'Stream canceled successfully',
             );
           } else if (state is LiveStreamingError) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: Colors.red,
-              ),
+            PulseToast.error(context, message: state.message,
             );
           }
         },

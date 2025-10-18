@@ -5,6 +5,7 @@ import 'package:logger/logger.dart';
 import '../../../domain/entities/privacy_preset.dart';
 import '../../blocs/profile/profile_bloc.dart';
 import '../../theme/pulse_colors.dart';
+import '../../widgets/common/pulse_toast.dart';
 
 final _logger = Logger();
 
@@ -88,21 +89,9 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen>
           UpdatePrivacySettings(settings: _currentSettings),
         );
 
-    // Show success snackbar
+    // Show success toast
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Row(
-            children: [
-              Icon(Icons.check_circle, color: Colors.white),
-              SizedBox(width: 12),
-              Text('Privacy settings saved'),
-            ],
-          ),
-          backgroundColor: Colors.green,
-          behavior: SnackBarBehavior.floating,
-          duration: Duration(seconds: 2),
-        ),
+      PulseToast.success(context, message: 'Privacy settings saved',
       );
       
       setState(() {
