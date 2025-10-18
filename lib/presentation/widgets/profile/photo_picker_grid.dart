@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../../services/media_upload_service.dart';
-import '../../../data/services/service_locator.dart';
+import '../../../core/network/api_client.dart';
 import '../../theme/pulse_colors.dart';
 
 /// Widget for selecting and uploading profile photos
@@ -27,11 +27,15 @@ class PhotoPickerGrid extends StatefulWidget {
 class _PhotoPickerGridState extends State<PhotoPickerGrid> {
   List<String> _photos = [];
   final Set<int> _uploadingIndices = {};
+  late final MediaUploadService _mediaUploadService;
 
   @override
   void initState() {
     super.initState();
     _photos = List.from(widget.initialPhotos);
+    _mediaUploadService = MediaUploadService(
+      httpClient: ApiClient.instance.dio,
+    );
   }
 
   @override
@@ -400,8 +404,7 @@ class _PhotoPickerGridState extends State<PhotoPickerGrid> {
 
   Future<void> _pickFromCamera(int index) async {
     try {
-      final imageFile = await ServiceLocator().mediaUploadService
-          .pickImageFromCamera();
+      final imageFile = await _mediaUploadService.pickImageFromCamera();
       if (imageFile != null) {
         await _uploadPhoto(imageFile, index);
       }
@@ -412,8 +415,7 @@ class _PhotoPickerGridState extends State<PhotoPickerGrid> {
 
   Future<void> _pickFromGallery(int index) async {
     try {
-      final imageFile = await ServiceLocator().mediaUploadService
-          .pickImageFromGallery();
+      final imageFile = await _mediaUploadService.pickImageFromGallery();
       if (imageFile != null) {
         await _uploadPhoto(imageFile, index);
       }
@@ -430,7 +432,7 @@ class _PhotoPickerGridState extends State<PhotoPickerGrid> {
         return;
       }
 
-      final imageFiles = await ServiceLocator().mediaUploadService
+      final imageFiles = await _mediaUploadService
           .pickMultipleImagesFromGallery(
         maxImages: remainingSlots,
       );
@@ -446,8 +448,10 @@ class _PhotoPickerGridState extends State<PhotoPickerGrid> {
 
   Future<void> _uploadPhoto(XFile imageFile, int targetIndex) async {
     // Validate image first
-    final validation = await ServiceLocator().mediaUploadService
-        .validateMediaFile(imageFile.path, MediaType.image);
+    final validation = await _mediaUploadService.validateMediaFile(
+      imageFile.path,
+      MediaType.image,
+    );
     if (!validation.isValid) {
       _showErrorSnackBar(validation.error ?? 'Invalid image');
       return;
@@ -458,7 +462,7 @@ class _PhotoPickerGridState extends State<PhotoPickerGrid> {
     });
 
     try {
-      final result = await ServiceLocator().mediaUploadService.uploadMedia(
+      final result = await _mediaUploadService.uploadMedia(
         filePath: imageFile.path,
         category: MediaCategory.profilePhoto,
         type: MediaType.image,

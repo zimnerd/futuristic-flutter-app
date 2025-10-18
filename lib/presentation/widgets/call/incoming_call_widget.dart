@@ -4,7 +4,8 @@ import '../../blocs/call/call_bloc.dart';
 import '../../theme/pulse_colors.dart';
 import '../../../domain/entities/call.dart';
 import '../../../domain/entities/user_profile.dart';
-import '../../../data/services/service_locator.dart';
+import '../../../data/services/messaging_service.dart';
+import '../../../core/network/api_client.dart';
 import '../common/robust_network_image.dart';
 
 /// Widget for displaying incoming call UI
@@ -404,7 +405,7 @@ class _IncomingCallWidgetState extends State<IncomingCallWidget>
   void _sendMessageAndDecline(String message) async {
     try {
       // Send quick message via messaging service
-      final messagingService = ServiceLocator().messagingService;
+      final messagingService = MessagingService(apiClient: ApiClient.instance);
       await messagingService.sendMessage(
         conversationId: widget.call.recipientId,
         content: message,
