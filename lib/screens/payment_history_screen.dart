@@ -56,8 +56,12 @@ class _PaymentHistoryScreenState extends State<PaymentHistoryScreen> {
             if (state.transactions.isEmpty) {
               return _buildEmptyState();
             }
-            
-            return _buildTransactionsList(state.transactions);
+
+            // Convert List<dynamic> to List<Map<String, dynamic>>
+            final transactions = state.transactions
+                .map((item) => item as Map<String, dynamic>)
+                .toList();
+            return _buildTransactionsList(transactions);
           }
           
           return _buildEmptyState();
