@@ -10,6 +10,7 @@ import '../../../domain/entities/discovery_types.dart';
 import '../../blocs/matching/matching_bloc.dart';
 import '../../widgets/matching/smart_match_widget.dart';
 import '../../widgets/matching/compatibility_score_widget.dart';
+import '../../widgets/common/pulse_toast.dart';
 import '../../theme/pulse_colors.dart';
 import '../../navigation/app_router.dart';
 
@@ -100,12 +101,7 @@ class _AiMatchingScreenState extends State<AiMatchingScreen>
   }
 
   void _showErrorMessage(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.red,
-        behavior: SnackBarBehavior.floating,
-      ),
+    PulseToast.error(context, message: message,
     );
   }
 
@@ -624,13 +620,9 @@ class _AiMatchingScreenState extends State<AiMatchingScreen>
             direction: SwipeAction.right,
           ),
         );
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Liked ${match.userProfile?.name ?? "profile"}'),
-            backgroundColor: Colors.green,
-            behavior: SnackBarBehavior.floating,
-            duration: const Duration(seconds: 2),
-          ),
+        PulseToast.success(
+          context,
+          message: 'Liked ${match.userProfile?.name ?? "profile"}',
         );
         break;
       case 'pass':
@@ -643,13 +635,7 @@ class _AiMatchingScreenState extends State<AiMatchingScreen>
         break;
       case 'super_like':
         matchingBloc.add(SuperLikeProfile(profileId: match.userProfile!.id));
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Super Like sent! 💫'),
-            backgroundColor: PulseColors.primary,
-            behavior: SnackBarBehavior.floating,
-            duration: Duration(seconds: 2),
-          ),
+        PulseToast.info(context, message: 'Super Like sent! 💫',
         );
         break;
     }
@@ -677,23 +663,14 @@ class _AiMatchingScreenState extends State<AiMatchingScreen>
       matchingBloc.add(RefreshMatches());
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('AI matching preferences saved successfully'),
-            backgroundColor: Colors.green,
-            behavior: SnackBarBehavior.floating,
-            duration: Duration(seconds: 2),
-          ),
+        PulseToast.success(
+          context,
+          message: 'AI matching preferences saved successfully',
         );
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to save preferences: $e'),
-            backgroundColor: Colors.red,
-            behavior: SnackBarBehavior.floating,
-          ),
+        PulseToast.error(context, message: 'Failed to save preferences: $e',
         );
       }
     }

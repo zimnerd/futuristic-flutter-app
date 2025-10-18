@@ -11,6 +11,7 @@ import '../../blocs/ai_companion/ai_companion_state.dart';
 import '../../widgets/common/pulse_loading_widget.dart';
 import '../../widgets/common/pulse_error_widget.dart';
 import '../../widgets/chat/ai_message_input.dart';
+import '../../widgets/common/pulse_toast.dart';
 import '../../theme/pulse_colors.dart';
 
 /// Chat screen for AI companion conversations
@@ -423,9 +424,9 @@ class _AiCompanionChatScreenState extends State<AiCompanionChatScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(
+        PulseToast.error(
           context,
-        ).showSnackBar(SnackBar(content: Text('Failed to capture image: $e')));
+          message: 'Failed to capture image: $e');
       }
     }
   }
@@ -455,9 +456,9 @@ class _AiCompanionChatScreenState extends State<AiCompanionChatScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(
+        PulseToast.error(
           context,
-        ).showSnackBar(SnackBar(content: Text('Failed to pick image: $e')));
+          message: 'Failed to pick image: $e');
       }
     }
   }
@@ -519,16 +520,17 @@ class _AiCompanionChatScreenState extends State<AiCompanionChatScreen> {
         }
       } else {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Microphone permission is required')),
+          PulseToast.error(
+            context,
+            message: 'Microphone permission is required',
           );
         }
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(
+        PulseToast.error(
           context,
-        ).showSnackBar(SnackBar(content: Text('Failed to record audio: $e')));
+          message: 'Failed to record audio: $e');
       }
     }
   }

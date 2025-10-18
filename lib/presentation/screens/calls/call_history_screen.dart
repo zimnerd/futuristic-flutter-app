@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import '../../../data/repositories/call_history_repository.dart';
 import '../../blocs/call_history/call_history_barrel.dart';
 import '../../widgets/common/loading_indicator.dart';
+import '../../widgets/common/pulse_toast.dart';
 import 'call_details_screen.dart';
 
 /// Screen for displaying call history with filters and pagination
@@ -100,18 +101,10 @@ class _CallHistoryScreenState extends State<CallHistoryScreen> {
       body: BlocConsumer<CallHistoryBloc, CallHistoryState>(
         listener: (context, state) {
           if (state is CallHistoryError) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: Colors.red,
-              ),
+            PulseToast.error(context, message: state.message,
             );
           } else if (state is CallHistoryDeleted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Call deleted successfully'),
-                backgroundColor: Colors.green,
-              ),
+            PulseToast.success(context, message: 'Call deleted successfully',
             );
           }
         },

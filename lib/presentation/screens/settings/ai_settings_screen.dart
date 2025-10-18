@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../business_logic/blocs/ai_preferences_bloc.dart';
 import '../../../data/models/ai_preferences.dart';
 import '../../widgets/common/loading_overlay.dart';
+import '../../widgets/common/pulse_toast.dart';
 import '../../widgets/ai/ai_feature_card.dart';
 import '../../widgets/ai/ai_onboarding_dialog.dart';
 
@@ -83,11 +84,7 @@ class _AiSettingsScreenState extends State<AiSettingsScreen>
           child: BlocConsumer<AiPreferencesBloc, AiPreferencesState>(
             listener: (context, state) {
               if (state is AiPreferencesError) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(state.message),
-                    backgroundColor: Colors.red,
-                  ),
+                PulseToast.error(context, message: state.message,
                 );
               }
             },

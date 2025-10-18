@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../domain/entities/notification_preferences.dart';
 import '../../blocs/notification/notification_bloc.dart';
+import '../../widgets/common/pulse_toast.dart';
 import '../../theme/pulse_colors.dart';
 
 /// Screen for managing notification preferences
@@ -28,18 +29,12 @@ class _NotificationSettingsScreenState
     return BlocListener<NotificationBloc, NotificationState>(
       listener: (context, state) {
         if (state is NotificationError) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(state.message),
-              backgroundColor: PulseColors.error,
-            ),
+          PulseToast.error(context, message: state.message,
           );
         } else if (state is NotificationPreferencesUpdated) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Notification preferences updated'),
-              backgroundColor: PulseColors.success,
-            ),
+          PulseToast.success(
+            context,
+            message: 'Notification preferences updated',
           );
         }
       },

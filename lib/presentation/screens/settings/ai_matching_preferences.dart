@@ -7,6 +7,7 @@ import 'package:pulse_dating_app/data/models/premium.dart';
 import '../../blocs/premium/premium_bloc.dart';
 import '../../blocs/premium/premium_event.dart';
 import '../../blocs/premium/premium_state.dart';
+import '../../widgets/common/pulse_toast.dart';
 import '../../../core/utils/logger.dart';
 
 /// AI Features preferences with premium/admin controls
@@ -58,14 +59,10 @@ class _AiMatchingPreferencesState extends State<AiMatchingPreferences> {
   }
 
   void _showSuccessFeedback(PremiumFeatureType feature, bool enabled) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
+    PulseToast.success(
+      context,
+      message:
           '${_getFeatureName(feature)} ${enabled ? 'enabled' : 'disabled'}',
-        ),
-        backgroundColor: enabled ? AppColors.success : AppColors.textSecondary,
-        duration: const Duration(seconds: 2),
-      ),
     );
   }
 
@@ -155,11 +152,7 @@ class _AiMatchingPreferencesState extends State<AiMatchingPreferences> {
       body: BlocConsumer<PremiumBloc, PremiumState>(
         listener: (context, state) {
           if (state is PremiumError) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: AppColors.error,
-              ),
+            PulseToast.error(context, message: state.message,
             );
           } else if (state is PremiumError) {
             // Handle premium access error

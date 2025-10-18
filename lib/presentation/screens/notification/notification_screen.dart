@@ -346,11 +346,9 @@ class _NotificationScreenState extends State<NotificationScreen> {
         break;
       default:
         // For system notifications, just mark as read (already done above)
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('${notification.title} - ${notification.message}'),
-            duration: const Duration(seconds: 2),
-          ),
+        PulseToast.info(
+          context,
+          message: '${notification.title} - ${notification.message}',
         );
         break;
     }
