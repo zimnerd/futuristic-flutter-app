@@ -6,6 +6,7 @@ import '../../../data/services/video_streaming_service.dart';
 import '../../../data/services/live_streaming_service.dart';
 import '../../../core/network/api_client.dart';
 import '../../theme/pulse_colors.dart';
+import '../../widgets/common/pulse_toast.dart';
 
 /// Screen for broadcasting a live stream (host view)
 class LiveStreamBroadcasterScreen extends StatefulWidget {
@@ -200,11 +201,7 @@ class _LiveStreamBroadcasterScreenState
         }
       } catch (e) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Error ending stream: $e'),
-              backgroundColor: Colors.red,
-            ),
+          PulseToast.error(context, message: 'Error ending stream: $e',
           );
         }
       }

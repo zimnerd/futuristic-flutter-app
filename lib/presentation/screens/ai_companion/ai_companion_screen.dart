@@ -9,6 +9,7 @@ import '../../blocs/ai_companion/ai_companion_event.dart';
 import '../../blocs/ai_companion/ai_companion_state.dart';
 import '../../widgets/common/pulse_loading_widget.dart';
 import '../../widgets/common/pulse_error_widget.dart';
+import '../../widgets/common/pulse_toast.dart';
 import '../../widgets/ai_companion/companion_card_widget.dart';
 import '../../widgets/ai_companion/companion_creation_widget.dart';
 import '../../theme/pulse_colors.dart';
@@ -153,20 +154,13 @@ class _AiCompanionScreenState extends State<AiCompanionScreen> {
         listener: (context, state) {
           if (state is AiCompanionCreated) {
             Navigator.pop(context);
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(
+            PulseToast.success(
+              context,
+              message:
                   'Companion "${state.companion.name}" created successfully!',
-                ),
-                backgroundColor: PulseColors.success,
-              ),
             );
           } else if (state is AiCompanionError) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('Error: ${state.message}'),
-                backgroundColor: Colors.red,
-              ),
+            PulseToast.error(context, message: 'Error: ${state.message}',
             );
           }
         },

@@ -5,6 +5,7 @@ import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import '../../../data/services/audio_call_service.dart';
 import '../../../data/models/user_model.dart';
 import '../../theme/pulse_colors.dart';
+import '../../widgets/common/pulse_toast.dart';
 
 /// Audio Call Screen with elegant UI for voice-only communication
 /// Features: Pulsing avatar animation, call duration, mute, speaker controls
@@ -143,13 +144,7 @@ class _AudioCallScreenState extends State<AudioCallScreen>
 
   void _showErrorSnackBar(String message) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.red.shade700,
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
+    PulseToast.error(context, message: message);
   }
 
   @override

@@ -8,6 +8,7 @@ import '../../data/services/subscription_service.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../widgets/app_button.dart';
+import '../widgets/common/pulse_toast.dart';
 import '../widgets/subscription_plan_card.dart';
 import '../widgets/usage_indicator.dart';
 import '../widgets/subscription_status_card.dart';
@@ -81,21 +82,11 @@ class _SubscriptionManagementScreenState extends State<SubscriptionManagementScr
   }
 
   void _showErrorSnackBar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: AppColors.error,
-      ),
-    );
+    PulseToast.error(context, message: message);
   }
 
   void _showSuccessSnackBar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: AppColors.success,
-      ),
-    );
+    PulseToast.success(context, message: message);
   }
 
   @override

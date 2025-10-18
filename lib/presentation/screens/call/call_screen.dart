@@ -5,6 +5,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 
 import '../../../blocs/call_bloc.dart';
 import '../../theme/pulse_colors.dart';
+import '../../widgets/common/pulse_toast.dart';
 import '../../../data/models/call_model.dart';
 
 class CallScreen extends StatefulWidget {
@@ -53,11 +54,7 @@ class _CallScreenState extends State<CallScreen> {
           if (state is CallEnded) {
             Navigator.of(context).pop();
           } else if (state is CallError) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: Colors.red,
-              ),
+            PulseToast.error(context, message: state.message,
             );
             Navigator.of(context).pop();
           }

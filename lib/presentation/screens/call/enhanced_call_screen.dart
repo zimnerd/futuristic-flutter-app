@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../data/models/user_model.dart';
 
 import '../../theme/pulse_colors.dart';
+import '../../widgets/common/pulse_toast.dart';
 import '../../widgets/call/video_effects_panel.dart';
 import '../../widgets/call/group_call_widget.dart';
 
@@ -119,16 +120,11 @@ class _EnhancedCallScreenState extends State<EnhancedCallScreen>
   }
 
   void _showMessage(String message, {bool isError = false}) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: isError ? Colors.red : PulseColors.primary,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-      ),
-    );
+    if (isError) {
+      PulseToast.error(context, message: message);
+    } else {
+      PulseToast.info(context, message: message);
+    }
   }
 
   @override

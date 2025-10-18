@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:agora_rtc_engine/agora_rtc_engine.dart'; // ✅ ADDED: For video rendering
 
 import '../../widgets/call/call_controls.dart';
+import '../../widgets/common/pulse_toast.dart';
 import '../../../domain/entities/user_profile.dart';
 import '../../../data/services/webrtc_service.dart';
 import '../../../data/services/messaging_service.dart';
@@ -111,7 +112,7 @@ class _VideoCallScreenState extends State<VideoCallScreen>
             ),
           ),
           ElevatedButton(
-            onPressed: _acceptCall,
+            onPressed: _answerCall,
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.green,
               foregroundColor: Colors.white,
@@ -129,13 +130,10 @@ class _VideoCallScreenState extends State<VideoCallScreen>
       final hasPermissions = await ensureVideoCallPermissions();
       if (!hasPermissions) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text(
+          PulseToast.error(
+            context,
+            message:
                 'Camera and microphone permissions are required for video calls',
-              ),
-              backgroundColor: Colors.red,
-            ),
           );
           Navigator.of(context).pop();
         }
@@ -172,18 +170,16 @@ class _VideoCallScreenState extends State<VideoCallScreen>
     } catch (e) {
       debugPrint('Failed to initiate call: $e');
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to start call: ${e.toString()}'),
-            backgroundColor: Colors.red,
-          ),
+        PulseToast.error(
+          context,
+          message: 'Failed to start call: ${e.toString()}',
         );
         Navigator.of(context).pop();
       }
     }
   }
 
-  void _acceptCall() async {
+  void _answerCall() async {
     if (mounted) {
       Navigator.of(context).pop(); // Close dialog
     }
@@ -193,13 +189,10 @@ class _VideoCallScreenState extends State<VideoCallScreen>
       final hasPermissions = await ensureVideoCallPermissions();
       if (!hasPermissions) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text(
+          PulseToast.error(
+            context,
+            message:
                 'Camera and microphone permissions are required for video calls',
-              ),
-              backgroundColor: Colors.red,
-            ),
           );
           Navigator.of(context).pop();
         }
@@ -234,11 +227,9 @@ class _VideoCallScreenState extends State<VideoCallScreen>
     } catch (e) {
       debugPrint('Failed to accept call: $e');
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to accept call: ${e.toString()}'),
-            backgroundColor: Colors.red,
-          ),
+        PulseToast.error(
+          context,
+          message: 'Failed to accept call: ${e.toString()}',
         );
         Navigator.of(context).pop();
       }
