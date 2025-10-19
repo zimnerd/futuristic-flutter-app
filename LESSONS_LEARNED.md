@@ -12595,3 +12595,280 @@ import { RtcTokenBuilder, RtcRole } from 'agora-access-token';
 - `mobile/LESSONS_LEARNED.md` - Added comprehensive integration documentation
 
 ---
+
+## 💎 **Premium Feature API Integration & Navigation (October 2025)**
+
+**Status**: ✅ **COMPLETE** - Premium Access Fixed + Navigation + Filter UX  
+**Date**: October 19, 2025  
+**Impact**: Critical bug fixes enabling premium feature access  
+**Rating**: 10/10 (Production blocking issue resolved)  
+**Time**: 3 hours (investigation 1h + fixes 2h)
+
+### **Context: Premium Paywall Blocking Access**
+
+**Problem**: Premium users with active subscriptions couldn't access "Who Liked You" feature
+- ✅ Database: `User.premium = true`
+- ✅ Backend API: Returns active subscription
+- ❌ Mobile: Still shows paywall instead of profiles
+
+**Root Cause**: Incorrect API response parsing in `premium_service.dart`
+
+---
+
+### **Critical Lesson #1: Backend Nesting Patterns** ⭐⭐⭐
+
+**ALWAYS check backend response structure before implementing API parsing!**
+
+#### **The Bug: Incorrect Data Access**
+
+```dart
+// ❌ WRONG - Missing nested 'data' wrapper
+Future<UserSubscription?> getCurrentSubscription() async {
+  final response = await _apiClient.get(ApiConstants.premiumSubscription);
+  final subscriptionData = response.data['subscription']; // NULL!
+  return UserSubscription.fromJson(subscriptionData);
+}
+```
+
+**Backend Actually Returns**:
+```json
+{
+  "success": true,
+  "data": {
+    "subscription": { "id": "...", "status": "active", ... },
+    "plans": [...]
+  },
+  "message": "Subscription retrieved"
+}
+```
+
+#### **The Fix: Correct Nested Access**
+
+```dart
+// ✅ CORRECT - Access nested data wrapper
+Future<UserSubscription?> getCurrentSubscription() async {
+  final response = await _apiClient.get(ApiConstants.premiumSubscription);
+  
+  // Extract nested 'data' first, then 'subscription'
+  final subscriptionData = response.data['data']?['subscription'];
+  
+  if (subscriptionData == null) {
+    return null; // No active subscription
+  }
+  
+  return UserSubscription.fromJson(subscriptionData);
+}
+```
+
+**Files Fixed** (4 methods in `premium_service.dart`):
+1. ✅ `getCurrentSubscription()` - Line ~37: `response.data['data']['subscription']`
+2. ✅ `getAvailablePlans()` - Line ~16: `response.data['data']['plans']`
+3. ✅ `getCoinBalance()` - Line ~180: `response.data['data']` with null check
+4. ✅ `getAvailableFeatures()` - Line ~265: Extract `response.data['data']` + parse 'key' field
+
+**Best Practices**:
+- ✅ Always use optional chaining: `response.data['data']?['subscription']`
+- ✅ Null-check extracted data before JSON parsing
+- ✅ Log full response during development to see actual structure
+- ✅ Match mobile parsing to backend DTO structure exactly
+- ❌ Never assume response structure - verify with backend code or API docs
+
+---
+
+### **Critical Lesson #2: Route Navigation Patterns** ⭐⭐
+
+**Problem**: Different screens used different route patterns for profile details
+
+#### **The Bug: Non-existent Route**
+
+```dart
+// ❌ WRONG - This route doesn't exist in app_router.dart
+onTap: () {
+  context.push('/profile/${users[index].id}'); // → 404 Page Not Found!
+}
+```
+
+**User Experience**: Clicking profile cards showed "Page not found" error
+
+#### **The Fix: Use AppRoutes Constants**
+
+**Step 1**: Find correct route in `app_router.dart`
+```dart
+// Route definition (line ~446)
+GoRoute(
+  path: AppRoutes.profileDetails, // = '/profile-details/:profileId'
+  name: 'profileDetails',
+  builder: (context, state) {
+    final extraData = state.extra;
+    final profile = extraData['profile'] as UserProfile?;
+    final profileContext = extraData['context'] as ProfileContext?;
+    // ...
+  },
+)
+```
+
+**Step 2**: Use route substitution pattern (matching swiper_card.dart)
+```dart
+// ✅ CORRECT - Use AppRoutes constant + replaceFirst
+onTap: () {
+  context.push(
+    AppRoutes.profileDetails.replaceFirst(':profileId', users[index].id),
+    extra: {
+      'profile': users[index],
+      'context': ProfileContext.general,
+      'onLike': () => _likeBack(users[index]),
+    },
+  );
+}
+```
+
+**Required Imports**:
+```dart
+import '../../navigation/app_router.dart';
+import '../profile/profile_details_screen.dart';
+```
+
+**Best Practices**:
+- ✅ Always use `AppRoutes` constants, never hardcode paths
+- ✅ Use `.replaceFirst(':paramName', value)` for route parameters
+- ✅ Pass profile data in `extra` map to avoid re-fetching
+- ✅ Include appropriate `ProfileContext` (discovery, matches, general)
+- ✅ Search codebase for existing navigation patterns before implementing new ones
+- ❌ Never use direct path strings like `'/profile/${id}'`
+
+**ProfileContext Values** (from `profile_details_screen.dart`):
+- `discovery` - Show like/superlike/pass actions
+- `matches` - Show chat/call/unmatch/report actions  
+- `general` - Show minimal actions (used for "Who Liked You")
+
+---
+
+### **Critical Lesson #3: Filter Modal Text Visibility** ⭐
+
+**Problem**: White background modal with default text styling = low contrast
+
+#### **The Bug: Invisible Text**
+
+```dart
+// ❌ WRONG - No explicit text colors on white background
+SwitchListTile(
+  title: const Text('Verified only'), // Uses theme default (may be white!)
+  subtitle: const Text('Show only verified users'),
+  value: _verifiedOnly,
+  onChanged: (value) { setState(() => _verifiedOnly = value); },
+)
+```
+
+**User Experience**: Filter options barely visible, hard to read
+
+#### **The Fix: Explicit Text Colors**
+
+```dart
+// ✅ CORRECT - Explicit colors following design system
+SwitchListTile(
+  title: Text(
+    'Verified only',
+    style: PulseTypography.bodyMedium.copyWith(
+      color: PulseColors.grey900, // High contrast dark text
+      fontWeight: FontWeight.w600,
+    ),
+  ),
+  subtitle: Text(
+    'Show only verified users',
+    style: PulseTypography.bodySmall.copyWith(
+      color: PulseColors.grey600, // Readable medium grey
+    ),
+  ),
+  value: _verifiedOnly,
+  onChanged: (value) { setState(() => _verifiedOnly = value); },
+  activeTrackColor: PulseColors.primary,
+)
+```
+
+**Design System Usage**:
+- **Titles**: `PulseTypography.bodyMedium` + `PulseColors.grey900` (dark, bold)
+- **Subtitles**: `PulseTypography.bodySmall` + `PulseColors.grey600` (medium grey)
+- **Action Buttons**: `TextStyle(color: PulseColors.primary)` (brand purple)
+- **Background**: `PulseColors.white` (ensures contrast)
+
+**Best Practices**:
+- ✅ Never rely on theme defaults for critical text
+- ✅ Always specify explicit colors on custom backgrounds
+- ✅ Use design system constants (`PulseColors.*`, `PulseTypography.*`)
+- ✅ Test text visibility on both light/dark backgrounds
+- ✅ Maintain WCAG AA contrast ratios (4.5:1 for normal text)
+- ❌ Don't use `const Text()` when styling is needed - remove `const`
+
+**Color Values Used**:
+- `PulseColors.grey900` = `#212121` (dark text, high contrast)
+- `PulseColors.grey600` = `#757575` (medium text, readable)
+- `PulseColors.primary` = `#6E3BFF` (brand purple)
+- `PulseColors.white` = `#FFFFFF` (background)
+
+---
+
+### **Testing Checklist**
+
+**✅ Premium Access**:
+- [x] Database User.premium = true
+- [x] Backend returns active subscription
+- [x] Mobile parses nested response correctly
+- [x] "Who Liked You" shows actual profiles (not blurred)
+- [x] Profile names visible
+- [x] No paywall for premium users
+
+**✅ Profile Navigation**:
+- [x] Click profile card → navigates successfully
+- [x] Profile details screen loads with correct data
+- [x] No 404 "Page not found" error
+- [x] Back button returns to "Who Liked You"
+- [x] Same route pattern as swiper/discovery
+
+**✅ Filter Modal**:
+- [x] Filter modal opens with clear, readable text
+- [x] "Verified only" title/subtitle visible
+- [x] "Super Likes only" title/subtitle visible
+- [x] "Clear All" button visible with brand color
+- [x] High contrast on white background
+
+---
+
+### **Files Modified (October 2025)**
+
+**Mobile**:
+- `lib/data/services/premium_service.dart`:
+  - Fixed 4 methods: `getCurrentSubscription()`, `getAvailablePlans()`, `getCoinBalance()`, `getAvailableFeatures()`
+  - Removed verbose debug logging (emojis, stack traces)
+  - Added proper null checks for nested data
+  
+- `lib/presentation/screens/discovery/who_liked_you_screen.dart`:
+  - Added imports: `app_router.dart`, `profile_details_screen.dart`
+  - Fixed navigation (lines 165-179): Use `AppRoutes.profileDetails` pattern
+  - Fixed filter modal text colors (lines 964-1028): Explicit `PulseColors.*` styling
+
+**Backend** (No Changes - Already Correct):
+- `src/premium/premium.controller.ts` - Returns nested `{ success, data: {...} }`
+- `src/premium/premium.service.ts` - Subscription logic working
+- Database seeder - Always sets `User.premium = true`
+
+**Documentation**:
+- `mobile/CRITICAL_API_PARSING_FIX_OCT_2025.md` - Detailed API parsing patterns
+- `mobile/WHO_LIKED_YOU_FIXES_OCT_2025.md` - Navigation + filter UX fixes
+- `mobile/LESSONS_LEARNED.md` - This section!
+
+---
+
+### **Key Takeaways**
+
+1. **API Response Structure Matters**: Always verify backend response format before writing mobile parsing code
+2. **Nested Data is Common**: NestJS often wraps responses in `{ success, data: {...} }` - extract `data` first
+3. **Use Route Constants**: `AppRoutes.profileDetails` prevents typos and ensures consistency
+4. **Search Codebase for Patterns**: Other screens (swiper, matches) already had correct navigation
+5. **Explicit Styling Required**: Don't rely on theme defaults for critical UI elements
+6. **Debug Logging Cleanup**: Remove verbose logs before production (keep errors only)
+7. **Documentation is Essential**: Complex bugs deserve detailed write-ups for future reference
+
+**Time Saved on Future Premium Features**: ~2-3 hours (no more API parsing guesswork!)
+
+---
+
