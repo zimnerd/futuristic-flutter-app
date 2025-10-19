@@ -316,11 +316,19 @@ class ProfileDraftRestoreDialog extends StatelessWidget {
     if (draft.age != null && draft.age! > 0) completedItems.add('Age');
     if (draft.bio?.isNotEmpty == true) completedItems.add('Bio');
     if (draft.photos.isNotEmpty)
+     {
       completedItems.add('Photos (${draft.photos.length})');
+    }
     if (draft.interests.isNotEmpty)
+      {
       completedItems.add('Interests (${draft.interests.length})');
-    if (draft.gender?.isNotEmpty == true) completedItems.add('Gender');
-    if (draft.lookingFor?.isNotEmpty == true) completedItems.add('Looking for');
+    }
+    if (draft.gender?.isNotEmpty == true) {
+      completedItems.add('Gender');
+    }
+    if (draft.lookingFor?.isNotEmpty == true) {
+      completedItems.add('Looking for');
+    }
 
     if (completedItems.isEmpty) {
       return Text(

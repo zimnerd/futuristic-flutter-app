@@ -348,7 +348,9 @@ class AiMatchingService {
       final queryParams = <String, dynamic>{'limit': limit.toString()};
       if (userId != null) queryParams['userId'] = userId;
       if (minCompatibility != null)
+        {
         queryParams['minCompatibility'] = minCompatibility.toString();
+      }
 
       final response = await _apiClient.get(
         '/matching/ai/recommendations',

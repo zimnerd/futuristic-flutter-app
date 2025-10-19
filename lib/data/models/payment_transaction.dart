@@ -177,15 +177,25 @@ class PaymentHistoryFilter {
   bool matches(PaymentTransaction transaction) {
     if (type != null && transaction.type != type) return false;
     if (status != null && transaction.status != status) return false;
-    if (subscriptionId != null && transaction.subscriptionId != subscriptionId)
+    if (subscriptionId != null &&
+        transaction.subscriptionId != subscriptionId) {
       return false;
-    if (minAmount != null && transaction.amount < minAmount!) return false;
-    if (maxAmount != null && transaction.amount > maxAmount!) return false;
+    }
+    if (minAmount != null && transaction.amount < minAmount!) {
+      return false;
+    }
+    if (maxAmount != null && transaction.amount > maxAmount!) {
+      return false;
+    }
 
     if (startDate != null && transaction.processedAt.isBefore(startDate!))
+     {
       return false;
+    }
     if (endDate != null && transaction.processedAt.isAfter(endDate!))
+    {
       return false;
+    }
 
     return true;
   }

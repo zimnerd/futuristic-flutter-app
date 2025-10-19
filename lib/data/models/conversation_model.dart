@@ -19,6 +19,8 @@ class ConversationModel extends Conversation {
     super.isMuted = false,
     super.isPinned = false,
     super.matchedAt,
+    super.isGroup = false, // 🔴 CRITICAL: Parse from backend
+    super.type, // Optional: conversation type enum
   });
 
   /// Convert from JSON
@@ -42,6 +44,9 @@ class ConversationModel extends Conversation {
       matchedAt: json['matchedAt'] != null
           ? DateTime.parse(json['matchedAt'] as String)
           : null,
+      isGroup:
+          json['isGroup'] as bool? ?? false, // 🔴 CRITICAL: Parse from JSON
+      type: json['type'] as String?, // Optional: conversation type
     );
   }
 
@@ -196,6 +201,10 @@ class ConversationModel extends Conversation {
       matchedAt: json['matchedAt'] != null
           ? DateTime.parse(json['matchedAt'] as String)
           : null,
+      isGroup:
+          json['isGroup'] as bool? ??
+          false, // 🔴 CRITICAL: Backend sends this field explicitly
+      type: json['type'] as String?, // Optional: 'GROUP' | 'DIRECT' enum
     );
   }
 
@@ -216,6 +225,8 @@ class ConversationModel extends Conversation {
       'isMuted': isMuted,
       'isPinned': isPinned,
       'matchedAt': matchedAt?.toIso8601String(),
+      'isGroup': isGroup, // 🔴 CRITICAL: Serialize for local storage
+      'type': type,
     };
   }
 
@@ -236,6 +247,8 @@ class ConversationModel extends Conversation {
       isMuted: isMuted,
       isPinned: isPinned,
       matchedAt: matchedAt,
+      isGroup: isGroup, // 🔴 CRITICAL: Pass to entity
+      type: type,
     );
   }
 
@@ -255,6 +268,8 @@ class ConversationModel extends Conversation {
       isMuted: entity.isMuted,
       isPinned: entity.isPinned,
       matchedAt: entity.matchedAt,
+      isGroup: entity.isGroup, // 🔴 CRITICAL: Get from entity
+      type: entity.type,
     );
   }
 }

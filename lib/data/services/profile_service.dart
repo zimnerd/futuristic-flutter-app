@@ -1092,8 +1092,9 @@ class ProfileService {
     if (profile.photos.isNotEmpty) {
       score += 20; // At least one photo
       if (profile.photos.length >= 3) score += 10; // Multiple photos
-      if (profile.photos.any((photo) => photo.isVerified))
+      if (profile.photos.any((photo) => photo.isVerified)) {
         score += 10; // Verified photo
+      }
     }
 
     // Preferences (20 points)

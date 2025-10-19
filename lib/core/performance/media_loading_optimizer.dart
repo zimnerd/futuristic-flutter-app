@@ -188,9 +188,9 @@ class MediaLoadingOptimizer {
 
   /// Optimize memory usage by removing least recently used items
   void optimizeMemoryUsage() {
-    if (_preloadedUrls.length <= 50)
+    if (_preloadedUrls.length <= 50) {
       return; // Only optimize if we have many cached items
-
+}
     // Sort by access time and remove oldest 25%
     final sortedEntries = _lastAccessTimes.entries.toList()
       ..sort((a, b) => a.value.compareTo(b.value));

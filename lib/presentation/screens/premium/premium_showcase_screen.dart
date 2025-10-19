@@ -7,6 +7,7 @@ import '../../../data/services/analytics_service.dart';
 import '../../blocs/premium/premium_bloc.dart';
 import '../../blocs/premium/premium_event.dart';
 import '../../blocs/premium/premium_state.dart';
+import '../../navigation/app_router.dart'; // 🔴 CRITICAL: Add for payment navigation
 import '../../theme/pulse_colors.dart';
 import '../../widgets/common/pulse_loading_widget.dart';
 import '../../widgets/common/pulse_error_widget.dart';
@@ -407,8 +408,9 @@ class _PremiumShowcaseScreenState extends State<PremiumShowcaseScreen>
 
   Widget _buildPricingSection(BuildContext context, List<PremiumPlan> plans) {
     if (plans.isEmpty)
+   {
       return const SliverToBoxAdapter(child: SizedBox.shrink());
-
+    }
     // Sort plans: monthly, 3-month, 6-month
     final sortedPlans = _sortPlansByDuration(plans);
 
@@ -991,15 +993,31 @@ class _PremiumShowcaseScreenState extends State<PremiumShowcaseScreen>
   void _confirmPurchase(PremiumPlan plan) {
     Navigator.of(context).pop(); // Close bottom sheet
 
-    context.read<PremiumBloc>().add(
-      SubscribeToPlan(
-        planId: plan.id,
-        paymentMethodId: 'default_payment_method',
-      ),
+    // 🔴 CRITICAL: Navigate to payment methods screen to complete purchase
+    // Pass plan details for payment processing
+    context.push(
+      AppRoutes.paymentMethods,
+      extra: {
+        'planId': plan.id,
+        'planName': plan.name,
+        'amount': plan.priceInCents / 100, // Convert cents to currency units
+        'currency': plan.currency,
+        'interval': plan.interval,
+        'purpose': 'premium_subscription',
+      },
     );
 
-    // TODO: Navigate to payment flow or show success
-    context.pop(); // Return to previous screen
+    // Track analytics for payment flow entry
+    AnalyticsService.instance.trackEvent(
+      eventType: AnalyticsEventType.featureUsed,
+      properties: {
+        'feature_name': 'premium_payment_flow_started',
+        'plan_id': plan.id,
+        'plan_name': plan.name,
+        'price_cents': plan.priceInCents.toString(),
+        'currency': plan.currency,
+      },
+    );
   }
 
   void _showFeatureDetails(

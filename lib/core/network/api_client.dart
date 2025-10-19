@@ -1526,7 +1526,9 @@ class ApiClient {
     if (longitude != null) queryParams['lng'] = longitude;
     if (radiusKm != null) queryParams['radius'] = radiusKm;
     if (category != null && category.isNotEmpty)
+      {
       queryParams['category'] = category;
+    }
 
     return await _dio.get('/events', queryParameters: queryParams);
   }

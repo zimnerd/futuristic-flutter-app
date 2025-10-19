@@ -19,6 +19,8 @@ class Conversation extends Equatable {
     this.isPinned = false,
     this.matchedAt,
     this.otherUser,
+    this.isGroup = false, // 🔴 CRITICAL: Explicit flag for group chat filtering
+    this.type, // Optional: conversation type enum from backend
   });
 
   final String id;
@@ -36,6 +38,8 @@ class Conversation extends Equatable {
   final bool isPinned;
   final DateTime? matchedAt;
   final UserProfile? otherUser;
+  final bool isGroup; // 🔴 CRITICAL: Backend returns this for mobile filtering
+  final String? type; // Optional: 'GROUP' | 'DIRECT' enum from backend
 
   /// Get display name for conversation
   String get displayName => otherUserName;
@@ -142,5 +146,7 @@ class Conversation extends Equatable {
     isPinned,
     matchedAt,
     otherUser,
+    isGroup, // 🔴 CRITICAL: Include in equality comparison
+    type,
   ];
 }

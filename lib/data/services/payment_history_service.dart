@@ -76,15 +76,25 @@ class PaymentHistoryService {
         if (filter.type != null) queryParams['type'] = filter.type!.name;
         if (filter.status != null) queryParams['status'] = filter.status!.name;
         if (filter.startDate != null)
+         {
           queryParams['start_date'] = filter.startDate!.toIso8601String();
+        }
         if (filter.endDate != null)
+          {
           queryParams['end_date'] = filter.endDate!.toIso8601String();
+        }
         if (filter.subscriptionId != null)
+          {
           queryParams['subscription_id'] = filter.subscriptionId;
+        }
         if (filter.minAmount != null)
+          {
           queryParams['min_amount'] = filter.minAmount;
+        }
         if (filter.maxAmount != null)
+          {
           queryParams['max_amount'] = filter.maxAmount;
+        }
       }
 
       final response = await _get(
@@ -186,13 +196,23 @@ class PaymentHistoryService {
         if (filter.type != null) body['type'] = filter.type!.name;
         if (filter.status != null) body['status'] = filter.status!.name;
         if (filter.startDate != null)
+          {
           body['start_date'] = filter.startDate!.toIso8601String();
+        }
         if (filter.endDate != null)
+          {
           body['end_date'] = filter.endDate!.toIso8601String();
+        }
         if (filter.subscriptionId != null)
+          {
           body['subscription_id'] = filter.subscriptionId;
-        if (filter.minAmount != null) body['min_amount'] = filter.minAmount;
-        if (filter.maxAmount != null) body['max_amount'] = filter.maxAmount;
+        }
+        if (filter.minAmount != null) {
+          body['min_amount'] = filter.minAmount;
+        }
+        if (filter.maxAmount != null) {
+          body['max_amount'] = filter.maxAmount;
+        }
       }
 
       final response = await _post('/payments/export', body);
@@ -217,7 +237,9 @@ class PaymentHistoryService {
     try {
       final queryParams = <String, dynamic>{};
       if (startDate != null)
+        {
         queryParams['start_date'] = startDate.toIso8601String();
+      }
       if (endDate != null) queryParams['end_date'] = endDate.toIso8601String();
 
       final response = await _get('/payments/stats', queryParams: queryParams);
@@ -261,9 +283,13 @@ class PaymentHistoryService {
         if (filter.type != null) body['type'] = filter.type!.name;
         if (filter.status != null) body['status'] = filter.status!.name;
         if (filter.startDate != null)
+         {
           body['start_date'] = filter.startDate!.toIso8601String();
+        }
         if (filter.endDate != null)
+          {
           body['end_date'] = filter.endDate!.toIso8601String();
+        }
       }
 
       final response = await _post('/payments/search', body);

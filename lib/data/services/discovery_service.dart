@@ -36,15 +36,25 @@ class DiscoveryService {
         if (filters.minAge != null) queryParams['minAge'] = filters.minAge;
         if (filters.maxAge != null) queryParams['maxAge'] = filters.maxAge;
         if (filters.maxDistance != null)
+         {
           queryParams['maxDistance'] = filters.maxDistance;
+        }
         if (filters.interests.isNotEmpty)
+          {
           queryParams['interests'] = filters.interests.join(',');
+        }
         if (filters.verifiedOnly)
+          {
           queryParams['verifiedOnly'] = filters.verifiedOnly;
+        }
         if (filters.premiumOnly)
+          {
           queryParams['premiumOnly'] = filters.premiumOnly;
+        }
         if (filters.recentlyActive)
+         {
           queryParams['recentlyActive'] = filters.recentlyActive;
+        }
       }
 
       final response = await _apiClient.get(
