@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:async';
 import '../../../core/theme/pulse_design_system.dart';
 import '../../../data/models/chat_model.dart';
@@ -77,19 +78,29 @@ class _MessageSearchResultsScreenState
     });
   }
 
-  void _loadRecentSearches() {
-    // TODO: Load from local storage
-    setState(() {
-      _recentSearches = [
-        'dinner plans',
-        'coffee',
-        'weekend',
-      ];
-    });
+  Future<void> _loadRecentSearches() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final searches = prefs.getStringList('recent_message_searches') ?? [];
+      if (mounted) {
+        setState(() {
+          _recentSearches = searches;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error loading recent searches: $e');
+      // Fallback to empty list if loading fails
+      if (mounted) {
+        setState(() {
+          _recentSearches = [];
+        });
+      }
+    }
   }
 
-  void _saveRecentSearch(String query) {
+  Future<void> _saveRecentSearch(String query) async {
     if (query.trim().isEmpty) return;
+    
     setState(() {
       _recentSearches.remove(query);
       _recentSearches.insert(0, query);
@@ -97,7 +108,14 @@ class _MessageSearchResultsScreenState
         _recentSearches = _recentSearches.take(10).toList();
       }
     });
-    // TODO: Save to local storage
+
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setStringList('recent_message_searches', _recentSearches);
+    } catch (e) {
+      debugPrint('Error saving recent search: $e');
+      // Continue silently - search still works even if persistence fails
+    }
   }
 
   void _performSearch(String query) {
