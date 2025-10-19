@@ -4,12 +4,14 @@ import 'package:uuid/uuid.dart';
 import '../models/call_invitation.dart';
 import '../../domain/services/websocket_service.dart';
 import '../../data/services/websocket_service_impl.dart';
-import '../../data/services/webrtc_service.dart';
 
 /// Service for managing call invitations between users
 ///
 /// Handles sending/receiving call invitations via WebSocket,
 /// managing call timeouts, busy states, and integration with native CallKit
+/// 
+/// NOTE: RTC tokens are NOT generated here - they come from backend
+/// in the 'call_ready_to_connect' event after recipient accepts
 class CallInvitationService {
   static final CallInvitationService _instance =
       CallInvitationService._internal();
@@ -17,7 +19,6 @@ class CallInvitationService {
   CallInvitationService._internal();
 
   final WebSocketService _webSocketService = WebSocketServiceImpl.instance;
-  final WebRTCService _webrtcService = WebRTCService();
   final _uuid = const Uuid();
 
   // Stream controllers
@@ -51,6 +52,40 @@ class CallInvitationService {
 
   /// Initialize the service and listen to WebSocket events
   Future<void> initialize() async {
+    debugPrint('🎬 CallInvitationService.initialize() called');
+
+    // Listen to WebSocket connection status to set up listeners after connection
+    _webSocketService.connectionStatus.listen((isConnected) {
+      debugPrint('🔌 WebSocket connection status changed: $isConnected');
+      if (isConnected) {
+        _registerEventListeners();
+      }
+    });
+
+    // If already connected, register listeners immediately
+    if (_webSocketService.isConnected) {
+      debugPrint(
+        '✅ WebSocket already connected, registering listeners immediately',
+      );
+      _registerEventListeners();
+    } else {
+      debugPrint(
+        '⏳ WebSocket not yet connected, listeners will be registered on connection',
+      );
+    }
+
+    debugPrint('✅ CallInvitationService initialized');
+  }
+
+  /// Register event listeners on WebSocket
+  /// Called when WebSocket connects or reconnects
+  void _registerEventListeners() {
+    debugPrint('📋 Registering call event listeners on WebSocket...');
+
+    // Note: Socket.IO allows registering the same listener multiple times
+    // but will only fire once per event. We re-register on every connect
+    // to ensure listeners persist after reconnections.
+
     // Listen to WebSocket events using the service interface
     _webSocketService.on('call_invitation', _handleIncomingCall);
     _webSocketService.on('call_accepted', _handleCallAccepted);
@@ -63,10 +98,14 @@ class CallInvitationService {
     _webSocketService.on('call_connected', _handleCallConnected);
     _webSocketService.on('call_failed', _handleCallFailed);
 
-    debugPrint('CallInvitationService initialized');
+    debugPrint('✅ All call event listeners registered (total: 8 events)');
   }
 
   /// Send a call invitation to another user
+  /// 
+  /// NOTE: Does NOT generate RTC token here!
+  /// Token will be received in 'call_ready_to_connect' event after recipient accepts.
+  /// This prevents Agora resource usage if call is declined/timeout.
   Future<CallInvitation> sendCallInvitation({
     required String recipientId,
     required String recipientName,
@@ -81,17 +120,16 @@ class CallInvitationService {
       throw CallException('Cannot make calls while in another call');
     }
 
-    // Generate call ID and RTC token
+    // Generate call ID and channel name
     final callId = _uuid.v4();
     final channelName = groupId ?? callId;
 
-    // Get RTC token from backend
-    final tokenData = await _webrtcService.getRtcToken(
-      channelName: channelName,
-      role: 1, // PUBLISHER role
-    );
+    // ❌ DO NOT generate RTC token here!
+    // Token will be sent by backend in 'call_ready_to_connect' event
+    // after recipient accepts the call
+    // This optimization prevents Agora charges for declined/timeout calls
 
-    // Create invitation
+    // Create invitation WITHOUT token
     final invitation = CallInvitation(
       callId: callId,
       callerId: '', // Will be set by backend from JWT
@@ -101,7 +139,7 @@ class CallInvitationService {
       status: CallInvitationStatus.pending,
       conversationId: conversationId,
       groupId: groupId,
-      rtcToken: tokenData['token'] as String,
+      // rtcToken: null, // Will be received in ready_to_connect event
       channelName: channelName,
       metadata: metadata,
       createdAt: DateTime.now(),
@@ -369,8 +407,9 @@ class CallInvitationService {
       final callId = data['callId'] as String;
       final channelName = data['channelName'] as String?;
       final token = data['token'] as String?;
+      final uid = data['uid'] as int?; // ✅ Extract UID from backend event
 
-      debugPrint('Call ready to connect: $callId');
+      debugPrint('Call ready to connect: $callId (UID: $uid)');
 
       // Emit connection status event
       _connectionStatusController.add({
@@ -378,6 +417,7 @@ class CallInvitationService {
         'callId': callId,
         'channelName': channelName,
         'token': token,
+        'uid': uid, // ✅ Pass UID to AudioCallScreen
         'status': CallConnectionStatus.connecting,
       });
     } catch (e) {

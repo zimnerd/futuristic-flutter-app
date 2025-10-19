@@ -15,6 +15,7 @@ import 'core/storage/hive_storage_service.dart';
 import 'core/utils/logger.dart';
 import 'core/services/service_locator.dart';
 import 'core/services/call_notification_service.dart';
+import 'core/services/call_invitation_service.dart';
 import 'data/datasources/local/user_local_data_source.dart';
 import 'data/datasources/remote/chat_remote_data_source.dart';
 import 'data/datasources/remote/notification_remote_data_source.dart';
@@ -140,6 +141,9 @@ void main() async {
 
   // Initialize call notification service (native CallKit/full-screen intent)
   await _initializeCallNotifications();
+
+  // Initialize call invitation service (WebSocket event listeners)
+  await CallInvitationService().initialize();
 
   // Initialize authentication tokens
   await _initializeStoredTokens();

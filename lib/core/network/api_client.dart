@@ -1052,11 +1052,26 @@ class ApiClient {
     );
   }
 
-  /// Initiate a video/audio call
+  /// ⚠️ DEPRECATED: Use CallInvitationService.sendCallInvitation() instead
+  ///
+  /// This REST API endpoint is deprecated because it generates Agora tokens
+  /// immediately and causes premature "Connected" status before the other
+  /// user accepts. Please migrate to WebSocket-based CallInvitationService.
+  ///
+  /// See: CALL_SYSTEM_COMPLETE_MIGRATION.md for migration guide
+  @Deprecated(
+    'Use CallInvitationService.sendCallInvitation() instead. '
+    'This REST API call will be removed in a future version.',
+  )
   Future<Response> initiateCall({
     required List<String> participantIds,
     required String type, // 'audio' or 'video'
   }) async {
+    _logger.w(
+      '⚠️ DEPRECATED: initiateCall() REST API called\n'
+      'Please migrate to CallInvitationService.sendCallInvitation()\n'
+      'See: CALL_SYSTEM_COMPLETE_MIGRATION.md',
+    );
     return await _dio.post(
       '/webrtc/calls',
       data: {'participantIds': participantIds, 'type': type},

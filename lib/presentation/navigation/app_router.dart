@@ -81,7 +81,7 @@ import '../blocs/block_report/block_report_bloc.dart';
 import '../blocs/auth/auth_state.dart';
 import '../screens/chat/chat_screen.dart';
 import '../screens/call/video_call_screen.dart';
-import '../screens/call/audio_call_screen.dart';
+import '../screens/calls/audio_call_screen.dart'; // ✅ FIXED: Using NEW version with WebSocket
 import '../screens/calls/call_history_screen.dart';
 import '../screens/calls/call_details_screen.dart';
 import '../blocs/call_history/call_history_barrel.dart';
@@ -514,25 +514,73 @@ class AppRouter {
           path: AppRoutes.videoCall,
           name: 'videoCall',
           builder: (context, state) {
-            // Extract user data from route extra or use current call state
             final callId = state.pathParameters['callId'] ?? '';
             final extra = state.extra as Map<String, dynamic>?;
-            final remoteUser =
-                extra?['remoteUser'] as UserProfile? ??
-                UserProfile(
-                  id: 'unknown_user',
-                  name: 'Unknown User',
-                  age: 25,
-                  bio: '',
-                  photos: [],
-                  location: UserLocation(
-                    latitude: 0.0,
-                    longitude: 0.0,
-                    address: 'Unknown',
-                    city: 'Unknown',
-                    country: 'Unknown',
-                  ),
-                );
+            
+            // Get remoteUser - could be UserModel or UserProfile
+            final remoteUserObject = extra?['remoteUser'];
+            final remoteUserModel = remoteUserObject is UserModel
+                ? remoteUserObject
+                : null;
+            final remoteUserProfile = remoteUserObject is UserProfile
+                ? remoteUserObject
+                : null;
+
+            // Convert UserModel to UserProfile if needed
+            final remoteUser = remoteUserModel != null
+                ? UserProfile(
+                    id: remoteUserModel.id,
+                    name: remoteUserModel.firstName ?? remoteUserModel.username,
+                    age: remoteUserModel.age ?? 25,
+                    bio: remoteUserModel.bio ?? '',
+                    photos: remoteUserModel.photos.asMap().entries.map((entry) {
+                      final index = entry.key;
+                      final p = entry.value;
+                      String photoUrl = '';
+
+                      if (p is String) {
+                        photoUrl = p;
+                      } else if (p is Map) {
+                        photoUrl = p['url'] as String? ?? '';
+                      } else {
+                        photoUrl = (p as dynamic).url as String? ?? '';
+                      }
+
+                      return ProfilePhoto(
+                        id: 'photo_$index',
+                        url: photoUrl,
+                        order: index,
+                        isMain: index == 0,
+                      );
+                    }).toList(),
+                    location: UserLocation(
+                      latitude:
+                          remoteUserModel.coordinates?['latitude'] as double? ??
+                          0.0,
+                      longitude:
+                          remoteUserModel.coordinates?['longitude']
+                              as double? ??
+                          0.0,
+                      address: remoteUserModel.location ?? 'Unknown',
+                      city: remoteUserModel.location ?? 'Unknown',
+                      country: 'Unknown',
+                    ),
+                  )
+                : remoteUserProfile ??
+                      UserProfile(
+                        id: 'unknown_user',
+                        name: 'Unknown User',
+                        age: 25,
+                        bio: '',
+                        photos: [],
+                        location: UserLocation(
+                          latitude: 0.0,
+                          longitude: 0.0,
+                          address: 'Unknown',
+                          city: 'Unknown',
+                          country: 'Unknown',
+                        ),
+                      );
 
             return VideoCallScreen(callId: callId, remoteUser: remoteUser);
           },
@@ -546,10 +594,26 @@ class AppRouter {
             final remoteUser = extra?['remoteUser'] as UserModel;
             final isIncoming = extra?['isIncoming'] as bool? ?? false;
 
+            // Extract photo URL - handle both String and Photo object
+            String? photoUrl;
+            if (remoteUser.photos.isNotEmpty) {
+              final firstPhoto = remoteUser.photos.first;
+              if (firstPhoto is String) {
+                photoUrl = firstPhoto;
+              } else if (firstPhoto is Map<String, dynamic>) {
+                photoUrl = firstPhoto['url'] as String?;
+              } else {
+                // Photo object with url getter
+                photoUrl = (firstPhoto as dynamic).url as String?;
+              }
+            }
+
             return AudioCallScreen(
               callId: callId,
-              remoteUser: remoteUser,
-              isIncoming: isIncoming,
+              recipientId: remoteUser.id,
+              userName: remoteUser.firstName ?? remoteUser.username,
+              userPhotoUrl: photoUrl,
+              isOutgoing: !isIncoming, // Convert isIncoming to isOutgoing
             );
           },
         ),

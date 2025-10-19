@@ -257,6 +257,7 @@ class AudioCallService {
     required String recipientId,
     String? channelName,
     String? token,
+    int? uid, // ✅ NEW: Accept UID from WebSocket event
   }) async {
     try {
       // Get app ID from environment or config
@@ -301,9 +302,15 @@ class AudioCallService {
       // Get RTC token from backend if not provided
       String agoraToken = token ?? '';
       String agoraChannel = channelName ?? '';
-      int tokenUid = 0; // UID from token response
+      int tokenUid = uid ?? 0; // ✅ Use provided UID or default to 0
 
       if (token == null || channelName == null) {
+        // ⚠️ DEPRECATED PATH: This should only be used for incoming calls
+        // For outgoing calls, token/channel/uid should come from WebSocket event
+        _logger.w(
+          '⚠️ DEPRECATED: Requesting token via REST API. '
+          'New flows should receive token via WebSocket call_ready_to_connect event.',
+        );
         _logger.i('🔑 Requesting audio call token for call: $callId');
         final response = await _apiClient.getCallToken(
           callId: callId,
@@ -321,6 +328,11 @@ class AudioCallService {
         tokenUid = tokenData['uid'] as int; // ✅ Extract UID from token response
 
         _logger.i('🔑 Token received - Channel: $agoraChannel, UID: $tokenUid');
+      } else {
+        // ✅ NEW PATH: Using token from WebSocket event
+        _logger.i(
+          '✅ Using token from WebSocket event - Channel: $agoraChannel, UID: $tokenUid',
+        );
       }
 
       _currentCallId = callId;
@@ -394,7 +406,18 @@ class AudioCallService {
     }
   }
 
-  /// Initiate an audio/video call to another user
+  /// ⚠️ DEPRECATED: Use CallInvitationService.sendCallInvitation() instead
+  ///
+  /// This method uses the old REST API flow which generates Agora tokens
+  /// immediately and causes premature "Connected" status before the other
+  /// user accepts. The new WebSocket-based CallInvitationService implements
+  /// proper event-driven call flow.
+  ///
+  /// See: CALL_SYSTEM_COMPLETE_MIGRATION.md for migration guide
+  @Deprecated(
+    'Use CallInvitationService.sendCallInvitation() instead. '
+    'This REST API flow will be removed in a future version.',
+  )
   Future<String?> initiateAudioCall({
     required String recipientId,
     required String recipientName,
@@ -402,7 +425,11 @@ class AudioCallService {
   }) async {
     try {
       final callType = isVideo ? 'VIDEO' : 'AUDIO';
-      _logger.i('📞 Initiating $callType call to: $recipientId');
+      _logger.w(
+        '⚠️ DEPRECATED: initiateAudioCall() called for $callType call\n'
+        'Please migrate to CallInvitationService.sendCallInvitation()\n'
+        'See: CALL_SYSTEM_COMPLETE_MIGRATION.md',
+      );
 
       // Create call through backend API
       final response = await _apiClient.initiateCall(

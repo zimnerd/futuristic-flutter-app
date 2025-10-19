@@ -76,6 +76,9 @@ class _AudioCallScreenState extends State<AudioCallScreen>
   @override
   void initState() {
     super.initState();
+    AppLogger.info(
+      '🎬 AudioCallScreen.initState - callId: ${widget.callId}, isOutgoing: ${widget.isOutgoing}',
+    );
     _audioService = AudioCallService.instance;
     _activeConversationId = widget.conversationId;
     _setupPulseAnimation();
@@ -84,6 +87,9 @@ class _AudioCallScreenState extends State<AudioCallScreen>
     _initializeAgoraService();
     // NEW: Listen for ready_to_connect event before joining
     _setupConnectionStatusListener();
+    AppLogger.info(
+      '✅ AudioCallScreen setup complete - waiting for ready_to_connect event',
+    );
   }
 
   void _setupStreamListeners() {
@@ -178,6 +184,9 @@ class _AudioCallScreenState extends State<AudioCallScreen>
 
   /// NEW: Listen for connection status events from backend
   void _setupConnectionStatusListener() {
+    AppLogger.info(
+      '🎧 Setting up connection status listener for call ${widget.callId}',
+    );
     _connectionStatusSubscription = _callInvitationService
         .onConnectionStatusChanged
         .listen((statusData) {
@@ -185,9 +194,14 @@ class _AudioCallScreenState extends State<AudioCallScreen>
           final callId = statusData['callId'] as String;
 
           // Only process events for this call
-          if (callId != widget.callId) return;
+          if (callId != widget.callId) {
+            AppLogger.info(
+              '⏭️ Ignoring event $event for different call $callId (expected: ${widget.callId})',
+            );
+            return;
+          }
 
-          AppLogger.info('Connection status event: $event for call $callId');
+          AppLogger.info('✅ Connection status event: $event for call $callId');
 
           switch (event) {
             case 'ready_to_connect':
@@ -219,13 +233,39 @@ class _AudioCallScreenState extends State<AudioCallScreen>
     });
 
     try {
-      AppLogger.info('Ready to connect - joining Agora channel');
+      AppLogger.info('🎉 ===== READY TO CONNECT EVENT RECEIVED =====');
+      AppLogger.info('📦 Event data: $data');
+
+      // ✅ Extract token, channelName, and UID from WebSocket event
+      final token = data['token'] as String?;
+      final channelName = data['channelName'] as String?;
+      final uid = data['uid'] as int?;
+
+      AppLogger.info(
+        '🔍 Extracted: token=${token != null ? "PRESENT" : "NULL"}, channel=$channelName, uid=$uid',
+      );
+
+      if (token == null || channelName == null || uid == null) {
+        AppLogger.error(
+          '❌ Missing required data in ready_to_connect event: '
+          'token=${token != null}, channelName=${channelName != null}, uid=${uid != null}',
+        );
+        _showErrorDialog('Invalid call data received from server');
+        return;
+      }
+
+      AppLogger.info('✅ All data present - proceeding to join Agora');
+
+      AppLogger.info(
+        '🎧 Joining with WebSocket token - Channel: $channelName, UID: $uid',
+      );
       
       final success = await _audioService.joinAudioCall(
         callId: widget.callId,
         recipientId: widget.recipientId,
-        channelName: data['channelName'] as String? ?? widget.channelName,
-        token: data['token'] as String? ?? widget.token,
+        channelName: channelName,
+        token: token,
+        uid: uid, // ✅ Pass UID from event
       );
 
       if (!success) {

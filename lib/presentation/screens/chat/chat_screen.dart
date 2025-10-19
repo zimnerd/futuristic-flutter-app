@@ -11,8 +11,9 @@ import 'package:permission_handler/permission_handler.dart';
 import '../../../blocs/chat_bloc.dart';
 import '../../../data/models/chat_model.dart';
 import '../../../data/services/background_sync_manager.dart';
-import '../../../data/services/audio_call_service.dart';
 import '../../../data/services/auto_reply_service.dart';
+import '../../../core/services/call_invitation_service.dart';
+import '../../../core/models/call_invitation.dart';
 import '../../../core/network/api_client.dart';
 import '../../../services/media_upload_service.dart' as media_service;
 import '../../../domain/entities/message.dart' show MessageType;
@@ -1555,8 +1556,14 @@ class _ChatScreenState extends State<ChatScreen>
     );
   }
 
+  /// ✅ NEW: WebSocket-based event-driven call initiation
+  /// This replaces the old REST API flow that caused premature "Connected" status
   Future<void> _initiateCall(BuildContext context, bool isVideo) async {
     try {
+      AppLogger.info(
+        '📞 Initiating ${isVideo ? 'video' : 'audio'} call via WebSocket',
+      );
+      
       // Show loading indicator
       showDialog(
         context: context,
@@ -1564,12 +1571,14 @@ class _ChatScreenState extends State<ChatScreen>
         builder: (context) => const Center(child: CircularProgressIndicator()),
       );
 
-      // Create call on backend first
-      final audioService = AudioCallService.instance;
-      final callId = await audioService.initiateAudioCall(
+      // ✅ Use CallInvitationService for WebSocket event-driven flow
+      final callInvitationService = CallInvitationService();
+      final invitation = await callInvitationService.sendCallInvitation(
         recipientId: widget.otherUserId,
         recipientName: widget.otherUserName,
-        isVideo: isVideo,
+        callType: isVideo ? CallType.video : CallType.audio,
+        recipientPhoto: widget.otherUserPhoto,
+        conversationId: widget.conversationId,
       );
 
       // Close loading dialog
@@ -1577,12 +1586,7 @@ class _ChatScreenState extends State<ChatScreen>
         Navigator.of(context).pop();
       }
 
-      if (callId == null) {
-        if (context.mounted) {
-          PulseToast.error(context, message: 'Failed to initiate call');
-        }
-        return;
-      }
+      AppLogger.info('✅ Call invitation sent: ${invitation.callId}');
 
       // Create UserModel from available data
       final remoteUser = UserModel(
@@ -1597,10 +1601,15 @@ class _ChatScreenState extends State<ChatScreen>
         createdAt: DateTime.now(),
       );
 
-      // Navigate to audio call screen with backend-generated call ID
+      // Navigate to call screen
+      // ✅ NOTE: No token passed - will be received via ready_to_connect event
       if (context.mounted) {
+        final callRoute = isVideo 
+            ? '/video-call/${invitation.callId}' 
+            : '/audio-call/${invitation.callId}';
+        
         context.push(
-          '/audio-call/$callId',
+          callRoute,
           extra: {
             'remoteUser': remoteUser,
             'isIncoming': false,
@@ -1609,13 +1618,15 @@ class _ChatScreenState extends State<ChatScreen>
         );
       }
     } catch (e) {
+      AppLogger.error('❌ Failed to initiate call: $e');
+      
       // Close loading dialog if still open
       if (context.mounted && Navigator.of(context).canPop()) {
         Navigator.of(context).pop();
       }
 
       if (context.mounted) {
-        PulseToast.error(context, message: 'Error initiating call: $e');
+        PulseToast.error(context, message: 'Failed to initiate call: $e');
       }
     }
   }
