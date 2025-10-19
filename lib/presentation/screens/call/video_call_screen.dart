@@ -13,6 +13,8 @@ import '../../../data/models/call_model.dart' as model;
 import '../../../core/mixins/permission_required_mixin.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/utils/logger.dart';
+import '../../../core/services/call_invitation_service.dart';
+import '../../../core/models/call_invitation.dart';
 
 class VideoCallScreen extends StatefulWidget {
   final UserProfile remoteUser;
@@ -33,9 +35,12 @@ class VideoCallScreen extends StatefulWidget {
 class _VideoCallScreenState extends State<VideoCallScreen>
     with PermissionRequiredMixin {
   final WebRTCService _webRTCService = WebRTCService();
+  final CallInvitationService _callInvitationService = CallInvitationService();
   final MessagingService _messagingService = MessagingService(
     apiClient: ApiClient.instance,
   );
+
+  StreamSubscription<Map<String, dynamic>>? _connectionStatusSubscription;
 
   bool _isVideoEnabled = true;
   bool _isAudioEnabled = true;
@@ -45,6 +50,12 @@ class _VideoCallScreenState extends State<VideoCallScreen>
   Duration _callDuration = Duration.zero;
   Timer? _callDurationTimer;
   DateTime? _callStartTime;
+  
+  // NEW: Track connection status
+  CallConnectionStatus _connectionStatus = CallConnectionStatus.ringing;
+  bool _isJoiningCall = false; // Prevent duplicate joins
+  String? _pendingChannelName;
+  String? _pendingToken;
 
   @override
   void initState() {
@@ -55,15 +66,149 @@ class _VideoCallScreenState extends State<VideoCallScreen>
       DeviceOrientation.landscapeRight,
     ]);
 
+    // NEW: Setup connection status listener first
+    _setupConnectionStatusListener();
+
     if (widget.isIncoming) {
       _showIncomingCallDialog();
     } else {
-      _initiateCall();
+      // NEW: Don't initiate call immediately, wait for ready_to_connect event
+      _prepareForCall();
+    }
+  }
+
+  /// NEW: Prepare for call but don't join yet
+  Future<void> _prepareForCall() async {
+    try {
+      // Request permissions first
+      final hasPermissions = await ensureVideoCallPermissions();
+      if (!hasPermissions) {
+        if (mounted) {
+          PulseToast.error(
+            context,
+            message:
+                'Camera and microphone permissions are required for video calls',
+          );
+          Navigator.of(context).pop();
+        }
+        return;
+      }
+
+      setState(() {
+        _connectionStatus = CallConnectionStatus.ringing;
+      });
+
+      AppLogger.info('Video call prepared, waiting for ready_to_connect event');
+    } catch (e) {
+      AppLogger.error('Failed to prepare call: $e');
+      if (mounted) {
+        PulseToast.error(
+          context,
+          message: 'Failed to prepare call: ${e.toString()}',
+        );
+        Navigator.of(context).pop();
+      }
+    }
+  }
+
+  /// NEW: Listen for connection status events from backend
+  void _setupConnectionStatusListener() {
+    _connectionStatusSubscription = _callInvitationService
+        .onConnectionStatusChanged
+        .listen((statusData) {
+          final event = statusData['event'] as String;
+          final callId = statusData['callId'] as String;
+
+          // Only process events for this call
+          if (callId != widget.callId) return;
+
+          AppLogger.info(
+            'Video call connection status event: $event for call $callId',
+          );
+
+          switch (event) {
+            case 'ready_to_connect':
+              // Both users accepted, now join WebRTC
+              _handleReadyToConnect(statusData);
+              break;
+            case 'connected':
+              // Both users in WebRTC channel, start timer
+              _handleCallConnected();
+              break;
+            case 'failed':
+              // Call failed (offline, network error, etc.)
+              _handleCallFailed(statusData['reason'] as String?);
+              break;
+          }
+        });
+  }
+
+  /// NEW: Handle ready to connect - Join WebRTC channel now
+  void _handleReadyToConnect(Map<String, dynamic> data) {
+    if (_isJoiningCall) {
+      AppLogger.warning('Already joining WebRTC, skipping duplicate join');
+      return;
+    }
+
+    setState(() {
+      _isJoiningCall = true;
+      _connectionStatus = CallConnectionStatus.connecting;
+      _pendingChannelName = data['channelName'] as String?;
+      _pendingToken = data['token'] as String?;
+    });
+
+    _initiateCall();
+  }
+
+  /// NEW: Handle call connected - Start timer NOW
+  void _handleCallConnected() {
+    setState(() {
+      _connectionStatus = CallConnectionStatus.connected;
+      _callStartTime = DateTime.now();
+      _isCallConnected = true;
+    });
+    _startCallTimer();
+    AppLogger.info('Video call connected - timer started');
+  }
+
+  /// NEW: Handle call failed
+  void _handleCallFailed(String? reason) {
+    setState(() {
+      _connectionStatus = CallConnectionStatus.failed;
+    });
+    AppLogger.error('Video call failed: ${reason ?? "Unknown reason"}');
+    if (mounted) {
+      PulseToast.error(
+        context,
+        message: 'Call failed: ${reason ?? "User is offline or unreachable"}',
+      );
+      Navigator.of(context).pop();
+    }
+  }
+
+  /// NEW: Get call status text based on connection status
+  String _getCallStatusText() {
+    switch (_connectionStatus) {
+      case CallConnectionStatus.ringing:
+        return 'Ringing...';
+      case CallConnectionStatus.connecting:
+        return 'Connecting...';
+      case CallConnectionStatus.connected:
+        return 'Connected';
+      case CallConnectionStatus.ended:
+        return 'Call ended';
+      case CallConnectionStatus.failed:
+        return 'Connection failed';
+      case CallConnectionStatus.noAnswer:
+        return 'No answer';
+      case CallConnectionStatus.declined:
+        return 'Call declined';
     }
   }
 
   @override
   void dispose() {
+    _connectionStatusSubscription?.cancel();
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     super.dispose();
   }
@@ -118,33 +263,33 @@ class _VideoCallScreenState extends State<VideoCallScreen>
 
   void _initiateCall() async {
     try {
-      // Request permissions first
-      final hasPermissions = await ensureVideoCallPermissions();
-      if (!hasPermissions) {
-        if (mounted) {
-          PulseToast.error(
-            context,
-            message:
-                'Camera and microphone permissions are required for video calls',
-          );
-          Navigator.of(context).pop();
+      // UPDATED: Use pending token from ready_to_connect event if available
+      String token;
+      String channelName;
+
+      if (_pendingToken != null && _pendingChannelName != null) {
+        // Use token from ready_to_connect event (both users accepted)
+        token = _pendingToken!;
+        channelName = _pendingChannelName!;
+        AppLogger.info('Using token from ready_to_connect event');
+      } else {
+        // Fallback: Get fresh token (shouldn't happen in normal flow)
+        AppLogger.warning(
+          'No pending token, requesting fresh token from backend',
+        );
+        final tokenResponse = await ApiClient.instance.post(
+          '/webrtc/calls/${widget.callId}/token',
+        );
+
+        if (tokenResponse.data == null) {
+          throw Exception('Failed to get call token');
         }
-        return;
+
+        token = tokenResponse.data['token'] as String;
+        channelName = tokenResponse.data['channelName'] as String;
       }
 
-      // Get call token from backend
-      final tokenResponse = await ApiClient.instance.post(
-        '/webrtc/calls/${widget.callId}/token',
-      );
-
-      if (tokenResponse.data == null) {
-        throw Exception('Failed to get call token');
-      }
-
-      final String token = tokenResponse.data['token'] as String;
-      final String channelName = tokenResponse.data['channelName'] as String;
-
-      // Start WebRTC call with real token from backend
+      // Start WebRTC call with token from backend
       await _webRTCService.startCall(
         receiverId: widget.remoteUser.id,
         receiverName: widget.remoteUser.name,
@@ -156,13 +301,14 @@ class _VideoCallScreenState extends State<VideoCallScreen>
         token: token,
       );
 
-      setState(() {
-        _isCallConnected = true;
-        _callStartTime = DateTime.now(); // Start tracking call duration
-      });
-      _startCallTimer();
+      // REMOVED: Don't set _isCallConnected or start timer here
+      // Wait for call_connected event from backend instead
+      AppLogger.info('Joined WebRTC channel, waiting for call_connected event');
     } catch (e) {
-      debugPrint('Failed to initiate call: $e');
+      AppLogger.error('Failed to initiate call: $e');
+      setState(() {
+        _connectionStatus = CallConnectionStatus.failed;
+      });
       if (mounted) {
         PulseToast.error(
           context,
@@ -410,9 +556,10 @@ class _VideoCallScreenState extends State<VideoCallScreen>
                     ),
                   ),
                   const SizedBox(height: 8),
-                  const Text(
-                    'Calling...',
-                    style: TextStyle(color: Colors.white70, fontSize: 16),
+                  // NEW: Show connection status based on enum
+                  Text(
+                    _getCallStatusText(),
+                    style: const TextStyle(color: Colors.white70, fontSize: 16),
                   ),
                 ],
               ),
