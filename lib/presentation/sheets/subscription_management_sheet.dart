@@ -140,7 +140,6 @@ class _SubscriptionManagementSheetState
   Widget _buildSubscriptionDetailsCard() {
     final subscription = widget.subscription;
     final isActive = subscription.status == SubscriptionStatus.active;
-    final isPaused = subscription.status == SubscriptionStatus.suspended;
     final isPendingCancellation =
         subscription.status == SubscriptionStatus.pendingCancellation;
 

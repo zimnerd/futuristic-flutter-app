@@ -321,12 +321,14 @@ class PremiumPlan extends Equatable {
   final String description;
   final int priceInCents;
   final String currency;
-  final String interval; // 'month', 'year'
+  final String interval; // 'month', 'year', '3month', '6month'
+  final int intervalCount; // Number of intervals (e.g., 1 for monthly, 3 for quarterly)
   final List<String> features;
   final bool isPopular;
   final String? promoText;
   final int? discountPercent;
   final bool isActive;
+  final Map<String, dynamic>? metadata; // Additional plan metadata
 
   const PremiumPlan({
     required this.id,
@@ -335,11 +337,13 @@ class PremiumPlan extends Equatable {
     required this.priceInCents,
     this.currency = 'USD',
     this.interval = 'month',
+    this.intervalCount = 1,
     this.features = const [],
     this.isPopular = false,
     this.promoText,
     this.discountPercent,
     this.isActive = true,
+    this.metadata,
   });
 
   factory PremiumPlan.fromJson(Map<String, dynamic> json) {
@@ -350,11 +354,13 @@ class PremiumPlan extends Equatable {
       priceInCents: json['priceInCents'] as int,
       currency: json['currency'] as String? ?? 'USD',
       interval: json['interval'] as String? ?? 'month',
+      intervalCount: json['intervalCount'] as int? ?? 1,
       features: List<String>.from(json['features'] ?? []),
       isPopular: json['isPopular'] as bool? ?? false,
       promoText: json['promoText'] as String?,
       discountPercent: json['discountPercent'] as int?,
       isActive: json['isActive'] as bool? ?? true,
+      metadata: json['metadata'] as Map<String, dynamic>?,
     );
   }
 
@@ -366,11 +372,13 @@ class PremiumPlan extends Equatable {
       'priceInCents': priceInCents,
       'currency': currency,
       'interval': interval,
+      'intervalCount': intervalCount,
       'features': features,
       'isPopular': isPopular,
       'promoText': promoText,
       'discountPercent': discountPercent,
       'isActive': isActive,
+      'metadata': metadata,
     };
   }
 
@@ -387,11 +395,13 @@ class PremiumPlan extends Equatable {
         priceInCents,
         currency,
         interval,
+        intervalCount,
         features,
         isPopular,
         promoText,
         discountPercent,
         isActive,
+        metadata,
       ];
 }
 

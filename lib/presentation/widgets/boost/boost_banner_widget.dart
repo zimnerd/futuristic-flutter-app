@@ -290,15 +290,4 @@ class _BoostBannerWidgetState extends State<BoostBannerWidget>
       return '$minutes:$formattedSeconds';
     }
   }
-
-  /// Format remaining time as "25m" or "5m" etc.
-  String _formatRemainingTime(int minutes) {
-    if (minutes >= 60) {
-      final hours = minutes ~/ 60;
-      final mins = minutes % 60;
-      return '${hours}h ${mins}m';
-    } else {
-      return '${minutes}m';
-    }
-  }
 }

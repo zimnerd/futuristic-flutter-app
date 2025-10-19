@@ -130,14 +130,13 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
   void _startConversation(BuildContext context) {
     if (!mounted) return;
 
-    final scaffoldMessenger = ScaffoldMessenger.of(context);
     final chatBloc = context.read<ChatBloc>();
-    
+
     // Create conversation using ChatBloc
     chatBloc.add(CreateConversation(
       participantId: widget.profile.id,
     ));
-    
+
     // Listen for conversation creation result
     final subscription = chatBloc.stream.listen((state) {
       if (state is ConversationCreated) {

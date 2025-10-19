@@ -61,7 +61,6 @@ class _MessageStatusIndicatorState extends State<MessageStatusIndicator>
     with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _scaleAnimation;
-  MessageStatus? _previousStatus;
 
   @override
   void initState() {
@@ -78,7 +77,6 @@ class _MessageStatusIndicatorState extends State<MessageStatusIndicator>
       ),
     );
 
-    _previousStatus = widget.status;
     _animationController.forward();
   }
 
@@ -88,7 +86,6 @@ class _MessageStatusIndicatorState extends State<MessageStatusIndicator>
 
     // Animate when status changes
     if (oldWidget.status != widget.status) {
-      _previousStatus = oldWidget.status;
       _animationController.reset();
       _animationController.forward();
     }
@@ -102,7 +99,6 @@ class _MessageStatusIndicatorState extends State<MessageStatusIndicator>
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final defaultColor = widget.color ?? Colors.grey.shade600;
     // More prominent blue for read status
     final defaultReadColor = widget.readColor ?? const Color(0xFF2196F3); // Material Blue

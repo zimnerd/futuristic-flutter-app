@@ -5,6 +5,7 @@ import '../../../domain/entities/event.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../theme/pulse_colors.dart';
 import '../common/robust_network_image.dart';
+import 'event_analytics_indicators.dart';
 
 class EventCard extends StatelessWidget {
   final Event event;
@@ -112,6 +113,17 @@ class EventCard extends StatelessWidget {
                         ),
                       ),
                     ],
+                  ),
+                  
+                  const SizedBox(height: 12),
+
+                  // Event Analytics Indicators
+                  EventAnalyticsIndicators(
+                    event: event,
+                    showAttendance: true,
+                    showEngagement: true,
+                    showPopularity: false,
+                    compact: true,
                   ),
                   
                   const SizedBox(height: 16),

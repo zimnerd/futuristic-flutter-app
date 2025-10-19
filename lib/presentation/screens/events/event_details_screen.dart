@@ -9,6 +9,7 @@ import '../../blocs/event/event_event.dart';
 import '../../blocs/event/event_state.dart';
 import '../../widgets/common/robust_network_image.dart';
 import '../../widgets/common/pulse_toast.dart';
+import '../../widgets/events/event_analytics_indicators.dart';
 
 class EventDetailsScreen extends StatefulWidget {
   final String eventId;
@@ -165,6 +166,18 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
             delegate: SliverChildListDelegate([
               // Event title and basic info
               _buildEventHeader(context, event),
+              const SizedBox(height: 20),
+
+              // Event Analytics Indicators
+              EventAnalyticsIndicators(
+                event: event,
+                showAttendance: true,
+                showEngagement: true,
+                showPopularity: true,
+                showSuccess: true,
+                showQuality: true,
+                compact: false,
+              ),
               const SizedBox(height: 24),
               
               // Event description

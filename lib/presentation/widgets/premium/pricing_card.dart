@@ -371,20 +371,19 @@ class PricingCard extends StatelessWidget {
                   ),
 
                   // Trial info
-                  // TODO: Add metadata support to PremiumPlan model
-                  // if (plan.metadata?['hasTrial'] == true) ...[
-                  //   const SizedBox(height: 8),
-                  //   Center(
-                  //     child: Text(
-                  //       '7-day free trial included',
-                  //       style: TextStyle(
-                  //         fontSize: 12,
-                  //         color: PulseColors.success,
-                  //         fontWeight: FontWeight.w500,
-                  //       ),
-                  //     ),
-                  //   ),
-                  // ],
+                  if (plan.metadata?['hasTrial'] == true) ...[
+                    const SizedBox(height: 8),
+                    Center(
+                      child: Text(
+                        '7-day free trial included',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: PulseColors.success,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),
