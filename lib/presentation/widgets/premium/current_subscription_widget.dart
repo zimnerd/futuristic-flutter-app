@@ -273,6 +273,12 @@ class CurrentSubscriptionWidget extends StatelessWidget {
         return Colors.orange;
       case SubscriptionStatus.suspended:
         return Colors.red;
+      case SubscriptionStatus.pending:
+        return Colors.blue;
+      case SubscriptionStatus.failed:
+        return Colors.red;
+      case SubscriptionStatus.pendingCancellation:
+        return Colors.orange;
     }
   }
 
@@ -290,6 +296,12 @@ class CurrentSubscriptionWidget extends StatelessWidget {
         return 'Past Due';
       case SubscriptionStatus.suspended:
         return 'Suspended';
+      case SubscriptionStatus.pending:
+        return 'Pending';
+      case SubscriptionStatus.failed:
+        return 'Failed';
+      case SubscriptionStatus.pendingCancellation:
+        return 'Cancelling';
     }
   }
 

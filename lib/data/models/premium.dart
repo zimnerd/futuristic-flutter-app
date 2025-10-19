@@ -1,4 +1,8 @@
 import 'package:equatable/equatable.dart';
+import 'subscription.dart';
+
+// Re-export SubscriptionStatus so files importing premium.dart can access it
+export 'subscription.dart' show SubscriptionStatus;
 
 /// Premium subscription tiers
 enum PremiumTier {
@@ -506,16 +510,6 @@ class UserSubscription extends Equatable {
         cancelledAt,
         cancelReason,
       ];
-}
-
-/// Subscription status enum
-enum SubscriptionStatus {
-  active,
-  inactive,
-  cancelled,
-  pastDue,
-  suspended,
-  expired,
 }
 
 /// Premium feature types
