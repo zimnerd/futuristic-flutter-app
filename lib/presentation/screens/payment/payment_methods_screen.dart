@@ -1,17 +1,30 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import '../../blocs/payment/payment_bloc.dart';
+import '../../blocs/premium/premium_bloc.dart';
+import '../../blocs/premium/premium_event.dart';
 import '../../../data/services/payment_service.dart';
 import '../../../widgets/app_button.dart';
 import '../../../widgets/app_text_field.dart';
 import '../../widgets/common/keyboard_dismissible_scaffold.dart';
 import '../../widgets/common/pulse_toast.dart';
+import '../../navigation/app_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../screens/payment_demo_screen.dart';
 
 class PaymentMethodsScreen extends StatefulWidget {
-  const PaymentMethodsScreen({super.key});
+  final String? planId;
+  final String? planName;
+  final double? amount;
+
+  const PaymentMethodsScreen({
+    super.key,
+    this.planId,
+    this.planName,
+    this.amount,
+  });
 
   @override
   State<PaymentMethodsScreen> createState() => _PaymentMethodsScreenState();
@@ -27,12 +40,27 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isPurchaseMode =
+        widget.planId != null && widget.planName != null && widget.amount != null;
+
     return KeyboardDismissibleScaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: Text(
-          'Payment Methods',
-          style: AppTextStyles.heading2.copyWith(color: AppColors.textPrimary),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              isPurchaseMode ? 'Complete Purchase' : 'Payment Methods',
+              style: AppTextStyles.heading2.copyWith(color: AppColors.textPrimary),
+            ),
+            if (isPurchaseMode && widget.planName != null)
+              Text(
+                '${widget.planName} - \$${widget.amount?.toStringAsFixed(2)}',
+                style: AppTextStyles.bodySmall.copyWith(
+                  color: AppColors.textSecondary,
+                ),
+              ),
+          ],
         ),
         backgroundColor: AppColors.surface,
         elevation: 0,
@@ -104,6 +132,11 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
     final last4 = method['last4'] as String? ?? '****';
     final brand = method['brand'] as String? ?? '';
     final isDefault = method['isDefault'] as bool? ?? false;
+    final methodId = method['id'] as String?;
+
+    // Check if we're in purchase mode (plan details provided)
+    final isPurchaseMode =
+        widget.planId != null && widget.planName != null && widget.amount != null;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -149,12 +182,26 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
                 ),
               ),
             const SizedBox(width: 8),
-            IconButton(
-              onPressed: () => _showDeleteConfirmation(context, method),
-              icon: Icon(Icons.delete_outline, color: AppColors.error),
-            ),
+            if (!isPurchaseMode)
+              IconButton(
+                onPressed: () => _showDeleteConfirmation(context, method),
+                icon: Icon(Icons.delete_outline, color: AppColors.error),
+              ),
+            if (isPurchaseMode)
+              ElevatedButton(
+                onPressed: () => _confirmPurchaseWithMethod(methodId),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                ),
+                child: const Text('Use This'),
+              ),
           ],
         ),
+        onTap: isPurchaseMode
+            ? () => _confirmPurchaseWithMethod(methodId)
+            : null,
       ),
     );
   }
@@ -286,6 +333,151 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
         ],
       ),
     );
+  }
+
+  void _confirmPurchaseWithMethod(String? paymentMethodId) {
+    if (paymentMethodId == null) {
+      PulseToast.error(context, message: 'Invalid payment method');
+      return;
+    }
+
+    if (widget.planId == null || widget.planName == null || widget.amount == null) {
+      PulseToast.error(context, message: 'Invalid plan details');
+      return;
+    }
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: AppColors.surface,
+        title: Text(
+          'Confirm Purchase',
+          style: AppTextStyles.heading3.copyWith(color: AppColors.textPrimary),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'You are about to subscribe to:',
+              style: AppTextStyles.bodyMedium.copyWith(
+                color: AppColors.textSecondary,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              widget.planName!,
+              style: AppTextStyles.bodyLarge.copyWith(
+                color: AppColors.textPrimary,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              '\$${widget.amount!.toStringAsFixed(2)}/month',
+              style: AppTextStyles.heading3.copyWith(
+                color: AppColors.primary,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.info_outline, color: AppColors.primary, size: 20),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Auto-renews monthly. Cancel anytime.',
+                      style: AppTextStyles.bodySmall.copyWith(
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: Text(
+              'Cancel',
+              style: AppTextStyles.bodyMedium.copyWith(
+                color: AppColors.textSecondary,
+              ),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.of(dialogContext).pop();
+              _processPurchase(paymentMethodId);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Confirm Purchase'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _processPurchase(String paymentMethodId) async {
+    // Show loading indicator
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(
+        child: CircularProgressIndicator(),
+      ),
+    );
+
+    try {
+      // Use the PremiumBloc to handle the subscription
+      context.read<PremiumBloc>().add(
+        SubscribeToPlan(
+          planId: widget.planId!,
+          paymentMethodId: paymentMethodId,
+        ),
+      );
+
+      // Wait a bit for the subscription to process
+      await Future.delayed(const Duration(seconds: 2));
+
+      // Close loading dialog
+      if (mounted) Navigator.of(context).pop();
+
+      // Reload premium data
+      if (mounted) {
+        context.read<PremiumBloc>().add(LoadCurrentSubscription());
+
+        PulseToast.success(
+          context,
+          message: 'Successfully subscribed to ${widget.planName}!',
+        );
+
+        // Navigate back to premium showcase or settings
+        context.go(AppRoutes.subscription);
+      }
+    } catch (e) {
+      // Close loading dialog
+      if (mounted) Navigator.of(context).pop();
+
+      if (mounted) {
+        PulseToast.error(
+          context,
+          message: 'Error: ${e.toString()}',
+        );
+      }
+    }
   }
 }
 

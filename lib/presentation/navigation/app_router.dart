@@ -825,7 +825,14 @@ class AppRouter {
         GoRoute(
           path: AppRoutes.paymentMethods,
           name: 'paymentMethods',
-          builder: (context, state) => const PaymentMethodsScreen(),
+          builder: (context, state) {
+            final extra = state.extra as Map<String, dynamic>?;
+            return PaymentMethodsScreen(
+              planId: extra?['planId'] as String?,
+              planName: extra?['planName'] as String?,
+              amount: extra?['amount'] as double?,
+            );
+          },
         ),
         GoRoute(
           path: AppRoutes.savedPaymentMethods,
