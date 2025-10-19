@@ -267,10 +267,10 @@ class _SyncStatusIndicatorState extends State<SyncStatusIndicator>
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
-          color: _getStatusColor().withOpacity(0.1),
+          color: _getStatusColor().withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: _getStatusColor().withOpacity(0.3),
+            color: _getStatusColor().withValues(alpha: 0.3),
           ),
         ),
         child: Row(
@@ -305,11 +305,11 @@ class _SyncStatusIndicatorState extends State<SyncStatusIndicator>
             width: widget.size,
             height: widget.size,
             decoration: BoxDecoration(
-              color: color.withOpacity(_pulseAnimation.value),
+              color: color.withValues(alpha: _pulseAnimation.value),
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
-                  color: color.withOpacity(0.5 * _pulseAnimation.value),
+                  color: color.withValues(alpha: 0.5 * _pulseAnimation.value),
                   blurRadius: 4,
                   spreadRadius: 2,
                 ),
@@ -328,7 +328,7 @@ class _SyncStatusIndicatorState extends State<SyncStatusIndicator>
         shape: BoxShape.circle,
         boxShadow: [
           BoxShadow(
-            color: color.withOpacity(0.3),
+            color: color.withValues(alpha: 0.3),
             blurRadius: 2,
             spreadRadius: 1,
           ),

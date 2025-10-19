@@ -312,7 +312,7 @@ class _PremiumShowcaseScreenState extends State<PremiumShowcaseScreen>
                           width: 80,
                           height: 80,
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.2),
+                            color: Colors.white.withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: const Icon(
@@ -343,7 +343,7 @@ class _PremiumShowcaseScreenState extends State<PremiumShowcaseScreen>
                           'Get unlimited access to all premium features\nand find your perfect match faster',
                           style: TextStyle(
                             fontSize: 16,
-                            color: Colors.white.withOpacity(0.9),
+                            color: Colors.white.withValues(alpha: 0.9),
                             height: 1.5,
                           ),
                           textAlign: TextAlign.center,
@@ -574,7 +574,7 @@ class _PremiumShowcaseScreenState extends State<PremiumShowcaseScreen>
           const SizedBox(height: 12),
           Divider(
             height: 1,
-            color: PulseColors.outline.withOpacity(0.3),
+            color: PulseColors.outline.withValues(alpha: 0.3),
           ),
           const SizedBox(height: 12),
         ],
@@ -588,7 +588,7 @@ class _PremiumShowcaseScreenState extends State<PremiumShowcaseScreen>
         value ? Icons.check_circle : Icons.cancel,
         color: value
             ? (isPremium ? PulseColors.success : PulseColors.onSurfaceVariant)
-            : PulseColors.onSurfaceVariant.withOpacity(0.3),
+            : PulseColors.onSurfaceVariant.withValues(alpha: 0.3),
         size: 20,
       );
     }
@@ -613,7 +613,7 @@ class _PremiumShowcaseScreenState extends State<PremiumShowcaseScreen>
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
             side: BorderSide(
-              color: PulseColors.success.withOpacity(0.3),
+              color: PulseColors.success.withValues(alpha: 0.3),
               width: 1,
             ),
           ),
@@ -656,7 +656,7 @@ class _PremiumShowcaseScreenState extends State<PremiumShowcaseScreen>
                 const SizedBox(height: 16),
                 Divider(
                   height: 1,
-                  color: PulseColors.outline.withOpacity(0.3),
+                  color: PulseColors.outline.withValues(alpha: 0.3),
                 ),
                 const SizedBox(height: 16),
                 Row(
@@ -694,7 +694,7 @@ class _PremiumShowcaseScreenState extends State<PremiumShowcaseScreen>
                 const SizedBox(height: 16),
                 Divider(
                   height: 1,
-                  color: PulseColors.outline.withOpacity(0.3),
+                  color: PulseColors.outline.withValues(alpha: 0.3),
                 ),
                 const SizedBox(height: 16),
                 Row(
@@ -833,7 +833,7 @@ class _PremiumShowcaseScreenState extends State<PremiumShowcaseScreen>
           color: Theme.of(context).scaffoldBackgroundColor,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: Colors.black.withValues(alpha: 0.1),
               blurRadius: 10,
               offset: const Offset(0, -2),
             ),

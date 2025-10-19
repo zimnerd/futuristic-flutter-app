@@ -137,7 +137,7 @@ class _PhotoPreviewScreenState extends State<PhotoPreviewScreen> {
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
                       colors: [
-                        Colors.black.withOpacity(0.5),
+                        Colors.black.withValues(alpha: 0.5),
                         Colors.transparent,
                       ],
                     ),
@@ -170,7 +170,7 @@ class _PhotoPreviewScreenState extends State<PhotoPreviewScreen> {
                             vertical: 6,
                           ),
                           decoration: BoxDecoration(
-                            color: Colors.black.withOpacity(0.5),
+                            color: Colors.black.withValues(alpha: 0.5),
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: Text(
@@ -234,7 +234,7 @@ class _PhotoPreviewScreenState extends State<PhotoPreviewScreen> {
                         vertical: 8,
                       ),
                       decoration: BoxDecoration(
-                        color: Colors.black.withOpacity(0.5),
+                        color: Colors.black.withValues(alpha: 0.5),
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Row(
@@ -249,7 +249,7 @@ class _PhotoPreviewScreenState extends State<PhotoPreviewScreen> {
                               shape: BoxShape.circle,
                               color: _currentIndex == index
                                   ? Colors.white
-                                  : Colors.white.withOpacity(0.4),
+                                  : Colors.white.withValues(alpha: 0.4),
                             ),
                           ),
                         ),

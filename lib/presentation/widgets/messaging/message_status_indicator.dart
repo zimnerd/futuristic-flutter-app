@@ -151,7 +151,7 @@ class _MessageStatusIndicatorState extends State<MessageStatusIndicator>
   Widget _buildReadIndicator(Color color) {
     return Container(
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(4),
       ),
       padding: const EdgeInsets.all(2),
@@ -181,7 +181,7 @@ class _MessageStatusIndicatorState extends State<MessageStatusIndicator>
             child: Container(
               padding: const EdgeInsets.all(4),
               decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
+                color: color.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(

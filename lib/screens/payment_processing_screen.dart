@@ -389,7 +389,12 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen> {
               _saveCard = value ?? false;
             });
           },
-          activeColor: AppColors.primary,
+          fillColor: WidgetStateProperty.resolveWith((states) {
+            if (states.contains(WidgetState.selected)) {
+              return AppColors.primary;
+            }
+            return null;
+          }),
         ),
         Expanded(
           child: Text(

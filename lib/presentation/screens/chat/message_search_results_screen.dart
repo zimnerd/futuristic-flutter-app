@@ -122,7 +122,7 @@ class _MessageSearchResultsScreenState
           style: const TextStyle(color: Colors.white),
           decoration: InputDecoration(
             hintText: 'Search messages...',
-            hintStyle: TextStyle(color: Colors.white.withOpacity(0.7)),
+            hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.7)),
             border: InputBorder.none,
             suffixIcon: _searchController.text.isNotEmpty
                 ? IconButton(
@@ -191,7 +191,7 @@ class _MessageSearchResultsScreenState
         color: Colors.grey[100],
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),
@@ -359,7 +359,7 @@ class _MessageSearchResultsScreenState
                 children: [
                   CircleAvatar(
                     radius: 16,
-                    backgroundColor: PulseColors.primary.withOpacity(0.1),
+                    backgroundColor: PulseColors.primary.withValues(alpha: 0.1),
                     child: Text(
                       result.senderName[0].toUpperCase(),
                       style: const TextStyle(
