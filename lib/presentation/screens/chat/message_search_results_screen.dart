@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:async';
 import '../../../core/theme/pulse_design_system.dart';
+import '../../../core/utils/search_query_parser.dart';
 import '../../../data/models/chat_model.dart';
 import '../../../blocs/chat_bloc.dart';
 import '../../widgets/common/empty_state_widget.dart';
@@ -37,11 +38,13 @@ class _MessageSearchResultsScreenState
     extends State<MessageSearchResultsScreen> {
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _searchFocus = FocusNode();
+  final SearchQueryParser _queryParser = SearchQueryParser();
   List<String> _recentSearches = [];
   String? _selectedConversation;
   DateTimeRange? _selectedDateRange;
   bool _showFilters = false;
   Timer? _debounceTimer; // ✅ Added for search debouncing
+  ParsedSearchQuery? _parsedQuery; // Stores the parsed query for filtering
 
   @override
   void initState() {
@@ -124,9 +127,22 @@ class _MessageSearchResultsScreenState
     _saveRecentSearch(query);
     HapticFeedback.lightImpact();
 
+    // Parse the query for advanced syntax
+    setState(() {
+      _parsedQuery = _queryParser.parse(query);
+    });
+
+    // Use simplified query for backend search (removes special syntax)
+    final searchQuery = _parsedQuery!.hasSpecialSyntax
+        ? _parsedQuery!.simplifiedQuery
+        : query;
+
     // Trigger search via ChatBloc
     context.read<ChatBloc>().add(
-      SearchMessages(query: query, conversationId: _selectedConversation),
+      SearchMessages(
+        query: searchQuery.isNotEmpty ? searchQuery : query,
+        conversationId: _selectedConversation,
+      ),
     );
   }
 
@@ -139,6 +155,152 @@ class _MessageSearchResultsScreenState
       '/chat/${message.conversationId}',
       extra: {'highlightMessageId': message.id},
     );
+  }
+
+  /// Show dialog with advanced search syntax help
+  void _showSearchSyntaxHelp() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Advanced Search Syntax'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Use these special commands to refine your search:',
+                style: TextStyle(fontWeight: FontWeight.w500),
+              ),
+              const SizedBox(height: 16),
+              _buildSyntaxExample(
+                '"exact phrase"',
+                'Find messages with this exact phrase',
+                'Example: "hello world"',
+              ),
+              const SizedBox(height: 12),
+              _buildSyntaxExample(
+                'sender:username',
+                'Filter by sender username',
+                'Example: sender:john',
+              ),
+              const SizedBox(height: 12),
+              _buildSyntaxExample(
+                'after:YYYY-MM-DD',
+                'Find messages after this date',
+                'Example: after:2024-01-01',
+              ),
+              const SizedBox(height: 12),
+              _buildSyntaxExample(
+                'before:YYYY-MM-DD',
+                'Find messages before this date',
+                'Example: before:2024-12-31',
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'You can combine multiple commands:',
+                style: TextStyle(fontWeight: FontWeight.w500),
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                '"project update" sender:sarah after:2024-01-15',
+                style: TextStyle(
+                  fontFamily: 'monospace',
+                  fontSize: 13,
+                  color: PulseColors.primary,
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Got it'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSyntaxExample(
+    String syntax,
+    String description,
+    String example,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          syntax,
+          style: const TextStyle(
+            fontFamily: 'monospace',
+            fontWeight: FontWeight.bold,
+            color: PulseColors.primary,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          description,
+          style: TextStyle(fontSize: 13, color: Colors.grey[700]),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          example,
+          style: TextStyle(
+            fontSize: 12,
+            fontStyle: FontStyle.italic,
+            color: Colors.grey[600],
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// Apply client-side filtering based on advanced search syntax
+  List<MessageModel> _applyAdvancedFilters(List<MessageModel> messages) {
+    if (_parsedQuery == null || !_parsedQuery!.hasSpecialSyntax) {
+      return messages;
+    }
+
+    return messages.where((message) {
+      // Filter by sender (username or user ID)
+      if (_parsedQuery!.sender != null) {
+        final sender = _parsedQuery!.sender!.toLowerCase();
+        final senderUsername = message.senderUsername.toLowerCase();
+        final senderId = message.senderId.toLowerCase();
+
+        if (!senderUsername.contains(sender) && !senderId.contains(sender)) {
+          return false;
+        }
+      }
+
+      // Filter by date range (before)
+      if (_parsedQuery!.beforeDate != null) {
+        if (message.createdAt.isAfter(_parsedQuery!.beforeDate!)) {
+          return false;
+        }
+      }
+
+      // Filter by date range (after)
+      if (_parsedQuery!.afterDate != null) {
+        if (message.createdAt.isBefore(_parsedQuery!.afterDate!)) {
+          return false;
+        }
+      }
+
+      // Filter by exact phrases
+      if (_parsedQuery!.phrases.isNotEmpty) {
+        final content = message.content?.toLowerCase() ?? '';
+        for (final phrase in _parsedQuery!.phrases) {
+          if (!content.contains(phrase.toLowerCase())) {
+            return false;
+          }
+        }
+      }
+
+      return true;
+    }).toList();
   }
 
   @override
@@ -169,6 +331,11 @@ class _MessageSearchResultsScreenState
         ),
         actions: [
           IconButton(
+            icon: const Icon(Icons.help_outline, color: Colors.white),
+            tooltip: 'Search syntax help',
+            onPressed: _showSearchSyntaxHelp,
+          ),
+          IconButton(
             icon: Icon(
               _showFilters ? Icons.filter_list : Icons.filter_list_outlined,
               color: Colors.white,
@@ -182,6 +349,10 @@ class _MessageSearchResultsScreenState
       ),
       body: Column(
         children: [
+          // Active syntax filters indicator
+          if (_parsedQuery != null && _parsedQuery!.hasSpecialSyntax)
+            _buildActiveFiltersChip(),
+          
           // Filters panel
           if (_showFilters) _buildFiltersPanel(),
 
@@ -200,10 +371,15 @@ class _MessageSearchResultsScreenState
                 }
 
                 if (state is MessageSearchLoaded) {
-                  if (state.searchResults.isEmpty) {
+                  // Apply advanced filters client-side
+                  final filteredResults = _applyAdvancedFilters(
+                    state.searchResults,
+                  );
+
+                  if (filteredResults.isEmpty) {
                     return _buildEmptyResults();
                   }
-                  return _buildSearchResults(state.searchResults);
+                  return _buildSearchResults(filteredResults);
                 }
 
                 if (state is MessageSearchError) {
@@ -213,6 +389,56 @@ class _MessageSearchResultsScreenState
                 // Show recent searches when no search performed
                 return _buildRecentSearches();
               },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildActiveFiltersChip() {
+    final filters = <String>[];
+
+    if (_parsedQuery!.phrases.isNotEmpty) {
+      filters.add(
+        '${_parsedQuery!.phrases.length} phrase${_parsedQuery!.phrases.length > 1 ? 's' : ''}',
+      );
+    }
+    if (_parsedQuery!.sender != null) {
+      filters.add('sender:${_parsedQuery!.sender}');
+    }
+    if (_parsedQuery!.afterDate != null) {
+      filters.add(
+        'after:${DateFormat('yyyy-MM-dd').format(_parsedQuery!.afterDate!)}',
+      );
+    }
+    if (_parsedQuery!.beforeDate != null) {
+      filters.add(
+        'before:${DateFormat('yyyy-MM-dd').format(_parsedQuery!.beforeDate!)}',
+      );
+    }
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      color: PulseColors.primary.withValues(alpha: 0.1),
+      child: Wrap(
+        spacing: 8,
+        runSpacing: 4,
+        children: [
+          const Icon(Icons.filter_alt, size: 16, color: PulseColors.primary),
+          ...filters.map(
+            (filter) => Chip(
+              label: Text(filter, style: const TextStyle(fontSize: 12)),
+              backgroundColor: Colors.white,
+              deleteIcon: const Icon(Icons.close, size: 16),
+              onDeleted: () {
+                // Clear all advanced syntax and perform plain search
+                _searchController.text = _parsedQuery!.simplifiedQuery;
+                _performSearch(_parsedQuery!.simplifiedQuery);
+              },
+              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              visualDensity: VisualDensity.compact,
             ),
           ),
         ],
@@ -283,32 +509,62 @@ class _MessageSearchResultsScreenState
           const SizedBox(height: 8),
 
           // Conversation filter
-          Row(
-            children: [
-              const Icon(Icons.chat_bubble_outline, size: 20),
-              const SizedBox(width: 8),
-              Expanded(
-                child: DropdownButton<String?>(
-                  value: _selectedConversation,
-                  isExpanded: true,
-                  hint: const Text('All conversations'),
-                  underline: const SizedBox(),
-                  items: [
-                    const DropdownMenuItem<String?>(
-                      value: null,
-                      child: Text('All conversations'),
-                    ),
-                    // TODO: Load actual conversations
-                  ],
-                  onChanged: (value) {
-                    setState(() => _selectedConversation = value);
-                    if (_searchController.text.isNotEmpty) {
-                      _performSearch(_searchController.text);
-                    }
-                  },
+          BlocBuilder<ChatBloc, ChatState>(
+            buildWhen: (previous, current) {
+              // Only rebuild when conversations change
+              if (previous is ConversationsLoaded &&
+                  current is ConversationsLoaded) {
+                return previous.conversations != current.conversations;
+              }
+              return current is ConversationsLoaded;
+            },
+            builder: (context, chatState) {
+              List<DropdownMenuItem<String?>> dropdownItems = [
+                const DropdownMenuItem<String?>(
+                  value: null,
+                  child: Text('All conversations'),
                 ),
-              ),
-            ],
+              ];
+
+              // Add conversations if loaded
+              if (chatState is ConversationsLoaded) {
+                final conversations = chatState.conversations;
+
+                dropdownItems.addAll(
+                  conversations.map((conversation) {
+                    // Use otherUserName from ConversationModel
+                    final displayName = conversation.otherUserName;
+
+                    return DropdownMenuItem<String>(
+                      value: conversation.id,
+                      child: Text(displayName, overflow: TextOverflow.ellipsis),
+                    );
+                  }),
+                );
+              }
+
+              return Row(
+                children: [
+                  const Icon(Icons.chat_bubble_outline, size: 20),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: DropdownButton<String?>(
+                      value: _selectedConversation,
+                      isExpanded: true,
+                      hint: const Text('All conversations'),
+                      underline: const SizedBox(),
+                      items: dropdownItems,
+                      onChanged: (value) {
+                        setState(() => _selectedConversation = value);
+                        if (_searchController.text.isNotEmpty) {
+                          _performSearch(_searchController.text);
+                        }
+                      },
+                    ),
+                  ),
+                ],
+              );
+            },
           ),
         ],
       ),

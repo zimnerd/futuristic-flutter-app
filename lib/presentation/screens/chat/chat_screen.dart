@@ -64,7 +64,8 @@ class ChatScreen extends StatefulWidget {
   State<ChatScreen> createState() => _ChatScreenState();
 }
 
-class _ChatScreenState extends State<ChatScreen> {
+class _ChatScreenState extends State<ChatScreen>
+    with SingleTickerProviderStateMixin {
   final ScrollController _scrollController = ScrollController();
   final TextEditingController _messageController = TextEditingController();
   final FocusNode _messageInputFocusNode = FocusNode();
@@ -81,6 +82,11 @@ class _ChatScreenState extends State<ChatScreen> {
   List<MessageModel> _searchResults = [];
   String _currentSearchQuery = '';
   int _currentSearchIndex = 0;
+  
+  // Message highlighting state (for jump-to-message from search)
+  String? _highlightMessageId;
+  AnimationController? _highlightAnimationController;
+  Animation<Color?>? _highlightColorAnimation;
   
   // Reply functionality state
   MessageModel? _replyToMessage;
@@ -113,6 +119,39 @@ class _ChatScreenState extends State<ChatScreen> {
     _mediaOptimizer = MediaLoadingOptimizer();
     _memoryManager = MemoryManager();
     _memoryManager.startMemoryManagement();
+    
+    // Extract highlightMessageId from route extra (passed from search results)
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final routeState = GoRouterState.of(context);
+      final extra = routeState.extra as Map<String, dynamic>?;
+      final highlightId = extra?['highlightMessageId'] as String?;
+
+      if (highlightId != null) {
+        setState(() => _highlightMessageId = highlightId);
+
+        // Initialize highlight animation
+        _highlightAnimationController = AnimationController(
+          duration: const Duration(milliseconds: 1500),
+          vsync: this,
+        );
+
+        _highlightColorAnimation =
+            ColorTween(
+              begin: PulseColors.primary.withValues(alpha: 0.3),
+              end: Colors.transparent,
+            ).animate(
+              CurvedAnimation(
+                parent: _highlightAnimationController!,
+                curve: Curves.easeOut,
+              ),
+            );
+
+        // Schedule scroll after messages load
+        Future.delayed(const Duration(milliseconds: 500), () {
+          _scrollToMessage(highlightId);
+        });
+      }
+    });
     
     // Debug information
     AppLogger.debug('ChatScreen initialized with:');
@@ -173,6 +212,7 @@ class _ChatScreenState extends State<ChatScreen> {
     _searchFocusNode.dispose();
     _typingTimer?.cancel();
     _smartReplyDebounceTimer?.cancel();
+    _highlightAnimationController?.dispose();
 
     // Cleanup performance optimizers
     _paginationOptimizer.dispose();
@@ -207,6 +247,61 @@ class _ChatScreenState extends State<ChatScreen> {
         curve: Curves.easeOut,
       );
     }
+  }
+  
+  /// Scroll to a specific message and highlight it (used for jump-to-message from search)
+  void _scrollToMessage(String messageId) {
+    final chatState = context.read<ChatBloc>().state;
+    if (chatState is! MessagesLoaded) {
+      AppLogger.warning(
+        'Cannot scroll to message: chat state is not MessagesLoaded',
+      );
+      return;
+    }
+
+    // Find message index (list is reversed, so newest is at index 0)
+    final messageIndex = chatState.messages.indexWhere(
+      (msg) => msg.id == messageId,
+    );
+
+    if (messageIndex == -1) {
+      AppLogger.warning('Message $messageId not found in loaded messages');
+      PulseToast.warning(context, message: 'Message not found in current view');
+      return;
+    }
+
+    if (!_scrollController.hasClients) {
+      AppLogger.warning('ScrollController has no clients');
+      return;
+    }
+
+    // Calculate approximate scroll position
+    // Each message bubble is ~100-150 pixels tall on average
+    const estimatedMessageHeight = 120.0;
+    final scrollPosition = messageIndex * estimatedMessageHeight;
+
+    // Scroll to the message
+    _scrollController
+        .animateTo(
+          scrollPosition.clamp(0, _scrollController.position.maxScrollExtent),
+          duration: const Duration(milliseconds: 500),
+          curve: Curves.easeInOut,
+        )
+        .then((_) {
+          // Start highlight animation after scroll completes
+          _highlightAnimationController?.forward().then((_) {
+            // Clear highlight after animation completes
+            Future.delayed(const Duration(milliseconds: 500), () {
+              if (mounted) {
+                setState(() => _highlightMessageId = null);
+              }
+            });
+          });
+        });
+
+    AppLogger.debug(
+      'Scrolling to message $messageId at index $messageIndex (position: $scrollPosition)',
+    );
   }
   
   /// Preload media for visible messages to improve performance
@@ -1252,23 +1347,44 @@ class _ChatScreenState extends State<ChatScreen> {
                 }
 
                 // Regular message bubble for all other message types
-                return MessageBubble(
-                  key: ValueKey(message.id),
-                  message: message,
-                  isCurrentUser: isCurrentUser,
-                  currentUserId: currentUserId,
-                  onLongPress: () => _onLongPress(message),
-                  onRetry: () => _retryFailedMessage(message),
-                  onReaction: (emoji) => _onReaction(message, emoji),
-                  onReply: () => _onReply(message),
-                  onMediaTap: () => _onMediaTap(message),
-                  isHighlighted:
-                      _searchResults.contains(message) &&
-                      _searchResults.isNotEmpty &&
-                      _searchResults[_currentSearchIndex] == message,
-                  searchQuery: _currentSearchQuery.isNotEmpty
-                      ? _currentSearchQuery
-                      : null,
+                final isSearchHighlighted =
+                    _searchResults.contains(message) &&
+                    _searchResults.isNotEmpty &&
+                    _searchResults[_currentSearchIndex] == message;
+                final isJumpToHighlighted = _highlightMessageId == message.id;
+
+                return AnimatedBuilder(
+                  animation:
+                      _highlightColorAnimation ??
+                      const AlwaysStoppedAnimation(Colors.transparent),
+                  builder: (context, child) {
+                    return Container(
+                      decoration:
+                          isJumpToHighlighted &&
+                              _highlightColorAnimation != null
+                          ? BoxDecoration(
+                              color: _highlightColorAnimation!.value,
+                              borderRadius: BorderRadius.circular(12),
+                            )
+                          : null,
+                      child: child,
+                    );
+                  },
+                  child: MessageBubble(
+                    key: ValueKey(message.id),
+                    message: message,
+                    isCurrentUser: isCurrentUser,
+                    currentUserId: currentUserId,
+                    onLongPress: () => _onLongPress(message),
+                    onRetry: () => _retryFailedMessage(message),
+                    onReaction: (emoji) => _onReaction(message, emoji),
+                    onReply: () => _onReply(message),
+                    onMediaTap: () => _onMediaTap(message),
+                    isHighlighted: isSearchHighlighted,
+                    searchQuery: _currentSearchQuery.isNotEmpty
+                        ? _currentSearchQuery
+                        : null,
+                  ),
                 );
               }
 
@@ -1293,23 +1409,50 @@ class _ChatScreenState extends State<ChatScreen> {
               child: ListView(
                 reverse: true,
                 children: [
-                  MessageBubble(
-                    message: state.message,
-                    isCurrentUser:
-                        true, // MessageSent is always from current user
-                    currentUserId: _currentUserId ?? '',
-                    onLongPress: () => _onLongPress(state.message),
-                    onRetry: () => _retryFailedMessage(state.message),
-                    onReaction: (emoji) => _onReaction(state.message, emoji),
-                    onReply: () => _onReply(state.message),
-                    onMediaTap: () => _onMediaTap(state.message),
-                    isHighlighted:
-                        _searchResults.contains(state.message) &&
-                        _searchResults.isNotEmpty &&
-                        _searchResults[_currentSearchIndex] == state.message,
-                    searchQuery: _currentSearchQuery.isNotEmpty
-                        ? _currentSearchQuery
-                        : null,
+                  Builder(
+                    builder: (context) {
+                      final isSearchHighlighted =
+                          _searchResults.contains(state.message) &&
+                          _searchResults.isNotEmpty &&
+                          _searchResults[_currentSearchIndex] == state.message;
+                      final isJumpToHighlighted =
+                          _highlightMessageId == state.message.id;
+
+                      return AnimatedBuilder(
+                        animation:
+                            _highlightColorAnimation ??
+                            const AlwaysStoppedAnimation(Colors.transparent),
+                        builder: (context, child) {
+                          return Container(
+                            decoration:
+                                isJumpToHighlighted &&
+                                    _highlightColorAnimation != null
+                                ? BoxDecoration(
+                                    color: _highlightColorAnimation!.value,
+                                    borderRadius: BorderRadius.circular(12),
+                                  )
+                                : null,
+                            child: child,
+                          );
+                        },
+                        child: MessageBubble(
+                          message: state.message,
+                          isCurrentUser:
+                              true, // MessageSent is always from current user
+                          currentUserId: _currentUserId ?? '',
+                          onLongPress: () => _onLongPress(state.message),
+                          onRetry: () => _retryFailedMessage(state.message),
+                          onReaction: (emoji) =>
+                              _onReaction(state.message, emoji),
+                          onReply: () => _onReply(state.message),
+                          onMediaTap: () => _onMediaTap(state.message),
+                          isHighlighted: isSearchHighlighted,
+                          searchQuery: _currentSearchQuery.isNotEmpty
+                              ? _currentSearchQuery
+                              : null,
+                        ),
+                      );
+                    },
                   ),
                 ],
               ),
