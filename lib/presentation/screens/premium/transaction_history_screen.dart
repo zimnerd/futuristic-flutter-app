@@ -1574,9 +1574,11 @@ Status: ${_getStatusLabel(transaction.status)}
 Thank you for using Pulse Dating!
 ''';
 
-      await Share.share(
-        receipt,
-        subject: 'Transaction Receipt - ${transaction.id}',
+      await SharePlus.instance.share(
+        ShareParams(
+          text: receipt,
+          subject: 'Transaction Receipt - ${transaction.id}',
+        ),
       );
     } catch (e) {
       if (mounted) {
