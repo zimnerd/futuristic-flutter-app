@@ -61,9 +61,10 @@ class _LiveStreamCardState extends State<LiveStreamCard>
     final bool isLive = widget.stream['isLive'] ?? true;
     final String thumbnailUrl = widget.stream['thumbnailUrl'] ?? '';
 
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(
+    return RepaintBoundary(
+      child: Card(
+        elevation: 4,
+        shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
       ),
       child: InkWell(
@@ -348,6 +349,7 @@ class _LiveStreamCardState extends State<LiveStreamCard>
             ),
           ],
         ),
+      ),
       ),
     );
   }

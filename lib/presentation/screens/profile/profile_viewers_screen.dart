@@ -143,6 +143,7 @@ class _ProfileViewersScreenState extends State<ProfileViewersScreen> {
               itemCount: viewers.length,
               itemBuilder: (context, index) {
                 return _ViewerGridCard(
+                  key: ValueKey(viewers[index].id),
                   user: viewers[index],
                   onTap: () {
                     context.push('/profile/${viewers[index].id}');
@@ -436,6 +437,7 @@ class _ViewerGridCard extends StatelessWidget {
   final VoidCallback onTap;
 
   const _ViewerGridCard({
+    super.key,
     required this.user,
     required this.onTap,
   });

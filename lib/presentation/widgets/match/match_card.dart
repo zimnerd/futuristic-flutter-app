@@ -40,9 +40,10 @@ class MatchCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      elevation: 2,
+    return RepaintBoundary(
+      child: Card(
+        margin: const EdgeInsets.only(bottom: 12),
+        elevation: 2,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
       ),
@@ -279,6 +280,7 @@ class MatchCard extends StatelessWidget {
             ],
           ),
         ),
+      ),
       ),
     );
   }

@@ -574,6 +574,7 @@ class _MatchesScreenState extends State<MatchesScreen>
       itemBuilder: (context, index) {
         final match = matches[index];
         return MatchCard(
+          key: ValueKey(match.id),
           match: match,
           userProfile: match.userProfile,
           onTap: () => _onMatchTapped(match),
@@ -598,7 +599,7 @@ class _MatchesScreenState extends State<MatchesScreen>
       itemCount: matches.length,
       itemBuilder: (context, index) {
         final match = matches[index];
-        return _buildGridMatchCard(match, status);
+        return _buildGridMatchCard(match, status, key: ValueKey(match.id));
       },
     );
   }
@@ -617,8 +618,9 @@ class _MatchesScreenState extends State<MatchesScreen>
     );
   }
 
-  Widget _buildGridMatchCard(MatchModel match, String status) {
+  Widget _buildGridMatchCard(MatchModel match, String status, {Key? key}) {
     return Card(
+      key: key,
       elevation: 4,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: InkWell(

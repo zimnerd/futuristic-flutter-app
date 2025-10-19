@@ -1253,6 +1253,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
                 // Regular message bubble for all other message types
                 return MessageBubble(
+                  key: ValueKey(message.id),
                   message: message,
                   isCurrentUser: isCurrentUser,
                   currentUserId: currentUserId,

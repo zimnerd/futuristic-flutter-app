@@ -32,9 +32,10 @@ class EventCard extends StatelessWidget {
       return const SizedBox.shrink();
     }
     
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      elevation: 4,
+    return RepaintBoundary(
+      child: Card(
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        elevation: 4,
       shadowColor: PulseColors.primary.withValues(alpha: 0.1),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
@@ -141,6 +142,7 @@ class EventCard extends StatelessWidget {
             ),
           ],
         ),
+      ),
       ),
     );
   }

@@ -346,6 +346,7 @@ class _MatchesScreenState extends State<MatchesScreen>
           itemBuilder: (context, index) {
           final match = matches[index];
           return MatchCard(
+              key: ValueKey(match.id),
             match: match,
             userProfile: match.userProfile,
             showStatus: false, // Hide redundant status on matches screen

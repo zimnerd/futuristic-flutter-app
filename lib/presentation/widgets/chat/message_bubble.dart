@@ -40,9 +40,10 @@ class MessageBubble extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onLongPress: onLongPress,
-      child: Padding(
+    return RepaintBoundary(
+      child: GestureDetector(
+        onLongPress: onLongPress,
+        child: Padding(
         padding: const EdgeInsets.only(bottom: 4),
         child: Column(
           children: [
@@ -339,6 +340,7 @@ class MessageBubble extends StatelessWidget {
             if (message.reactions?.isNotEmpty == true) _buildReactions(context),
           ],
         ),
+      ),
       ),
     );
   }

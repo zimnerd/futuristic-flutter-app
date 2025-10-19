@@ -428,6 +428,7 @@ class _LiveStreamingScreenState extends State<LiveStreamingScreen>
           return Padding(
             padding: const EdgeInsets.only(bottom: 16),
             child: LiveStreamCard(
+              key: ValueKey(stream['id']),
               stream: stream,
               onTap: () => _joinStream(stream),
               onReport: () => _reportStream(stream),
@@ -451,6 +452,7 @@ class _LiveStreamingScreenState extends State<LiveStreamingScreen>
         return Padding(
           padding: const EdgeInsets.only(bottom: 16),
           child: LiveStreamCard(
+            key: ValueKey(stream['id']),
             stream: stream,
             isOwner: true,
             onTap: () => _viewStreamDetails(stream),

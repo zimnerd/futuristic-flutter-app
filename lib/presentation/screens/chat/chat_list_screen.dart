@@ -454,6 +454,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
         : null;
 
     return Container(
+      key: ValueKey(conversation.id),
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       decoration: BoxDecoration(
         color: Colors.white,

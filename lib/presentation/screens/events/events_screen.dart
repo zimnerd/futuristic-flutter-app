@@ -456,6 +456,7 @@ class _EventsScreenState extends State<EventsScreen>
         itemBuilder: (context, index) {
           final event = eventsToShow[index];
           return EventCard(
+            key: ValueKey(event.id),
             event: event,
             onTap: () => _onEventTap(event),
             onAttend: () => _onAttendEvent(event),
@@ -508,6 +509,7 @@ class _EventsScreenState extends State<EventsScreen>
             itemBuilder: (context, index) {
               final event = eventsToShow[index];
               return EventCard(
+                key: ValueKey(event.id),
                 event: event,
                 onTap: () => _onEventTap(event),
                 onAttend: () => _onAttendEvent(event),
