@@ -165,34 +165,51 @@ class _AutoLoginWrapperState extends State<AutoLoginWrapper> {
           }
 
           // Initialize location tracking after successful authentication
-          // Use addPostFrameCallback to ensure context is ready for dialogs
-          WidgetsBinding.instance.addPostFrameCallback((_) async {
-            _logger.i(
-              '📍 Initializing location tracking after successful login...',
-            );
-
-            // Add a small delay to ensure UI is fully rendered
-            await Future.delayed(const Duration(milliseconds: 500));
-
-            if (!context.mounted) {
+          // Wait longer to ensure MaterialApp is built and navigation is complete
+          Future.delayed(const Duration(milliseconds: 1500), () async {
+            // Ensure widget is still mounted and context has MaterialLocalizations
+            if (!mounted) {
               _logger.w(
-                '⚠️ Context not mounted, skipping location initialization',
+                '⚠️ 📍 Widget unmounted, skipping location initialization',
               );
               return;
             }
 
-            _logger.i(
-              '📍 Context is mounted, proceeding with location initialization',
-            );
+            // Check if MaterialLocalizations is available before showing dialogs
+            try {
+              final localizations = Localizations.maybeLocaleOf(context);
+              if (localizations == null) {
+                _logger.w(
+                  '⚠️ 📍 MaterialLocalizations not available yet, using silent location request',
+                );
+                // Use silent initialization without dialogs
+                final locationInitialized = await _locationTracker.initialize();
+                if (locationInitialized) {
+                  _logger.i(
+                    '✅ 📍 Location tracking started silently (1km threshold)',
+                  );
+                } else {
+                  _logger.w(
+                    '⚠️ 📍 Location tracking failed - permission denied or unavailable',
+                  );
+                }
+                return;
+              }
 
-            final locationInitialized = await _locationTracker
-                .initializeWithDialogs(context);
-            if (locationInitialized) {
-              _logger.i('✅ 📍 Location tracking started (1km threshold)');
-            } else {
-              _logger.w(
-                '⚠️ 📍 Location tracking failed to start - user may have denied permission',
+              _logger.i(
+                '📍 Initializing location tracking with user dialogs...',
               );
+              final locationInitialized = await _locationTracker
+                  .initializeWithDialogs(context);
+              if (locationInitialized) {
+                _logger.i('✅ 📍 Location tracking started (1km threshold)');
+              } else {
+                _logger.w(
+                  '⚠️ 📍 Location tracking failed to start - user may have denied permission',
+                );
+              }
+            } catch (e) {
+              _logger.e('❌ 📍 Error during location initialization: $e');
             }
           });
         } else if (state is AuthError) {

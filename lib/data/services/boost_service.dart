@@ -38,15 +38,20 @@ class BoostService {
 
       _logger.d('BoostService: Boost activation response: ${response.data}');
 
-      // Backend returns the boost details directly
-      final Map<String, dynamic> result = response.data as Map<String, dynamic>;
+      // Handle response format - backend returns boost details at top level
+      final responseData = response.data as Map<String, dynamic>;
+
+      // Check if data is nested or at top level
+      final boostData = responseData.containsKey('data')
+          ? responseData['data'] as Map<String, dynamic>
+          : responseData;
 
       return {
-        'success': result['success'] ?? true,
-        'boostId': result['boostId'] as String,
-        'startTime': result['startTime'] as String,
-        'expiresAt': result['expiresAt'] as String,
-        'durationMinutes': result['durationMinutes'] as int,
+        'success': responseData['success'] ?? true,
+        'boostId': boostData['boostId'] as String,
+        'startTime': boostData['startTime'] as String,
+        'expiresAt': boostData['expiresAt'] as String,
+        'durationMinutes': boostData['durationMinutes'] as int,
       };
     } catch (e) {
       _logger.e('BoostService: Error activating boost: $e');
@@ -70,9 +75,17 @@ class BoostService {
 
       _logger.d('BoostService: Boost status response: ${response.data}');
 
-      final result = response.data as Map<String, dynamic>?;
+      // Backend wraps response in standard format: { success, data, ... }
+      final responseData = response.data as Map<String, dynamic>?;
 
-      // If no active boost, backend returns null
+      if (responseData == null || responseData.isEmpty) {
+        _logger.d('BoostService: No response data');
+        return null;
+      }
+
+      final result = responseData['data'] as Map<String, dynamic>?;
+
+      // If no active boost, backend returns null in data field
       if (result == null || result.isEmpty) {
         _logger.d('BoostService: No active boost');
         return null;
@@ -111,10 +124,12 @@ class BoostService {
 
       _logger.d('BoostService: Boost cancellation response: ${response.data}');
 
-      final Map<String, dynamic> result = response.data as Map<String, dynamic>;
+      // Backend wraps response in standard format
+      final responseData = response.data as Map<String, dynamic>;
+      final result = responseData['data'] as Map<String, dynamic>;
 
       return {
-        'success': result['success'] ?? true,
+        'success': responseData['success'] ?? true,
         'message': result['message'] as String,
         'boostId': result['boostId'] as String,
         'cancelledAt': result['cancelledAt'] as String,

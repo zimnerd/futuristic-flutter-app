@@ -47,7 +47,7 @@ class PremiumBloc extends Bloc<PremiumEvent, PremiumState> {
   ) async {
     try {
       emit(PremiumLoading());
-      _logger.d('$_tag: Loading complete premium data');
+      _logger.i('$_tag: 🔄 Loading complete premium data');
 
       final results = await Future.wait([
         _premiumService.getAvailablePlans(),
@@ -60,6 +60,12 @@ class PremiumBloc extends Bloc<PremiumEvent, PremiumState> {
       final subscription = results[1] as UserSubscription?;
       final coinBalance = results[2] as CoinBalance?;
       final features = results[3] as List<PremiumFeature>;
+
+      _logger.i('$_tag: 📊 Results - Plans: ${plans.length}, Subscription: ${subscription != null ? "EXISTS (${subscription.status})" : "NULL"}, Features: ${features.length}');
+      
+      if (subscription != null) {
+        _logger.i('$_tag: 🎫 Subscription Details - IsActive: ${subscription.isActive}, Tier: ${subscription.planName}, End: ${subscription.endDate}');
+      }
 
       emit(
         PremiumLoaded(
@@ -76,10 +82,10 @@ class PremiumBloc extends Bloc<PremiumEvent, PremiumState> {
         ),
       );
 
-      _logger.d('$_tag: Premium data loaded successfully');
+      _logger.i('$_tag: ✅ Premium data loaded successfully - State: PremiumLoaded, HasSubscription: ${subscription != null}');
     } catch (e, stackTrace) {
       _logger.e(
-        '$_tag: Failed to load premium data',
+        '$_tag: ❌ Failed to load premium data',
         error: e,
         stackTrace: stackTrace,
       );

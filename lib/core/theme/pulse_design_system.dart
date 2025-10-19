@@ -396,7 +396,7 @@ class PulseIcons {
   static const IconData settings = Icons.settings;
   static const IconData filters = Icons.tune;
   static const IconData notifications = Icons.notifications;
-  static const IconData ai = Icons.smart_toy;
+  static const IconData ai = Icons.psychology;
 }
 
 /// Action button configuration

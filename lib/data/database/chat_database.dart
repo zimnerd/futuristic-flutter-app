@@ -42,9 +42,25 @@ class ChatDatabase {
   Future<void> _onConfigure(Database db) async {
     _logger.d('Configuring database for optimal performance...');
 
-    // Enable Write-Ahead Logging for better concurrency
+    // Try to enable Write-Ahead Logging for better concurrency
     // WAL mode allows readers and writers to work simultaneously
-    await db.execute('PRAGMA journal_mode = WAL');
+    // Note: WAL mode may fail on iOS Simulator, so we catch and fallback
+    try {
+      await db.execute('PRAGMA journal_mode = WAL');
+      _logger.d('WAL mode enabled successfully');
+    } catch (e) {
+      _logger.w(
+        'WAL mode failed (common on iOS Simulator), using DELETE mode: $e',
+      );
+      // Fallback to DELETE mode (default SQLite journaling)
+      try {
+        await db.execute('PRAGMA journal_mode = DELETE');
+        _logger.d('DELETE mode enabled as fallback');
+      } catch (fallbackError) {
+        _logger.e('Failed to set journal mode: $fallbackError');
+        // Continue anyway - database will use default journal mode
+      }
+    }
 
     // Set cache size to 10MB for better performance
     await db.execute('PRAGMA cache_size = -10000');
@@ -56,7 +72,7 @@ class ChatDatabase {
     // Enable foreign key constraints
     await db.execute('PRAGMA foreign_keys = ON');
 
-    _logger.d('Database configuration complete (WAL mode enabled)');
+    _logger.d('Database configuration complete');
   }
 
   /// Create database tables with proper indexing

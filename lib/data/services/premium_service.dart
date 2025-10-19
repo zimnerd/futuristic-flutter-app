@@ -16,6 +16,7 @@ class PremiumService {
       final response = await _apiClient.get(ApiConstants.premiumSubscription);
 
       if (response.statusCode == 200 && response.data != null) {
+        // Backend returns { subscription, plans } - extract plans
         final List<dynamic> data = response.data['plans'] ?? [];
         final plans = data.map((json) => PremiumPlan.fromJson(json)).toList();
 
@@ -34,23 +35,39 @@ class PremiumService {
   /// Get current user's subscription status
   Future<UserSubscription?> getCurrentSubscription() async {
     try {
+      _logger.d('🔍 Fetching current subscription from API...');
       final response = await _apiClient.get(ApiConstants.premiumSubscription);
 
+      _logger.d('📡 API Response - Status: ${response.statusCode}');
+      _logger.d('📦 API Response - Data: ${response.data}');
+
       if (response.statusCode == 200 && response.data != null) {
-        final subscription = UserSubscription.fromJson(response.data!);
-        _logger.d('Retrieved current subscription: ${subscription.planId}');
+        // Backend returns { subscription, plans } - extract subscription
+        final subscriptionData = response.data['subscription'];
+        _logger.d('🎫 Subscription data: $subscriptionData');
+
+        if (subscriptionData == null) {
+          _logger.w('⚠️  No active subscription found (data is null)');
+          return null;
+        }
+
+        final subscription = UserSubscription.fromJson(subscriptionData);
+        _logger.i(
+          '✅ Retrieved subscription - ID: ${subscription.id}, Status: ${subscription.status}, IsActive: ${subscription.isActive}',
+        );
         return subscription;
       } else if (response.statusCode == 404) {
-        _logger.d('No active subscription found');
+        _logger.d('❌ No active subscription found (404)');
         return null;
       } else {
         _logger.e(
-          'Failed to get current subscription: ${response.statusMessage}',
+          '❌ Failed to get current subscription: ${response.statusMessage}',
         );
         return null;
       }
-    } catch (e) {
-      _logger.e('Error getting current subscription: $e');
+    } catch (e, stackTrace) {
+      _logger.e('💥 Error getting current subscription: $e');
+      _logger.e('Stack trace: $stackTrace');
       return null;
     }
   }

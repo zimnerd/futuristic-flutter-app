@@ -452,11 +452,33 @@ class UserSubscription extends Equatable {
   });
 
   factory UserSubscription.fromJson(Map<String, dynamic> json) {
+    // Handle backend response format variations
+    final planId = json['planId'] as String? ?? json['id'] as String? ?? '';
+    final planName =
+        json['planName'] as String? ?? json['tier'] as String? ?? 'Premium';
+    final interval =
+        json['interval'] as String? ??
+        (json['billingCycle'] as String?)?.toLowerCase() ??
+        'monthly';
+
+    // Convert price: backend may send 'price' (float) or 'priceInCents' (int)
+    final int priceInCents;
+    if (json.containsKey('priceInCents')) {
+      priceInCents = json['priceInCents'] as int;
+    } else if (json.containsKey('price')) {
+      final price = json['price'];
+      priceInCents = price is int
+          ? price * 100
+          : ((price as double) * 100).round();
+    } else {
+      priceInCents = 0;
+    }
+    
     return UserSubscription(
       id: json['id'] as String,
       userId: json['userId'] as String,
-      planId: json['planId'] as String,
-      planName: json['planName'] as String,
+      planId: planId,
+      planName: planName,
       status: SubscriptionStatus.values.firstWhere(
         (e) => e.name == json['status'],
         orElse: () => SubscriptionStatus.inactive,
@@ -470,9 +492,9 @@ class UserSubscription extends Equatable {
           : null,
       autoRenew: json['autoRenew'] as bool? ?? true,
       paymentMethodId: json['paymentMethodId'] as String?,
-      priceInCents: json['priceInCents'] as int,
+      priceInCents: priceInCents,
       currency: json['currency'] as String? ?? 'USD',
-      interval: json['interval'] as String? ?? 'month',
+      interval: interval,
       cancelledAt: json['cancelledAt'] != null
           ? DateTime.parse(json['cancelledAt'] as String)
           : null,

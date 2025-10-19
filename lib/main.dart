@@ -54,6 +54,10 @@ import 'presentation/blocs/match/match_bloc.dart';
 import 'presentation/blocs/filters/filter_bloc.dart';
 import 'presentation/blocs/discovery/discovery_bloc.dart';
 import 'presentation/blocs/live_streaming/live_streaming_bloc.dart';
+import 'presentation/blocs/premium/premium_bloc.dart';
+import 'presentation/blocs/ai_companion/ai_companion_bloc.dart';
+import 'data/services/premium_service.dart';
+import 'data/services/ai_companion_service.dart';
 import 'presentation/navigation/app_router.dart';
 import 'presentation/theme/pulse_theme.dart';
 import 'presentation/widgets/auto_login_wrapper.dart';
@@ -247,6 +251,14 @@ class PulseDatingApp extends StatelessWidget {
         RepositoryProvider<LiveStreamingService>(
           create: (context) => LiveStreamingService(context.read<ApiClient>()),
         ),
+        // Add PremiumService
+        RepositoryProvider<PremiumService>(
+          create: (context) => PremiumService(context.read<ApiClient>()),
+        ),
+        // Add AiCompanionService
+        RepositoryProvider<AiCompanionService>(
+          create: (context) => AiCompanionService(),
+        ),
         // Add AuthService for ProfileService dependency
         RepositoryProvider<AuthService>(
           create: (context) => AuthService(
@@ -368,6 +380,19 @@ class PulseDatingApp extends StatelessWidget {
         BlocProvider<LiveStreamingBloc>(
           create: (context) =>
               LiveStreamingBloc(context.read<LiveStreamingService>()),
+        ),
+        // PremiumBloc for premium features and subscriptions
+        BlocProvider<PremiumBloc>(
+          create: (context) => PremiumBloc(
+            premiumService: context.read<PremiumService>(),
+            authBloc: context.read<AuthBloc>(),
+          ),
+        ),
+        // AiCompanionBloc for AI companion interactions
+        BlocProvider<AiCompanionBloc>(
+          create: (context) => AiCompanionBloc(
+            aiCompanionService: context.read<AiCompanionService>(),
+          ),
         ),
         // ProfileBloc for profile screen
         BlocProvider<ProfileBloc>(

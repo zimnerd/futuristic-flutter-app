@@ -19,10 +19,8 @@ import '../../blocs/premium/premium_bloc.dart';
 import '../../blocs/premium/premium_event.dart';
 import '../../blocs/premium/premium_state.dart';
 import '../../blocs/auth/auth_bloc.dart';
-import '../../widgets/boost/boost_banner_widget.dart';
 import '../../widgets/boost/boost_confirmation_dialog.dart';
 import '../../widgets/discovery/swipe_card.dart' as swipe_widget;
-import '../../widgets/ai/floating_ai_button.dart';
 import '../../widgets/common/empty_state_widget.dart';
 import '../../widgets/common/pulse_toast.dart';
 import '../../widgets/common/skeleton_loading.dart';
@@ -603,16 +601,14 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
                     // Modern curved header
                     _buildModernHeader(),
 
-                    // Boost banner (appears below header when boost is active)
+                    // Main content area
                     Positioned(
                       top: 120,
                       left: 0,
                       right: 0,
-                      child: const BoostBannerWidget(),
+                      bottom: 0,
+                      child: _buildMainContent(state),
                     ),
-
-                    // Main content area
-                    Positioned.fill(top: 120, child: _buildMainContent(state)),
 
                     // Prominent undo button (below card stack)
                     if (state is DiscoveryLoaded &&
@@ -628,21 +624,13 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
                     if (state is DiscoveryLoaded && state.hasUsers)
                       _buildFloatingBoostButton(),
 
-                    // Floating AI Companion button (QUICK WIN - Easy AI access)
-                    if (state is DiscoveryLoaded && state.hasUsers)
-                      const Positioned(
-                        left: 16,
-                        bottom: 140,
-                        child: FloatingAIButton(),
-                      ),
-
                     // Match celebration
                     if (state is DiscoveryMatchFound) _buildMatchDialog(state),
                   ],
                 ); // Stack
               }, // BlocBuilder builder
             ), // BlocBuilder
-          ), // BlocListener child
+          ), // DiscoveryBloc BlocListener child
         ), // Container (Scaffold body)
       ), // Scaffold
     ); // MultiBlocProvider child
@@ -1181,16 +1169,97 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
   }
 
   /// Build floating boost button for profile visibility boost
+  /// Shows rocket icon when inactive, circular progress when active
   Widget _buildFloatingBoostButton() {
     return BlocBuilder<BoostBloc, BoostState>(
       builder: (context, boostState) {
-        // Hide button if boost is already active
+        // Show progress indicator if boost is active
         if (boostState is BoostActive) {
+          // Calculate progress
+          final now = DateTime.now();
+          final elapsed = now.difference(boostState.startTime);
+          final totalDuration = boostState.expiresAt.difference(
+            boostState.startTime,
+          );
+          final progress = (elapsed.inSeconds / totalDuration.inSeconds).clamp(
+            0.0,
+            1.0,
+          );
+          final remainingMinutes = boostState.expiresAt
+              .difference(now)
+              .inMinutes;
+
+          return Positioned(
+            bottom: 120,
+            right: 20,
+            child: GestureDetector(
+              onTap: () {
+                HapticFeedback.mediumImpact();
+                _showBoostActiveModal(context, boostState);
+              },
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  // Circular progress indicator
+                  SizedBox(
+                    width: 70,
+                    height: 70,
+                    child: CircularProgressIndicator(
+                      value: progress,
+                      strokeWidth: 4,
+                      backgroundColor: Colors.grey.withValues(alpha: 0.2),
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        remainingMinutes <= 5
+                            ? PulseColors.warning
+                            : PulseColors.primary,
+                      ),
+                    ),
+                  ),
+                  // Inner circle with rocket icon
+                  Container(
+                    width: 60,
+                    height: 60,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: remainingMinutes <= 5
+                            ? [PulseColors.warning, PulseColors.warningDark]
+                            : [PulseColors.primary, PulseColors.accent],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color:
+                              (remainingMinutes <= 5
+                                      ? PulseColors.warning
+                                      : PulseColors.primary)
+                                  .withValues(alpha: 0.4),
+                          blurRadius: 16,
+                          offset: const Offset(0, 8),
+                        ),
+                      ],
+                    ),
+                    child: const Icon(
+                      Icons.rocket_launch,
+                      color: Colors.white,
+                      size: 28,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
+
+        // Hide button if still loading
+        if (boostState is BoostLoading) {
           return const SizedBox.shrink();
         }
 
+        // Show activation button when inactive
         return Positioned(
-          bottom: 120, // Above action buttons
+          bottom: 120,
           right: 20,
           child: GestureDetector(
             onTap: () async {
@@ -1208,8 +1277,8 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
               width: 60,
               height: 60,
               decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: const [PulseColors.primary, PulseColors.accent],
+                gradient: const LinearGradient(
+                  colors: [PulseColors.primary, PulseColors.accent],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
@@ -1231,6 +1300,176 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
           ),
         );
       },
+    );
+  }
+
+  /// Show modal with active boost information
+  void _showBoostActiveModal(BuildContext context, BoostActive boostState) {
+    final now = DateTime.now();
+    final remainingDuration = boostState.expiresAt.difference(now);
+    final remainingMinutes = remainingDuration.inMinutes;
+    final remainingSeconds = remainingDuration.inSeconds % 60;
+    final elapsed = now.difference(boostState.startTime);
+    final totalDuration = boostState.expiresAt.difference(boostState.startTime);
+    final progress = (elapsed.inSeconds / totalDuration.inSeconds).clamp(
+      0.0,
+      1.0,
+    );
+    final isExpiringSoon = remainingMinutes <= 5;
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        contentPadding: EdgeInsets.zero,
+        content: Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: isExpiringSoon
+                  ? [PulseColors.warning, PulseColors.warningDark]
+                  : [PulseColors.primary, PulseColors.accent],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Rocket icon with pulse animation
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.2),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.rocket_launch,
+                  color: Colors.white,
+                  size: 48,
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // Title
+              const Text(
+                'Boost Active!',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 8),
+
+              // Subtitle
+              const Text(
+                'You\'re getting 10x more visibility',
+                style: TextStyle(color: Colors.white, fontSize: 14),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 24),
+
+              // Time remaining card
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.timer, color: Colors.white, size: 24),
+                    const SizedBox(width: 8),
+                    Text(
+                      '${remainingMinutes}:${remainingSeconds.toString().padLeft(2, '0')}',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 32,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    const Text(
+                      'remaining',
+                      style: TextStyle(color: Colors.white, fontSize: 14),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // Progress bar
+              ClipRRect(
+                borderRadius: BorderRadius.circular(4),
+                child: LinearProgressIndicator(
+                  value: progress,
+                  backgroundColor: Colors.white.withValues(alpha: 0.3),
+                  valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+                  minHeight: 8,
+                ),
+              ),
+
+              if (isExpiringSoon) ...[
+                const SizedBox(height: 16),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.warning_amber_rounded,
+                        color: Colors.white.withValues(alpha: 0.9),
+                        size: 20,
+                      ),
+                      const SizedBox(width: 8),
+                      const Text(
+                        'Boost ending soon!',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+
+              const SizedBox(height: 24),
+
+              // Close button
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                style: TextButton.styleFrom(
+                  backgroundColor: Colors.white.withValues(alpha: 0.2),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 32,
+                    vertical: 12,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: const Text(
+                  'Got it!',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
