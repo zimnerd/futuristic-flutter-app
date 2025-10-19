@@ -91,6 +91,8 @@ import '../screens/discovery/who_liked_you_screen.dart';
 import '../screens/features/advanced_features_screen.dart';
 import '../screens/explore/explore_screen.dart';
 import '../screens/heat_map_screen.dart';
+import '../screens/premium/transaction_history_screen.dart';
+import '../screens/matching/ai_matching_screen.dart';
 import '../../../data/models/user_model.dart';
 import '../../../data/models/ai_companion.dart';
 import '../../../features/group_chat/data/models.dart';
@@ -333,6 +335,27 @@ class AppRouter {
           path: AppRoutes.advancedFeatures,
           name: 'advancedFeatures',
           builder: (context, state) => const AdvancedFeaturesScreen(),
+        ),
+        GoRoute(
+          path: AppRoutes.transactionHistory,
+          name: 'transactionHistory',
+          builder: (context, state) => const TransactionHistoryScreen(),
+        ),
+        GoRoute(
+          path: AppRoutes.aiMatching,
+          name: 'aiMatching',
+          builder: (context, state) {
+            final authBloc = BlocProvider.of<AuthBloc>(context);
+            final authState = authBloc.state;
+            if (authState is! AuthAuthenticated) {
+              // Redirect to login if not authenticated
+              Future.microtask(() => context.go(AppRoutes.login));
+              return const Scaffold(
+                body: Center(child: CircularProgressIndicator()),
+              );
+            }
+            return AiMatchingScreen(currentUser: authState.user);
+          },
         ),
         GoRoute(
           path: AppRoutes.virtualGifts,
@@ -1137,4 +1160,10 @@ class AppRoutes {
 
   // Analytics routes
   static const String advancedAnalytics = '/advanced-analytics';
+  
+  // AI Matching routes
+  static const String aiMatching = '/ai-matching';
+
+  // Transaction routes
+  static const String transactionHistory = '/transaction-history';
 }

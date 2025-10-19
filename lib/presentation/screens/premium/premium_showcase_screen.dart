@@ -803,9 +803,6 @@ class _PremiumShowcaseScreenState extends State<PremiumShowcaseScreen>
   }
 
   Widget _buildCTAButton(BuildContext context, PremiumPlan plan, String type) {
-    // TODO: Add metadata support to PremiumPlan model for free trial detection
-    // final hasFreeTrial = plan.metadata?['hasTrial'] == true;
-
     return ElevatedButton(
       onPressed: () => _handleSubscribe(plan, type),
       style: ElevatedButton.styleFrom(

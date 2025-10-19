@@ -65,14 +65,31 @@ class SettingsScreen extends StatelessWidget {
           ),
           _buildSettingsTile(
             icon: Icons.psychology,
-            title: 'AI Features',
-            subtitle: 'Manage AI-powered features',
-            onTap: () {
-              PulseToast.info(
-                context,
-                message: 'AI Features settings coming soon!',
-              );
-            },
+            title: 'AI Matching Settings',
+            subtitle: 'Configure AI-powered match preferences',
+            onTap: () => context.push('/ai-matching'),
+          ),
+          const SizedBox(height: PulseSpacing.lg),
+
+          // Premium & Features Section
+          _buildSectionHeader('Premium & Features'),
+          _buildSettingsTile(
+            icon: Icons.star_rounded,
+            title: 'Advanced Features',
+            subtitle: 'Explore premium dating features',
+            onTap: () => context.push('/advanced-features'),
+          ),
+          _buildSettingsTile(
+            icon: Icons.receipt_long,
+            title: 'Transaction History',
+            subtitle: 'View your payment and subscription history',
+            onTap: () => context.push('/transaction-history'),
+          ),
+          _buildSettingsTile(
+            icon: Icons.map_rounded,
+            title: 'Activity Heat Map',
+            subtitle: 'See where you\'re most active',
+            onTap: () => context.push('/heat-map'),
           ),
           const SizedBox(height: PulseSpacing.lg),
 
