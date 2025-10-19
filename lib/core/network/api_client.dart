@@ -162,7 +162,19 @@ class ApiClient {
                   clearTokens: true,
                 );
 
-                handler.next(error);
+                // Return user-friendly error instead of technical details
+                return handler.resolve(
+                  Response(
+                    requestOptions: error.requestOptions,
+                    statusCode: 401,
+                    data: {
+                      'success': false,
+                      'message':
+                          'Your session has expired. Please log in again.',
+                      'errors': [],
+                    },
+                  ),
+                );
               }
             } else {
               // No auth token available - trigger global logout
@@ -172,7 +184,18 @@ class ApiClient {
                 clearTokens: true,
               );
 
-              handler.next(error);
+              // Return user-friendly error instead of technical details
+              return handler.resolve(
+                Response(
+                  requestOptions: error.requestOptions,
+                  statusCode: 401,
+                  data: {
+                    'success': false,
+                    'message': 'Your session has expired. Please log in again.',
+                    'errors': [],
+                  },
+                ),
+              );
             }
           } else {
             handler.next(error);

@@ -85,7 +85,7 @@ class DiscoveryBloc extends Bloc<DiscoveryEvent, DiscoveryState> {
       );
     } catch (error) {
       emit(
-        DiscoveryError(message: 'Failed to load users: ${error.toString()}'),
+        DiscoveryError(message: _extractUserFriendlyErrorMessage(error)),
       );
     }
   }
@@ -184,7 +184,7 @@ class DiscoveryBloc extends Bloc<DiscoveryEvent, DiscoveryState> {
     } catch (error) {
       emit(
         DiscoveryError(
-          message: 'Failed to record swipe: ${error.toString()}',
+          message: _extractUserFriendlyErrorMessage(error),
           previousState: currentState,
         ),
       );
@@ -246,7 +246,7 @@ class DiscoveryBloc extends Bloc<DiscoveryEvent, DiscoveryState> {
     } catch (error) {
       emit(
         DiscoveryError(
-          message: 'Failed to record like: ${error.toString()}',
+          message: _extractUserFriendlyErrorMessage(error),
           previousState: currentState,
         ),
       );
@@ -305,7 +305,7 @@ class DiscoveryBloc extends Bloc<DiscoveryEvent, DiscoveryState> {
     } catch (error) {
       emit(
         DiscoveryError(
-          message: 'Failed to record super like: ${error.toString()}',
+          message: _extractUserFriendlyErrorMessage(error),
           previousState: currentState,
         ),
       );
@@ -347,7 +347,7 @@ class DiscoveryBloc extends Bloc<DiscoveryEvent, DiscoveryState> {
     } catch (error) {
       emit(
         DiscoveryError(
-          message: 'Failed to undo swipe: ${error.toString()}',
+          message: _extractUserFriendlyErrorMessage(error),
           previousState: currentState,
         ),
       );
@@ -394,7 +394,7 @@ class DiscoveryBloc extends Bloc<DiscoveryEvent, DiscoveryState> {
     } catch (error) {
       emit(
         DiscoveryError(
-          message: 'Failed to activate boost: ${error.toString()}',
+          message: _extractUserFriendlyErrorMessage(error),
           previousState: currentState,
         ),
       );
@@ -539,10 +539,58 @@ class DiscoveryBloc extends Bloc<DiscoveryEvent, DiscoveryState> {
       AppLogger.debug('Failed to load who liked you: $error');
       emit(
         DiscoveryError(
-          message: 'Failed to load users who liked you: ${error.toString()}',
+          message: _extractUserFriendlyErrorMessage(error),
         ),
       );
     }
+  }
+
+  /// Extract user-friendly error message from error object
+  /// Prevents technical DioException details from showing to users
+  String _extractUserFriendlyErrorMessage(dynamic error) {
+    final errorString = error.toString();
+
+    // Check for authentication/session errors
+    if (errorString.contains('401') ||
+        errorString.contains('session has expired') ||
+        errorString.contains('Unauthorized')) {
+      return 'Your session has expired. Please log in again.';
+    }
+
+    // Check for network errors
+    if (errorString.contains('SocketException') ||
+        errorString.contains('Connection refused') ||
+        errorString.contains('Failed host lookup') ||
+        errorString.contains('Network is unreachable')) {
+      return 'Connection problem. Please check your internet.';
+    }
+
+    // Check for timeout errors
+    if (errorString.contains('timeout') ||
+        errorString.contains('TimeoutException')) {
+      return 'Request timed out. Please try again.';
+    }
+
+    // Check for server errors
+    if (errorString.contains('500') ||
+        errorString.contains('502') ||
+        errorString.contains('503') ||
+        errorString.contains('504')) {
+      return 'Server error. Please try again later.';
+    }
+
+    // Check for permission errors
+    if (errorString.contains('403') || errorString.contains('Forbidden')) {
+      return 'You don\'t have permission to do that.';
+    }
+
+    // Check for not found errors
+    if (errorString.contains('404') || errorString.contains('Not Found')) {
+      return 'Content not found. Please try again.';
+    }
+
+    // Generic fallback for unknown errors
+    return 'Something went wrong. Please try again.';
   }
 }
 
