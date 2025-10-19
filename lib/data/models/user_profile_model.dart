@@ -28,8 +28,8 @@ class UserProfileModel extends UserProfile {
       name: json['name'] as String,
       age: json['age'] as int,
       bio: json['bio'] as String? ?? '',
-      photos: (json['photos'] as List<dynamic>?)
-          ?.map((photo) {
+      photos:
+          (json['photos'] as List<dynamic>?)?.map((photo) {
             // Handle both string URLs (old format) and photo objects (new format)
             if (photo is String) {
               // Backend returning simple URL string - create photo object
@@ -44,20 +44,24 @@ class UserProfileModel extends UserProfile {
               return ProfilePhotoModel.fromJson(photo);
             }
             throw Exception('Invalid photo format: $photo');
-          })
-          .toList() ?? [],
-      location: UserLocationModel.fromJson(json['location'] as Map<String, dynamic>),
+          }).toList() ??
+          [],
+      location: UserLocationModel.fromJson(
+        json['location'] as Map<String, dynamic>,
+      ),
       isVerified: json['isVerified'] as bool? ?? false,
-      interests: (json['interests'] as List<dynamic>?)
-          ?.map((interest) => interest as String)
-          .toList() ?? [],
+      interests:
+          (json['interests'] as List<dynamic>?)
+              ?.map((interest) => interest as String)
+              .toList() ??
+          [],
       occupation: json['occupation'] as String?,
       education: json['education'] as String?,
       height: json['height'] as int?,
       zodiacSign: json['zodiacSign'] as String?,
       lifestyle: json['lifestyle'] as Map<String, dynamic>? ?? {},
       preferences: json['preferences'] as Map<String, dynamic>? ?? {},
-      lastActiveAt: json['lastActiveAt'] != null 
+      lastActiveAt: json['lastActiveAt'] != null
           ? DateTime.parse(json['lastActiveAt'] as String)
           : null,
       distanceKm: json['distanceKm']?.toDouble(),
@@ -72,7 +76,9 @@ class UserProfileModel extends UserProfile {
       'name': name,
       'age': age,
       'bio': bio,
-      'photos': photos.map((photo) => (photo as ProfilePhotoModel).toJson()).toList(),
+      'photos': photos
+          .map((photo) => (photo as ProfilePhotoModel).toJson())
+          .toList(),
       'location': (location as UserLocationModel).toJson(),
       'isVerified': isVerified,
       'interests': interests,
@@ -116,12 +122,14 @@ class UserProfileModel extends UserProfile {
       name: entity.name,
       age: entity.age,
       bio: entity.bio,
-      photos: entity.photos.map((photo) => 
-          photo is ProfilePhotoModel 
-              ? photo 
-              : ProfilePhotoModel.fromEntity(photo)
-      ).toList(),
-      location: entity.location is UserLocationModel 
+      photos: entity.photos
+          .map(
+            (photo) => photo is ProfilePhotoModel
+                ? photo
+                : ProfilePhotoModel.fromEntity(photo),
+          )
+          .toList(),
+      location: entity.location is UserLocationModel
           ? entity.location as UserLocationModel
           : UserLocationModel.fromEntity(entity.location),
       isVerified: entity.isVerified,
@@ -158,7 +166,7 @@ class ProfilePhotoModel extends ProfilePhoto {
       description: json['description'] as String?,
       isMain: json['isMain'] as bool? ?? false,
       isVerified: json['isVerified'] as bool? ?? false,
-      uploadedAt: json['uploadedAt'] != null 
+      uploadedAt: json['uploadedAt'] != null
           ? DateTime.parse(json['uploadedAt'] as String)
           : json['createdAt'] != null
           ? DateTime.parse(json['createdAt'] as String)

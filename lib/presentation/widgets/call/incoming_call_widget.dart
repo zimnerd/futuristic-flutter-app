@@ -13,10 +13,7 @@ import '../common/pulse_toast.dart';
 class IncomingCallWidget extends StatefulWidget {
   final Call call;
 
-  const IncomingCallWidget({
-    super.key,
-    required this.call,
-  });
+  const IncomingCallWidget({super.key, required this.call});
 
   @override
   State<IncomingCallWidget> createState() => _IncomingCallWidgetState();
@@ -32,33 +29,26 @@ class _IncomingCallWidgetState extends State<IncomingCallWidget>
   @override
   void initState() {
     super.initState();
-    
+
     // Setup animations
     _pulseController = AnimationController(
       duration: const Duration(seconds: 1),
       vsync: this,
     )..repeat(reverse: true);
-    
+
     _slideController = AnimationController(
       duration: const Duration(milliseconds: 300),
       vsync: this,
     );
 
-    _pulseAnimation = Tween<double>(
-      begin: 0.8,
-      end: 1.2,
-    ).animate(CurvedAnimation(
-      parent: _pulseController,
-      curve: Curves.easeInOut,
-    ));
+    _pulseAnimation = Tween<double>(begin: 0.8, end: 1.2).animate(
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
+    );
 
-    _slideAnimation = Tween<Offset>(
-      begin: const Offset(0, 1),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _slideController,
-      curve: Curves.easeOutBack,
-    ));
+    _slideAnimation = Tween<Offset>(begin: const Offset(0, 1), end: Offset.zero)
+        .animate(
+          CurvedAnimation(parent: _slideController, curve: Curves.easeOutBack),
+        );
 
     // Start slide-in animation
     _slideController.forward();
@@ -81,10 +71,7 @@ class _IncomingCallWidgetState extends State<IncomingCallWidget>
             gradient: LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
-              colors: [
-                PulseColors.primary,
-                PulseColors.secondary,
-              ],
+              colors: [PulseColors.primary, PulseColors.secondary],
             ),
           ),
           child: SafeArea(
@@ -92,16 +79,13 @@ class _IncomingCallWidgetState extends State<IncomingCallWidget>
               children: [
                 // Header with call type and status
                 _buildHeader(),
-                
+
                 // Caller info section
-                Expanded(
-                  flex: 2,
-                  child: _buildCallerInfo(),
-                ),
-                
+                Expanded(flex: 2, child: _buildCallerInfo()),
+
                 // Action buttons
                 _buildActionButtons(),
-                
+
                 // Bottom spacing
                 const SizedBox(height: 32),
               ],
@@ -162,7 +146,7 @@ class _IncomingCallWidgetState extends State<IncomingCallWidget>
 
   Widget _buildCallerInfo() {
     final callerProfile = widget.call.getOtherParticipant('current_user_id');
-    
+
     return Padding(
       padding: const EdgeInsets.all(32),
       child: Column(
@@ -191,16 +175,14 @@ class _IncomingCallWidgetState extends State<IncomingCallWidget>
                       ),
                     ],
                   ),
-                  child: ClipOval(
-                    child: _buildProfileImage(callerProfile),
-                  ),
+                  child: ClipOval(child: _buildProfileImage(callerProfile)),
                 ),
               );
             },
           ),
-          
+
           const SizedBox(height: 24),
-          
+
           // Caller name
           Text(
             callerProfile?.name ?? 'Unknown Caller',
@@ -211,9 +193,9 @@ class _IncomingCallWidgetState extends State<IncomingCallWidget>
             ),
             textAlign: TextAlign.center,
           ),
-          
+
           const SizedBox(height: 8),
-          
+
           // Caller status or additional info
           if (callerProfile?.bio.isNotEmpty == true) ...[
             Text(
@@ -250,20 +232,14 @@ class _IncomingCallWidgetState extends State<IncomingCallWidget>
         userGender: profile.gender,
       );
     }
-    
+
     return _buildDefaultAvatar();
   }
 
   Widget _buildDefaultAvatar() {
     return Container(
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.2),
-      ),
-      child: const Icon(
-        Icons.person,
-        size: 80,
-        color: Colors.white,
-      ),
+      decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.2)),
+      child: const Icon(Icons.person, size: 80, color: Colors.white),
     );
   }
 
@@ -280,7 +256,7 @@ class _IncomingCallWidgetState extends State<IncomingCallWidget>
             onTap: () => _declineCall(),
             label: 'Decline',
           ),
-          
+
           // Quick message button (optional)
           if (widget.call.type == CallType.video) ...[
             _buildActionButton(
@@ -291,11 +267,11 @@ class _IncomingCallWidgetState extends State<IncomingCallWidget>
               iconColor: Colors.white,
             ),
           ],
-          
+
           // Accept button
           _buildActionButton(
-            icon: widget.call.type == CallType.video 
-                ? Icons.videocam 
+            icon: widget.call.type == CallType.video
+                ? Icons.videocam
                 : Icons.call,
             color: Colors.green,
             onTap: () => _acceptCall(),
@@ -334,11 +310,7 @@ class _IncomingCallWidgetState extends State<IncomingCallWidget>
             child: InkWell(
               borderRadius: BorderRadius.circular(32),
               onTap: onTap,
-              child: Icon(
-                icon,
-                color: iconColor,
-                size: 28,
-              ),
+              child: Icon(icon, color: iconColor, size: 28),
             ),
           ),
         ),

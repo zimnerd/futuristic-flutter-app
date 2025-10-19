@@ -61,10 +61,7 @@ class LiveStreamJoined extends LiveStreamingState {
   final Map<String, dynamic> streamInfo;
   final List<Map<String, dynamic>> viewers;
 
-  const LiveStreamJoined({
-    required this.streamInfo,
-    this.viewers = const [],
-  });
+  const LiveStreamJoined({required this.streamInfo, this.viewers = const []});
 
   @override
   List<Object> get props => [streamInfo, viewers];
@@ -85,10 +82,7 @@ class LiveStreamEnded extends LiveStreamingState {
   final String streamId;
   final Map<String, dynamic>? analytics;
 
-  const LiveStreamEnded({
-    required this.streamId,
-    this.analytics,
-  });
+  const LiveStreamEnded({required this.streamId, this.analytics});
 
   @override
   List<Object?> get props => [streamId, analytics];
@@ -99,10 +93,7 @@ class StreamMessageSent extends LiveStreamingState {
   final String streamId;
   final String message;
 
-  const StreamMessageSent({
-    required this.streamId,
-    required this.message,
-  });
+  const StreamMessageSent({required this.streamId, required this.message});
 
   @override
   List<Object> get props => [streamId, message];
@@ -157,10 +148,7 @@ class StreamSettingsUpdated extends LiveStreamingState {
   final String streamId;
   final Map<String, dynamic> settings;
 
-  const StreamSettingsUpdated({
-    required this.streamId,
-    required this.settings,
-  });
+  const StreamSettingsUpdated({required this.streamId, required this.settings});
 
   @override
   List<Object> get props => [streamId, settings];

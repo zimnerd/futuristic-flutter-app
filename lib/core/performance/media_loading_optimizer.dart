@@ -8,7 +8,8 @@ import '../../data/services/cache_ttl_service.dart';
 /// Optimizes media loading and caching for better performance
 /// Now integrated with CacheTTLService for persistent cache metadata
 class MediaLoadingOptimizer {
-  static final MediaLoadingOptimizer _instance = MediaLoadingOptimizer._internal();
+  static final MediaLoadingOptimizer _instance =
+      MediaLoadingOptimizer._internal();
   factory MediaLoadingOptimizer() => _instance;
   MediaLoadingOptimizer._internal();
 
@@ -23,9 +24,13 @@ class MediaLoadingOptimizer {
     final digest = md5.convert(bytes);
     return digest.toString();
   }
-  
+
   /// Preload media URL for faster display
-  Future<void> preloadMedia(String mediaUrl, {bool isVideo = false, String? cacheType}) async {
+  Future<void> preloadMedia(
+    String mediaUrl, {
+    bool isVideo = false,
+    String? cacheType,
+  }) async {
     if (_preloadedUrls.contains(mediaUrl)) {
       // Still record access for TTL tracking
       final cacheKey = _getCacheKey(mediaUrl);
@@ -51,32 +56,37 @@ class MediaLoadingOptimizer {
       );
 
       if (kDebugMode) {
-        print('MediaOptimizer: Preloaded ${isVideo ? 'video' : 'image'}: ${mediaUrl.substring(mediaUrl.length - 20)}');
+        print(
+          'MediaOptimizer: Preloaded ${isVideo ? 'video' : 'image'}: ${mediaUrl.substring(mediaUrl.length - 20)}',
+        );
       }
     } catch (e) {
       if (kDebugMode) {
-              debugPrint('Error optimizing image: $e');
+        debugPrint('Error optimizing image: $e');
       }
     }
   }
-  
+
   /// Batch preload multiple media URLs
-  Future<void> batchPreloadMedia(List<String> mediaUrls, {List<bool>? isVideoFlags}) async {
+  Future<void> batchPreloadMedia(
+    List<String> mediaUrls, {
+    List<bool>? isVideoFlags,
+  }) async {
     final futures = <Future<void>>[];
-    
+
     for (int i = 0; i < mediaUrls.length; i++) {
       final isVideo = isVideoFlags?[i] ?? false;
       futures.add(preloadMedia(mediaUrls[i], isVideo: isVideo));
     }
-    
+
     await Future.wait(futures);
   }
-  
+
   /// Check if media is already preloaded
   bool isMediaPreloaded(String mediaUrl) {
     return _preloadedUrls.contains(mediaUrl);
   }
-  
+
   /// Get optimized loading priority for media
   int getLoadingPriority(String mediaUrl, bool isVisible) {
     if (isVisible && !isMediaPreloaded(mediaUrl)) {
@@ -87,7 +97,7 @@ class MediaLoadingOptimizer {
       return 3; // Low priority - not visible
     }
   }
-  
+
   /// Clean up old cache entries
   /// Now uses CacheTTLService for persistent expiration tracking
   Future<void> cleanupOldCache() async {
@@ -108,7 +118,9 @@ class MediaLoadingOptimizer {
       final deletedCount = await _cacheTTLService.removeExpiredMetadata();
 
       if (kDebugMode && expiredUrls.isNotEmpty) {
-        debugPrint('MediaOptimizer: Cleaned up ${expiredUrls.length} expired cache entries ($deletedCount from DB)');
+        debugPrint(
+          'MediaOptimizer: Cleaned up ${expiredUrls.length} expired cache entries ($deletedCount from DB)',
+        );
       }
 
       // Also extend TTL for frequently accessed items
@@ -119,7 +131,7 @@ class MediaLoadingOptimizer {
       }
     }
   }
-  
+
   /// Get cache statistics
   /// Now includes persistent cache TTL data
   Future<Map<String, dynamic>> getCacheStats() async {
@@ -139,14 +151,16 @@ class MediaLoadingOptimizer {
       // In-memory stats
       'inMemoryCached': _preloadedUrls.length,
       'recentlyAccessed': recentlyAccessed,
-      'cacheHitRate': _preloadedUrls.isEmpty ? 0 : (recentlyAccessed / _preloadedUrls.length * 100).round(),
+      'cacheHitRate': _preloadedUrls.isEmpty
+          ? 0
+          : (recentlyAccessed / _preloadedUrls.length * 100).round(),
       'memoryStatus': _preloadedUrls.length < 100 ? 'Good' : 'High',
 
       // Persistent cache stats (from CacheTTLService)
       'persistentStats': ttlStats,
     };
   }
-  
+
   /// Clear specific media from cache
   Future<void> clearMediaFromCache(String mediaUrl) async {
     _preloadedUrls.remove(mediaUrl);
@@ -171,26 +185,29 @@ class MediaLoadingOptimizer {
       print('MediaOptimizer: Cleared all media cache');
     }
   }
-  
+
   /// Optimize memory usage by removing least recently used items
   void optimizeMemoryUsage() {
-    if (_preloadedUrls.length <= 50) return; // Only optimize if we have many cached items
-    
+    if (_preloadedUrls.length <= 50)
+      return; // Only optimize if we have many cached items
+
     // Sort by access time and remove oldest 25%
     final sortedEntries = _lastAccessTimes.entries.toList()
       ..sort((a, b) => a.value.compareTo(b.value));
-    
+
     final toRemove = (sortedEntries.length * 0.25).floor();
     for (int i = 0; i < toRemove; i++) {
       final url = sortedEntries[i].key;
       clearMediaFromCache(url);
     }
-    
+
     if (kDebugMode) {
-      print('MediaOptimizer: Removed $toRemove LRU cache entries for memory optimization');
+      print(
+        'MediaOptimizer: Removed $toRemove LRU cache entries for memory optimization',
+      );
     }
   }
-  
+
   /// Cleanup resources
   void dispose() {
     _preloadedUrls.clear();
@@ -210,14 +227,14 @@ class MediaOptimizationHelper {
     final optimizer = MediaLoadingOptimizer();
     return !optimizer.isMediaPreloaded(mediaUrl) && !isVisible;
   }
-  
+
   /// Get recommended image quality based on context
   static double getRecommendedImageQuality(bool isFullScreen, bool isVisible) {
     if (isFullScreen) return 1.0; // Full quality for full screen
     if (!isVisible) return 0.5; // Lower quality for non-visible
     return 0.8; // Good quality for visible thumbnails
   }
-  
+
   /// Should we prioritize this media loading?
   static bool shouldPrioritizeLoading(bool isVisible, bool isInViewport) {
     return isVisible && isInViewport;

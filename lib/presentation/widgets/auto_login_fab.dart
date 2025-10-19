@@ -274,7 +274,6 @@ class _AutoLoginCard extends StatelessWidget {
     Navigator.of(context).pop();
 
     // Show feedback
-    PulseToast.success(context, message: 'Signing in as ${account.name}...',
-    );
+    PulseToast.success(context, message: 'Signing in as ${account.name}...');
   }
 }

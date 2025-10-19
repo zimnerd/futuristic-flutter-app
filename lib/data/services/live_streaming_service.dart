@@ -30,7 +30,9 @@ class LiveStreamingService {
       );
 
       if (response.statusCode == 200 && response.data != null) {
-        _logger.d('Successfully started live stream: ${response.data['streamId']}');
+        _logger.d(
+          'Successfully started live stream: ${response.data['streamId']}',
+        );
         return response.data;
       } else {
         _logger.e('Failed to start live stream: ${response.statusMessage}');
@@ -171,8 +173,10 @@ class LiveStreamingService {
 
       if (response.statusCode == 200 && response.data != null) {
         final List<dynamic> data = response.data['streams'] ?? [];
-        final streams = data.map((stream) => Map<String, dynamic>.from(stream)).toList();
-        
+        final streams = data
+            .map((stream) => Map<String, dynamic>.from(stream))
+            .toList();
+
         _logger.d('Retrieved ${streams.length} active live streams');
         return streams;
       } else {
@@ -339,16 +343,15 @@ class LiveStreamingService {
     try {
       final response = await _apiClient.get(
         '/api/v1/live-streaming/my-streams',
-        queryParameters: {
-          'page': page.toString(),
-          'limit': limit.toString(),
-        },
+        queryParameters: {'page': page.toString(), 'limit': limit.toString()},
       );
 
       if (response.statusCode == 200 && response.data != null) {
         final List<dynamic> data = response.data['streams'] ?? [];
-        final streams = data.map((stream) => Map<String, dynamic>.from(stream)).toList();
-        
+        final streams = data
+            .map((stream) => Map<String, dynamic>.from(stream))
+            .toList();
+
         _logger.d('Retrieved ${streams.length} streaming history records');
         return streams;
       } else {

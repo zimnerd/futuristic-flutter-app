@@ -33,10 +33,10 @@ class _EventsScreenState extends State<EventsScreen>
   @override
   void initState() {
     super.initState();
-    
+
     // Add observer to detect when app comes to foreground
     WidgetsBinding.instance.addObserver(this);
-    
+
     // Defer event loading until after build completes to ensure bloc context is available
     WidgetsBinding.instance.addPostFrameCallback((_) {
       AppLogger.info('📱 Events Screen: PostFrameCallback triggered');
@@ -75,7 +75,7 @@ class _EventsScreenState extends State<EventsScreen>
       // 🔧 FIX: Also reload if state is EventDetailsLoaded (user just viewed event details)
       if (currentState is EventInitial ||
           currentState is EventError ||
-          currentState is EventDetailsLoaded ||  // ← Added this!
+          currentState is EventDetailsLoaded || // ← Added this!
           (currentState is EventsLoaded && currentState.events.isEmpty)) {
         AppLogger.info('📱 Events Screen: Loading events...');
         _loadEvents();
@@ -178,13 +178,13 @@ class _EventsScreenState extends State<EventsScreen>
             '📱 Events Screen: Attendance updated, setting refresh flag',
           );
           _shouldRefreshOnReturn = true;
-          
+
           if (_joiningEventId != null) {
             setState(() {
               _joiningEventId = null;
             });
           }
-          
+
           if (state.isAttending) {
             PulseToast.success(
               context,
@@ -218,13 +218,13 @@ class _EventsScreenState extends State<EventsScreen>
               _joiningEventId = null;
             });
           }
-          
+
           String errorMessage = state.message;
           if (errorMessage.contains('Already attending') ||
               errorMessage.contains('already attending')) {
             errorMessage = 'You have already joined this event!';
           }
-          
+
           PulseToast.error(
             context,
             message: errorMessage,
@@ -285,7 +285,7 @@ class _EventsScreenState extends State<EventsScreen>
                       '📱 BlocBuilder: EventsLoaded - events: ${state.events.length}, filtered: ${state.filteredEvents.length}',
                     );
                   }
-                  
+
                   if (state is EventLoading) {
                     return _buildLoadingState();
                   } else if (state is EventsLoaded) {
@@ -295,7 +295,9 @@ class _EventsScreenState extends State<EventsScreen>
                   } else if (state is EventDetailsLoaded) {
                     // 🔧 FIX: Handle EventDetailsLoaded - user just viewed event details
                     // Trigger reload to get back to EventsLoaded state
-                    AppLogger.info('📱 BlocBuilder: EventDetailsLoaded detected, triggering reload');
+                    AppLogger.info(
+                      '📱 BlocBuilder: EventDetailsLoaded detected, triggering reload',
+                    );
                     WidgetsBinding.instance.addPostFrameCallback((_) {
                       if (mounted) {
                         _loadEvents();
@@ -369,9 +371,9 @@ class _EventsScreenState extends State<EventsScreen>
               ),
             ),
           ),
-          
+
           const SizedBox(width: 12),
-          
+
           // Reload Button
           Container(
             decoration: BoxDecoration(
@@ -384,16 +386,13 @@ class _EventsScreenState extends State<EventsScreen>
             ),
             child: IconButton(
               onPressed: _onRefreshCategories,
-              icon: Icon(
-                Icons.refresh,
-                color: PulseColors.primary,
-              ),
+              icon: Icon(Icons.refresh, color: PulseColors.primary),
               tooltip: 'Refresh events',
             ),
           ),
-          
+
           const SizedBox(width: 8),
-          
+
           // Filter Button (for future advanced filters)
           Container(
             decoration: BoxDecoration(
@@ -402,10 +401,7 @@ class _EventsScreenState extends State<EventsScreen>
             ),
             child: IconButton(
               onPressed: _onShowFilters,
-              icon: Icon(
-                Icons.tune,
-                color: PulseColors.onSurfaceVariant,
-              ),
+              icon: Icon(Icons.tune, color: PulseColors.onSurfaceVariant),
               tooltip: 'Advanced filters',
             ),
           ),
@@ -419,9 +415,7 @@ class _EventsScreenState extends State<EventsScreen>
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          CircularProgressIndicator(
-            color: PulseColors.primary,
-          ),
+          CircularProgressIndicator(color: PulseColors.primary),
           const SizedBox(height: 16),
           Text(
             'Loading events...',
@@ -438,7 +432,7 @@ class _EventsScreenState extends State<EventsScreen>
     AppLogger.info(
       '📱 _buildEventsLoaded called - events: ${state.events.length}, filteredEvents: ${state.filteredEvents.length}',
     );
-    
+
     // Apply joined filter if enabled
     final eventsToShow = _showJoinedOnly
         ? state.filteredEvents.where((e) => e.isAttending).toList()
@@ -539,11 +533,7 @@ class _EventsScreenState extends State<EventsScreen>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.error_outline,
-              size: 64,
-              color: PulseColors.error,
-            ),
+            Icon(Icons.error_outline, size: 64, color: PulseColors.error),
             const SizedBox(height: 16),
             Text(
               'Oops! Something went wrong',
@@ -657,7 +647,7 @@ class _EventsScreenState extends State<EventsScreen>
             ),
             const SizedBox(height: 8),
             Text(
-              _selectedCategory != null 
+              _selectedCategory != null
                   ? 'No ${EventCategories.getDisplayName(_selectedCategory!).toLowerCase()} events match your search'
                   : 'No events match your search criteria',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -672,14 +662,14 @@ class _EventsScreenState extends State<EventsScreen>
                 setState(() {
                   _selectedCategory = null;
                 });
-                context.read<EventBloc>().add(const FilterEventsByCategory(null));
+                context.read<EventBloc>().add(
+                  const FilterEventsByCategory(null),
+                );
                 context.read<EventBloc>().add(const SearchEvents(''));
               },
               icon: const Icon(Icons.clear_all),
               label: const Text('Clear Filters'),
-              style: TextButton.styleFrom(
-                foregroundColor: PulseColors.primary,
-              ),
+              style: TextButton.styleFrom(foregroundColor: PulseColors.primary),
             ),
           ],
         ),

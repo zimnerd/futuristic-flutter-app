@@ -44,7 +44,7 @@ class _PhoneInputState extends State<PhoneInput> {
     _selectedCountryCode = widget.initialCountryCode;
     _phoneCode = PhoneUtils.getPhoneCode(_selectedCountryCode);
     _controller = TextEditingController(text: widget.initialValue);
-    
+
     // Try to detect user's country from location if using default
     if (widget.initialCountryCode == PhoneUtils.defaultCountryCode) {
       _detectUserCountry();
@@ -81,7 +81,10 @@ class _PhoneInputState extends State<PhoneInput> {
   void _onPhoneNumberChanged(String value) {
     if (widget.onChanged != null) {
       // Format the complete phone number and notify parent
-      final formattedPhone = PhoneUtils.formatForWhatsApp(value, _selectedCountryCode);
+      final formattedPhone = PhoneUtils.formatForWhatsApp(
+        value,
+        _selectedCountryCode,
+      );
       widget.onChanged!(formattedPhone);
     }
   }
@@ -91,11 +94,11 @@ class _PhoneInputState extends State<PhoneInput> {
       _selectedCountryCode = countryCode;
       _phoneCode = PhoneUtils.getPhoneCode(countryCode);
     });
-    
+
     if (widget.onCountryChanged != null) {
       widget.onCountryChanged!(countryCode);
     }
-    
+
     // Re-format current phone number with new country code
     if (_controller.text.isNotEmpty) {
       _onPhoneNumberChanged(_controller.text);
@@ -104,7 +107,7 @@ class _PhoneInputState extends State<PhoneInput> {
 
   Future<void> _showCountryPicker() async {
     final countries = PhoneUtils.getCountriesList();
-    
+
     final selected = await showModalBottomSheet<Map<String, String>>(
       context: context,
       isScrollControlled: true,
@@ -126,7 +129,7 @@ class _PhoneInputState extends State<PhoneInput> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    
+
     return TextFormField(
       controller: _controller,
       enabled: widget.enabled,
@@ -168,10 +171,7 @@ class _PhoneInputState extends State<PhoneInput> {
             ),
           ),
         ),
-        prefixIconConstraints: const BoxConstraints(
-          minWidth: 0,
-          minHeight: 0,
-        ),
+        prefixIconConstraints: const BoxConstraints(minWidth: 0, minHeight: 0),
       ),
       validator: widget.validator != null
           ? (value) {
@@ -261,7 +261,7 @@ class _CountryPickerBottomSheetState extends State<_CountryPickerBottomSheet> {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final mediaQuery = MediaQuery.of(context);
-    
+
     return Container(
       height: mediaQuery.size.height * 0.7,
       padding: EdgeInsets.only(
@@ -286,7 +286,7 @@ class _CountryPickerBottomSheetState extends State<_CountryPickerBottomSheet> {
               borderRadius: BorderRadius.circular(2),
             ),
           ),
-          
+
           // Title
           Text(
             'Select Country',
@@ -295,9 +295,9 @@ class _CountryPickerBottomSheetState extends State<_CountryPickerBottomSheet> {
               color: colorScheme.onSurface,
             ),
           ),
-          
+
           const SizedBox(height: 16),
-          
+
           // Search field
           TextField(
             controller: _searchController,
@@ -328,17 +328,18 @@ class _CountryPickerBottomSheetState extends State<_CountryPickerBottomSheet> {
             style: TextStyle(color: colorScheme.onSurface),
             onChanged: _filterCountries,
           ),
-          
+
           const SizedBox(height: 16),
-          
+
           // Countries list
           Expanded(
             child: ListView.builder(
               itemCount: _filteredCountries.length,
               itemBuilder: (context, index) {
                 final country = _filteredCountries[index];
-                final isSelected = country['code'] == widget.selectedCountryCode;
-                
+                final isSelected =
+                    country['code'] == widget.selectedCountryCode;
+
                 return ListTile(
                   leading: Text(
                     _getCountryFlag(country['code']!),
@@ -372,11 +373,28 @@ class _CountryPickerBottomSheetState extends State<_CountryPickerBottomSheet> {
 
   String _getCountryFlag(String countryCode) {
     const flagMap = {
-      'ZA': '🇿🇦', 'US': '🇺🇸', 'GB': '🇬🇧', 'AU': '🇦🇺', 'CA': '🇨🇦',
-      'DE': '🇩🇪', 'FR': '🇫🇷', 'IT': '🇮🇹', 'ES': '🇪🇸', 'NL': '🇳🇱',
-      'BE': '🇧🇪', 'IN': '🇮🇳', 'CN': '🇨🇳', 'JP': '🇯🇵', 'KR': '🇰🇷',
-      'BR': '🇧🇷', 'MX': '🇲🇽', 'AR': '🇦🇷', 'EG': '🇪🇬', 'NG': '🇳🇬',
-      'KE': '🇰🇪', 'GH': '🇬🇭',
+      'ZA': '🇿🇦',
+      'US': '🇺🇸',
+      'GB': '🇬🇧',
+      'AU': '🇦🇺',
+      'CA': '🇨🇦',
+      'DE': '🇩🇪',
+      'FR': '🇫🇷',
+      'IT': '🇮🇹',
+      'ES': '🇪🇸',
+      'NL': '🇳🇱',
+      'BE': '🇧🇪',
+      'IN': '🇮🇳',
+      'CN': '🇨🇳',
+      'JP': '🇯🇵',
+      'KR': '🇰🇷',
+      'BR': '🇧🇷',
+      'MX': '🇲🇽',
+      'AR': '🇦🇷',
+      'EG': '🇪🇬',
+      'NG': '🇳🇬',
+      'KE': '🇰🇪',
+      'GH': '🇬🇭',
     };
     return flagMap[countryCode] ?? '🌐';
   }

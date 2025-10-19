@@ -19,9 +19,7 @@ class MessageInput extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        border: Border(
-          top: BorderSide(color: Colors.grey[200]!),
-        ),
+        border: Border(top: BorderSide(color: Colors.grey[200]!)),
       ),
       child: SafeArea(
         child: Padding(
@@ -57,11 +55,7 @@ class MessageInput extends StatelessWidget {
                   shape: BoxShape.circle,
                 ),
                 child: IconButton(
-                  icon: const Icon(
-                    Icons.send,
-                    color: Colors.white,
-                    size: 20,
-                  ),
+                  icon: const Icon(Icons.send, color: Colors.white, size: 20),
                   onPressed: onSend,
                 ),
               ),

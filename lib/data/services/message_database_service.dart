@@ -6,7 +6,8 @@ import '../database/models/database_models.dart';
 /// Service for managing messages in local SQLite database
 /// Handles pagination, caching, and offline synchronization
 class MessageDatabaseService {
-  static final MessageDatabaseService _instance = MessageDatabaseService._internal();
+  static final MessageDatabaseService _instance =
+      MessageDatabaseService._internal();
   factory MessageDatabaseService() => _instance;
   MessageDatabaseService._internal();
 
@@ -27,13 +28,17 @@ class MessageDatabaseService {
         message.toMap(),
         conflictAlgorithm: ConflictAlgorithm.replace,
       );
-      
+
       // Update conversation's last message metadata
       await _updateConversationLastMessage(message);
-      
+
       _logger.d('Message saved to database: ${message.id}');
     } catch (e, stackTrace) {
-      _logger.e('Error saving message to database', error: e, stackTrace: stackTrace);
+      _logger.e(
+        'Error saving message to database',
+        error: e,
+        stackTrace: stackTrace,
+      );
       rethrow;
     }
   }
@@ -41,11 +46,11 @@ class MessageDatabaseService {
   /// Batch insert messages for efficient loading
   Future<void> saveMessages(List<MessageDbModel> messages) async {
     if (messages.isEmpty) return;
-    
+
     try {
       final db = await _db;
       final batch = db.batch();
-      
+
       for (final message in messages) {
         batch.insert(
           'messages',
@@ -53,20 +58,24 @@ class MessageDatabaseService {
           conflictAlgorithm: ConflictAlgorithm.replace,
         );
       }
-      
+
       await batch.commit(noResult: true);
-      
+
       // Update conversation metadata with latest message
       if (messages.isNotEmpty) {
-        final latestMessage = messages.reduce((a, b) => 
-          a.createdAt.isAfter(b.createdAt) ? a : b
+        final latestMessage = messages.reduce(
+          (a, b) => a.createdAt.isAfter(b.createdAt) ? a : b,
         );
         await _updateConversationLastMessage(latestMessage);
       }
-      
+
       _logger.d('Batch saved ${messages.length} messages to database');
     } catch (e, stackTrace) {
-      _logger.e('Error batch saving messages', error: e, stackTrace: stackTrace);
+      _logger.e(
+        'Error batch saving messages',
+        error: e,
+        stackTrace: stackTrace,
+      );
       rethrow;
     }
   }
@@ -79,10 +88,10 @@ class MessageDatabaseService {
   }) async {
     try {
       final db = await _db;
-      
+
       String whereClause = 'conversation_id = ?';
       List<dynamic> whereArgs = [conversationId];
-      
+
       // Add cursor condition for pagination
       if (cursorMessageId != null) {
         final cursorMessage = await _getMessageById(cursorMessageId);
@@ -91,7 +100,7 @@ class MessageDatabaseService {
           whereArgs.add(cursorMessage.createdAt.millisecondsSinceEpoch);
         }
       }
-      
+
       final result = await db.query(
         'messages',
         where: whereClause,
@@ -99,10 +108,14 @@ class MessageDatabaseService {
         orderBy: 'created_at DESC',
         limit: limit,
       );
-      
-      final messages = result.map((map) => MessageDbModel.fromMap(map)).toList();
-      
-      _logger.d('Retrieved ${messages.length} messages for conversation $conversationId');
+
+      final messages = result
+          .map((map) => MessageDbModel.fromMap(map))
+          .toList();
+
+      _logger.d(
+        'Retrieved ${messages.length} messages for conversation $conversationId',
+      );
       return messages;
     } catch (e, stackTrace) {
       _logger.e('Error retrieving messages', error: e, stackTrace: stackTrace);
@@ -117,7 +130,7 @@ class MessageDatabaseService {
   }) async {
     try {
       final db = await _db;
-      
+
       final result = await db.query(
         'messages',
         where: 'conversation_id = ?',
@@ -125,13 +138,21 @@ class MessageDatabaseService {
         orderBy: 'created_at DESC',
         limit: limit,
       );
-      
-      final messages = result.map((map) => MessageDbModel.fromMap(map)).toList();
-      
-      _logger.d('Retrieved ${messages.length} latest messages for conversation $conversationId');
+
+      final messages = result
+          .map((map) => MessageDbModel.fromMap(map))
+          .toList();
+
+      _logger.d(
+        'Retrieved ${messages.length} latest messages for conversation $conversationId',
+      );
       return messages;
     } catch (e, stackTrace) {
-      _logger.e('Error retrieving latest messages', error: e, stackTrace: stackTrace);
+      _logger.e(
+        'Error retrieving latest messages',
+        error: e,
+        stackTrace: stackTrace,
+      );
       return [];
     }
   }
@@ -140,23 +161,27 @@ class MessageDatabaseService {
   Future<MessageDbModel?> getMessageByTempId(String tempId) async {
     try {
       final db = await _db;
-      
+
       final result = await db.query(
         'messages',
         where: 'temp_id = ?',
         whereArgs: [tempId],
         limit: 1,
       );
-      
+
       if (result.isNotEmpty) {
         final message = MessageDbModel.fromMap(result.first);
         _logger.d('Found message by temp ID: $tempId -> ${message.id}');
         return message;
       }
-      
+
       return null;
     } catch (e, stackTrace) {
-      _logger.e('Error finding message by temp ID', error: e, stackTrace: stackTrace);
+      _logger.e(
+        'Error finding message by temp ID',
+        error: e,
+        stackTrace: stackTrace,
+      );
       return null;
     }
   }
@@ -165,7 +190,7 @@ class MessageDatabaseService {
   Future<void> updateMessageStatus(String messageId, String status) async {
     try {
       final db = await _db;
-      
+
       await db.update(
         'messages',
         {
@@ -176,10 +201,14 @@ class MessageDatabaseService {
         where: 'id = ?',
         whereArgs: [messageId],
       );
-      
+
       _logger.d('Updated message status: $messageId -> $status');
     } catch (e, stackTrace) {
-      _logger.e('Error updating message status', error: e, stackTrace: stackTrace);
+      _logger.e(
+        'Error updating message status',
+        error: e,
+        stackTrace: stackTrace,
+      );
       rethrow;
     }
   }
@@ -191,24 +220,24 @@ class MessageDatabaseService {
   }) async {
     try {
       final db = await _db;
-      
+
       // Delete optimistic message
-      await db.delete(
-        'messages',
-        where: 'temp_id = ?',
-        whereArgs: [tempId],
-      );
-      
+      await db.delete('messages', where: 'temp_id = ?', whereArgs: [tempId]);
+
       // Insert server message
       await db.insert(
         'messages',
         serverMessage.toMap(),
         conflictAlgorithm: ConflictAlgorithm.replace,
       );
-      
+
       _logger.d('Replaced optimistic message: $tempId -> ${serverMessage.id}');
     } catch (e, stackTrace) {
-      _logger.e('Error replacing optimistic message', error: e, stackTrace: stackTrace);
+      _logger.e(
+        'Error replacing optimistic message',
+        error: e,
+        stackTrace: stackTrace,
+      );
       rethrow;
     }
   }
@@ -224,7 +253,7 @@ class MessageDatabaseService {
         conversation.toMap(),
         conflictAlgorithm: ConflictAlgorithm.replace,
       );
-      
+
       _logger.d('Conversation saved: ${conversation.id}');
     } catch (e, stackTrace) {
       _logger.e('Error saving conversation', error: e, stackTrace: stackTrace);
@@ -236,21 +265,25 @@ class MessageDatabaseService {
   Future<ConversationDbModel?> getConversation(String conversationId) async {
     try {
       final db = await _db;
-      
+
       final result = await db.query(
         'conversations',
         where: 'id = ?',
         whereArgs: [conversationId],
         limit: 1,
       );
-      
+
       if (result.isNotEmpty) {
         return ConversationDbModel.fromMap(result.first);
       }
-      
+
       return null;
     } catch (e, stackTrace) {
-      _logger.e('Error retrieving conversation', error: e, stackTrace: stackTrace);
+      _logger.e(
+        'Error retrieving conversation',
+        error: e,
+        stackTrace: stackTrace,
+      );
       return null;
     }
   }
@@ -259,15 +292,19 @@ class MessageDatabaseService {
   Future<List<ConversationDbModel>> getConversations() async {
     try {
       final db = await _db;
-      
+
       final result = await db.query(
         'conversations',
         orderBy: 'updated_at DESC',
       );
-      
+
       return result.map((map) => ConversationDbModel.fromMap(map)).toList();
     } catch (e, stackTrace) {
-      _logger.e('Error retrieving conversations', error: e, stackTrace: stackTrace);
+      _logger.e(
+        'Error retrieving conversations',
+        error: e,
+        stackTrace: stackTrace,
+      );
       return [];
     }
   }
@@ -283,33 +320,45 @@ class MessageDatabaseService {
         metadata.toMap(),
         conflictAlgorithm: ConflictAlgorithm.replace,
       );
-      
-      _logger.d('Pagination metadata saved for conversation: ${metadata.conversationId}');
+
+      _logger.d(
+        'Pagination metadata saved for conversation: ${metadata.conversationId}',
+      );
     } catch (e, stackTrace) {
-      _logger.e('Error saving pagination metadata', error: e, stackTrace: stackTrace);
+      _logger.e(
+        'Error saving pagination metadata',
+        error: e,
+        stackTrace: stackTrace,
+      );
       rethrow;
     }
   }
 
   /// Get pagination metadata for conversation
-  Future<PaginationMetadata?> getPaginationMetadata(String conversationId) async {
+  Future<PaginationMetadata?> getPaginationMetadata(
+    String conversationId,
+  ) async {
     try {
       final db = await _db;
-      
+
       final result = await db.query(
         'pagination_metadata',
         where: 'conversation_id = ?',
         whereArgs: [conversationId],
         limit: 1,
       );
-      
+
       if (result.isNotEmpty) {
         return PaginationMetadata.fromMap(result.first);
       }
-      
+
       return null;
     } catch (e, stackTrace) {
-      _logger.e('Error retrieving pagination metadata', error: e, stackTrace: stackTrace);
+      _logger.e(
+        'Error retrieving pagination metadata',
+        error: e,
+        stackTrace: stackTrace,
+      );
       return null;
     }
   }
@@ -320,21 +369,25 @@ class MessageDatabaseService {
   Future<MessageDbModel?> _getMessageById(String messageId) async {
     try {
       final db = await _db;
-      
+
       final result = await db.query(
         'messages',
         where: 'id = ?',
         whereArgs: [messageId],
         limit: 1,
       );
-      
+
       if (result.isNotEmpty) {
         return MessageDbModel.fromMap(result.first);
       }
-      
+
       return null;
     } catch (e, stackTrace) {
-      _logger.e('Error retrieving message by ID', error: e, stackTrace: stackTrace);
+      _logger.e(
+        'Error retrieving message by ID',
+        error: e,
+        stackTrace: stackTrace,
+      );
       return null;
     }
   }
@@ -343,7 +396,7 @@ class MessageDatabaseService {
   Future<void> _updateConversationLastMessage(MessageDbModel message) async {
     try {
       final db = await _db;
-      
+
       await db.update(
         'conversations',
         {
@@ -355,7 +408,11 @@ class MessageDatabaseService {
         whereArgs: [message.conversationId],
       );
     } catch (e, stackTrace) {
-      _logger.e('Error updating conversation last message', error: e, stackTrace: stackTrace);
+      _logger.e(
+        'Error updating conversation last message',
+        error: e,
+        stackTrace: stackTrace,
+      );
     }
   }
 
@@ -365,17 +422,21 @@ class MessageDatabaseService {
   Future<List<MessageDbModel>> getUnsyncedMessages() async {
     try {
       final db = await _db;
-      
+
       final result = await db.query(
         'messages',
         where: 'sync_status != ?',
         whereArgs: ['synced'],
         orderBy: 'created_at ASC',
       );
-      
+
       return result.map((map) => MessageDbModel.fromMap(map)).toList();
     } catch (e, stackTrace) {
-      _logger.e('Error retrieving unsynced messages', error: e, stackTrace: stackTrace);
+      _logger.e(
+        'Error retrieving unsynced messages',
+        error: e,
+        stackTrace: stackTrace,
+      );
       return [];
     }
   }
@@ -383,11 +444,11 @@ class MessageDatabaseService {
   /// Mark messages as synced
   Future<void> markMessagesSynced(List<String> messageIds) async {
     if (messageIds.isEmpty) return;
-    
+
     try {
       final db = await _db;
       final batch = db.batch();
-      
+
       for (final messageId in messageIds) {
         batch.update(
           'messages',
@@ -399,11 +460,15 @@ class MessageDatabaseService {
           whereArgs: [messageId],
         );
       }
-      
+
       await batch.commit(noResult: true);
       _logger.d('Marked ${messageIds.length} messages as synced');
     } catch (e, stackTrace) {
-      _logger.e('Error marking messages as synced', error: e, stackTrace: stackTrace);
+      _logger.e(
+        'Error marking messages as synced',
+        error: e,
+        stackTrace: stackTrace,
+      );
       rethrow;
     }
   }
@@ -415,7 +480,7 @@ class MessageDatabaseService {
   }) async {
     try {
       final db = await _db;
-      
+
       // Get messages to keep (latest ones)
       final messagesToKeep = await db.query(
         'messages',
@@ -425,21 +490,27 @@ class MessageDatabaseService {
         orderBy: 'created_at DESC',
         limit: keepLatestCount,
       );
-      
+
       if (messagesToKeep.isEmpty) return;
-      
+
       final keepIds = messagesToKeep.map((m) => "'${m['id']}'").join(',');
-      
+
       // Delete messages not in the keep list
       await db.delete(
         'messages',
         where: 'conversation_id = ? AND id NOT IN ($keepIds)',
         whereArgs: [conversationId],
       );
-      
-      _logger.d('Cleared old messages for conversation $conversationId, kept latest $keepLatestCount');
+
+      _logger.d(
+        'Cleared old messages for conversation $conversationId, kept latest $keepLatestCount',
+      );
     } catch (e, stackTrace) {
-      _logger.e('Error clearing old messages', error: e, stackTrace: stackTrace);
+      _logger.e(
+        'Error clearing old messages',
+        error: e,
+        stackTrace: stackTrace,
+      );
       rethrow;
     }
   }
@@ -448,22 +519,23 @@ class MessageDatabaseService {
   Future<Map<String, dynamic>> getStats() async {
     try {
       final dbStats = await ChatDatabase.instance.getStats();
-      
+
       final db = await _db;
-      
+
       // Get unsynced message count
       final unsyncedResult = await db.rawQuery(
         'SELECT COUNT(*) as count FROM messages WHERE sync_status != ?',
         ['synced'],
       );
       final unsyncedCount = unsyncedResult.first['count'] as int;
-      
-      return {
-        ...dbStats,
-        'unsynced_messages': unsyncedCount,
-      };
+
+      return {...dbStats, 'unsynced_messages': unsyncedCount};
     } catch (e, stackTrace) {
-      _logger.e('Error getting database stats', error: e, stackTrace: stackTrace);
+      _logger.e(
+        'Error getting database stats',
+        error: e,
+        stackTrace: stackTrace,
+      );
       return {};
     }
   }
@@ -488,7 +560,11 @@ class MessageDatabaseService {
 
       _logger.d('Message added to outbox: ${message.tempId ?? message.id}');
     } catch (e, stackTrace) {
-      _logger.e('Error adding message to outbox', error: e, stackTrace: stackTrace);
+      _logger.e(
+        'Error adding message to outbox',
+        error: e,
+        stackTrace: stackTrace,
+      );
       rethrow;
     }
   }
@@ -507,13 +583,19 @@ class MessageDatabaseService {
       _logger.d('Retrieved ${result.length} pending outbox messages');
       return result;
     } catch (e, stackTrace) {
-      _logger.e('Error retrieving pending outbox', error: e, stackTrace: stackTrace);
+      _logger.e(
+        'Error retrieving pending outbox',
+        error: e,
+        stackTrace: stackTrace,
+      );
       return [];
     }
   }
 
   /// Get outbox messages for a specific conversation
-  Future<List<Map<String, dynamic>>> getConversationOutbox(String conversationId) async {
+  Future<List<Map<String, dynamic>>> getConversationOutbox(
+    String conversationId,
+  ) async {
     try {
       final db = await _db;
       final result = await db.query(
@@ -525,7 +607,11 @@ class MessageDatabaseService {
 
       return result;
     } catch (e, stackTrace) {
-      _logger.e('Error retrieving conversation outbox', error: e, stackTrace: stackTrace);
+      _logger.e(
+        'Error retrieving conversation outbox',
+        error: e,
+        stackTrace: stackTrace,
+      );
       return [];
     }
   }
@@ -534,11 +620,19 @@ class MessageDatabaseService {
   Future<void> removeFromOutbox(String tempId) async {
     try {
       final db = await _db;
-      await db.delete('message_outbox', where: 'temp_id = ?', whereArgs: [tempId]);
+      await db.delete(
+        'message_outbox',
+        where: 'temp_id = ?',
+        whereArgs: [tempId],
+      );
 
       _logger.d('Removed message from outbox: $tempId');
     } catch (e, stackTrace) {
-      _logger.e('Error removing message from outbox', error: e, stackTrace: stackTrace);
+      _logger.e(
+        'Error removing message from outbox',
+        error: e,
+        stackTrace: stackTrace,
+      );
       rethrow;
     }
   }
@@ -553,12 +647,20 @@ class MessageDatabaseService {
                last_error = ?,
                last_retry_at = ?
            WHERE temp_id = ?''',
-        [error ?? 'Unknown error', DateTime.now().millisecondsSinceEpoch, tempId],
+        [
+          error ?? 'Unknown error',
+          DateTime.now().millisecondsSinceEpoch,
+          tempId,
+        ],
       );
 
       _logger.d('Incremented retry count for outbox message: $tempId');
     } catch (e, stackTrace) {
-      _logger.e('Error incrementing retry count', error: e, stackTrace: stackTrace);
+      _logger.e(
+        'Error incrementing retry count',
+        error: e,
+        stackTrace: stackTrace,
+      );
       rethrow;
     }
   }
@@ -575,7 +677,11 @@ class MessageDatabaseService {
 
       _logger.d('Cleared $deletedCount failed outbox messages');
     } catch (e, stackTrace) {
-      _logger.e('Error clearing failed outbox', error: e, stackTrace: stackTrace);
+      _logger.e(
+        'Error clearing failed outbox',
+        error: e,
+        stackTrace: stackTrace,
+      );
       rethrow;
     }
   }
@@ -585,7 +691,9 @@ class MessageDatabaseService {
     try {
       final db = await _db;
 
-      final totalResult = await db.rawQuery('SELECT COUNT(*) as count FROM message_outbox');
+      final totalResult = await db.rawQuery(
+        'SELECT COUNT(*) as count FROM message_outbox',
+      );
       final total = totalResult.first['count'] as int;
 
       final failedResult = await db.rawQuery(
@@ -594,11 +702,7 @@ class MessageDatabaseService {
       );
       final failed = failedResult.first['count'] as int;
 
-      return {
-        'total': total,
-        'pending': total - failed,
-        'failed': failed,
-      };
+      return {'total': total, 'pending': total - failed, 'failed': failed};
     } catch (e, stackTrace) {
       _logger.e('Error getting outbox stats', error: e, stackTrace: stackTrace);
       return {'total': 0, 'pending': 0, 'failed': 0};

@@ -89,10 +89,7 @@ class ProfileNavigation {
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Text(
                 'A complete profile gets 3x more matches!',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey[600],
-                ),
+                style: TextStyle(fontSize: 14, color: Colors.grey[600]),
               ),
             ),
             const SizedBox(height: 20),
@@ -135,10 +132,7 @@ class ProfileNavigation {
                       ),
                       child: Text(
                         'Maybe Later',
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.grey[600],
-                        ),
+                        style: TextStyle(fontSize: 16, color: Colors.grey[600]),
                       ),
                     ),
                   ),
@@ -164,15 +158,14 @@ extension ProfileNavigationExtension on BuildContext {
     VoidCallback? onLike,
     VoidCallback? onMessage,
     VoidCallback? onSuperLike,
-  }) =>
-      ProfileNavigation.toProfileDetails(
-        this,
-        profile,
-        isOwnProfile: isOwnProfile,
-        onLike: onLike,
-        onMessage: onMessage,
-        onSuperLike: onSuperLike,
-      );
+  }) => ProfileNavigation.toProfileDetails(
+    this,
+    profile,
+    isOwnProfile: isOwnProfile,
+    onLike: onLike,
+    onMessage: onMessage,
+    onSuperLike: onSuperLike,
+  );
 
   /// Show profile completion bottom sheet
   Future<void> showProfileCompletion(UserProfile? profile) =>

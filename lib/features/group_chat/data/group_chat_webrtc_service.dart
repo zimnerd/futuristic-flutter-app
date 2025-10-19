@@ -2,55 +2,59 @@ import 'dart:async';
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 
 /// WebRTC service for group chat video/audio calls using Agora SDK
-/// 
+///
 /// This service manages video and audio calls within live sessions,
 /// providing methods to join calls, manage media state, and handle participant events.
 class GroupChatWebRTCService {
   RtcEngine? _engine;
   String? _currentChannelId;
   int? _localUid;
-  
+
   // Stream controllers for call events
   final _userJoinedController = StreamController<CallParticipant>.broadcast();
   final _userLeftController = StreamController<int>.broadcast();
   final _localUserJoinedController = StreamController<int>.broadcast();
   final _errorController = StreamController<String>.broadcast();
-  final _connectionStateController = StreamController<ConnectionStateType>.broadcast();
-  
+  final _connectionStateController =
+      StreamController<ConnectionStateType>.broadcast();
+
   // Public streams
   Stream<CallParticipant> get onUserJoined => _userJoinedController.stream;
   Stream<int> get onUserLeft => _userLeftController.stream;
   Stream<int> get onLocalUserJoined => _localUserJoinedController.stream;
   Stream<String> get onError => _errorController.stream;
-  Stream<ConnectionStateType> get onConnectionStateChanged => _connectionStateController.stream;
-  
+  Stream<ConnectionStateType> get onConnectionStateChanged =>
+      _connectionStateController.stream;
+
   // Media state
   bool _isMuted = false;
   bool _isVideoEnabled = true;
   bool _isSpeakerOn = true;
-  
+
   bool get isMuted => _isMuted;
   bool get isVideoEnabled => _isVideoEnabled;
   bool get isSpeakerOn => _isSpeakerOn;
   bool get isInCall => _currentChannelId != null;
   String? get currentChannelId => _currentChannelId;
   int? get localUid => _localUid;
-  
+
   /// Initialize the Agora RTC Engine
-  /// 
+  ///
   /// [appId] - Agora App ID from environment or config
   Future<void> initialize(String appId) async {
     if (_engine != null) {
       return; // Already initialized
     }
-    
+
     try {
       _engine = createAgoraRtcEngine();
-      await _engine!.initialize(RtcEngineContext(
-        appId: appId,
-        channelProfile: ChannelProfileType.channelProfileCommunication,
-      ));
-      
+      await _engine!.initialize(
+        RtcEngineContext(
+          appId: appId,
+          channelProfile: ChannelProfileType.channelProfileCommunication,
+        ),
+      );
+
       // Register event handlers
       _engine!.registerEventHandler(
         RtcEngineEventHandler(
@@ -59,69 +63,98 @@ class GroupChatWebRTCService {
             _localUserJoinedController.add(connection.localUid!);
           },
           onUserJoined: (RtcConnection connection, int remoteUid, int elapsed) {
-            _userJoinedController.add(CallParticipant(
-              uid: remoteUid,
-              hasVideo: true,
-              hasAudio: true,
-            ));
+            _userJoinedController.add(
+              CallParticipant(uid: remoteUid, hasVideo: true, hasAudio: true),
+            );
           },
-          onUserOffline: (RtcConnection connection, int remoteUid, UserOfflineReasonType reason) {
-            _userLeftController.add(remoteUid);
-          },
+          onUserOffline:
+              (
+                RtcConnection connection,
+                int remoteUid,
+                UserOfflineReasonType reason,
+              ) {
+                _userLeftController.add(remoteUid);
+              },
           onError: (ErrorCodeType err, String msg) {
             _errorController.add('Error: ${err.name} - $msg');
           },
-          onConnectionStateChanged: (RtcConnection connection, ConnectionStateType state, ConnectionChangedReasonType reason) {
-            _connectionStateController.add(state);
-          },
-          onRemoteVideoStateChanged: (RtcConnection connection, int remoteUid, RemoteVideoState state, RemoteVideoStateReason reason, int elapsed) {
-            // Update participant video state
-            if (state == RemoteVideoState.remoteVideoStateStopped || 
-                state == RemoteVideoState.remoteVideoStateFrozen) {
-              _userJoinedController.add(CallParticipant(
-                uid: remoteUid,
-                hasVideo: false,
-                hasAudio: true,
-              ));
-            } else if (state == RemoteVideoState.remoteVideoStateDecoding) {
-              _userJoinedController.add(CallParticipant(
-                uid: remoteUid,
-                hasVideo: true,
-                hasAudio: true,
-              ));
-            }
-          },
-          onRemoteAudioStateChanged: (RtcConnection connection, int remoteUid, RemoteAudioState state, RemoteAudioStateReason reason, int elapsed) {
-            // Update participant audio state
-            if (state == RemoteAudioState.remoteAudioStateStopped) {
-              _userJoinedController.add(CallParticipant(
-                uid: remoteUid,
-                hasVideo: true,
-                hasAudio: false,
-              ));
-            } else if (state == RemoteAudioState.remoteAudioStateDecoding) {
-              _userJoinedController.add(CallParticipant(
-                uid: remoteUid,
-                hasVideo: true,
-                hasAudio: true,
-              ));
-            }
-          },
+          onConnectionStateChanged:
+              (
+                RtcConnection connection,
+                ConnectionStateType state,
+                ConnectionChangedReasonType reason,
+              ) {
+                _connectionStateController.add(state);
+              },
+          onRemoteVideoStateChanged:
+              (
+                RtcConnection connection,
+                int remoteUid,
+                RemoteVideoState state,
+                RemoteVideoStateReason reason,
+                int elapsed,
+              ) {
+                // Update participant video state
+                if (state == RemoteVideoState.remoteVideoStateStopped ||
+                    state == RemoteVideoState.remoteVideoStateFrozen) {
+                  _userJoinedController.add(
+                    CallParticipant(
+                      uid: remoteUid,
+                      hasVideo: false,
+                      hasAudio: true,
+                    ),
+                  );
+                } else if (state == RemoteVideoState.remoteVideoStateDecoding) {
+                  _userJoinedController.add(
+                    CallParticipant(
+                      uid: remoteUid,
+                      hasVideo: true,
+                      hasAudio: true,
+                    ),
+                  );
+                }
+              },
+          onRemoteAudioStateChanged:
+              (
+                RtcConnection connection,
+                int remoteUid,
+                RemoteAudioState state,
+                RemoteAudioStateReason reason,
+                int elapsed,
+              ) {
+                // Update participant audio state
+                if (state == RemoteAudioState.remoteAudioStateStopped) {
+                  _userJoinedController.add(
+                    CallParticipant(
+                      uid: remoteUid,
+                      hasVideo: true,
+                      hasAudio: false,
+                    ),
+                  );
+                } else if (state == RemoteAudioState.remoteAudioStateDecoding) {
+                  _userJoinedController.add(
+                    CallParticipant(
+                      uid: remoteUid,
+                      hasVideo: true,
+                      hasAudio: true,
+                    ),
+                  );
+                }
+              },
         ),
       );
-      
+
       // Enable video module
       await _engine!.enableVideo();
       await _engine!.enableAudio();
-      
     } catch (e) {
       _errorController.add('Failed to initialize: $e');
       rethrow;
     }
   }
-  
+
   /// Join a video/audio call channel
-  /// 
+  ///
   /// [channelId] - Live session ID or conversation ID
   /// [token] - Agora RTC token (generated by backend)
   /// [uid] - User ID (0 for auto-assign)
@@ -135,11 +168,11 @@ class GroupChatWebRTCService {
     if (_engine == null) {
       throw Exception('RTC Engine not initialized. Call initialize() first.');
     }
-    
+
     if (_currentChannelId != null) {
       throw Exception('Already in a call. Leave current call first.');
     }
-    
+
     try {
       // Configure video settings before joining
       await _engine!.setVideoEncoderConfiguration(
@@ -150,13 +183,13 @@ class GroupChatWebRTCService {
           orientationMode: OrientationMode.orientationModeAdaptive,
         ),
       );
-      
+
       // Enable/disable video based on parameter
       _isVideoEnabled = enableVideo;
       if (!enableVideo) {
         await _engine!.disableVideo();
       }
-      
+
       // Join channel
       await _engine!.joinChannel(
         token: token,
@@ -171,21 +204,20 @@ class GroupChatWebRTCService {
           publishMicrophoneTrack: true,
         ),
       );
-      
+
       _currentChannelId = channelId;
-      
     } catch (e) {
       _errorController.add('Failed to join call: $e');
       rethrow;
     }
   }
-  
+
   /// Leave the current call
   Future<void> leaveCall() async {
     if (_engine == null || _currentChannelId == null) {
       return;
     }
-    
+
     try {
       await _engine!.leaveChannel();
       _currentChannelId = null;
@@ -197,11 +229,11 @@ class GroupChatWebRTCService {
       rethrow;
     }
   }
-  
+
   /// Toggle microphone mute state
   Future<void> toggleMute() async {
     if (_engine == null) return;
-    
+
     try {
       _isMuted = !_isMuted;
       await _engine!.muteLocalAudioStream(_isMuted);
@@ -210,11 +242,11 @@ class GroupChatWebRTCService {
       rethrow;
     }
   }
-  
+
   /// Toggle video enable state
   Future<void> toggleVideo() async {
     if (_engine == null) return;
-    
+
     try {
       _isVideoEnabled = !_isVideoEnabled;
       if (_isVideoEnabled) {
@@ -227,11 +259,11 @@ class GroupChatWebRTCService {
       rethrow;
     }
   }
-  
+
   /// Toggle speaker on/off
   Future<void> toggleSpeaker() async {
     if (_engine == null) return;
-    
+
     try {
       _isSpeakerOn = !_isSpeakerOn;
       await _engine!.setEnableSpeakerphone(_isSpeakerOn);
@@ -240,11 +272,11 @@ class GroupChatWebRTCService {
       rethrow;
     }
   }
-  
+
   /// Switch camera (front/back)
   Future<void> switchCamera() async {
     if (_engine == null) return;
-    
+
     try {
       await _engine!.switchCamera();
     } catch (e) {
@@ -252,11 +284,11 @@ class GroupChatWebRTCService {
       rethrow;
     }
   }
-  
+
   /// Mute specific remote user
   Future<void> muteRemoteUser(int uid, bool mute) async {
     if (_engine == null) return;
-    
+
     try {
       await _engine!.muteRemoteAudioStream(uid: uid, mute: mute);
     } catch (e) {
@@ -264,20 +296,20 @@ class GroupChatWebRTCService {
       rethrow;
     }
   }
-  
+
   /// Get RTC engine instance for custom operations
   RtcEngine? get engine => _engine;
-  
+
   /// Dispose and clean up resources
   Future<void> dispose() async {
     await leaveCall();
-    
+
     _userJoinedController.close();
     _userLeftController.close();
     _localUserJoinedController.close();
     _errorController.close();
     _connectionStateController.close();
-    
+
     if (_engine != null) {
       await _engine!.release();
       _engine = null;
@@ -290,18 +322,14 @@ class CallParticipant {
   final int uid;
   final bool hasVideo;
   final bool hasAudio;
-  
+
   CallParticipant({
     required this.uid,
     this.hasVideo = true,
     this.hasAudio = true,
   });
-  
-  CallParticipant copyWith({
-    int? uid,
-    bool? hasVideo,
-    bool? hasAudio,
-  }) {
+
+  CallParticipant copyWith({int? uid, bool? hasVideo, bool? hasAudio}) {
     return CallParticipant(
       uid: uid ?? this.uid,
       hasVideo: hasVideo ?? this.hasVideo,

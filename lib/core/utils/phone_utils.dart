@@ -108,11 +108,13 @@ class PhoneUtils {
   /// Equivalent to web's formatForWhatsApp function
   static String formatForWhatsApp(String phoneNumber, String countryCode) {
     try {
-      developer.log('🔢 Formatting phone for WhatsApp: $phoneNumber with country: $countryCode');
-      
+      developer.log(
+        '🔢 Formatting phone for WhatsApp: $phoneNumber with country: $countryCode',
+      );
+
       final phoneCode = getPhoneCode(countryCode);
       final cleanNumber = _cleanPhoneNumber(phoneNumber);
-      
+
       if (cleanNumber.isEmpty) {
         developer.log('⚠️ Empty phone number after cleaning');
         return '';
@@ -152,10 +154,13 @@ class PhoneUtils {
 
   /// Clean phone number for submission to backend
   /// Equivalent to web's cleanPhoneForSubmission function
-  static String cleanPhoneForSubmission(String phoneNumber, String countryCode) {
+  static String cleanPhoneForSubmission(
+    String phoneNumber,
+    String countryCode,
+  ) {
     try {
       developer.log('🧹 Cleaning phone for submission: $phoneNumber');
-      
+
       if (phoneNumber.trim().isEmpty) {
         developer.log('⚠️ Empty phone number provided');
         return '';
@@ -163,7 +168,7 @@ class PhoneUtils {
 
       // First format for WhatsApp to get consistent international format
       final whatsappFormatted = formatForWhatsApp(phoneNumber, countryCode);
-      
+
       if (whatsappFormatted.isEmpty) {
         developer.log('⚠️ WhatsApp formatting failed');
         return '';
@@ -171,7 +176,7 @@ class PhoneUtils {
 
       // Additional cleanup for backend submission
       final cleaned = whatsappFormatted.trim();
-      
+
       // Validate the final result
       if (isValidPhoneNumber(cleaned)) {
         developer.log('✅ Phone cleaned successfully: $cleaned');
@@ -190,11 +195,11 @@ class PhoneUtils {
   /// Must match backend validation: /^\+?[1-9]\d{1,14}$/
   static bool isValidPhoneNumber(String phoneNumber) {
     if (phoneNumber.isEmpty) return false;
-    
+
     // Backend regex pattern: /^\+?[1-9]\d{1,14}$/
     final backendPattern = RegExp(r'^\+?[1-9]\d{1,14}$');
     final isValid = backendPattern.hasMatch(phoneNumber);
-    
+
     developer.log('🔍 Validating phone: $phoneNumber -> $isValid');
     return isValid;
   }
@@ -203,28 +208,30 @@ class PhoneUtils {
   static String _cleanPhoneNumber(String phoneNumber) {
     // Remove all characters except digits and +
     final cleaned = phoneNumber.replaceAll(RegExp(r'[^\d+]'), '');
-    
+
     // Remove + if not at the beginning
     if (cleaned.contains('+') && !cleaned.startsWith('+')) {
       return cleaned.replaceAll('+', '');
     }
-    
+
     // Remove leading + for processing
     if (cleaned.startsWith('+')) {
       return cleaned.substring(1);
     }
-    
+
     return cleaned;
   }
 
   /// Get list of countries for dropdown/picker
   static List<Map<String, String>> getCountriesList() {
     return countryData.entries
-        .map((entry) => {
-              'code': entry.key,
-              'name': entry.value['name']!,
-              'phoneCode': entry.value['code']!,
-            })
+        .map(
+          (entry) => {
+            'code': entry.key,
+            'name': entry.value['name']!,
+            'phoneCode': entry.value['code']!,
+          },
+        )
         .toList()
       ..sort((a, b) => a['name']!.compareTo(b['name']!));
   }
@@ -232,13 +239,15 @@ class PhoneUtils {
   /// Search countries by name or code
   static List<Map<String, String>> searchCountries(String query) {
     if (query.isEmpty) return getCountriesList();
-    
+
     final lowercaseQuery = query.toLowerCase();
     return getCountriesList()
-        .where((country) =>
-            country['name']!.toLowerCase().contains(lowercaseQuery) ||
-            country['code']!.toLowerCase().contains(lowercaseQuery) ||
-            country['phoneCode']!.contains(query))
+        .where(
+          (country) =>
+              country['name']!.toLowerCase().contains(lowercaseQuery) ||
+              country['code']!.toLowerCase().contains(lowercaseQuery) ||
+              country['phoneCode']!.contains(query),
+        )
         .toList();
   }
 
@@ -246,7 +255,7 @@ class PhoneUtils {
   static String formatForDisplay(String phoneNumber, String countryCode) {
     final formatted = formatForWhatsApp(phoneNumber, countryCode);
     if (formatted.isEmpty) return phoneNumber;
-    
+
     // Add some formatting for better readability
     if (formatted.length > 4) {
       final code = getPhoneCode(countryCode);
@@ -255,7 +264,7 @@ class PhoneUtils {
         return '$code $national';
       }
     }
-    
+
     return formatted;
   }
 }

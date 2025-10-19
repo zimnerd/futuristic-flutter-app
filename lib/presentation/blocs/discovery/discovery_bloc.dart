@@ -9,7 +9,7 @@ import 'discovery_event.dart';
 import 'discovery_state.dart';
 
 /// BLoC for managing user discovery and swiping functionality
-/// 
+///
 /// Handles the core dating app experience including:
 /// - Loading discoverable users
 /// - Processing swipe actions (like, pass, super like)
@@ -22,10 +22,10 @@ class DiscoveryBloc extends Bloc<DiscoveryEvent, DiscoveryState> {
     required DiscoveryService discoveryService,
     required PreferencesService preferencesService,
     MediaPrefetchService? prefetchService,
-  })  : _discoveryService = discoveryService,
+  }) : _discoveryService = discoveryService,
        _preferencesService = preferencesService,
        _prefetchService = prefetchService ?? MediaPrefetchService(),
-        super(const DiscoveryInitial()) {
+       super(const DiscoveryInitial()) {
     // Register event handlers
     on<LoadDiscoverableUsers>(_onLoadDiscoverableUsers);
     on<LoadDiscoverableUsersWithPreferences>(
@@ -68,12 +68,15 @@ class DiscoveryBloc extends Bloc<DiscoveryEvent, DiscoveryState> {
         return;
       }
 
-      emit(DiscoveryLoaded(
-        userStack: users,
-        currentFilters: filters,
-        canUndo: false,
-        hasMoreUsers: users.length >= 10, // Assume more if we got a full batch
-      ));
+      emit(
+        DiscoveryLoaded(
+          userStack: users,
+          currentFilters: filters,
+          canUndo: false,
+          hasMoreUsers:
+              users.length >= 10, // Assume more if we got a full batch
+        ),
+      );
 
       // 🚀 Trigger prefetch for upcoming profiles
       _prefetchService.prefetchProfiles(
@@ -81,9 +84,9 @@ class DiscoveryBloc extends Bloc<DiscoveryEvent, DiscoveryState> {
         currentIndex: 0, // Start prefetching from the first profile
       );
     } catch (error) {
-      emit(DiscoveryError(
-        message: 'Failed to load users: ${error.toString()}',
-      ));
+      emit(
+        DiscoveryError(message: 'Failed to load users: ${error.toString()}'),
+      );
     }
   }
 
@@ -145,7 +148,7 @@ class DiscoveryBloc extends Bloc<DiscoveryEvent, DiscoveryState> {
     if (state is! DiscoveryLoaded) return;
 
     final currentState = state as DiscoveryLoaded;
-    
+
     try {
       // Send pass action to backend
       await _discoveryService.recordSwipeAction(
@@ -157,12 +160,14 @@ class DiscoveryBloc extends Bloc<DiscoveryEvent, DiscoveryState> {
       final updatedStack = List<UserProfile>.from(currentState.userStack)
         ..removeWhere((user) => user.id == event.userProfile.id);
 
-      emit(currentState.copyWith(
-        userStack: updatedStack,
-        lastSwipedUser: event.userProfile,
-        lastSwipeAction: SwipeAction.left,
-        canUndo: true,
-      ));
+      emit(
+        currentState.copyWith(
+          userStack: updatedStack,
+          lastSwipedUser: event.userProfile,
+          lastSwipeAction: SwipeAction.left,
+          canUndo: true,
+        ),
+      );
 
       // 🚀 Prefetch next profiles after swipe
       if (updatedStack.isNotEmpty) {
@@ -177,10 +182,12 @@ class DiscoveryBloc extends Bloc<DiscoveryEvent, DiscoveryState> {
         add(const LoadMoreUsers());
       }
     } catch (error) {
-      emit(DiscoveryError(
-        message: 'Failed to record swipe: ${error.toString()}',
-        previousState: currentState,
-      ));
+      emit(
+        DiscoveryError(
+          message: 'Failed to record swipe: ${error.toString()}',
+          previousState: currentState,
+        ),
+      );
     }
   }
 
@@ -192,7 +199,7 @@ class DiscoveryBloc extends Bloc<DiscoveryEvent, DiscoveryState> {
     if (state is! DiscoveryLoaded) return;
 
     final currentState = state as DiscoveryLoaded;
-    
+
     try {
       // Send like action to backend
       final result = await _discoveryService.recordSwipeAction(
@@ -213,11 +220,13 @@ class DiscoveryBloc extends Bloc<DiscoveryEvent, DiscoveryState> {
 
       // Check if it's a match
       if (result.isMatch) {
-        emit(DiscoveryMatchFound(
-          matchedUser: event.userProfile,
-          isNewMatch: true,
-          previousState: updatedState,
-        ));
+        emit(
+          DiscoveryMatchFound(
+            matchedUser: event.userProfile,
+            isNewMatch: true,
+            previousState: updatedState,
+          ),
+        );
       } else {
         emit(updatedState);
       }
@@ -235,22 +244,21 @@ class DiscoveryBloc extends Bloc<DiscoveryEvent, DiscoveryState> {
         add(const LoadMoreUsers());
       }
     } catch (error) {
-      emit(DiscoveryError(
-        message: 'Failed to record like: ${error.toString()}',
-        previousState: currentState,
-      ));
+      emit(
+        DiscoveryError(
+          message: 'Failed to record like: ${error.toString()}',
+          previousState: currentState,
+        ),
+      );
     }
   }
 
   /// Handle up swipe (super like)
-  Future<void> _onSwipeUp(
-    SwipeUp event,
-    Emitter<DiscoveryState> emit,
-  ) async {
+  Future<void> _onSwipeUp(SwipeUp event, Emitter<DiscoveryState> emit) async {
     if (state is! DiscoveryLoaded) return;
 
     final currentState = state as DiscoveryLoaded;
-    
+
     try {
       // Send super like action to backend
       final result = await _discoveryService.recordSwipeAction(
@@ -271,11 +279,13 @@ class DiscoveryBloc extends Bloc<DiscoveryEvent, DiscoveryState> {
 
       // Super likes have higher match probability
       if (result.isMatch) {
-        emit(DiscoveryMatchFound(
-          matchedUser: event.userProfile,
-          isNewMatch: true,
-          previousState: updatedState,
-        ));
+        emit(
+          DiscoveryMatchFound(
+            matchedUser: event.userProfile,
+            isNewMatch: true,
+            previousState: updatedState,
+          ),
+        );
       } else {
         emit(updatedState);
       }
@@ -293,10 +303,12 @@ class DiscoveryBloc extends Bloc<DiscoveryEvent, DiscoveryState> {
         add(const LoadMoreUsers());
       }
     } catch (error) {
-      emit(DiscoveryError(
-        message: 'Failed to record super like: ${error.toString()}',
-        previousState: currentState,
-      ));
+      emit(
+        DiscoveryError(
+          message: 'Failed to record super like: ${error.toString()}',
+          previousState: currentState,
+        ),
+      );
     }
   }
 
@@ -308,7 +320,7 @@ class DiscoveryBloc extends Bloc<DiscoveryEvent, DiscoveryState> {
     if (state is! DiscoveryLoaded) return;
 
     final currentState = state as DiscoveryLoaded;
-    
+
     if (!currentState.canUndo || currentState.lastSwipedUser == null) {
       return;
     }
@@ -318,20 +330,27 @@ class DiscoveryBloc extends Bloc<DiscoveryEvent, DiscoveryState> {
       await _discoveryService.undoLastSwipe();
 
       // Add the user back to the front of the stack
-      final updatedStack = [currentState.lastSwipedUser!, ...currentState.userStack];
+      final updatedStack = [
+        currentState.lastSwipedUser!,
+        ...currentState.userStack,
+      ];
 
-      emit(currentState.copyWith(
-        userStack: updatedStack,
-        lastSwipedUser: null,
-        lastSwipeAction: null,
-        canUndo: false,
-        rewindJustCompleted: true,
-      ));
+      emit(
+        currentState.copyWith(
+          userStack: updatedStack,
+          lastSwipedUser: null,
+          lastSwipeAction: null,
+          canUndo: false,
+          rewindJustCompleted: true,
+        ),
+      );
     } catch (error) {
-      emit(DiscoveryError(
-        message: 'Failed to undo swipe: ${error.toString()}',
-        previousState: currentState,
-      ));
+      emit(
+        DiscoveryError(
+          message: 'Failed to undo swipe: ${error.toString()}',
+          previousState: currentState,
+        ),
+      );
     }
   }
 
@@ -340,45 +359,45 @@ class DiscoveryBloc extends Bloc<DiscoveryEvent, DiscoveryState> {
     ApplyFilters event,
     Emitter<DiscoveryState> emit,
   ) async {
-    add(LoadDiscoverableUsers(
-      resetStack: true,
-      filters: event.filters,
-    ));
+    add(LoadDiscoverableUsers(resetStack: true, filters: event.filters));
   }
 
   /// Activate boost feature
-  Future<void> _onUseBoost(
-    UseBoost event,
-    Emitter<DiscoveryState> emit,
-  ) async {
+  Future<void> _onUseBoost(UseBoost event, Emitter<DiscoveryState> emit) async {
     if (state is! DiscoveryLoaded) return;
 
     final currentState = state as DiscoveryLoaded;
-    
+
     try {
       emit(DiscoveryBoostActivating(previousState: currentState));
 
       final boostResult = await _discoveryService.activateBoost();
 
-      emit(DiscoveryBoostActivated(
-        boostDuration: boostResult.duration,
-        updatedState: currentState.copyWith(
-          isBoostActive: true,
-          boostTimeRemaining: boostResult.duration,
+      emit(
+        DiscoveryBoostActivated(
+          boostDuration: boostResult.duration,
+          updatedState: currentState.copyWith(
+            isBoostActive: true,
+            boostTimeRemaining: boostResult.duration,
+          ),
         ),
-      ));
+      );
 
       // Return to normal state after showing boost confirmation
       await Future.delayed(const Duration(seconds: 2));
-      emit(currentState.copyWith(
-        isBoostActive: true,
-        boostTimeRemaining: boostResult.duration,
-      ));
+      emit(
+        currentState.copyWith(
+          isBoostActive: true,
+          boostTimeRemaining: boostResult.duration,
+        ),
+      );
     } catch (error) {
-      emit(DiscoveryError(
-        message: 'Failed to activate boost: ${error.toString()}',
-        previousState: currentState,
-      ));
+      emit(
+        DiscoveryError(
+          message: 'Failed to activate boost: ${error.toString()}',
+          previousState: currentState,
+        ),
+      );
     }
   }
 
@@ -390,7 +409,7 @@ class DiscoveryBloc extends Bloc<DiscoveryEvent, DiscoveryState> {
     if (state is! DiscoveryLoaded) return;
 
     final currentState = state as DiscoveryLoaded;
-    
+
     try {
       emit(currentState.copyWith()); // Trigger loading indicator
 
@@ -405,11 +424,13 @@ class DiscoveryBloc extends Bloc<DiscoveryEvent, DiscoveryState> {
       }
 
       final updatedStack = [...currentState.userStack, ...moreUsers];
-      
-      emit(currentState.copyWith(
-        userStack: updatedStack,
-        hasMoreUsers: moreUsers.length >= 10,
-      ));
+
+      emit(
+        currentState.copyWith(
+          userStack: updatedStack,
+          hasMoreUsers: moreUsers.length >= 10,
+        ),
+      );
     } catch (error) {
       // Silently fail for background loading
       emit(currentState.copyWith(hasMoreUsers: false));
@@ -424,12 +445,14 @@ class DiscoveryBloc extends Bloc<DiscoveryEvent, DiscoveryState> {
     if (state is! DiscoveryLoaded) return;
 
     final currentState = state as DiscoveryLoaded;
-    
-    emit(DiscoveryMatchFound(
-      matchedUser: event.matchedUser,
-      isNewMatch: event.isNewMatch,
-      previousState: currentState,
-    ));
+
+    emit(
+      DiscoveryMatchFound(
+        matchedUser: event.matchedUser,
+        isNewMatch: event.isNewMatch,
+        previousState: currentState,
+      ),
+    );
   }
 
   /// Refresh the entire discovery stack
@@ -439,10 +462,12 @@ class DiscoveryBloc extends Bloc<DiscoveryEvent, DiscoveryState> {
   ) async {
     if (state is DiscoveryLoaded) {
       final currentState = state as DiscoveryLoaded;
-      add(LoadDiscoverableUsers(
-        resetStack: true,
-        filters: currentState.currentFilters,
-      ));
+      add(
+        LoadDiscoverableUsers(
+          resetStack: true,
+          filters: currentState.currentFilters,
+        ),
+      );
     } else {
       add(const LoadDiscoverableUsers(resetStack: true));
     }

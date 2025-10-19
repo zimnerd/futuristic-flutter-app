@@ -5,26 +5,26 @@ import 'package:logger/logger.dart';
 import 'temp_media_upload_service.dart';
 
 /// Service for managing profile photos with temporary upload pattern
-/// 
+///
 /// **Usage Pattern**:
 /// 1. User picks photo → uploadTempPhoto() → Store mediaId
 /// 2. User removes photo → markPhotoForDeletion(mediaId)
 /// 3. User saves profile → confirmPhotos() + deleteMarkedPhotos()
 /// 4. User cancels → temp files auto-cleanup after 24 hours
-/// 
+///
 /// **Example**:
 /// ```dart
 /// final photoManager = PhotoManagerService(
 ///   uploadService: tempMediaUploadService,
 /// );
-/// 
+///
 /// // User picks new photo
 /// final result = await photoManager.uploadTempPhoto(imageFile);
 /// _tempPhotoIds.add(result.mediaId);
-/// 
+///
 /// // User removes existing photo
 /// photoManager.markPhotoForDeletion(existingPhotoId);
-/// 
+///
 /// // User saves profile
 /// await photoManager.confirmPhotos(_tempPhotoIds);
 /// await photoManager.deleteMarkedPhotos();
@@ -37,15 +37,15 @@ class PhotoManagerService {
   PhotoManagerService({
     required TempMediaUploadService uploadService,
     Logger? logger,
-  })  : _uploadService = uploadService,
-        _logger = logger ?? Logger();
+  }) : _uploadService = uploadService,
+       _logger = logger ?? Logger();
 
   /// Upload photo to temporary storage (instant upload on selection)
   /// Returns media ID and temporary URL for preview
   Future<MediaUploadResult> uploadTempPhoto(File imageFile) async {
     try {
       _logger.i('📸 Uploading temp photo');
-      
+
       final result = await _uploadService.uploadTemp(
         imageFile: imageFile,
         type: 'image', // lowercase as per backend validation
@@ -67,7 +67,7 @@ class PhotoManagerService {
   ) async {
     try {
       _logger.i('📸 Uploading ${imageFiles.length} temp photos');
-      
+
       final results = await _uploadService.uploadMultipleTemp(
         imageFiles: imageFiles,
         type: 'IMAGE',
@@ -117,7 +117,7 @@ class PhotoManagerService {
 
     try {
       _logger.i('✅ Confirming ${tempPhotoIds.length} temp photos');
-      
+
       final result = await _uploadService.confirmUploads(tempPhotoIds);
 
       if (result.hasFailures) {
@@ -143,7 +143,7 @@ class PhotoManagerService {
 
     try {
       _logger.i('🗑️ Deleting ${_photosToDelete.length} marked photos');
-      
+
       final result = await _uploadService.deleteMedia(_photosToDelete);
 
       if (result.hasFailures) {
@@ -166,7 +166,7 @@ class PhotoManagerService {
   Future<bool> deletePhotoImmediately(String mediaId) async {
     try {
       _logger.i('🗑️ Deleting photo immediately: $mediaId');
-      
+
       final success = await _uploadService.deleteSingleMedia(mediaId);
 
       if (success) {
@@ -199,7 +199,7 @@ class PhotoManagerService {
       final deleteResult = await deleteMarkedPhotos();
 
       _logger.i('✅ Photos saved successfully');
-      
+
       return PhotoSaveResult(
         confirmResult: confirmResult,
         deleteResult: deleteResult,
@@ -223,10 +223,7 @@ class PhotoSaveResult {
   final ConfirmUploadResult confirmResult;
   final DeleteMediaResult deleteResult;
 
-  PhotoSaveResult({
-    required this.confirmResult,
-    required this.deleteResult,
-  });
+  PhotoSaveResult({required this.confirmResult, required this.deleteResult});
 
   /// Check if all operations succeeded
   bool get allSucceeded =>
@@ -237,9 +234,9 @@ class PhotoSaveResult {
 
   /// Get all failed operations
   List<String> get allFailures => [
-        ...confirmResult.failed,
-        ...deleteResult.failed,
-      ];
+    ...confirmResult.failed,
+    ...deleteResult.failed,
+  ];
 
   /// Get summary message
   String getSummaryMessage() {

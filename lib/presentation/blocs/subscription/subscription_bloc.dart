@@ -20,13 +20,16 @@ class LoadSubscriptionUsageEvent extends SubscriptionEvent {}
 class UpdateSubscriptionPlanEvent extends SubscriptionEvent {
   final String planId;
   final String paymentMethodId;
-  
-  UpdateSubscriptionPlanEvent({required this.planId, required this.paymentMethodId});
+
+  UpdateSubscriptionPlanEvent({
+    required this.planId,
+    required this.paymentMethodId,
+  });
 }
 
 class CancelSubscriptionEvent extends SubscriptionEvent {
   final String reason;
-  
+
   CancelSubscriptionEvent({required this.reason});
 }
 
@@ -49,19 +52,19 @@ class SubscriptionLoading extends SubscriptionState {}
 
 class SubscriptionLoaded extends SubscriptionState {
   final Subscription? subscription;
-  
+
   SubscriptionLoaded(this.subscription);
 }
 
 class SubscriptionPlansLoaded extends SubscriptionState {
   final List<SubscriptionPlan> plans;
-  
+
   SubscriptionPlansLoaded(this.plans);
 }
 
 class SubscriptionUsageLoaded extends SubscriptionState {
   final SubscriptionUsage? usage;
-  
+
   SubscriptionUsageLoaded(this.usage);
 }
 
@@ -69,7 +72,7 @@ class SubscriptionDataLoaded extends SubscriptionState {
   final Subscription? subscription;
   final List<SubscriptionPlan> plans;
   final SubscriptionUsage? usage;
-  
+
   SubscriptionDataLoaded({
     required this.subscription,
     required this.plans,
@@ -80,13 +83,13 @@ class SubscriptionDataLoaded extends SubscriptionState {
 class SubscriptionSuccess extends SubscriptionState {
   final String message;
   final Map<String, dynamic>? data;
-  
+
   SubscriptionSuccess(this.message, {this.data});
 }
 
 class SubscriptionError extends SubscriptionState {
   final String message;
-  
+
   SubscriptionError(this.message);
 }
 
@@ -103,7 +106,7 @@ class SubscriptionBloc extends Bloc<SubscriptionEvent, SubscriptionState> {
       savedMethodsService: SavedPaymentMethodsService.instance,
       apiClient: ApiClient.instance,
     );
-    
+
     on<LoadSubscriptionEvent>(_onLoadSubscription);
     on<LoadSubscriptionPlansEvent>(_onLoadSubscriptionPlans);
     on<LoadSubscriptionUsageEvent>(_onLoadSubscriptionUsage);
@@ -119,11 +122,11 @@ class SubscriptionBloc extends Bloc<SubscriptionEvent, SubscriptionState> {
     Emitter<SubscriptionState> emit,
   ) async {
     emit(SubscriptionLoading());
-    
+
     try {
       final subscription = await _subscriptionService.getCurrentSubscription();
       emit(SubscriptionLoaded(subscription));
-      
+
       // Track analytics
       if (subscription != null) {
         _analyticsService.trackEvent(
@@ -146,12 +149,12 @@ class SubscriptionBloc extends Bloc<SubscriptionEvent, SubscriptionState> {
     Emitter<SubscriptionState> emit,
   ) async {
     emit(SubscriptionLoading());
-    
+
     try {
       // Get predefined plans from the model
       final plans = PredefinedPlans.plans;
       emit(SubscriptionPlansLoaded(plans));
-      
+
       // Track analytics
       _analyticsService.trackEvent(
         eventType: AnalyticsEventType.featureUsed,
@@ -171,11 +174,11 @@ class SubscriptionBloc extends Bloc<SubscriptionEvent, SubscriptionState> {
     Emitter<SubscriptionState> emit,
   ) async {
     emit(SubscriptionLoading());
-    
+
     try {
       final usage = await _subscriptionService.getSubscriptionUsage();
       emit(SubscriptionUsageLoaded(usage));
-      
+
       // Track analytics
       _analyticsService.trackEvent(
         eventType: AnalyticsEventType.featureUsed,
@@ -195,21 +198,23 @@ class SubscriptionBloc extends Bloc<SubscriptionEvent, SubscriptionState> {
     Emitter<SubscriptionState> emit,
   ) async {
     emit(SubscriptionLoading());
-    
+
     try {
       // Find the plan by ID
       final plan = PredefinedPlans.plans.firstWhere(
         (p) => p.id == event.planId,
         orElse: () => throw Exception('Plan not found'),
       );
-      
-      final result = await _subscriptionService.changePlan(
-        newPlan: plan,
+
+      final result = await _subscriptionService.changePlan(newPlan: plan);
+
+      emit(
+        SubscriptionSuccess(
+          'Subscription plan updated successfully',
+          data: result.data?.toJson(),
+        ),
       );
-      
-      emit(SubscriptionSuccess('Subscription plan updated successfully', 
-        data: result.data?.toJson()));
-      
+
       // Track analytics
       _analyticsService.trackEvent(
         eventType: AnalyticsEventType.featureUsed,
@@ -218,7 +223,7 @@ class SubscriptionBloc extends Bloc<SubscriptionEvent, SubscriptionState> {
           'new_plan': event.planId,
         },
       );
-      
+
       // Refresh subscription data
       add(RefreshSubscriptionDataEvent());
     } catch (e) {
@@ -232,15 +237,19 @@ class SubscriptionBloc extends Bloc<SubscriptionEvent, SubscriptionState> {
     Emitter<SubscriptionState> emit,
   ) async {
     emit(SubscriptionLoading());
-    
+
     try {
       final result = await _subscriptionService.cancelSubscription(
         reason: event.reason,
       );
-      
-      emit(SubscriptionSuccess('Subscription cancelled successfully', 
-        data: result.data?.toJson()));
-      
+
+      emit(
+        SubscriptionSuccess(
+          'Subscription cancelled successfully',
+          data: result.data?.toJson(),
+        ),
+      );
+
       // Track analytics
       _analyticsService.trackEvent(
         eventType: AnalyticsEventType.featureUsed,
@@ -249,7 +258,7 @@ class SubscriptionBloc extends Bloc<SubscriptionEvent, SubscriptionState> {
           'reason': event.reason,
         },
       );
-      
+
       // Refresh subscription data
       add(RefreshSubscriptionDataEvent());
     } catch (e) {
@@ -267,15 +276,17 @@ class SubscriptionBloc extends Bloc<SubscriptionEvent, SubscriptionState> {
     try {
       final result = await _subscriptionService.resumeSubscription();
 
-      emit(SubscriptionSuccess('Subscription resumed successfully',
-        data: result.data?.toJson()));
+      emit(
+        SubscriptionSuccess(
+          'Subscription resumed successfully',
+          data: result.data?.toJson(),
+        ),
+      );
 
       // Track analytics
       _analyticsService.trackEvent(
         eventType: AnalyticsEventType.featureUsed,
-        properties: {
-          'feature': 'subscription_resumed',
-        },
+        properties: {'feature': 'subscription_resumed'},
       );
 
       // Refresh subscription data
@@ -300,7 +311,9 @@ class SubscriptionBloc extends Bloc<SubscriptionEvent, SubscriptionState> {
       }
 
       // Update subscription to suspended status
-      final pauseEndDate = DateTime.now().add(Duration(days: 30 * event.months));
+      final pauseEndDate = DateTime.now().add(
+        Duration(days: 30 * event.months),
+      );
       final updatedSubscription = subscription.copyWith(
         status: SubscriptionStatus.suspended,
         metadata: {
@@ -313,20 +326,20 @@ class SubscriptionBloc extends Bloc<SubscriptionEvent, SubscriptionState> {
       );
 
       // Save the updated subscription (this would normally call backend API)
-      await _subscriptionService.getCurrentSubscription(); // Placeholder for actual API call
+      await _subscriptionService
+          .getCurrentSubscription(); // Placeholder for actual API call
 
-      emit(SubscriptionSuccess(
-        'Subscription paused for ${event.months} month${event.months > 1 ? 's' : ''}',
-        data: updatedSubscription.toJson(),
-      ));
+      emit(
+        SubscriptionSuccess(
+          'Subscription paused for ${event.months} month${event.months > 1 ? 's' : ''}',
+          data: updatedSubscription.toJson(),
+        ),
+      );
 
       // Track analytics
       _analyticsService.trackEvent(
         eventType: AnalyticsEventType.featureUsed,
-        properties: {
-          'feature': 'subscription_paused',
-          'months': event.months,
-        },
+        properties: {'feature': 'subscription_paused', 'months': event.months},
       );
 
       // Refresh subscription data
@@ -342,7 +355,7 @@ class SubscriptionBloc extends Bloc<SubscriptionEvent, SubscriptionState> {
     Emitter<SubscriptionState> emit,
   ) async {
     emit(SubscriptionLoading());
-    
+
     try {
       // Load all subscription data in parallel
       final results = await Future.wait<dynamic>([
@@ -350,17 +363,19 @@ class SubscriptionBloc extends Bloc<SubscriptionEvent, SubscriptionState> {
         Future.value(PredefinedPlans.plans), // Static data
         _subscriptionService.getSubscriptionUsage(),
       ]);
-      
+
       final subscription = results[0] as Subscription?;
       final plans = results[1] as List<SubscriptionPlan>;
       final usage = results[2] as SubscriptionUsage?;
-      
-      emit(SubscriptionDataLoaded(
-        subscription: subscription,
-        plans: plans,
-        usage: usage,
-      ));
-      
+
+      emit(
+        SubscriptionDataLoaded(
+          subscription: subscription,
+          plans: plans,
+          usage: usage,
+        ),
+      );
+
       // Track analytics
       _analyticsService.trackEvent(
         eventType: AnalyticsEventType.featureUsed,

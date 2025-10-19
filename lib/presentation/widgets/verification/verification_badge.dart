@@ -3,7 +3,7 @@ import '../../../core/theme/app_colors.dart';
 
 /// Reusable verification badge widget to display verified status
 /// Can be used on profile cards, detail screens, chat headers, etc.
-/// 
+///
 /// Usage:
 /// ```dart
 /// VerificationBadge(
@@ -144,11 +144,7 @@ class VerificationBadge extends StatelessWidget {
   }
 }
 
-enum VerificationBadgeSize {
-  small,
-  medium,
-  large,
-}
+enum VerificationBadgeSize { small, medium, large }
 
 class _BadgeSizeConfig {
   final double iconSize;

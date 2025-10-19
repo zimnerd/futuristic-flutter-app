@@ -17,7 +17,7 @@ class VirtualGiftService {
       if (response.statusCode == 200 && response.data != null) {
         final List<dynamic> data = response.data['gifts'] ?? [];
         final gifts = data.map((json) => VirtualGift.fromJson(json)).toList();
-        
+
         _logger.d('Retrieved ${gifts.length} available virtual gifts');
         return gifts;
       } else {
@@ -40,8 +40,10 @@ class VirtualGiftService {
       if (response.statusCode == 200 && response.data != null) {
         final List<dynamic> data = response.data['gifts'] ?? [];
         final gifts = data.map((json) => VirtualGift.fromJson(json)).toList();
-        
-        _logger.d('Retrieved ${gifts.length} gifts in category: ${category.name}');
+
+        _logger.d(
+          'Retrieved ${gifts.length} gifts in category: ${category.name}',
+        );
         return gifts;
       } else {
         _logger.e('Failed to get gifts by category: ${response.statusMessage}');
@@ -93,17 +95,18 @@ class VirtualGiftService {
     try {
       final response = await _apiClient.get(
         '/api/v1/virtual-gifts/transactions',
-        queryParameters: {
-          'page': page.toString(),
-          'limit': limit.toString(),
-        },
+        queryParameters: {'page': page.toString(), 'limit': limit.toString()},
       );
 
       if (response.statusCode == 200 && response.data != null) {
         final List<dynamic> data = response.data['transactions'] ?? [];
-        final transactions = data.map((json) => GiftTransaction.fromJson(json)).toList();
-        
-        _logger.d('Retrieved ${transactions.length} received gifts (page $page)');
+        final transactions = data
+            .map((json) => GiftTransaction.fromJson(json))
+            .toList();
+
+        _logger.d(
+          'Retrieved ${transactions.length} received gifts (page $page)',
+        );
         return transactions;
       } else {
         _logger.e('Failed to get received gifts: ${response.statusMessage}');
@@ -123,16 +126,15 @@ class VirtualGiftService {
     try {
       final response = await _apiClient.get(
         '/api/v1/virtual-gifts/transactions',
-        queryParameters: {
-          'page': page.toString(),
-          'limit': limit.toString(),
-        },
+        queryParameters: {'page': page.toString(), 'limit': limit.toString()},
       );
 
       if (response.statusCode == 200 && response.data != null) {
         final List<dynamic> data = response.data['transactions'] ?? [];
-        final transactions = data.map((json) => GiftTransaction.fromJson(json)).toList();
-        
+        final transactions = data
+            .map((json) => GiftTransaction.fromJson(json))
+            .toList();
+
         _logger.d('Retrieved ${transactions.length} sent gifts (page $page)');
         return transactions;
       } else {
@@ -150,10 +152,7 @@ class VirtualGiftService {
     try {
       final response = await _apiClient.post(
         '/api/v1/virtual-gifts/transactions/$transactionId/receive',
-        data: {
-          'transactionId': transactionId,
-          'thankYouMessage': message,
-        },
+        data: {'transactionId': transactionId, 'thankYouMessage': message},
       );
 
       if (response.statusCode == 200) {
@@ -201,11 +200,12 @@ class VirtualGiftService {
           'totalGiftsReceived': response.data['totalGiftsReceived'] ?? 0,
           'totalCoinsSpent': response.data['totalCoinsSpent'] ?? 0,
           'totalCoinsEarned': response.data['totalCoinsEarned'] ?? 0,
-          'favoriteGiftCategory': response.data['favoriteGiftCategory'] ?? 'flowers',
+          'favoriteGiftCategory':
+              response.data['favoriteGiftCategory'] ?? 'flowers',
           'mostSentGift': response.data['mostSentGift'],
           'mostReceivedGift': response.data['mostReceivedGift'],
         };
-        
+
         _logger.d('Retrieved user gift statistics');
         return stats;
       } else {
@@ -230,7 +230,9 @@ class VirtualGiftService {
         _logger.d('Gift notification marked as read: $transactionId');
         return true;
       } else {
-        _logger.e('Failed to mark gift notification as read: ${response.statusMessage}');
+        _logger.e(
+          'Failed to mark gift notification as read: ${response.statusMessage}',
+        );
         return false;
       }
     } catch (e) {
@@ -250,7 +252,7 @@ class VirtualGiftService {
       if (response.statusCode == 200 && response.data != null) {
         final List<dynamic> data = response.data['gifts'] ?? [];
         final gifts = data.map((json) => VirtualGift.fromJson(json)).toList();
-        
+
         _logger.d('Retrieved ${gifts.length} popular gifts');
         return gifts;
       } else {
@@ -271,20 +273,23 @@ class VirtualGiftService {
     try {
       final response = await _apiClient.get(
         '/api/v1/virtual-gifts/activity',
-        queryParameters: {
-          'page': page.toString(),
-          'limit': limit.toString(),
-        },
+        queryParameters: {'page': page.toString(), 'limit': limit.toString()},
       );
 
       if (response.statusCode == 200 && response.data != null) {
         final List<dynamic> data = response.data['activities'] ?? [];
-        final activities = data.map((json) => GiftTransaction.fromJson(json)).toList();
-        
-        _logger.d('Retrieved ${activities.length} gift activities (page $page)');
+        final activities = data
+            .map((json) => GiftTransaction.fromJson(json))
+            .toList();
+
+        _logger.d(
+          'Retrieved ${activities.length} gift activities (page $page)',
+        );
         return activities;
       } else {
-        _logger.e('Failed to get gift activity feed: ${response.statusMessage}');
+        _logger.e(
+          'Failed to get gift activity feed: ${response.statusMessage}',
+        );
         return [];
       }
     } catch (e) {

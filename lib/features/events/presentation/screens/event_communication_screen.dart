@@ -13,13 +13,11 @@ import '../../../../presentation/widgets/common/pulse_toast.dart';
 class EventCommunicationScreen extends StatefulWidget {
   final Event event;
 
-  const EventCommunicationScreen({
-    super.key,
-    required this.event,
-  });
+  const EventCommunicationScreen({super.key, required this.event});
 
   @override
-  State<EventCommunicationScreen> createState() => _EventCommunicationScreenState();
+  State<EventCommunicationScreen> createState() =>
+      _EventCommunicationScreenState();
 }
 
 class _EventCommunicationScreenState extends State<EventCommunicationScreen>
@@ -266,9 +264,7 @@ class _EventCommunicationScreenState extends State<EventCommunicationScreen>
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
-        border: Border(
-          top: BorderSide(color: Colors.grey[200]!),
-        ),
+        border: Border(top: BorderSide(color: Colors.grey[200]!)),
       ),
       child: Row(
         children: [
@@ -359,11 +355,7 @@ class _EventCommunicationScreenState extends State<EventCommunicationScreen>
                 color: PulseColors.primary,
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
-                Icons.mic,
-                size: 64,
-                color: Colors.white,
-              ),
+              child: const Icon(Icons.mic, size: 64, color: Colors.white),
             ),
             const SizedBox(height: 32),
             const Text(
@@ -377,10 +369,7 @@ class _EventCommunicationScreenState extends State<EventCommunicationScreen>
             const SizedBox(height: 8),
             Text(
               'Connect with other event participants',
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey[600],
-              ),
+              style: TextStyle(fontSize: 16, color: Colors.grey[600]),
             ),
             const SizedBox(height: 32),
             ElevatedButton.icon(
@@ -468,11 +457,7 @@ class _EventCommunicationScreenState extends State<EventCommunicationScreen>
                 color: PulseColors.secondary,
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
-                Icons.videocam,
-                size: 64,
-                color: Colors.white,
-              ),
+              child: const Icon(Icons.videocam, size: 64, color: Colors.white),
             ),
             const SizedBox(height: 32),
             const Text(
@@ -486,10 +471,7 @@ class _EventCommunicationScreenState extends State<EventCommunicationScreen>
             const SizedBox(height: 8),
             Text(
               'Face-to-face conversation with participants',
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey[600],
-              ),
+              style: TextStyle(fontSize: 16, color: Colors.grey[600]),
             ),
             const SizedBox(height: 32),
             ElevatedButton.icon(

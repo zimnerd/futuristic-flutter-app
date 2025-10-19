@@ -41,7 +41,7 @@ class AiFeatureCard extends StatelessWidget {
               : null,
           color: enabled ? null : Colors.grey.shade900.withValues(alpha: 0.3),
           border: Border.all(
-            color: enabled 
+            color: enabled
                 ? Colors.white.withValues(alpha: 0.2)
                 : Colors.grey.withValues(alpha: 0.2),
             width: 1,
@@ -69,14 +69,10 @@ class AiFeatureCard extends StatelessWidget {
                     color: enabled ? null : Colors.grey.withValues(alpha: 0.3),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Icon(
-                    icon,
-                    color: Colors.white,
-                    size: 24,
-                  ),
+                  child: Icon(icon, color: Colors.white, size: 24),
                 ),
                 const SizedBox(width: 16),
-                
+
                 // Title and description
                 Expanded(
                   child: Column(
@@ -93,8 +89,8 @@ class AiFeatureCard extends StatelessWidget {
                       Text(
                         description,
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: enabled 
-                              ? Colors.white70 
+                          color: enabled
+                              ? Colors.white70
                               : Colors.grey.shade500,
                           height: 1.3,
                         ),
@@ -102,7 +98,7 @@ class AiFeatureCard extends StatelessWidget {
                     ],
                   ),
                 ),
-                
+
                 // Chevron
                 Icon(
                   Icons.chevron_right,
@@ -111,41 +107,48 @@ class AiFeatureCard extends StatelessWidget {
                 ),
               ],
             ),
-            
+
             // Features list
             if (features.isNotEmpty) ...[
               const SizedBox(height: 16),
               Wrap(
                 spacing: 8,
                 runSpacing: 8,
-                children: features.map((feature) => Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
-                  ),
-                  decoration: BoxDecoration(
-                    color: enabled 
+                children: features
+                    .map(
+                      (feature) => Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: enabled
                               ? Colors.white.withValues(alpha: 0.1)
                               : Colors.grey.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(
-                      color: enabled 
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: enabled
                                 ? Colors.white.withValues(alpha: 0.2)
                                 : Colors.grey.withValues(alpha: 0.2),
-                      width: 1,
-                    ),
-                  ),
-                  child: Text(
-                    feature,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: enabled ? Colors.white70 : Colors.grey.shade500,
-                      fontSize: 12,
-                    ),
-                  ),
-                )).toList(),
+                            width: 1,
+                          ),
+                        ),
+                        child: Text(
+                          feature,
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(
+                                color: enabled
+                                    ? Colors.white70
+                                    : Colors.grey.shade500,
+                                fontSize: 12,
+                              ),
+                        ),
+                      ),
+                    )
+                    .toList(),
               ),
             ],
-            
+
             // Status indicator
             const SizedBox(height: 12),
             Row(

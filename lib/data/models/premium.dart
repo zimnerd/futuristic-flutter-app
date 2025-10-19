@@ -50,7 +50,11 @@ enum PremiumTier {
 
 /// Available premium features
 enum PremiumFeature {
-  advancedFilters('Advanced Filters', '🔍', 'Filter by education, interests, and more'),
+  advancedFilters(
+    'Advanced Filters',
+    '🔍',
+    'Filter by education, interests, and more',
+  ),
   unlimitedLikes('Unlimited Likes', '💫', 'Like as many profiles as you want'),
   readReceipts('Read Receipts', '✓', 'See when your messages are read'),
   whoLikedYou('Who Liked You', '👀', 'See who liked your profile'),
@@ -115,7 +119,8 @@ class PremiumSubscription extends Equatable {
       nextPaymentDate: json['nextPaymentDate'] != null
           ? DateTime.parse(json['nextPaymentDate'] as String)
           : null,
-      features: (json['features'] as List<dynamic>?)
+      features:
+          (json['features'] as List<dynamic>?)
               ?.map((e) => e as String)
               .toList() ??
           [],
@@ -187,18 +192,18 @@ class PremiumSubscription extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        userId,
-        tier,
-        startDate,
-        endDate,
-        isActive,
-        autoRenew,
-        paymentMethodId,
-        lastPaymentDate,
-        nextPaymentDate,
-        features,
-      ];
+    id,
+    userId,
+    tier,
+    startDate,
+    endDate,
+    isActive,
+    autoRenew,
+    paymentMethodId,
+    lastPaymentDate,
+    nextPaymentDate,
+    features,
+  ];
 }
 
 /// Premium feature usage analytics
@@ -247,14 +252,14 @@ class PremiumUsageStats extends Equatable {
 
   @override
   List<Object?> get props => [
-        userId,
-        featureUsage,
-        totalLikes,
-        totalMatches,
-        totalMessages,
-        totalGifts,
-        lastUpdated,
-      ];
+    userId,
+    featureUsage,
+    totalLikes,
+    totalMatches,
+    totalMessages,
+    totalGifts,
+    lastUpdated,
+  ];
 }
 
 /// Premium subscription benefits info
@@ -280,7 +285,7 @@ class PremiumBenefits extends Equatable {
   factory PremiumBenefits.fromTier(PremiumTier tier) {
     final features = tier.features.map((f) => f.displayName).toList();
     final benefits = tier.features.map((f) => f.description).toList();
-    
+
     return PremiumBenefits(
       tier: tier,
       features: features,
@@ -308,14 +313,14 @@ class PremiumBenefits extends Equatable {
 
   @override
   List<Object?> get props => [
-        tier,
-        features,
-        benefits,
-        monthlyPrice,
-        yearlyPrice,
-        yearlySavings,
-        isPopular,
-      ];
+    tier,
+    features,
+    benefits,
+    monthlyPrice,
+    yearlyPrice,
+    yearlySavings,
+    isPopular,
+  ];
 }
 
 /// Premium plan information
@@ -326,7 +331,8 @@ class PremiumPlan extends Equatable {
   final int priceInCents;
   final String currency;
   final String interval; // 'month', 'year', '3month', '6month'
-  final int intervalCount; // Number of intervals (e.g., 1 for monthly, 3 for quarterly)
+  final int
+  intervalCount; // Number of intervals (e.g., 1 for monthly, 3 for quarterly)
   final List<String> features;
   final bool isPopular;
   final String? promoText;
@@ -393,20 +399,20 @@ class PremiumPlan extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        name,
-        description,
-        priceInCents,
-        currency,
-        interval,
-        intervalCount,
-        features,
-        isPopular,
-        promoText,
-        discountPercent,
-        isActive,
-        metadata,
-      ];
+    id,
+    name,
+    description,
+    priceInCents,
+    currency,
+    interval,
+    intervalCount,
+    features,
+    isPopular,
+    promoText,
+    discountPercent,
+    isActive,
+    metadata,
+  ];
 }
 
 /// User subscription information
@@ -456,14 +462,20 @@ class UserSubscription extends Equatable {
         orElse: () => SubscriptionStatus.inactive,
       ),
       startDate: DateTime.parse(json['startDate'] as String),
-      endDate: json['endDate'] != null ? DateTime.parse(json['endDate'] as String) : null,
-      nextBillingDate: json['nextBillingDate'] != null ? DateTime.parse(json['nextBillingDate'] as String) : null,
+      endDate: json['endDate'] != null
+          ? DateTime.parse(json['endDate'] as String)
+          : null,
+      nextBillingDate: json['nextBillingDate'] != null
+          ? DateTime.parse(json['nextBillingDate'] as String)
+          : null,
       autoRenew: json['autoRenew'] as bool? ?? true,
       paymentMethodId: json['paymentMethodId'] as String?,
       priceInCents: json['priceInCents'] as int,
       currency: json['currency'] as String? ?? 'USD',
       interval: json['interval'] as String? ?? 'month',
-      cancelledAt: json['cancelledAt'] != null ? DateTime.parse(json['cancelledAt'] as String) : null,
+      cancelledAt: json['cancelledAt'] != null
+          ? DateTime.parse(json['cancelledAt'] as String)
+          : null,
       cancelReason: json['cancelReason'] as String?,
     );
   }
@@ -494,22 +506,22 @@ class UserSubscription extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        userId,
-        planId,
-        planName,
-        status,
-        startDate,
-        endDate,
-        nextBillingDate,
-        autoRenew,
-        paymentMethodId,
-        priceInCents,
-        currency,
-        interval,
-        cancelledAt,
-        cancelReason,
-      ];
+    id,
+    userId,
+    planId,
+    planName,
+    status,
+    startDate,
+    endDate,
+    nextBillingDate,
+    autoRenew,
+    paymentMethodId,
+    priceInCents,
+    currency,
+    interval,
+    cancelledAt,
+    cancelReason,
+  ];
 }
 
 /// Premium feature types
@@ -593,17 +605,17 @@ class PurchaseResult extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        userId,
-        transactionId,
-        amount,
-        currency,
-        itemType,
-        itemId,
-        purchaseDate,
-        isSuccessful,
-        errorMessage,
-      ];
+    id,
+    userId,
+    transactionId,
+    amount,
+    currency,
+    itemType,
+    itemId,
+    purchaseDate,
+    isSuccessful,
+    errorMessage,
+  ];
 }
 
 /// Coin balance information
@@ -648,13 +660,13 @@ class CoinBalance extends Equatable {
 
   @override
   List<Object?> get props => [
-        userId,
-        totalCoins,
-        earnedCoins,
-        purchasedCoins,
-        spentCoins,
-        lastUpdated,
-      ];
+    userId,
+    totalCoins,
+    earnedCoins,
+    purchasedCoins,
+    spentCoins,
+    lastUpdated,
+  ];
 }
 
 /// Coin transaction information
@@ -709,26 +721,18 @@ class CoinTransaction extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        userId,
-        amount,
-        type,
-        description,
-        relatedId,
-        createdAt,
-      ];
+    id,
+    userId,
+    amount,
+    type,
+    description,
+    relatedId,
+    createdAt,
+  ];
 }
 
 /// Coin transaction types
-enum CoinTransactionType {
-  purchase,
-  earned,
-  spent,
-  refund,
-  bonus,
-  gift,
-  other,
-}
+enum CoinTransactionType { purchase, earned, spent, refund, bonus, gift, other }
 
 /// Promo code result
 class PromoCodeResult extends Equatable {
@@ -759,7 +763,9 @@ class PromoCodeResult extends Equatable {
       discountType: json['discountType'] as String?,
       discountValue: json['discountValue'] as int?,
       description: json['description'] as String?,
-      expiryDate: json['expiryDate'] != null ? DateTime.parse(json['expiryDate'] as String) : null,
+      expiryDate: json['expiryDate'] != null
+          ? DateTime.parse(json['expiryDate'] as String)
+          : null,
       isRedeemed: json['isRedeemed'] as bool? ?? false,
       errorMessage: json['errorMessage'] as String?,
     );
@@ -780,13 +786,13 @@ class PromoCodeResult extends Equatable {
 
   @override
   List<Object?> get props => [
-        promoCode,
-        isValid,
-        discountType,
-        discountValue,
-        description,
-        expiryDate,
-        isRedeemed,
-        errorMessage,
-      ];
+    promoCode,
+    isValid,
+    discountType,
+    discountValue,
+    description,
+    expiryDate,
+    isRedeemed,
+    errorMessage,
+  ];
 }

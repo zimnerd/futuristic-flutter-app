@@ -356,7 +356,10 @@ class ApiServiceImpl implements ApiService {
       if (error.response?.data is Map) {
         final data = error.response!.data as Map;
         // Extract message from nested structure (backend format)
-        return data['message'] ?? data['error'] ?? data['details'] ?? 'Unknown error occurred';
+        return data['message'] ??
+            data['error'] ??
+            data['details'] ??
+            'Unknown error occurred';
       }
       return error.message ?? 'Network error occurred';
     }

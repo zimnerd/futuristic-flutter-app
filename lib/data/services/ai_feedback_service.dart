@@ -7,8 +7,7 @@ import 'package:pulse_dating_app/core/network/api_client.dart';
 /// All feedback is stored for model training and feature improvement
 class AiFeedbackService {
   static AiFeedbackService? _instance;
-  static AiFeedbackService get instance => 
-      _instance ??= AiFeedbackService._();
+  static AiFeedbackService get instance => _instance ??= AiFeedbackService._();
   AiFeedbackService._();
 
   final ApiClient _apiClient = ApiClient.instance;
@@ -19,7 +18,8 @@ class AiFeedbackService {
     required String userId,
     required String conversationId,
     required String suggestionId,
-    required String featureType, // 'suggestion', 'analysis', 'revival', 'compatibility'
+    required String
+    featureType, // 'suggestion', 'analysis', 'revival', 'compatibility'
     required int rating, // 1-5 scale
     required int helpfulness, // 1-5 scale
     required int accuracy, // 1-5 scale
@@ -66,7 +66,8 @@ class AiFeedbackService {
   Future<bool> submitProfileFeedback({
     required String userId,
     required String profileAnalysisId,
-    required String featureType, // 'analysis', 'improvement', 'conversation_starter', 'image_insight'
+    required String
+    featureType, // 'analysis', 'improvement', 'conversation_starter', 'image_insight'
     required int rating, // 1-5 scale
     required int relevance, // 1-5 scale
     required int usefulness, // 1-5 scale
@@ -163,7 +164,8 @@ class AiFeedbackService {
   Future<bool> submitGeneralAiFeedback({
     required String userId,
     required String aiResponseId,
-    required String featureType, // 'smart_notifications', 'insights_dashboard', 'ai_matching'
+    required String
+    featureType, // 'smart_notifications', 'insights_dashboard', 'ai_matching'
     required int rating, // 1-5 scale
     required int satisfaction, // 1-5 scale
     String? comment,
@@ -292,7 +294,9 @@ class AiFeedbackService {
   }) async {
     try {
       // For now, just log the reminder request
-      _logger.i('Feedback reminder requested for $featureType at ${reminderTime ?? DateTime.now().add(const Duration(hours: 24))}');
+      _logger.i(
+        'Feedback reminder requested for $featureType at ${reminderTime ?? DateTime.now().add(const Duration(hours: 24))}',
+      );
       return true;
     } catch (e) {
       _logger.e('Error requesting feedback reminder: $e');
@@ -315,8 +319,7 @@ class AiFeedbackService {
         rating: isPositive ? 5 : 1,
         comment: quickComment,
         helpful: isPositive,
-        context: {'type': 'quick_rating',
-        },
+        context: {'type': 'quick_rating'},
       );
 
       if (response.statusCode == 200) {

@@ -10,16 +10,12 @@ class CoinBalanceWidget extends StatelessWidget {
   final CoinBalance? coinBalance;
   final VoidCallback? onBuyCoins;
 
-  const CoinBalanceWidget({
-    super.key,
-    this.coinBalance,
-    this.onBuyCoins,
-  });
+  const CoinBalanceWidget({super.key, this.coinBalance, this.onBuyCoins});
 
   @override
   Widget build(BuildContext context) {
     final balance = coinBalance?.totalCoins ?? 0;
-    
+
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Padding(
@@ -48,9 +44,8 @@ class CoinBalanceWidget extends StatelessWidget {
                     children: [
                       Text(
                         'Pulse Coins',
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(fontWeight: FontWeight.bold),
                       ),
                       Text(
                         'Use coins for boosts and premium features',
@@ -63,9 +58,9 @@ class CoinBalanceWidget extends StatelessWidget {
                 ),
               ],
             ),
-            
+
             const SizedBox(height: 16),
-            
+
             Row(
               children: [
                 Expanded(
@@ -73,10 +68,7 @@ class CoinBalanceWidget extends StatelessWidget {
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
-                        colors: [
-                          Colors.amber[50]!,
-                          Colors.amber[100]!,
-                        ],
+                        colors: [Colors.amber[50]!, Colors.amber[100]!],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
@@ -96,26 +88,26 @@ class CoinBalanceWidget extends StatelessWidget {
                             const SizedBox(width: 6),
                             Text(
                               _formatBalance(balance),
-                              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.amber[700],
-                              ),
+                              style: Theme.of(context).textTheme.headlineMedium
+                                  ?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.amber[700],
+                                  ),
                             ),
                           ],
                         ),
                         Text(
                           'Available Coins',
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: Colors.amber[600],
-                          ),
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(color: Colors.amber[600]),
                         ),
                       ],
                     ),
                   ),
                 ),
-                
+
                 const SizedBox(width: 12),
-                
+
                 ElevatedButton(
                   onPressed: onBuyCoins,
                   style: ElevatedButton.styleFrom(
@@ -146,29 +138,25 @@ class CoinBalanceWidget extends StatelessWidget {
                 ),
               ],
             ),
-            
+
             if (coinBalance?.lastUpdated != null) ...[
               const SizedBox(height: 16),
               Row(
                 children: [
-                  Icon(
-                    Icons.history,
-                    size: 16,
-                    color: Colors.grey[600],
-                  ),
+                  Icon(Icons.history, size: 16, color: Colors.grey[600]),
                   const SizedBox(width: 6),
                   Text(
                     'Last updated: ${_formatDate(coinBalance!.lastUpdated)}',
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Colors.grey[600],
-                    ),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
                   ),
                 ],
               ),
             ],
-            
+
             const SizedBox(height: 16),
-            
+
             Row(
               children: [
                 Expanded(
@@ -216,18 +204,14 @@ class CoinBalanceWidget extends StatelessWidget {
         ),
         child: Column(
           children: [
-            Icon(
-              icon,
-              color: PulseColors.primary,
-              size: 20,
-            ),
+            Icon(icon, color: PulseColors.primary, size: 20),
             const SizedBox(height: 4),
             Text(
               title,
               textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                fontWeight: FontWeight.w500,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w500),
             ),
             Text(
               cost,
@@ -254,7 +238,7 @@ class CoinBalanceWidget extends StatelessWidget {
   String _formatDate(DateTime date) {
     final now = DateTime.now();
     final difference = now.difference(date);
-    
+
     if (difference.inDays > 0) {
       return '${difference.inDays} days ago';
     } else if (difference.inHours > 0) {
@@ -266,7 +250,7 @@ class CoinBalanceWidget extends StatelessWidget {
 
   void _onUseCoins(BuildContext context, int amount, String purpose) {
     final currentBalance = coinBalance?.totalCoins ?? 0;
-    
+
     if (currentBalance < amount) {
       PulseToast.error(
         context,
@@ -274,7 +258,7 @@ class CoinBalanceWidget extends StatelessWidget {
       );
       return;
     }
-    
+
     // Show confirmation dialog
     showDialog(
       context: context,
@@ -289,10 +273,10 @@ class CoinBalanceWidget extends StatelessWidget {
           ElevatedButton(
             onPressed: () {
               Navigator.of(context).pop();
-              final featureType = purpose == 'Profile Boost' 
-                  ? PremiumFeatureType.boost 
+              final featureType = purpose == 'Profile Boost'
+                  ? PremiumFeatureType.boost
                   : PremiumFeatureType.superLike;
-                  
+
               context.read<PremiumBloc>().add(
                 UsePremiumFeature(
                   featureType: featureType,

@@ -61,7 +61,7 @@ class LocationService {
 
       _lastKnownPosition = position;
       await _cacheLocation(position);
-      
+
       return position;
     } catch (e) {
       // Fallback to cached location if available
@@ -79,16 +79,15 @@ class LocationService {
       distanceFilter: 100, // Update every 100 meters
     );
 
-    _positionStreamSubscription = Geolocator.getPositionStream(
-      locationSettings: locationSettings,
-    ).listen(
-      (Position position) async {
-        await _handleLocationUpdate(position);
-      },
-      onError: (error) {
+    _positionStreamSubscription =
+        Geolocator.getPositionStream(locationSettings: locationSettings).listen(
+          (Position position) async {
+            await _handleLocationUpdate(position);
+          },
+          onError: (error) {
             AppLogger.debug('Location tracking error: $error');
-      },
-    );
+          },
+        );
   }
 
   /// Stop location tracking
@@ -100,10 +99,9 @@ class LocationService {
   /// Handle location update with smart filtering
   Future<void> _handleLocationUpdate(Position newPosition) async {
     final lastPosition = await _getCachedLocation();
-    
-    if (lastPosition == null || 
+
+    if (lastPosition == null ||
         _shouldUpdateLocation(lastPosition, newPosition)) {
-      
       _lastKnownPosition = newPosition;
       await _cacheLocation(newPosition);
       await _updateServerLocation(newPosition);
@@ -123,7 +121,12 @@ class LocationService {
   }
 
   /// Calculate distance between two points in kilometers
-  double _calculateDistanceKm(double lat1, double lon1, double lat2, double lon2) {
+  double _calculateDistanceKm(
+    double lat1,
+    double lon1,
+    double lat2,
+    double lon2,
+  ) {
     return Geolocator.distanceBetween(lat1, lon1, lat2, lon2) / 1000;
   }
 
@@ -134,10 +137,11 @@ class LocationService {
         '/users/me/location',
         data: {
           // Fixed: POST -> PUT, /users/location -> /me/location
-        'latitude': position.latitude,
-        'longitude': position.longitude,
-        'location': await _getLocationName(position),
-      });
+          'latitude': position.latitude,
+          'longitude': position.longitude,
+          'location': await _getLocationName(position),
+        },
+      );
 
       // Update last update timestamp
       final prefs = await SharedPreferences.getInstance();
@@ -161,15 +165,17 @@ class LocationService {
   /// Cache location locally
   Future<void> _cacheLocation(Position position) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_lastLocationKey, 
-      '${position.latitude},${position.longitude},${position.timestamp.millisecondsSinceEpoch}');
+    await prefs.setString(
+      _lastLocationKey,
+      '${position.latitude},${position.longitude},${position.timestamp.millisecondsSinceEpoch}',
+    );
   }
 
   /// Get cached location
   Future<Position?> _getCachedLocation() async {
     final prefs = await SharedPreferences.getInstance();
     final locationString = prefs.getString(_lastLocationKey);
-    
+
     if (locationString == null) return null;
 
     final parts = locationString.split(',');
@@ -206,9 +212,10 @@ class LocationService {
   /// Update distance preference
   Future<void> updateDistancePreference(int distanceKm) async {
     try {
-      await _apiService.patch('/users/me', data: {
-        'distancePreferenceKm': distanceKm,
-      });
+      await _apiService.patch(
+        '/users/me',
+        data: {'distancePreferenceKm': distanceKm},
+      );
     } catch (e) {
       AppLogger.debug('Failed to update distance preference: $e');
     }
@@ -218,10 +225,10 @@ class LocationService {
   Future<bool> isLocationAvailable() async {
     final serviceEnabled = await Geolocator.isLocationServiceEnabled();
     final permission = await Geolocator.checkPermission();
-    
-    return serviceEnabled && 
-           permission != LocationPermission.denied &&
-           permission != LocationPermission.deniedForever;
+
+    return serviceEnabled &&
+        permission != LocationPermission.denied &&
+        permission != LocationPermission.deniedForever;
   }
 
   /// Open location settings

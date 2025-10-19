@@ -25,8 +25,8 @@ class _LiveSessionsScreenState extends State<LiveSessionsScreen> {
 
   void _loadSessions() {
     context.read<GroupChatBloc>().add(
-          LoadActiveLiveSessions(filterByType: _selectedFilter),
-        );
+      LoadActiveLiveSessions(filterByType: _selectedFilter),
+    );
   }
 
   void _onFilterChanged(GroupType? type) {
@@ -46,10 +46,7 @@ class _LiveSessionsScreenState extends State<LiveSessionsScreen> {
             icon: const Icon(Icons.filter_list),
             onSelected: _onFilterChanged,
             itemBuilder: (context) => [
-              const PopupMenuItem(
-                value: null,
-                child: Text('All'),
-              ),
+              const PopupMenuItem(value: null, child: Text('All')),
               const PopupMenuItem(
                 value: GroupType.dating,
                 child: Text('Dating'),
@@ -58,10 +55,7 @@ class _LiveSessionsScreenState extends State<LiveSessionsScreen> {
                 value: GroupType.speedDating,
                 child: Text('Speed Dating'),
               ),
-              const PopupMenuItem(
-                value: GroupType.study,
-                child: Text('Study'),
-              ),
+              const PopupMenuItem(value: GroupType.study, child: Text('Study')),
               const PopupMenuItem(
                 value: GroupType.interest,
                 child: Text('Interest'),
@@ -75,15 +69,16 @@ class _LiveSessionsScreenState extends State<LiveSessionsScreen> {
           if (state is GroupChatError) {
             PulseToast.error(context, message: state.message);
           } else if (state is JoinRequestSent) {
-            PulseToast.success(context, message: 'Join request sent! Waiting for approval...');
+            PulseToast.success(
+              context,
+              message: 'Join request sent! Waiting for approval...',
+            );
             _loadSessions(); // Reload to show updated state
           }
         },
         builder: (context, state) {
           if (state is GroupChatLoading) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
+            return const Center(child: CircularProgressIndicator());
           }
 
           if (state is GroupChatLoaded) {
@@ -127,11 +122,7 @@ class _LiveSessionsScreenState extends State<LiveSessionsScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.video_call_outlined,
-            size: 80,
-            color: Colors.grey[400],
-          ),
+          Icon(Icons.video_call_outlined, size: 80, color: Colors.grey[400]),
           const SizedBox(height: 16),
           Text(
             'No active live sessions',
@@ -144,10 +135,7 @@ class _LiveSessionsScreenState extends State<LiveSessionsScreen> {
           const SizedBox(height: 8),
           Text(
             'Check back later or create your own!',
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.grey[500],
-            ),
+            style: TextStyle(fontSize: 14, color: Colors.grey[500]),
           ),
         ],
       ),
@@ -196,13 +184,13 @@ class _LiveSessionsScreenState extends State<LiveSessionsScreen> {
             onPressed: () {
               Navigator.of(dialogContext).pop();
               context.read<GroupChatBloc>().add(
-                    RequestToJoinSession(
-                      liveSessionId: session.id,
-                      message: messageController.text.trim().isEmpty
-                          ? null
-                          : messageController.text.trim(),
-                    ),
-                  );
+                RequestToJoinSession(
+                  liveSessionId: session.id,
+                  message: messageController.text.trim().isEmpty
+                      ? null
+                      : messageController.text.trim(),
+                ),
+              );
             },
             child: const Text('Send Request'),
           ),
@@ -240,7 +228,10 @@ class _LiveSessionsScreenState extends State<LiveSessionsScreen> {
             onPressed: () {
               Navigator.of(dialogContext).pop();
               // Navigate to chat screen (to be implemented)
-              PulseToast.success(context, message: 'Joined ${session.title} chat');
+              PulseToast.success(
+                context,
+                message: 'Joined ${session.title} chat',
+              );
             },
             child: const Text('Chat Only'),
           ),
@@ -264,9 +255,7 @@ class _LiveSessionsScreenState extends State<LiveSessionsScreen> {
       showDialog(
         context: context,
         barrierDismissible: false,
-        builder: (context) => const Center(
-          child: CircularProgressIndicator(),
-        ),
+        builder: (context) => const Center(child: CircularProgressIndicator()),
       );
 
       // Get RTC token from backend using session ID as channel name
@@ -302,7 +291,10 @@ class _LiveSessionsScreenState extends State<LiveSessionsScreen> {
 
       // Show error message
       if (!mounted) return;
-      PulseToast.error(context, message: 'Failed to join session: ${e.toString()}');
+      PulseToast.error(
+        context,
+        message: 'Failed to join session: ${e.toString()}',
+      );
     }
   }
 }
@@ -311,19 +303,14 @@ class _LiveSessionCard extends StatelessWidget {
   final LiveSession session;
   final VoidCallback onTap;
 
-  const _LiveSessionCard({
-    required this.session,
-    required this.onTap,
-  });
+  const _LiveSessionCard({required this.session, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
     return Card(
       clipBehavior: Clip.antiAlias,
       elevation: 4,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: InkWell(
         onTap: session.isFull ? null : onTap,
         child: Stack(

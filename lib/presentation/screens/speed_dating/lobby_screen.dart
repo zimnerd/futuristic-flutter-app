@@ -14,10 +14,7 @@ import 'active_round_screen.dart';
 class SpeedDatingLobbyScreen extends StatefulWidget {
   final String eventId;
 
-  const SpeedDatingLobbyScreen({
-    super.key,
-    required this.eventId,
-  });
+  const SpeedDatingLobbyScreen({super.key, required this.eventId});
 
   @override
   State<SpeedDatingLobbyScreen> createState() => _SpeedDatingLobbyScreenState();
@@ -25,7 +22,7 @@ class SpeedDatingLobbyScreen extends StatefulWidget {
 
 class _SpeedDatingLobbyScreenState extends State<SpeedDatingLobbyScreen> {
   final SpeedDatingService _speedDatingService = SpeedDatingService();
-  
+
   Map<String, dynamic>? _event;
   List<Map<String, dynamic>> _participants = [];
   bool _isLoading = true;
@@ -48,7 +45,7 @@ class _SpeedDatingLobbyScreenState extends State<SpeedDatingLobbyScreen> {
 
     try {
       final event = await _speedDatingService.getEventById(widget.eventId);
-      
+
       if (event != null && mounted) {
         setState(() {
           _event = event;
@@ -56,7 +53,7 @@ class _SpeedDatingLobbyScreenState extends State<SpeedDatingLobbyScreen> {
             event['participants'] ?? [],
           );
           _isLoading = false;
-          
+
           // Check if current user has joined
           final currentUserId = _getCurrentUserId();
           _hasJoined = _participants.any((p) => p['userId'] == currentUserId);
@@ -87,13 +84,13 @@ class _SpeedDatingLobbyScreenState extends State<SpeedDatingLobbyScreen> {
             MaterialPageRoute(
               builder: (_) => ActiveRoundScreen(
                 eventId: widget.eventId,
-                sessionId: _event!['currentSessionId'] as String? ?? widget.eventId,
+                sessionId:
+                    _event!['currentSessionId'] as String? ?? widget.eventId,
               ),
             ),
           );
         } else {
-          PulseToast.info(context, message: 'Event has started!',
-          );
+          PulseToast.info(context, message: 'Event has started!');
         }
       }
     });
@@ -117,17 +114,20 @@ class _SpeedDatingLobbyScreenState extends State<SpeedDatingLobbyScreen> {
     });
 
     try {
-      final participant = await _speedDatingService.joinEvent(widget.eventId, userId);
-      
+      final participant = await _speedDatingService.joinEvent(
+        widget.eventId,
+        userId,
+      );
+
       if (participant != null && mounted) {
         setState(() {
           _hasJoined = true;
           _isJoining = false;
         });
-        
+
         // Reload event data to get updated participant list
         await _loadEventData();
-        
+
         if (mounted) {
           PulseToast.success(
             context,
@@ -181,20 +181,22 @@ class _SpeedDatingLobbyScreenState extends State<SpeedDatingLobbyScreen> {
     });
 
     try {
-      final success = await _speedDatingService.leaveEvent(widget.eventId, userId);
-      
+      final success = await _speedDatingService.leaveEvent(
+        widget.eventId,
+        userId,
+      );
+
       if (success && mounted) {
         setState(() {
           _hasJoined = false;
           _isJoining = false;
         });
-        
+
         // Reload event data
         await _loadEventData();
-        
+
         if (mounted) {
-          PulseToast.info(context, message: 'Left the event',
-          );
+          PulseToast.info(context, message: 'Left the event');
         }
       } else if (mounted) {
         setState(() {
@@ -355,10 +357,7 @@ class _SpeedDatingLobbyScreenState extends State<SpeedDatingLobbyScreen> {
             if (event['description'] != null)
               Text(
                 event['description'] as String,
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.grey[700],
-                ),
+                style: TextStyle(fontSize: 16, color: Colors.grey[700]),
               ),
             const SizedBox(height: 16),
             _buildEventDetail(
@@ -366,10 +365,7 @@ class _SpeedDatingLobbyScreenState extends State<SpeedDatingLobbyScreen> {
               DateFormat('MMM dd, yyyy - hh:mm a').format(scheduledAt),
             ),
             const SizedBox(height: 8),
-            _buildEventDetail(
-              Icons.timer,
-              '$duration minutes',
-            ),
+            _buildEventDetail(Icons.timer, '$duration minutes'),
             const SizedBox(height: 8),
             _buildEventDetail(
               Icons.group,
@@ -378,7 +374,9 @@ class _SpeedDatingLobbyScreenState extends State<SpeedDatingLobbyScreen> {
             const SizedBox(height: 8),
             _buildEventDetail(
               isVirtual ? Icons.videocam : Icons.location_on,
-              isVirtual ? 'Virtual Event' : (event['location'] as String? ?? 'TBA'),
+              isVirtual
+                  ? 'Virtual Event'
+                  : (event['location'] as String? ?? 'TBA'),
             ),
             if (event['ageMin'] != null || event['ageMax'] != null) ...[
               const SizedBox(height: 8),
@@ -438,12 +436,7 @@ class _SpeedDatingLobbyScreenState extends State<SpeedDatingLobbyScreen> {
       children: [
         Icon(icon, size: 20, color: Colors.grey[600]),
         const SizedBox(width: 8),
-        Expanded(
-          child: Text(
-            text,
-            style: const TextStyle(fontSize: 14),
-          ),
-        ),
+        Expanded(child: Text(text, style: const TextStyle(fontSize: 14))),
       ],
     );
   }
@@ -456,10 +449,7 @@ class _SpeedDatingLobbyScreenState extends State<SpeedDatingLobbyScreen> {
           children: [
             const Text(
               'Participants',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             const SizedBox(width: 8),
             Container(
@@ -496,9 +486,8 @@ class _SpeedDatingLobbyScreenState extends State<SpeedDatingLobbyScreen> {
             physics: const NeverScrollableScrollPhysics(),
             itemCount: _participants.length,
             separatorBuilder: (context, index) => const Divider(height: 1),
-            itemBuilder: (context, index) => _buildParticipantItem(
-              _participants[index],
-            ),
+            itemBuilder: (context, index) =>
+                _buildParticipantItem(_participants[index]),
           ),
       ],
     );
@@ -520,14 +509,9 @@ class _SpeedDatingLobbyScreenState extends State<SpeedDatingLobbyScreen> {
         backgroundImage: photoUrl != null
             ? CachedNetworkImageProvider(photoUrl)
             : null,
-        child: photoUrl == null
-            ? Text(name[0].toUpperCase())
-            : null,
+        child: photoUrl == null ? Text(name[0].toUpperCase()) : null,
       ),
-      title: Text(
-        name,
-        style: const TextStyle(fontWeight: FontWeight.w600),
-      ),
+      title: Text(name, style: const TextStyle(fontWeight: FontWeight.w600)),
       subtitle: age != null ? Text('$age years old') : null,
       trailing: status == 'active'
           ? Container(
@@ -553,7 +537,7 @@ class _SpeedDatingLobbyScreenState extends State<SpeedDatingLobbyScreen> {
     if (_event == null) return const SizedBox.shrink();
 
     final status = _event!['status'] as String;
-    
+
     // Check if current user is organizer (event creator)
     final authState = context.read<AuthBloc>().state;
     final currentUserId = authState is AuthAuthenticated
@@ -586,7 +570,10 @@ class _SpeedDatingLobbyScreenState extends State<SpeedDatingLobbyScreen> {
                     )
                   : const Text(
                       'Leave Event',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
             )
           else
@@ -610,7 +597,10 @@ class _SpeedDatingLobbyScreenState extends State<SpeedDatingLobbyScreen> {
                     )
                   : const Text(
                       'Join Event',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
             ),
           // Organizer can start event when 4+ participants are present

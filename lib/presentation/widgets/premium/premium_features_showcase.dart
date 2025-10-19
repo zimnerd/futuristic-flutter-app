@@ -14,7 +14,8 @@ class PremiumFeaturesShowcase extends StatefulWidget {
   final Function(PremiumFeature)? onFeatureSelected;
 
   @override
-  State<PremiumFeaturesShowcase> createState() => _PremiumFeaturesShowcaseState();
+  State<PremiumFeaturesShowcase> createState() =>
+      _PremiumFeaturesShowcaseState();
 }
 
 class _PremiumFeaturesShowcaseState extends State<PremiumFeaturesShowcase>
@@ -27,19 +28,19 @@ class _PremiumFeaturesShowcaseState extends State<PremiumFeaturesShowcase>
   @override
   void initState() {
     super.initState();
-    
+
     _pageController = PageController();
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 800),
       vsync: this,
     );
-    
+
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
     );
-    
+
     _animationController.forward();
-    
+
     // Auto-scroll through features
     _startAutoScroll();
   }
@@ -53,7 +54,7 @@ class _PremiumFeaturesShowcaseState extends State<PremiumFeaturesShowcase>
 
   void _startAutoScroll() {
     if (widget.features.isEmpty) return;
-    
+
     Future.delayed(const Duration(seconds: 4), () {
       if (mounted) {
         final nextIndex = (_currentIndex + 1) % widget.features.length;
@@ -92,11 +93,7 @@ class _PremiumFeaturesShowcaseState extends State<PremiumFeaturesShowcase>
               padding: const EdgeInsets.all(20),
               child: Row(
                 children: [
-                  const Icon(
-                    Icons.star,
-                    color: Colors.white,
-                    size: 24,
-                  ),
+                  const Icon(Icons.star, color: Colors.white, size: 24),
                   const SizedBox(width: 8),
                   const Text(
                     'Premium Features',
@@ -128,7 +125,7 @@ class _PremiumFeaturesShowcaseState extends State<PremiumFeaturesShowcase>
                 ],
               ),
             ),
-            
+
             // Feature showcase
             Expanded(
               child: PageView.builder(
@@ -145,7 +142,7 @@ class _PremiumFeaturesShowcaseState extends State<PremiumFeaturesShowcase>
                 },
               ),
             ),
-            
+
             // Page indicator
             Padding(
               padding: const EdgeInsets.all(20),
@@ -159,8 +156,8 @@ class _PremiumFeaturesShowcaseState extends State<PremiumFeaturesShowcase>
                     width: index == _currentIndex ? 24 : 8,
                     height: 8,
                     decoration: BoxDecoration(
-                      color: index == _currentIndex 
-                          ? Colors.white 
+                      color: index == _currentIndex
+                          ? Colors.white
                           : Colors.white.withValues(alpha: 0.4),
                       borderRadius: BorderRadius.circular(4),
                     ),
@@ -191,15 +188,12 @@ class _PremiumFeaturesShowcaseState extends State<PremiumFeaturesShowcase>
                 shape: BoxShape.circle,
               ),
               child: Center(
-                child: Text(
-                  feature.icon,
-                  style: const TextStyle(fontSize: 40),
-                ),
+                child: Text(feature.icon, style: const TextStyle(fontSize: 40)),
               ),
             ),
-            
+
             const SizedBox(height: 16),
-            
+
             // Feature name
             Text(
               feature.displayName,
@@ -210,9 +204,9 @@ class _PremiumFeaturesShowcaseState extends State<PremiumFeaturesShowcase>
               ),
               textAlign: TextAlign.center,
             ),
-            
+
             const SizedBox(height: 8),
-            
+
             // Feature description
             Text(
               feature.description,
@@ -272,10 +266,7 @@ class PremiumFeaturesGrid extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: Colors.grey.shade200,
-            width: 1,
-          ),
+          border: Border.all(color: Colors.grey.shade200, width: 1),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.05),
@@ -296,15 +287,12 @@ class PremiumFeaturesGrid extends StatelessWidget {
                 shape: BoxShape.circle,
               ),
               child: Center(
-                child: Text(
-                  feature.icon,
-                  style: const TextStyle(fontSize: 24),
-                ),
+                child: Text(feature.icon, style: const TextStyle(fontSize: 24)),
               ),
             ),
-            
+
             const SizedBox(height: 12),
-            
+
             // Feature name
             Text(
               feature.displayName,
@@ -340,7 +328,9 @@ class PremiumFeaturesList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
-      children: features.map((feature) => _buildFeatureListItem(feature)).toList(),
+      children: features
+          .map((feature) => _buildFeatureListItem(feature))
+          .toList(),
     );
   }
 
@@ -353,10 +343,7 @@ class PremiumFeaturesList extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: Colors.grey.shade200,
-            width: 1,
-          ),
+          border: Border.all(color: Colors.grey.shade200, width: 1),
         ),
         child: Row(
           children: [
@@ -369,15 +356,12 @@ class PremiumFeaturesList extends StatelessWidget {
                 shape: BoxShape.circle,
               ),
               child: Center(
-                child: Text(
-                  feature.icon,
-                  style: const TextStyle(fontSize: 20),
-                ),
+                child: Text(feature.icon, style: const TextStyle(fontSize: 20)),
               ),
             ),
-            
+
             const SizedBox(width: 16),
-            
+
             // Feature details
             Expanded(
               child: Column(
@@ -395,10 +379,7 @@ class PremiumFeaturesList extends StatelessWidget {
                     const SizedBox(height: 4),
                     Text(
                       feature.description,
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey[600],
-                      ),
+                      style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -406,13 +387,9 @@ class PremiumFeaturesList extends StatelessWidget {
                 ],
               ),
             ),
-            
+
             // Arrow indicator
-            Icon(
-              Icons.arrow_forward_ios,
-              size: 16,
-              color: Colors.grey[400],
-            ),
+            Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey[400]),
           ],
         ),
       ),

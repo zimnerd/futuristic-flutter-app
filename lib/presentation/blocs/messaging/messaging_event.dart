@@ -20,10 +20,7 @@ class LoadConversations extends MessagingEvent {
 
 /// Event to load messages for a conversation
 class LoadMessages extends MessagingEvent {
-  const LoadMessages({
-    required this.conversationId,
-    this.refresh = false,
-  });
+  const LoadMessages({required this.conversationId, this.refresh = false});
 
   final String conversationId;
   final bool refresh;
@@ -139,10 +136,7 @@ class StopTyping extends MessagingEvent {
 
 /// Event when user typing status changes
 class UserTyping extends MessagingEvent {
-  const UserTyping({
-    required this.userId,
-    required this.isTyping,
-  });
+  const UserTyping({required this.userId, required this.isTyping});
 
   final String userId;
   final bool isTyping;
@@ -153,10 +147,7 @@ class UserTyping extends MessagingEvent {
 
 /// Event to update user online status
 class UpdateOnlineStatus extends MessagingEvent {
-  const UpdateOnlineStatus({
-    required this.userId,
-    required this.isOnline,
-  });
+  const UpdateOnlineStatus({required this.userId, required this.isOnline});
 
   final String userId;
   final bool isOnline;

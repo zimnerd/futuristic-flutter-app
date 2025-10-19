@@ -47,17 +47,23 @@ class HeatMapService {
         final clusters = (dataPayload['clusters'] as List)
             .map((json) => OptimizedClusterData.fromJson(json))
             .toList();
-            
+
         final performance = dataPayload['performance'] != null
             ? PerformanceMetrics.fromJson(dataPayload['performance'])
             : PerformanceMetrics(queryTimeMs: 0, clusteringTimeMs: 0);
-        
-        dev.log('Fetched ${clusters.length} optimized clusters (${performance.queryTimeMs}ms query, ${performance.clusteringTimeMs}ms clustering)', name: 'HeatMapService');
-        
+
+        dev.log(
+          'Fetched ${clusters.length} optimized clusters (${performance.queryTimeMs}ms query, ${performance.clusteringTimeMs}ms clustering)',
+          name: 'HeatMapService',
+        );
+
         return OptimizedHeatmapResponse(
           clusters: clusters,
           performance: performance,
-          totalUsers: clusters.fold<int>(0, (sum, cluster) => sum + cluster.userCount),
+          totalUsers: clusters.fold<int>(
+            0,
+            (sum, cluster) => sum + cluster.userCount,
+          ),
         );
       }
 
@@ -67,7 +73,10 @@ class HeatMapService {
         totalUsers: 0,
       );
     } catch (e) {
-      dev.log('Failed to fetch optimized heatmap data: $e', name: 'HeatMapService');
+      dev.log(
+        'Failed to fetch optimized heatmap data: $e',
+        name: 'HeatMapService',
+      );
       throw Exception('Failed to load optimized heatmap data: ${e.toString()}');
     }
   }
@@ -79,7 +88,7 @@ class HeatMapService {
   }) async {
     try {
       final queryParams = <String, dynamic>{};
-      
+
       if (bounds != null) {
         queryParams.addAll({
           'northLatitude': bounds.northLatitude,
@@ -88,7 +97,7 @@ class HeatMapService {
           'westLongitude': bounds.westLongitude,
         });
       }
-      
+
       if (filters != null) {
         queryParams.addAll(filters.toJson());
       }
@@ -102,8 +111,11 @@ class HeatMapService {
         final points = (response.data['data'] as List)
             .map((json) => HeatMapDataPoint.fromJson(json))
             .toList();
-        
-        dev.log('Fetched ${points.length} heat map points', name: 'HeatMapService');
+
+        dev.log(
+          'Fetched ${points.length} heat map points',
+          name: 'HeatMapService',
+        );
         return points;
       }
 
@@ -137,12 +149,17 @@ class HeatMapService {
       );
 
       if (response.data != null && response.data['data'] != null) {
-        return LocationCoverageData.fromJson(response.data['data'] as Map<String, dynamic>);
+        return LocationCoverageData.fromJson(
+          response.data['data'] as Map<String, dynamic>,
+        );
       } else {
         throw Exception('Failed to fetch location coverage data');
       }
     } catch (e) {
-      dev.log('Error fetching location coverage data: $e', name: 'HeatMapService');
+      dev.log(
+        'Error fetching location coverage data: $e',
+        name: 'HeatMapService',
+      );
       rethrow;
     }
   }
@@ -156,10 +173,15 @@ class HeatMapService {
 
     final double lat1Rad = _degreesToRadians(point1.latitude);
     final double lat2Rad = _degreesToRadians(point2.latitude);
-    final double deltaLatRad = _degreesToRadians(point2.latitude - point1.latitude);
-    final double deltaLngRad = _degreesToRadians(point2.longitude - point1.longitude);
+    final double deltaLatRad = _degreesToRadians(
+      point2.latitude - point1.latitude,
+    );
+    final double deltaLngRad = _degreesToRadians(
+      point2.longitude - point1.longitude,
+    );
 
-    final double a = math.sin(deltaLatRad / 2) * math.sin(deltaLatRad / 2) +
+    final double a =
+        math.sin(deltaLatRad / 2) * math.sin(deltaLatRad / 2) +
         math.cos(lat1Rad) *
             math.cos(lat2Rad) *
             math.sin(deltaLngRad / 2) *
@@ -189,7 +211,8 @@ class HeatMapService {
     final double deltaLngRad = _degreesToRadians(to.longitude - from.longitude);
 
     final double y = math.sin(deltaLngRad) * math.cos(lat2Rad);
-    final double x = math.cos(lat1Rad) * math.sin(lat2Rad) -
+    final double x =
+        math.cos(lat1Rad) * math.sin(lat2Rad) -
         math.sin(lat1Rad) * math.cos(lat2Rad) * math.cos(deltaLngRad);
 
     final double bearingRad = math.atan2(y, x);
@@ -213,13 +236,19 @@ class HeatMapService {
 
     final double destLatRad = math.asin(
       math.sin(startLatRad) * math.cos(distanceRadians) +
-          math.cos(startLatRad) * math.sin(distanceRadians) * math.cos(bearingRadians),
+          math.cos(startLatRad) *
+              math.sin(distanceRadians) *
+              math.cos(bearingRadians),
     );
 
-    final double destLngRad = startLngRad +
+    final double destLngRad =
+        startLngRad +
         math.atan2(
-          math.sin(bearingRadians) * math.sin(distanceRadians) * math.cos(startLatRad),
-          math.cos(distanceRadians) - math.sin(startLatRad) * math.sin(destLatRad),
+          math.sin(bearingRadians) *
+              math.sin(distanceRadians) *
+              math.cos(startLatRad),
+          math.cos(distanceRadians) -
+              math.sin(startLatRad) * math.sin(destLatRad),
         );
 
     return LocationCoordinates(
@@ -261,8 +290,8 @@ class HeatMapService {
     // Grid size in degrees, smaller for higher zoom levels
     if (zoomLevel >= 15) return 0.001; // ~100m
     if (zoomLevel >= 13) return 0.005; // ~500m
-    if (zoomLevel >= 11) return 0.01;  // ~1km
-    if (zoomLevel >= 9) return 0.05;   // ~5km
+    if (zoomLevel >= 11) return 0.01; // ~1km
+    if (zoomLevel >= 9) return 0.05; // ~5km
     return 0.1; // ~10km
   }
 
@@ -281,7 +310,7 @@ class HeatMapService {
   }) {
     final List<HeatMapDataPoint> sorted = List.from(dataPoints);
     sorted.sort((a, b) {
-      return ascending 
+      return ascending
           ? a.density.compareTo(b.density)
           : b.density.compareTo(a.density);
     });
@@ -302,8 +331,12 @@ class HeatMapService {
       };
     }
 
-    final densities = coverageData.coverageAreas.map((area) => area.density).toList();
-    final coverages = coverageData.coverageAreas.map((area) => area.coverage).toList();
+    final densities = coverageData.coverageAreas
+        .map((area) => area.density)
+        .toList();
+    final coverages = coverageData.coverageAreas
+        .map((area) => area.coverage)
+        .toList();
 
     return {
       'totalAreas': coverageData.coverageAreas.length,
@@ -322,7 +355,10 @@ class HeatMapService {
         'longitude': coordinates.longitude,
       };
 
-      await _apiClient.put('${ApiConstants.usersMe}/location', data: requestData);
+      await _apiClient.put(
+        '${ApiConstants.usersMe}/location',
+        data: requestData,
+      );
 
       dev.log(
         'User location updated successfully: ${coordinates.latitude}, ${coordinates.longitude}',

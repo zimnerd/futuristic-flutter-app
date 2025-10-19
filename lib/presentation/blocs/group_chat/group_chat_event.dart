@@ -36,7 +36,12 @@ class CreateLiveSession extends GroupChatEvent {
   });
 
   @override
-  List<Object?> get props => [title, description, maxParticipants, requireApproval];
+  List<Object?> get props => [
+    title,
+    description,
+    maxParticipants,
+    requireApproval,
+  ];
 }
 
 /// Request to join a live session
@@ -44,10 +49,7 @@ class RequestToJoinLiveSession extends GroupChatEvent {
   final String liveSessionId;
   final String? message;
 
-  const RequestToJoinLiveSession({
-    required this.liveSessionId,
-    this.message,
-  });
+  const RequestToJoinLiveSession({required this.liveSessionId, this.message});
 
   @override
   List<Object?> get props => [liveSessionId, message];
@@ -108,12 +110,12 @@ class CreateGroupConversation extends GroupChatEvent {
 
   @override
   List<Object?> get props => [
-        title,
+    title,
     description,
-        groupType,
-        participantUserIds,
+    groupType,
+    participantUserIds,
     requireApproval,
-      ];
+  ];
 }
 
 /// Join a group/conversation WebSocket room
@@ -195,7 +197,12 @@ class ReportGroupUser extends GroupChatEvent {
   });
 
   @override
-  List<Object?> get props => [conversationId, reportedUserId, reason, description];
+  List<Object?> get props => [
+    conversationId,
+    reportedUserId,
+    reason,
+    description,
+  ];
 }
 
 // ==================== REAL-TIME EVENTS ====================
@@ -333,10 +340,7 @@ class DeleteMessage extends GroupChatEvent {
   final String messageId;
   final String conversationId;
 
-  const DeleteMessage({
-    required this.messageId,
-    required this.conversationId,
-  });
+  const DeleteMessage({required this.messageId, required this.conversationId});
 
   @override
   List<Object?> get props => [messageId, conversationId];
@@ -393,10 +397,7 @@ class SearchMessages extends GroupChatEvent {
   final String conversationId;
   final String query;
 
-  const SearchMessages({
-    required this.conversationId,
-    required this.query,
-  });
+  const SearchMessages({required this.conversationId, required this.query});
 
   @override
   List<Object?> get props => [conversationId, query];

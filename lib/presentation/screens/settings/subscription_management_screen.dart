@@ -17,10 +17,12 @@ class SubscriptionManagementScreen extends StatefulWidget {
   const SubscriptionManagementScreen({super.key});
 
   @override
-  State<SubscriptionManagementScreen> createState() => _SubscriptionManagementScreenState();
+  State<SubscriptionManagementScreen> createState() =>
+      _SubscriptionManagementScreenState();
 }
 
-class _SubscriptionManagementScreenState extends State<SubscriptionManagementScreen> {
+class _SubscriptionManagementScreenState
+    extends State<SubscriptionManagementScreen> {
   @override
   void initState() {
     super.initState();
@@ -68,7 +70,8 @@ class _SubscriptionManagementScreenState extends State<SubscriptionManagementScr
             return _buildErrorState('Unable to load subscription data');
           }
 
-          final hasSubscription = state.subscription != null && state.subscription!.isActive;
+          final hasSubscription =
+              state.subscription != null && state.subscription!.isActive;
 
           return SingleChildScrollView(
             child: Column(
@@ -92,7 +95,8 @@ class _SubscriptionManagementScreenState extends State<SubscriptionManagementScr
                 const SizedBox(height: 24),
 
                 // Subscription actions
-                if (hasSubscription) _buildSubscriptionActions(state.subscription!),
+                if (hasSubscription)
+                  _buildSubscriptionActions(state.subscription!),
 
                 const SizedBox(height: 16),
 
@@ -101,7 +105,8 @@ class _SubscriptionManagementScreenState extends State<SubscriptionManagementScr
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: ElevatedButton.icon(
-                      onPressed: () => _openSubscriptionManagementSheet(state.subscription!),
+                      onPressed: () =>
+                          _openSubscriptionManagementSheet(state.subscription!),
                       icon: const Icon(Icons.settings),
                       label: const Text('Manage Subscription Details'),
                       style: ElevatedButton.styleFrom(
@@ -160,7 +165,10 @@ class _SubscriptionManagementScreenState extends State<SubscriptionManagementScr
     );
   }
 
-  Widget _buildSubscriptionCard(UserSubscription? subscription, bool hasActive) {
+  Widget _buildSubscriptionCard(
+    UserSubscription? subscription,
+    bool hasActive,
+  ) {
     final isPremium = hasActive && subscription != null;
 
     return Container(
@@ -173,13 +181,13 @@ class _SubscriptionManagementScreenState extends State<SubscriptionManagementScr
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               )
-            : LinearGradient(
-                colors: [Colors.grey[300]!, Colors.grey[400]!],
-              ),
+            : LinearGradient(colors: [Colors.grey[300]!, Colors.grey[400]!]),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: isPremium ? AppColors.primary.withValues(alpha: 0.3) : Colors.grey.withValues(alpha: 0.2),
+            color: isPremium
+                ? AppColors.primary.withValues(alpha: 0.3)
+                : Colors.grey.withValues(alpha: 0.2),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -244,7 +252,9 @@ class _SubscriptionManagementScreenState extends State<SubscriptionManagementScr
               _buildStatusRow(
                 Icons.event_available,
                 'Next Billing',
-                DateFormat('MMM dd, yyyy').format(subscription.nextBillingDate!),
+                DateFormat(
+                  'MMM dd, yyyy',
+                ).format(subscription.nextBillingDate!),
               ),
             const SizedBox(height: 8),
             _buildStatusRow(
@@ -259,7 +269,10 @@ class _SubscriptionManagementScreenState extends State<SubscriptionManagementScr
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.white,
                   foregroundColor: AppColors.primary,
-                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 32,
+                    vertical: 12,
+                  ),
                 ),
                 child: const Text(
                   'Upgrade to Premium',
@@ -318,14 +331,14 @@ class _SubscriptionManagementScreenState extends State<SubscriptionManagementScr
             children: [
               const Text(
                 'Your Benefits',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               const Spacer(),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 4,
+                ),
                 decoration: BoxDecoration(
                   color: subscription.status == SubscriptionStatus.active
                       ? AppColors.success.withValues(alpha: 0.1)
@@ -364,12 +377,7 @@ class _SubscriptionManagementScreenState extends State<SubscriptionManagementScr
         children: [
           const Icon(Icons.check_circle, color: AppColors.success, size: 20),
           const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              text,
-              style: const TextStyle(fontSize: 14),
-            ),
-          ),
+          Expanded(child: Text(text, style: const TextStyle(fontSize: 14))),
         ],
       ),
     );
@@ -387,91 +395,101 @@ class _SubscriptionManagementScreenState extends State<SubscriptionManagementScr
             padding: const EdgeInsets.only(left: 4, bottom: 12),
             child: Text(
               hasSubscription ? 'Switch Plan' : 'Available Plans',
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
           ),
-          ...plans.where((plan) => plan.isActive).map((plan) => Container(
-                margin: const EdgeInsets.only(bottom: 12),
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: plan.isPopular ? AppColors.primary : Colors.grey[300]!,
-                    width: plan.isPopular ? 2 : 1,
+          ...plans
+              .where((plan) => plan.isActive)
+              .map(
+                (plan) => Container(
+                  margin: const EdgeInsets.only(bottom: 12),
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: plan.isPopular
+                          ? AppColors.primary
+                          : Colors.grey[300]!,
+                      width: plan.isPopular ? 2 : 1,
+                    ),
                   ),
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Text(
-                                plan.name,
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              if (plan.isPopular) ...[
-                                const SizedBox(width: 8),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                                  decoration: BoxDecoration(
-                                    color: AppColors.primary,
-                                    borderRadius: BorderRadius.circular(4),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Text(
+                                  plan.name,
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
                                   ),
-                                  child: const Text(
-                                    'POPULAR',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.bold,
+                                ),
+                                if (plan.isPopular) ...[
+                                  const SizedBox(width: 8),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                      vertical: 2,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.primary,
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                    child: const Text(
+                                      'POPULAR',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.bold,
+                                      ),
                                     ),
                                   ),
-                                ),
+                                ],
                               ],
-                            ],
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            plan.formattedPrice,
-                            style: TextStyle(fontSize: 14, color: Colors.grey[600]),
-                          ),
-                          if (plan.discountPercent != null && plan.discountPercent! > 0) ...[
+                            ),
                             const SizedBox(height: 4),
                             Text(
-                              'Save ${plan.discountPercent}%',
-                              style: const TextStyle(
-                                color: AppColors.success,
-                                fontSize: 12,
-                                fontWeight: FontWeight.w600,
+                              plan.formattedPrice,
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.grey[600],
                               ),
                             ),
+                            if (plan.discountPercent != null &&
+                                plan.discountPercent! > 0) ...[
+                              const SizedBox(height: 4),
+                              Text(
+                                'Save ${plan.discountPercent}%',
+                                style: const TextStyle(
+                                  color: AppColors.success,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
                           ],
-                        ],
-                      ),
-                    ),
-                    ElevatedButton(
-                      onPressed: () => _showSubscribeDialog(plan),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
                         ),
                       ),
-                      child: Text(hasSubscription ? 'Switch' : 'Subscribe'),
-                    ),
-                  ],
+                      ElevatedButton(
+                        onPressed: () => _showSubscribeDialog(plan),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                        child: Text(hasSubscription ? 'Switch' : 'Subscribe'),
+                      ),
+                    ],
+                  ),
                 ),
-              )),
+              ),
         ],
       ),
     );
@@ -526,9 +544,7 @@ class _SubscriptionManagementScreenState extends State<SubscriptionManagementScr
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Subscribe'),
-        content: Text(
-          'Subscribe to ${plan.name} for ${plan.formattedPrice}?',
-        ),
+        content: Text('Subscribe to ${plan.name} for ${plan.formattedPrice}?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -593,8 +609,8 @@ class _SubscriptionManagementScreenState extends State<SubscriptionManagementScr
               Navigator.pop(context);
               final reason = reasonController.text.trim();
               context.read<PremiumBloc>().add(
-                    CancelSubscription(reason.isNotEmpty ? reason : null),
-                  );
+                CancelSubscription(reason.isNotEmpty ? reason : null),
+              );
             },
             style: TextButton.styleFrom(foregroundColor: Colors.red),
             child: const Text('Cancel Subscription'),
@@ -621,8 +637,7 @@ class _SubscriptionManagementScreenState extends State<SubscriptionManagementScr
             onPressed: () {
               Navigator.pop(context);
               context.read<PremiumBloc>().add(ReactivateSubscription());
-              PulseToast.success(context, message: 'Subscription reactivated!',
-              );
+              PulseToast.success(context, message: 'Subscription reactivated!');
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primary,

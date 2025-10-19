@@ -26,7 +26,12 @@ class AiCompanionLoaded extends AiCompanionState {
   });
 
   @override
-  List<Object?> get props => [companions, selectedCompanion, conversationHistory, analytics];
+  List<Object?> get props => [
+    companions,
+    selectedCompanion,
+    conversationHistory,
+    analytics,
+  ];
 
   AiCompanionLoaded copyWith({
     List<AICompanion>? companions,

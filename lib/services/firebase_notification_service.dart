@@ -13,45 +13,48 @@ import '../presentation/navigation/app_router.dart';
 /// Firebase Cloud Messaging service for real-time push notifications
 class FirebaseNotificationService {
   static FirebaseNotificationService? _instance;
-  static FirebaseNotificationService get instance => _instance ??= FirebaseNotificationService._();
+  static FirebaseNotificationService get instance =>
+      _instance ??= FirebaseNotificationService._();
   FirebaseNotificationService._();
 
   FirebaseMessaging? _messaging;
   FlutterLocalNotificationsPlugin? _localNotifications;
   final ApiClient _apiClient = ApiClient.instance;
   String? _fcmToken;
-  
+
   // Track active call notifications for missed call handling
   final Map<int, Timer> _activeCallTimers = {};
-  
-  final StreamController<Map<String, dynamic>> _notificationStreamController = 
-      StreamController<Map<String, dynamic>>.broadcast();
-  Stream<Map<String, dynamic>> get onNotification => _notificationStreamController.stream;
 
-  final StreamController<Map<String, dynamic>> _messageClickStreamController = 
+  final StreamController<Map<String, dynamic>> _notificationStreamController =
       StreamController<Map<String, dynamic>>.broadcast();
-  Stream<Map<String, dynamic>> get onMessageClick => _messageClickStreamController.stream;
+  Stream<Map<String, dynamic>> get onNotification =>
+      _notificationStreamController.stream;
+
+  final StreamController<Map<String, dynamic>> _messageClickStreamController =
+      StreamController<Map<String, dynamic>>.broadcast();
+  Stream<Map<String, dynamic>> get onMessageClick =>
+      _messageClickStreamController.stream;
 
   /// Initialize Firebase messaging and local notifications
   Future<void> initialize({String? authToken}) async {
     try {
       AppLogger.info('🔔 Initializing Firebase notifications...');
-      
+
       // Get Firebase messaging instance (Firebase should already be initialized)
       _messaging = FirebaseMessaging.instance;
-      
+
       // Request notification permissions
       await _requestNotificationPermissions();
-      
+
       // Initialize local notifications
       await _initializeLocalNotifications();
-      
+
       // Get FCM token
       _fcmToken = await _messaging?.getToken();
       AppLogger.info(
         '📱 FCM Token obtained: ${_fcmToken != null ? "${_fcmToken!.substring(0, 20)}..." : "null"}',
       );
-      
+
       // Register token with backend if we have it
       if (_fcmToken != null) {
         AppLogger.info('🚀 Registering FCM token with backend...');
@@ -59,10 +62,10 @@ class FirebaseNotificationService {
       } else {
         AppLogger.warning('⚠️ Cannot register FCM token: token not available');
       }
-      
+
       // Set up message handlers
       _setupMessageHandlers();
-      
+
       AppLogger.info('✅ Firebase notifications initialized successfully');
     } catch (e) {
       AppLogger.error('❌ Failed to initialize Firebase notifications: $e');
@@ -81,14 +84,18 @@ class FirebaseNotificationService {
       sound: true,
     );
 
-    AppLogger.info('Notification permission granted: ${settings?.authorizationStatus}');
+    AppLogger.info(
+      'Notification permission granted: ${settings?.authorizationStatus}',
+    );
   }
 
   /// Initialize local notifications for foreground messages
   Future<void> _initializeLocalNotifications() async {
     _localNotifications = FlutterLocalNotificationsPlugin();
 
-    const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
+    const androidSettings = AndroidInitializationSettings(
+      '@mipmap/ic_launcher',
+    );
     const iosSettings = DarwinInitializationSettings(
       requestAlertPermission: true,
       requestBadgePermission: true,
@@ -144,7 +151,7 @@ class FirebaseNotificationService {
   /// Set up Firebase message handlers
   void _setupMessageHandlers() {
     // NOTE: Background message handler is registered in main.dart
-    
+
     // Handle foreground messages
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       AppLogger.info('Foreground message received: ${message.data}');
@@ -177,7 +184,7 @@ class FirebaseNotificationService {
       // Check if this is an incoming call notification
       if (data['type'] == 'incoming_call') {
         AppLogger.info('📞 Incoming call notification received');
-        
+
         // Use CallNotificationService for native call UI (CallKit/full-screen intent)
         await CallNotificationService.instance.handleIncomingCallPush(data);
 
@@ -187,7 +194,7 @@ class FirebaseNotificationService {
         // Show regular local notification for foreground messages
         await _showLocalNotification(message);
       }
-      
+
       // Add to stream for app to handle
       _notificationStreamController.add({
         'title': message.notification?.title ?? 'New Message',
@@ -440,7 +447,7 @@ class FirebaseNotificationService {
   void _onLocalNotificationClick(NotificationResponse response) {
     try {
       final actionId = response.actionId;
-      
+
       if (response.payload != null) {
         final data = json.decode(response.payload!);
         final type = data['type'] ?? 'message';
@@ -541,7 +548,9 @@ class FirebaseNotificationService {
     try {
       final initialMessage = await _messaging?.getInitialMessage();
       if (initialMessage != null) {
-        AppLogger.info('App opened from terminated state via notification: ${initialMessage.data}');
+        AppLogger.info(
+          'App opened from terminated state via notification: ${initialMessage.data}',
+        );
         _handleMessageOpened(initialMessage);
       }
     } catch (e) {
@@ -554,7 +563,7 @@ class FirebaseNotificationService {
     try {
       // Get current user ID
       final userId = await _apiClient.getCurrentUserId();
-      
+
       if (userId == null) {
         AppLogger.error(
           '❌ Cannot register FCM token: user ID is null (user not authenticated)',

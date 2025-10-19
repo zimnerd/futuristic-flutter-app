@@ -15,12 +15,7 @@ enum NotificationType {
 }
 
 /// Notification priority enum
-enum NotificationPriority {
-  low,
-  normal,
-  high,
-  urgent,
-}
+enum NotificationPriority { low, normal, high, urgent }
 
 /// Notification model
 class NotificationModel extends Equatable {
@@ -163,7 +158,7 @@ class NotificationModel extends Equatable {
   String get timeAgo {
     final now = DateTime.now();
     final difference = now.difference(createdAt);
-    
+
     if (difference.inMinutes < 1) {
       return 'now';
     } else if (difference.inMinutes < 60) {
@@ -292,22 +287,22 @@ class NotificationModel extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        userId,
-        title,
-        body,
-        type,
-        priority,
-        imageUrl,
-        iconUrl,
-        data,
-        actionUrl,
-        isRead,
-        readAt,
-        isArchived,
-        archivedAt,
-        scheduledFor,
-        createdAt,
-        updatedAt,
-      ];
+    id,
+    userId,
+    title,
+    body,
+    type,
+    priority,
+    imageUrl,
+    iconUrl,
+    data,
+    actionUrl,
+    isRead,
+    readAt,
+    isArchived,
+    archivedAt,
+    scheduledFor,
+    createdAt,
+    updatedAt,
+  ];
 }

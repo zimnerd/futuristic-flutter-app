@@ -5,7 +5,7 @@ library;
 /// Base class for all data exceptions
 abstract class DataException implements Exception {
   const DataException([this.message]);
-  
+
   final String? message;
 }
 

@@ -33,7 +33,8 @@ class AiOnboardingRequest extends Equatable {
 /// Onboarding step information
 class AiOnboardingStep extends Equatable {
   final String stepId;
-  final String category; // 'personality', 'interests', 'lifestyle', 'preferences'
+  final String
+  category; // 'personality', 'interests', 'lifestyle', 'preferences'
   final int stepNumber;
   final int totalSteps;
 
@@ -104,14 +105,14 @@ class AiOnboardingResponse extends Equatable {
 
   @override
   List<Object?> get props => [
-        sessionId,
-        currentStep,
-        questions,
-        generatedSection,
-        progress,
-        isComplete,
-        generatedAt,
-      ];
+    sessionId,
+    currentStep,
+    questions,
+    generatedSection,
+    progress,
+    isComplete,
+    generatedAt,
+  ];
 }
 
 /// AI-generated onboarding question
@@ -141,8 +142,8 @@ class AiOnboardingQuestion extends Equatable {
       id: json['id'],
       question: json['question'],
       type: json['type'],
-      options: json['options'] != null 
-          ? List<String>.from(json['options']) 
+      options: json['options'] != null
+          ? List<String>.from(json['options'])
           : null,
       constraints: json['constraints'],
       category: json['category'],
@@ -153,15 +154,15 @@ class AiOnboardingQuestion extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        question,
-        type,
-        options,
-        constraints,
-        category,
-        reasoning,
-        isRequired,
-      ];
+    id,
+    question,
+    type,
+    options,
+    constraints,
+    category,
+    reasoning,
+    isRequired,
+  ];
 }
 
 /// AI-generated profile section
@@ -192,22 +193,22 @@ class AiGeneratedProfileSection extends Equatable {
       confidence: json['confidence'].toDouble(),
       basedOn: List<String>.from(json['basedOn']),
       requiresConfirmation: json['requiresConfirmation'] ?? true,
-      alternatives: json['alternatives'] != null 
-          ? List<String>.from(json['alternatives']) 
+      alternatives: json['alternatives'] != null
+          ? List<String>.from(json['alternatives'])
           : null,
     );
   }
 
   @override
   List<Object?> get props => [
-        sectionType,
-        content,
-        reasoning,
-        confidence,
-        basedOn,
-        requiresConfirmation,
-        alternatives,
-      ];
+    sectionType,
+    content,
+    reasoning,
+    confidence,
+    basedOn,
+    requiresConfirmation,
+    alternatives,
+  ];
 }
 
 /// Onboarding progress tracking
@@ -241,20 +242,21 @@ class AiOnboardingProgress extends Equatable {
 
   @override
   List<Object?> get props => [
-        completedSteps,
-        totalSteps,
-        completionPercentage,
-        completedCategories,
-        nextCategory,
-        collectedData,
-      ];
+    completedSteps,
+    totalSteps,
+    completionPercentage,
+    completedCategories,
+    nextCategory,
+    collectedData,
+  ];
 }
 
 /// Request model for AI feedback and rating
 class AiFeedbackRequest extends Equatable {
   final String userId;
   final String sessionId;
-  final String featureType; // 'conversation_analysis', 'profile_suggestion', etc.
+  final String
+  featureType; // 'conversation_analysis', 'profile_suggestion', etc.
   final String aiResponseId;
   final AiFeedbackRating rating;
   final String? comment;
@@ -284,14 +286,14 @@ class AiFeedbackRequest extends Equatable {
 
   @override
   List<Object?> get props => [
-        userId,
-        sessionId,
-        featureType,
-        aiResponseId,
-        rating,
-        comment,
-        context,
-      ];
+    userId,
+    sessionId,
+    featureType,
+    aiResponseId,
+    rating,
+    comment,
+    context,
+  ];
 }
 
 /// AI feedback rating
@@ -334,22 +336,22 @@ class AiFeedbackRating extends Equatable {
       relevance: json['relevance'],
       clarity: json['clarity'],
       wouldUseAgain: json['wouldUseAgain'],
-      selectedTags: json['selectedTags'] != null 
-          ? List<String>.from(json['selectedTags']) 
+      selectedTags: json['selectedTags'] != null
+          ? List<String>.from(json['selectedTags'])
           : null,
     );
   }
 
   @override
   List<Object?> get props => [
-        overall,
-        accuracy,
-        usefulness,
-        relevance,
-        clarity,
-        wouldUseAgain,
-        selectedTags,
-      ];
+    overall,
+    accuracy,
+    usefulness,
+    relevance,
+    clarity,
+    wouldUseAgain,
+    selectedTags,
+  ];
 }
 
 /// Response model for AI feedback submission
@@ -381,13 +383,20 @@ class AiFeedbackResponse extends Equatable {
   }
 
   @override
-  List<Object?> get props => [feedbackId, success, message, insights, submittedAt];
+  List<Object?> get props => [
+    feedbackId,
+    success,
+    message,
+    insights,
+    submittedAt,
+  ];
 }
 
 /// AI feedback insights for user
 class AiFeedbackInsights extends Equatable {
   final double userSatisfactionTrend; // How user's satisfaction is trending
-  final Map<String, double> featurePerformance; // How each AI feature is performing for this user
+  final Map<String, double>
+  featurePerformance; // How each AI feature is performing for this user
   final List<String> recommendedFeatures; // AI features user might like
   final String thankYouMessage;
 
@@ -409,11 +418,11 @@ class AiFeedbackInsights extends Equatable {
 
   @override
   List<Object?> get props => [
-        userSatisfactionTrend,
-        featurePerformance,
-        recommendedFeatures,
-        thankYouMessage,
-      ];
+    userSatisfactionTrend,
+    featurePerformance,
+    recommendedFeatures,
+    thankYouMessage,
+  ];
 }
 
 /// Request model for AI insights dashboard
@@ -440,7 +449,12 @@ class AiInsightsRequest extends Equatable {
   }
 
   @override
-  List<Object?> get props => [userId, timeframe, categories, includeComparisons];
+  List<Object?> get props => [
+    userId,
+    timeframe,
+    categories,
+    includeComparisons,
+  ];
 }
 
 /// Response model for AI insights dashboard
@@ -478,13 +492,13 @@ class AiInsightsResponse extends Equatable {
 
   @override
   List<Object?> get props => [
-        userId,
-        usageStats,
-        insights,
-        progress,
-        recommendations,
-        generatedAt,
-      ];
+    userId,
+    usageStats,
+    insights,
+    progress,
+    recommendations,
+    generatedAt,
+  ];
 }
 
 /// AI usage statistics
@@ -515,12 +529,12 @@ class AiUsageStats extends Equatable {
 
   @override
   List<Object?> get props => [
-        totalInteractions,
-        featureUsage,
-        averageRating,
-        sessionsThisWeek,
-        improvementsImplemented,
-      ];
+    totalInteractions,
+    featureUsage,
+    averageRating,
+    sessionsThisWeek,
+    improvementsImplemented,
+  ];
 }
 
 /// AI insight card for dashboard
@@ -560,15 +574,15 @@ class AiInsightCard extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        title,
-        description,
-        type,
-        value,
-        trend,
-        actionText,
-        actionRoute,
-      ];
+    id,
+    title,
+    description,
+    type,
+    value,
+    trend,
+    actionText,
+    actionRoute,
+  ];
 }
 
 /// AI progress summary
@@ -599,12 +613,12 @@ class AiProgressSummary extends Equatable {
 
   @override
   List<Object?> get props => [
-        profileScore,
-        profileScoreChange,
-        conversationsImproved,
-        matchesFromAiSuggestions,
-        achievements,
-      ];
+    profileScore,
+    profileScoreChange,
+    conversationsImproved,
+    matchesFromAiSuggestions,
+    achievements,
+  ];
 }
 
 /// AI recommendation for user
@@ -644,13 +658,13 @@ class AiRecommendation extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        title,
-        description,
-        category,
-        priority,
-        actionText,
-        actionRoute,
-        impact,
-      ];
+    id,
+    title,
+    description,
+    category,
+    priority,
+    actionText,
+    actionRoute,
+    impact,
+  ];
 }

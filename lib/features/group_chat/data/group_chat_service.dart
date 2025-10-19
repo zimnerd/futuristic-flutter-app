@@ -94,7 +94,9 @@ class GroupChatService {
   }
 
   /// Get all active live sessions
-  Future<List<LiveSession>> getActiveLiveSessions({GroupType? groupType}) async {
+  Future<List<LiveSession>> getActiveLiveSessions({
+    GroupType? groupType,
+  }) async {
     try {
       final response = await _apiClient.getActiveLiveSessions(
         groupType: groupType?.name.toUpperCase(),
@@ -608,8 +610,7 @@ class GroupChatService {
     try {
       final response = await _apiClient.dio.post(
         '/group-chat/conversation/$conversationId/block-user',
-        data: {'userId': userId, if (reason != null) 'reason': reason,
-        },
+        data: {'userId': userId, if (reason != null) 'reason': reason},
       );
 
       if (response.statusCode != 200) {
@@ -793,8 +794,7 @@ class GroupChatService {
     try {
       final response = await _apiClient.dio.post(
         '/chat/messages/$messageId/report',
-        data: {'reason': reason, if (details != null) 'details': details,
-        },
+        data: {'reason': reason, if (details != null) 'details': details},
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {

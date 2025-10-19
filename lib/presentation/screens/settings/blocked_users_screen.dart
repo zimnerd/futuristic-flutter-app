@@ -10,7 +10,8 @@ class SafetyBlockedUsersScreen extends StatefulWidget {
   const SafetyBlockedUsersScreen({super.key});
 
   @override
-  State<SafetyBlockedUsersScreen> createState() => _SafetyBlockedUsersScreenState();
+  State<SafetyBlockedUsersScreen> createState() =>
+      _SafetyBlockedUsersScreenState();
 }
 
 class _SafetyBlockedUsersScreenState extends State<SafetyBlockedUsersScreen> {
@@ -25,9 +26,7 @@ class _SafetyBlockedUsersScreenState extends State<SafetyBlockedUsersScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Text(
           'Unblock User',
           style: PulseTextStyles.titleLarge.copyWith(
@@ -90,22 +89,18 @@ class _SafetyBlockedUsersScreenState extends State<SafetyBlockedUsersScreen> {
       body: BlocListener<BlockReportBloc, BlockReportState>(
         listener: (context, state) {
           if (state is UserUnblocked) {
-            PulseToast.success(context, message: 'User unblocked successfully',
-            );
+            PulseToast.success(context, message: 'User unblocked successfully');
             // Reload the list
             context.read<BlockReportBloc>().add(LoadBlockedUsers());
           } else if (state is BlockReportError) {
-            PulseToast.error(context, message: state.message,
-            );
+            PulseToast.error(context, message: state.message);
           }
         },
         child: BlocBuilder<BlockReportBloc, BlockReportState>(
           builder: (context, state) {
             if (state is BlockReportLoading) {
               return Center(
-                child: CircularProgressIndicator(
-                  color: PulseColors.primary,
-                ),
+                child: CircularProgressIndicator(color: PulseColors.primary),
               );
             }
 
@@ -122,7 +117,8 @@ class _SafetyBlockedUsersScreenState extends State<SafetyBlockedUsersScreen> {
                 child: ListView.separated(
                   padding: const EdgeInsets.all(16),
                   itemCount: state.blockedUserIds.length,
-                  separatorBuilder: (context, index) => const SizedBox(height: 12),
+                  separatorBuilder: (context, index) =>
+                      const SizedBox(height: 12),
                   itemBuilder: (context, index) {
                     final userId = state.blockedUserIds[index];
                     return _buildBlockedUserCard(userId);
@@ -148,9 +144,7 @@ class _SafetyBlockedUsersScreenState extends State<SafetyBlockedUsersScreen> {
       decoration: BoxDecoration(
         color: PulseColors.surfaceVariant.withValues(alpha: 0.3),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: PulseColors.onSurface.withValues(alpha: 0.1),
-        ),
+        border: Border.all(color: PulseColors.onSurface.withValues(alpha: 0.1)),
       ),
       child: Row(
         children: [
@@ -162,11 +156,7 @@ class _SafetyBlockedUsersScreenState extends State<SafetyBlockedUsersScreen> {
               color: PulseColors.primary.withValues(alpha: 0.2),
               shape: BoxShape.circle,
             ),
-            child: Icon(
-              Icons.person,
-              size: 32,
-              color: PulseColors.primary,
-            ),
+            child: Icon(Icons.person, size: 32, color: PulseColors.primary),
           ),
           const SizedBox(width: 16),
           // User info

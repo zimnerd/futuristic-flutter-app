@@ -14,10 +14,7 @@ import 'cancellation_reason_dialog.dart';
 class SubscriptionManagementSheet extends StatefulWidget {
   final Subscription subscription;
 
-  const SubscriptionManagementSheet({
-    super.key,
-    required this.subscription,
-  });
+  const SubscriptionManagementSheet({super.key, required this.subscription});
 
   @override
   State<SubscriptionManagementSheet> createState() =>
@@ -38,11 +35,8 @@ class _SubscriptionManagementSheetState
   Future<void> _loadBillingHistory() async {
     // Load last 3 transactions related to this subscription
     context.read<PaymentBloc>().add(
-          LoadPaymentHistoryEvent(
-            subscriptionId: widget.subscription.id,
-            limit: 3,
-          ),
-        );
+      LoadPaymentHistoryEvent(subscriptionId: widget.subscription.id, limit: 3),
+    );
   }
 
   @override
@@ -75,10 +69,7 @@ class _SubscriptionManagementSheetState
                 const Expanded(
                   child: Text(
                     'Manage Subscription',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                   ),
                 ),
                 IconButton(
@@ -152,9 +143,7 @@ class _SubscriptionManagementSheetState
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               )
-            : LinearGradient(
-                colors: [Colors.grey[400]!, Colors.grey[500]!],
-              ),
+            : LinearGradient(colors: [Colors.grey[400]!, Colors.grey[500]!]),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -208,7 +197,10 @@ class _SubscriptionManagementSheetState
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(20),
@@ -262,10 +254,7 @@ class _SubscriptionManagementSheetState
                   Expanded(
                     child: Text(
                       'Your subscription will not renew. You can still use premium features until ${subscription.endDate != null ? DateFormat('MMM dd').format(subscription.endDate!) : 'the end of your billing period'}.',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 12,
-                      ),
+                      style: const TextStyle(color: Colors.white, fontSize: 12),
                     ),
                   ),
                 ],
@@ -324,21 +313,21 @@ class _SubscriptionManagementSheetState
               color: isCompleted
                   ? Colors.green[50]
                   : isRefunded
-                      ? Colors.orange[50]
-                      : Colors.grey[100],
+                  ? Colors.orange[50]
+                  : Colors.grey[100],
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(
               isCompleted
                   ? Icons.check_circle
                   : isRefunded
-                      ? Icons.refresh
-                      : Icons.error_outline,
+                  ? Icons.refresh
+                  : Icons.error_outline,
               color: isCompleted
                   ? Colors.green
                   : isRefunded
-                      ? Colors.orange
-                      : Colors.grey,
+                  ? Colors.orange
+                  : Colors.grey,
               size: 20,
             ),
           ),
@@ -357,10 +346,7 @@ class _SubscriptionManagementSheetState
                 const SizedBox(height: 4),
                 Text(
                   transactionData['date'] ?? '',
-                  style: TextStyle(
-                    color: Colors.grey[600],
-                    fontSize: 12,
-                  ),
+                  style: TextStyle(color: Colors.grey[600], fontSize: 12),
                 ),
               ],
             ),
@@ -378,13 +364,15 @@ class _SubscriptionManagementSheetState
               ),
               const SizedBox(height: 4),
               Text(
-                (transactionData['status'] ?? 'PENDING').toString().toUpperCase(),
+                (transactionData['status'] ?? 'PENDING')
+                    .toString()
+                    .toUpperCase(),
                 style: TextStyle(
                   color: isCompleted
                       ? Colors.green
                       : isRefunded
-                          ? Colors.orange
-                          : Colors.grey,
+                      ? Colors.orange
+                      : Colors.grey,
                   fontSize: 10,
                   fontWeight: FontWeight.w600,
                 ),
@@ -405,10 +393,7 @@ class _SubscriptionManagementSheetState
           children: [
             const Text(
               'Billing History',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             TextButton(
               onPressed: () {
@@ -455,7 +440,8 @@ class _SubscriptionManagementSheetState
   }
 
   Widget _buildTransactionItem(PaymentTransaction transaction) {
-    final isCompleted = transaction.status == PaymentTransactionStatus.completed;
+    final isCompleted =
+        transaction.status == PaymentTransactionStatus.completed;
     final isRefunded = transaction.status == PaymentTransactionStatus.refunded;
 
     return Container(
@@ -474,21 +460,21 @@ class _SubscriptionManagementSheetState
               color: isCompleted
                   ? Colors.green[50]
                   : isRefunded
-                      ? Colors.orange[50]
-                      : Colors.grey[100],
+                  ? Colors.orange[50]
+                  : Colors.grey[100],
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(
               isCompleted
                   ? Icons.check_circle
                   : isRefunded
-                      ? Icons.refresh
-                      : Icons.error_outline,
+                  ? Icons.refresh
+                  : Icons.error_outline,
               color: isCompleted
                   ? Colors.green
                   : isRefunded
-                      ? Colors.orange
-                      : Colors.grey,
+                  ? Colors.orange
+                  : Colors.grey,
               size: 20,
             ),
           ),
@@ -507,10 +493,7 @@ class _SubscriptionManagementSheetState
                 const SizedBox(height: 4),
                 Text(
                   DateFormat('MMM dd, yyyy').format(transaction.processedAt),
-                  style: TextStyle(
-                    color: Colors.grey[600],
-                    fontSize: 12,
-                  ),
+                  style: TextStyle(color: Colors.grey[600], fontSize: 12),
                 ),
               ],
             ),
@@ -533,8 +516,8 @@ class _SubscriptionManagementSheetState
                   color: isCompleted
                       ? Colors.green
                       : isRefunded
-                          ? Colors.orange
-                          : Colors.grey,
+                      ? Colors.orange
+                      : Colors.grey,
                   fontSize: 10,
                   fontWeight: FontWeight.w600,
                 ),
@@ -558,10 +541,7 @@ class _SubscriptionManagementSheetState
       children: [
         const Text(
           'Subscription Actions',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 16),
 
@@ -613,10 +593,7 @@ class _SubscriptionManagementSheetState
             children: [
               Text(
                 'Need help?',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey[600],
-                ),
+                style: TextStyle(fontSize: 12, color: Colors.grey[600]),
               ),
               TextButton(
                 onPressed: () {
@@ -669,10 +646,7 @@ class _SubscriptionManagementSheetState
           children: [
             const Text(
               'Pause Subscription',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             const Text(
@@ -715,8 +689,8 @@ class _SubscriptionManagementSheetState
 
   void _pauseSubscription(int months) {
     context.read<SubscriptionBloc>().add(
-          PauseSubscriptionEvent(months: months),
-        );
+      PauseSubscriptionEvent(months: months),
+    );
   }
 
   void _resumeSubscription() {
@@ -738,10 +712,8 @@ class _SubscriptionManagementSheetState
       final reason = result['reason'] as String?;
 
       context.read<SubscriptionBloc>().add(
-            CancelSubscriptionEvent(
-              reason: reason ?? 'No reason provided',
-            ),
-          );
+        CancelSubscriptionEvent(reason: reason ?? 'No reason provided'),
+      );
     }
   }
 }

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../core/services/network_quality_service.dart';
 
 /// Network quality indicator widget
-/// 
+///
 /// Visual indicator showing real-time network quality during calls.
 /// Features:
 /// - Color-coded quality levels (🟢 Green, 🟡 Yellow, 🟠 Orange, 🔴 Red)
@@ -13,10 +13,10 @@ import '../../core/services/network_quality_service.dart';
 class NetworkQualityIndicator extends StatefulWidget {
   /// Whether to auto-hide when quality is excellent
   final bool autoHide;
-  
+
   /// Custom size for the indicator
   final double size;
-  
+
   /// Callback when tapped
   final VoidCallback? onTap;
 
@@ -28,7 +28,8 @@ class NetworkQualityIndicator extends StatefulWidget {
   });
 
   @override
-  State<NetworkQualityIndicator> createState() => _NetworkQualityIndicatorState();
+  State<NetworkQualityIndicator> createState() =>
+      _NetworkQualityIndicatorState();
 }
 
 class _NetworkQualityIndicatorState extends State<NetworkQualityIndicator>
@@ -40,7 +41,7 @@ class _NetworkQualityIndicatorState extends State<NetworkQualityIndicator>
   @override
   void initState() {
     super.initState();
-    
+
     // Setup pulse animation for poor quality
     _animationController = AnimationController(
       vsync: this,
@@ -121,10 +122,7 @@ class _NetworkQualityIndicatorState extends State<NetworkQualityIndicator>
             decoration: BoxDecoration(
               color: color.withValues(alpha: 0.2),
               shape: BoxShape.circle,
-              border: Border.all(
-                color: color,
-                width: 2.0,
-              ),
+              border: Border.all(color: color, width: 2.0),
             ),
             child: Center(
               child: shouldAnimate
@@ -141,11 +139,7 @@ class _NetworkQualityIndicatorState extends State<NetworkQualityIndicator>
                         );
                       },
                     )
-                  : Icon(
-                      icon,
-                      color: color,
-                      size: widget.size * 0.5,
-                    ),
+                  : Icon(icon, color: color, size: widget.size * 0.5),
             ),
           ),
         );
@@ -155,7 +149,7 @@ class _NetworkQualityIndicatorState extends State<NetworkQualityIndicator>
 }
 
 /// Compact network quality indicator for minimal space usage
-/// 
+///
 /// Shows only the quality icon without background, suitable for
 /// tight spaces or when you want a minimal indicator.
 class CompactNetworkQualityIndicator extends StatelessWidget {
@@ -201,7 +195,7 @@ class CompactNetworkQualityIndicator extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final networkQualityService = NetworkQualityService();
-    
+
     return StreamBuilder<NetworkQualityMetrics>(
       stream: networkQualityService.metricsStream,
       builder: (context, snapshot) {
@@ -220,11 +214,7 @@ class CompactNetworkQualityIndicator extends StatelessWidget {
 
         return GestureDetector(
           onTap: onTap,
-          child: Icon(
-            icon,
-            color: color,
-            size: size,
-          ),
+          child: Icon(icon, color: color, size: size),
         );
       },
     );
@@ -232,18 +222,14 @@ class CompactNetworkQualityIndicator extends StatelessWidget {
 }
 
 /// Network quality badge with text label
-/// 
+///
 /// Shows quality level with colored badge and text description.
 /// Useful for settings screens or detailed status displays.
 class NetworkQualityBadge extends StatelessWidget {
   final bool showScore;
   final VoidCallback? onTap;
 
-  const NetworkQualityBadge({
-    super.key,
-    this.showScore = false,
-    this.onTap,
-  });
+  const NetworkQualityBadge({super.key, this.showScore = false, this.onTap});
 
   Color _getQualityColor(NetworkQuality quality) {
     switch (quality) {
@@ -278,7 +264,7 @@ class NetworkQualityBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final networkQualityService = NetworkQualityService();
-    
+
     return StreamBuilder<NetworkQualityMetrics>(
       stream: networkQualityService.metricsStream,
       builder: (context, snapshot) {

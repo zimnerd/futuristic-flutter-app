@@ -970,4 +970,3 @@ class GroupChatBloc extends Bloc<GroupChatEvent, GroupChatState> {
     return super.close();
   }
 }
-

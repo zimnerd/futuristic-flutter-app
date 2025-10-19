@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../theme/pulse_colors.dart';
 
 /// Confirmation dialog for activating a profile boost
-/// 
+///
 /// Shows boost details and confirmation before activation:
 /// - Duration (30 minutes)
 /// - Benefits (10x more visibility)
@@ -20,9 +20,7 @@ class BoostConfirmationDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       child: Padding(
         padding: const EdgeInsets.all(24.0),
         child: Column(
@@ -51,10 +49,7 @@ class BoostConfirmationDialog extends StatelessWidget {
             // Title
             const Text(
               'Boost Your Profile',
-              style: TextStyle(
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 12),
@@ -157,11 +152,7 @@ class BoostConfirmationDialog extends StatelessWidget {
             color: PulseColors.primary.withValues(alpha: 0.1),
             shape: BoxShape.circle,
           ),
-          child: Icon(
-            icon,
-            size: 20,
-            color: PulseColors.primary,
-          ),
+          child: Icon(icon, size: 20, color: PulseColors.primary),
         ),
         const SizedBox(width: 12),
         Expanded(

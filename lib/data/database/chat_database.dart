@@ -8,7 +8,7 @@ import '../services/cache_ttl_service.dart';
 class ChatDatabase {
   static const String _databaseName = 'pulse_chat.db';
   static const int _databaseVersion = 3;
-  
+
   static Database? _database;
   static final Logger _logger = Logger();
 
@@ -62,7 +62,7 @@ class ChatDatabase {
   /// Create database tables with proper indexing
   Future<void> _onCreate(Database db, int version) async {
     _logger.d('Creating chat database tables...');
-    
+
     // Conversations table - cached conversation metadata
     await db.execute('''
       CREATE TABLE conversations (
@@ -119,46 +119,46 @@ class ChatDatabase {
 
     // Create indexes for optimal query performance
     await _createIndexes(db);
-    
+
     _logger.d('Chat database tables created successfully');
   }
 
   /// Create performance-optimized indexes
   Future<void> _createIndexes(Database db) async {
     _logger.d('Creating database indexes...');
-    
+
     // Messages indexes for pagination and real-time queries
     await db.execute('''
       CREATE INDEX idx_messages_conversation_created 
       ON messages (conversation_id, created_at DESC)
     ''');
-    
+
     await db.execute('''
       CREATE INDEX idx_messages_sender 
       ON messages (sender_id)
     ''');
-    
+
     await db.execute('''
       CREATE INDEX idx_messages_temp_id 
       ON messages (temp_id)
     ''');
-    
+
     await db.execute('''
       CREATE INDEX idx_messages_status 
       ON messages (status)
     ''');
-    
+
     // Conversations indexes
     await db.execute('''
       CREATE INDEX idx_conversations_updated 
       ON conversations (updated_at DESC)
     ''');
-    
+
     await db.execute('''
       CREATE INDEX idx_conversations_participant 
       ON conversations (participant_ids)
     ''');
-    
+
     _logger.d('Database indexes created successfully');
   }
 
@@ -233,21 +233,29 @@ class ChatDatabase {
   Future<Map<String, int>> getStats() async {
     final db = await database;
 
-    final conversationsCount = Sqflite.firstIntValue(
-      await db.rawQuery('SELECT COUNT(*) FROM conversations'),
-    ) ?? 0;
+    final conversationsCount =
+        Sqflite.firstIntValue(
+          await db.rawQuery('SELECT COUNT(*) FROM conversations'),
+        ) ??
+        0;
 
-    final messagesCount = Sqflite.firstIntValue(
-      await db.rawQuery('SELECT COUNT(*) FROM messages'),
-    ) ?? 0;
+    final messagesCount =
+        Sqflite.firstIntValue(
+          await db.rawQuery('SELECT COUNT(*) FROM messages'),
+        ) ??
+        0;
 
-    final outboxCount = Sqflite.firstIntValue(
-      await db.rawQuery('SELECT COUNT(*) FROM message_outbox'),
-    ) ?? 0;
+    final outboxCount =
+        Sqflite.firstIntValue(
+          await db.rawQuery('SELECT COUNT(*) FROM message_outbox'),
+        ) ??
+        0;
 
-    final cacheCount = Sqflite.firstIntValue(
-      await db.rawQuery('SELECT COUNT(*) FROM cache_metadata'),
-    ) ?? 0;
+    final cacheCount =
+        Sqflite.firstIntValue(
+          await db.rawQuery('SELECT COUNT(*) FROM cache_metadata'),
+        ) ??
+        0;
 
     return {
       'conversations': conversationsCount,
@@ -279,7 +287,11 @@ class ChatDatabase {
 
       _logger.i('Database maintenance completed successfully');
     } catch (e, stackTrace) {
-      _logger.e('Database maintenance failed', error: e, stackTrace: stackTrace);
+      _logger.e(
+        'Database maintenance failed',
+        error: e,
+        stackTrace: stackTrace,
+      );
       rethrow;
     }
   }
@@ -314,7 +326,11 @@ class ChatDatabase {
         'cacheSize': cacheSize,
       };
     } catch (e, stackTrace) {
-      _logger.e('Failed to get database info', error: e, stackTrace: stackTrace);
+      _logger.e(
+        'Failed to get database info',
+        error: e,
+        stackTrace: stackTrace,
+      );
       return {};
     }
   }

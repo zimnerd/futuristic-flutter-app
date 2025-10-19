@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import '../utils/logger.dart';
 
 /// Service to check Google Play Services availability on Android
-/// 
+///
 /// Required by Firebase Messaging for proper FCM token generation.
 /// Official Firebase docs: https://firebase.google.com/docs/cloud-messaging/flutter/client
 class PlayServicesChecker {
@@ -12,11 +12,11 @@ class PlayServicesChecker {
   );
 
   /// Check if Google Play Services is available on this device
-  /// 
+  ///
   /// Returns:
   /// - `true` if Play Services is available and up to date
   /// - `false` if Play Services is missing, outdated, or needs updating
-  /// 
+  ///
   /// Note: This check is Android-specific and always returns true on iOS
   static Future<bool> checkAvailability() async {
     if (!Platform.isAndroid) {
@@ -24,12 +24,16 @@ class PlayServicesChecker {
     }
 
     try {
-      final bool? isAvailable = await _channel.invokeMethod('checkPlayServices');
+      final bool? isAvailable = await _channel.invokeMethod(
+        'checkPlayServices',
+      );
       if (isAvailable == true) {
         AppLogger.info('✅ Google Play Services is available');
         return true;
       } else {
-        AppLogger.warning('⚠️ Google Play Services is not available or outdated');
+        AppLogger.warning(
+          '⚠️ Google Play Services is not available or outdated',
+        );
         return false;
       }
     } on PlatformException catch (e) {
@@ -42,7 +46,7 @@ class PlayServicesChecker {
   }
 
   /// Prompt user to update Google Play Services if needed
-  /// 
+  ///
   /// This will show the system dialog to update Play Services
   static Future<void> promptUpdate() async {
     if (!Platform.isAndroid) return;

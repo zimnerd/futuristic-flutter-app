@@ -22,17 +22,15 @@ class UploadProgressIndicator extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final hasError = errorMessage != null;
-    
+
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: hasError 
-            ? Colors.red.shade50 
-            : PulseColors.surface,
+        color: hasError ? Colors.red.shade50 : PulseColors.surface,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: hasError 
+          color: hasError
               ? Colors.red.shade200
               : PulseColors.primary.withValues(alpha: 0.2),
           width: 1,
@@ -76,8 +74,8 @@ class UploadProgressIndicator extends StatelessWidget {
                       Text(
                         fileSize!,
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: hasError 
-                              ? Colors.red.shade500 
+                          color: hasError
+                              ? Colors.red.shade500
                               : Colors.grey.shade600,
                         ),
                       ),
@@ -97,16 +95,16 @@ class UploadProgressIndicator extends StatelessWidget {
                 ),
             ],
           ),
-          
+
           const SizedBox(height: 12),
-          
+
           // Progress bar or error message
           if (hasError) ...[
             Text(
               errorMessage!,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Colors.red.shade600,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(color: Colors.red.shade600),
             ),
           ] else ...[
             // Progress bar
@@ -144,8 +142,8 @@ class UploadProgressIndicator extends StatelessWidget {
                     Text(
                       isUploading ? 'Uploading...' : 'Upload complete',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: isUploading 
-                            ? Colors.grey.shade600 
+                        color: isUploading
+                            ? Colors.grey.shade600
                             : Colors.green.shade600,
                       ),
                     ),
@@ -176,7 +174,7 @@ class CompactUploadProgress extends StatelessWidget {
   final double progress;
   final bool isUploading;
   final VoidCallback? onCancel;
-  
+
   const CompactUploadProgress({
     super.key,
     required this.progress,
@@ -218,11 +216,7 @@ class CompactUploadProgress extends StatelessWidget {
             const SizedBox(width: 8),
             GestureDetector(
               onTap: onCancel,
-              child: const Icon(
-                Icons.close,
-                color: Colors.white,
-                size: 16,
-              ),
+              child: const Icon(Icons.close, color: Colors.white, size: 16),
             ),
           ],
         ],

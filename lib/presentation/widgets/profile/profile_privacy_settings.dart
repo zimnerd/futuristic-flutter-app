@@ -116,10 +116,7 @@ class _ProfilePrivacySettingsState extends State<ProfilePrivacySettings> {
                       ),
                       Text(
                         'Control who can see your information',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey,
-                        ),
+                        style: TextStyle(fontSize: 14, color: Colors.grey),
                       ),
                     ],
                   ),
@@ -127,9 +124,9 @@ class _ProfilePrivacySettingsState extends State<ProfilePrivacySettings> {
               ],
             ),
           ),
-          
+
           Divider(color: Colors.grey[200], height: 1),
-          
+
           _buildPrivacyOption(
             'Show Distance',
             'Display your distance to other users',
@@ -137,7 +134,7 @@ class _ProfilePrivacySettingsState extends State<ProfilePrivacySettings> {
             'showDistance',
             subtitle: 'Others can see how far away you are',
           ),
-          
+
           _buildPrivacyOption(
             'Show Age',
             'Display your age on your profile',
@@ -145,7 +142,7 @@ class _ProfilePrivacySettingsState extends State<ProfilePrivacySettings> {
             'showAge',
             subtitle: 'Your age will be visible to others',
           ),
-          
+
           _buildPrivacyOption(
             'Show Last Active',
             'Display when you were last online',
@@ -153,7 +150,7 @@ class _ProfilePrivacySettingsState extends State<ProfilePrivacySettings> {
             'showLastActive',
             subtitle: 'Others can see when you were last active',
           ),
-          
+
           _buildPrivacyOption(
             'Show Online Status',
             'Display when you are currently online',
@@ -161,7 +158,7 @@ class _ProfilePrivacySettingsState extends State<ProfilePrivacySettings> {
             'showOnlineStatus',
             subtitle: 'Show a green dot when you\'re online',
           ),
-          
+
           _buildPrivacyOption(
             'Incognito Mode',
             'Browse privately and hide from discovery',
@@ -170,7 +167,7 @@ class _ProfilePrivacySettingsState extends State<ProfilePrivacySettings> {
             subtitle: 'Turn on to stop appearing in swipe deck',
             isWarning: true,
           ),
-          
+
           _buildPrivacyOption(
             'Read Receipts',
             'Show when you\'ve read messages',
@@ -178,9 +175,9 @@ class _ProfilePrivacySettingsState extends State<ProfilePrivacySettings> {
             'readReceipts',
             subtitle: 'Others can see if you\'ve read their messages',
           ),
-          
+
           Divider(color: Colors.grey[200], height: 1),
-          
+
           Padding(
             padding: const EdgeInsets.all(20),
             child: Text(
@@ -192,7 +189,7 @@ class _ProfilePrivacySettingsState extends State<ProfilePrivacySettings> {
               ),
             ),
           ),
-          
+
           _buildDropdownOption(
             'Who Can Message Me',
             'Control who can send you messages',
@@ -201,7 +198,7 @@ class _ProfilePrivacySettingsState extends State<ProfilePrivacySettings> {
             ['everyone', 'matches', 'none'],
             subtitle: 'Set message restrictions',
           ),
-          
+
           _buildDropdownOption(
             'Who Can See My Profile',
             'Control profile visibility',
@@ -210,7 +207,7 @@ class _ProfilePrivacySettingsState extends State<ProfilePrivacySettings> {
             ['everyone', 'matches', 'none'],
             subtitle: 'Set profile visibility restrictions',
           ),
-          
+
           const SizedBox(height: 16),
         ],
       ),
@@ -226,7 +223,7 @@ class _ProfilePrivacySettingsState extends State<ProfilePrivacySettings> {
     bool isWarning = false,
   }) {
     final isEnabled = _settings[settingKey] ?? true;
-    
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       child: Row(
@@ -234,9 +231,9 @@ class _ProfilePrivacySettingsState extends State<ProfilePrivacySettings> {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: isWarning 
-                ? Colors.orange.withValues(alpha: 0.1)
-                : Colors.grey.withValues(alpha: 0.1),
+              color: isWarning
+                  ? Colors.orange.withValues(alpha: 0.1)
+                  : Colors.grey.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(
@@ -262,10 +259,7 @@ class _ProfilePrivacySettingsState extends State<ProfilePrivacySettings> {
                   const SizedBox(height: 2),
                   Text(
                     subtitle,
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: Colors.grey[600],
-                    ),
+                    style: TextStyle(fontSize: 13, color: Colors.grey[600]),
                   ),
                 ],
               ],
@@ -283,7 +277,7 @@ class _ProfilePrivacySettingsState extends State<ProfilePrivacySettings> {
       ),
     );
   }
-  
+
   Widget _buildDropdownOption(
     String title,
     String description,
@@ -293,7 +287,7 @@ class _ProfilePrivacySettingsState extends State<ProfilePrivacySettings> {
     String? subtitle,
   }) {
     final currentValue = _settings[settingKey] as String? ?? options.first;
-    
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       child: Column(
@@ -307,11 +301,7 @@ class _ProfilePrivacySettingsState extends State<ProfilePrivacySettings> {
                   color: Colors.grey.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: Icon(
-                  icon,
-                  color: Colors.grey[600],
-                  size: 20,
-                ),
+                child: Icon(icon, color: Colors.grey[600], size: 20),
               ),
               const SizedBox(width: 16),
               Expanded(
@@ -330,10 +320,7 @@ class _ProfilePrivacySettingsState extends State<ProfilePrivacySettings> {
                       const SizedBox(height: 2),
                       Text(
                         subtitle,
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: Colors.grey[600],
-                        ),
+                        style: TextStyle(fontSize: 13, color: Colors.grey[600]),
                       ),
                     ],
                   ],
@@ -352,7 +339,10 @@ class _ProfilePrivacySettingsState extends State<ProfilePrivacySettings> {
               initialValue: currentValue,
               decoration: const InputDecoration(
                 border: InputBorder.none,
-                contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
               ),
               dropdownColor: Colors.white,
               isExpanded: true,
@@ -380,12 +370,13 @@ class _ProfilePrivacySettingsState extends State<ProfilePrivacySettings> {
       ),
     );
   }
-  
+
   String _formatOptionText(String option) {
     // Capitalize first letter of each word
-    return option.split('_').map((word) => 
-      word[0].toUpperCase() + word.substring(1)
-    ).join(' ');
+    return option
+        .split('_')
+        .map((word) => word[0].toUpperCase() + word.substring(1))
+        .join(' ');
   }
 }
 
@@ -405,10 +396,14 @@ class DefaultPrivacySettings {
   static const Map<String, String> descriptions = {
     'showDistance': 'Controls whether your distance is visible to other users',
     'showAge': 'Controls whether your age appears on your profile',
-    'showLastActive': 'Controls whether others can see when you were last online',
-    'showOnlineStatus': 'Controls whether others can see if you\'re currently online',
-    'incognitoMode': 'Controls whether you appear in the discovery feed for other users',
-    'readReceipts': 'Controls whether others can see if you\'ve read their messages',
+    'showLastActive':
+        'Controls whether others can see when you were last online',
+    'showOnlineStatus':
+        'Controls whether others can see if you\'re currently online',
+    'incognitoMode':
+        'Controls whether you appear in the discovery feed for other users',
+    'readReceipts':
+        'Controls whether others can see if you\'ve read their messages',
     'whoCanMessageMe': 'Controls who can send you messages',
     'whoCanSeeMyProfile': 'Controls who can view your full profile',
   };

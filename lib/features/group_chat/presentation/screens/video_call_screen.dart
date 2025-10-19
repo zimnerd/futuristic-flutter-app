@@ -7,7 +7,7 @@ import '../../data/group_chat_webrtc_service.dart';
 import '../../data/models.dart';
 
 /// Video call screen for live session group video/audio calls
-/// 
+///
 /// Displays a grid layout of participants with real-time video streams,
 /// provides controls for mute/video/speaker/camera/end call,
 /// and manages participant state changes dynamically.
@@ -71,18 +71,17 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
     });
 
     // Start the video call
-    context.read<GroupChatBloc>().add(StartVideoCall(
-          liveSessionId: widget.liveSessionId,
-          token: widget.rtcToken,
-          enableVideo: true,
-        ));
+    context.read<GroupChatBloc>().add(
+      StartVideoCall(
+        liveSessionId: widget.liveSessionId,
+        token: widget.rtcToken,
+        enableVideo: true,
+      ),
+    );
   }
 
   void _showError(String message) {
-    PulseToast.error(
-      context,
-      message: message,
-    );
+    PulseToast.error(context, message: message);
   }
 
   @override
@@ -142,11 +141,7 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
                   ),
 
                   // Session info overlay at top right
-                  Positioned(
-                    top: 16,
-                    right: 16,
-                    child: _buildSessionInfo(),
-                  ),
+                  Positioned(top: 16, right: 16, child: _buildSessionInfo()),
                 ],
               ),
       ),
@@ -156,7 +151,11 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
   Widget _buildVideoGrid() {
     final allParticipants = [
       if (_webrtcService?.localUid != null)
-        CallParticipant(uid: _webrtcService!.localUid!, hasVideo: _webrtcService!.isVideoEnabled, hasAudio: !_webrtcService!.isMuted),
+        CallParticipant(
+          uid: _webrtcService!.localUid!,
+          hasVideo: _webrtcService!.isVideoEnabled,
+          hasAudio: !_webrtcService!.isMuted,
+        ),
       ..._participants.values,
     ];
 
@@ -217,7 +216,9 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
                       controller: VideoViewController.remote(
                         rtcEngine: _webrtcService!.engine!,
                         canvas: VideoCanvas(uid: participant.uid),
-                        connection: RtcConnection(channelId: widget.liveSessionId),
+                        connection: RtcConnection(
+                          channelId: widget.liveSessionId,
+                        ),
                       ),
                     ),
 
@@ -239,7 +240,10 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
                     const SizedBox(height: 8),
                     Text(
                       isLocal ? 'You' : 'User ${participant.uid}',
-                      style: const TextStyle(color: Colors.white70, fontSize: 14),
+                      style: const TextStyle(
+                        color: Colors.white70,
+                        fontSize: 14,
+                      ),
                     ),
                   ],
                 ),
@@ -288,14 +292,21 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
                 top: 8,
                 left: 8,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.blue.withValues(alpha: 0.8),
                     borderRadius: BorderRadius.circular(6),
                   ),
                   child: const Text(
                     'You',
-                    style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ),
@@ -316,10 +327,7 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [
-            Colors.transparent,
-            Colors.black.withValues(alpha: 0.8),
-          ],
+          colors: [Colors.transparent, Colors.black.withValues(alpha: 0.8)],
         ),
       ),
       child: Row(
@@ -407,10 +415,7 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
           ),
         ),
         const SizedBox(height: 4),
-        Text(
-          label,
-          style: const TextStyle(color: Colors.white, fontSize: 12),
-        ),
+        Text(label, style: const TextStyle(color: Colors.white, fontSize: 12)),
       ],
     );
   }

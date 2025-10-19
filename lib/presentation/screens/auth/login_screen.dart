@@ -26,7 +26,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _phoneController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  
+
   bool _isLoading = false;
   bool _isPhoneMode = true;
   bool _obscurePassword = true;
@@ -221,7 +221,7 @@ class _LoginScreenState extends State<LoginScreen> {
     if (confirmed == true && mounted) {
       // Remove '+' prefix from phone number for backend
       final cleanPhone = phone.replaceAll('+', '');
-      
+
       context.read<AuthBloc>().add(
         AuthOTPSendRequested(
           email: null, // No email for phone-only login
@@ -289,10 +289,7 @@ class _LoginScreenState extends State<LoginScreen> {
               },
             );
           } else if (state is AuthError) {
-            PulseToast.error(
-              context,
-              message: state.message,
-            );
+            PulseToast.error(context, message: state.message);
           }
         },
         child: SafeArea(
@@ -307,7 +304,7 @@ class _LoginScreenState extends State<LoginScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 const SizedBox(height: 60),
-                
+
                 // Logo and title
                 const Icon(
                   Icons.favorite,
@@ -315,7 +312,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   color: PulseColors.primary,
                 ),
                 const SizedBox(height: 24),
-                
+
                 Text(
                   'Welcome Back',
                   style: Theme.of(context).textTheme.headlineMedium?.copyWith(
@@ -325,7 +322,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 8),
-                
+
                 Text(
                   'Sign in to continue',
                   style: Theme.of(context).textTheme.bodyLarge?.copyWith(
@@ -334,7 +331,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 48),
-                
+
                 // Toggle between phone and email login
                 Row(
                   children: [
@@ -345,7 +342,9 @@ class _LoginScreenState extends State<LoginScreen> {
                           backgroundColor: _isPhoneMode
                               ? PulseColors.primary.withValues(alpha: 0.1)
                               : null,
-                          foregroundColor: _isPhoneMode ? PulseColors.primary : PulseColors.onSurfaceVariant,
+                          foregroundColor: _isPhoneMode
+                              ? PulseColors.primary
+                              : PulseColors.onSurfaceVariant,
                         ),
                         child: const Text('Phone'),
                       ),
@@ -358,7 +357,9 @@ class _LoginScreenState extends State<LoginScreen> {
                           backgroundColor: !_isPhoneMode
                               ? PulseColors.primary.withValues(alpha: 0.1)
                               : null,
-                          foregroundColor: !_isPhoneMode ? PulseColors.primary : PulseColors.onSurfaceVariant,
+                          foregroundColor: !_isPhoneMode
+                              ? PulseColors.primary
+                              : PulseColors.onSurfaceVariant,
                         ),
                         child: const Text('Email'),
                       ),
@@ -366,7 +367,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ],
                 ),
                 const SizedBox(height: 32),
-                
+
                 // Login form
                 Form(
                   key: _formKey,
@@ -406,7 +407,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         ),
                         const SizedBox(height: 16),
-                        
+
                         TextFormField(
                           controller: _passwordController,
                           obscureText: _obscurePassword,
@@ -416,17 +417,23 @@ class _LoginScreenState extends State<LoginScreen> {
                             hintText: 'Enter your password',
                             prefixIcon: const Icon(Icons.lock),
                             suffixIcon: IconButton(
-                              icon: Icon(_obscurePassword ? Icons.visibility : Icons.visibility_off),
-                              onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                              icon: Icon(
+                                _obscurePassword
+                                    ? Icons.visibility
+                                    : Icons.visibility_off,
+                              ),
+                              onPressed: () => setState(
+                                () => _obscurePassword = !_obscurePassword,
+                              ),
                             ),
                           ),
                         ),
                       ],
                       const SizedBox(height: 32),
-                      
+
                       // Extra space for keyboard
                       const SizedBox(height: 80),
-                      
+
                       // Login button
                       ElevatedButton(
                         onPressed: _isLoading ? null : _handleLogin,
@@ -444,7 +451,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                 width: 20,
                                 child: CircularProgressIndicator(
                                   strokeWidth: 2,
-                                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    Colors.white,
+                                  ),
                                 ),
                               )
                             : Text(
@@ -455,28 +464,27 @@ class _LoginScreenState extends State<LoginScreen> {
                                 ),
                               ),
                       ),
-                      
+
                       if (!_isPhoneMode) ...[
                         const SizedBox(height: 16),
-                        
+
                         // Forgot password
                         TextButton(
                           onPressed: () => context.push('/forgot-password'),
                           child: const Text('Forgot Password?'),
                         ),
                       ],
-                      
+
                       const SizedBox(height: 32),
-                      
+
                       // Register link
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Text(
                             "Don't have an account? ",
-                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: PulseColors.onSurfaceVariant,
-                            ),
+                            style: Theme.of(context).textTheme.bodyMedium
+                                ?.copyWith(color: PulseColors.onSurfaceVariant),
                           ),
                           TextButton(
                             onPressed: () => context.push('/register'),

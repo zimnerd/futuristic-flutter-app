@@ -96,24 +96,20 @@ class EventInvitation extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        eventId,
-        invitedById,
-        invitedUserId,
-        status,
-        createdAt,
-        respondedAt,
-        event,
-        invitedBy,
-        invitedUser,
-      ];
+    id,
+    eventId,
+    invitedById,
+    invitedUserId,
+    status,
+    createdAt,
+    respondedAt,
+    event,
+    invitedBy,
+    invitedUser,
+  ];
 }
 
-enum EventInvitationStatus {
-  pending,
-  accepted,
-  declined,
-}
+enum EventInvitationStatus { pending, accepted, declined }
 
 class CreateEventInvitationRequest {
   final String eventId;
@@ -125,10 +121,7 @@ class CreateEventInvitationRequest {
   });
 
   Map<String, dynamic> toJson() {
-    return {
-      'eventId': eventId,
-      'userIds': userIds,
-    };
+    return {'eventId': eventId, 'userIds': userIds};
   }
 }
 
@@ -142,9 +135,6 @@ class RespondToInvitationRequest {
   });
 
   Map<String, dynamic> toJson() {
-    return {
-      'invitationId': invitationId,
-      'status': status.name.toUpperCase(),
-    };
+    return {'invitationId': invitationId, 'status': status.name.toUpperCase()};
   }
 }

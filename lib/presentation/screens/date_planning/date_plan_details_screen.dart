@@ -11,10 +11,7 @@ import '../../widgets/common/pulse_toast.dart';
 class DatePlanDetailsScreen extends StatefulWidget {
   final Map<String, dynamic> datePlan;
 
-  const DatePlanDetailsScreen({
-    super.key,
-    required this.datePlan,
-  });
+  const DatePlanDetailsScreen({super.key, required this.datePlan});
 
   @override
   State<DatePlanDetailsScreen> createState() => _DatePlanDetailsScreenState();
@@ -26,7 +23,7 @@ class _DatePlanDetailsScreenState extends State<DatePlanDetailsScreen> {
     final plan = widget.datePlan;
     final scheduledDate = DateTime.tryParse(plan['scheduledDate'] ?? '');
     final activities = List<String>.from(plan['activities'] ?? []);
-    
+
     return Scaffold(
       appBar: AppBar(
         title: Text(plan['title'] ?? 'Date Plan'),
@@ -94,11 +91,11 @@ class _DatePlanDetailsScreenState extends State<DatePlanDetailsScreen> {
                   children: [
                     Text(
                       plan['title'] ?? 'Untitled Plan',
-                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: Theme.of(context).textTheme.headlineSmall
+                          ?.copyWith(fontWeight: FontWeight.bold),
                     ),
-                    if (plan['description'] != null && plan['description'].isNotEmpty) ...[
+                    if (plan['description'] != null &&
+                        plan['description'].isNotEmpty) ...[
                       const SizedBox(height: 8),
                       Text(
                         plan['description'],
@@ -110,7 +107,7 @@ class _DatePlanDetailsScreenState extends State<DatePlanDetailsScreen> {
               ),
             ),
             const SizedBox(height: 16),
-            
+
             // Date & Time
             if (scheduledDate != null)
               Card(
@@ -123,7 +120,7 @@ class _DatePlanDetailsScreenState extends State<DatePlanDetailsScreen> {
                 ),
               ),
             const SizedBox(height: 16),
-            
+
             // Location
             if (plan['location'] != null && plan['location'].isNotEmpty)
               Card(
@@ -138,7 +135,7 @@ class _DatePlanDetailsScreenState extends State<DatePlanDetailsScreen> {
                 ),
               ),
             const SizedBox(height: 16),
-            
+
             // Budget
             if (plan['budget'] != null && plan['budget'].isNotEmpty)
               Card(
@@ -149,7 +146,7 @@ class _DatePlanDetailsScreenState extends State<DatePlanDetailsScreen> {
                 ),
               ),
             const SizedBox(height: 16),
-            
+
             // Activities
             if (activities.isNotEmpty)
               Card(
@@ -160,27 +157,28 @@ class _DatePlanDetailsScreenState extends State<DatePlanDetailsScreen> {
                     children: [
                       Text(
                         'Activities',
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(height: 8),
-                      ...activities.map((activity) => Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 4),
-                        child: Row(
-                          children: [
-                            const Icon(Icons.check_circle_outline, size: 16),
-                            const SizedBox(width: 8),
-                            Expanded(child: Text(activity)),
-                          ],
+                      ...activities.map(
+                        (activity) => Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 4),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.check_circle_outline, size: 16),
+                              const SizedBox(width: 8),
+                              Expanded(child: Text(activity)),
+                            ],
+                          ),
                         ),
-                      )),
+                      ),
                     ],
                   ),
                 ),
               ),
             const SizedBox(height: 32),
-            
+
             // Action Buttons
             Row(
               children: [
@@ -213,14 +211,28 @@ class _DatePlanDetailsScreenState extends State<DatePlanDetailsScreen> {
 
   String _formatDate(DateTime date) {
     final months = [
-      'January', 'February', 'March', 'April', 'May', 'June',
-      'July', 'August', 'September', 'October', 'November', 'December'
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December',
     ];
     return '${months[date.month - 1]} ${date.day}, ${date.year}';
   }
 
   String _formatTime(DateTime date) {
-    final hour = date.hour == 0 ? 12 : date.hour > 12 ? date.hour - 12 : date.hour;
+    final hour = date.hour == 0
+        ? 12
+        : date.hour > 12
+        ? date.hour - 12
+        : date.hour;
     final minute = date.minute.toString().padLeft(2, '0');
     final period = date.hour < 12 ? 'AM' : 'PM';
     return '$hour:$minute $period';
@@ -235,8 +247,7 @@ class _DatePlanDetailsScreenState extends State<DatePlanDetailsScreen> {
 
   void _sharePlan() {
     // Share plan functionality
-    PulseToast.success(context, message: 'Plan shared!',
-    );
+    PulseToast.success(context, message: 'Plan shared!');
   }
 
   void _deletePlan() {
@@ -256,17 +267,14 @@ class _DatePlanDetailsScreenState extends State<DatePlanDetailsScreen> {
             onPressed: () {
               final planId = widget.datePlan['id'] as String?;
               if (planId != null) {
-                context.read<DatePlanningBloc>().add(CancelDatePlan(
-                  planId: planId,
-                  reason: 'Deleted by user',
-                ));
+                context.read<DatePlanningBloc>().add(
+                  CancelDatePlan(planId: planId, reason: 'Deleted by user'),
+                );
               }
               Navigator.pop(context); // Close dialog
               context.pop(); // Return to previous screen
             },
-            style: TextButton.styleFrom(
-              foregroundColor: Colors.red,
-            ),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
             child: const Text('Delete'),
           ),
         ],
@@ -305,8 +313,7 @@ class _DatePlanDetailsScreenState extends State<DatePlanDetailsScreen> {
           TextButton(
             onPressed: () {
               Navigator.pop(context);
-              PulseToast.success(context, message: 'Invitation sent!',
-              );
+              PulseToast.success(context, message: 'Invitation sent!');
             },
             child: const Text('Send'),
           ),
@@ -317,7 +324,6 @@ class _DatePlanDetailsScreenState extends State<DatePlanDetailsScreen> {
 
   void _openLocation(String location) {
     // Open location in maps app (would use url_launcher in real implementation)
-    PulseToast.info(context, message: 'Opening $location in maps...',
-    );
+    PulseToast.info(context, message: 'Opening $location in maps...');
   }
 }

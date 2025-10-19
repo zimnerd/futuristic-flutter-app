@@ -35,8 +35,7 @@ class EventAnalyticsIndicators extends StatelessWidget {
       spacing: compact ? 6 : 8,
       runSpacing: compact ? 6 : 8,
       children: [
-        if (showAttendance && event.attendanceRate > 0)
-          _buildAttendanceBadge(),
+        if (showAttendance && event.attendanceRate > 0) _buildAttendanceBadge(),
         if (showEngagement && event.engagementScore > 20)
           _buildEngagementBadge(),
         if (showQuality) _buildQualityBadge(),
@@ -73,11 +72,7 @@ class EventAnalyticsIndicators extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            config.icon,
-            color: Colors.white,
-            size: compact ? 12 : 14,
-          ),
+          Icon(config.icon, color: Colors.white, size: compact ? 12 : 14),
           SizedBox(width: compact ? 3 : 4),
           Text(
             config.label,
@@ -110,11 +105,7 @@ class EventAnalyticsIndicators extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            Icons.trending_up,
-            color: color,
-            size: compact ? 12 : 14,
-          ),
+          Icon(Icons.trending_up, color: color, size: compact ? 12 : 14),
           SizedBox(width: compact ? 3 : 4),
           Text(
             '$score%',
@@ -158,11 +149,7 @@ class EventAnalyticsIndicators extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            config.icon,
-            color: Colors.white,
-            size: compact ? 12 : 14,
-          ),
+          Icon(config.icon, color: Colors.white, size: compact ? 12 : 14),
           SizedBox(width: compact ? 3 : 4),
           Text(
             config.label,
@@ -196,11 +183,7 @@ class EventAnalyticsIndicators extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            config.icon,
-            color: config.color,
-            size: compact ? 12 : 14,
-          ),
+          Icon(config.icon, color: config.color, size: compact ? 12 : 14),
           if (!compact) ...[
             SizedBox(width: 4),
             Text(
@@ -233,11 +216,7 @@ class EventAnalyticsIndicators extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            Icons.verified,
-            color: Colors.white,
-            size: compact ? 12 : 14,
-          ),
+          Icon(Icons.verified, color: Colors.white, size: compact ? 12 : 14),
           if (!compact) ...[
             const SizedBox(width: 4),
             const Text(
@@ -306,11 +285,7 @@ class EventAnalyticsIndicators extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(
-            Icons.star,
-            color: Colors.white,
-            size: 14,
-          ),
+          const Icon(Icons.star, color: Colors.white, size: 14),
           const SizedBox(width: 4),
           Text(
             event.satisfactionScore.toStringAsFixed(1),
@@ -328,37 +303,35 @@ class EventAnalyticsIndicators extends StatelessWidget {
   // ==================== Configuration Helpers ====================
 
   /// Get attendance health configuration
-  ({
-    String label,
-    IconData icon,
-    List<Color> colors,
-  }) _getAttendanceConfig(String health) {
+  ({String label, IconData icon, List<Color> colors}) _getAttendanceConfig(
+    String health,
+  ) {
     return switch (health) {
       'excellent' => (
-          label: 'Excellent',
-          icon: Icons.people,
-          colors: const [Color(0xFF00D95F), Color(0xFF00E676)],
-        ),
+        label: 'Excellent',
+        icon: Icons.people,
+        colors: const [Color(0xFF00D95F), Color(0xFF00E676)],
+      ),
       'good' => (
-          label: 'Good',
-          icon: Icons.people,
-          colors: const [Color(0xFF4CAF50), Color(0xFF66BB6A)],
-        ),
+        label: 'Good',
+        icon: Icons.people,
+        colors: const [Color(0xFF4CAF50), Color(0xFF66BB6A)],
+      ),
       'moderate' => (
-          label: 'Moderate',
-          icon: Icons.people_outline,
-          colors: const [Color(0xFFFFA726), Color(0xFFFFB74D)],
-        ),
+        label: 'Moderate',
+        icon: Icons.people_outline,
+        colors: const [Color(0xFFFFA726), Color(0xFFFFB74D)],
+      ),
       'poor' => (
-          label: 'Poor',
-          icon: Icons.people_outline,
-          colors: const [Color(0xFFEF5350), Color(0xFFE57373)],
-        ),
+        label: 'Poor',
+        icon: Icons.people_outline,
+        colors: const [Color(0xFFEF5350), Color(0xFFE57373)],
+      ),
       _ => (
-          label: 'N/A',
-          icon: Icons.info_outline,
-          colors: const [Color(0xFF9E9E9E), Color(0xFFBDBDBD)],
-        ),
+        label: 'N/A',
+        icon: Icons.info_outline,
+        colors: const [Color(0xFF9E9E9E), Color(0xFFBDBDBD)],
+      ),
     };
   }
 
@@ -371,72 +344,68 @@ class EventAnalyticsIndicators extends StatelessWidget {
   }
 
   /// Get quality configuration
-  ({
-    String label,
-    IconData icon,
-    List<Color> colors,
-  }) _getQualityConfig(String quality) {
+  ({String label, IconData icon, List<Color> colors}) _getQualityConfig(
+    String quality,
+  ) {
     return switch (quality) {
       'premium' => (
-          label: 'Premium',
-          icon: Icons.workspace_premium,
-          colors: PulseColors.premiumGradient,
-        ),
+        label: 'Premium',
+        icon: Icons.workspace_premium,
+        colors: PulseColors.premiumGradient,
+      ),
       'great' => (
-          label: 'Great',
-          icon: Icons.star,
-          colors: const [Color(0xFF6E3BFF), Color(0xFF9D5CFF)],
-        ),
+        label: 'Great',
+        icon: Icons.star,
+        colors: const [Color(0xFF6E3BFF), Color(0xFF9D5CFF)],
+      ),
       'good' => (
-          label: 'Good',
-          icon: Icons.check_circle,
-          colors: const [Color(0xFF4CAF50), Color(0xFF66BB6A)],
-        ),
+        label: 'Good',
+        icon: Icons.check_circle,
+        colors: const [Color(0xFF4CAF50), Color(0xFF66BB6A)],
+      ),
       'standard' => (
-          label: 'Standard',
-          icon: Icons.event,
-          colors: const [Color(0xFF9E9E9E), Color(0xFFBDBDBD)],
-        ),
+        label: 'Standard',
+        icon: Icons.event,
+        colors: const [Color(0xFF9E9E9E), Color(0xFFBDBDBD)],
+      ),
       _ => (
-          label: 'N/A',
-          icon: Icons.info_outline,
-          colors: const [Color(0xFF9E9E9E), Color(0xFFBDBDBD)],
-        ),
+        label: 'N/A',
+        icon: Icons.info_outline,
+        colors: const [Color(0xFF9E9E9E), Color(0xFFBDBDBD)],
+      ),
     };
   }
 
   /// Get popularity configuration
-  ({
-    String label,
-    IconData icon,
-    Color color,
-  }) _getPopularityConfig(String popularity) {
+  ({String label, IconData icon, Color color}) _getPopularityConfig(
+    String popularity,
+  ) {
     return switch (popularity) {
       'viral' => (
-          label: 'Viral',
-          icon: Icons.whatshot,
-          color: const Color(0xFFFF3D00),
-        ),
+        label: 'Viral',
+        icon: Icons.whatshot,
+        color: const Color(0xFFFF3D00),
+      ),
       'trending' => (
-          label: 'Trending',
-          icon: Icons.trending_up,
-          color: const Color(0xFFFF6B00),
-        ),
+        label: 'Trending',
+        icon: Icons.trending_up,
+        color: const Color(0xFFFF6B00),
+      ),
       'popular' => (
-          label: 'Popular',
-          icon: Icons.thumb_up,
-          color: const Color(0xFF6E3BFF),
-        ),
+        label: 'Popular',
+        icon: Icons.thumb_up,
+        color: const Color(0xFF6E3BFF),
+      ),
       'growing' => (
-          label: 'Growing',
-          icon: Icons.show_chart,
-          color: const Color(0xFF00C2FF),
-        ),
+        label: 'Growing',
+        icon: Icons.show_chart,
+        color: const Color(0xFF00C2FF),
+      ),
       _ => (
-          label: 'New',
-          icon: Icons.fiber_new,
-          color: const Color(0xFF9E9E9E),
-        ),
+        label: 'New',
+        icon: Icons.fiber_new,
+        color: const Color(0xFF9E9E9E),
+      ),
     };
   }
 
@@ -456,10 +425,7 @@ class EventAnalyticsIndicators extends StatelessWidget {
 class EventAnalyticsCard extends StatelessWidget {
   final Event event;
 
-  const EventAnalyticsCard({
-    super.key,
-    required this.event,
-  });
+  const EventAnalyticsCard({super.key, required this.event});
 
   @override
   Widget build(BuildContext context) {
@@ -481,15 +447,14 @@ class EventAnalyticsCard extends StatelessWidget {
                 const SizedBox(width: 8),
                 const Text(
                   'Event Analytics',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
                 const Spacer(),
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: PulseColors.primary.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
@@ -551,10 +516,7 @@ class EventAnalyticsCard extends StatelessWidget {
             if (event.conversionRate != null) ...[
               const Text(
                 'Conversion Funnel',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                ),
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 12),
               _buildFunnelVisual(),
@@ -600,12 +562,7 @@ class EventAnalyticsCard extends StatelessWidget {
       children: [
         Icon(icon, color: color, size: 20),
         const SizedBox(width: 8),
-        Expanded(
-          child: Text(
-            label,
-            style: const TextStyle(fontSize: 14),
-          ),
-        ),
+        Expanded(child: Text(label, style: const TextStyle(fontSize: 14))),
         Text(
           value,
           style: TextStyle(
@@ -663,15 +620,16 @@ class EventAnalyticsCard extends StatelessWidget {
     );
   }
 
-  Widget _buildFunnelStage(String label, String percentage, double widthFactor) {
+  Widget _buildFunnelStage(
+    String label,
+    String percentage,
+    double widthFactor,
+  ) {
     return Row(
       children: [
         SizedBox(
           width: 120,
-          child: Text(
-            label,
-            style: const TextStyle(fontSize: 12),
-          ),
+          child: Text(label, style: const TextStyle(fontSize: 12)),
         ),
         Expanded(
           child: Stack(
@@ -684,10 +642,9 @@ class EventAnalyticsCard extends StatelessWidget {
                 ),
               ),
               FractionallySizedBox(
-                widthFactor: widthFactor *
-                    (double.tryParse(
-                            percentage.replaceAll('%', '')) ??
-                        0) /
+                widthFactor:
+                    widthFactor *
+                    (double.tryParse(percentage.replaceAll('%', '')) ?? 0) /
                     100,
                 child: Container(
                   height: 24,
@@ -726,17 +683,11 @@ class EventAnalyticsCard extends StatelessWidget {
         const SizedBox(height: 4),
         Text(
           value,
-          style: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w700,
-          ),
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
         ),
         Text(
           label,
-          style: TextStyle(
-            fontSize: 11,
-            color: Colors.grey.shade600,
-          ),
+          style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
         ),
       ],
     );

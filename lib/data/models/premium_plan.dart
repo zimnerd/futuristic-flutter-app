@@ -140,7 +140,7 @@ class PremiumPlan extends Equatable {
       'platinum': 4,
       'diamond': 5,
     };
-    
+
     for (final entry in tierMap.entries) {
       if (name.toLowerCase().contains(entry.key)) {
         return entry.value;
@@ -188,20 +188,20 @@ class PremiumPlan extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        name,
-        description,
-        price,
-        currency,
-        interval,
-        intervalCount,
-        features,
-        limits,
-        isActive,
-        isPopular,
-        badge,
-        metadata,
-        createdAt,
-        updatedAt,
-      ];
+    id,
+    name,
+    description,
+    price,
+    currency,
+    interval,
+    intervalCount,
+    features,
+    limits,
+    isActive,
+    isPopular,
+    badge,
+    metadata,
+    createdAt,
+    updatedAt,
+  ];
 }

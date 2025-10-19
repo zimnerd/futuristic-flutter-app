@@ -93,34 +93,24 @@ class VoiceMessage extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        conversationId,
-        senderId,
-        audioUrl,
-        duration,
-        waveformData,
-        isPlayed,
-        createdAt,
-        senderName,
-        senderAvatarUrl,
-      ];
+    id,
+    conversationId,
+    senderId,
+    audioUrl,
+    duration,
+    waveformData,
+    isPlayed,
+    createdAt,
+    senderName,
+    senderAvatarUrl,
+  ];
 }
 
 /// Represents the recording state for voice messages
-enum VoiceRecordingState {
-  idle,
-  recording,
-  paused,
-  finished,
-}
+enum VoiceRecordingState { idle, recording, paused, finished }
 
 /// Represents the playback state for voice messages
-enum VoicePlaybackState {
-  stopped,
-  playing,
-  paused,
-  loading,
-}
+enum VoicePlaybackState { stopped, playing, paused, loading }
 
 /// Voice message recording session
 class VoiceRecordingSession extends Equatable {
@@ -155,5 +145,11 @@ class VoiceRecordingSession extends Equatable {
   }
 
   @override
-  List<Object?> get props => [sessionId, state, duration, waveformData, filePath];
+  List<Object?> get props => [
+    sessionId,
+    state,
+    duration,
+    waveformData,
+    filePath,
+  ];
 }

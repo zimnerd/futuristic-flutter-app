@@ -8,13 +8,11 @@ class TokenService {
   static const String _accessTokenKey = 'access_token';
   static const String _refreshTokenKey = 'refresh_token';
   static const String _userDataKey = 'user_data';
-  
+
   static final _storage = FlutterSecureStorage(
-    aOptions: AndroidOptions(
-      encryptedSharedPreferences: true,
-    ),
+    aOptions: AndroidOptions(encryptedSharedPreferences: true),
   );
-  
+
   final Logger _logger = Logger();
 
   /// Store access and refresh tokens securely
@@ -100,7 +98,7 @@ class TokenService {
     try {
       final accessToken = await getAccessToken();
       final refreshToken = await getRefreshToken();
-      
+
       return accessToken != null && refreshToken != null;
     } catch (e) {
       _logger.e('Failed to check token validity: $e');
@@ -116,14 +114,14 @@ class TokenService {
 
       final payload = _decodeBase64(parts[1]);
       final payloadMap = jsonDecode(payload) as Map<String, dynamic>;
-      
+
       if (payloadMap['exp'] != null) {
         final expiryDate = DateTime.fromMillisecondsSinceEpoch(
           (payloadMap['exp'] as int) * 1000,
         );
         return DateTime.now().isAfter(expiryDate);
       }
-      
+
       return false;
     } catch (e) {
       _logger.e('Failed to parse token expiry: $e');
@@ -142,17 +140,18 @@ class TokenService {
 
       final payload = _decodeBase64(parts[1]);
       final payloadMap = jsonDecode(payload) as Map<String, dynamic>;
-      
+
       // Try common user ID field names
-      final userId = payloadMap['sub'] ?? // Standard JWT subject claim
-                     payloadMap['userId'] ?? 
-                     payloadMap['user_id'] ?? 
-                     payloadMap['id'];
-      
+      final userId =
+          payloadMap['sub'] ?? // Standard JWT subject claim
+          payloadMap['userId'] ??
+          payloadMap['user_id'] ??
+          payloadMap['id'];
+
       if (userId != null) {
         return userId.toString();
       }
-      
+
       _logger.w('No user ID found in JWT payload');
       return null;
     } catch (e) {

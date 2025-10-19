@@ -69,10 +69,7 @@ class UsePremiumFeature extends PremiumEvent {
   final PremiumFeatureType featureType;
   final Map<String, dynamic>? parameters;
 
-  const UsePremiumFeature({
-    required this.featureType,
-    this.parameters,
-  });
+  const UsePremiumFeature({required this.featureType, this.parameters});
 
   @override
   List<Object?> get props => [featureType, parameters];

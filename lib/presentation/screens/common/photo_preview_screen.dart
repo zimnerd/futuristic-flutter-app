@@ -109,15 +109,13 @@ class _PhotoPreviewScreenState extends State<PhotoPreviewScreen> {
                     value: event == null
                         ? 0
                         : event.cumulativeBytesLoaded /
-                            (event.expectedTotalBytes ?? 1),
+                              (event.expectedTotalBytes ?? 1),
                     valueColor: const AlwaysStoppedAnimation<Color>(
                       PulseColors.primary,
                     ),
                   ),
                 ),
-                backgroundDecoration: const BoxDecoration(
-                  color: Colors.black,
-                ),
+                backgroundDecoration: const BoxDecoration(color: Colors.black),
                 pageController: _pageController,
                 onPageChanged: (index) {
                   setState(() => _currentIndex = index);

@@ -8,28 +8,30 @@ import '../../core/utils/logger.dart';
 /// Push notification service for handling notifications
 class PushNotificationService {
   static PushNotificationService? _instance;
-  static PushNotificationService get instance => _instance ??= PushNotificationService._();
+  static PushNotificationService get instance =>
+      _instance ??= PushNotificationService._();
   PushNotificationService._();
 
   String? _authToken;
   String? _deviceToken;
-  
-  final StreamController<Map<String, dynamic>> _notificationStreamController = 
+
+  final StreamController<Map<String, dynamic>> _notificationStreamController =
       StreamController<Map<String, dynamic>>.broadcast();
-  Stream<Map<String, dynamic>> get onNotification => _notificationStreamController.stream;
+  Stream<Map<String, dynamic>> get onNotification =>
+      _notificationStreamController.stream;
 
   /// Initialize push notifications
   Future<void> initialize({String? authToken}) async {
     _authToken = authToken;
-    
+
     try {
       // Generate a mock device token for now
       _deviceToken = 'device_${DateTime.now().millisecondsSinceEpoch}';
-      
+
       if (_authToken != null) {
         await _registerTokenWithBackend(_deviceToken!);
       }
-      
+
       AppLogger.info('Push notifications initialized successfully');
     } catch (e) {
       AppLogger.error('Failed to initialize push notifications: $e');
@@ -39,7 +41,7 @@ class PushNotificationService {
   /// Register device token with backend
   Future<void> _registerTokenWithBackend(String token) async {
     if (_authToken == null) return;
-    
+
     try {
       final response = await http.post(
         Uri.parse(
@@ -58,7 +60,9 @@ class PushNotificationService {
       if (response.statusCode == 200 || response.statusCode == 201) {
         AppLogger.info('Device token registered successfully');
       } else {
-        AppLogger.warning('Failed to register device token: ${response.statusCode}');
+        AppLogger.warning(
+          'Failed to register device token: ${response.statusCode}',
+        );
       }
     } catch (e) {
       AppLogger.error('Error registering device token: $e');
@@ -68,7 +72,7 @@ class PushNotificationService {
   /// Send test notification
   Future<void> sendTestNotification() async {
     if (_authToken == null) return;
-    
+
     try {
       final response = await http.post(
         Uri.parse('${ApiConstants.baseUrl}${ApiConstants.notifications}/test'),
@@ -87,7 +91,9 @@ class PushNotificationService {
           'body': 'This is a test notification from PulseLink',
         });
       } else {
-        AppLogger.warning('Failed to send test notification: ${response.statusCode}');
+        AppLogger.warning(
+          'Failed to send test notification: ${response.statusCode}',
+        );
       }
     } catch (e) {
       AppLogger.error('Error sending test notification: $e');
@@ -110,10 +116,12 @@ class PushNotificationService {
     int? quietEndHour,
   }) async {
     if (_authToken == null) return;
-    
+
     try {
       final response = await http.put(
-        Uri.parse('${ApiConstants.baseUrl}${ApiConstants.notifications}/preferences'),
+        Uri.parse(
+          '${ApiConstants.baseUrl}${ApiConstants.notifications}/preferences',
+        ),
         headers: {
           'Authorization': 'Bearer $_authToken',
           'Content-Type': 'application/json',
@@ -132,7 +140,9 @@ class PushNotificationService {
       if (response.statusCode == 200) {
         AppLogger.info('Notification preferences updated successfully');
       } else {
-        AppLogger.warning('Failed to update notification preferences: ${response.statusCode}');
+        AppLogger.warning(
+          'Failed to update notification preferences: ${response.statusCode}',
+        );
       }
     } catch (e) {
       AppLogger.error('Error updating notification preferences: $e');
@@ -142,10 +152,12 @@ class PushNotificationService {
   /// Get notification preferences
   Future<Map<String, dynamic>?> getNotificationPreferences() async {
     if (_authToken == null) return null;
-    
+
     try {
       final response = await http.get(
-        Uri.parse('${ApiConstants.baseUrl}${ApiConstants.notifications}/preferences'),
+        Uri.parse(
+          '${ApiConstants.baseUrl}${ApiConstants.notifications}/preferences',
+        ),
         headers: {
           'Authorization': 'Bearer $_authToken',
           'Content-Type': 'application/json',
@@ -156,7 +168,9 @@ class PushNotificationService {
         final data = json.decode(response.body);
         return data['preferences'] as Map<String, dynamic>;
       } else {
-        AppLogger.warning('Failed to get notification preferences: ${response.statusCode}');
+        AppLogger.warning(
+          'Failed to get notification preferences: ${response.statusCode}',
+        );
         return null;
       }
     } catch (e) {
@@ -171,10 +185,12 @@ class PushNotificationService {
     int limit = 20,
   }) async {
     if (_authToken == null) return [];
-    
+
     try {
       final response = await http.get(
-        Uri.parse('${ApiConstants.baseUrl}${ApiConstants.notifications}/history?page=$page&limit=$limit'),
+        Uri.parse(
+          '${ApiConstants.baseUrl}${ApiConstants.notifications}/history?page=$page&limit=$limit',
+        ),
         headers: {
           'Authorization': 'Bearer $_authToken',
           'Content-Type': 'application/json',
@@ -185,7 +201,9 @@ class PushNotificationService {
         final data = json.decode(response.body);
         return List<Map<String, dynamic>>.from(data['notifications'] ?? []);
       } else {
-        AppLogger.warning('Failed to get notification history: ${response.statusCode}');
+        AppLogger.warning(
+          'Failed to get notification history: ${response.statusCode}',
+        );
         return [];
       }
     } catch (e) {
@@ -197,10 +215,12 @@ class PushNotificationService {
   /// Mark notification as read
   Future<void> markAsRead(String notificationId) async {
     if (_authToken == null) return;
-    
+
     try {
       final response = await http.patch(
-        Uri.parse('${ApiConstants.baseUrl}${ApiConstants.notifications}/$notificationId/read'),
+        Uri.parse(
+          '${ApiConstants.baseUrl}${ApiConstants.notifications}/$notificationId/read',
+        ),
         headers: {
           'Authorization': 'Bearer $_authToken',
           'Content-Type': 'application/json',
@@ -210,7 +230,9 @@ class PushNotificationService {
       if (response.statusCode == 200) {
         AppLogger.info('Notification marked as read: $notificationId');
       } else {
-        AppLogger.warning('Failed to mark notification as read: ${response.statusCode}');
+        AppLogger.warning(
+          'Failed to mark notification as read: ${response.statusCode}',
+        );
       }
     } catch (e) {
       AppLogger.error('Error marking notification as read: $e');
@@ -220,10 +242,12 @@ class PushNotificationService {
   /// Delete notification
   Future<void> deleteNotification(String notificationId) async {
     if (_authToken == null) return;
-    
+
     try {
       final response = await http.delete(
-        Uri.parse('${ApiConstants.baseUrl}${ApiConstants.notifications}/$notificationId'),
+        Uri.parse(
+          '${ApiConstants.baseUrl}${ApiConstants.notifications}/$notificationId',
+        ),
         headers: {
           'Authorization': 'Bearer $_authToken',
           'Content-Type': 'application/json',
@@ -233,7 +257,9 @@ class PushNotificationService {
       if (response.statusCode == 200) {
         AppLogger.info('Notification deleted: $notificationId');
       } else {
-        AppLogger.warning('Failed to delete notification: ${response.statusCode}');
+        AppLogger.warning(
+          'Failed to delete notification: ${response.statusCode}',
+        );
       }
     } catch (e) {
       AppLogger.error('Error deleting notification: $e');
@@ -243,23 +269,25 @@ class PushNotificationService {
   /// Subscribe to topic
   Future<void> subscribeToTopic(String topic) async {
     if (_authToken == null) return;
-    
+
     try {
       final response = await http.post(
-        Uri.parse('${ApiConstants.baseUrl}${ApiConstants.notifications}/subscribe'),
+        Uri.parse(
+          '${ApiConstants.baseUrl}${ApiConstants.notifications}/subscribe',
+        ),
         headers: {
           'Authorization': 'Bearer $_authToken',
           'Content-Type': 'application/json',
         },
-        body: json.encode({
-          'topic': topic,
-        }),
+        body: json.encode({'topic': topic}),
       );
 
       if (response.statusCode == 200) {
         AppLogger.info('Subscribed to topic: $topic');
       } else {
-        AppLogger.warning('Failed to subscribe to topic: ${response.statusCode}');
+        AppLogger.warning(
+          'Failed to subscribe to topic: ${response.statusCode}',
+        );
       }
     } catch (e) {
       AppLogger.error('Error subscribing to topic $topic: $e');
@@ -269,23 +297,25 @@ class PushNotificationService {
   /// Unsubscribe from topic
   Future<void> unsubscribeFromTopic(String topic) async {
     if (_authToken == null) return;
-    
+
     try {
       final response = await http.post(
-        Uri.parse('${ApiConstants.baseUrl}${ApiConstants.notifications}/unsubscribe'),
+        Uri.parse(
+          '${ApiConstants.baseUrl}${ApiConstants.notifications}/unsubscribe',
+        ),
         headers: {
           'Authorization': 'Bearer $_authToken',
           'Content-Type': 'application/json',
         },
-        body: json.encode({
-          'topic': topic,
-        }),
+        body: json.encode({'topic': topic}),
       );
 
       if (response.statusCode == 200) {
         AppLogger.info('Unsubscribed from topic: $topic');
       } else {
-        AppLogger.warning('Failed to unsubscribe from topic: ${response.statusCode}');
+        AppLogger.warning(
+          'Failed to unsubscribe from topic: ${response.statusCode}',
+        );
       }
     } catch (e) {
       AppLogger.error('Error unsubscribing from topic $topic: $e');
@@ -295,7 +325,7 @@ class PushNotificationService {
   /// Update auth token
   void updateAuthToken(String authToken) {
     _authToken = authToken;
-    
+
     // Re-register device token with new auth
     if (_deviceToken != null) {
       _registerTokenWithBackend(_deviceToken!);
@@ -309,10 +339,10 @@ class PushNotificationService {
       if (_deviceToken != null && _authToken != null) {
         await _unregisterTokenFromBackend(_deviceToken!);
       }
-      
+
       _authToken = null;
       _deviceToken = null;
-      
+
       AppLogger.info('Notifications cleared successfully');
     } catch (e) {
       AppLogger.error('Error clearing notifications: $e');
@@ -322,7 +352,7 @@ class PushNotificationService {
   /// Unregister device token from backend
   Future<void> _unregisterTokenFromBackend(String token) async {
     if (_authToken == null) return;
-    
+
     try {
       final response = await http.delete(
         Uri.parse(
@@ -337,7 +367,9 @@ class PushNotificationService {
       if (response.statusCode == 200) {
         AppLogger.info('Device token unregistered successfully');
       } else {
-        AppLogger.warning('Failed to unregister device token: ${response.statusCode}');
+        AppLogger.warning(
+          'Failed to unregister device token: ${response.statusCode}',
+        );
       }
     } catch (e) {
       AppLogger.error('Error unregistering device token: $e');

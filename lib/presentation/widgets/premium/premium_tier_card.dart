@@ -35,25 +35,25 @@ class _PremiumTierCardState extends State<PremiumTierCard>
   @override
   void initState() {
     super.initState();
-    
+
     _shimmerController = AnimationController(
       duration: const Duration(milliseconds: 2000),
       vsync: this,
     );
-    
+
     _selectionController = AnimationController(
       duration: const Duration(milliseconds: 300),
       vsync: this,
     );
-    
+
     _shimmerAnimation = Tween<double>(begin: -1.0, end: 1.0).animate(
       CurvedAnimation(parent: _shimmerController, curve: Curves.easeInOut),
     );
-    
+
     _scaleAnimation = Tween<double>(begin: 1.0, end: 1.02).animate(
       CurvedAnimation(parent: _selectionController, curve: Curves.easeOut),
     );
-    
+
     if (widget.tier == PremiumTier.premium) {
       _shimmerController.repeat();
     }
@@ -62,7 +62,7 @@ class _PremiumTierCardState extends State<PremiumTierCard>
   @override
   void didUpdateWidget(PremiumTierCard oldWidget) {
     super.didUpdateWidget(oldWidget);
-    
+
     if (widget.isSelected != oldWidget.isSelected) {
       if (widget.isSelected) {
         _selectionController.forward();
@@ -101,16 +101,16 @@ class _PremiumTierCardState extends State<PremiumTierCard>
                     : null,
                 color: widget.isSelected ? null : Colors.white,
                 border: Border.all(
-                  color: widget.isSelected 
-                      ? Colors.transparent 
+                  color: widget.isSelected
+                      ? Colors.transparent
                       : widget.tier == PremiumTier.premium
-                          ? PulseColors.primary
-                          : Colors.grey.shade300,
+                      ? PulseColors.primary
+                      : Colors.grey.shade300,
                   width: widget.tier == PremiumTier.premium ? 2 : 1,
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: widget.isSelected 
+                    color: widget.isSelected
                         ? PulseColors.primary.withValues(alpha: 0.3)
                         : PulseColors.outline.withValues(alpha: 0.2),
                     blurRadius: widget.isSelected ? 20 : 10,
@@ -124,7 +124,7 @@ class _PremiumTierCardState extends State<PremiumTierCard>
                   // Shimmer effect for premium plans
                   if (widget.tier == PremiumTier.premium && !widget.isSelected)
                     _buildShimmerEffect(),
-                  
+
                   // Main content
                   Padding(
                     padding: const EdgeInsets.all(20),
@@ -143,8 +143,8 @@ class _PremiumTierCardState extends State<PremiumTierCard>
                                     style: TextStyle(
                                       fontSize: 20,
                                       fontWeight: FontWeight.bold,
-                                      color: widget.isSelected 
-                                          ? Colors.white 
+                                      color: widget.isSelected
+                                          ? Colors.white
                                           : PulseColors.onSurface,
                                     ),
                                   ),
@@ -152,8 +152,8 @@ class _PremiumTierCardState extends State<PremiumTierCard>
                                     _getDescription(),
                                     style: TextStyle(
                                       fontSize: 14,
-                                      color: widget.isSelected 
-                                          ? Colors.white70 
+                                      color: widget.isSelected
+                                          ? Colors.white70
                                           : Colors.grey[600],
                                     ),
                                   ),
@@ -167,8 +167,8 @@ class _PremiumTierCardState extends State<PremiumTierCard>
                                   vertical: 6,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: widget.isSelected 
-                                      ? Colors.white 
+                                  color: widget.isSelected
+                                      ? Colors.white
                                       : PulseColors.primary,
                                   borderRadius: BorderRadius.circular(20),
                                 ),
@@ -177,17 +177,17 @@ class _PremiumTierCardState extends State<PremiumTierCard>
                                   style: TextStyle(
                                     fontSize: 10,
                                     fontWeight: FontWeight.bold,
-                                    color: widget.isSelected 
-                                        ? PulseColors.primary 
+                                    color: widget.isSelected
+                                        ? PulseColors.primary
                                         : Colors.white,
                                   ),
                                 ),
                               ),
                           ],
                         ),
-                        
+
                         const SizedBox(height: 16),
-                        
+
                         // Pricing
                         if (widget.tier != PremiumTier.free)
                           Row(
@@ -198,8 +198,8 @@ class _PremiumTierCardState extends State<PremiumTierCard>
                                 style: TextStyle(
                                   fontSize: 32,
                                   fontWeight: FontWeight.bold,
-                                  color: widget.isSelected 
-                                      ? Colors.white 
+                                  color: widget.isSelected
+                                      ? Colors.white
                                       : Colors.black87,
                                 ),
                               ),
@@ -211,30 +211,32 @@ class _PremiumTierCardState extends State<PremiumTierCard>
                             style: TextStyle(
                               fontSize: 32,
                               fontWeight: FontWeight.bold,
-                              color: widget.isSelected 
-                                  ? Colors.white 
+                              color: widget.isSelected
+                                  ? Colors.white
                                   : Colors.black87,
                             ),
                           ),
-                        
+
                         const SizedBox(height: 20),
-                        
+
                         // Features list
-                        ...widget.tier.features.map((feature) =>
-                          _buildFeatureItem(feature),
+                        ...widget.tier.features.map(
+                          (feature) => _buildFeatureItem(feature),
                         ),
-                        
+
                         const SizedBox(height: 20),
-                        
+
                         // CTA Button
-                        if (widget.isSelected && widget.tier != PremiumTier.free)
+                        if (widget.isSelected &&
+                            widget.tier != PremiumTier.free)
                           PulseButton(
                             text: 'Get ${widget.tier.displayName}',
                             onPressed: () {
                               context.read<PremiumBloc>().add(
                                 SubscribeToPlan(
                                   planId: widget.tier.name,
-                                  paymentMethodId: 'default', // This would come from payment selection
+                                  paymentMethodId:
+                                      'default', // This would come from payment selection
                                 ),
                               );
                             },
@@ -243,7 +245,7 @@ class _PremiumTierCardState extends State<PremiumTierCard>
                       ],
                     ),
                   ),
-                  
+
                   // Selection indicator
                   if (widget.isSelected)
                     Positioned(
@@ -307,19 +309,14 @@ class _PremiumTierCardState extends State<PremiumTierCard>
       padding: const EdgeInsets.only(bottom: 8),
       child: Row(
         children: [
-          Text(
-            feature.icon,
-            style: const TextStyle(fontSize: 18),
-          ),
+          Text(feature.icon, style: const TextStyle(fontSize: 18)),
           const SizedBox(width: 12),
           Expanded(
             child: Text(
               feature.displayName,
               style: TextStyle(
                 fontSize: 14,
-                color: widget.isSelected 
-                    ? Colors.white 
-                    : Colors.black87,
+                color: widget.isSelected ? Colors.white : Colors.black87,
               ),
             ),
           ),

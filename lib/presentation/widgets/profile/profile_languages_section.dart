@@ -45,7 +45,7 @@ class ProfileLanguagesSection extends StatelessWidget {
 
   void _toggleLanguage(String language) {
     final updatedLanguages = List<String>.from(selectedLanguages);
-    
+
     if (updatedLanguages.contains(language)) {
       updatedLanguages.remove(language);
     } else {
@@ -53,7 +53,7 @@ class ProfileLanguagesSection extends StatelessWidget {
         updatedLanguages.add(language);
       }
     }
-    
+
     onChanged(updatedLanguages);
   }
 
@@ -69,16 +69,13 @@ class ProfileLanguagesSection extends StatelessWidget {
     final textColor =
         Theme.of(context).textTheme.bodyLarge?.color ??
         (isDark ? Colors.white : Colors.black87);
-    
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: containerColor,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: borderColor,
-          width: 1,
-        ),
+        border: Border.all(color: borderColor, width: 1),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -121,7 +118,9 @@ class ProfileLanguagesSection extends StatelessWidget {
                               vertical: 2,
                             ),
                             decoration: BoxDecoration(
-                              color: PulseColors.secondary.withValues(alpha: 0.2),
+                              color: PulseColors.secondary.withValues(
+                                alpha: 0.2,
+                              ),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Text(
@@ -161,8 +160,9 @@ class ProfileLanguagesSection extends StatelessWidget {
               final language = option['value'] as String;
               final icon = option['icon'] as String;
               final isSelected = selectedLanguages.contains(language);
-              final canSelect = maxSelections == null || 
-                  selectedLanguages.length < maxSelections! || 
+              final canSelect =
+                  maxSelections == null ||
+                  selectedLanguages.length < maxSelections! ||
                   isSelected;
               final isDisabled = !canSelect;
 
@@ -214,7 +214,9 @@ class ProfileLanguagesSection extends StatelessWidget {
                         language,
                         style: TextStyle(
                           fontSize: 13,
-                          fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                          fontWeight: isSelected
+                              ? FontWeight.w600
+                              : FontWeight.w400,
                           color: isSelected
                               ? textColor
                               : isDisabled
@@ -256,7 +258,8 @@ class ProfileLanguagesSection extends StatelessWidget {
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      maxSelections != null && selectedLanguages.length >= maxSelections!
+                      maxSelections != null &&
+                              selectedLanguages.length >= maxSelections!
                           ? 'Maximum languages selected. Tap to deselect.'
                           : 'Speaking multiple languages expands your potential matches',
                       style: TextStyle(

@@ -3,7 +3,8 @@ import 'dart:developer' as dev;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:google_maps_cluster_manager/google_maps_cluster_manager.dart' as cluster;
+import 'package:google_maps_cluster_manager/google_maps_cluster_manager.dart'
+    as cluster;
 
 import '../../core/models/location_models.dart';
 import '../../data/models/heat_map_models.dart';
@@ -37,7 +38,7 @@ class _CoverageMapWidgetState extends State<CoverageMapWidget> {
   final Set<Marker> _markers = {};
   final Set<Circle> _circles = {};
   final Set<Polygon> _polygons = {};
-  
+
   LocationCoordinates? _currentLocation;
   List<HeatMapDataPoint> _heatMapData = [];
   LocationCoverageData? _coverageData;
@@ -49,7 +50,7 @@ class _CoverageMapWidgetState extends State<CoverageMapWidget> {
 
   // Map styling and type
   MapType _currentMapType = MapType.normal;
-  
+
   // Clustering
   late cluster.ClusterManager<HeatMapClusterItem> _clusterManager;
 
@@ -131,7 +132,7 @@ class _CoverageMapWidgetState extends State<CoverageMapWidget> {
           _coverageData = coverageData;
           _isLoading = false;
         });
-        
+
         _updateMapVisualization();
       }
     } catch (e) {
@@ -167,14 +168,17 @@ class _CoverageMapWidgetState extends State<CoverageMapWidget> {
 
   void _updateHeatMapVisualization() {
     final circles = <Circle>{};
-    
+
     for (int i = 0; i < _heatMapData.length; i++) {
       final point = _heatMapData[i];
-      
+
       circles.add(
         Circle(
           circleId: CircleId('heatmap_$i'),
-          center: LatLng(point.coordinates.latitude, point.coordinates.longitude),
+          center: LatLng(
+            point.coordinates.latitude,
+            point.coordinates.longitude,
+          ),
           radius: _calculateHeatMapRadius(point.density),
           fillColor: _getHeatMapColor(point.density).withValues(alpha: 0.3),
           strokeColor: _getHeatMapColor(point.density),
@@ -193,12 +197,13 @@ class _CoverageMapWidgetState extends State<CoverageMapWidget> {
     if (_coverageData == null || _currentLocation == null) return;
 
     final polygons = <Polygon>{};
-    
+
     for (int i = 0; i < _coverageData!.coverageAreas.length; i++) {
       final area = _coverageData!.coverageAreas[i];
-      
-      final polygonPoints = area.boundaryPoints.map((coord) =>
-          LatLng(coord.latitude, coord.longitude)).toList();
+
+      final polygonPoints = area.boundaryPoints
+          .map((coord) => LatLng(coord.latitude, coord.longitude))
+          .toList();
 
       polygons.add(
         Polygon(
@@ -221,11 +226,14 @@ class _CoverageMapWidgetState extends State<CoverageMapWidget> {
     if (_currentLocation == null) return;
 
     final markers = <Marker>{};
-    
+
     markers.add(
       Marker(
         markerId: const MarkerId('current_location'),
-        position: LatLng(_currentLocation!.latitude, _currentLocation!.longitude),
+        position: LatLng(
+          _currentLocation!.latitude,
+          _currentLocation!.longitude,
+        ),
         icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
         infoWindow: const InfoWindow(
           title: 'Your Location',
@@ -259,10 +267,6 @@ class _CoverageMapWidgetState extends State<CoverageMapWidget> {
     });
   }
 
-
-
-
-
   LocationBounds _calculateMapBounds() {
     if (_currentLocation == null) {
       // Default bounds (global)
@@ -291,7 +295,7 @@ class _CoverageMapWidgetState extends State<CoverageMapWidget> {
     const double minRadius = 100.0;
     const double maxRadius = 2000.0;
     const int maxDensity = 100;
-    
+
     final double normalizedDensity = (density / maxDensity).clamp(0.0, 1.0);
     return minRadius + (normalizedDensity * (maxRadius - minRadius));
   }
@@ -388,8 +392,8 @@ class _CoverageMapWidgetState extends State<CoverageMapWidget> {
 
     final zoom =
         distanceToZoom.entries
-        .where((entry) => widget.maxDistance <= entry.key)
-        .map((entry) => entry.value)
+            .where((entry) => widget.maxDistance <= entry.key)
+            .map((entry) => entry.value)
             .firstOrNull ??
         10.0; // Use 10.0 as safer default
 
@@ -538,7 +542,10 @@ class _CoverageMapWidgetState extends State<CoverageMapWidget> {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF6E3BFF),
                       ),
-                      child: const Text('Retry', style: TextStyle(color: Colors.white)),
+                      child: const Text(
+                        'Retry',
+                        style: TextStyle(color: Colors.white),
+                      ),
                     ),
                   ],
                 ),
@@ -559,13 +566,16 @@ class _CoverageMapWidgetState extends State<CoverageMapWidget> {
                   child: const Icon(Icons.refresh, color: Color(0xFF6E3BFF)),
                 ),
                 const SizedBox(height: 8),
-                
+
                 // Center on user button
                 FloatingActionButton(
                   mini: true,
                   onPressed: _centerOnUser,
                   backgroundColor: Colors.white,
-                  child: const Icon(Icons.my_location, color: Color(0xFF6E3BFF)),
+                  child: const Icon(
+                    Icons.my_location,
+                    color: Color(0xFF6E3BFF),
+                  ),
                 ),
                 const SizedBox(height: 8),
 
@@ -623,9 +633,18 @@ class _CoverageMapWidgetState extends State<CoverageMapWidget> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _buildStatItem('Total Users', _coverageData!.totalUsers.toString()),
-              _buildStatItem('Coverage Areas', _coverageData!.coverageAreas.length.toString()),
-              _buildStatItem('Avg Density', _coverageData!.averageDensity.toStringAsFixed(1)),
+              _buildStatItem(
+                'Total Users',
+                _coverageData!.totalUsers.toString(),
+              ),
+              _buildStatItem(
+                'Coverage Areas',
+                _coverageData!.coverageAreas.length.toString(),
+              ),
+              _buildStatItem(
+                'Avg Density',
+                _coverageData!.averageDensity.toStringAsFixed(1),
+              ),
             ],
           ),
         ],
@@ -644,13 +663,7 @@ class _CoverageMapWidgetState extends State<CoverageMapWidget> {
             color: Color(0xFF6E3BFF),
           ),
         ),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 12,
-            color: Colors.grey[600],
-          ),
-        ),
+        Text(label, style: TextStyle(fontSize: 12, color: Colors.grey[600])),
       ],
     );
   }
@@ -660,7 +673,10 @@ class _CoverageMapWidgetState extends State<CoverageMapWidget> {
       _mapController!.animateCamera(
         CameraUpdate.newCameraPosition(
           CameraPosition(
-            target: LatLng(_currentLocation!.latitude, _currentLocation!.longitude),
+            target: LatLng(
+              _currentLocation!.latitude,
+              _currentLocation!.longitude,
+            ),
             zoom: _calculateOptimalZoom(),
           ),
         ),
@@ -676,12 +692,7 @@ class _CoverageMapWidgetState extends State<CoverageMapWidget> {
 }
 
 /// Filter options for coverage map
-enum CoverageMapFilter {
-  all,
-  matched,
-  likedMe,
-  unmatched,
-}
+enum CoverageMapFilter { all, matched, likedMe, unmatched }
 
 /// Extension for filter display names
 extension CoverageMapFilterExtension on CoverageMapFilter {
@@ -716,9 +727,12 @@ extension CoverageMapFilterExtension on CoverageMapFilter {
 class HeatMapClusterItem implements cluster.ClusterItem {
   final HeatMapDataPoint dataPoint;
   final LatLng _location;
-  
-  HeatMapClusterItem(this.dataPoint) 
-      : _location = LatLng(dataPoint.coordinates.latitude, dataPoint.coordinates.longitude);
+
+  HeatMapClusterItem(this.dataPoint)
+    : _location = LatLng(
+        dataPoint.coordinates.latitude,
+        dataPoint.coordinates.longitude,
+      );
 
   @override
   LatLng get location => _location;

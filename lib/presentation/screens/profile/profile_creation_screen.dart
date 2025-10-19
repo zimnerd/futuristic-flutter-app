@@ -152,43 +152,43 @@ class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
           ],
         ),
         body: BlocConsumer<ProfileBloc, ProfileState>(
-        listener: (context, state) {
-          if (state.status == ProfileStatus.error) {
-            PulseToast.error(
-              context,
-              message: state.error ?? 'An error occurred',
-            );
-          } else if (state.status == ProfileStatus.success) {
-            // Profile created successfully, navigate to main app
-            Navigator.of(context).pushReplacementNamed('/main');
-          }
-        },
-        builder: (context, state) {
-          if (state.status == ProfileStatus.loading) {
-            return const Center(child: PulseLoadingWidget());
-          }
+          listener: (context, state) {
+            if (state.status == ProfileStatus.error) {
+              PulseToast.error(
+                context,
+                message: state.error ?? 'An error occurred',
+              );
+            } else if (state.status == ProfileStatus.success) {
+              // Profile created successfully, navigate to main app
+              Navigator.of(context).pushReplacementNamed('/main');
+            }
+          },
+          builder: (context, state) {
+            if (state.status == ProfileStatus.loading) {
+              return const Center(child: PulseLoadingWidget());
+            }
 
-          return Column(
-            children: [
-              _buildProgressIndicator(),
-              Expanded(
-                child: PageView(
-                  controller: _pageController,
-                  physics: const NeverScrollableScrollPhysics(),
-                  children: [
-                    _buildBasicInfoStep(),
-                    _buildPhotosStep(),
-                    _buildBioStep(),
-                    _buildInterestsStep(),
-                    _buildPreferencesStep(),
-                  ],
+            return Column(
+              children: [
+                _buildProgressIndicator(),
+                Expanded(
+                  child: PageView(
+                    controller: _pageController,
+                    physics: const NeverScrollableScrollPhysics(),
+                    children: [
+                      _buildBasicInfoStep(),
+                      _buildPhotosStep(),
+                      _buildBioStep(),
+                      _buildInterestsStep(),
+                      _buildPreferencesStep(),
+                    ],
+                  ),
                 ),
-              ),
-              _buildNavigationButtons(),
-            ],
-          );
-        },
-      ),
+                _buildNavigationButtons(),
+              ],
+            );
+          },
+        ),
       ),
     );
   }
@@ -786,24 +786,19 @@ class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
 
   void _createProfile() {
     if (!_formKey.currentState!.validate()) {
-      PulseToast.error(
-        context,
-        message: 'Please fill in all required fields',
-      );
+      PulseToast.error(context, message: 'Please fill in all required fields');
       return;
     }
 
     // Validate required fields before submission
     if (_selectedPhotos.isEmpty) {
-      PulseToast.error(
-        context,
-        message: 'Please add at least one photo',
-      );
+      PulseToast.error(context, message: 'Please add at least one photo');
       return;
     }
 
     // Get current user ID (this would typically come from auth state)
-    const userId = 'current-user-id'; // This should be retrieved from auth state
+    const userId =
+        'current-user-id'; // This should be retrieved from auth state
 
     final profileData = {
       'name': _nameController.text.trim(),
@@ -819,23 +814,16 @@ class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
     };
 
     try {
-      context.read<UserBloc>().add(UserProfileUpdateRequested(
-        userId: userId,
-        updates: profileData,
-      ));
-
-      PulseToast.success(
-        context,
-        message: 'Profile created successfully!',
+      context.read<UserBloc>().add(
+        UserProfileUpdateRequested(userId: userId, updates: profileData),
       );
+
+      PulseToast.success(context, message: 'Profile created successfully!');
 
       // Navigate to main app
       context.go('/main');
     } catch (e) {
-      PulseToast.error(
-        context,
-        message: 'Failed to create profile: $e',
-      );
+      PulseToast.error(context, message: 'Failed to create profile: $e');
     }
   }
 
@@ -951,7 +939,9 @@ class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
       case 0:
         return 'Continue';
       case 1:
-        return _selectedPhotos.isNotEmpty ? 'Continue with Photos' : 'Add at least 1 photo';
+        return _selectedPhotos.isNotEmpty
+            ? 'Continue with Photos'
+            : 'Add at least 1 photo';
       case 2:
         return _bioController.text.trim().isNotEmpty
             ? 'Continue with Bio'

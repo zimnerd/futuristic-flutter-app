@@ -13,10 +13,7 @@ import '../../widgets/common/pulse_toast.dart';
 class LiveStreamViewerScreen extends StatefulWidget {
   final Map<String, dynamic> stream;
 
-  const LiveStreamViewerScreen({
-    super.key,
-    required this.stream,
-  });
+  const LiveStreamViewerScreen({super.key, required this.stream});
 
   @override
   State<LiveStreamViewerScreen> createState() => _LiveStreamViewerScreenState();
@@ -25,8 +22,7 @@ class LiveStreamViewerScreen extends StatefulWidget {
 class _LiveStreamViewerScreenState extends State<LiveStreamViewerScreen> {
   final VideoStreamingService _streamingService =
       VideoStreamingService.instance;
-  final LiveStreamingService _apiService =
-      LiveStreamingService(
+  final LiveStreamingService _apiService = LiveStreamingService(
     ApiClient.instance,
   );
   final _messageController = TextEditingController();
@@ -158,10 +154,7 @@ class _LiveStreamViewerScreenState extends State<LiveStreamViewerScreen> {
       }
     } catch (e) {
       if (mounted) {
-        PulseToast.error(
-          context,
-          message: 'Error leaving stream: $e',
-        );
+        PulseToast.error(context, message: 'Error leaving stream: $e');
       }
     }
   }
@@ -180,10 +173,7 @@ class _LiveStreamViewerScreenState extends State<LiveStreamViewerScreen> {
           _messageController.clear();
         } else {
           if (mounted) {
-            PulseToast.error(
-              context,
-              message: 'Failed to send message',
-            );
+            PulseToast.error(context, message: 'Failed to send message');
           }
         }
       } catch (e) {
@@ -385,10 +375,7 @@ class _LiveStreamViewerScreenState extends State<LiveStreamViewerScreen> {
                       child: Text(
                         'Chat messages\nwill appear here',
                         textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: Colors.white70,
-                          fontSize: 12,
-                        ),
+                        style: TextStyle(color: Colors.white70, fontSize: 12),
                       ),
                     ),
                   ),

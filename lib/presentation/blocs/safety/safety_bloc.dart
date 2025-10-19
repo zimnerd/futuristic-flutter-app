@@ -38,7 +38,7 @@ class SafetyBloc extends Bloc<SafetyEvent, SafetyState> {
     Emitter<SafetyState> emit,
   ) async {
     emit(state.copyWith(isLoading: true, status: SafetyStatus.loading));
-    
+
     try {
       // Load all safety data
       final futures = await Future.wait([
@@ -95,27 +95,32 @@ class SafetyBloc extends Bloc<SafetyEvent, SafetyState> {
       if (report != null) {
         final updatedReports = List<SafetyReport>.from(state.userReports)
           ..add(report);
-        emit(state.copyWith(
-          status: SafetyStatus.reported,
+        emit(
+          state.copyWith(
+            status: SafetyStatus.reported,
             isLoading: false,
-          userReports: updatedReports,
-          lastReport: report,
+            userReports: updatedReports,
+            lastReport: report,
           ),
         );
       } else {
-        emit(state.copyWith(
-          status: SafetyStatus.error,
+        emit(
+          state.copyWith(
+            status: SafetyStatus.error,
             isLoading: false,
             errorMessage: 'Failed to report user',
-        ));
+          ),
+        );
       }
     } catch (e) {
       _logger.e('Error reporting user: $e');
-      emit(state.copyWith(
-        status: SafetyStatus.error,
+      emit(
+        state.copyWith(
+          status: SafetyStatus.error,
           isLoading: false,
           errorMessage: e.toString(),
-      ));
+        ),
+      );
     }
   }
 
@@ -124,7 +129,7 @@ class SafetyBloc extends Bloc<SafetyEvent, SafetyState> {
     Emitter<SafetyState> emit,
   ) async {
     emit(state.copyWith(status: SafetyStatus.reporting, isLoading: true));
-    
+
     try {
       final report = await _safetyService.reportContent(
         contentId: event.contentId,
@@ -145,51 +150,60 @@ class SafetyBloc extends Bloc<SafetyEvent, SafetyState> {
           ),
         );
       } else {
-        emit(state.copyWith(
-          status: SafetyStatus.error,
+        emit(
+          state.copyWith(
+            status: SafetyStatus.error,
             isLoading: false,
             errorMessage: 'Failed to report content',
-        ));
+          ),
+        );
       }
     } catch (e) {
       _logger.e('Error reporting content: $e');
-      emit(state.copyWith(
-        status: SafetyStatus.error,
+      emit(
+        state.copyWith(
+          status: SafetyStatus.error,
           isLoading: false,
           errorMessage: e.toString(),
-      ));
+        ),
+      );
     }
   }
 
   Future<void> _onBlockUser(BlockUser event, Emitter<SafetyState> emit) async {
     emit(state.copyWith(status: SafetyStatus.blocking, isLoading: true));
-    
+
     try {
       final success = await _safetyService.blockUser(event.userId);
 
       if (success) {
         // Refresh blocked users list
         final blockedUsers = await _safetyService.getBlockedUsers();
-        emit(state.copyWith(
+        emit(
+          state.copyWith(
             status: SafetyStatus.blocked,
-          isLoading: false,
+            isLoading: false,
             blockedUsers: blockedUsers,
           ),
         );
       } else {
-        emit(state.copyWith(
+        emit(
+          state.copyWith(
             status: SafetyStatus.error,
-          isLoading: false,
+            isLoading: false,
             errorMessage: 'Failed to block user',
-        ));
+          ),
+        );
       }
     } catch (e) {
       _logger.e('Error blocking user: $e');
-      emit(state.copyWith(
+      emit(
+        state.copyWith(
           status: SafetyStatus.error,
-        isLoading: false,
+          isLoading: false,
           errorMessage: e.toString(),
-      ));
+        ),
+      );
     }
   }
 
@@ -198,7 +212,7 @@ class SafetyBloc extends Bloc<SafetyEvent, SafetyState> {
     Emitter<SafetyState> emit,
   ) async {
     emit(state.copyWith(isLoading: true));
-    
+
     try {
       final success = await _safetyService.unblockUser(event.userId);
 
@@ -223,11 +237,13 @@ class SafetyBloc extends Bloc<SafetyEvent, SafetyState> {
       }
     } catch (e) {
       _logger.e('Error unblocking user: $e');
-      emit(state.copyWith(
+      emit(
+        state.copyWith(
           status: SafetyStatus.error,
-        isLoading: false,
+          isLoading: false,
           errorMessage: e.toString(),
-      ));
+        ),
+      );
     }
   }
 
@@ -236,22 +252,25 @@ class SafetyBloc extends Bloc<SafetyEvent, SafetyState> {
     Emitter<SafetyState> emit,
   ) async {
     emit(state.copyWith(isLoading: true));
-    
+
     try {
       final blockedUsers = await _safetyService.getBlockedUsers();
-      emit(state.copyWith(
+      emit(
+        state.copyWith(
           status: SafetyStatus.loaded,
-        isLoading: false,
+          isLoading: false,
           blockedUsers: blockedUsers,
         ),
       );
     } catch (e) {
       _logger.e('Error loading blocked users: $e');
-      emit(state.copyWith(
+      emit(
+        state.copyWith(
           status: SafetyStatus.error,
-        isLoading: false,
+          isLoading: false,
           errorMessage: e.toString(),
-      ));
+        ),
+      );
     }
   }
 
@@ -260,22 +279,25 @@ class SafetyBloc extends Bloc<SafetyEvent, SafetyState> {
     Emitter<SafetyState> emit,
   ) async {
     emit(state.copyWith(isLoading: true));
-    
+
     try {
       final settings = await _safetyService.getSafetySettings();
-      emit(state.copyWith(
+      emit(
+        state.copyWith(
           status: SafetyStatus.loaded,
-        isLoading: false,
+          isLoading: false,
           safetySettings: settings,
         ),
       );
     } catch (e) {
       _logger.e('Error loading safety settings: $e');
-      emit(state.copyWith(
+      emit(
+        state.copyWith(
           status: SafetyStatus.error,
-        isLoading: false,
+          isLoading: false,
           errorMessage: e.toString(),
-      ));
+        ),
+      );
     }
   }
 
@@ -284,7 +306,7 @@ class SafetyBloc extends Bloc<SafetyEvent, SafetyState> {
     Emitter<SafetyState> emit,
   ) async {
     emit(state.copyWith(isLoading: true));
-    
+
     try {
       // Create SafetySettings object from event data
       final newSettings = SafetySettings(
@@ -295,31 +317,36 @@ class SafetyBloc extends Bloc<SafetyEvent, SafetyState> {
       );
 
       final success = await _safetyService.updateSafetySettings(newSettings);
-      
+
       if (success) {
-        emit(state.copyWith(
+        emit(
+          state.copyWith(
             status: SafetyStatus.loaded,
             isLoading: false,
             safetySettings: newSettings,
-          locationSharingEnabled: event.locationSharing,
-          emergencyContactsEnabled: event.emergencyContacts,
+            locationSharingEnabled: event.locationSharing,
+            emergencyContactsEnabled: event.emergencyContacts,
             incidentReportingEnabled: event.incidentReporting,
           ),
         );
       } else {
-        emit(state.copyWith(
+        emit(
+          state.copyWith(
             status: SafetyStatus.error,
-          isLoading: false,
-          errorMessage: 'Failed to update safety settings',
-        ));
+            isLoading: false,
+            errorMessage: 'Failed to update safety settings',
+          ),
+        );
       }
     } catch (e) {
       _logger.e('Error updating safety settings: $e');
-      emit(state.copyWith(
+      emit(
+        state.copyWith(
           status: SafetyStatus.error,
-        isLoading: false,
+          isLoading: false,
           errorMessage: e.toString(),
-      ));
+        ),
+      );
     }
   }
 
@@ -328,7 +355,7 @@ class SafetyBloc extends Bloc<SafetyEvent, SafetyState> {
     Emitter<SafetyState> emit,
   ) async {
     emit(state.copyWith(isLoading: true));
-    
+
     try {
       final scoreData = await _safetyService.getSafetyScore();
       emit(
@@ -355,7 +382,7 @@ class SafetyBloc extends Bloc<SafetyEvent, SafetyState> {
     Emitter<SafetyState> emit,
   ) async {
     emit(state.copyWith(isLoading: true));
-    
+
     try {
       final reports = await _safetyService.getMySafetyReports();
       emit(
@@ -390,7 +417,8 @@ class SafetyBloc extends Bloc<SafetyEvent, SafetyState> {
       );
 
       if (success) {
-        emit(state.copyWith(
+        emit(
+          state.copyWith(
             status: SafetyStatus.alerted,
             isLoading: false,
             isEmergencyMode: true,
@@ -398,19 +426,23 @@ class SafetyBloc extends Bloc<SafetyEvent, SafetyState> {
           ),
         );
       } else {
-        emit(state.copyWith(
+        emit(
+          state.copyWith(
             status: SafetyStatus.error,
-          isLoading: false,
+            isLoading: false,
             errorMessage: 'Failed to trigger emergency contact',
-        ));
+          ),
+        );
       }
     } catch (e) {
       _logger.e('Error triggering emergency contact: $e');
-      emit(state.copyWith(
+      emit(
+        state.copyWith(
           status: SafetyStatus.error,
-        isLoading: false,
+          isLoading: false,
           errorMessage: e.toString(),
-      ));
+        ),
+      );
     }
   }
 
@@ -419,14 +451,16 @@ class SafetyBloc extends Bloc<SafetyEvent, SafetyState> {
     Emitter<SafetyState> emit,
   ) async {
     emit(state.copyWith(isLoading: true));
-    
+
     try {
       final tips = await _safetyService.getSafetyTips();
-      emit(state.copyWith(
+      emit(
+        state.copyWith(
           status: SafetyStatus.loaded,
           isLoading: false,
           safetyTips: tips,
-      ));
+        ),
+      );
     } catch (e) {
       _logger.e('Error loading safety tips: $e');
       emit(
@@ -444,7 +478,7 @@ class SafetyBloc extends Bloc<SafetyEvent, SafetyState> {
     Emitter<SafetyState> emit,
   ) async {
     emit(state.copyWith(isLoading: true));
-    
+
     try {
       final success = await _safetyService.submitPhotoVerification(
         event.photoPath,
@@ -459,11 +493,13 @@ class SafetyBloc extends Bloc<SafetyEvent, SafetyState> {
       );
     } catch (e) {
       _logger.e('Error submitting photo verification: $e');
-      emit(state.copyWith(
-        status: SafetyStatus.error,
+      emit(
+        state.copyWith(
+          status: SafetyStatus.error,
           isLoading: false,
           errorMessage: e.toString(),
-      ));
+        ),
+      );
     }
   }
 
@@ -472,27 +508,30 @@ class SafetyBloc extends Bloc<SafetyEvent, SafetyState> {
     Emitter<SafetyState> emit,
   ) async {
     emit(state.copyWith(isLoading: true));
-    
+
     try {
       final success = await _safetyService.submitIdVerification(
         frontPhotoPath: event.frontPhotoPath,
         backPhotoPath: event.backPhotoPath,
         idType: event.idType,
       );
-      emit(state.copyWith(
+      emit(
+        state.copyWith(
           status: SafetyStatus.loaded,
-        isLoading: false,
+          isLoading: false,
           idVerificationSubmitted: success,
           errorMessage: success ? null : 'Failed to submit ID verification',
         ),
       );
     } catch (e) {
       _logger.e('Error submitting ID verification: $e');
-      emit(state.copyWith(
+      emit(
+        state.copyWith(
           status: SafetyStatus.error,
-        isLoading: false,
+          isLoading: false,
           errorMessage: e.toString(),
-      ));
+        ),
+      );
     }
   }
 
@@ -501,7 +540,7 @@ class SafetyBloc extends Bloc<SafetyEvent, SafetyState> {
     Emitter<SafetyState> emit,
   ) async {
     emit(state.copyWith(status: SafetyStatus.reporting, isLoading: true));
-    
+
     try {
       final report = await _safetyService.reportDateSafetyConcern(
         dateId: event.dateId,
@@ -523,19 +562,23 @@ class SafetyBloc extends Bloc<SafetyEvent, SafetyState> {
           ),
         );
       } else {
-        emit(state.copyWith(
+        emit(
+          state.copyWith(
             status: SafetyStatus.error,
             isLoading: false,
             errorMessage: 'Failed to report date safety concern',
-        ));
+          ),
+        );
       }
     } catch (e) {
       _logger.e('Error reporting date safety concern: $e');
-      emit(state.copyWith(
+      emit(
+        state.copyWith(
           status: SafetyStatus.error,
           isLoading: false,
           errorMessage: e.toString(),
-      ));
+        ),
+      );
     }
   }
 
@@ -544,7 +587,7 @@ class SafetyBloc extends Bloc<SafetyEvent, SafetyState> {
     Emitter<SafetyState> emit,
   ) async {
     emit(state.copyWith(isLoading: true));
-    
+
     try {
       final safetyCheck = await _safetyService.checkUserSafety(event.userId);
       emit(
@@ -556,11 +599,13 @@ class SafetyBloc extends Bloc<SafetyEvent, SafetyState> {
       );
     } catch (e) {
       _logger.e('Error checking user safety: $e');
-      emit(state.copyWith(
+      emit(
+        state.copyWith(
           status: SafetyStatus.error,
           isLoading: false,
           errorMessage: e.toString(),
-      ));
+        ),
+      );
     }
   }
 }

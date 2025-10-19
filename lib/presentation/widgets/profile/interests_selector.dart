@@ -99,17 +99,19 @@ class _InterestsSelectorState extends State<InterestsSelector>
   List<String> _getFilteredInterests(List<String> interests) {
     if (_searchQuery.isEmpty) return interests;
     return interests
-        .where((interest) =>
-            interest.toLowerCase().contains(_searchQuery.toLowerCase()))
+        .where(
+          (interest) =>
+              interest.toLowerCase().contains(_searchQuery.toLowerCase()),
+        )
         .toList();
   }
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => InterestsBloc(
-        repository: InterestsRepository(),
-      )..add(const LoadInterests()),
+      create: (context) =>
+          InterestsBloc(repository: InterestsRepository())
+            ..add(const LoadInterests()),
       child: BlocBuilder<InterestsBloc, InterestsState>(
         builder: (context, state) {
           if (state is InterestsLoading) {
@@ -415,11 +417,7 @@ class _InterestsSelectorState extends State<InterestsSelector>
             ),
             if (isSelected) ...[
               const SizedBox(width: 8),
-              Icon(
-                Icons.check_circle,
-                color: Colors.white,
-                size: 16,
-              ),
+              Icon(Icons.check_circle, color: Colors.white, size: 16),
             ],
           ],
         ),
@@ -450,11 +448,7 @@ class _InterestsSelectorState extends State<InterestsSelector>
           const SizedBox(width: 6),
           InkWell(
             onTap: () => _toggleInterest(interest),
-            child: const Icon(
-              Icons.close,
-              color: Colors.white,
-              size: 14,
-            ),
+            child: const Icon(Icons.close, color: Colors.white, size: 14),
           ),
         ],
       ),

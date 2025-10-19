@@ -105,10 +105,10 @@ class ProfileState extends Equatable {
       uploadingPhotos: uploadingPhotos ?? this.uploadingPhotos,
     );
   }
-  
+
   /// Check if we have valid profile data
   bool get hasValidProfile => profile != null && profile!.id.isNotEmpty;
-  
+
   /// Check if cached profile is stale (older than 5 minutes)
   /// Returns true if no lastFetchTime (never fetched) or cache is expired
   bool get isCacheStale {
@@ -130,19 +130,19 @@ class ProfileState extends Equatable {
 
   @override
   List<Object?> get props => [
-        status,
-        updateStatus,
-        uploadStatus,
+    status,
+    updateStatus,
+    uploadStatus,
     statsStatus, // NEW
     viewersStatus, // NEW
-        profile,
+    profile,
     stats, // NEW
     viewers, // NEW
     viewersTotalCount, // NEW
-        error,
+    error,
     uploadingPhotos,
     lastFetchTime,
     statsLastFetchTime, // NEW
     viewersLastFetchTime, // NEW
-      ];
+  ];
 }

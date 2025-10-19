@@ -52,8 +52,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   Text(state.error ?? 'Failed to load profile'),
                   const SizedBox(height: 16),
                   ElevatedButton(
-                    onPressed: () =>
-                        context.read<ProfileBloc>().add(const LoadProfile(forceRefresh: true)),
+                    onPressed: () => context.read<ProfileBloc>().add(
+                      const LoadProfile(forceRefresh: true),
+                    ),
                     child: const Text('Retry'),
                   ),
                 ],
@@ -133,9 +134,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ],
         ),
         borderRadius: BorderRadius.circular(PulseRadii.xl),
-        border: Border.all(
-          color: PulseColors.primary.withValues(alpha: 0.2),
-        ),
+        border: Border.all(color: PulseColors.primary.withValues(alpha: 0.2)),
       ),
       child: Column(
         children: [
@@ -164,14 +163,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       userProfile.photos.first.url,
                       fit: BoxFit.cover,
                       errorBuilder: (context, error, stackTrace) {
-                        return const Icon(Icons.person, size: 50, color: Colors.white);
+                        return const Icon(
+                          Icons.person,
+                          size: 50,
+                          color: Colors.white,
+                        );
                       },
                     ),
                   )
                 : const Icon(Icons.person, size: 50, color: Colors.white),
           ),
           const SizedBox(height: PulseSpacing.md),
-          
+
           // Name and Age
           Text(
             '${userProfile.name}, ${userProfile.age}',
@@ -181,7 +184,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
           ),
           const SizedBox(height: PulseSpacing.sm),
-          
+
           // Location
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -200,7 +203,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             ],
           ),
-          
+
           // Verification Badge
           const SizedBox(height: PulseSpacing.sm),
           VerificationBadge(
@@ -208,7 +211,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             size: VerificationBadgeSize.medium,
             showLabel: true,
           ),
-          
+
           // Analytics Indicators (engagement level & profile quality)
           const SizedBox(height: PulseSpacing.sm),
           ProfileAnalyticsIndicators(
@@ -217,7 +220,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             showProfileQuality: true,
             compact: false,
           ),
-          
+
           // Edit Profile Button
           const SizedBox(height: PulseSpacing.md),
           SizedBox(
@@ -311,7 +314,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           PulseColors.primary.withValues(alpha: 0.7),
                         ],
                         showTapHint: true,
-                        isPremium: true,  // Show premium badge
+                        isPremium: true, // Show premium badge
                       ),
                     ),
                   ),
@@ -356,9 +359,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(PulseRadii.lg),
-        border: Border.all(
-          color: PulseColors.outline.withValues(alpha: 0.3),
-        ),
+        border: Border.all(color: PulseColors.outline.withValues(alpha: 0.3)),
         boxShadow: [
           BoxShadow(
             color: colors[0].withValues(alpha: 0.15),
@@ -497,17 +498,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ],
         ),
         const SizedBox(height: PulseSpacing.lg),
-        
+
         _buildSection(
           title: 'Photos',
           icon: Icons.photo_library,
           userProfile: userProfile,
-          items: [
-            _buildPhotoGrid(userProfile),
-          ],
+          items: [_buildPhotoGrid(userProfile)],
         ),
         const SizedBox(height: PulseSpacing.lg),
-        
+
         _buildSection(
           title: 'Work & Education',
           icon: Icons.work,
@@ -522,26 +521,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ],
         ),
         const SizedBox(height: PulseSpacing.lg),
-        
+
         _buildSection(
           title: 'Interests',
           icon: Icons.favorite,
           userProfile: userProfile,
-          items: [
-            _buildInterestsDisplay(userProfile),
-          ],
+          items: [_buildInterestsDisplay(userProfile)],
         ),
         const SizedBox(height: PulseSpacing.lg),
-        
+
         _buildSection(
           title: 'Dating Preferences',
           icon: Icons.tune,
           userProfile: userProfile,
           items: [
             _buildSectionItem('I am', userProfile?.gender ?? 'Not specified'),
-            _buildSectionItem(
-              'Show me', _formatShowMe(userProfile?.showMe),
-            ),
+            _buildSectionItem('Show me', _formatShowMe(userProfile?.showMe)),
           ],
         ),
       ],
@@ -559,9 +554,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(PulseRadii.lg),
-        border: Border.all(
-          color: PulseColors.outline.withValues(alpha: 0.5),
-        ),
+        border: Border.all(color: PulseColors.outline.withValues(alpha: 0.5)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.05),
@@ -581,11 +574,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   color: PulseColors.primary.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(PulseRadii.md),
                 ),
-                child: Icon(
-                  icon,
-                  color: PulseColors.primary,
-                  size: 20,
-                ),
+                child: Icon(icon, color: PulseColors.primary, size: 20),
               ),
               const SizedBox(width: PulseSpacing.md),
               Expanded(
@@ -660,32 +649,34 @@ class _ProfileScreenState extends State<ProfileScreen> {
         scrollDirection: Axis.horizontal,
         itemCount: photos.length,
         itemBuilder: (context, index) {
-            return Container(
-              width: 80,
-              height: 80,
-              margin: const EdgeInsets.only(right: PulseSpacing.sm),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(PulseRadii.md),
-                border: Border.all(
-                  color: PulseColors.primary.withValues(alpha: 0.3),
-                  width: 2,
-                ),
+          return Container(
+            width: 80,
+            height: 80,
+            margin: const EdgeInsets.only(right: PulseSpacing.sm),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(PulseRadii.md),
+              border: Border.all(
+                color: PulseColors.primary.withValues(alpha: 0.3),
+                width: 2,
               ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(PulseRadii.md - 2),
-                child: Image.network(
-                  photos[index].url,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Container(
-                      color: PulseColors.surfaceVariant,
-                      child: const Icon(Icons.image, color: PulseColors.onSurfaceVariant),
-                    );
-                  },
-                ),
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(PulseRadii.md - 2),
+              child: Image.network(
+                photos[index].url,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  return Container(
+                    color: PulseColors.surfaceVariant,
+                    child: const Icon(
+                      Icons.image,
+                      color: PulseColors.onSurfaceVariant,
+                    ),
+                  );
+                },
               ),
-            );
-          
+            ),
+          );
         },
       ),
     );
@@ -752,7 +743,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
         if (newPhotos != null && newPhotos.isNotEmpty) {
           for (final photo in newPhotos) {
             if (photo is File) {
-              context.read<ProfileBloc>().add(UploadPhoto(photoPath: photo.path));
+              context.read<ProfileBloc>().add(
+                UploadPhoto(photoPath: photo.path),
+              );
             } else if (photo is String) {
               context.read<ProfileBloc>().add(UploadPhoto(photoPath: photo));
             }
@@ -816,9 +809,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               .toList(),
         };
       case 'interests':
-        return {
-          'interests': userProfile.interests,
-        };
+        return {'interests': userProfile.interests};
       case 'preferences':
         return {
           'gender': userProfile.gender,

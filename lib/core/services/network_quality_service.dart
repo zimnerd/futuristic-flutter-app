@@ -161,9 +161,8 @@ class NetworkQualityService {
   Stream<NetworkQualityMetrics> get metricsStream => _metricsController.stream;
 
   /// Current quality metrics (latest snapshot)
-  NetworkQualityMetrics? get currentMetrics => _lastMetricsUpdate != null
-      ? _calculateMetrics()
-      : null;
+  NetworkQualityMetrics? get currentMetrics =>
+      _lastMetricsUpdate != null ? _calculateMetrics() : null;
 
   /// Start monitoring network quality for a call
   void startMonitoring({
@@ -326,12 +325,13 @@ class NetworkQualityService {
     final rttScore = max(0, 100 - (_rtt ~/ 5));
 
     // Weighted average (prioritize tx/rx quality from Agora)
-    final weightedScore = (txScore * 0.25 +
-            rxScore * 0.25 +
-            packetLossScore * 0.2 +
-            jitterScore * 0.15 +
-            rttScore * 0.15)
-        .round();
+    final weightedScore =
+        (txScore * 0.25 +
+                rxScore * 0.25 +
+                packetLossScore * 0.2 +
+                jitterScore * 0.15 +
+                rttScore * 0.15)
+            .round();
 
     return weightedScore.clamp(0, 100);
   }
@@ -353,15 +353,14 @@ class NetworkQualityService {
     _metricsController.add(metrics);
 
     _logger.d(
-        'Quality: ${metrics.qualityIcon} ${metrics.qualityDescription} (${metrics.qualityScore}/100) - '
-        'RTT: ${metrics.rtt}ms, Loss: ${metrics.packetLossRate}%, Jitter: ${metrics.jitter}ms');
+      'Quality: ${metrics.qualityIcon} ${metrics.qualityDescription} (${metrics.qualityScore}/100) - '
+      'RTT: ${metrics.rtt}ms, Loss: ${metrics.packetLossRate}%, Jitter: ${metrics.jitter}ms',
+    );
   }
 
   /// Send quality update to backend via WebSocket
   void _sendQualityUpdateToBackend() {
-    if (!_isMonitoring ||
-        _currentCallId == null ||
-        _webSocketService == null) {
+    if (!_isMonitoring || _currentCallId == null || _webSocketService == null) {
       return;
     }
 

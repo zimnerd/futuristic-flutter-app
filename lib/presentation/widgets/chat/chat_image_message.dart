@@ -59,8 +59,9 @@ class ChatImageMessage extends StatelessWidget {
           ],
         ),
         child: Column(
-          crossAxisAlignment:
-              isCurrentUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+          crossAxisAlignment: isCurrentUser
+              ? CrossAxisAlignment.end
+              : CrossAxisAlignment.start,
           children: [
             // Image with upload overlay
             Stack(
@@ -159,11 +160,7 @@ class ChatImageMessage extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(
-                Icons.error_outline,
-                color: Colors.white,
-                size: 48,
-              ),
+              const Icon(Icons.error_outline, color: Colors.white, size: 48),
               const SizedBox(height: 16),
               ElevatedButton.icon(
                 onPressed: onRetryUpload,
@@ -264,8 +261,10 @@ class ChatImageMessage extends StatelessWidget {
             if (onDeleteMessage != null)
               ListTile(
                 leading: const Icon(Icons.delete, color: Colors.red),
-                title: const Text('Delete Message',
-                    style: TextStyle(color: Colors.red)),
+                title: const Text(
+                  'Delete Message',
+                  style: TextStyle(color: Colors.red),
+                ),
                 onTap: () {
                   Navigator.pop(context);
                   onDeleteMessage();

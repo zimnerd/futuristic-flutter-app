@@ -31,8 +31,10 @@ class DatePlanningService {
 
       if (response.statusCode == 200 && response.data != null) {
         final List<dynamic> data = response.data['suggestions'] ?? [];
-        final suggestions = data.map((suggestion) => Map<String, dynamic>.from(suggestion)).toList();
-        
+        final suggestions = data
+            .map((suggestion) => Map<String, dynamic>.from(suggestion))
+            .toList();
+
         _logger.d('Retrieved ${suggestions.length} date suggestions');
         return suggestions;
       } else {
@@ -66,7 +68,9 @@ class DatePlanningService {
       );
 
       if (response.statusCode == 200 && response.data != null) {
-        _logger.d('Successfully planned date: ${response.data['id'] ?? response.data['dateId']}');
+        _logger.d(
+          'Successfully planned date: ${response.data['id'] ?? response.data['dateId']}',
+        );
         return response.data;
       } else {
         _logger.e('Failed to plan date: ${response.statusMessage}');
@@ -83,16 +87,16 @@ class DatePlanningService {
     try {
       final response = await _apiClient.put(
         '/date-planning/plans/$dateId/accept',
-        data: {
-          'dateId': dateId,
-        },
+        data: {'dateId': dateId},
       );
 
       if (response.statusCode == 200) {
         _logger.d('Successfully accepted date invitation: $dateId');
         return true;
       } else {
-        _logger.e('Failed to accept date invitation: ${response.statusMessage}');
+        _logger.e(
+          'Failed to accept date invitation: ${response.statusMessage}',
+        );
         return false;
       }
     } catch (e) {
@@ -106,17 +110,16 @@ class DatePlanningService {
     try {
       final response = await _apiClient.put(
         '/date-planning/plans/$dateId/decline',
-        data: {
-          'dateId': dateId,
-          if (reason != null) 'reason': reason,
-        },
+        data: {'dateId': dateId, if (reason != null) 'reason': reason},
       );
 
       if (response.statusCode == 200) {
         _logger.d('Successfully declined date invitation: $dateId');
         return true;
       } else {
-        _logger.e('Failed to decline date invitation: ${response.statusMessage}');
+        _logger.e(
+          'Failed to decline date invitation: ${response.statusMessage}',
+        );
         return false;
       }
     } catch (e) {
@@ -157,9 +160,7 @@ class DatePlanningService {
   /// Cancel a planned date
   Future<bool> cancelDate(String dateId, {String? reason}) async {
     try {
-      final response = await _apiClient.delete(
-        '/date-planning/plans/$dateId',
-      );
+      final response = await _apiClient.delete('/date-planning/plans/$dateId');
 
       if (response.statusCode == 200) {
         _logger.d('Successfully cancelled date: $dateId');
@@ -180,9 +181,15 @@ class DatePlanningService {
       final response = await _apiClient.get('/date-planning/plans');
 
       if (response.statusCode == 200 && response.data != null) {
-        final List<dynamic> data = response.data['items'] ?? response.data['plans'] ?? response.data['dates'] ?? [];
-        final dates = data.map((date) => Map<String, dynamic>.from(date)).toList();
-        
+        final List<dynamic> data =
+            response.data['items'] ??
+            response.data['plans'] ??
+            response.data['dates'] ??
+            [];
+        final dates = data
+            .map((date) => Map<String, dynamic>.from(date))
+            .toList();
+
         _logger.d('Retrieved ${dates.length} upcoming dates');
         return dates;
       } else {
@@ -201,14 +208,15 @@ class DatePlanningService {
     int limit = 20,
   }) async {
     try {
-      final response = await _apiClient.get(
-        '/date-planning/plans/history',
-      );
+      final response = await _apiClient.get('/date-planning/plans/history');
 
       if (response.statusCode == 200 && response.data != null) {
-        final List<dynamic> data = response.data['items'] ?? response.data['dates'] ?? [];
-        final dates = data.map((date) => Map<String, dynamic>.from(date)).toList();
-        
+        final List<dynamic> data =
+            response.data['items'] ?? response.data['dates'] ?? [];
+        final dates = data
+            .map((date) => Map<String, dynamic>.from(date))
+            .toList();
+
         _logger.d('Retrieved ${dates.length} date history records');
         return dates;
       } else {
@@ -272,8 +280,10 @@ class DatePlanningService {
 
       if (response.statusCode == 200 && response.data != null) {
         final List<dynamic> data = response.data['venues'] ?? [];
-        final venues = data.map((venue) => Map<String, dynamic>.from(venue)).toList();
-        
+        final venues = data
+            .map((venue) => Map<String, dynamic>.from(venue))
+            .toList();
+
         _logger.d('Retrieved ${venues.length} nearby venues');
         return venues;
       } else {
@@ -306,8 +316,10 @@ class DatePlanningService {
 
       if (response.statusCode == 200 && response.data != null) {
         final List<dynamic> data = response.data['ideas'] ?? [];
-        final ideas = data.map((idea) => Map<String, dynamic>.from(idea)).toList();
-        
+        final ideas = data
+            .map((idea) => Map<String, dynamic>.from(idea))
+            .toList();
+
         _logger.d('Retrieved ${ideas.length} date ideas');
         return ideas;
       } else {

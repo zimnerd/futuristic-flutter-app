@@ -18,10 +18,7 @@ import '../../theme/pulse_colors.dart';
 class AiCompanionChatScreen extends StatefulWidget {
   final AICompanion companion;
 
-  const AiCompanionChatScreen({
-    super.key,
-    required this.companion,
-  });
+  const AiCompanionChatScreen({super.key, required this.companion});
 
   @override
   State<AiCompanionChatScreen> createState() => _AiCompanionChatScreenState();
@@ -82,10 +79,7 @@ class _AiCompanionChatScreenState extends State<AiCompanionChatScreen> {
                   ),
                   Text(
                     widget.companion.personality.displayName,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey[600],
-                    ),
+                    style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                   ),
                 ],
               ),
@@ -193,19 +187,13 @@ class _AiCompanionChatScreenState extends State<AiCompanionChatScreen> {
             const SizedBox(height: 16),
             Text(
               'Start chatting with ${widget.companion.name}!',
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-              ),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
             Text(
               widget.companion.description,
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey[600],
-              ),
+              style: TextStyle(fontSize: 14, color: Colors.grey[600]),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),
@@ -231,14 +219,13 @@ class _AiCompanionChatScreenState extends State<AiCompanionChatScreen> {
         return GestureDetector(
           onTap: () => _sendMessage(suggestion),
           child: Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 8,
-            ),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             decoration: BoxDecoration(
               color: PulseColors.primary.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: PulseColors.primary.withValues(alpha: 0.3)),
+              border: Border.all(
+                color: PulseColors.primary.withValues(alpha: 0.3),
+              ),
             ),
             child: Text(
               suggestion,
@@ -255,12 +242,12 @@ class _AiCompanionChatScreenState extends State<AiCompanionChatScreen> {
 
   Widget _buildMessageBubble(CompanionMessage message) {
     final isUser = !message.isFromCompanion;
-    
+
     // Don't render empty messages
     if (message.content.trim().isEmpty) {
       return const SizedBox.shrink();
     }
-    
+
     return Align(
       alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
       child: GestureDetector(
@@ -386,7 +373,7 @@ class _AiCompanionChatScreenState extends State<AiCompanionChatScreen> {
       ),
     );
     _messageController.clear();
-    
+
     // Scroll to bottom after sending
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_scrollController.hasClients) {
@@ -424,9 +411,7 @@ class _AiCompanionChatScreenState extends State<AiCompanionChatScreen> {
       }
     } catch (e) {
       if (mounted) {
-        PulseToast.error(
-          context,
-          message: 'Failed to capture image: $e');
+        PulseToast.error(context, message: 'Failed to capture image: $e');
       }
     }
   }
@@ -456,9 +441,7 @@ class _AiCompanionChatScreenState extends State<AiCompanionChatScreen> {
       }
     } catch (e) {
       if (mounted) {
-        PulseToast.error(
-          context,
-          message: 'Failed to pick image: $e');
+        PulseToast.error(context, message: 'Failed to pick image: $e');
       }
     }
   }
@@ -466,7 +449,7 @@ class _AiCompanionChatScreenState extends State<AiCompanionChatScreen> {
   Future<void> _handleVoiceMessage() async {
     try {
       final record = AudioRecorder();
-      
+
       // Capture bloc reference and navigator before any async operations
       final bloc = context.read<AiCompanionBloc>();
       final navigator = Navigator.of(context);
@@ -528,9 +511,7 @@ class _AiCompanionChatScreenState extends State<AiCompanionChatScreen> {
       }
     } catch (e) {
       if (mounted) {
-        PulseToast.error(
-          context,
-          message: 'Failed to record audio: $e');
+        PulseToast.error(context, message: 'Failed to record audio: $e');
       }
     }
   }
@@ -563,53 +544,50 @@ class _AiCompanionChatScreenState extends State<AiCompanionChatScreen> {
                   CircleAvatar(
                     radius: 40,
                     backgroundImage: widget.companion.avatarUrl.isNotEmpty
-                  ? NetworkImage(widget.companion.avatarUrl)
-                  : null,
-              backgroundColor: PulseColors.primary.withValues(alpha: 0.2),
-              child: widget.companion.avatarUrl.isEmpty
-                  ? Text(
-                      widget.companion.personality.emoji,
-                      style: const TextStyle(fontSize: 32),
-                    )
-                  : null,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              widget.companion.name,
-              style: const TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            Text(
-              widget.companion.personality.displayName,
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey[600],
-              ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              widget.companion.description,
-              textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 14),
-            ),
-            const SizedBox(height: 20),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                _buildInfoStat(
-                  'Conversations',
-                  widget.companion.conversationCount.toString(),
-                  Icons.chat_bubble_outline,
-                ),
-                _buildInfoStat(
-                  'Relationship Level',
-                  'Level ${widget.companion.relationshipLevel}',
-                  Icons.favorite_outline,
-                ),
-              ],
-            ),
+                        ? NetworkImage(widget.companion.avatarUrl)
+                        : null,
+                    backgroundColor: PulseColors.primary.withValues(alpha: 0.2),
+                    child: widget.companion.avatarUrl.isEmpty
+                        ? Text(
+                            widget.companion.personality.emoji,
+                            style: const TextStyle(fontSize: 32),
+                          )
+                        : null,
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    widget.companion.name,
+                    style: const TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Text(
+                    widget.companion.personality.displayName,
+                    style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    widget.companion.description,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(fontSize: 14),
+                  ),
+                  const SizedBox(height: 20),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      _buildInfoStat(
+                        'Conversations',
+                        widget.companion.conversationCount.toString(),
+                        Icons.chat_bubble_outline,
+                      ),
+                      _buildInfoStat(
+                        'Relationship Level',
+                        'Level ${widget.companion.relationshipLevel}',
+                        Icons.favorite_outline,
+                      ),
+                    ],
+                  ),
                 ],
               ),
             ),
@@ -626,18 +604,9 @@ class _AiCompanionChatScreenState extends State<AiCompanionChatScreen> {
         const SizedBox(height: 4),
         Text(
           value,
-          style: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-          ),
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
         ),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 12,
-            color: Colors.grey[600],
-          ),
-        ),
+        Text(label, style: TextStyle(fontSize: 12, color: Colors.grey[600])),
       ],
     );
   }

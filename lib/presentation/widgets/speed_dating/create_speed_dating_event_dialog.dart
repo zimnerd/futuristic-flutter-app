@@ -10,28 +10,24 @@ class CreateSpeedDatingEventDialog extends StatefulWidget {
   const CreateSpeedDatingEventDialog({super.key});
 
   @override
-  State<CreateSpeedDatingEventDialog> createState() => _CreateSpeedDatingEventDialogState();
+  State<CreateSpeedDatingEventDialog> createState() =>
+      _CreateSpeedDatingEventDialogState();
 }
 
-class _CreateSpeedDatingEventDialogState extends State<CreateSpeedDatingEventDialog> {
+class _CreateSpeedDatingEventDialogState
+    extends State<CreateSpeedDatingEventDialog> {
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
   final _locationController = TextEditingController();
   final _maxParticipantsController = TextEditingController(text: '20');
   final _roundDurationController = TextEditingController(text: '5');
   final _feeController = TextEditingController(text: '0');
-  
+
   DateTime _selectedDate = DateTime.now().add(const Duration(days: 7));
   TimeOfDay _selectedTime = const TimeOfDay(hour: 19, minute: 0);
   String _selectedAgeRange = '25-35';
-  
-  final List<String> _ageRanges = [
-    '18-25',
-    '25-35',
-    '35-45',
-    '45-55',
-    '55+',
-  ];
+
+  final List<String> _ageRanges = ['18-25', '25-35', '35-45', '45-55', '55+'];
 
   @override
   void dispose() {
@@ -67,7 +63,7 @@ class _CreateSpeedDatingEventDialogState extends State<CreateSpeedDatingEventDia
                 ),
               ),
               const SizedBox(height: 24),
-              
+
               // Title
               TextField(
                 controller: _titleController,
@@ -78,7 +74,7 @@ class _CreateSpeedDatingEventDialogState extends State<CreateSpeedDatingEventDia
                 ),
               ),
               const SizedBox(height: 16),
-              
+
               // Description
               TextField(
                 controller: _descriptionController,
@@ -90,7 +86,7 @@ class _CreateSpeedDatingEventDialogState extends State<CreateSpeedDatingEventDia
                 ),
               ),
               const SizedBox(height: 16),
-              
+
               // Location
               TextField(
                 controller: _locationController,
@@ -101,7 +97,7 @@ class _CreateSpeedDatingEventDialogState extends State<CreateSpeedDatingEventDia
                 ),
               ),
               const SizedBox(height: 16),
-              
+
               // Date & Time
               Row(
                 children: [
@@ -147,7 +143,7 @@ class _CreateSpeedDatingEventDialogState extends State<CreateSpeedDatingEventDia
                 ],
               ),
               const SizedBox(height: 16),
-              
+
               // Age Range
               DropdownButtonFormField<String>(
                 initialValue: _selectedAgeRange,
@@ -155,10 +151,12 @@ class _CreateSpeedDatingEventDialogState extends State<CreateSpeedDatingEventDia
                   labelText: 'Age Range',
                   border: OutlineInputBorder(),
                 ),
-                items: _ageRanges.map((range) => DropdownMenuItem(
-                  value: range,
-                  child: Text(range),
-                )).toList(),
+                items: _ageRanges
+                    .map(
+                      (range) =>
+                          DropdownMenuItem(value: range, child: Text(range)),
+                    )
+                    .toList(),
                 onChanged: (value) {
                   if (value != null) {
                     setState(() {
@@ -168,7 +166,7 @@ class _CreateSpeedDatingEventDialogState extends State<CreateSpeedDatingEventDia
                 },
               ),
               const SizedBox(height: 16),
-              
+
               // Max Participants & Round Duration
               Row(
                 children: [
@@ -196,7 +194,7 @@ class _CreateSpeedDatingEventDialogState extends State<CreateSpeedDatingEventDia
                 ],
               ),
               const SizedBox(height: 16),
-              
+
               // Registration Fee
               TextField(
                 controller: _feeController,
@@ -208,7 +206,7 @@ class _CreateSpeedDatingEventDialogState extends State<CreateSpeedDatingEventDia
                 ),
               ),
               const SizedBox(height: 32),
-              
+
               // Action Buttons
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
@@ -237,14 +235,28 @@ class _CreateSpeedDatingEventDialogState extends State<CreateSpeedDatingEventDia
 
   String _formatDate(DateTime date) {
     final months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
     ];
     return '${months[date.month - 1]} ${date.day}, ${date.year}';
   }
 
   String _formatTime(TimeOfDay time) {
-    final hour = time.hour == 0 ? 12 : time.hour > 12 ? time.hour - 12 : time.hour;
+    final hour = time.hour == 0
+        ? 12
+        : time.hour > 12
+        ? time.hour - 12
+        : time.hour;
     final minute = time.minute.toString().padLeft(2, '0');
     final period = time.hour < 12 ? 'AM' : 'PM';
     return '$hour:$minute $period';
@@ -310,13 +322,15 @@ class _CreateSpeedDatingEventDialogState extends State<CreateSpeedDatingEventDia
       'fee': fee,
     };
 
-    context.read<SpeedDatingBloc>().add(CreateSpeedDatingEvent(
-      title: title,
-      description: description,
-      scheduledDate: scheduledDateTime,
-      maxParticipants: maxParticipants,
-      preferences: preferences,
-    ));
+    context.read<SpeedDatingBloc>().add(
+      CreateSpeedDatingEvent(
+        title: title,
+        description: description,
+        scheduledDate: scheduledDateTime,
+        maxParticipants: maxParticipants,
+        preferences: preferences,
+      ),
+    );
 
     Navigator.pop(context);
     PulseToast.success(context, message: 'Speed dating event created!');

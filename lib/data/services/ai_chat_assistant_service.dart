@@ -1,20 +1,9 @@
 import '../../core/network/api_client.dart';
 import '../../core/utils/logger.dart';
 
-enum AiAssistanceType {
-  response,
-  icebreaker,
-  refinement,
-  custom,
-}
+enum AiAssistanceType { response, icebreaker, refinement, custom }
 
-enum MessageTone { 
-  casual, 
-  formal, 
-  flirty, 
-  friendly, 
-  witty 
-}
+enum MessageTone { casual, formal, flirty, friendly, witty }
 
 /// Context options for AI assistance
 class AiContextOptions {
@@ -48,7 +37,8 @@ class AiContextOptions {
 
 /// Service for comprehensive AI-powered chat assistance
 class AiChatAssistantService {
-  static final AiChatAssistantService _instance = AiChatAssistantService._internal();
+  static final AiChatAssistantService _instance =
+      AiChatAssistantService._internal();
   factory AiChatAssistantService() => _instance;
   AiChatAssistantService._internal();
 
@@ -95,13 +85,14 @@ class AiChatAssistantService {
       final response = await getChatAssistance(
         assistanceType: AiAssistanceType.icebreaker,
         conversationId: conversationId,
-        userRequest: 'Generate engaging icebreaker messages for starting a conversation',
+        userRequest:
+            'Generate engaging icebreaker messages for starting a conversation',
         contextOptions: contextOptions,
         suggestionCount: 5,
       );
 
-      return response.alternatives.isNotEmpty 
-          ? response.alternatives 
+      return response.alternatives.isNotEmpty
+          ? response.alternatives
           : [response.suggestion];
     } catch (e) {
       AppLogger.error('Error generating icebreakers: $e');
@@ -134,12 +125,16 @@ class AiChatAssistantService {
         suggestionCount: 3,
       );
 
-      return response.alternatives.isNotEmpty 
-          ? response.alternatives 
+      return response.alternatives.isNotEmpty
+          ? response.alternatives
           : [response.suggestion];
     } catch (e) {
       AppLogger.error('Error generating response suggestions: $e');
-      return ['Thanks for sharing that!', 'That sounds interesting!', 'Tell me more about that.'];
+      return [
+        'Thanks for sharing that!',
+        'That sounds interesting!',
+        'Tell me more about that.',
+      ];
     }
   }
 
@@ -155,7 +150,8 @@ class AiChatAssistantService {
       final response = await getChatAssistance(
         assistanceType: AiAssistanceType.refinement,
         conversationId: conversationId,
-        userRequest: 'Refine this message: "$originalMessage". $refinementRequest',
+        userRequest:
+            'Refine this message: "$originalMessage". $refinementRequest',
         contextOptions: contextOptions,
         specificMessage: originalMessage,
         tone: targetTone,

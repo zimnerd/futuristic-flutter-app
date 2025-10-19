@@ -49,12 +49,13 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen>
         'incognitoMode': profileState.profile!.incognitoMode ?? false,
         'readReceipts': profileState.profile!.readReceipts ?? true,
         'whoCanMessageMe': profileState.profile!.whoCanMessageMe ?? 'everyone',
-        'whoCanSeeMyProfile': profileState.profile!.whoCanSeeMyProfile ?? 'everyone',
+        'whoCanSeeMyProfile':
+            profileState.profile!.whoCanSeeMyProfile ?? 'everyone',
       };
-      
+
       // Detect current preset
       _selectedPreset = PrivacyPreset.detectPreset(_currentSettings);
-      
+
       _logger.i('📱 Privacy Settings initialized: $_currentSettings');
       _logger.i('🎯 Detected preset: $_selectedPreset');
     }
@@ -67,7 +68,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen>
       _selectedPreset = level;
       _hasUnsavedChanges = true;
     });
-    
+
     _logger.i('🎨 Applied preset: ${preset.title}');
     _logger.i('⚙️ New settings: $_currentSettings');
   }
@@ -78,22 +79,21 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen>
       _selectedPreset = PrivacyPreset.detectPreset(_currentSettings);
       _hasUnsavedChanges = true;
     });
-    
+
     _logger.d('🔧 Updated $key = $value, detected preset: $_selectedPreset');
   }
 
   Future<void> _saveSettings() async {
     _logger.i('💾 Saving privacy settings...');
-    
+
     context.read<ProfileBloc>().add(
-          UpdatePrivacySettings(settings: _currentSettings),
-        );
+      UpdatePrivacySettings(settings: _currentSettings),
+    );
 
     // Show success toast
     if (mounted) {
-      PulseToast.success(context, message: 'Privacy settings saved',
-      );
-      
+      PulseToast.success(context, message: 'Privacy settings saved');
+
       setState(() {
         _hasUnsavedChanges = false;
       });
@@ -106,7 +106,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen>
       canPop: !_hasUnsavedChanges,
       onPopInvokedWithResult: (didPop, result) async {
         if (didPop) return;
-        
+
         final shouldDiscard = await _showDiscardDialog();
         if (shouldDiscard == true && context.mounted) {
           Navigator.of(context).pop();
@@ -158,23 +158,14 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen>
             unselectedLabelColor: Colors.grey,
             indicatorColor: PulseColors.primary,
             tabs: [
-              Tab(
-                icon: Icon(Icons.auto_fix_high_rounded),
-                text: 'Presets',
-              ),
-              Tab(
-                icon: Icon(Icons.tune_rounded),
-                text: 'Custom',
-              ),
+              Tab(icon: Icon(Icons.auto_fix_high_rounded), text: 'Presets'),
+              Tab(icon: Icon(Icons.tune_rounded), text: 'Custom'),
             ],
           ),
         ),
         body: TabBarView(
           controller: _tabController,
-          children: [
-            _buildPresetsTab(),
-            _buildCustomTab(),
-          ],
+          children: [_buildPresetsTab(), _buildCustomTab()],
         ),
       ),
     );
@@ -203,22 +194,19 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen>
                 SizedBox(height: 8),
                 Text(
                   'Choose a preset that matches your privacy preference',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey[600],
-                  ),
+                  style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                 ),
               ],
             ),
           ),
-          
+
           SizedBox(height: 16),
-          
+
           // Preset Cards
           ...PrivacyPreset.all.map((preset) => _buildPresetCard(preset)),
-          
+
           SizedBox(height: 24),
-          
+
           // Comparison Table
           _buildComparisonTable(),
         ],
@@ -228,7 +216,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen>
 
   Widget _buildPresetCard(PrivacyPreset preset) {
     final isSelected = _selectedPreset == preset.level;
-    
+
     return Container(
       margin: EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
@@ -263,15 +251,11 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen>
                     color: preset.color.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Icon(
-                    preset.icon,
-                    color: preset.color,
-                    size: 28,
-                  ),
+                  child: Icon(preset.icon, color: preset.color, size: 28),
                 ),
-                
+
                 SizedBox(width: 16),
-                
+
                 // Content
                 Expanded(
                   child: Column(
@@ -279,14 +263,14 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen>
                     children: [
                       Row(
                         children: [
-                      Text(
-                        preset.title,
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black87,
-                        ),
-                      ),
+                          Text(
+                            preset.title,
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black87,
+                            ),
+                          ),
                           if (isSelected) ...[
                             SizedBox(width: 8),
                             Icon(
@@ -300,15 +284,12 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen>
                       SizedBox(height: 4),
                       Text(
                         preset.description,
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: Colors.grey[600],
-                        ),
+                        style: TextStyle(fontSize: 13, color: Colors.grey[600]),
                       ),
                     ],
                   ),
                 ),
-                
+
                 // Arrow
                 Icon(
                   Icons.arrow_forward_ios_rounded,
@@ -326,7 +307,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen>
   Widget _buildComparisonTable() {
     final comparison = PrivacyPreset.getComparison();
     final presets = PrivacyPreset.all;
-    
+
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -353,9 +334,9 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen>
               ),
             ),
           ),
-          
+
           Divider(height: 1),
-          
+
           // Header Row
           Container(
             padding: EdgeInsets.all(12),
@@ -373,24 +354,23 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen>
                     ),
                   ),
                 ),
-                ...presets.map((preset) => Expanded(
-                      child: Center(
-                        child: Icon(
-                          preset.icon,
-                          color: preset.color,
-                          size: 16,
-                        ),
-                      ),
-                    )),
+                ...presets.map(
+                  (preset) => Expanded(
+                    child: Center(
+                      child: Icon(preset.icon, color: preset.color, size: 16),
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
-          
+
           // Feature Rows
           ...comparison.entries.map((entry) {
             final featureKey = entry.key;
-            final featureLabel = PrivacyPreset.featureLabels[featureKey] ?? featureKey;
-            
+            final featureLabel =
+                PrivacyPreset.featureLabels[featureKey] ?? featureKey;
+
             return Container(
               padding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
               decoration: BoxDecoration(
@@ -404,18 +384,13 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen>
                     flex: 2,
                     child: Text(
                       featureLabel,
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: Colors.black87,
-                      ),
+                      style: TextStyle(fontSize: 13, color: Colors.black87),
                     ),
                   ),
                   ...presets.map((preset) {
                     final value = entry.value[preset.level];
                     return Expanded(
-                      child: Center(
-                        child: _buildFeatureValue(value),
-                      ),
+                      child: Center(child: _buildFeatureValue(value)),
                     );
                   }),
                 ],
@@ -487,100 +462,84 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen>
             ),
             SizedBox(height: 16),
           ],
-          
+
           // Profile Visibility Section
-          _buildSection(
-            'Profile Visibility',
-            Icons.visibility_rounded,
-            [
-              _buildDropdownSetting(
-                'Who can see my profile',
-                'whoCanSeeMyProfile',
-                'Control who can view your full profile',
-                ['everyone', 'matches', 'none'],
-                {
-                  'everyone': 'Everyone',
-                  'matches': 'Matches Only',
-                  'none': 'Hidden',
-                },
-              ),
-              _buildDropdownSetting(
-                'Who can message me',
-                'whoCanMessageMe',
-                'Control who can send you messages',
-                ['everyone', 'matches', 'none'],
-                {
-                  'everyone': 'Everyone',
-                  'matches': 'Matches Only',
-                  'none': 'No One',
-                },
-              ),
-            ],
-          ),
-          
+          _buildSection('Profile Visibility', Icons.visibility_rounded, [
+            _buildDropdownSetting(
+              'Who can see my profile',
+              'whoCanSeeMyProfile',
+              'Control who can view your full profile',
+              ['everyone', 'matches', 'none'],
+              {
+                'everyone': 'Everyone',
+                'matches': 'Matches Only',
+                'none': 'Hidden',
+              },
+            ),
+            _buildDropdownSetting(
+              'Who can message me',
+              'whoCanMessageMe',
+              'Control who can send you messages',
+              ['everyone', 'matches', 'none'],
+              {
+                'everyone': 'Everyone',
+                'matches': 'Matches Only',
+                'none': 'No One',
+              },
+            ),
+          ]),
+
           SizedBox(height: 16),
-          
+
           // Activity Visibility Section
-          _buildSection(
-            'Activity Visibility',
-            Icons.access_time_rounded,
-            [
-              _buildToggleSetting(
-                'Show online status',
-                'showOnlineStatus',
-                'Let others see when you\'re currently active',
-              ),
-              _buildToggleSetting(
-                'Show last active',
-                'showLastActive',
-                'Display when you were last online',
-              ),
-              _buildToggleSetting(
-                'Read receipts',
-                'readReceipts',
-                'Let others know when you\'ve read their messages',
-              ),
-            ],
-          ),
-          
+          _buildSection('Activity Visibility', Icons.access_time_rounded, [
+            _buildToggleSetting(
+              'Show online status',
+              'showOnlineStatus',
+              'Let others see when you\'re currently active',
+            ),
+            _buildToggleSetting(
+              'Show last active',
+              'showLastActive',
+              'Display when you were last online',
+            ),
+            _buildToggleSetting(
+              'Read receipts',
+              'readReceipts',
+              'Let others know when you\'ve read their messages',
+            ),
+          ]),
+
           SizedBox(height: 16),
-          
+
           // Profile Information Section
-          _buildSection(
-            'Profile Information',
-            Icons.person_rounded,
-            [
-              _buildToggleSetting(
-                'Show age',
-                'showAge',
-                'Display your age on your profile',
-              ),
-              _buildToggleSetting(
-                'Show distance',
-                'showDistance',
-                'Show how far away you are from others',
-              ),
-            ],
-          ),
-          
+          _buildSection('Profile Information', Icons.person_rounded, [
+            _buildToggleSetting(
+              'Show age',
+              'showAge',
+              'Display your age on your profile',
+            ),
+            _buildToggleSetting(
+              'Show distance',
+              'showDistance',
+              'Show how far away you are from others',
+            ),
+          ]),
+
           SizedBox(height: 16),
-          
+
           // Advanced Section
-          _buildSection(
-            'Advanced',
-            Icons.settings_rounded,
-            [
-              _buildToggleSetting(
-                'Incognito mode',
-                'incognitoMode',
-                'Browse profiles without appearing in discovery',
-                isPremium: true,
-              ),
-            ],
-          ),
-          
+          _buildSection('Advanced', Icons.settings_rounded, [
+            _buildToggleSetting(
+              'Incognito mode',
+              'incognitoMode',
+              'Browse profiles without appearing in discovery',
+              isPremium: true,
+            ),
+          ]),
+
           SizedBox(height: 32),
-          
+
           // Save Button (fixed at bottom)
           if (_hasUnsavedChanges)
             SizedBox(
@@ -598,10 +557,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen>
                 ),
                 child: Text(
                   'Save Privacy Settings',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                 ),
               ),
             ),
@@ -636,11 +592,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen>
                     color: PulseColors.primary.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: Icon(
-                    icon,
-                    color: PulseColors.primary,
-                    size: 20,
-                  ),
+                  child: Icon(icon, color: PulseColors.primary, size: 20),
                 ),
                 SizedBox(width: 12),
                 Text(
@@ -668,7 +620,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen>
     bool isPremium = false,
   }) {
     final value = _currentSettings[key] as bool;
-    
+
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
@@ -695,10 +647,16 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen>
                     if (isPremium) ...[
                       SizedBox(width: 8),
                       Container(
-                        padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
-                            colors: [PulseColors.primary, PulseColors.secondary],
+                            colors: [
+                              PulseColors.primary,
+                              PulseColors.secondary,
+                            ],
                           ),
                           borderRadius: BorderRadius.circular(4),
                         ),
@@ -717,10 +675,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen>
                 SizedBox(height: 4),
                 Text(
                   description,
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: Colors.grey[600],
-                  ),
+                  style: TextStyle(fontSize: 13, color: Colors.grey[600]),
                 ),
               ],
             ),
@@ -744,7 +699,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen>
     Map<String, String> labels,
   ) {
     final value = _currentSettings[key] as String;
-    
+
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
@@ -766,10 +721,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen>
           SizedBox(height: 4),
           Text(
             description,
-            style: TextStyle(
-              fontSize: 13,
-              color: Colors.grey[600],
-            ),
+            style: TextStyle(fontSize: 13, color: Colors.grey[600]),
           ),
           SizedBox(height: 12),
           Container(
@@ -822,9 +774,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen>
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
-            style: TextButton.styleFrom(
-              foregroundColor: Colors.red,
-            ),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
             child: Text('Discard'),
           ),
         ],

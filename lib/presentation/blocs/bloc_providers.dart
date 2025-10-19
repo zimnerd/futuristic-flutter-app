@@ -21,7 +21,7 @@ import '../../data/services/profile_service.dart';
 import '../../data/services/photo_manager_service.dart';
 
 /// Provides all BLoCs to the widget tree with proper dependency injection
-/// 
+///
 /// Note: This is a focused implementation for payment/subscription features.
 /// Additional BLoCs can be added as needed when their dependencies are resolved.
 class BlocProviders extends StatelessWidget {
@@ -36,7 +36,7 @@ class BlocProviders extends StatelessWidget {
         // Payment & Subscription BLoCs - Ready for integration
         BlocProvider<PaymentBloc>(create: (context) => PaymentBloc()),
         BlocProvider<SubscriptionBloc>(create: (context) => SubscriptionBloc()),
-        
+
         // Call Management BLoC - Real-time communication
         BlocProvider<CallBloc>(
           create: (context) =>
@@ -45,8 +45,7 @@ class BlocProviders extends StatelessWidget {
 
         // Discovery BLoC - User discovery and swiping
         BlocProvider<DiscoveryBloc>(
-          create: (context) =>
-              DiscoveryBloc(
+          create: (context) => DiscoveryBloc(
             discoveryService: DiscoveryService(apiClient: ApiClient.instance),
             preferencesService: PreferencesService(ApiClient.instance),
           ),
@@ -58,7 +57,7 @@ class BlocProviders extends StatelessWidget {
             matchingService: MatchingService(apiClient: ApiClient.instance),
           ),
         ),
-        
+
         // Profile Management BLoC - User profile customization
         BlocProvider<ProfileBloc>(
           create: (context) => ProfileBloc(
@@ -66,26 +65,23 @@ class BlocProviders extends StatelessWidget {
             photoManager: di.sl<PhotoManagerService>(),
           ),
         ),
-        
+
         // Authentication BLoC - User authentication and session management
         BlocProvider<AuthBloc>(
-          create: (context) => AuthBloc(
-            userRepository: di.sl<UserRepository>(),
-          ),
+          create: (context) =>
+              AuthBloc(userRepository: di.sl<UserRepository>()),
         ),
 
         // User Management BLoC - User profile operations and management
         BlocProvider<UserBloc>(
-          create: (context) => UserBloc(
-            userRepository: di.sl<UserRepository>(),
-          ),
+          create: (context) =>
+              UserBloc(userRepository: di.sl<UserRepository>()),
         ),
 
         // Messaging BLoC - Chat and conversation management
         BlocProvider<MessagingBloc>(
-          create: (context) => MessagingBloc(
-            messagingService: di.sl<MessagingService>(),
-          ),
+          create: (context) =>
+              MessagingBloc(messagingService: di.sl<MessagingService>()),
         ),
       ],
       child: child,
@@ -98,7 +94,7 @@ extension BlocExtensions on BuildContext {
   // Payment & Subscription BLoCs - Ready to use
   PaymentBloc get paymentBloc => read<PaymentBloc>();
   SubscriptionBloc get subscriptionBloc => read<SubscriptionBloc>();
-  
+
   // Call Management BLoC - Real-time communication
   CallBloc get callBloc => read<CallBloc>();
 

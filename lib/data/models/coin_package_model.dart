@@ -28,7 +28,8 @@ class CoinPackage {
   double savingsPercentage(CoinPackage basePackage) {
     if (basePackage.pricePerCoin == 0) return 0;
     return ((basePackage.pricePerCoin - pricePerCoin) /
-            basePackage.pricePerCoin) * 100;
+            basePackage.pricePerCoin) *
+        100;
   }
 
   /// Formatted price string

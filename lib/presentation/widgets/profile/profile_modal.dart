@@ -40,7 +40,7 @@ class ProfileModal extends StatelessWidget {
               borderRadius: BorderRadius.circular(2),
             ),
           ),
-          
+
           // Header with close button
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
@@ -62,7 +62,7 @@ class ProfileModal extends StatelessWidget {
               ],
             ),
           ),
-          
+
           // Content
           Expanded(
             child: SingleChildScrollView(
@@ -93,7 +93,7 @@ class ProfileModal extends StatelessWidget {
                     ),
                     const SizedBox(height: 24),
                   ],
-                  
+
                   // Basic info
                   Row(
                     children: [
@@ -112,14 +112,16 @@ class ProfileModal extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 8),
-                  
+
                   // Location
                   if (userProfile.location.city?.isNotEmpty == true) ...[
                     Row(
                       children: [
-                        Icon(Icons.location_on, 
-                             color: Colors.grey[600], 
-                             size: 16),
+                        Icon(
+                          Icons.location_on,
+                          color: Colors.grey[600],
+                          size: 16,
+                        ),
                         const SizedBox(width: 4),
                         Text(
                           userProfile.location.city!,
@@ -132,7 +134,7 @@ class ProfileModal extends StatelessWidget {
                     ),
                     const SizedBox(height: 16),
                   ],
-                  
+
                   // Bio
                   if (userProfile.bio.isNotEmpty) ...[
                     const Text(
@@ -145,14 +147,11 @@ class ProfileModal extends StatelessWidget {
                     const SizedBox(height: 8),
                     Text(
                       userProfile.bio,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        height: 1.4,
-                      ),
+                      style: const TextStyle(fontSize: 16, height: 1.4),
                     ),
                     const SizedBox(height: 24),
                   ],
-                  
+
                   // Interests
                   if (userProfile.interests.isNotEmpty) ...[
                     const Text(
@@ -191,7 +190,7 @@ class ProfileModal extends StatelessWidget {
                     ),
                     const SizedBox(height: 24),
                   ],
-                  
+
                   // Additional info
                   if (userProfile.occupation?.isNotEmpty == true ||
                       userProfile.education?.isNotEmpty == true) ...[
@@ -203,13 +202,11 @@ class ProfileModal extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 12),
-                    
+
                     if (userProfile.occupation?.isNotEmpty == true) ...[
                       Row(
                         children: [
-                          Icon(Icons.work, 
-                               color: Colors.grey[600], 
-                               size: 20),
+                          Icon(Icons.work, color: Colors.grey[600], size: 20),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
@@ -221,13 +218,11 @@ class ProfileModal extends StatelessWidget {
                       ),
                       const SizedBox(height: 8),
                     ],
-                    
+
                     if (userProfile.education?.isNotEmpty == true) ...[
                       Row(
                         children: [
-                          Icon(Icons.school, 
-                               color: Colors.grey[600], 
-                               size: 20),
+                          Icon(Icons.school, color: Colors.grey[600], size: 20),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
@@ -244,7 +239,7 @@ class ProfileModal extends StatelessWidget {
               ),
             ),
           ),
-          
+
           // Action button
           if (onMessage != null) ...[
             Padding(
@@ -263,10 +258,7 @@ class ProfileModal extends StatelessWidget {
                   ),
                   child: const Text(
                     'Start Conversation',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                   ),
                 ),
               ),
@@ -286,10 +278,8 @@ class ProfileModal extends StatelessWidget {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => ProfileModal(
-        userProfile: userProfile,
-        onMessage: onMessage,
-      ),
+      builder: (context) =>
+          ProfileModal(userProfile: userProfile, onMessage: onMessage),
     );
   }
 }

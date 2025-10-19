@@ -45,7 +45,7 @@ class _GiftPurchaseWidgetState extends State<GiftPurchaseWidget> {
   @override
   Widget build(BuildContext context) {
     final canAfford = widget.userBalance >= widget.gift.price;
-    
+
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -89,9 +89,9 @@ class _GiftPurchaseWidgetState extends State<GiftPurchaseWidget> {
                 ),
                 Text(
                   'To ${widget.recipientName}',
-                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    color: Colors.grey[600],
-                  ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyLarge?.copyWith(color: Colors.grey[600]),
                 ),
               ],
             ),
@@ -99,9 +99,7 @@ class _GiftPurchaseWidgetState extends State<GiftPurchaseWidget> {
           IconButton(
             onPressed: widget.onCancel,
             icon: const Icon(Icons.close),
-            style: IconButton.styleFrom(
-              backgroundColor: Colors.grey[100],
-            ),
+            style: IconButton.styleFrom(backgroundColor: Colors.grey[100]),
           ),
         ],
       ),
@@ -150,16 +148,16 @@ class _GiftPurchaseWidgetState extends State<GiftPurchaseWidget> {
               children: [
                 Text(
                   widget.gift.name,
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   widget.gift.description,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Colors.grey[600],
-                  ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -170,7 +168,9 @@ class _GiftPurchaseWidgetState extends State<GiftPurchaseWidget> {
                     vertical: 6,
                   ),
                   decoration: BoxDecoration(
-                    color: _getRarityColor(widget.gift.rarity).withValues(alpha: 0.1),
+                    color: _getRarityColor(
+                      widget.gift.rarity,
+                    ).withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(
                       color: _getRarityColor(widget.gift.rarity),
@@ -211,9 +211,9 @@ class _GiftPurchaseWidgetState extends State<GiftPurchaseWidget> {
         children: [
           Text(
             'Add a personal message (optional)',
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w600,
-            ),
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 12),
           TextField(
@@ -241,7 +241,7 @@ class _GiftPurchaseWidgetState extends State<GiftPurchaseWidget> {
 
   Widget _buildCostBreakdown() {
     final canAfford = widget.userBalance >= widget.gift.price;
-    
+
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20),
       padding: const EdgeInsets.all(16),
@@ -257,10 +257,7 @@ class _GiftPurchaseWidgetState extends State<GiftPurchaseWidget> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                'Gift Cost:',
-                style: Theme.of(context).textTheme.bodyLarge,
-              ),
+              Text('Gift Cost:', style: Theme.of(context).textTheme.bodyLarge),
               Row(
                 children: [
                   Icon(
@@ -291,9 +288,9 @@ class _GiftPurchaseWidgetState extends State<GiftPurchaseWidget> {
               ),
               Text(
                 '${widget.userBalance}',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
               ),
             ],
           ),
@@ -303,9 +300,9 @@ class _GiftPurchaseWidgetState extends State<GiftPurchaseWidget> {
             children: [
               Text(
                 'After Purchase:',
-                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w600),
               ),
               Text(
                 '${widget.userBalance - widget.gift.price}',
@@ -394,9 +391,7 @@ class _GiftPurchaseWidgetState extends State<GiftPurchaseWidget> {
                     )
                   : Text(
                       canAfford ? 'Send Gift' : 'Insufficient Credits',
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w600,
-                      ),
+                      style: const TextStyle(fontWeight: FontWeight.w600),
                     ),
             ),
           ),

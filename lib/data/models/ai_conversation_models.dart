@@ -34,14 +34,14 @@ class AiConversationAnalysisRequest extends Equatable {
 
   @override
   List<Object?> get props => [
-        conversationId,
-        userId,
-        matchId,
-        messages,
-        userProfile,
-        matchProfile,
-        context,
-      ];
+    conversationId,
+    userId,
+    matchId,
+    messages,
+    userProfile,
+    matchProfile,
+    context,
+  ];
 }
 
 /// Message data for AI analysis
@@ -162,15 +162,15 @@ class AiUserProfileData extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        name,
-        age,
-        bio,
-        interests,
-        photos,
-        preferences,
-        personality,
-      ];
+    id,
+    name,
+    age,
+    bio,
+    interests,
+    photos,
+    preferences,
+    personality,
+  ];
 }
 
 /// Response model for AI conversation analysis
@@ -216,15 +216,15 @@ class AiConversationAnalysisResponse extends Equatable {
 
   @override
   List<Object?> get props => [
-        requestId,
-        health,
-        metrics,
-        suggestions,
-        compatibilityInsights,
-        revivalPlan,
-        confidence,
-        generatedAt,
-      ];
+    requestId,
+    health,
+    metrics,
+    suggestions,
+    compatibilityInsights,
+    revivalPlan,
+    confidence,
+    generatedAt,
+  ];
 }
 
 /// Conversation health assessment from AI
@@ -291,14 +291,14 @@ class AiConversationMetrics extends Equatable {
 
   @override
   List<Object?> get props => [
-        messageCount,
-        engagementScore,
-        responseTimeScore,
-        topicDiversityScore,
-        emotionalConnectionScore,
-        dominantTopics,
-        sentimentAnalysis,
-      ];
+    messageCount,
+    engagementScore,
+    responseTimeScore,
+    topicDiversityScore,
+    emotionalConnectionScore,
+    dominantTopics,
+    sentimentAnalysis,
+  ];
 }
 
 /// AI-generated conversation suggestion
@@ -338,21 +338,22 @@ class AiConversationSuggestion extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        type,
-        content,
-        reasoning,
-        confidence,
-        tags,
-        category,
-        metadata,
-      ];
+    id,
+    type,
+    content,
+    reasoning,
+    confidence,
+    tags,
+    category,
+    metadata,
+  ];
 }
 
 /// AI compatibility insight
 class AiCompatibilityInsight extends Equatable {
   final String type; // 'strength', 'concern', 'neutral'
-  final String category; // 'interests', 'personality', 'communication', 'lifestyle'
+  final String
+  category; // 'interests', 'personality', 'communication', 'lifestyle'
   final String insight;
   final double impact; // -1.0 to 1.0
   final List<String> evidence;
@@ -380,13 +381,13 @@ class AiCompatibilityInsight extends Equatable {
 
   @override
   List<Object?> get props => [
-        type,
-        category,
-        insight,
-        impact,
-        evidence,
-        recommendation,
-      ];
+    type,
+    category,
+    insight,
+    impact,
+    evidence,
+    recommendation,
+  ];
 }
 
 /// AI-generated conversation revival plan
@@ -423,12 +424,12 @@ class AiConversationRevivalPlan extends Equatable {
 
   @override
   List<Object?> get props => [
-        planId,
-        strategy,
-        suggestedMessages,
-        topicsToExplore,
-        reasoning,
-        successProbability,
-        timeToAct,
-      ];
+    planId,
+    strategy,
+    suggestedMessages,
+    topicsToExplore,
+    reasoning,
+    successProbability,
+    timeToAct,
+  ];
 }

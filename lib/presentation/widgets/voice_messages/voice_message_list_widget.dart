@@ -44,24 +44,20 @@ class VoiceMessageListWidget extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.mic_none,
-            size: 64,
-            color: Colors.grey[400],
-          ),
+          Icon(Icons.mic_none, size: 64, color: Colors.grey[400]),
           const SizedBox(height: 16),
           Text(
             emptyStateTitle,
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-              color: Colors.grey[600],
-            ),
+            style: Theme.of(
+              context,
+            ).textTheme.headlineSmall?.copyWith(color: Colors.grey[600]),
           ),
           const SizedBox(height: 8),
           Text(
             emptyStateSubtitle,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: Colors.grey[500],
-            ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(color: Colors.grey[500]),
             textAlign: TextAlign.center,
           ),
         ],
@@ -72,9 +68,7 @@ class VoiceMessageListWidget extends StatelessWidget {
   Widget _buildMessageCard(BuildContext context, VoiceMessage message) {
     return Card(
       elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: InkWell(
         onTap: () => onMessageTap(message),
         borderRadius: BorderRadius.circular(12),
@@ -98,9 +92,8 @@ class VoiceMessageListWidget extends StatelessWidget {
                             children: [
                               Text(
                                 _formatDuration(message.duration),
-                                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                  color: Colors.grey[600],
-                                ),
+                                style: Theme.of(context).textTheme.bodySmall
+                                    ?.copyWith(color: Colors.grey[600]),
                               ),
                               const SizedBox(width: 8),
                               if (!message.isPlayed)
@@ -130,7 +123,7 @@ class VoiceMessageListWidget extends StatelessWidget {
                   ],
                 ),
               ),
-              
+
               // Message info and actions
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
@@ -145,9 +138,9 @@ class VoiceMessageListWidget extends StatelessWidget {
                   const SizedBox(height: 4),
                   Text(
                     _formatDate(message.createdAt),
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Colors.grey[600],
-                    ),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
                   ),
                   const SizedBox(height: 8),
                   _buildActionButtons(context, message),
@@ -193,9 +186,7 @@ class VoiceMessageListWidget extends StatelessWidget {
             margin: const EdgeInsets.symmetric(horizontal: 1),
             height: amplitude * 40,
             decoration: BoxDecoration(
-              color: message.isPlayed 
-                  ? Colors.grey[400] 
-                  : PulseColors.primary,
+              color: message.isPlayed ? Colors.grey[400] : PulseColors.primary,
               borderRadius: BorderRadius.circular(1.5),
             ),
           );
@@ -232,9 +223,7 @@ class VoiceMessageListWidget extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Text('Delete Voice Message'),
         content: const Text(
           'Are you sure you want to delete this voice message? This action cannot be undone.',
@@ -249,9 +238,7 @@ class VoiceMessageListWidget extends StatelessWidget {
               Navigator.of(context).pop();
               onMessageDelete!(message);
             },
-            style: TextButton.styleFrom(
-              foregroundColor: Colors.red,
-            ),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
             child: const Text('Delete'),
           ),
         ],

@@ -28,7 +28,7 @@ class ConversationService {
         final conversations = data.map<Conversation>((json) {
           return Conversation.fromJson(json as Map<String, dynamic>);
         }).toList();
-        
+
         _logger.d('Retrieved ${conversations.length} conversations');
         return conversations;
       } else {
@@ -55,10 +55,13 @@ class ConversationService {
       );
 
       if (response.statusCode == 200 && response.data != null) {
-        final List<dynamic> data = response.data['data'] ?? response.data['messages'] ?? [];
+        final List<dynamic> data =
+            response.data['data'] ?? response.data['messages'] ?? [];
         final messages = data.map((json) => Message.fromJson(json)).toList();
-        
-        _logger.d('Retrieved ${messages.length} messages for conversation $conversationId');
+
+        _logger.d(
+          'Retrieved ${messages.length} messages for conversation $conversationId',
+        );
         return messages;
       } else {
         _logger.e('Failed to get messages: ${response.statusMessage}');
@@ -86,7 +89,9 @@ class ConversationService {
       );
 
       if (response.statusCode == 201 && response.data != null) {
-        final message = Message.fromJson(response.data['data'] ?? response.data);
+        final message = Message.fromJson(
+          response.data['data'] ?? response.data,
+        );
         _logger.d('Message sent successfully: ${message.id}');
         return message;
       } else {
@@ -137,7 +142,9 @@ class ConversationService {
         _logger.d('Conversation marked as read: $conversationId');
         return true;
       } else {
-        _logger.e('Failed to mark conversation as read: ${response.statusMessage}');
+        _logger.e(
+          'Failed to mark conversation as read: ${response.statusMessage}',
+        );
         return false;
       }
     } catch (e) {

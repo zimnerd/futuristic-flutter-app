@@ -5,17 +5,23 @@ import '../../domain/services/websocket_service.dart';
 /// This service provides a clean API for all chat operations and manages Socket.IO events
 class SocketChatService {
   final WebSocketService _webSocketService;
-  
+
   // Stream controllers for different types of events
-  final StreamController<Map<String, dynamic>> _messageController = StreamController.broadcast();
-  final StreamController<Map<String, dynamic>> _conversationController = StreamController.broadcast();
-  final StreamController<Map<String, dynamic>> _typingController = StreamController.broadcast();
-  final StreamController<Map<String, dynamic>> _presenceController = StreamController.broadcast();
-  final StreamController<Map<String, dynamic>> _callController = StreamController.broadcast();
-  
+  final StreamController<Map<String, dynamic>> _messageController =
+      StreamController.broadcast();
+  final StreamController<Map<String, dynamic>> _conversationController =
+      StreamController.broadcast();
+  final StreamController<Map<String, dynamic>> _typingController =
+      StreamController.broadcast();
+  final StreamController<Map<String, dynamic>> _presenceController =
+      StreamController.broadcast();
+  final StreamController<Map<String, dynamic>> _callController =
+      StreamController.broadcast();
+
   // Public streams
   Stream<Map<String, dynamic>> get messageStream => _messageController.stream;
-  Stream<Map<String, dynamic>> get conversationStream => _conversationController.stream;
+  Stream<Map<String, dynamic>> get conversationStream =>
+      _conversationController.stream;
   Stream<Map<String, dynamic>> get typingStream => _typingController.stream;
   Stream<Map<String, dynamic>> get presenceStream => _presenceController.stream;
   Stream<Map<String, dynamic>> get callStream => _callController.stream;
@@ -28,17 +34,11 @@ class SocketChatService {
   void _setupEventListeners() {
     // Message events
     _webSocketService.onNewMessage((data) {
-      _messageController.add({
-        'type': 'message_received',
-        'data': data,
-      });
+      _messageController.add({'type': 'message_received', 'data': data});
     });
 
     _webSocketService.onMessageUpdate((data) {
-      _messageController.add({
-        'type': 'message_status_updated',
-        'data': data,
-      });
+      _messageController.add({'type': 'message_status_updated', 'data': data});
     });
 
     _webSocketService.onMessageDeleted((messageId) {
@@ -50,17 +50,11 @@ class SocketChatService {
 
     // Typing events
     _webSocketService.onTypingStart((data) {
-      _typingController.add({
-        'type': 'typing_started',
-        'data': data,
-      });
+      _typingController.add({'type': 'typing_started', 'data': data});
     });
 
     _webSocketService.onTypingStop((data) {
-      _typingController.add({
-        'type': 'typing_stopped',
-        'data': data,
-      });
+      _typingController.add({'type': 'typing_stopped', 'data': data});
     });
 
     // User presence events
@@ -79,32 +73,20 @@ class SocketChatService {
     });
 
     _webSocketService.onUserStatusChange((data) {
-      _presenceController.add({
-        'type': 'user_status_changed',
-        'data': data,
-      });
+      _presenceController.add({'type': 'user_status_changed', 'data': data});
     });
 
     // Call events
     _webSocketService.onIncomingCall((data) {
-      _callController.add({
-        'type': 'call_initiated',
-        'data': data,
-      });
+      _callController.add({'type': 'call_initiated', 'data': data});
     });
 
     _webSocketService.onCallAccepted((data) {
-      _callController.add({
-        'type': 'call_answered',
-        'data': data,
-      });
+      _callController.add({'type': 'call_answered', 'data': data});
     });
 
     _webSocketService.onCallDeclined((data) {
-      _callController.add({
-        'type': 'call_declined',
-        'data': data,
-      });
+      _callController.add({'type': 'call_declined', 'data': data});
     });
 
     // Use setter for call ended events
@@ -332,14 +314,8 @@ class SocketChatService {
   }
 
   /// Get bookmarked messages
-  Future<void> getBookmarks({
-    int? page,
-    int? limit,
-  }) async {
-    _webSocketService.emit('getBookmarks', {
-      'page': page,
-      'limit': limit,
-    });
+  Future<void> getBookmarks({int? page, int? limit}) async {
+    _webSocketService.emit('getBookmarks', {'page': page, 'limit': limit});
   }
 
   // === AI COMPANION OPERATIONS ===
@@ -382,14 +358,8 @@ class SocketChatService {
   }
 
   /// End a call
-  Future<void> endCall({
-    required String callId,
-    String? reason,
-  }) async {
-    _webSocketService.emit('endCall', {
-      'callId': callId,
-      'reason': reason,
-    });
+  Future<void> endCall({required String callId, String? reason}) async {
+    _webSocketService.emit('endCall', {'callId': callId, 'reason': reason});
   }
 
   /// Send WebRTC signaling data

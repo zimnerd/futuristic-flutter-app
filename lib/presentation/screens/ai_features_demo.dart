@@ -16,10 +16,10 @@ class _AiFeaturesDemoState extends State<AiFeaturesDemo>
     with TickerProviderStateMixin {
   final TextEditingController _messageController = TextEditingController();
   final List<DemoMessage> _messages = [];
-  
+
   late AnimationController _fadeController;
   late Animation<double> _fadeAnimation;
-  
+
   final String _lastReceivedMessage = "Hey! How are you doing today? 😊";
 
   @override
@@ -29,10 +29,11 @@ class _AiFeaturesDemoState extends State<AiFeaturesDemo>
       duration: const Duration(milliseconds: 800),
       vsync: this,
     );
-    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _fadeController, curve: Curves.easeIn),
-    );
-    
+    _fadeAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _fadeController, curve: Curves.easeIn));
+
     _initializeDemoMessages();
     _fadeController.forward();
   }
@@ -52,7 +53,8 @@ class _AiFeaturesDemoState extends State<AiFeaturesDemo>
         timestamp: DateTime.now().subtract(const Duration(minutes: 5)),
       ),
       DemoMessage(
-        text: "I can help you with profile building, icebreakers, and smart replies!",
+        text:
+            "I can help you with profile building, icebreakers, and smart replies!",
         isAi: true,
         timestamp: DateTime.now().subtract(const Duration(minutes: 4)),
       ),
@@ -69,24 +71,24 @@ class _AiFeaturesDemoState extends State<AiFeaturesDemo>
     if (message.isEmpty) return;
 
     setState(() {
-      _messages.add(DemoMessage(
-        text: message,
-        isAi: false,
-        timestamp: DateTime.now(),
-      ));
+      _messages.add(
+        DemoMessage(text: message, isAi: false, timestamp: DateTime.now()),
+      );
     });
 
     _messageController.clear();
-    
+
     // Simulate AI response
     Future.delayed(const Duration(seconds: 1), () {
       if (mounted) {
         setState(() {
-          _messages.add(DemoMessage(
-            text: _generateAiResponse(message),
-            isAi: true,
-            timestamp: DateTime.now(),
-          ));
+          _messages.add(
+            DemoMessage(
+              text: _generateAiResponse(message),
+              isAi: true,
+              timestamp: DateTime.now(),
+            ),
+          );
         });
       }
     });
@@ -110,11 +112,7 @@ class _AiFeaturesDemoState extends State<AiFeaturesDemo>
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [
-              Color(0xFF0F0F0F),
-              Color(0xFF1A1A2E),
-              Color(0xFF16213E),
-            ],
+            colors: [Color(0xFF0F0F0F), Color(0xFF1A1A2E), Color(0xFF16213E)],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
@@ -147,7 +145,10 @@ class _AiFeaturesDemoState extends State<AiFeaturesDemo>
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: [PulseColors.primary, PulseColors.secondary],
@@ -157,7 +158,11 @@ class _AiFeaturesDemoState extends State<AiFeaturesDemo>
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.auto_awesome, color: Colors.white, size: 16),
+                      const Icon(
+                        Icons.auto_awesome,
+                        color: Colors.white,
+                        size: 16,
+                      ),
                       const SizedBox(width: 8),
                       const Text(
                         'AI Features Demo',
@@ -207,7 +212,11 @@ class _AiFeaturesDemoState extends State<AiFeaturesDemo>
               children: [
                 Row(
                   children: [
-                    Icon(Icons.psychology, color: PulseColors.primary, size: 20),
+                    Icon(
+                      Icons.psychology,
+                      color: PulseColors.primary,
+                      size: 20,
+                    ),
                     const SizedBox(width: 8),
                     Text(
                       'Available AI Features',
@@ -222,17 +231,28 @@ class _AiFeaturesDemoState extends State<AiFeaturesDemo>
                 const SizedBox(height: 12),
                 Row(
                   children: [
-                    Expanded(child: _buildFeatureChip('🤖 AI Companion', Colors.purple)),
+                    Expanded(
+                      child: _buildFeatureChip(
+                        '🤖 AI Companion',
+                        Colors.purple,
+                      ),
+                    ),
                     const SizedBox(width: 8),
-                    Expanded(child: _buildFeatureChip('💬 Smart Replies', Colors.blue)),
+                    Expanded(
+                      child: _buildFeatureChip('💬 Smart Replies', Colors.blue),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 8),
                 Row(
                   children: [
-                    Expanded(child: _buildFeatureChip('⚡ Icebreakers', Colors.orange)),
+                    Expanded(
+                      child: _buildFeatureChip('⚡ Icebreakers', Colors.orange),
+                    ),
                     const SizedBox(width: 8),
-                    Expanded(child: _buildFeatureChip('✨ Profile Help', Colors.green)),
+                    Expanded(
+                      child: _buildFeatureChip('✨ Profile Help', Colors.green),
+                    ),
                   ],
                 ),
               ],
@@ -285,7 +305,9 @@ class _AiFeaturesDemoState extends State<AiFeaturesDemo>
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       child: Row(
-        mainAxisAlignment: message.isAi ? MainAxisAlignment.start : MainAxisAlignment.end,
+        mainAxisAlignment: message.isAi
+            ? MainAxisAlignment.start
+            : MainAxisAlignment.end,
         children: [
           if (message.isAi) ...[
             Container(
@@ -297,7 +319,11 @@ class _AiFeaturesDemoState extends State<AiFeaturesDemo>
                 ),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.auto_awesome, color: Colors.white, size: 16),
+              child: const Icon(
+                Icons.auto_awesome,
+                color: Colors.white,
+                size: 16,
+              ),
             ),
             const SizedBox(width: 8),
           ],
@@ -305,11 +331,11 @@ class _AiFeaturesDemoState extends State<AiFeaturesDemo>
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: BoxDecoration(
-                color: message.isAi 
+                color: message.isAi
                     ? Colors.white.withValues(alpha: 0.1)
                     : PulseColors.primary.withValues(alpha: 0.8),
                 borderRadius: BorderRadius.circular(16),
-                border: message.isAi 
+                border: message.isAi
                     ? Border.all(
                         color: PulseColors.primary.withValues(alpha: 0.3),
                       )
@@ -320,10 +346,7 @@ class _AiFeaturesDemoState extends State<AiFeaturesDemo>
                 children: [
                   Text(
                     message.text,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 14,
-                    ),
+                    style: const TextStyle(color: Colors.white, fontSize: 14),
                   ),
                   const SizedBox(height: 4),
                   Text(
@@ -360,9 +383,7 @@ class _AiFeaturesDemoState extends State<AiFeaturesDemo>
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: PulseColors.primary.withValues(alpha: 0.3),
-        ),
+        border: Border.all(color: PulseColors.primary.withValues(alpha: 0.3)),
       ),
       child: AiMessageInput(
         controller: _messageController,
@@ -373,12 +394,10 @@ class _AiFeaturesDemoState extends State<AiFeaturesDemo>
           // Handle typing indicator
         },
         onCamera: () {
-          PulseToast.info(context, message: 'Camera feature coming soon!',
-          );
+          PulseToast.info(context, message: 'Camera feature coming soon!');
         },
         onGallery: () {
-          PulseToast.info(context, message: 'Gallery feature coming soon!',
-          );
+          PulseToast.info(context, message: 'Gallery feature coming soon!');
         },
         onVoice: () {
           PulseToast.info(
@@ -393,7 +412,7 @@ class _AiFeaturesDemoState extends State<AiFeaturesDemo>
   String _formatTime(DateTime time) {
     final now = DateTime.now();
     final difference = now.difference(time);
-    
+
     if (difference.inMinutes < 1) {
       return 'Just now';
     } else if (difference.inMinutes < 60) {

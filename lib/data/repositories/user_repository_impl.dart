@@ -863,12 +863,16 @@ class UserRepositoryImpl implements UserRepository {
   }
 
   @override
-  Future<void> updateUserLocation(String userId, double latitude, double longitude) async {
+  Future<void> updateUserLocation(
+    String userId,
+    double latitude,
+    double longitude,
+  ) async {
     try {
       _logger.i('Updating user location for user: $userId');
-      
+
       await _remoteDataSource.updateUserLocation(userId, latitude, longitude);
-      
+
       // Update cached user if available
       final cachedUser = await _localDataSource.getCachedUser(userId);
       if (cachedUser != null) {
@@ -881,7 +885,7 @@ class UserRepositoryImpl implements UserRepository {
         );
         await _localDataSource.cacheUser(updatedUser);
       }
-      
+
       _logger.i('User location updated successfully');
     } catch (e) {
       _logger.e('Failed to update user location: $e');

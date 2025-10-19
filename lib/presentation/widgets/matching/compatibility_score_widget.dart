@@ -19,7 +19,7 @@ class CompatibilityScoreWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final percentage = (score * 100).round();
     final color = _getScoreColor(score);
-    
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -39,7 +39,7 @@ class CompatibilityScoreWidget extends StatelessWidget {
                   ),
                 ),
               ),
-              
+
               // Progress circle
               Center(
                 child: SizedBox(
@@ -53,7 +53,7 @@ class CompatibilityScoreWidget extends StatelessWidget {
                   ),
                 ),
               ),
-              
+
               // Score text
               if (showPercentage)
                 Center(
@@ -79,7 +79,7 @@ class CompatibilityScoreWidget extends StatelessWidget {
             ],
           ),
         ),
-        
+
         if (showLabel) ...[
           const SizedBox(height: 8),
           Text(
@@ -135,7 +135,7 @@ class CompatibilityBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final percentage = (score * 100).round();
     final color = _getScoreColor(score);
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -151,11 +151,7 @@ class CompatibilityBar extends StatelessWidget {
             ),
             if (showIcon) ...[
               const SizedBox(width: 8),
-              Icon(
-                Icons.psychology,
-                size: 16,
-                color: color,
-              ),
+              Icon(Icons.psychology, size: 16, color: color),
             ],
           ],
         ),

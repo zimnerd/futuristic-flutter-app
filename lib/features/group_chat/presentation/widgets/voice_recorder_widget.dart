@@ -62,15 +62,13 @@ class _VoiceRecorderWidgetState extends State<VoiceRecorderWidget> {
         });
       } else {
         if (mounted) {
-          PulseToast.error(context, message: 'Microphone permission denied',
-          );
+          PulseToast.error(context, message: 'Microphone permission denied');
         }
         widget.onCancel?.call();
       }
     } catch (e) {
       if (mounted) {
-        PulseToast.error(context, message: 'Failed to start recording: $e',
-        );
+        PulseToast.error(context, message: 'Failed to start recording: $e');
       }
       widget.onCancel?.call();
     }
@@ -86,8 +84,7 @@ class _VoiceRecorderWidgetState extends State<VoiceRecorderWidget> {
       }
     } catch (e) {
       if (mounted) {
-        PulseToast.error(context, message: 'Failed to stop recording: $e',
-        );
+        PulseToast.error(context, message: 'Failed to stop recording: $e');
       }
     }
   }
@@ -144,12 +141,12 @@ class _VoiceRecorderWidgetState extends State<VoiceRecorderWidget> {
             ],
           ),
           const SizedBox(height: 16),
-          
+
           // Waveform visualization (animated)
           _buildWaveform(),
-          
+
           const SizedBox(height: 16),
-          
+
           // Controls
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -160,7 +157,7 @@ class _VoiceRecorderWidgetState extends State<VoiceRecorderWidget> {
                 icon: const Icon(Icons.close, size: 32),
                 color: Colors.red,
               ),
-              
+
               // Recording animation
               Container(
                 width: 64,
@@ -169,13 +166,9 @@ class _VoiceRecorderWidgetState extends State<VoiceRecorderWidget> {
                   color: Theme.of(context).primaryColor,
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
-                  Icons.mic,
-                  color: Colors.white,
-                  size: 32,
-                ),
+                child: const Icon(Icons.mic, color: Colors.white, size: 32),
               ),
-              
+
               // Send button
               IconButton(
                 onPressed: _stopRecording,
@@ -184,16 +177,13 @@ class _VoiceRecorderWidgetState extends State<VoiceRecorderWidget> {
               ),
             ],
           ),
-          
+
           const SizedBox(height: 8),
-          
+
           // Hint text
           Text(
             'Slide to cancel • Tap to send',
-            style: TextStyle(
-              fontSize: 12,
-              color: Colors.grey[600],
-            ),
+            style: TextStyle(fontSize: 12, color: Colors.grey[600]),
           ),
         ],
       ),

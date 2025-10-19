@@ -10,16 +10,15 @@ import '../../widgets/common/pulse_toast.dart';
 class SpeedDatingEventDetailsScreen extends StatefulWidget {
   final Map<String, dynamic> event;
 
-  const SpeedDatingEventDetailsScreen({
-    super.key,
-    required this.event,
-  });
+  const SpeedDatingEventDetailsScreen({super.key, required this.event});
 
   @override
-  State<SpeedDatingEventDetailsScreen> createState() => _SpeedDatingEventDetailsScreenState();
+  State<SpeedDatingEventDetailsScreen> createState() =>
+      _SpeedDatingEventDetailsScreenState();
 }
 
-class _SpeedDatingEventDetailsScreenState extends State<SpeedDatingEventDetailsScreen> {
+class _SpeedDatingEventDetailsScreenState
+    extends State<SpeedDatingEventDetailsScreen> {
   @override
   Widget build(BuildContext context) {
     final event = widget.event;
@@ -29,11 +28,9 @@ class _SpeedDatingEventDetailsScreenState extends State<SpeedDatingEventDetailsS
     final currentParticipants = event['currentParticipants'] ?? 0;
     final isRegistered = event['isRegistered'] == true;
     final canJoin = currentParticipants < maxParticipants && !isRegistered;
-    
+
     return Scaffold(
-      appBar: AppBar(
-        title: Text(event['title'] ?? 'Speed Dating Event'),
-      ),
+      appBar: AppBar(title: Text(event['title'] ?? 'Speed Dating Event')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -48,11 +45,11 @@ class _SpeedDatingEventDetailsScreenState extends State<SpeedDatingEventDetailsS
                   children: [
                     Text(
                       event['title'] ?? 'Speed Dating Event',
-                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: Theme.of(context).textTheme.headlineSmall
+                          ?.copyWith(fontWeight: FontWeight.bold),
                     ),
-                    if (event['description'] != null && event['description'].isNotEmpty) ...[
+                    if (event['description'] != null &&
+                        event['description'].isNotEmpty) ...[
                       const SizedBox(height: 8),
                       Text(
                         event['description'],
@@ -64,7 +61,7 @@ class _SpeedDatingEventDetailsScreenState extends State<SpeedDatingEventDetailsS
               ),
             ),
             const SizedBox(height: 16),
-            
+
             // Event Status
             Card(
               child: Padding(
@@ -81,11 +78,14 @@ class _SpeedDatingEventDetailsScreenState extends State<SpeedDatingEventDetailsS
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            isRegistered ? 'You are registered!' : 'Join this event',
-                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: isRegistered ? Colors.green : null,
-                            ),
+                            isRegistered
+                                ? 'You are registered!'
+                                : 'Join this event',
+                            style: Theme.of(context).textTheme.titleMedium
+                                ?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: isRegistered ? Colors.green : null,
+                                ),
                           ),
                           Text(
                             '$currentParticipants/$maxParticipants participants',
@@ -99,7 +99,7 @@ class _SpeedDatingEventDetailsScreenState extends State<SpeedDatingEventDetailsS
               ),
             ),
             const SizedBox(height: 16),
-            
+
             // Date & Time
             if (startTime != null && endTime != null)
               Card(
@@ -112,7 +112,7 @@ class _SpeedDatingEventDetailsScreenState extends State<SpeedDatingEventDetailsS
                 ),
               ),
             const SizedBox(height: 16),
-            
+
             // Location
             if (event['location'] != null && event['location'].isNotEmpty)
               Card(
@@ -127,7 +127,7 @@ class _SpeedDatingEventDetailsScreenState extends State<SpeedDatingEventDetailsS
                 ),
               ),
             const SizedBox(height: 16),
-            
+
             // Age Range
             if (event['ageRange'] != null)
               Card(
@@ -138,18 +138,20 @@ class _SpeedDatingEventDetailsScreenState extends State<SpeedDatingEventDetailsS
                 ),
               ),
             const SizedBox(height: 16),
-            
+
             // Round Duration
             if (event['roundDuration'] != null)
               Card(
                 child: ListTile(
                   leading: const Icon(Icons.timer),
                   title: const Text('Round Duration'),
-                  subtitle: Text('${event['roundDuration']} minutes per conversation'),
+                  subtitle: Text(
+                    '${event['roundDuration']} minutes per conversation',
+                  ),
                 ),
               ),
             const SizedBox(height: 16),
-            
+
             // Registration Fee
             if (event['fee'] != null && event['fee'] > 0)
               Card(
@@ -160,7 +162,7 @@ class _SpeedDatingEventDetailsScreenState extends State<SpeedDatingEventDetailsS
                 ),
               ),
             const SizedBox(height: 32),
-            
+
             // Action Button
             SizedBox(
               width: double.infinity,
@@ -192,14 +194,28 @@ class _SpeedDatingEventDetailsScreenState extends State<SpeedDatingEventDetailsS
 
   String _formatDateTime(DateTime dateTime) {
     final months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
     ];
     return '${months[dateTime.month - 1]} ${dateTime.day}, ${dateTime.year}';
   }
 
   String _formatTime(DateTime dateTime) {
-    final hour = dateTime.hour == 0 ? 12 : dateTime.hour > 12 ? dateTime.hour - 12 : dateTime.hour;
+    final hour = dateTime.hour == 0
+        ? 12
+        : dateTime.hour > 12
+        ? dateTime.hour - 12
+        : dateTime.hour;
     final minute = dateTime.minute.toString().padLeft(2, '0');
     final period = dateTime.hour < 12 ? 'AM' : 'PM';
     return '$hour:$minute $period';
@@ -209,8 +225,7 @@ class _SpeedDatingEventDetailsScreenState extends State<SpeedDatingEventDetailsS
     final eventId = widget.event['id'] as String?;
     if (eventId != null) {
       context.read<SpeedDatingBloc>().add(JoinSpeedDatingEvent(eventId));
-      PulseToast.info(context, message: 'Joining event...',
-      );
+      PulseToast.info(context, message: 'Joining event...');
     }
   }
 
@@ -231,14 +246,14 @@ class _SpeedDatingEventDetailsScreenState extends State<SpeedDatingEventDetailsS
             onPressed: () {
               final eventId = widget.event['id'] as String?;
               if (eventId != null) {
-                context.read<SpeedDatingBloc>().add(LeaveSpeedDatingEvent(eventId));
+                context.read<SpeedDatingBloc>().add(
+                  LeaveSpeedDatingEvent(eventId),
+                );
               }
               Navigator.pop(context); // Close dialog
               context.pop(); // Return to previous screen
             },
-            style: TextButton.styleFrom(
-              foregroundColor: Colors.red,
-            ),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
             child: const Text('Leave'),
           ),
         ],
@@ -247,7 +262,6 @@ class _SpeedDatingEventDetailsScreenState extends State<SpeedDatingEventDetailsS
   }
 
   void _openLocation(String location) {
-    PulseToast.info(context, message: 'Opening location: $location',
-    );
+    PulseToast.info(context, message: 'Opening location: $location');
   }
 }

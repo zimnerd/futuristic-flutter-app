@@ -7,7 +7,7 @@ import '../../data/services/websocket_service_impl.dart';
 import '../../data/services/webrtc_service.dart';
 
 /// Service for managing call invitations between users
-/// 
+///
 /// Handles sending/receiving call invitations via WebSocket,
 /// managing call timeouts, busy states, and integration with native CallKit
 class CallInvitationService {
@@ -21,16 +21,11 @@ class CallInvitationService {
   final _uuid = const Uuid();
 
   // Stream controllers
-  final _incomingCallController =
-      StreamController<CallInvitation>.broadcast();
-  final _callAcceptedController =
-      StreamController<CallInvitation>.broadcast();
-  final _callRejectedController =
-      StreamController<CallInvitation>.broadcast();
-  final _callTimeoutController =
-      StreamController<CallInvitation>.broadcast();
-  final _callCancelledController =
-      StreamController<CallInvitation>.broadcast();
+  final _incomingCallController = StreamController<CallInvitation>.broadcast();
+  final _callAcceptedController = StreamController<CallInvitation>.broadcast();
+  final _callRejectedController = StreamController<CallInvitation>.broadcast();
+  final _callTimeoutController = StreamController<CallInvitation>.broadcast();
+  final _callCancelledController = StreamController<CallInvitation>.broadcast();
   final _callStateController = StreamController<CallState>.broadcast();
 
   // Public streams
@@ -103,9 +98,7 @@ class CallInvitationService {
     _webSocketService.emit('send_call_invitation', invitation.toJson());
 
     // Update state
-    _currentState = _currentState.copyWith(
-      outgoingInvitation: invitation,
-    );
+    _currentState = _currentState.copyWith(outgoingInvitation: invitation);
     _callStateController.add(_currentState);
 
     // Set timeout (30 seconds)
@@ -154,9 +147,7 @@ class CallInvitationService {
     });
 
     // Update state
-    _currentState = _currentState.copyWith(
-      currentInvitation: null,
-    );
+    _currentState = _currentState.copyWith(currentInvitation: null);
     _callStateController.add(_currentState);
 
     // Cancel timeout
@@ -176,9 +167,7 @@ class CallInvitationService {
     _webSocketService.emit('cancel_call', {'callId': callId});
 
     // Update state
-    _currentState = _currentState.copyWith(
-      outgoingInvitation: null,
-    );
+    _currentState = _currentState.copyWith(outgoingInvitation: null);
     _callStateController.add(_currentState);
 
     // Cancel timeout
@@ -223,9 +212,7 @@ class CallInvitationService {
       }
 
       // Update state
-      _currentState = _currentState.copyWith(
-        currentInvitation: invitation,
-      );
+      _currentState = _currentState.copyWith(currentInvitation: invitation);
       _callStateController.add(_currentState);
 
       // Emit to listeners
@@ -234,7 +221,9 @@ class CallInvitationService {
       // Set timeout
       _setCallTimeout(invitation.callId);
 
-      debugPrint('Received incoming call: ${invitation.callId} from ${invitation.callerName}');
+      debugPrint(
+        'Received incoming call: ${invitation.callId} from ${invitation.callerName}',
+      );
     } catch (e) {
       debugPrint('Error handling incoming call: $e');
     }
@@ -279,9 +268,7 @@ class CallInvitationService {
           status: CallInvitationStatus.rejected,
         );
 
-        _currentState = _currentState.copyWith(
-          outgoingInvitation: null,
-        );
+        _currentState = _currentState.copyWith(outgoingInvitation: null);
         _callStateController.add(_currentState);
 
         _callRejectedController.add(rejectedInvitation);
@@ -298,8 +285,8 @@ class CallInvitationService {
   void _handleCallTimeout(dynamic data) {
     try {
       final callId = data is String ? data : data['callId'] as String;
-      final invitation = _currentState.currentInvitation ??
-          _currentState.outgoingInvitation;
+      final invitation =
+          _currentState.currentInvitation ?? _currentState.outgoingInvitation;
 
       if (invitation != null && invitation.callId == callId) {
         final timeoutInvitation = invitation.copyWith(
@@ -335,9 +322,7 @@ class CallInvitationService {
       final invitation = _currentState.currentInvitation;
 
       if (invitation != null && invitation.callId == callId) {
-        _currentState = _currentState.copyWith(
-          currentInvitation: null,
-        );
+        _currentState = _currentState.copyWith(currentInvitation: null);
         _callStateController.add(_currentState);
 
         _callCancelledController.add(invitation);

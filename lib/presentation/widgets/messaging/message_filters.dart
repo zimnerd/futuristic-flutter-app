@@ -38,32 +38,13 @@ class MessageFilters {
   }
 }
 
-enum MessageFilterType {
-  all,
-  matches,
-  connections,
-  archived,
-}
+enum MessageFilterType { all, matches, connections, archived }
 
-enum MessageStatusFilter {
-  all,
-  online,
-  offline,
-  recentlyActive,
-}
+enum MessageStatusFilter { all, online, offline, recentlyActive }
 
-enum MessageTimeFilter {
-  all,
-  today,
-  yesterday,
-  thisWeek, thisMonth,
-}
+enum MessageTimeFilter { all, today, yesterday, thisWeek, thisMonth }
 
-enum MessageSortOption {
-  recent,
-  alphabetical,
-  unreadFirst, onlineFirst,
-}
+enum MessageSortOption { recent, alphabetical, unreadFirst, onlineFirst }
 
 /// Filter bottom sheet widget for message conversations
 class MessageFilterBottomSheet extends StatefulWidget {
@@ -77,7 +58,8 @@ class MessageFilterBottomSheet extends StatefulWidget {
   });
 
   @override
-  State<MessageFilterBottomSheet> createState() => _MessageFilterBottomSheetState();
+  State<MessageFilterBottomSheet> createState() =>
+      _MessageFilterBottomSheetState();
 }
 
 class _MessageFilterBottomSheetState extends State<MessageFilterBottomSheet> {
@@ -143,30 +125,15 @@ class _MessageFilterBottomSheetState extends State<MessageFilterBottomSheet> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildFilterSection(
-                    'Conversation Type',
-                    _buildTypeFilters(),
-                  ),
+                  _buildFilterSection('Conversation Type', _buildTypeFilters()),
                   const SizedBox(height: PulseSpacing.lg),
-                  _buildFilterSection(
-                    'Status',
-                    _buildStatusFilters(),
-                  ),
+                  _buildFilterSection('Status', _buildStatusFilters()),
                   const SizedBox(height: PulseSpacing.lg),
-                  _buildFilterSection(
-                    'Time',
-                    _buildTimeFilters(),
-                  ),
+                  _buildFilterSection('Time', _buildTimeFilters()),
                   const SizedBox(height: PulseSpacing.lg),
-                  _buildFilterSection(
-                    'Quick Filters',
-                    _buildQuickFilters(),
-                  ),
+                  _buildFilterSection('Quick Filters', _buildQuickFilters()),
                   const SizedBox(height: PulseSpacing.lg),
-                  _buildFilterSection(
-                    'Sort By',
-                    _buildSortOptions(),
-                  ),
+                  _buildFilterSection('Sort By', _buildSortOptions()),
                   const SizedBox(height: PulseSpacing.xl),
                 ],
               ),
@@ -218,7 +185,9 @@ class _MessageFilterBottomSheetState extends State<MessageFilterBottomSheet> {
           selected: isSelected,
           onSelected: (selected) {
             setState(() {
-              _filters = _filters.copyWith(type: selected ? type : MessageFilterType.all);
+              _filters = _filters.copyWith(
+                type: selected ? type : MessageFilterType.all,
+              );
             });
           },
         );
@@ -236,7 +205,9 @@ class _MessageFilterBottomSheetState extends State<MessageFilterBottomSheet> {
           selected: isSelected,
           onSelected: (selected) {
             setState(() {
-              _filters = _filters.copyWith(status: selected ? status : MessageStatusFilter.all);
+              _filters = _filters.copyWith(
+                status: selected ? status : MessageStatusFilter.all,
+              );
             });
           },
         );
@@ -254,7 +225,9 @@ class _MessageFilterBottomSheetState extends State<MessageFilterBottomSheet> {
           selected: isSelected,
           onSelected: (selected) {
             setState(() {
-              _filters = _filters.copyWith(timeFilter: selected ? time : MessageTimeFilter.all);
+              _filters = _filters.copyWith(
+                timeFilter: selected ? time : MessageTimeFilter.all,
+              );
             });
           },
         );

@@ -96,8 +96,7 @@ class _VirtualGiftsScreenState extends State<VirtualGiftsScreen>
               message: state.errorMessage ?? 'An error occurred',
             );
           } else if (state.status == VirtualGiftStatus.sent) {
-            PulseToast.success(context, message: 'Gift sent successfully!',
-            );
+            PulseToast.success(context, message: 'Gift sent successfully!');
             if (widget.recipientId != null) {
               Navigator.of(context).pop();
             }

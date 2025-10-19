@@ -7,7 +7,7 @@ import '../../domain/services/api_service.dart';
 /// match suggestions, and profile optimization recommendations
 class AiNotificationService {
   static AiNotificationService? _instance;
-  
+
   final ApiService _apiService;
   final Logger _logger = Logger();
 
@@ -240,7 +240,8 @@ class AiNotificationService {
   Future<bool> markNotificationInteraction({
     required String userId,
     required String notificationId,
-    required String interactionType, // 'opened', 'dismissed', 'acted_upon', 'ignored'
+    required String
+    interactionType, // 'opened', 'dismissed', 'acted_upon', 'ignored'
     Map<String, dynamic>? context,
   }) async {
     try {
@@ -387,18 +388,13 @@ class AiNotification {
 
   bool get isExpired => DateTime.now().isAfter(expiresAt);
   bool get isValid => !isExpired;
-  
+
   Duration get timeUntilExpiry => expiresAt.difference(DateTime.now());
   Duration get timeSinceGenerated => DateTime.now().difference(generatedAt);
 }
 
 /// Notification priority levels
-enum NotificationPriority {
-  low,
-  medium,
-  high,
-  urgent,
-}
+enum NotificationPriority { low, medium, high, urgent }
 
 extension NotificationPriorityExtension on NotificationPriority {
   String get displayName {

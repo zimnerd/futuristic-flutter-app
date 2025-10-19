@@ -8,11 +8,7 @@ class SafetyTipsWidget extends StatelessWidget {
   final List<SafetyTip> tips;
   final VoidCallback? onTipRead;
 
-  const SafetyTipsWidget({
-    super.key,
-    required this.tips,
-    this.onTipRead,
-  });
+  const SafetyTipsWidget({super.key, required this.tips, this.onTipRead});
 
   @override
   Widget build(BuildContext context) {
@@ -21,17 +17,13 @@ class SafetyTipsWidget extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.lightbulb_outline,
-              size: 64,
-              color: Colors.grey[400],
-            ),
+            Icon(Icons.lightbulb_outline, size: 64, color: Colors.grey[400]),
             const SizedBox(height: 16),
             Text(
               'No safety tips available',
-              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                color: Colors.grey[600],
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodyLarge?.copyWith(color: Colors.grey[600]),
             ),
           ],
         ),
@@ -52,9 +44,7 @@ class SafetyTipsWidget extends StatelessWidget {
   Widget _buildTipCard(BuildContext context, SafetyTip tip) {
     return Card(
       elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: ExpansionTile(
         tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
@@ -71,9 +61,9 @@ class SafetyTipsWidget extends StatelessWidget {
         ),
         title: Text(
           tip.title,
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.w600,
-          ),
+          style: Theme.of(
+            context,
+          ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
         ),
         subtitle: Row(
           children: [
@@ -93,11 +83,7 @@ class SafetyTipsWidget extends StatelessWidget {
             ),
             const Spacer(),
             if (tip.isActive)
-              const Icon(
-                Icons.lightbulb,
-                size: 16,
-                color: Colors.amber,
-              ),
+              const Icon(Icons.lightbulb, size: 16, color: Colors.amber),
           ],
         ),
         children: [
@@ -114,9 +100,9 @@ class SafetyTipsWidget extends StatelessWidget {
             children: [
               Text(
                 'Updated: ${_formatDate(tip.updatedAt ?? tip.createdAt)}',
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Colors.grey[600],
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
               ),
               TextButton(
                 onPressed: () {

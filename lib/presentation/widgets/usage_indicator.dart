@@ -7,10 +7,7 @@ import '../../data/models/subscription_usage.dart';
 class UsageIndicator extends StatelessWidget {
   final SubscriptionUsage usage;
 
-  const UsageIndicator({
-    super.key,
-    required this.usage,
-  });
+  const UsageIndicator({super.key, required this.usage});
 
   @override
   Widget build(BuildContext context) {
@@ -19,10 +16,7 @@ class UsageIndicator extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: AppColors.border,
-          width: 1,
-        ),
+        border: Border.all(color: AppColors.border, width: 1),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -66,7 +60,9 @@ class UsageIndicator extends StatelessWidget {
     Color color,
   ) {
     final isUnlimited = counter.limit == null;
-    final percentage = isUnlimited ? 0.0 : (counter.count / counter.limit!).clamp(0.0, 1.0);
+    final percentage = isUnlimited
+        ? 0.0
+        : (counter.count / counter.limit!).clamp(0.0, 1.0);
     final isNearLimit = !isUnlimited && percentage > 0.8;
 
     return Column(
@@ -80,11 +76,7 @@ class UsageIndicator extends StatelessWidget {
                 color: color.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: Icon(
-                icon,
-                color: color,
-                size: 20,
-              ),
+              child: Icon(icon, color: color, size: 20),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -99,12 +91,12 @@ class UsageIndicator extends StatelessWidget {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    isUnlimited 
+                    isUnlimited
                         ? '${counter.count} used (Unlimited)'
                         : '${counter.count} of ${counter.limit} used',
                     style: AppTextStyles.bodySmall.copyWith(
-                      color: isNearLimit 
-                          ? AppColors.warning 
+                      color: isNearLimit
+                          ? AppColors.warning
                           : AppColors.textSecondary,
                     ),
                   ),
@@ -115,8 +107,8 @@ class UsageIndicator extends StatelessWidget {
               Text(
                 '${(percentage * 100).toInt()}%',
                 style: AppTextStyles.labelSmall.copyWith(
-                  color: isNearLimit 
-                      ? AppColors.warning 
+                  color: isNearLimit
+                      ? AppColors.warning
                       : AppColors.textSecondary,
                   fontWeight: FontWeight.w600,
                 ),

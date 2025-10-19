@@ -20,16 +20,30 @@ class EventMessage {
     this.isMe = false,
   });
 
-  factory EventMessage.fromJson(Map<String, dynamic> json, String? currentUserId) {
+  factory EventMessage.fromJson(
+    Map<String, dynamic> json,
+    String? currentUserId,
+  ) {
     return EventMessage(
       id: json['id'] ?? '',
       eventId: json['eventId'] ?? json['event_id'] ?? '',
       userId: json['userId'] ?? json['user_id'] ?? '',
-      userName: json['userName'] ?? json['user_name'] ?? json['user']?['name'] ?? 'Unknown User',
-      userAvatarUrl: json['userAvatarUrl'] ?? json['user_avatar_url'] ?? json['user']?['avatar_url'],
+      userName:
+          json['userName'] ??
+          json['user_name'] ??
+          json['user']?['name'] ??
+          'Unknown User',
+      userAvatarUrl:
+          json['userAvatarUrl'] ??
+          json['user_avatar_url'] ??
+          json['user']?['avatar_url'],
       content: json['content'] ?? json['message'] ?? '',
-      createdAt: DateTime.tryParse(json['createdAt'] ?? json['created_at'] ?? '') ?? DateTime.now(),
-      isMe: currentUserId != null && (json['userId'] ?? json['user_id']) == currentUserId,
+      createdAt:
+          DateTime.tryParse(json['createdAt'] ?? json['created_at'] ?? '') ??
+          DateTime.now(),
+      isMe:
+          currentUserId != null &&
+          (json['userId'] ?? json['user_id']) == currentUserId,
     );
   }
 
@@ -84,9 +98,6 @@ class EventMessage {
 
   @override
   int get hashCode {
-    return id.hashCode ^
-        eventId.hashCode ^
-        userId.hashCode ^
-        content.hashCode;
+    return id.hashCode ^ eventId.hashCode ^ userId.hashCode ^ content.hashCode;
   }
 }

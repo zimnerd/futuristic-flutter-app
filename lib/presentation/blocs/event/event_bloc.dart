@@ -24,11 +24,11 @@ class EventBloc extends Bloc<EventEvent, EventState> {
   bool? _hasAvailableSpots;
   LocationCoordinates?
   _userLocation; // Cache user location for distance filtering
-  
+
   // 🔧 FIX: Cache event details without changing state
   Event? _currentEventDetails;
   List<EventAttendance>? _currentEventAttendees;
-  
+
   // Public getters for cached event details
   Event? get currentEventDetails => _currentEventDetails;
   List<EventAttendance>? get currentEventAttendees => _currentEventAttendees;
@@ -37,10 +37,10 @@ class EventBloc extends Bloc<EventEvent, EventState> {
     EventService? eventService,
     LocationService? locationService,
     String? currentUserId,
-  })  : _eventService = eventService ?? EventService.instance,
-      _locationService = locationService,
+  }) : _eventService = eventService ?? EventService.instance,
+       _locationService = locationService,
        _currentUserId = currentUserId,
-        super(const EventInitial()) {
+       super(const EventInitial()) {
     on<LoadEvents>(_onLoadEvents);
     on<LoadNearbyEvents>(_onLoadNearbyEvents);
     on<LoadEventDetails>(_onLoadEventDetails);
@@ -66,14 +66,14 @@ class EventBloc extends Bloc<EventEvent, EventState> {
   void setCurrentUserId(String userId) {
     _currentUserId = userId;
   }
-  
+
   /// 🔧 FIX: Clear cached event details (e.g., when user logs out)
   void clearCachedEventDetails() {
     _currentEventDetails = null;
     _currentEventAttendees = null;
     AppLogger.info('📱 EventBloc: Cached event details cleared');
   }
-  
+
   @override
   void onTransition(Transition<EventEvent, EventState> transition) {
     super.onTransition(transition);
@@ -106,12 +106,14 @@ class EventBloc extends Bloc<EventEvent, EventState> {
       final filteredEvents = _applyFilters(events);
       AppLogger.info('🔍 After filtering: ${filteredEvents.length} events');
 
-      emit(EventsLoaded(
-        events: events,
-        filteredEvents: filteredEvents,
-        currentCategory: _currentCategory,
-        searchQuery: _searchQuery,
-      ));
+      emit(
+        EventsLoaded(
+          events: events,
+          filteredEvents: filteredEvents,
+          currentCategory: _currentCategory,
+          searchQuery: _searchQuery,
+        ),
+      );
     } catch (e) {
       AppLogger.error('❌ Error loading events: $e');
 
@@ -153,7 +155,9 @@ class EventBloc extends Bloc<EventEvent, EventState> {
   }
 
   Future<void> _onLoadNearbyEvents(
-      LoadNearbyEvents event, Emitter<EventState> emit) async {
+    LoadNearbyEvents event,
+    Emitter<EventState> emit,
+  ) async {
     try {
       emit(const EventLoading());
 
@@ -166,12 +170,14 @@ class EventBloc extends Bloc<EventEvent, EventState> {
       _allEvents = events;
       final filteredEvents = _applyFilters(events);
 
-      emit(EventsLoaded(
-        events: events,
-        filteredEvents: filteredEvents,
-        currentCategory: _currentCategory,
-        searchQuery: _searchQuery,
-      ));
+      emit(
+        EventsLoaded(
+          events: events,
+          filteredEvents: filteredEvents,
+          currentCategory: _currentCategory,
+          searchQuery: _searchQuery,
+        ),
+      );
     } catch (e) {
       AppLogger.error('Error loading nearby events: $e');
 
@@ -213,10 +219,14 @@ class EventBloc extends Bloc<EventEvent, EventState> {
   }
 
   Future<void> _onLoadEventDetails(
-      LoadEventDetails event, Emitter<EventState> emit) async {
+    LoadEventDetails event,
+    Emitter<EventState> emit,
+  ) async {
     try {
-      AppLogger.info('📱 EventBloc: Loading event details for ${event.eventId}');
-      
+      AppLogger.info(
+        '📱 EventBloc: Loading event details for ${event.eventId}',
+      );
+
       final eventDetails = await _eventService.getEventById(
         event.eventId,
         currentUserId: _currentUserId,
@@ -226,10 +236,12 @@ class EventBloc extends Bloc<EventEvent, EventState> {
       // This preserves the EventsLoaded state so the list doesn't disappear
       _currentEventDetails = eventDetails;
       _currentEventAttendees = eventDetails.attendees;
-      
+
       AppLogger.info('📱 EventBloc: Event details cached for ${event.eventId}');
-      AppLogger.info('📱 EventBloc: Current state preserved: ${state.runtimeType}');
-      
+      AppLogger.info(
+        '📱 EventBloc: Current state preserved: ${state.runtimeType}',
+      );
+
       // ✅ DON'T emit EventDetailsLoaded - this keeps EventsLoaded active!
       // EventDetailsScreen will access via currentEventDetails getter
     } catch (e) {
@@ -239,7 +251,9 @@ class EventBloc extends Bloc<EventEvent, EventState> {
   }
 
   Future<void> _onCreateEvent(
-      CreateEvent event, Emitter<EventState> emit) async {
+    CreateEvent event,
+    Emitter<EventState> emit,
+  ) async {
     try {
       emit(const EventActionLoading('Creating event...'));
 
@@ -264,7 +278,9 @@ class EventBloc extends Bloc<EventEvent, EventState> {
   }
 
   Future<void> _onUpdateEvent(
-      UpdateEvent event, Emitter<EventState> emit) async {
+    UpdateEvent event,
+    Emitter<EventState> emit,
+  ) async {
     try {
       emit(const EventActionLoading('Updating event...'));
 
@@ -290,7 +306,9 @@ class EventBloc extends Bloc<EventEvent, EventState> {
   }
 
   Future<void> _onDeleteEvent(
-      DeleteEvent event, Emitter<EventState> emit) async {
+    DeleteEvent event,
+    Emitter<EventState> emit,
+  ) async {
     try {
       emit(const EventActionLoading('Deleting event...'));
 
@@ -306,7 +324,9 @@ class EventBloc extends Bloc<EventEvent, EventState> {
   }
 
   Future<void> _onAttendEvent(
-      AttendEvent event, Emitter<EventState> emit) async {
+    AttendEvent event,
+    Emitter<EventState> emit,
+  ) async {
     try {
       emit(const EventActionLoading('Joining event...'));
 
@@ -317,11 +337,13 @@ class EventBloc extends Bloc<EventEvent, EventState> {
 
       final updatedEvent = _allEvents.firstWhere((e) => e.id == event.eventId);
 
-      emit(EventAttendanceUpdated(
-        eventId: event.eventId,
-        isAttending: true,
-        attendeeCount: updatedEvent.attendeeCount,
-      ));
+      emit(
+        EventAttendanceUpdated(
+          eventId: event.eventId,
+          isAttending: true,
+          attendeeCount: updatedEvent.attendeeCount,
+        ),
+      );
 
       // Return to properly filtered events list
       final filteredEvents = _applyFilters(_allEvents);
@@ -381,11 +403,13 @@ class EventBloc extends Bloc<EventEvent, EventState> {
 
       final updatedEvent = _allEvents.firstWhere((e) => e.id == event.eventId);
 
-      emit(EventAttendanceUpdated(
-        eventId: event.eventId,
-        isAttending: false,
-        attendeeCount: updatedEvent.attendeeCount,
-      ));
+      emit(
+        EventAttendanceUpdated(
+          eventId: event.eventId,
+          isAttending: false,
+          attendeeCount: updatedEvent.attendeeCount,
+        ),
+      );
 
       // Return to properly filtered events list
       final filteredEvents = _applyFilters(_allEvents);
@@ -404,14 +428,18 @@ class EventBloc extends Bloc<EventEvent, EventState> {
   }
 
   Future<void> _onLoadEventAttendees(
-      LoadEventAttendees event, Emitter<EventState> emit) async {
+    LoadEventAttendees event,
+    Emitter<EventState> emit,
+  ) async {
     try {
       final eventDetails = await _eventService.getEventById(event.eventId);
 
-      emit(EventAttendeesLoaded(
-        eventId: event.eventId,
-        attendees: eventDetails.attendees,
-      ));
+      emit(
+        EventAttendeesLoaded(
+          eventId: event.eventId,
+          attendees: eventDetails.attendees,
+        ),
+      );
     } catch (e) {
       emit(EventError(message: e.toString()));
     }
@@ -460,7 +488,7 @@ class EventBloc extends Bloc<EventEvent, EventState> {
   ) async {
     try {
       _currentCategory = event.category;
-      
+
       // Show loading state while fetching new category data
       emit(const EventLoading());
 
@@ -482,10 +510,11 @@ class EventBloc extends Bloc<EventEvent, EventState> {
       emit(
         EventsLoaded(
           events: events,
-        filteredEvents: filteredEvents,
-        currentCategory: _currentCategory,
+          filteredEvents: filteredEvents,
+          currentCategory: _currentCategory,
           searchQuery: _searchQuery,
-      ));
+        ),
+      );
     } catch (e) {
       AppLogger.error('Error filtering events by category: $e');
 
@@ -508,34 +537,38 @@ class EventBloc extends Bloc<EventEvent, EventState> {
 
     if (state is EventsLoaded) {
       final currentState = state as EventsLoaded;
-      emit(currentState.copyWith(
-        filteredEvents: filteredEvents,
-        searchQuery: _searchQuery,
-      ));
+      emit(
+        currentState.copyWith(
+          filteredEvents: filteredEvents,
+          searchQuery: _searchQuery,
+        ),
+      );
     }
   }
 
   Future<void> _onRefreshEvents(
-      RefreshEvents event, Emitter<EventState> emit) async {
+    RefreshEvents event,
+    Emitter<EventState> emit,
+  ) async {
     try {
       if (state is EventsLoaded) {
         final currentState = state as EventsLoaded;
         emit(EventRefreshing(currentState.events));
       }
 
-      final events = await _eventService.getEvents(
-        category: _currentCategory,
-      );
+      final events = await _eventService.getEvents(category: _currentCategory);
 
       _allEvents = events;
       final filteredEvents = _applyAllFilters(events);
 
-      emit(EventsLoaded(
-        events: events,
-        filteredEvents: filteredEvents,
-        currentCategory: _currentCategory,
-        searchQuery: _searchQuery,
-      ));
+      emit(
+        EventsLoaded(
+          events: events,
+          filteredEvents: filteredEvents,
+          currentCategory: _currentCategory,
+          searchQuery: _searchQuery,
+        ),
+      );
     } catch (e) {
       emit(EventError(message: e.toString()));
     }

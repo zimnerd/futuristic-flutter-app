@@ -84,17 +84,17 @@ class EmergencyContact extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        userId,
-        name,
+    id,
+    userId,
+    name,
     phone,
-        email,
-        relationship,
+    email,
+    relationship,
     isPrimary,
-        isActive,
-        createdAt,
+    isActive,
+    createdAt,
     updatedAt,
-      ];
+  ];
 }
 
 /// Safe date check-in for user safety
@@ -178,16 +178,16 @@ class SafeDateCheckIn extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        userId,
-        matchId,
-        scheduledTime,
-        location,
-        status,
-        lastUpdateAt,
-        notes,
-        matchName,
-      ];
+    id,
+    userId,
+    matchId,
+    scheduledTime,
+    location,
+    status,
+    lastUpdateAt,
+    notes,
+    matchName,
+  ];
 }
 
 /// Check-in status options
@@ -245,7 +245,14 @@ class LocationData extends Equatable {
   }
 
   @override
-  List<Object?> get props => [name, address, latitude, longitude, accuracy, timestamp];
+  List<Object?> get props => [
+    name,
+    address,
+    latitude,
+    longitude,
+    accuracy,
+    timestamp,
+  ];
 }
 
 /// Location sharing for real-time safety
@@ -297,14 +304,14 @@ class LocationShare extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        userId,
-        sharedWithUserId,
-        expiresAt,
-        isActive,
-        location,
-        sharedWithName,
-      ];
+    id,
+    userId,
+    sharedWithUserId,
+    expiresAt,
+    isActive,
+    location,
+    sharedWithName,
+  ];
 }
 
 /// Safety settings for the user
@@ -332,13 +339,15 @@ class SafetySettings extends Equatable {
   factory SafetySettings.fromJson(Map<String, dynamic> json) {
     return SafetySettings(
       userId: json['userId'] as String,
-      emergencyContactsEnabled: json['emergencyContactsEnabled'] as bool? ?? true,
+      emergencyContactsEnabled:
+          json['emergencyContactsEnabled'] as bool? ?? true,
       checkInRemindersEnabled: json['checkInRemindersEnabled'] as bool? ?? true,
       locationSharingEnabled: json['locationSharingEnabled'] as bool? ?? false,
       panicButtonEnabled: json['panicButtonEnabled'] as bool? ?? true,
       checkInInterval: json['checkInInterval'] as int? ?? 60,
       autoCheckInEnabled: json['autoCheckInEnabled'] as bool? ?? false,
-      trustedContactIds: (json['trustedContactIds'] as List<dynamic>?)
+      trustedContactIds:
+          (json['trustedContactIds'] as List<dynamic>?)
               ?.map((e) => e as String)
               .toList() ??
           [],
@@ -370,9 +379,12 @@ class SafetySettings extends Equatable {
   }) {
     return SafetySettings(
       userId: userId ?? this.userId,
-      emergencyContactsEnabled: emergencyContactsEnabled ?? this.emergencyContactsEnabled,
-      checkInRemindersEnabled: checkInRemindersEnabled ?? this.checkInRemindersEnabled,
-      locationSharingEnabled: locationSharingEnabled ?? this.locationSharingEnabled,
+      emergencyContactsEnabled:
+          emergencyContactsEnabled ?? this.emergencyContactsEnabled,
+      checkInRemindersEnabled:
+          checkInRemindersEnabled ?? this.checkInRemindersEnabled,
+      locationSharingEnabled:
+          locationSharingEnabled ?? this.locationSharingEnabled,
       panicButtonEnabled: panicButtonEnabled ?? this.panicButtonEnabled,
       checkInInterval: checkInInterval ?? this.checkInInterval,
       autoCheckInEnabled: autoCheckInEnabled ?? this.autoCheckInEnabled,
@@ -382,15 +394,15 @@ class SafetySettings extends Equatable {
 
   @override
   List<Object?> get props => [
-        userId,
-        emergencyContactsEnabled,
-        checkInRemindersEnabled,
-        locationSharingEnabled,
-        panicButtonEnabled,
-        checkInInterval,
-        autoCheckInEnabled,
-        trustedContactIds,
-      ];
+    userId,
+    emergencyContactsEnabled,
+    checkInRemindersEnabled,
+    locationSharingEnabled,
+    panicButtonEnabled,
+    checkInInterval,
+    autoCheckInEnabled,
+    trustedContactIds,
+  ];
 }
 
 /// Safety report types
@@ -458,7 +470,9 @@ class SafetyReport extends Equatable {
         orElse: () => ReportStatus.pending,
       ),
       createdAt: DateTime.parse(json['createdAt'] as String),
-      resolvedAt: json['resolvedAt'] != null ? DateTime.parse(json['resolvedAt'] as String) : null,
+      resolvedAt: json['resolvedAt'] != null
+          ? DateTime.parse(json['resolvedAt'] as String)
+          : null,
       adminNotes: json['adminNotes'] as String?,
     );
   }
@@ -515,30 +529,24 @@ class SafetyReport extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        reporterId,
-        reportedUserId,
-        contentId,
-        contentType,
-        reportType,
-        description,
-        evidenceUrls,
-        incidentLocation,
-        status,
-        createdAt,
-        resolvedAt,
-        adminNotes,
-      ];
+    id,
+    reporterId,
+    reportedUserId,
+    contentId,
+    contentType,
+    reportType,
+    description,
+    evidenceUrls,
+    incidentLocation,
+    status,
+    createdAt,
+    resolvedAt,
+    adminNotes,
+  ];
 }
 
 /// Report status enum
-enum ReportStatus {
-  pending,
-  investigating,
-  resolved,
-  dismissed,
-  escalated,
-}
+enum ReportStatus { pending, investigating, resolved, dismissed, escalated }
 
 /// Blocked user information
 class BlockedUser extends Equatable {
@@ -606,14 +614,14 @@ class BlockedUser extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        userId,
-        blockedUserId,
-        blockedUserName,
-        blockedUserPhotoUrl,
-        reason,
-        blockedAt,
-      ];
+    id,
+    userId,
+    blockedUserId,
+    blockedUserName,
+    blockedUserPhotoUrl,
+    reason,
+    blockedAt,
+  ];
 }
 
 /// Safety tip information
@@ -650,7 +658,9 @@ class SafetyTip extends Equatable {
       priority: json['priority'] as int? ?? 0,
       isActive: json['isActive'] as bool? ?? true,
       createdAt: DateTime.parse(json['createdAt'] as String),
-      updatedAt: json['updatedAt'] != null ? DateTime.parse(json['updatedAt'] as String) : null,
+      updatedAt: json['updatedAt'] != null
+          ? DateTime.parse(json['updatedAt'] as String)
+          : null,
     );
   }
 
@@ -691,15 +701,15 @@ class SafetyTip extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        title,
-        content,
-        category,
-        priority,
-        isActive,
-        createdAt,
-        updatedAt,
-      ];
+    id,
+    title,
+    content,
+    category,
+    priority,
+    isActive,
+    createdAt,
+    updatedAt,
+  ];
 }
 
 /// Safety tip categories

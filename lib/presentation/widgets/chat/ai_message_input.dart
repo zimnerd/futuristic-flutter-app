@@ -49,21 +49,19 @@ class _AiMessageInputState extends State<AiMessageInput>
   bool _showAttachments = false;
   bool _showAiSuggestions = false;
   final bool _isLoadingSuggestions = false;
-  
+
   final List<String> _suggestions = [];
-  
+
   late AnimationController _aiGlowController;
   late AnimationController _suggestionController;
   late Animation<double> _aiGlowAnimation;
   late Animation<double> _suggestionAnimation;
-  
-
 
   @override
   void initState() {
     super.initState();
     widget.controller.addListener(_onTextChanged);
-    
+
     // Initialize animations for futuristic effects
     _aiGlowController = AnimationController(
       duration: const Duration(milliseconds: 2000),
@@ -73,14 +71,14 @@ class _AiMessageInputState extends State<AiMessageInput>
       duration: const Duration(milliseconds: 300),
       vsync: this,
     );
-    
+
     _aiGlowAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _aiGlowController, curve: Curves.easeInOut),
     );
     _suggestionAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _suggestionController, curve: Curves.easeOutBack),
     );
-    
+
     _aiGlowController.repeat(reverse: true);
   }
 
@@ -112,10 +110,6 @@ class _AiMessageInputState extends State<AiMessageInput>
     }
   }
 
-
-
-
-
   void _useSuggestion(String suggestion) {
     widget.controller.text = suggestion;
     setState(() {
@@ -132,7 +126,9 @@ class _AiMessageInputState extends State<AiMessageInput>
         conversationId: widget.chatId,
         currentUserId: widget.currentUserId,
         matchUserId: widget.matchUserId,
-        specificMessage: widget.controller.text.isNotEmpty ? widget.controller.text : null,
+        specificMessage: widget.controller.text.isNotEmpty
+            ? widget.controller.text
+            : null,
         onClose: () => Navigator.of(context).pop(),
         onApplyToChat: (message) {
           widget.controller.text = message;
@@ -148,7 +144,7 @@ class _AiMessageInputState extends State<AiMessageInput>
   Widget build(BuildContext context) {
     // Get keyboard height for proper padding on iOS
     final keyboardPadding = MediaQuery.of(context).viewInsets.bottom;
-    
+
     return Container(
       padding: EdgeInsets.fromLTRB(
         16,
@@ -165,9 +161,7 @@ class _AiMessageInputState extends State<AiMessageInput>
             offset: const Offset(0, -2),
           ),
         ],
-        border: Border(
-          top: BorderSide(color: Colors.grey[100]!, width: 0.5),
-        ),
+        border: Border(top: BorderSide(color: Colors.grey[100]!, width: 0.5)),
       ),
       child: Column(
         children: [
@@ -230,10 +224,12 @@ class _AiMessageInputState extends State<AiMessageInput>
               color: Colors.white,
               size: 20,
             ),
-            onPressed: _isLoadingSuggestions ? null : () {
-              // Always show the modal directly for better UX
-              _showAiCustomModal();
-            },
+            onPressed: _isLoadingSuggestions
+                ? null
+                : () {
+                    // Always show the modal directly for better UX
+                    _showAiCustomModal();
+                  },
           ),
         );
       },
@@ -409,9 +405,7 @@ class _AiMessageInputState extends State<AiMessageInput>
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.7),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: Colors.grey.withValues(alpha: 0.2),
-                  ),
+                  border: Border.all(color: Colors.grey.withValues(alpha: 0.2)),
                 ),
                 child: Row(
                   children: [
@@ -438,8 +432,6 @@ class _AiMessageInputState extends State<AiMessageInput>
       }).toList(),
     );
   }
-
-
 
   Widget _buildAttachmentButton() {
     return Container(
@@ -633,7 +625,10 @@ class _AiMessageInputState extends State<AiMessageInput>
                       setState(() {
                         _showAttachments = false;
                       });
-                      PulseToast.info(context, message: 'Sharing current location...');
+                      PulseToast.info(
+                        context,
+                        message: 'Sharing current location...',
+                      );
                     },
                   ),
                 ],
@@ -665,8 +660,7 @@ class _AiMessageInputState extends State<AiMessageInput>
             ),
           ],
         ),
-        child: Icon(icon, color: Colors.white,
-          size: 24),
+        child: Icon(icon, color: Colors.white, size: 24),
       ),
     );
   }

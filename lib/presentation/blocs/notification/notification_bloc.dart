@@ -18,9 +18,9 @@ class NotificationBloc extends Bloc<NotificationEvent, NotificationState> {
   NotificationBloc({
     required UserRepository userRepository,
     required AuthBloc authBloc,
-  })  : _userRepository = userRepository,
+  }) : _userRepository = userRepository,
        _authBloc = authBloc,
-        super(const NotificationInitial()) {
+       super(const NotificationInitial()) {
     on<LoadNotificationPreferences>(_onLoadNotificationPreferences);
     on<UpdateNotificationPreferences>(_onUpdateNotificationPreferences);
     on<UpdateSinglePreference>(_onUpdateSinglePreference);
@@ -49,14 +49,18 @@ class NotificationBloc extends Bloc<NotificationEvent, NotificationState> {
     try {
       // Get userId from auth context
       final userId = _getCurrentUserId();
-      
-      final preferencesJson = await _userRepository.getNotificationPreferences(userId);
+
+      final preferencesJson = await _userRepository.getNotificationPreferences(
+        userId,
+      );
       final preferences = NotificationPreferences.fromJson(preferencesJson);
       emit(NotificationPreferencesLoaded(preferences));
     } catch (e) {
-      emit(NotificationError(
-        message: 'Failed to load notification preferences: ${e.toString()}',
-      ));
+      emit(
+        NotificationError(
+          message: 'Failed to load notification preferences: ${e.toString()}',
+        ),
+      );
     }
   }
 
@@ -71,19 +75,23 @@ class NotificationBloc extends Bloc<NotificationEvent, NotificationState> {
     try {
       // Get userId from auth context
       final userId = _getCurrentUserId();
-      
+
       await _userRepository.updateNotificationPreferences(
         userId,
         event.preferences.toJson(),
       );
-      emit(NotificationPreferencesUpdated(
-        preferences: event.preferences,
-        message: 'Notification preferences updated successfully',
-      ));
+      emit(
+        NotificationPreferencesUpdated(
+          preferences: event.preferences,
+          message: 'Notification preferences updated successfully',
+        ),
+      );
     } catch (e) {
-      emit(NotificationError(
-        message: 'Failed to update notification preferences: ${e.toString()}',
-      ));
+      emit(
+        NotificationError(
+          message: 'Failed to update notification preferences: ${e.toString()}',
+        ),
+      );
     }
   }
 
@@ -93,7 +101,7 @@ class NotificationBloc extends Bloc<NotificationEvent, NotificationState> {
     Emitter<NotificationState> emit,
   ) async {
     final currentState = state;
-    
+
     // Only proceed if we have loaded preferences
     if (currentState is! NotificationPreferencesLoaded &&
         currentState is! NotificationPreferencesUpdated) {
@@ -142,9 +150,11 @@ class NotificationBloc extends Bloc<NotificationEvent, NotificationState> {
         add(const LoadNotificationPreferences());
       }
     } catch (e) {
-      emit(NotificationError(
-        message: 'Failed to send test notification: ${e.toString()}',
-      ));
+      emit(
+        NotificationError(
+          message: 'Failed to send test notification: ${e.toString()}',
+        ),
+      );
     }
   }
 
@@ -175,20 +185,24 @@ class NotificationBloc extends Bloc<NotificationEvent, NotificationState> {
 
       // Get userId from auth context
       final userId = _getCurrentUserId();
-      
+
       await _userRepository.updateNotificationPreferences(
         userId,
         defaultPreferences.toJson(),
       );
-      
-      emit(NotificationPreferencesUpdated(
-        preferences: defaultPreferences,
-        message: 'Notification preferences reset to defaults',
-      ));
+
+      emit(
+        NotificationPreferencesUpdated(
+          preferences: defaultPreferences,
+          message: 'Notification preferences reset to defaults',
+        ),
+      );
     } catch (e) {
-      emit(NotificationError(
-        message: 'Failed to reset notification preferences: ${e.toString()}',
-      ));
+      emit(
+        NotificationError(
+          message: 'Failed to reset notification preferences: ${e.toString()}',
+        ),
+      );
     }
   }
 }

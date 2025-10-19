@@ -1,28 +1,22 @@
 import 'package:equatable/equatable.dart';
 import '../../../data/models/voice_message.dart';
 
-enum VoiceMessageStatus { 
-  initial, 
-  recording, 
+enum VoiceMessageStatus {
+  initial,
+  recording,
   recordingPaused,
   recorded,
-  sending, 
-  sent, 
-  playing, 
-  paused, 
+  sending,
+  sent,
+  playing,
+  paused,
   stopped,
   loading,
   loaded,
-  error 
+  error,
 }
 
-enum PlaybackState {
-  idle,
-  playing,
-  paused,
-  loading,
-  buffering,
-}
+enum PlaybackState { idle, playing, paused, loading, buffering }
 
 class VoiceMessageState extends Equatable {
   final VoiceMessageStatus status;
@@ -85,17 +79,17 @@ class VoiceMessageState extends Equatable {
 
   @override
   List<Object?> get props => [
-        status,
-        messages,
-        currentMessage,
-        playbackState,
-        currentlyPlayingId,
-        playbackPosition,
-        recordingDuration,
-        recordingPath,
-        errorMessage,
-        isRecording,
-        hasPermission,
-        currentVolume,
-      ];
+    status,
+    messages,
+    currentMessage,
+    playbackState,
+    currentlyPlayingId,
+    playbackPosition,
+    recordingDuration,
+    recordingPath,
+    errorMessage,
+    isRecording,
+    hasPermission,
+    currentVolume,
+  ];
 }

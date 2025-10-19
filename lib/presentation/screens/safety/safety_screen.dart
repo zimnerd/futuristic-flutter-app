@@ -33,10 +33,7 @@ class _SafetyScreenState extends State<SafetyScreen> {
       appBar: AppBar(
         title: const Text(
           'Safety Center',
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
+          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
         ),
         backgroundColor: PulseColors.primary,
         elevation: 0,
@@ -69,11 +66,7 @@ class _SafetyScreenState extends State<SafetyScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(
-                    Icons.error_outline,
-                    size: 64,
-                    color: Colors.red,
-                  ),
+                  Icon(Icons.error_outline, size: 64, color: Colors.red),
                   const SizedBox(height: 16),
                   Text(
                     'Failed to load safety data',
@@ -108,12 +101,12 @@ class _SafetyScreenState extends State<SafetyScreen> {
                     // Emergency button - always accessible
                     const EmergencyButtonWidget(),
                     const SizedBox(height: 24),
-                    
+
                     // Safety score card
                     if (state.safetyScore != null)
                       SafetyScoreWidget(score: state.safetyScore!),
                     const SizedBox(height: 24),
-                    
+
                     // Main safety dashboard
                     SafetyDashboardWidget(
                       blockedUsers: state.blockedUsers,
@@ -122,10 +115,10 @@ class _SafetyScreenState extends State<SafetyScreen> {
                       settings: state.safetySettings,
                     ),
                     const SizedBox(height: 24),
-                    
+
                     // Quick actions
                     _buildQuickActions(context),
-                    
+
                     // Safety tips section
                     if (state.safetyTips.isNotEmpty)
                       _buildSafetyTips(context, state.safetyTips),
@@ -158,9 +151,9 @@ class _SafetyScreenState extends State<SafetyScreen> {
         children: [
           Text(
             'Quick Actions',
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 16),
           Row(
@@ -233,17 +226,13 @@ class _SafetyScreenState extends State<SafetyScreen> {
         ),
         child: Column(
           children: [
-            Icon(
-              icon,
-              color: PulseColors.primary,
-              size: 32,
-            ),
+            Icon(icon, color: PulseColors.primary, size: 32),
             const SizedBox(height: 8),
             Text(
               title,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 4),

@@ -75,7 +75,7 @@ class UserBlockedException extends UserException {
 
 class UserNotRegisteredException extends UserException {
   const UserNotRegisteredException([String? customMessage])
-      : super(customMessage ?? 'No account found. Please register first.');
+    : super(customMessage ?? 'No account found. Please register first.');
 }
 
 /// Matching-related exceptions

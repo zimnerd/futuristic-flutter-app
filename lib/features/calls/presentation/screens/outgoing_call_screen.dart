@@ -7,7 +7,7 @@ import '../../../../core/services/call_invitation_service.dart';
 import '../../../../presentation/widgets/common/pulse_toast.dart';
 
 /// Outgoing call screen shown when user initiates a call
-/// 
+///
 /// Features:
 /// - "Calling..." state with animated rings
 /// - Recipient photo/name display
@@ -54,9 +54,10 @@ class _OutgoingCallScreenState extends State<OutgoingCallScreen>
       vsync: this,
     )..repeat();
 
-    _pulseAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _pulseController, curve: Curves.easeOut),
-    );
+    _pulseAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _pulseController, curve: Curves.easeOut));
   }
 
   void _listenToCallEvents() {
@@ -84,29 +85,20 @@ class _OutgoingCallScreenState extends State<OutgoingCallScreen>
 
   void _onCallAccepted(CallInvitation invitation) {
     if (mounted) {
-      Navigator.of(context).pop({
-        'accepted': true,
-        'invitation': invitation,
-      });
+      Navigator.of(context).pop({'accepted': true, 'invitation': invitation});
     }
   }
 
   void _onCallRejected() {
     if (mounted) {
-      PulseToast.warning(
-        context,
-        message: 'Call declined',
-      );
+      PulseToast.warning(context, message: 'Call declined');
       Navigator.of(context).pop({'accepted': false});
     }
   }
 
   void _onCallTimeout() {
     if (mounted) {
-      PulseToast.info(
-        context,
-        message: 'No answer',
-      );
+      PulseToast.info(context, message: 'No answer');
       Navigator.of(context).pop({'accepted': false});
     }
   }
@@ -118,7 +110,6 @@ class _OutgoingCallScreenState extends State<OutgoingCallScreen>
       Navigator.of(context).pop({'accepted': false});
     }
   }
-
 
   @override
   void dispose() {
@@ -248,10 +239,7 @@ class _OutgoingCallScreenState extends State<OutgoingCallScreen>
           height: 140,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            border: Border.all(
-              color: Colors.white,
-              width: 4,
-            ),
+            border: Border.all(color: Colors.white, width: 4),
             boxShadow: [
               BoxShadow(
                 color: const Color(0xFF6E3BFF).withValues(alpha: 0.5),
@@ -290,7 +278,9 @@ class _OutgoingCallScreenState extends State<OutgoingCallScreen>
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               border: Border.all(
-                color: const Color(0xFF00C2FF).withValues(alpha: 0.5 - value * 0.5),
+                color: const Color(
+                  0xFF00C2FF,
+                ).withValues(alpha: 0.5 - value * 0.5),
                 width: 2,
               ),
             ),
@@ -341,8 +331,10 @@ class _OutgoingCallScreenState extends State<OutgoingCallScreen>
             animation: _pulseController,
             builder: (context, child) {
               final delay = index * 0.3;
-              final value =
-                  ((_pulseController.value - delay) % 1.0).clamp(0.0, 1.0);
+              final value = ((_pulseController.value - delay) % 1.0).clamp(
+                0.0,
+                1.0,
+              );
 
               return Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 2),
@@ -394,11 +386,7 @@ class _OutgoingCallScreenState extends State<OutgoingCallScreen>
                 ),
               ],
             ),
-            child: const Icon(
-              Icons.call_end,
-              color: Colors.white,
-              size: 32,
-            ),
+            child: const Icon(Icons.call_end, color: Colors.white, size: 32),
           ),
 
           const SizedBox(height: 12),

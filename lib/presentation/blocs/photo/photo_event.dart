@@ -20,10 +20,7 @@ class UploadPhoto extends PhotoEvent {
   final File photoFile;
   final bool setAsMain;
 
-  const UploadPhoto({
-    required this.photoFile,
-    this.setAsMain = false,
-  });
+  const UploadPhoto({required this.photoFile, this.setAsMain = false});
 
   @override
   List<Object?> get props => [photoFile, setAsMain];

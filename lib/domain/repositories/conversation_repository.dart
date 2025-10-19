@@ -5,7 +5,9 @@ abstract class ConversationRepository {
   Future<List<Map<String, dynamic>>> getArchivedConversations(String userId);
   Future<Map<String, dynamic>?> getConversationById(String conversationId);
   Future<Map<String, dynamic>?> getConversationBetweenUsers(
-      String user1Id, String user2Id);
+    String user1Id,
+    String user2Id,
+  );
 
   // Conversation Creation & Management
   Future<String> startConversation(String initiatorId, String receiverId);
@@ -21,12 +23,16 @@ abstract class ConversationRepository {
   Future<void> archiveConversation(String conversationId, String userId);
   Future<void> unarchiveConversation(String conversationId, String userId);
   Future<void> muteConversation(
-      String conversationId, String userId, Duration? duration);
+    String conversationId,
+    String userId,
+    Duration? duration,
+  );
   Future<void> unmuteConversation(String conversationId, String userId);
 
   // Participant Management
   Future<List<Map<String, dynamic>>> getConversationParticipants(
-      String conversationId);
+    String conversationId,
+  );
   Future<void> addParticipant(String conversationId, String userId);
   Future<void> removeParticipant(String conversationId, String userId);
   Future<bool> isUserInConversation(String conversationId, String userId);
@@ -68,7 +74,10 @@ abstract class ConversationRepository {
   Future<bool> canUserStartConversation(String initiatorId, String receiverId);
   Future<List<String>> getBlockedConversations(String userId);
   Future<void> reportConversation(
-      String conversationId, String reporterId, String reason);
+    String conversationId,
+    String reporterId,
+    String reason,
+  );
 
   // Offline Support
   Future<void> cacheConversation(Map<String, dynamic> conversation);

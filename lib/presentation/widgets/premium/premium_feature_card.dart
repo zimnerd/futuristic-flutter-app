@@ -75,10 +75,7 @@ class PremiumFeatureCard extends StatelessWidget {
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: isPremium
-                        ? [
-                            PulseColors.primary,
-                            PulseColors.primaryLight,
-                          ]
+                        ? [PulseColors.primary, PulseColors.primaryLight]
                         : [
                             PulseColors.onSurfaceVariant,
                             PulseColors.onSurfaceVariant,
@@ -86,11 +83,7 @@ class PremiumFeatureCard extends StatelessWidget {
                   ),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(
-                  icon,
-                  color: Colors.white,
-                  size: 24,
-                ),
+                child: Icon(icon, color: Colors.white, size: 24),
               ),
 
               const SizedBox(width: 16),
@@ -120,10 +113,7 @@ class PremiumFeatureCard extends StatelessWidget {
                             ),
                             decoration: BoxDecoration(
                               gradient: const LinearGradient(
-                                colors: [
-                                  Color(0xFFFFD700),
-                                  Color(0xFFFF9900),
-                                ],
+                                colors: [Color(0xFFFFD700), Color(0xFFFF9900)],
                               ),
                               borderRadius: BorderRadius.circular(6),
                             ),
@@ -214,7 +204,9 @@ class CompactPremiumFeatureCard extends StatelessWidget {
           Icon(
             icon,
             size: 16,
-            color: isPremium ? PulseColors.primary : PulseColors.onSurfaceVariant,
+            color: isPremium
+                ? PulseColors.primary
+                : PulseColors.onSurfaceVariant,
           ),
           const SizedBox(width: 8),
           Flexible(
@@ -257,28 +249,17 @@ class FeatureComparisonRow extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 12),
       child: Row(
         children: [
-          Icon(
-            icon,
-            size: 20,
-            color: PulseColors.onSurfaceVariant,
-          ),
+          Icon(icon, size: 20, color: PulseColors.onSurfaceVariant),
           const SizedBox(width: 12),
           Expanded(
             flex: 2,
             child: Text(
               title,
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-              ),
+              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
             ),
           ),
-          Expanded(
-            child: _buildValue(freeValue, false),
-          ),
-          Expanded(
-            child: _buildValue(premiumValue, true),
-          ),
+          Expanded(child: _buildValue(freeValue, false)),
+          Expanded(child: _buildValue(premiumValue, true)),
         ],
       ),
     );

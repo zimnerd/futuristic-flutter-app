@@ -11,10 +11,7 @@ import '../../../core/network/api_client.dart';
 class StartStreamScreen extends StatefulWidget {
   final Map<String, dynamic>? streamToEdit;
 
-  const StartStreamScreen({
-    super.key,
-    this.streamToEdit,
-  });
+  const StartStreamScreen({super.key, this.streamToEdit});
 
   @override
   State<StartStreamScreen> createState() => _StartStreamScreenState();
@@ -58,7 +55,7 @@ class _StartStreamScreenState extends State<StartStreamScreen> {
   @override
   Widget build(BuildContext context) {
     final isEditing = widget.streamToEdit != null;
-    
+
     return KeyboardDismissibleScaffold(
       appBar: AppBar(
         title: Text(isEditing ? 'Edit Stream' : 'Start Live Stream'),
@@ -89,26 +86,19 @@ class _StartStreamScreenState extends State<StartStreamScreen> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(
-                      Icons.videocam,
-                      size: 60,
-                      color: Colors.white54,
-                    ),
+                    Icon(Icons.videocam, size: 60, color: Colors.white54),
                     SizedBox(height: 8),
                     Text(
                       'Camera Preview',
-                      style: TextStyle(
-                        color: Colors.white54,
-                        fontSize: 16,
-                      ),
+                      style: TextStyle(color: Colors.white54, fontSize: 16),
                     ),
                   ],
                 ),
               ),
             ),
-            
+
             const SizedBox(height: 24),
-            
+
             // Title input
             TextField(
               controller: _titleController,
@@ -119,9 +109,9 @@ class _StartStreamScreenState extends State<StartStreamScreen> {
               ),
               maxLength: 100,
             ),
-            
+
             const SizedBox(height: 16),
-            
+
             // Description input
             TextField(
               controller: _descriptionController,
@@ -133,9 +123,9 @@ class _StartStreamScreenState extends State<StartStreamScreen> {
               maxLines: 3,
               maxLength: 500,
             ),
-            
+
             const SizedBox(height: 16),
-            
+
             // Category selection
             DropdownButtonFormField<String>(
               initialValue: _selectedCategory,
@@ -144,10 +134,7 @@ class _StartStreamScreenState extends State<StartStreamScreen> {
                 border: OutlineInputBorder(),
               ),
               items: _categories.map((category) {
-                return DropdownMenuItem(
-                  value: category,
-                  child: Text(category),
-                );
+                return DropdownMenuItem(value: category, child: Text(category));
               }).toList(),
               onChanged: (value) {
                 setState(() {
@@ -155,9 +142,9 @@ class _StartStreamScreenState extends State<StartStreamScreen> {
                 });
               },
             ),
-            
+
             const Spacer(),
-            
+
             // Start/Update button
             SizedBox(
               width: double.infinity,
@@ -185,7 +172,7 @@ class _StartStreamScreenState extends State<StartStreamScreen> {
 
   void _startStream() async {
     final title = _titleController.text.trim();
-    
+
     if (title.isEmpty) {
       PulseToast.warning(
         context,
@@ -193,11 +180,11 @@ class _StartStreamScreenState extends State<StartStreamScreen> {
       );
       return;
     }
-    
+
     try {
       final liveStreamingService = LiveStreamingService(ApiClient.instance);
       final description = _descriptionController.text.trim();
-      
+
       if (widget.streamToEdit != null) {
         // Update existing stream
         final streamId = widget.streamToEdit!['id'] ?? '';
@@ -233,18 +220,19 @@ class _StartStreamScreenState extends State<StartStreamScreen> {
               : 'Live streaming with PulseLink',
           tags: [_selectedCategory],
         );
-        
+
         if (result != null) {
           if (mounted) {
             PulseToast.success(
               context,
               message: 'Live stream started successfully!',
             );
-            
+
             // Navigate to broadcaster screen
-            final streamId = result['data']?['id']?.toString() ?? 
-                           result['id']?.toString() ?? 
-                           '';
+            final streamId =
+                result['data']?['id']?.toString() ??
+                result['id']?.toString() ??
+                '';
             if (mounted) {
               context.pushReplacement(
                 AppRoutes.liveStreamBroadcaster,
@@ -269,8 +257,7 @@ class _StartStreamScreenState extends State<StartStreamScreen> {
       }
     } catch (e) {
       if (mounted) {
-        PulseToast.error(context, message: 'Error: ${e.toString()}',
-        );
+        PulseToast.error(context, message: 'Error: ${e.toString()}');
       }
     }
   }

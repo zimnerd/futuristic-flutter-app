@@ -8,7 +8,8 @@ import '../models/leaderboard_entry.dart';
 /// Service for social gaming API integration with NestJS backend
 class SocialGamingApiService {
   static SocialGamingApiService? _instance;
-  static SocialGamingApiService get instance => _instance ??= SocialGamingApiService._();
+  static SocialGamingApiService get instance =>
+      _instance ??= SocialGamingApiService._();
   SocialGamingApiService._();
 
   String? _authToken;
@@ -22,7 +23,9 @@ class SocialGamingApiService {
   Future<List<Achievement>> getUserAchievements(String userId) async {
     try {
       final response = await http.get(
-        Uri.parse('${ApiConstants.baseUrl}${ApiConstants.socialGaming}/achievements/$userId'),
+        Uri.parse(
+          '${ApiConstants.baseUrl}${ApiConstants.socialGaming}/achievements/$userId',
+        ),
         headers: {
           'Authorization': 'Bearer $_authToken',
           'Content-Type': 'application/json',
@@ -47,7 +50,9 @@ class SocialGamingApiService {
   Future<List<Achievement>> getAllAchievements() async {
     try {
       final response = await http.get(
-        Uri.parse('${ApiConstants.baseUrl}${ApiConstants.socialGaming}/achievements'),
+        Uri.parse(
+          '${ApiConstants.baseUrl}${ApiConstants.socialGaming}/achievements',
+        ),
         headers: {
           'Authorization': 'Bearer $_authToken',
           'Content-Type': 'application/json',
@@ -60,7 +65,9 @@ class SocialGamingApiService {
             .map((json) => Achievement.fromJson(json))
             .toList();
       } else {
-        throw Exception('Failed to load all achievements: ${response.statusCode}');
+        throw Exception(
+          'Failed to load all achievements: ${response.statusCode}',
+        );
       }
     } catch (e) {
       AppLogger.error('Error fetching all achievements: $e');
@@ -75,14 +82,14 @@ class SocialGamingApiService {
   }) async {
     try {
       final response = await http.post(
-        Uri.parse('${ApiConstants.baseUrl}${ApiConstants.socialGaming}/achievements/$achievementId/unlock'),
+        Uri.parse(
+          '${ApiConstants.baseUrl}${ApiConstants.socialGaming}/achievements/$achievementId/unlock',
+        ),
         headers: {
           'Authorization': 'Bearer $_authToken',
           'Content-Type': 'application/json',
         },
-        body: json.encode({
-          'metadata': metadata,
-        }),
+        body: json.encode({'metadata': metadata}),
       );
 
       if (response.statusCode == 201) {
@@ -106,12 +113,15 @@ class SocialGamingApiService {
   }) async {
     try {
       final response = await http.get(
-        Uri.parse('${ApiConstants.baseUrl}${ApiConstants.socialGaming}/leaderboard')
-            .replace(queryParameters: {
-          'category': category,
-          'page': page.toString(),
-          'limit': limit.toString(),
-        }),
+        Uri.parse(
+          '${ApiConstants.baseUrl}${ApiConstants.socialGaming}/leaderboard',
+        ).replace(
+          queryParameters: {
+            'category': category,
+            'page': page.toString(),
+            'limit': limit.toString(),
+          },
+        ),
         headers: {
           'Authorization': 'Bearer $_authToken',
           'Content-Type': 'application/json',
@@ -139,10 +149,9 @@ class SocialGamingApiService {
   }) async {
     try {
       final response = await http.get(
-        Uri.parse('${ApiConstants.baseUrl}${ApiConstants.socialGaming}/leaderboard/$userId')
-            .replace(queryParameters: {
-          'category': category,
-        }),
+        Uri.parse(
+          '${ApiConstants.baseUrl}${ApiConstants.socialGaming}/leaderboard/$userId',
+        ).replace(queryParameters: {'category': category}),
         headers: {
           'Authorization': 'Bearer $_authToken',
           'Content-Type': 'application/json',
@@ -199,7 +208,9 @@ class SocialGamingApiService {
   Future<Map<String, dynamic>> getUserStats(String userId) async {
     try {
       final response = await http.get(
-        Uri.parse('${ApiConstants.baseUrl}${ApiConstants.socialGaming}/stats/$userId'),
+        Uri.parse(
+          '${ApiConstants.baseUrl}${ApiConstants.socialGaming}/stats/$userId',
+        ),
         headers: {
           'Authorization': 'Bearer $_authToken',
           'Content-Type': 'application/json',
@@ -222,7 +233,9 @@ class SocialGamingApiService {
   Future<List<String>> getLeaderboardCategories() async {
     try {
       final response = await http.get(
-        Uri.parse('${ApiConstants.baseUrl}${ApiConstants.socialGaming}/leaderboard/categories'),
+        Uri.parse(
+          '${ApiConstants.baseUrl}${ApiConstants.socialGaming}/leaderboard/categories',
+        ),
         headers: {
           'Authorization': 'Bearer $_authToken',
           'Content-Type': 'application/json',
@@ -249,7 +262,9 @@ class SocialGamingApiService {
   }) async {
     try {
       final response = await http.post(
-        Uri.parse('${ApiConstants.baseUrl}${ApiConstants.socialGaming}/challenge'),
+        Uri.parse(
+          '${ApiConstants.baseUrl}${ApiConstants.socialGaming}/challenge',
+        ),
         headers: {
           'Authorization': 'Bearer $_authToken',
           'Content-Type': 'application/json',
@@ -278,7 +293,9 @@ class SocialGamingApiService {
   Future<List<Map<String, dynamic>>> getUserChallenges(String userId) async {
     try {
       final response = await http.get(
-        Uri.parse('${ApiConstants.baseUrl}${ApiConstants.socialGaming}/challenges/$userId'),
+        Uri.parse(
+          '${ApiConstants.baseUrl}${ApiConstants.socialGaming}/challenges/$userId',
+        ),
         headers: {
           'Authorization': 'Bearer $_authToken',
           'Content-Type': 'application/json',

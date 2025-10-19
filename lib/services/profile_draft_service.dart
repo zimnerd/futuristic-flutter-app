@@ -4,7 +4,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 class ProfileDraftService {
   static const String _boxName = 'profile_draft';
   static const String _draftKey = 'current_draft';
-  
+
   late final Box<Map<dynamic, dynamic>> _box;
 
   /// Initialize the service
@@ -21,7 +21,7 @@ class ProfileDraftService {
   ProfileDraft? loadDraft() {
     final draftMap = _box.get(_draftKey);
     if (draftMap == null) return null;
-    
+
     try {
       return ProfileDraft.fromMap(Map<String, dynamic>.from(draftMap));
     } catch (e) {
@@ -129,7 +129,8 @@ class ProfileDraft {
   /// Calculate completion percentage
   double get completionPercentage {
     int completedFields = 0;
-    const int totalFields = 7; // name, age, bio, photos, interests, gender, lookingFor
+    const int totalFields =
+        7; // name, age, bio, photos, interests, gender, lookingFor
 
     if (name?.isNotEmpty == true) completedFields++;
     if (age != null && age! > 0) completedFields++;
@@ -145,12 +146,12 @@ class ProfileDraft {
   /// Check if draft is empty (no meaningful data)
   bool get isEmpty {
     return name?.isEmpty != false &&
-           age == null &&
-           bio?.isEmpty != false &&
-           photos.isEmpty &&
-           interests.isEmpty &&
-           gender?.isEmpty != false &&
-           lookingFor?.isEmpty != false;
+        age == null &&
+        bio?.isEmpty != false &&
+        photos.isEmpty &&
+        interests.isEmpty &&
+        gender?.isEmpty != false &&
+        lookingFor?.isEmpty != false;
   }
 
   /// Get formatted time since last save

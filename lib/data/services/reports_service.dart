@@ -6,8 +6,7 @@ import '../exceptions/app_exceptions.dart';
 class ReportsService {
   final ApiClient _apiClient;
 
-  ReportsService({required ApiClient apiClient})
-    : _apiClient = apiClient;
+  ReportsService({required ApiClient apiClient}) : _apiClient = apiClient;
 
   /// Report a user profile
   Future<void> reportProfile({
@@ -50,12 +49,15 @@ class ReportsService {
     String? description,
   }) async {
     try {
-      final response = await _apiClient.post('/reports', data: {
-        'messageId': messageId,
-        'type': 'message',
-        'reason': reason,
-        if (description != null) 'description': description,
-      });
+      final response = await _apiClient.post(
+        '/reports',
+        data: {
+          'messageId': messageId,
+          'type': 'message',
+          'reason': reason,
+          if (description != null) 'description': description,
+        },
+      );
 
       if (response.statusCode != 200 && response.statusCode != 201) {
         throw NetworkException('Failed to report message');
@@ -73,12 +75,15 @@ class ReportsService {
     String? description,
   }) async {
     try {
-      final response = await _apiClient.post('/reports', data: {
-        'contentId': contentId,
-        'type': contentType,
-        'reason': reason,
-        if (description != null) 'description': description,
-      });
+      final response = await _apiClient.post(
+        '/reports',
+        data: {
+          'contentId': contentId,
+          'type': contentType,
+          'reason': reason,
+          if (description != null) 'description': description,
+        },
+      );
 
       if (response.statusCode != 200 && response.statusCode != 201) {
         throw NetworkException('Failed to report content');
@@ -94,10 +99,13 @@ class ReportsService {
       case DioExceptionType.connectionTimeout:
       case DioExceptionType.sendTimeout:
       case DioExceptionType.receiveTimeout:
-        return NetworkException('Connection timeout. Please check your internet connection.');
+        return NetworkException(
+          'Connection timeout. Please check your internet connection.',
+        );
       case DioExceptionType.badResponse:
         final statusCode = e.response?.statusCode;
-        final message = e.response?.data?['message'] ?? 'Unknown error occurred';
+        final message =
+            e.response?.data?['message'] ?? 'Unknown error occurred';
         return NetworkException('Server error ($statusCode): $message');
       case DioExceptionType.cancel:
         return NetworkException('Request was cancelled');

@@ -27,16 +27,16 @@ class CompactVoiceRecorder extends StatefulWidget {
 class _CompactVoiceRecorderState extends State<CompactVoiceRecorder>
     with TickerProviderStateMixin {
   final AudioRecorder _recorder = AudioRecorder();
-  
+
   bool _isRecording = false;
   bool _isPaused = false;
   Duration _recordedDuration = Duration.zero;
   Timer? _recordingTimer;
-  
+
   late AnimationController _pulseController;
   late AnimationController _waveController;
   late Animation<double> _pulseAnimation;
-  
+
   String? _currentRecordingPath;
 
   @override
@@ -51,19 +51,15 @@ class _CompactVoiceRecorderState extends State<CompactVoiceRecorder>
       duration: const Duration(milliseconds: 1500),
       vsync: this,
     );
-    
+
     _waveController = AnimationController(
       duration: const Duration(milliseconds: 800),
       vsync: this,
     );
 
-    _pulseAnimation = Tween<double>(
-      begin: 1.0,
-      end: 1.3,
-    ).animate(CurvedAnimation(
-      parent: _pulseController,
-      curve: Curves.easeInOut,
-    ));
+    _pulseAnimation = Tween<double>(begin: 1.0, end: 1.3).animate(
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
+    );
   }
 
   @override
@@ -78,9 +74,10 @@ class _CompactVoiceRecorderState extends State<CompactVoiceRecorder>
   Future<void> _startRecording() async {
     try {
       if (await _recorder.hasPermission()) {
-        final path = '/tmp/voice_message_${DateTime.now().millisecondsSinceEpoch}.m4a';
+        final path =
+            '/tmp/voice_message_${DateTime.now().millisecondsSinceEpoch}.m4a';
         _currentRecordingPath = path;
-        
+
         await _recorder.start(
           const RecordConfig(
             encoder: AudioEncoder.aacLc,
@@ -132,7 +129,7 @@ class _CompactVoiceRecorderState extends State<CompactVoiceRecorder>
   Future<void> _stopRecording() async {
     try {
       final path = await _recorder.stop();
-      
+
       _recordingTimer?.cancel();
       _pulseController.stop();
       _waveController.stop();
@@ -146,9 +143,11 @@ class _CompactVoiceRecorderState extends State<CompactVoiceRecorder>
         final file = File(path);
         if (await file.exists()) {
           // Generate simple waveform data
-          final waveformData = List.generate(50, (index) => 
-            0.3 + (index % 3) * 0.2 + (index % 7) * 0.1);
-            
+          final waveformData = List.generate(
+            50,
+            (index) => 0.3 + (index % 3) * 0.2 + (index % 7) * 0.1,
+          );
+
           final message = VoiceMessage(
             id: DateTime.now().millisecondsSinceEpoch.toString(),
             conversationId: 'temp_conversation',
@@ -158,7 +157,7 @@ class _CompactVoiceRecorderState extends State<CompactVoiceRecorder>
             waveformData: waveformData,
             createdAt: DateTime.now(),
           );
-          
+
           widget.onMessageRecorded(message);
         }
       } else {
@@ -176,7 +175,7 @@ class _CompactVoiceRecorderState extends State<CompactVoiceRecorder>
       _recordingTimer?.cancel();
       _pulseController.stop();
       _waveController.stop();
-      
+
       // Delete the recording file
       if (_currentRecordingPath != null) {
         final file = File(_currentRecordingPath!);
@@ -187,7 +186,7 @@ class _CompactVoiceRecorderState extends State<CompactVoiceRecorder>
     } catch (e) {
       // Ignore cleanup errors
     }
-    
+
     widget.onCancel();
   }
 
@@ -217,11 +216,7 @@ class _CompactVoiceRecorderState extends State<CompactVoiceRecorder>
           // Header
           Row(
             children: [
-              Icon(
-                Icons.mic,
-                color: PulseColors.primary,
-                size: 20,
-              ),
+              Icon(Icons.mic, color: PulseColors.primary, size: 20),
               const SizedBox(width: 8),
               Text(
                 'Recording Voice Message',
@@ -239,9 +234,9 @@ class _CompactVoiceRecorderState extends State<CompactVoiceRecorder>
               ),
             ],
           ),
-          
+
           const SizedBox(height: 20),
-          
+
           // Recording visualizer and timer
           Row(
             children: [
@@ -250,13 +245,15 @@ class _CompactVoiceRecorderState extends State<CompactVoiceRecorder>
                 animation: _pulseAnimation,
                 builder: (context, child) {
                   return Transform.scale(
-                    scale: _isRecording && !_isPaused ? _pulseAnimation.value : 1.0,
+                    scale: _isRecording && !_isPaused
+                        ? _pulseAnimation.value
+                        : 1.0,
                     child: Container(
                       width: 50,
                       height: 50,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: _isRecording 
+                        color: _isRecording
                             ? (_isPaused ? Colors.orange : Colors.red)
                             : PulseColors.primary,
                         boxShadow: _isRecording && !_isPaused
@@ -270,7 +267,7 @@ class _CompactVoiceRecorderState extends State<CompactVoiceRecorder>
                             : null,
                       ),
                       child: Icon(
-                        _isRecording 
+                        _isRecording
                             ? (_isPaused ? Icons.pause : Icons.mic)
                             : Icons.mic_none,
                         color: Colors.white,
@@ -280,9 +277,9 @@ class _CompactVoiceRecorderState extends State<CompactVoiceRecorder>
                   );
                 },
               ),
-              
+
               const SizedBox(width: 16),
-              
+
               // Duration and waveform
               Expanded(
                 child: Column(
@@ -304,14 +301,18 @@ class _CompactVoiceRecorderState extends State<CompactVoiceRecorder>
                         return Row(
                           children: List.generate(15, (index) {
                             final height = _isRecording && !_isPaused
-                                ? 2 + (index % 4) * 3 + (_waveController.value * 8)
+                                ? 2 +
+                                      (index % 4) * 3 +
+                                      (_waveController.value * 8)
                                 : 2.0;
                             return Container(
                               margin: const EdgeInsets.symmetric(horizontal: 1),
                               width: 3,
                               height: height,
                               decoration: BoxDecoration(
-                                color: PulseColors.primary.withValues(alpha: 0.6),
+                                color: PulseColors.primary.withValues(
+                                  alpha: 0.6,
+                                ),
                                 borderRadius: BorderRadius.circular(2),
                               ),
                             );
@@ -324,9 +325,9 @@ class _CompactVoiceRecorderState extends State<CompactVoiceRecorder>
               ),
             ],
           ),
-          
+
           const SizedBox(height: 20),
-          
+
           // Controls
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -338,7 +339,7 @@ class _CompactVoiceRecorderState extends State<CompactVoiceRecorder>
                 color: Colors.red,
                 onPressed: _cancelRecording,
               ),
-              
+
               // Pause/Resume
               if (_isRecording)
                 _buildControlButton(
@@ -347,21 +348,25 @@ class _CompactVoiceRecorderState extends State<CompactVoiceRecorder>
                   color: Colors.orange,
                   onPressed: _isPaused ? _resumeRecording : _pauseRecording,
                 ),
-              
+
               // Send
               _buildControlButton(
                 icon: Icons.send,
                 label: 'Send',
                 color: PulseColors.primary,
-                onPressed: _recordedDuration.inSeconds > 0 ? _stopRecording : null,
+                onPressed: _recordedDuration.inSeconds > 0
+                    ? _stopRecording
+                    : null,
               ),
             ],
           ),
-          
+
           // Max duration indicator
           const SizedBox(height: 8),
           LinearProgressIndicator(
-            value: _recordedDuration.inMilliseconds / widget.maxDuration.inMilliseconds,
+            value:
+                _recordedDuration.inMilliseconds /
+                widget.maxDuration.inMilliseconds,
             backgroundColor: Colors.grey[300],
             valueColor: AlwaysStoppedAnimation<Color>(
               _recordedDuration.inSeconds > (widget.maxDuration.inSeconds * 0.8)
@@ -372,10 +377,7 @@ class _CompactVoiceRecorderState extends State<CompactVoiceRecorder>
           const SizedBox(height: 4),
           Text(
             'Max: ${_formatDuration(widget.maxDuration)}',
-            style: TextStyle(
-              fontSize: 12,
-              color: Colors.grey[600],
-            ),
+            style: TextStyle(fontSize: 12, color: Colors.grey[600]),
           ),
         ],
       ),

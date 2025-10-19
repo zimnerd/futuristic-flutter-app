@@ -25,32 +25,25 @@ class _AiSettingsScreenState extends State<AiSettingsScreen>
   @override
   void initState() {
     super.initState();
-    
+
     _fadeController = AnimationController(
       duration: const Duration(milliseconds: 800),
       vsync: this,
     );
-    
+
     _slideController = AnimationController(
       duration: const Duration(milliseconds: 600),
       vsync: this,
     );
-    
-    _fadeAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _fadeController,
-      curve: Curves.easeInOut,
-    ));
-    
-    _slideAnimation = Tween<Offset>(
-      begin: const Offset(0, 0.1),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _slideController,
-      curve: Curves.easeOutCubic,
-    ));
+
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _fadeController, curve: Curves.easeInOut),
+    );
+
+    _slideAnimation =
+        Tween<Offset>(begin: const Offset(0, 0.1), end: Offset.zero).animate(
+          CurvedAnimation(parent: _slideController, curve: Curves.easeOutCubic),
+        );
 
     // Start animations
     _fadeController.forward();
@@ -84,8 +77,7 @@ class _AiSettingsScreenState extends State<AiSettingsScreen>
           child: BlocConsumer<AiPreferencesBloc, AiPreferencesState>(
             listener: (context, state) {
               if (state is AiPreferencesError) {
-                PulseToast.error(context, message: state.message,
-                );
+                PulseToast.error(context, message: state.message);
               }
             },
             builder: (context, state) {
@@ -123,16 +115,19 @@ class _AiSettingsScreenState extends State<AiSettingsScreen>
           const SizedBox(height: 16),
           Text(
             'Loading AI Settings...',
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              color: Colors.white70,
-            ),
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(color: Colors.white70),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildSettingsContent(BuildContext context, AiPreferences preferences) {
+  Widget _buildSettingsContent(
+    BuildContext context,
+    AiPreferences preferences,
+  ) {
     return FadeTransition(
       opacity: _fadeAnimation,
       child: SlideTransition(
@@ -157,10 +152,7 @@ class _AiSettingsScreenState extends State<AiSettingsScreen>
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
-                        colors: [
-                          Colors.purple.shade400,
-                          Colors.cyan.shade400,
-                        ],
+                        colors: [Colors.purple.shade400, Colors.cyan.shade400],
                       ),
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -177,16 +169,16 @@ class _AiSettingsScreenState extends State<AiSettingsScreen>
                       children: [
                         Text(
                           'AI Assistant',
-                          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                          ),
+                          style: Theme.of(context).textTheme.headlineSmall
+                              ?.copyWith(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
                         ),
                         Text(
                           'Personalize your AI experience',
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: Colors.white70,
-                          ),
+                          style: Theme.of(context).textTheme.bodyMedium
+                              ?.copyWith(color: Colors.white70),
                         ),
                       ],
                     ),
@@ -194,7 +186,9 @@ class _AiSettingsScreenState extends State<AiSettingsScreen>
                   Switch(
                     value: preferences.isAiEnabled,
                     onChanged: (value) {
-                      context.read<AiPreferencesBloc>().add(SetAiEnabled(value));
+                      context.read<AiPreferencesBloc>().add(
+                        SetAiEnabled(value),
+                      );
                     },
                     activeThumbColor: Colors.cyan,
                     activeTrackColor: Colors.cyan.withValues(alpha: 0.3),
@@ -290,7 +284,10 @@ class _AiSettingsScreenState extends State<AiSettingsScreen>
     );
   }
 
-  Widget _buildEnabledSettings(BuildContext context, AiPreferences preferences) {
+  Widget _buildEnabledSettings(
+    BuildContext context,
+    AiPreferences preferences,
+  ) {
     return ListView(
       padding: const EdgeInsets.all(20),
       children: [
@@ -302,14 +299,17 @@ class _AiSettingsScreenState extends State<AiSettingsScreen>
           iconGradient: LinearGradient(
             colors: [Colors.blue.shade400, Colors.cyan.shade400],
           ),
-          enabled: preferences.conversations.smartRepliesEnabled ||
-                   preferences.conversations.customReplyEnabled ||
-                   preferences.conversations.autoSuggestionsEnabled,
+          enabled:
+              preferences.conversations.smartRepliesEnabled ||
+              preferences.conversations.customReplyEnabled ||
+              preferences.conversations.autoSuggestionsEnabled,
           onTap: () => _navigateToConversationSettings(context, preferences),
           features: [
             if (preferences.conversations.smartRepliesEnabled) 'Smart Replies',
-            if (preferences.conversations.customReplyEnabled) 'Custom AI Replies',
-            if (preferences.conversations.autoSuggestionsEnabled) 'Auto Suggestions',
+            if (preferences.conversations.customReplyEnabled)
+              'Custom AI Replies',
+            if (preferences.conversations.autoSuggestionsEnabled)
+              'Auto Suggestions',
           ],
         ),
 
@@ -323,13 +323,15 @@ class _AiSettingsScreenState extends State<AiSettingsScreen>
           iconGradient: LinearGradient(
             colors: [Colors.purple.shade400, Colors.pink.shade400],
           ),
-          enabled: preferences.companion.companionChatEnabled ||
-                   preferences.companion.companionAdviceEnabled,
+          enabled:
+              preferences.companion.companionChatEnabled ||
+              preferences.companion.companionAdviceEnabled,
           onTap: () => _navigateToCompanionSettings(context, preferences),
           features: [
             if (preferences.companion.companionChatEnabled) 'Companion Chat',
             if (preferences.companion.companionAdviceEnabled) 'Dating Advice',
-            if (preferences.companion.relationshipAnalysisEnabled) 'Relationship Analysis',
+            if (preferences.companion.relationshipAnalysisEnabled)
+              'Relationship Analysis',
           ],
         ),
 
@@ -343,11 +345,13 @@ class _AiSettingsScreenState extends State<AiSettingsScreen>
           iconGradient: LinearGradient(
             colors: [Colors.green.shade400, Colors.teal.shade400],
           ),
-          enabled: preferences.profile.profileOptimizationEnabled ||
-                   preferences.profile.bioSuggestionsEnabled,
+          enabled:
+              preferences.profile.profileOptimizationEnabled ||
+              preferences.profile.bioSuggestionsEnabled,
           onTap: () => _navigateToProfileSettings(context, preferences),
           features: [
-            if (preferences.profile.profileOptimizationEnabled) 'Profile Optimization',
+            if (preferences.profile.profileOptimizationEnabled)
+              'Profile Optimization',
             if (preferences.profile.bioSuggestionsEnabled) 'Bio Suggestions',
             if (preferences.profile.photoAnalysisEnabled) 'Photo Analysis',
           ],
@@ -367,8 +371,10 @@ class _AiSettingsScreenState extends State<AiSettingsScreen>
           onTap: () => _navigateToMatchingSettings(context, preferences),
           features: [
             if (preferences.matching.smartMatchingEnabled) 'Smart Matching',
-            if (preferences.matching.compatibilityAnalysisEnabled) 'Compatibility Analysis',
-            if (preferences.matching.personalityInsightsEnabled) 'Personality Insights',
+            if (preferences.matching.compatibilityAnalysisEnabled)
+              'Compatibility Analysis',
+            if (preferences.matching.personalityInsightsEnabled)
+              'Personality Insights',
           ],
         ),
 
@@ -385,9 +391,12 @@ class _AiSettingsScreenState extends State<AiSettingsScreen>
           enabled: preferences.icebreakers.icebreakerSuggestionsEnabled,
           onTap: () => _navigateToIcebreakerSettings(context, preferences),
           features: [
-            if (preferences.icebreakers.icebreakerSuggestionsEnabled) 'Smart Suggestions',
-            if (preferences.icebreakers.personalizedIcebreakersEnabled) 'Personalized',
-            if (preferences.icebreakers.contextualIcebreakersEnabled) 'Contextual',
+            if (preferences.icebreakers.icebreakerSuggestionsEnabled)
+              'Smart Suggestions',
+            if (preferences.icebreakers.personalizedIcebreakersEnabled)
+              'Personalized',
+            if (preferences.icebreakers.contextualIcebreakersEnabled)
+              'Contextual',
           ],
         ),
 
@@ -460,42 +469,57 @@ class _AiSettingsScreenState extends State<AiSettingsScreen>
               Navigator.of(context).pop();
               context.read<AiPreferencesBloc>().add(ResetAiPreferences());
             },
-            child: const Text(
-              'Reset',
-              style: TextStyle(color: Colors.red),
-            ),
+            child: const Text('Reset', style: TextStyle(color: Colors.red)),
           ),
         ],
       ),
     );
   }
 
-  void _navigateToConversationSettings(BuildContext context, AiPreferences preferences) {
+  void _navigateToConversationSettings(
+    BuildContext context,
+    AiPreferences preferences,
+  ) {
     // Navigate to conversation settings page
     Navigator.of(context).pushNamed('/ai-conversation-settings');
   }
 
-  void _navigateToCompanionSettings(BuildContext context, AiPreferences preferences) {
+  void _navigateToCompanionSettings(
+    BuildContext context,
+    AiPreferences preferences,
+  ) {
     // Navigate to companion settings page
     Navigator.of(context).pushNamed('/ai-companion-settings');
   }
 
-  void _navigateToProfileSettings(BuildContext context, AiPreferences preferences) {
+  void _navigateToProfileSettings(
+    BuildContext context,
+    AiPreferences preferences,
+  ) {
     // Navigate to profile settings page
     Navigator.of(context).pushNamed('/ai-profile-settings');
   }
 
-  void _navigateToMatchingSettings(BuildContext context, AiPreferences preferences) {
+  void _navigateToMatchingSettings(
+    BuildContext context,
+    AiPreferences preferences,
+  ) {
     // Navigate to matching settings page
     Navigator.of(context).pushNamed('/ai-matching-settings');
   }
 
-  void _navigateToIcebreakerSettings(BuildContext context, AiPreferences preferences) {
+  void _navigateToIcebreakerSettings(
+    BuildContext context,
+    AiPreferences preferences,
+  ) {
     // Navigate to icebreaker settings page
     Navigator.of(context).pushNamed('/ai-icebreaker-settings');
   }
 
-  void _navigateToGeneralSettings(BuildContext context, AiPreferences preferences) {
+  void _navigateToGeneralSettings(
+    BuildContext context,
+    AiPreferences preferences,
+  ) {
     // Navigate to general settings page
     Navigator.of(context).pushNamed('/ai-general-settings');
   }

@@ -119,11 +119,11 @@ class AppRouter {
   static GoRouter? _router;
   static final GlobalKey<NavigatorState> navigatorKey =
       GlobalKey<NavigatorState>();
-  
+
   /// Initialize router with AuthBloc for navigation state updates
   static void initialize(AuthBloc authBloc) {
     final authListenable = AuthBlocListenable(authBloc);
-    
+
     _router = GoRouter(
       debugLogDiagnostics: kDebugMode,
       initialLocation: AppRoutes.welcome,
@@ -131,43 +131,43 @@ class AppRouter {
       refreshListenable: authListenable,
       navigatorKey: navigatorKey,
       routes: [
-      // Onboarding routes
-      GoRoute(
-        path: AppRoutes.welcome,
-        name: 'welcome',
-        builder: (context, state) => const ModernLandingScreen(),
-      ),
-      GoRoute(
-        path: AppRoutes.onboarding,
-        name: 'onboarding',
-        builder: (context, state) => const OnboardingScreen(),
-      ),
-      GoRoute(
-        path: AppRoutes.intentSelection,
-        name: 'intentSelection',
-        builder: (context, state) => const IntentSelectionScreen(),
-      ),
+        // Onboarding routes
+        GoRoute(
+          path: AppRoutes.welcome,
+          name: 'welcome',
+          builder: (context, state) => const ModernLandingScreen(),
+        ),
+        GoRoute(
+          path: AppRoutes.onboarding,
+          name: 'onboarding',
+          builder: (context, state) => const OnboardingScreen(),
+        ),
+        GoRoute(
+          path: AppRoutes.intentSelection,
+          name: 'intentSelection',
+          builder: (context, state) => const IntentSelectionScreen(),
+        ),
 
-      // Authentication routes
-      GoRoute(
-        path: AppRoutes.login,
-        name: 'login',
-        builder: (context, state) => const simple_login.LoginScreen(),
-      ),
-      GoRoute(
-        path: AppRoutes.register,
-        name: 'register',
+        // Authentication routes
+        GoRoute(
+          path: AppRoutes.login,
+          name: 'login',
+          builder: (context, state) => const simple_login.LoginScreen(),
+        ),
+        GoRoute(
+          path: AppRoutes.register,
+          name: 'register',
           builder: (context, state) {
             final extra = state.extra as Map<String, dynamic>?;
             final phoneNumber = extra?['phoneNumber'] as String?;
             return RegisterScreen(phoneNumber: phoneNumber);
           },
-      ),
-      GoRoute(
-        path: AppRoutes.forgotPassword,
-        name: 'forgotPassword',
-        builder: (context, state) => const ForgotPasswordScreen(),
-      ),
+        ),
+        GoRoute(
+          path: AppRoutes.forgotPassword,
+          name: 'forgotPassword',
+          builder: (context, state) => const ForgotPasswordScreen(),
+        ),
         GoRoute(
           path: AppRoutes.otpVerify,
           name: 'otpVerify',
@@ -205,7 +205,7 @@ class AppRouter {
                   path: AppRoutes.matches,
                   name: 'matches',
                   builder: (context, state) => const MatchesScreen(),
-              ),
+                ),
               ],
             ),
 
@@ -281,133 +281,134 @@ class AppRouter {
           name: 'subscription',
           builder: (context, state) => const SubscriptionManagementScreen(),
         ),
-      
-      // Events routes (full screen)
-      GoRoute(
-        path: AppRoutes.eventDetails,
-        name: 'eventDetails',
-        builder: (context, state) {
-          final eventId = state.pathParameters['eventId'] ?? '';
-          return EventDetailsScreen(eventId: eventId);
-        },
-      ),
-      GoRoute(
-        path: AppRoutes.createEvent,
-        name: 'createEvent',
-        builder: (context, state) => const CreateEventScreen(),
-      ),
-      GoRoute(
-        path: AppRoutes.eventCommunication,
-        name: 'eventCommunication',
-        builder: (context, state) {
-          final eventId = state.pathParameters['eventId'] ?? '';
-          // For now, create a dummy event. In real implementation, fetch from state/service
-          final event = Event(
-            id: eventId,
-            title: 'Sample Event',
-            description: 'Sample event description',
-            location: 'Sample location',
-            coordinates: const EventCoordinates(lat: 0.0, lng: 0.0),
-            date: DateTime.now(),
-            image: null,
-            category: 'Social',
-            createdAt: DateTime.now(),
-            attendees: [],
-          );
-          return EventCommunicationScreen(event: event);
-        },
-      ),
-      
-      // Advanced feature routes (full screen, not in bottom nav)
-      GoRoute(
-        path: AppRoutes.discovery,
-        name: 'discovery',
-        builder: (context, state) => const DiscoveryScreen(),
-      ),
-      GoRoute(
+
+        // Events routes (full screen)
+        GoRoute(
+          path: AppRoutes.eventDetails,
+          name: 'eventDetails',
+          builder: (context, state) {
+            final eventId = state.pathParameters['eventId'] ?? '';
+            return EventDetailsScreen(eventId: eventId);
+          },
+        ),
+        GoRoute(
+          path: AppRoutes.createEvent,
+          name: 'createEvent',
+          builder: (context, state) => const CreateEventScreen(),
+        ),
+        GoRoute(
+          path: AppRoutes.eventCommunication,
+          name: 'eventCommunication',
+          builder: (context, state) {
+            final eventId = state.pathParameters['eventId'] ?? '';
+            // For now, create a dummy event. In real implementation, fetch from state/service
+            final event = Event(
+              id: eventId,
+              title: 'Sample Event',
+              description: 'Sample event description',
+              location: 'Sample location',
+              coordinates: const EventCoordinates(lat: 0.0, lng: 0.0),
+              date: DateTime.now(),
+              image: null,
+              category: 'Social',
+              createdAt: DateTime.now(),
+              attendees: [],
+            );
+            return EventCommunicationScreen(event: event);
+          },
+        ),
+
+        // Advanced feature routes (full screen, not in bottom nav)
+        GoRoute(
+          path: AppRoutes.discovery,
+          name: 'discovery',
+          builder: (context, state) => const DiscoveryScreen(),
+        ),
+        GoRoute(
           path: AppRoutes.whoLikedYou,
           name: 'whoLikedYou',
           builder: (context, state) => const WhoLikedYouScreen(),
         ),
         GoRoute(
-        path: AppRoutes.advancedFeatures,
-        name: 'advancedFeatures',
-        builder: (context, state) => const AdvancedFeaturesScreen(),
-      ),
-      GoRoute(
-        path: AppRoutes.virtualGifts,
-        name: 'virtualGifts',
-        builder: (context, state) {
-          final recipientId = state.uri.queryParameters['recipientId'];
-          final recipientName = state.uri.queryParameters['recipientName'];
-          return VirtualGiftsScreen(
-            recipientId: recipientId,
-            recipientName: recipientName,
-          );
-        },
-      ),
-      GoRoute(
-        path: AppRoutes.premium,
-        name: 'premium',
-        builder: (context, state) => const PremiumScreen(),
-      ),
-      GoRoute(
-        path: AppRoutes.premiumShowcase,
-        name: 'premiumShowcase',
-        builder: (context, state) {
-          final highlightFeature = state.uri.queryParameters['feature'];
-          final selectedPlanId = state.uri.queryParameters['plan'];
-          final source = state.uri.queryParameters['source'];
-          return PremiumShowcaseScreen(
-            highlightFeature: highlightFeature,
-            selectedPlanId: selectedPlanId,
-            source: source,
-          );
-        },
-      ),
-      GoRoute(
-        path: AppRoutes.safety,
-        name: 'safety',
-        builder: (context, state) => const SafetyScreen(),
-      ),
-      GoRoute(
-        path: AppRoutes.aiCompanion,
-        name: 'aiCompanion',
-        builder: (context, state) => const AiCompanionScreen(),
-      ),
-      GoRoute(
-        path: AppRoutes.speedDating,
-        name: 'speedDating',
-        builder: (context, state) => const SpeedDatingScreen(),
-      ),
-      GoRoute(
-        path: AppRoutes.liveStreaming,
-        name: 'liveStreaming',
-        builder: (context, state) => const LiveStreamingScreen(),
-      ),
-      GoRoute(
-        path: AppRoutes.datePlanning,
-        name: 'datePlanning',
-        builder: (context, state) => const DatePlanningScreen(),
-      ),
-      GoRoute(
-        path: AppRoutes.voiceMessages,
-        name: 'voiceMessages',
-        builder: (context, state) => const VoiceMessagesScreen(),
-      ),
-      GoRoute(
-        path: AppRoutes.profileCreation,
-        name: 'profileCreation',
-        builder: (context, state) => const ProfileCreationScreen(),
-      ),
-      GoRoute(
-        path: AppRoutes.profileSectionEdit,
-        name: 'profileSectionEdit',
-        builder: (context, state) {
-          final extra = state.extra as Map<String, dynamic>?;
-          final sectionType = extra?['sectionType'] as String? ?? 'basic_info';
-          final initialData = extra?['initialData'] as Map<String, dynamic>?;
-          
+          path: AppRoutes.advancedFeatures,
+          name: 'advancedFeatures',
+          builder: (context, state) => const AdvancedFeaturesScreen(),
+        ),
+        GoRoute(
+          path: AppRoutes.virtualGifts,
+          name: 'virtualGifts',
+          builder: (context, state) {
+            final recipientId = state.uri.queryParameters['recipientId'];
+            final recipientName = state.uri.queryParameters['recipientName'];
+            return VirtualGiftsScreen(
+              recipientId: recipientId,
+              recipientName: recipientName,
+            );
+          },
+        ),
+        GoRoute(
+          path: AppRoutes.premium,
+          name: 'premium',
+          builder: (context, state) => const PremiumScreen(),
+        ),
+        GoRoute(
+          path: AppRoutes.premiumShowcase,
+          name: 'premiumShowcase',
+          builder: (context, state) {
+            final highlightFeature = state.uri.queryParameters['feature'];
+            final selectedPlanId = state.uri.queryParameters['plan'];
+            final source = state.uri.queryParameters['source'];
+            return PremiumShowcaseScreen(
+              highlightFeature: highlightFeature,
+              selectedPlanId: selectedPlanId,
+              source: source,
+            );
+          },
+        ),
+        GoRoute(
+          path: AppRoutes.safety,
+          name: 'safety',
+          builder: (context, state) => const SafetyScreen(),
+        ),
+        GoRoute(
+          path: AppRoutes.aiCompanion,
+          name: 'aiCompanion',
+          builder: (context, state) => const AiCompanionScreen(),
+        ),
+        GoRoute(
+          path: AppRoutes.speedDating,
+          name: 'speedDating',
+          builder: (context, state) => const SpeedDatingScreen(),
+        ),
+        GoRoute(
+          path: AppRoutes.liveStreaming,
+          name: 'liveStreaming',
+          builder: (context, state) => const LiveStreamingScreen(),
+        ),
+        GoRoute(
+          path: AppRoutes.datePlanning,
+          name: 'datePlanning',
+          builder: (context, state) => const DatePlanningScreen(),
+        ),
+        GoRoute(
+          path: AppRoutes.voiceMessages,
+          name: 'voiceMessages',
+          builder: (context, state) => const VoiceMessagesScreen(),
+        ),
+        GoRoute(
+          path: AppRoutes.profileCreation,
+          name: 'profileCreation',
+          builder: (context, state) => const ProfileCreationScreen(),
+        ),
+        GoRoute(
+          path: AppRoutes.profileSectionEdit,
+          name: 'profileSectionEdit',
+          builder: (context, state) {
+            final extra = state.extra as Map<String, dynamic>?;
+            final sectionType =
+                extra?['sectionType'] as String? ?? 'basic_info';
+            final initialData = extra?['initialData'] as Map<String, dynamic>?;
+
             return BlocProvider(
               create: (context) =>
                   PhotoBloc(userRepository: context.read<UserRepository>()),
@@ -415,13 +416,13 @@ class AppRouter {
                 sectionType: sectionType,
                 initialData: initialData,
               ),
-          );
-        },
-      ),
-      GoRoute(
-        path: AppRoutes.profileDetails,
-        name: 'profileDetails',
-        builder: (context, state) {
+            );
+          },
+        ),
+        GoRoute(
+          path: AppRoutes.profileDetails,
+          name: 'profileDetails',
+          builder: (context, state) {
             // Extract profile and context from extra data
             final extraData = state.extra;
             final UserProfile? profile;
@@ -453,13 +454,13 @@ class AppRouter {
               onSuperLike = null;
             }
 
-          if (profile == null) {
-            // Navigate back if no profile provided
-            return Scaffold(
-              appBar: AppBar(title: const Text('Profile Not Found')),
-              body: const Center(child: Text('Profile not found')),
-            );
-          }
+            if (profile == null) {
+              // Navigate back if no profile provided
+              return Scaffold(
+                appBar: AppBar(title: const Text('Profile Not Found')),
+                body: const Center(child: Text('Profile not found')),
+              );
+            }
 
             return ProfileDetailsScreen(
               profile: profile,
@@ -469,51 +470,50 @@ class AppRouter {
               onDislike: onDislike,
               onSuperLike: onSuperLike,
             );
-        },
-      ),
-      GoRoute(
-        path: AppRoutes.chat,
-        name: 'chat',
-        builder: (context, state) {
-          final conversationId = state.pathParameters['conversationId'] ?? '';
-          final extra = state.extra as Map<String, dynamic>?;
+          },
+        ),
+        GoRoute(
+          path: AppRoutes.chat,
+          name: 'chat',
+          builder: (context, state) {
+            final conversationId = state.pathParameters['conversationId'] ?? '';
+            final extra = state.extra as Map<String, dynamic>?;
 
-          return ChatScreen(
-            conversationId: conversationId,
-            otherUserId: extra?['otherUserId'] ?? '',
-            otherUserName: extra?['otherUserName'] ?? 'User',
-            otherUserPhoto: extra?['otherUserPhoto'],
-          );
-        },
-      ),
-      GoRoute(
-        path: AppRoutes.videoCall,
-        name: 'videoCall',
-        builder: (context, state) {
-          // Extract user data from route extra or use current call state
-          final callId = state.pathParameters['callId'] ?? '';
-          final extra = state.extra as Map<String, dynamic>?;
-          final remoteUser =
-              extra?['remoteUser'] as UserProfile? ??
-              UserProfile(
-                id: 'unknown_user',
-                name: 'Unknown User',
-                age: 25,
-                bio: '',
-                photos: [],
-                location: UserLocation(
-                  latitude: 0.0,
-                  longitude: 0.0,
-                  address: 'Unknown',
-                  city: 'Unknown',
-                  country: 'Unknown',
-                ),
-              );
+            return ChatScreen(
+              conversationId: conversationId,
+              otherUserId: extra?['otherUserId'] ?? '',
+              otherUserName: extra?['otherUserName'] ?? 'User',
+              otherUserPhoto: extra?['otherUserPhoto'],
+            );
+          },
+        ),
+        GoRoute(
+          path: AppRoutes.videoCall,
+          name: 'videoCall',
+          builder: (context, state) {
+            // Extract user data from route extra or use current call state
+            final callId = state.pathParameters['callId'] ?? '';
+            final extra = state.extra as Map<String, dynamic>?;
+            final remoteUser =
+                extra?['remoteUser'] as UserProfile? ??
+                UserProfile(
+                  id: 'unknown_user',
+                  name: 'Unknown User',
+                  age: 25,
+                  bio: '',
+                  photos: [],
+                  location: UserLocation(
+                    latitude: 0.0,
+                    longitude: 0.0,
+                    address: 'Unknown',
+                    city: 'Unknown',
+                    country: 'Unknown',
+                  ),
+                );
 
-          return VideoCallScreen(callId: callId, remoteUser: remoteUser,
-          );
-        },
-      ),
+            return VideoCallScreen(callId: callId, remoteUser: remoteUser);
+          },
+        ),
         GoRoute(
           path: AppRoutes.audioCall,
           name: 'audioCall',
@@ -545,7 +545,7 @@ class AppRouter {
           name: 'privacySettings',
           builder: (context, state) => const PrivacySettingsScreen(),
         ),
-        
+
         // Date Planning routes
         GoRoute(
           path: AppRoutes.datePlanDetails,
@@ -672,7 +672,7 @@ class AppRouter {
           name: 'groupChat',
           builder: (context, state) {
             final group = state.extra as GroupConversation;
-            
+
             // Create GroupChatBloc with required services
             final apiClient = ApiClient.instance;
             final authToken = apiClient.authToken ?? '';
@@ -733,7 +733,7 @@ class AppRouter {
           builder: (context, state) {
             final liveSessionId = state.pathParameters['liveSessionId'] ?? '';
             final data = state.extra as Map<String, dynamic>?;
-            
+
             // Get or create GroupChatBloc - must be provided for VideoCallScreen
             final groupChatBloc = data?['groupChatBloc'] as GroupChatBloc?;
 
@@ -937,36 +937,40 @@ class AppRouter {
             );
           },
         ),
-    ],
-    errorBuilder: (context, state) => Scaffold(
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.error_outline, size: 64, color: Colors.red),
-            const SizedBox(height: 16),
-            Text(
-              'Page not found',
-              style: Theme.of(context).textTheme.headlineSmall,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              state.uri.toString(),
-              style: Theme.of(context).textTheme.bodyMedium,
-            ),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: () => context.go(AppRoutes.welcome),
-              child: const Text('Go Home'),
-            ),
-          ],
+      ],
+      errorBuilder: (context, state) => Scaffold(
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.error_outline, size: 64, color: Colors.red),
+              const SizedBox(height: 16),
+              Text(
+                'Page not found',
+                style: Theme.of(context).textTheme.headlineSmall,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                state.uri.toString(),
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: () => context.go(AppRoutes.welcome),
+                child: const Text('Go Home'),
+              ),
+            ],
+          ),
         ),
       ),
-    ),
     );
   }
 
-  static GoRouter get router => _router ?? (throw StateError('AppRouter not initialized. Call AppRouter.initialize() first.'));
+  static GoRouter get router =>
+      _router ??
+      (throw StateError(
+        'AppRouter not initialized. Call AppRouter.initialize() first.',
+      ));
 
   /// Handle route redirects based on authentication state
   static String? _handleRedirect(BuildContext context, GoRouterState state) {
@@ -1045,7 +1049,7 @@ class AppRoutes {
   static const String heatMap = '/heat-map';
   static const String subscription = '/subscription';
   static const String events = '/events';
-  
+
   // Advanced feature routes
   static const String discovery = '/discovery';
   static const String whoLikedYou = '/who-liked-you';
@@ -1069,12 +1073,12 @@ class AppRoutes {
   static const String videoCall = '/video-call/:callId';
   static const String groupVideoCall = '/group-video-call/:liveSessionId';
   static const String audioCall = '/audio-call/:callId';
-  
+
   // Events routes
   static const String eventDetails = '/events/:eventId';
   static const String createEvent = '/events/create';
   static const String eventCommunication = '/events/:eventId/communication';
-  
+
   // Date planning routes
   static const String datePlanDetails = '/date-plan-details';
   static const String createDatePlan = '/create-date-plan';

@@ -30,7 +30,9 @@ class HeatMapDataPoint extends Equatable {
     if (json.containsKey('coordinates')) {
       // Stored format
       return HeatMapDataPoint(
-        coordinates: LocationCoordinates.fromJson(json['coordinates'] as Map<String, dynamic>),
+        coordinates: LocationCoordinates.fromJson(
+          json['coordinates'] as Map<String, dynamic>,
+        ),
         density: json['density'] as int,
         radius: (json['radius'] as num).toDouble(),
         label: json['label'] as String?,
@@ -50,7 +52,8 @@ class HeatMapDataPoint extends Equatable {
   }
 
   @override
-  String toString() => 'HeatMapDataPoint(coordinates: $coordinates, density: $density, radius: $radius)';
+  String toString() =>
+      'HeatMapDataPoint(coordinates: $coordinates, density: $density, radius: $radius)';
 }
 
 /// Heat map data model containing all data points and metadata
@@ -70,7 +73,13 @@ class HeatMapData extends Equatable {
   });
 
   @override
-  List<Object> get props => [dataPoints, bounds, totalUsers, averageDensity, generatedAt];
+  List<Object> get props => [
+    dataPoints,
+    bounds,
+    totalUsers,
+    averageDensity,
+    generatedAt,
+  ];
 
   Map<String, dynamic> toJson() => {
     'dataPoints': dataPoints.map((point) => point.toJson()).toList(),
@@ -83,7 +92,9 @@ class HeatMapData extends Equatable {
   factory HeatMapData.fromJson(Map<String, dynamic> json) {
     return HeatMapData(
       dataPoints: (json['dataPoints'] as List<dynamic>)
-          .map((item) => HeatMapDataPoint.fromJson(item as Map<String, dynamic>))
+          .map(
+            (item) => HeatMapDataPoint.fromJson(item as Map<String, dynamic>),
+          )
           .toList(),
       bounds: LocationBounds.fromJson(json['bounds'] as Map<String, dynamic>),
       totalUsers: json['totalUsers'] as int,
@@ -93,7 +104,8 @@ class HeatMapData extends Equatable {
   }
 
   @override
-  String toString() => 'HeatMapData(dataPoints: ${dataPoints.length}, totalUsers: $totalUsers)';
+  String toString() =>
+      'HeatMapData(dataPoints: ${dataPoints.length}, totalUsers: $totalUsers)';
 }
 
 /// Heat map filters for data customization
@@ -115,7 +127,14 @@ class HeatMapFilters extends Equatable {
   });
 
   @override
-  List<Object?> get props => [maxDistance, minAge, maxAge, matchStatus, interests, includeOnlineOnly];
+  List<Object?> get props => [
+    maxDistance,
+    minAge,
+    maxAge,
+    matchStatus,
+    interests,
+    includeOnlineOnly,
+  ];
 
   Map<String, dynamic> toJson() => {
     'maxDistance': maxDistance,
@@ -131,7 +150,7 @@ class HeatMapFilters extends Equatable {
       maxDistance: json['maxDistance'] as int,
       minAge: json['minAge'] as int,
       maxAge: json['maxAge'] as int,
-      matchStatus: json['matchStatus'] != null 
+      matchStatus: json['matchStatus'] != null
           ? MatchStatus.values.firstWhere((e) => e.name == json['matchStatus'])
           : null,
       interests: (json['interests'] as List<dynamic>?)?.cast<String>(),
@@ -140,7 +159,8 @@ class HeatMapFilters extends Equatable {
   }
 
   @override
-  String toString() => 'HeatMapFilters(maxDistance: $maxDistance, minAge: $minAge, maxAge: $maxAge)';
+  String toString() =>
+      'HeatMapFilters(maxDistance: $maxDistance, minAge: $minAge, maxAge: $maxAge)';
 }
 
 /// Coverage area model representing an area with user density
@@ -170,7 +190,10 @@ class CoverageArea extends Equatable {
   factory CoverageArea.fromJson(Map<String, dynamic> json) {
     return CoverageArea(
       boundaryPoints: (json['boundaryPoints'] as List<dynamic>)
-          .map((item) => LocationCoordinates.fromJson(item as Map<String, dynamic>))
+          .map(
+            (item) =>
+                LocationCoordinates.fromJson(item as Map<String, dynamic>),
+          )
           .toList(),
       density: json['density'] as int,
       coverage: (json['coverage'] as num).toDouble(),
@@ -179,7 +202,8 @@ class CoverageArea extends Equatable {
   }
 
   @override
-  String toString() => 'CoverageArea(density: $density, coverage: $coverage, areaType: $areaType)';
+  String toString() =>
+      'CoverageArea(density: $density, coverage: $coverage, areaType: $areaType)';
 }
 
 /// Location coverage data model
@@ -201,7 +225,14 @@ class LocationCoverageData extends Equatable {
   });
 
   @override
-  List<Object> get props => [coverageAreas, totalUsers, averageDensity, totalCoverage, center, radiusKm];
+  List<Object> get props => [
+    coverageAreas,
+    totalUsers,
+    averageDensity,
+    totalCoverage,
+    center,
+    radiusKm,
+  ];
 
   Map<String, dynamic> toJson() => {
     'coverageAreas': coverageAreas.map((area) => area.toJson()).toList(),
@@ -223,30 +254,39 @@ class LocationCoverageData extends Equatable {
         totalUsers: json['totalUsers'] as int,
         averageDensity: (json['averageDensity'] as num).toDouble(),
         totalCoverage: (json['totalCoverage'] as num).toDouble(),
-        center: LocationCoordinates.fromJson(json['center'] as Map<String, dynamic>),
+        center: LocationCoordinates.fromJson(
+          json['center'] as Map<String, dynamic>,
+        ),
         radiusKm: (json['radiusKm'] as num).toDouble(),
       );
     } else {
       // API response format: {center, radius, userCounts}
       final userCounts = json['userCounts'] as Map<String, dynamic>;
-      final totalUsers = (userCounts['matched'] as int? ?? 0) +
-                        (userCounts['likedMe'] as int? ?? 0) +
-                        (userCounts['unmatched'] as int? ?? 0) +
-                        (userCounts['passed'] as int? ?? 0);
-      
+      final totalUsers =
+          (userCounts['matched'] as int? ?? 0) +
+          (userCounts['likedMe'] as int? ?? 0) +
+          (userCounts['unmatched'] as int? ?? 0) +
+          (userCounts['passed'] as int? ?? 0);
+
       return LocationCoverageData(
-        coverageAreas: [], // Empty for API response - would need additional processing
+        coverageAreas:
+            [], // Empty for API response - would need additional processing
         totalUsers: totalUsers,
-        averageDensity: totalUsers > 0 ? totalUsers / ((json['radius'] as num).toDouble()) : 0.0,
+        averageDensity: totalUsers > 0
+            ? totalUsers / ((json['radius'] as num).toDouble())
+            : 0.0,
         totalCoverage: (json['radius'] as num).toDouble(),
-        center: LocationCoordinates.fromJson(json['center'] as Map<String, dynamic>),
+        center: LocationCoordinates.fromJson(
+          json['center'] as Map<String, dynamic>,
+        ),
         radiusKm: (json['radius'] as num).toDouble(),
       );
     }
   }
 
   @override
-  String toString() => 'LocationCoverageData(totalUsers: $totalUsers, totalCoverage: $totalCoverage)';
+  String toString() =>
+      'LocationCoverageData(totalUsers: $totalUsers, totalCoverage: $totalCoverage)';
 }
 
 /// Location coverage filters
@@ -266,7 +306,13 @@ class LocationCoverageFilters extends Equatable {
   });
 
   @override
-  List<Object?> get props => [minAge, maxAge, matchStatus, interests, includeOnlineOnly];
+  List<Object?> get props => [
+    minAge,
+    maxAge,
+    matchStatus,
+    interests,
+    includeOnlineOnly,
+  ];
 
   Map<String, dynamic> toJson() => {
     'minAge': minAge,
@@ -280,7 +326,7 @@ class LocationCoverageFilters extends Equatable {
     return LocationCoverageFilters(
       minAge: json['minAge'] as int,
       maxAge: json['maxAge'] as int,
-      matchStatus: json['matchStatus'] != null 
+      matchStatus: json['matchStatus'] != null
           ? MatchStatus.values.firstWhere((e) => e.name == json['matchStatus'])
           : null,
       interests: (json['interests'] as List<dynamic>?)?.cast<String>(),
@@ -289,16 +335,12 @@ class LocationCoverageFilters extends Equatable {
   }
 
   @override
-  String toString() => 'LocationCoverageFilters(minAge: $minAge, maxAge: $maxAge)';
+  String toString() =>
+      'LocationCoverageFilters(minAge: $minAge, maxAge: $maxAge)';
 }
 
 /// Match status enumeration
-enum MatchStatus {
-  none,
-  likedYou,
-  matched,
-  rejected,
-}
+enum MatchStatus { none, likedYou, matched, rejected }
 
 /// Extension for match status display names
 extension MatchStatusExtension on MatchStatus {

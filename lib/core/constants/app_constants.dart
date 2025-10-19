@@ -14,6 +14,7 @@ class AppConstants {
     final host = Platform.isAndroid ? '10.0.2.2' : 'localhost';
     return 'http://$host:3000';
   }
+
   static const String apiVersion = 'v1';
   static String get apiBaseUrl => '$baseUrl/api/$apiVersion';
 

@@ -50,10 +50,16 @@ abstract class UserRepository {
   // User Profile
   Future<UserModel?> getUserById(String userId);
   Future<UserModel> updateUserProfile(
-      String userId, Map<String, dynamic> updates);
+    String userId,
+    Map<String, dynamic> updates,
+  );
   Future<void> uploadProfilePhoto(String userId, String photoPath);
   Future<void> deleteProfilePhoto(String userId, String photoUrl);
-  Future<void> updateUserLocation(String userId, double latitude, double longitude);
+  Future<void> updateUserLocation(
+    String userId,
+    double latitude,
+    double longitude,
+  );
 
   // Photo Management
   Future<Map<String, dynamic>> uploadMultiplePhotos(
@@ -72,17 +78,24 @@ abstract class UserRepository {
     double radiusKm = 50.0,
     int limit = 20,
   });
-  Future<List<UserModel>> getUserRecommendations(String userId,
-      {int limit = 10});
+  Future<List<UserModel>> getUserRecommendations(
+    String userId, {
+    int limit = 10,
+  });
 
   // User Preferences
   Future<void> updateUserPreferences(
-      String userId, Map<String, dynamic> preferences);
+    String userId,
+    Map<String, dynamic> preferences,
+  );
   Future<Map<String, dynamic>?> getUserPreferences(String userId);
 
   // User Actions
   Future<void> reportUser(
-      String reporterId, String reportedUserId, String reason);
+    String reporterId,
+    String reportedUserId,
+    String reason,
+  );
   Future<void> blockUser(String blockerId, String blockedUserId);
   Future<void> unblockUser(String blockerId, String blockedUserId);
   Future<List<String>> getBlockedUsers(String userId);

@@ -150,11 +150,7 @@ class PaymentMethodCard extends StatelessWidget {
         color: iconColor.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(8),
       ),
-      child: Icon(
-        iconData,
-        color: iconColor,
-        size: 24,
-      ),
+      child: Icon(iconData, color: iconColor, size: 24),
     );
   }
 
@@ -178,15 +174,10 @@ class PaymentMethodCard extends StatelessWidget {
 
   Widget _buildMoreMenu(BuildContext context) {
     return PopupMenuButton<String>(
-      icon: Icon(
-        Icons.more_vert,
-        color: AppColors.textSecondary,
-      ),
+      icon: Icon(Icons.more_vert, color: AppColors.textSecondary),
       color: AppColors.surface,
       elevation: 8,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       onSelected: (value) {
         switch (value) {
           case 'edit':
@@ -207,10 +198,7 @@ class PaymentMethodCard extends StatelessWidget {
             children: [
               Icon(Icons.edit, color: AppColors.textSecondary, size: 20),
               const SizedBox(width: 12),
-              Text(
-                'Edit',
-                style: AppTextStyles.bodyMedium,
-              ),
+              Text('Edit', style: AppTextStyles.bodyMedium),
             ],
           ),
         ),
@@ -221,10 +209,7 @@ class PaymentMethodCard extends StatelessWidget {
               children: [
                 Icon(Icons.star, color: AppColors.textSecondary, size: 20),
                 const SizedBox(width: 12),
-                Text(
-                  'Set as Default',
-                  style: AppTextStyles.bodyMedium,
-                ),
+                Text('Set as Default', style: AppTextStyles.bodyMedium),
               ],
             ),
           ),

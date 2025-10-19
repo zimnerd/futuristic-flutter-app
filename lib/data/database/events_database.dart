@@ -8,7 +8,7 @@ import '../../domain/entities/event.dart';
 class EventsDatabase {
   static const String _databaseName = 'pulse_events.db';
   static const int _databaseVersion = 2; // Incremented for event_count column
-  
+
   static Database? _database;
   static final Logger _logger = Logger();
 
@@ -26,9 +26,9 @@ class EventsDatabase {
   Future<Database> _initDatabase() async {
     final databasesPath = await getDatabasesPath();
     final path = join(databasesPath, _databaseName);
-    
+
     _logger.d('Initializing events database at: $path');
-    
+
     return await openDatabase(
       path,
       version: _databaseVersion,
@@ -40,7 +40,7 @@ class EventsDatabase {
   /// Create database tables
   Future<void> _onCreate(Database db, int version) async {
     _logger.d('Creating events database tables...');
-    
+
     // Event categories table - cached categories
     await db.execute('''
       CREATE TABLE event_categories (
@@ -79,17 +79,23 @@ class EventsDatabase {
     ''');
 
     // Create indexes for better performance
-    await db.execute('CREATE INDEX idx_categories_slug ON event_categories (slug)');
-    await db.execute('CREATE INDEX idx_categories_active ON event_categories (is_active)');
-    await db.execute('CREATE INDEX idx_events_category ON cached_events (category_slug)');
-    
+    await db.execute(
+      'CREATE INDEX idx_categories_slug ON event_categories (slug)',
+    );
+    await db.execute(
+      'CREATE INDEX idx_categories_active ON event_categories (is_active)',
+    );
+    await db.execute(
+      'CREATE INDEX idx_events_category ON cached_events (category_slug)',
+    );
+
     _logger.d('Events database tables created successfully');
   }
 
   /// Handle database upgrades
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
     _logger.d('Upgrading events database from v$oldVersion to v$newVersion');
-    
+
     // Upgrade from v1 to v2: Add event_count column
     if (oldVersion == 1 && newVersion >= 2) {
       await db.execute(
@@ -103,10 +109,10 @@ class EventsDatabase {
   Future<void> cacheCategories(List<EventCategory> categories) async {
     final db = await database;
     final batch = db.batch();
-    
+
     // Clear existing categories
     batch.delete('event_categories');
-    
+
     // Insert new categories
     final now = DateTime.now().millisecondsSinceEpoch;
     for (final category in categories) {
@@ -126,7 +132,7 @@ class EventsDatabase {
         'cached_at': now,
       });
     }
-    
+
     await batch.commit();
     _logger.d('Cached ${categories.length} event categories');
   }
@@ -134,17 +140,17 @@ class EventsDatabase {
   /// Get cached event categories
   Future<List<EventCategory>> getCachedCategories({Duration? maxAge}) async {
     final db = await database;
-    
+
     // Build query with optional age filter
     String whereClause = 'is_active = 1';
     List<Object?> whereArgs = [];
-    
+
     if (maxAge != null) {
       final cutoff = DateTime.now().subtract(maxAge).millisecondsSinceEpoch;
       whereClause += ' AND cached_at > ?';
       whereArgs.add(cutoff);
     }
-    
+
     final List<Map<String, Object?>> maps = await db.query(
       'event_categories',
       where: whereClause,
@@ -152,32 +158,38 @@ class EventsDatabase {
       orderBy: 'order_index ASC, name ASC',
     );
 
-    return maps.map((map) => EventCategory(
-      id: map['id'] as String,
-      name: map['name'] as String,
-      slug: map['slug'] as String,
-      description: map['description'] as String?,
-      icon: map['icon'] as String?,
-      color: map['color'] as String?,
+    return maps
+        .map(
+          (map) => EventCategory(
+            id: map['id'] as String,
+            name: map['name'] as String,
+            slug: map['slug'] as String,
+            description: map['description'] as String?,
+            icon: map['icon'] as String?,
+            color: map['color'] as String?,
             eventCount:
                 (map['event_count'] as int?) ?? 0, // Read cached event count
-      createdAt: DateTime.parse(map['created_at'] as String),
-      updatedAt: DateTime.parse(map['updated_at'] as String),
-    )).toList();
+            createdAt: DateTime.parse(map['created_at'] as String),
+            updatedAt: DateTime.parse(map['updated_at'] as String),
+          ),
+        )
+        .toList();
   }
 
   /// Check if categories cache is fresh
-  Future<bool> isCategoriesCacheFresh({Duration maxAge = const Duration(hours: 1)}) async {
+  Future<bool> isCategoriesCacheFresh({
+    Duration maxAge = const Duration(hours: 1),
+  }) async {
     final db = await database;
     final cutoff = DateTime.now().subtract(maxAge).millisecondsSinceEpoch;
-    
+
     final result = await db.query(
       'event_categories',
       where: 'cached_at > ?',
       whereArgs: [cutoff],
       limit: 1,
     );
-    
+
     return result.isNotEmpty;
   }
 
@@ -192,14 +204,11 @@ class EventsDatabase {
   /// Get cache statistics
   Future<Map<String, int>> getCacheStats() async {
     final db = await database;
-    
+
     final categoriesCount = (await db.query('event_categories')).length;
     final eventsCount = (await db.query('cached_events')).length;
-    
-    return {
-      'categories': categoriesCount,
-      'events': eventsCount,
-    };
+
+    return {'categories': categoriesCount, 'events': eventsCount};
   }
 
   /// Close database connection

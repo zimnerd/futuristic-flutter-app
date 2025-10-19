@@ -6,7 +6,7 @@ import '../../../core/theme/pulse_design_system.dart';
 import '../../../core/network/api_client.dart';
 
 /// Modern Main Navigation Wrapper with PulseLink Design
-/// 
+///
 /// Clean, minimal navigation bar with:
 /// - 5 horizontal tabs (Home, Search, Recent, Messages, Profile)
 /// - Purple pill styling for active tab with label text
@@ -18,10 +18,7 @@ import '../../../core/network/api_client.dart';
 class MainNavigationWrapper extends StatefulWidget {
   final StatefulNavigationShell navigationShell;
 
-  const MainNavigationWrapper({
-    super.key,
-    required this.navigationShell,
-  });
+  const MainNavigationWrapper({super.key, required this.navigationShell});
 
   @override
   State<MainNavigationWrapper> createState() => _MainNavigationWrapperState();
@@ -153,7 +150,7 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper>
 
   Widget _buildCurvedBottomBar() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
+
     return Container(
       margin: const EdgeInsets.fromLTRB(8, 8, 8, 8),
       child: ClipRRect(
@@ -203,11 +200,11 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper>
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final isActive = index == widget.navigationShell.currentIndex;
-    
+
     // Use theme colors for active state
     final activeColor = PulseColors.backgroundDark;
     final inactiveColor = isDark ? PulseColors.grey500 : PulseColors.grey400;
-    
+
     return AnimatedBuilder(
       animation: _animationController,
       builder: (context, child) {
@@ -257,8 +254,7 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper>
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(
-                            item.activeIcon, color: Colors.white, size: 24),
+                          Icon(item.activeIcon, color: Colors.white, size: 24),
                           const SizedBox(width: 10),
                           Text(
                             item.label,
@@ -341,7 +337,6 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper>
       },
     );
   }
-
 }
 
 class NavigationItem {

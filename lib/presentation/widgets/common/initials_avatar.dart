@@ -5,7 +5,7 @@ import 'dart:math';
 Color _generateColorFromString(String text) {
   final hash = text.hashCode;
   final random = Random(hash);
-  
+
   // Generate pleasant colors with good contrast
   final hue = random.nextDouble() * 360;
   return HSLColor.fromAHSL(1.0, hue, 0.6, 0.5).toColor();
@@ -14,9 +14,9 @@ Color _generateColorFromString(String text) {
 /// Extracts initials from a string (e.g., "Marketing Team" -> "MT")
 String _generateInitials(String name) {
   if (name.isEmpty) return '??';
-  
+
   final words = name.trim().split(RegExp(r'\s+'));
-  
+
   if (words.length >= 2) {
     // Take first letter of first two words
     return '${words[0][0]}${words[1][0]}'.toUpperCase();
@@ -27,7 +27,7 @@ String _generateInitials(String name) {
     // Single letter - duplicate it
     return words[0][0].toUpperCase() * 2;
   }
-  
+
   return '??';
 }
 
@@ -82,10 +82,12 @@ class InitialsAvatar extends StatelessWidget {
     return CircleAvatar(
       radius: radius,
       backgroundColor: color,
-      child: child ??
+      child:
+          child ??
           Text(
             initials,
-            style: textStyle ??
+            style:
+                textStyle ??
                 TextStyle(
                   color: Colors.white,
                   fontSize: radius * 0.6, // Scale font size with radius

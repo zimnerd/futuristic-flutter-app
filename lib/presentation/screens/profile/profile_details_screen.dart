@@ -65,14 +65,14 @@ class ProfileDetailsScreen extends StatefulWidget {
 class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
     with TickerProviderStateMixin {
   late PageController _pageController;
-  
+
   int _currentPhotoIndex = 0;
 
   @override
   void initState() {
     super.initState();
     _pageController = PageController();
-    
+
     // Load stats if viewing own profile
     if (widget.isOwnProfile) {
       context.read<ProfileBloc>().add(const LoadProfileStats());
@@ -133,9 +133,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
     final chatBloc = context.read<ChatBloc>();
 
     // Create conversation using ChatBloc
-    chatBloc.add(CreateConversation(
-      participantId: widget.profile.id,
-    ));
+    chatBloc.add(CreateConversation(participantId: widget.profile.id));
 
     // Listen for conversation creation result
     final subscription = chatBloc.stream.listen((state) {
@@ -188,7 +186,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
         );
       }
     });
-    
+
     // Auto-cancel subscription after reasonable timeout
     Future.delayed(const Duration(seconds: 10), () {
       subscription.cancel();
@@ -306,9 +304,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
             ],
           ),
       ],
-      flexibleSpace: FlexibleSpaceBar(
-        background: _buildPhotoCarousel(),
-      ),
+      flexibleSpace: FlexibleSpaceBar(background: _buildPhotoCarousel()),
     );
   }
 
@@ -317,11 +313,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
       return Container(
         color: Colors.grey[200],
         child: const Center(
-          child: Icon(
-            Icons.person,
-            size: 80,
-            color: Colors.grey,
-          ),
+          child: Icon(Icons.person, size: 80, color: Colors.grey),
         ),
       );
     }
@@ -447,24 +439,80 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
                           isVerified: widget.profile.verified,
                           size: VerificationBadgeSize.medium,
                         ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                // Location with distance
-                if (_shouldShowDistance())
-                  Row(
-                    children: [
-                      const Icon(
-                        Icons.location_on,
-                        color: Colors.white,
-                        size: 16,
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    // Location with distance
+                    if (_shouldShowDistance())
+                      Row(
+                        children: [
+                          const Icon(
+                            Icons.location_on,
+                            color: Colors.white,
+                            size: 16,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            widget.profile.distanceString,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              color: Colors.white,
+                              shadows: [
+                                Shadow(
+                                  color: Colors.black45,
+                                  offset: Offset(0, 1),
+                                  blurRadius: 2,
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          if (_shouldShowOnlineStatus() &&
+                              widget.profile.isOnline) ...[
+                            Container(
+                              width: 8,
+                              height: 8,
+                              decoration: const BoxDecoration(
+                                color: PulseColors.success,
+                                shape: BoxShape.circle,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: PulseColors.success,
+                                    blurRadius: 8,
+                                    spreadRadius: 2,
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            const Text(
+                              'Online now',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.white,
+                                shadows: [
+                                  Shadow(
+                                    color: Colors.black45,
+                                    offset: Offset(0, 1),
+                                    blurRadius: 2,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ],
                       ),
-                      const SizedBox(width: 4),
+                    const SizedBox(height: 8),
+                    // Bio preview
+                    if (widget.profile.bio.isNotEmpty)
                       Text(
-                        widget.profile.distanceString,
+                        widget.profile.bio.length > 100
+                            ? '${widget.profile.bio.substring(0, 100)}...'
+                            : widget.profile.bio,
                         style: const TextStyle(
                           fontSize: 14,
                           color: Colors.white,
+                          height: 1.3,
                           shadows: [
                             Shadow(
                               color: Colors.black45,
@@ -473,99 +521,43 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
                             ),
                           ],
                         ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      const SizedBox(width: 12),
-                      if (_shouldShowOnlineStatus() &&
-                          widget.profile.isOnline) ...[
-                        Container(
-                          width: 8,
-                          height: 8,
-                          decoration: const BoxDecoration(
-                            color: PulseColors.success,
-                            shape: BoxShape.circle,
-                            boxShadow: [
-                              BoxShadow(
-                                color: PulseColors.success,
-                                blurRadius: 8,
-                                spreadRadius: 2,
-                              ),
-                            ],
+                    const SizedBox(height: 12),
+                    // Badges row (occupation, social media, etc)
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        // Occupation badge
+                        if (widget.profile.occupation != null)
+                          _buildBadgePill(
+                            icon: Icons.work_outline,
+                            label: widget.profile.occupation!,
                           ),
-                        ),
-                        const SizedBox(width: 6),
-                        const Text(
-                          'Online now',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.white,
-                            shadows: [
-                              Shadow(
-                                color: Colors.black45,
-                                offset: Offset(0, 1),
-                                blurRadius: 2,
-                              ),
-                            ],
+                        // Education badge
+                        if (widget.profile.education != null)
+                          _buildBadgePill(
+                            icon: Icons.school_outlined,
+                            label: widget.profile.education!,
                           ),
-                        ),
-                      ],
-                    ],
-                  ),
-                const SizedBox(height: 8),
-                // Bio preview
-                    if (widget.profile.bio.isNotEmpty)
-                  Text(
-                    widget.profile.bio.length > 100
-                        ? '${widget.profile.bio.substring(0, 100)}...'
-                        : widget.profile.bio,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      color: Colors.white,
-                      height: 1.3,
-                      shadows: [
-                        Shadow(
-                          color: Colors.black45,
-                          offset: Offset(0, 1),
-                          blurRadius: 2,
-                        ),
+                        // Add social media badges if available
+                        // These would come from profile data - placeholder for now
                       ],
                     ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                const SizedBox(height: 12),
-                // Badges row (occupation, social media, etc)
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: [
-                    // Occupation badge
-                    if (widget.profile.occupation != null)
-                      _buildBadgePill(
-                        icon: Icons.work_outline,
-                        label: widget.profile.occupation!,
-                      ),
-                    // Education badge
-                    if (widget.profile.education != null)
-                      _buildBadgePill(
-                        icon: Icons.school_outlined,
-                        label: widget.profile.education!,
-                      ),
-                    // Add social media badges if available
-                    // These would come from profile data - placeholder for now
                   ],
                 ),
-              ],
+              ),
             ),
-          ),
-        ),
           ),
 
           // Photo indicators
           if (widget.profile.photos.length > 1)
-          Positioned(
-            top: 100,
-            left: 20,
-            right: 20,
+            Positioned(
+              top: 100,
+              left: 20,
+              right: 20,
               child: IgnorePointer(
                 // Allow gestures to pass through
                 child: Row(
@@ -601,10 +593,10 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
               ),
             ),
 
-        // Photo counter
-        Positioned(
-          bottom: 20,
-          right: 20,
+          // Photo counter
+          Positioned(
+            bottom: 20,
+            right: 20,
             child: IgnorePointer(
               // Allow gestures to pass through
               child: Container(
@@ -653,7 +645,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
               ),
             ),
           ),
-      ],
+        ],
       ),
     ); // Close GestureDetector
   }
@@ -682,9 +674,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
   Widget _buildPhotoLoading() {
     return Container(
       color: Colors.grey[200],
-      child: const Center(
-        child: CircularProgressIndicator(strokeWidth: 2),
-      ),
+      child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
     );
   }
 
@@ -884,11 +874,11 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
                       if (_shouldShowOnlineStatus())
                         Text(
                           'Online now',
-                        style: PulseTextStyles.labelSmall.copyWith(
-                          color: PulseColors.success,
-                          fontWeight: FontWeight.w600,
+                          style: PulseTextStyles.labelSmall.copyWith(
+                            color: PulseColors.success,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
-                      ),
                     ] else ...[
                       Container(
                         width: 8,
@@ -1083,8 +1073,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
               color: PulseColors.primary.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(icon,
-              color: PulseColors.primary, size: 24),
+            child: Icon(icon, color: PulseColors.primary, size: 24),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -1220,7 +1209,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
 
   Widget _buildPhotosGrid() {
     final remainingPhotos = widget.profile.photos.skip(1).take(4).toList();
-    
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Column(
@@ -2162,7 +2151,7 @@ Join PulseLink to connect!''';
     // Share functionality ready - requires share_plus package
     // Add to pubspec.yaml: share_plus: ^7.0.0
     // Then uncomment: Share.share(shareText, subject: '${profile.name} on PulseLink');
-    
+
     PulseToast.info(
       context,
       message: 'Share text prepared:\n$shareText',
@@ -2635,7 +2624,8 @@ Join PulseLink to connect!''';
               Navigator.pop(dialogContext);
               PulseToast.success(
                 context,
-                message: 'Report submitted. Thank you for keeping PulseLink safe.',
+                message:
+                    'Report submitted. Thank you for keeping PulseLink safe.',
                 duration: const Duration(seconds: 3),
               );
             } else if (state is BlockReportError) {

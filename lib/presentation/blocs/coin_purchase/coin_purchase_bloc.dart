@@ -20,9 +20,9 @@ class CoinPurchaseBloc extends Bloc<CoinPurchaseEvent, CoinPurchaseState> {
   CoinPurchaseBloc({
     required PaymentService paymentService,
     required PremiumService premiumService,
-  })  : _paymentService = paymentService,
-        _premiumService = premiumService,
-        super(const CoinPurchaseInitial()) {
+  }) : _paymentService = paymentService,
+       _premiumService = premiumService,
+       super(const CoinPurchaseInitial()) {
     on<LoadPaymentMethods>(_onLoadPaymentMethods);
     on<PaymentMethodSelected>(_onPaymentMethodSelected);
     on<PurchaseCoinsRequested>(_onPurchaseCoinsRequested);
@@ -40,17 +40,23 @@ class CoinPurchaseBloc extends Bloc<CoinPurchaseEvent, CoinPurchaseState> {
 
       final paymentMethods = await _paymentService.getUserPaymentMethods();
 
-      emit(PaymentMethodsLoaded(
-        paymentMethods: paymentMethods,
-        selectedPaymentMethodId: paymentMethods.isNotEmpty ? paymentMethods.first['id'] as String : null,
-      ));
+      emit(
+        PaymentMethodsLoaded(
+          paymentMethods: paymentMethods,
+          selectedPaymentMethodId: paymentMethods.isNotEmpty
+              ? paymentMethods.first['id'] as String
+              : null,
+        ),
+      );
 
       _logger.d('Loaded ${paymentMethods.length} payment methods');
     } catch (e) {
       _logger.e('Failed to load payment methods: $e');
-      emit(CoinPurchaseError(
-        message: 'Failed to load payment methods: ${e.toString()}',
-      ));
+      emit(
+        CoinPurchaseError(
+          message: 'Failed to load payment methods: ${e.toString()}',
+        ),
+      );
     }
   }
 
@@ -61,7 +67,9 @@ class CoinPurchaseBloc extends Bloc<CoinPurchaseEvent, CoinPurchaseState> {
   ) async {
     if (state is PaymentMethodsLoaded) {
       final currentState = state as PaymentMethodsLoaded;
-      emit(currentState.copyWith(selectedPaymentMethodId: event.paymentMethodId));
+      emit(
+        currentState.copyWith(selectedPaymentMethodId: event.paymentMethodId),
+      );
       _logger.d('Selected payment method: ${event.paymentMethodId}');
     }
   }
@@ -73,7 +81,9 @@ class CoinPurchaseBloc extends Bloc<CoinPurchaseEvent, CoinPurchaseState> {
   ) async {
     try {
       emit(const CoinPurchaseLoading(message: 'Processing payment...'));
-      _logger.d('Processing coin purchase: ${event.coins} coins for \$${event.price}');
+      _logger.d(
+        'Processing coin purchase: ${event.coins} coins for \$${event.price}',
+      );
 
       String? paymentMethodId;
 
@@ -87,9 +97,12 @@ class CoinPurchaseBloc extends Bloc<CoinPurchaseEvent, CoinPurchaseState> {
       if (paymentMethodId == null) {
         final paymentMethods = await _paymentService.getUserPaymentMethods();
         if (paymentMethods.isEmpty) {
-          emit(const CoinPurchaseError(
-            message: 'No payment method available. Please add a payment method first.',
-          ));
+          emit(
+            const CoinPurchaseError(
+              message:
+                  'No payment method available. Please add a payment method first.',
+            ),
+          );
           return;
         }
         paymentMethodId = paymentMethods.first['id'] as String;
@@ -105,31 +118,38 @@ class CoinPurchaseBloc extends Bloc<CoinPurchaseEvent, CoinPurchaseState> {
         // Get updated balance
         final balance = await _premiumService.getCoinBalance();
 
-        emit(CoinPurchaseSuccess(
-          coinsAdded: event.coins,
-          newBalance: balance?.totalCoins ?? 0,
-          transactionId: result.transactionId,
-        ));
+        emit(
+          CoinPurchaseSuccess(
+            coinsAdded: event.coins,
+            newBalance: balance?.totalCoins ?? 0,
+            transactionId: result.transactionId,
+          ),
+        );
 
         _logger.i('Coin purchase successful: ${event.coins} coins added');
       } else {
-        emit(const CoinPurchaseError(
-          message: 'Purchase failed. Please try again.',
-        ));
+        emit(
+          const CoinPurchaseError(
+            message: 'Purchase failed. Please try again.',
+          ),
+        );
       }
     } catch (e) {
       _logger.e('Coin purchase failed: $e');
 
       // Check for specific error types
       final errorMessage = e.toString();
-      final isInsufficientFunds = errorMessage.toLowerCase().contains('insufficient') ||
+      final isInsufficientFunds =
+          errorMessage.toLowerCase().contains('insufficient') ||
           errorMessage.toLowerCase().contains('declined') ||
           errorMessage.toLowerCase().contains('payment failed');
 
-      emit(CoinPurchaseError(
-        message: _parseErrorMessage(errorMessage),
-        isInsufficientFunds: isInsufficientFunds,
-      ));
+      emit(
+        CoinPurchaseError(
+          message: _parseErrorMessage(errorMessage),
+          isInsufficientFunds: isInsufficientFunds,
+        ),
+      );
     }
   }
 

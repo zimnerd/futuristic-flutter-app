@@ -56,7 +56,7 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
     Future.doWhile(() async {
       await Future.delayed(const Duration(seconds: 1));
       if (!mounted) return false;
-      
+
       setState(() {
         _remainingSeconds--;
       });
@@ -75,7 +75,7 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
     if (_formKey.currentState?.validate() == true) {
       final code = _otpController.text.trim();
       _logger.i('Verifying OTP code: $code');
-      
+
       context.read<AuthBloc>().add(
         AuthOTPVerifyRequested(
           sessionId: widget.sessionId,
@@ -137,20 +137,11 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
             context.go('/register', extra: {'phoneNumber': state.phoneNumber});
           } else if (state is AuthOTPSent) {
             // OTP resent successfully
-            PulseToast.success(
-              context,
-              message: 'OTP resent successfully',
-            );
+            PulseToast.success(context, message: 'OTP resent successfully');
           } else if (state is AuthOTPVerificationFailed) {
-            PulseToast.error(
-              context,
-              message: state.message,
-            );
+            PulseToast.error(context, message: state.message);
           } else if (state is AuthError) {
-            PulseToast.error(
-              context,
-              message: state.message,
-            );
+            PulseToast.error(context, message: state.message);
           }
         },
         child: SafeArea(
@@ -167,20 +158,16 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
                 const SizedBox(height: 40),
 
                 // Icon
-                const Icon(
-                  Icons.message,
-                  size: 80,
-                  color: PulseColors.primary,
-                ),
+                const Icon(Icons.message, size: 80, color: PulseColors.primary),
                 const SizedBox(height: 24),
 
                 // Title
                 Text(
                   'Verify Your Number',
                   style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: PulseColors.onSurface,
-                      ),
+                    fontWeight: FontWeight.bold,
+                    color: PulseColors.onSurface,
+                  ),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 16),
@@ -189,28 +176,29 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
                 Text(
                   'We sent a verification code to',
                   style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        color: PulseColors.onSurfaceVariant,
-                      ),
+                    color: PulseColors.onSurfaceVariant,
+                  ),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 8),
                 Text(
                   widget.phoneNumber,
                   style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        color: PulseColors.primary,
-                        fontWeight: FontWeight.w600,
-                      ),
+                    color: PulseColors.primary,
+                    fontWeight: FontWeight.w600,
+                  ),
                   textAlign: TextAlign.center,
                 ),
-                
-                if (widget.deliveryMethods != null && widget.deliveryMethods!.isNotEmpty) ...[
+
+                if (widget.deliveryMethods != null &&
+                    widget.deliveryMethods!.isNotEmpty) ...[
                   const SizedBox(height: 8),
                   Text(
                     'via ${widget.deliveryMethods!.join(", ").toUpperCase()}',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: PulseColors.onSurfaceVariant,
-                          fontStyle: FontStyle.italic,
-                        ),
+                      color: PulseColors.onSurfaceVariant,
+                      fontStyle: FontStyle.italic,
+                    ),
                     textAlign: TextAlign.center,
                   ),
                 ],
@@ -237,14 +225,16 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
                         decoration: InputDecoration(
                           hintText: '• • • •',
                           hintStyle: TextStyle(
-                            color: PulseColors.onSurfaceVariant.withValues(alpha: 0.3),
+                            color: PulseColors.onSurfaceVariant.withValues(
+                              alpha: 0.3,
+                            ),
                             letterSpacing: 16,
                           ),
                           counterText: '',
                         ),
                       ),
                       const SizedBox(height: 32),
-                      
+
                       // Extra space for keyboard
                       const SizedBox(height: 80),
 
@@ -265,8 +255,9 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
                                 width: 20,
                                 child: CircularProgressIndicator(
                                   strokeWidth: 2,
-                                  valueColor:
-                                      AlwaysStoppedAnimation<Color>(Colors.white),
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    Colors.white,
+                                  ),
                                 ),
                               )
                             : const Text(
@@ -286,9 +277,8 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
                         children: [
                           Text(
                             "Didn't receive the code? ",
-                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                  color: PulseColors.onSurfaceVariant,
-                                ),
+                            style: Theme.of(context).textTheme.bodyMedium
+                                ?.copyWith(color: PulseColors.onSurfaceVariant),
                           ),
                           TextButton(
                             onPressed: _canResend ? _handleResend : null,

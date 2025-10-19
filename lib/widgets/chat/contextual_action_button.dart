@@ -44,11 +44,7 @@ class ContextualActionButton extends StatelessWidget {
                   ),
                 )
               else
-                Icon(
-                  icon,
-                  size: 14,
-                  color: textColor ?? PulseColors.primary,
-                ),
+                Icon(icon, size: 14, color: textColor ?? PulseColors.primary),
               const SizedBox(width: 4),
               Text(
                 label,

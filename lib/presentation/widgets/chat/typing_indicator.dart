@@ -6,10 +6,7 @@ import '../../theme/theme_extensions.dart';
 class TypingIndicator extends StatefulWidget {
   final String? userName;
 
-  const TypingIndicator({
-    super.key,
-    this.userName,
-  });
+  const TypingIndicator({super.key, this.userName});
 
   @override
   State<TypingIndicator> createState() => _TypingIndicatorState();
@@ -74,7 +71,7 @@ class _TypingIndicatorState extends State<TypingIndicator>
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  widget.userName != null 
+                  widget.userName != null
                       ? '${widget.userName} is typing'
                       : 'Typing',
                   style: TextStyle(
@@ -92,7 +89,7 @@ class _TypingIndicatorState extends State<TypingIndicator>
                         final delay = index * 0.2;
                         final animationValue = (_animation.value - delay) % 1.0;
                         final opacity = animationValue > 0.5 ? 1.0 : 0.3;
-                        
+
                         return Container(
                           margin: const EdgeInsets.symmetric(horizontal: 1),
                           child: Opacity(

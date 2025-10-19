@@ -102,7 +102,13 @@ class CreateSpeedDatingEvent extends SpeedDatingEvent {
   });
 
   @override
-  List<Object> get props => [title, description, scheduledDate, maxParticipants, preferences];
+  List<Object> get props => [
+    title,
+    description,
+    scheduledDate,
+    maxParticipants,
+    preferences,
+  ];
 }
 
 class LoadSpeedDatingHistory extends SpeedDatingEvent {}

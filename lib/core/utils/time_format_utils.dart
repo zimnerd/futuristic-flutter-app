@@ -4,7 +4,7 @@ library;
 /// Format last active time as "Active Xm/h/d ago" or "Active last week/month"
 String formatLastActive(DateTime? lastActive) {
   if (lastActive == null) return 'Active recently';
-  
+
   final now = DateTime.now();
   final difference = now.difference(lastActive);
 

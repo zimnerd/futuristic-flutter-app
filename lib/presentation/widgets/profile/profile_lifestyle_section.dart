@@ -69,16 +69,13 @@ class ProfileLifestyleSection extends StatelessWidget {
     final borderColor = isDark
         ? Colors.white.withValues(alpha: 0.1)
         : Colors.grey.withValues(alpha: 0.2);
-    
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: containerColor,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: borderColor,
-          width: 1,
-        ),
+        border: Border.all(color: borderColor, width: 1),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -114,10 +111,7 @@ class ProfileLifestyleSection extends StatelessWidget {
                     const SizedBox(height: 4),
                     Text(
                       subtitle,
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: subtitleColor,
-                      ),
+                      style: TextStyle(fontSize: 14, color: subtitleColor),
                     ),
                   ],
                 ),
@@ -150,9 +144,7 @@ class ProfileLifestyleSection extends StatelessWidget {
                         : containerColor,
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                      color: isSelected
-                          ? PulseColors.primary
-                          : borderColor,
+                      color: isSelected ? PulseColors.primary : borderColor,
                       width: isSelected ? 2 : 1,
                     ),
                   ),

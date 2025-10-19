@@ -14,11 +14,13 @@ class SavedPaymentMethodsScreen extends StatefulWidget {
   const SavedPaymentMethodsScreen({super.key});
 
   @override
-  State<SavedPaymentMethodsScreen> createState() => _SavedPaymentMethodsScreenState();
+  State<SavedPaymentMethodsScreen> createState() =>
+      _SavedPaymentMethodsScreenState();
 }
 
 class _SavedPaymentMethodsScreenState extends State<SavedPaymentMethodsScreen> {
-  final SavedPaymentMethodsService _service = SavedPaymentMethodsService.instance;
+  final SavedPaymentMethodsService _service =
+      SavedPaymentMethodsService.instance;
   List<SavedPaymentMethod> _savedMethods = [];
   bool _isLoading = true;
   String? _error;
@@ -56,71 +58,65 @@ class _SavedPaymentMethodsScreenState extends State<SavedPaymentMethodsScreen> {
     try {
       final success = await _service.deletePaymentMethod(method.id);
       if (success && mounted) {
-        PulseToast.success(
-          context,
-          message: 'Payment method deleted',
-        );
+        PulseToast.success(context, message: 'Payment method deleted');
         await _loadSavedMethods();
       } else {
         throw Exception('Failed to delete payment method');
       }
     } catch (e) {
       if (mounted) {
-        PulseToast.error(
-          context,
-          message: 'Error deleting payment method: $e',
-        );
+        PulseToast.error(context, message: 'Error deleting payment method: $e');
       }
     }
   }
 
   Future<bool> _showDeleteConfirmation(SavedPaymentMethod method) async {
     return await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: AppColors.background,
-        title: Text(
-          'Delete Payment Method',
-          style: AppTextStyles.heading3,
-        ),
-        content: Text(
-          'Are you sure you want to delete ${method.displayName}?',
-          style: AppTextStyles.bodyMedium,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text(
-              'Cancel',
-              style: AppTextStyles.labelLarge.copyWith(color: AppColors.textSecondary),
+          context: context,
+          builder: (context) => AlertDialog(
+            backgroundColor: AppColors.background,
+            title: Text('Delete Payment Method', style: AppTextStyles.heading3),
+            content: Text(
+              'Are you sure you want to delete ${method.displayName}?',
+              style: AppTextStyles.bodyMedium,
             ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: Text(
+                  'Cancel',
+                  style: AppTextStyles.labelLarge.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                child: Text(
+                  'Delete',
+                  style: AppTextStyles.labelLarge.copyWith(
+                    color: AppColors.error,
+                  ),
+                ),
+              ),
+            ],
           ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: Text(
-              'Delete',
-              style: AppTextStyles.labelLarge.copyWith(color: AppColors.error),
-            ),
-          ),
-        ],
-      ),
-    ) ?? false;
+        ) ??
+        false;
   }
 
   Future<void> _setAsDefault(SavedPaymentMethod method) async {
     try {
       final success = await _service.setDefaultPaymentMethod(method.id);
       if (success && mounted) {
-        PulseToast.success(context, message: 'Default payment method updated',
-        );
+        PulseToast.success(context, message: 'Default payment method updated');
         await _loadSavedMethods();
       } else {
         throw Exception('Failed to set default payment method');
       }
     } catch (e) {
       if (mounted) {
-        PulseToast.error(context, message: 'Error updating default method: $e',
-        );
+        PulseToast.error(context, message: 'Error updating default method: $e');
       }
     }
   }
@@ -138,8 +134,7 @@ class _SavedPaymentMethodsScreenState extends State<SavedPaymentMethodsScreen> {
           nickname: result,
         );
         if (success && mounted) {
-          PulseToast.success(context, message: 'Payment method updated',
-          );
+          PulseToast.success(context, message: 'Payment method updated');
           await _loadSavedMethods();
         } else {
           throw Exception('Failed to update payment method');
@@ -157,9 +152,7 @@ class _SavedPaymentMethodsScreenState extends State<SavedPaymentMethodsScreen> {
 
   Future<void> _addNewPaymentMethod() async {
     final result = await Navigator.of(context).push<bool>(
-      MaterialPageRoute(
-        builder: (context) => const AddPaymentMethodScreen(),
-      ),
+      MaterialPageRoute(builder: (context) => const AddPaymentMethodScreen()),
     );
 
     if (result == true) {
@@ -178,10 +171,7 @@ class _SavedPaymentMethodsScreenState extends State<SavedPaymentMethodsScreen> {
           icon: Icon(Icons.arrow_back, color: AppColors.textPrimary),
           onPressed: () => Navigator.of(context).pop(),
         ),
-        title: Text(
-          'Payment Methods',
-          style: AppTextStyles.heading2,
-        ),
+        title: Text('Payment Methods', style: AppTextStyles.heading2),
         actions: [
           IconButton(
             icon: Icon(Icons.add, color: AppColors.primary),
@@ -216,11 +206,7 @@ class _SavedPaymentMethodsScreenState extends State<SavedPaymentMethodsScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.error_outline,
-              size: 64,
-              color: AppColors.error,
-            ),
+            Icon(Icons.error_outline, size: 64, color: AppColors.error),
             const SizedBox(height: 16),
             Text(
               'Error Loading Payment Methods',
@@ -230,14 +216,13 @@ class _SavedPaymentMethodsScreenState extends State<SavedPaymentMethodsScreen> {
             const SizedBox(height: 8),
             Text(
               _error!,
-              style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary),
+              style: AppTextStyles.bodyMedium.copyWith(
+                color: AppColors.textSecondary,
+              ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),
-            AppButton(
-              text: 'Try Again',
-              onPressed: _loadSavedMethods,
-            ),
+            AppButton(text: 'Try Again', onPressed: _loadSavedMethods),
           ],
         ),
       ),
@@ -265,7 +250,9 @@ class _SavedPaymentMethodsScreenState extends State<SavedPaymentMethodsScreen> {
             const SizedBox(height: 8),
             Text(
               'Add a payment method to make purchases faster and more convenient.',
-              style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary),
+              style: AppTextStyles.bodyMedium.copyWith(
+                color: AppColors.textSecondary,
+              ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),
@@ -309,7 +296,8 @@ class _EditPaymentMethodDialog extends StatefulWidget {
   const _EditPaymentMethodDialog({required this.method});
 
   @override
-  State<_EditPaymentMethodDialog> createState() => _EditPaymentMethodDialogState();
+  State<_EditPaymentMethodDialog> createState() =>
+      _EditPaymentMethodDialogState();
 }
 
 class _EditPaymentMethodDialogState extends State<_EditPaymentMethodDialog> {
@@ -331,10 +319,7 @@ class _EditPaymentMethodDialogState extends State<_EditPaymentMethodDialog> {
   Widget build(BuildContext context) {
     return AlertDialog(
       backgroundColor: AppColors.background,
-      title: Text(
-        'Edit Payment Method',
-        style: AppTextStyles.heading3,
-      ),
+      title: Text('Edit Payment Method', style: AppTextStyles.heading3),
       contentPadding: EdgeInsets.only(
         left: 24,
         right: 24,
@@ -346,7 +331,9 @@ class _EditPaymentMethodDialogState extends State<_EditPaymentMethodDialog> {
         children: [
           Text(
             widget.method.maskedCardNumber,
-            style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary),
+            style: AppTextStyles.bodyMedium.copyWith(
+              color: AppColors.textSecondary,
+            ),
           ),
           const SizedBox(height: 16),
           AppTextField(
@@ -361,7 +348,9 @@ class _EditPaymentMethodDialogState extends State<_EditPaymentMethodDialog> {
           onPressed: () => Navigator.of(context).pop(),
           child: Text(
             'Cancel',
-            style: AppTextStyles.labelLarge.copyWith(color: AppColors.textSecondary),
+            style: AppTextStyles.labelLarge.copyWith(
+              color: AppColors.textSecondary,
+            ),
           ),
         ),
         TextButton(

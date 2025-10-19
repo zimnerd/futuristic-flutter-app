@@ -60,7 +60,7 @@ class ProfileRelationshipGoalsSection extends StatelessWidget {
 
   void _toggleGoal(String goalValue) {
     final updatedGoals = List<String>.from(selectedGoals);
-    
+
     if (updatedGoals.contains(goalValue)) {
       // Remove if already selected
       updatedGoals.remove(goalValue);
@@ -70,7 +70,7 @@ class ProfileRelationshipGoalsSection extends StatelessWidget {
         updatedGoals.add(goalValue);
       }
     }
-    
+
     onChanged(updatedGoals);
   }
 
@@ -86,16 +86,13 @@ class ProfileRelationshipGoalsSection extends StatelessWidget {
     final textColor =
         Theme.of(context).textTheme.bodyLarge?.color ??
         (isDark ? Colors.white : Colors.black87);
-    
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: containerColor,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: borderColor,
-          width: 1,
-        ),
+        border: Border.all(color: borderColor, width: 1),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -138,7 +135,9 @@ class ProfileRelationshipGoalsSection extends StatelessWidget {
                               vertical: 2,
                             ),
                             decoration: BoxDecoration(
-                              color: PulseColors.secondary.withValues(alpha: 0.2),
+                              color: PulseColors.secondary.withValues(
+                                alpha: 0.2,
+                              ),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Text(
@@ -174,13 +173,16 @@ class ProfileRelationshipGoalsSection extends StatelessWidget {
             runSpacing: 12,
             children: goalOptions.map((option) {
               final isSelected = selectedGoals.contains(option['value']);
-              final canSelect = maxSelections == null || 
-                  selectedGoals.length < maxSelections! || 
+              final canSelect =
+                  maxSelections == null ||
+                  selectedGoals.length < maxSelections! ||
                   isSelected;
               final isDisabled = !canSelect;
 
               return InkWell(
-                onTap: isDisabled ? null : () => _toggleGoal(option['value'] as String),
+                onTap: isDisabled
+                    ? null
+                    : () => _toggleGoal(option['value'] as String),
                 borderRadius: BorderRadius.circular(12),
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 200),
@@ -218,8 +220,8 @@ class ProfileRelationshipGoalsSection extends StatelessWidget {
                         color: isSelected
                             ? PulseColors.secondary
                             : isDisabled
-                                ? textColor.withValues(alpha: 0.3)
-                                : textColor.withValues(alpha: 0.7),
+                            ? textColor.withValues(alpha: 0.3)
+                            : textColor.withValues(alpha: 0.7),
                         size: 20,
                       ),
                       const SizedBox(width: 8),
@@ -234,8 +236,8 @@ class ProfileRelationshipGoalsSection extends StatelessWidget {
                               color: isSelected
                                   ? (isDark ? Colors.white : Colors.black87)
                                   : isDisabled
-                                      ? textColor.withValues(alpha: 0.4)
-                                      : textColor,
+                                  ? textColor.withValues(alpha: 0.4)
+                                  : textColor,
                             ),
                           ),
                           Text(
@@ -245,8 +247,8 @@ class ProfileRelationshipGoalsSection extends StatelessWidget {
                               color: isSelected
                                   ? textColor.withValues(alpha: 0.7)
                                   : isDisabled
-                                      ? textColor.withValues(alpha: 0.3)
-                                      : textColor.withValues(alpha: 0.6),
+                                  ? textColor.withValues(alpha: 0.3)
+                                  : textColor.withValues(alpha: 0.6),
                             ),
                           ),
                         ],
@@ -285,7 +287,8 @@ class ProfileRelationshipGoalsSection extends StatelessWidget {
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      maxSelections != null && selectedGoals.length >= maxSelections!
+                      maxSelections != null &&
+                              selectedGoals.length >= maxSelections!
                           ? 'Maximum selections reached. Tap to deselect.'
                           : 'Being clear about your goals helps find the right match',
                       style: TextStyle(

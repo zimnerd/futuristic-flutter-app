@@ -74,10 +74,10 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
   // Temp upload tracking for PhotoManagerService integration
   final List<String> _tempPhotoUrls = [];
   final Set<String> _photosMarkedForDeletion = {};
-  
+
   // Flag to track if we've shown initial toast (prevent toasts on page load)
   bool _hasShownInitialToast = false;
-  
+
   // Flag to prevent infinite reload loops
   bool _isReloading = false;
 
@@ -114,7 +114,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
         profileBloc.add(ClearUploadProgress(tempId: tempId));
       }
     });
-    
+
     _tabController.dispose();
     _pageController.dispose();
     _nameController.dispose();
@@ -136,19 +136,19 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
         profile.company ?? ''; // Company not in backend schema
     _schoolController.text = profile.education ?? profile.school ?? '';
     _selectedInterests = List.from(profile.interests);
-    
+
     // Normalize gender from backend format (MALE/FEMALE) to UI format (Man/Woman)
     _selectedGender = _normalizeGender(profile.gender) ?? 'Woman';
     // Load gender preference from showMe array (e.g., ['MEN'] -> 'Men')
     _selectedPreference = _normalizeShowMe(profile.showMe);
     _photos = List.from(profile.photos);
-    
+
     // Populate new profile fields with enum mapping
     _selectedLifestyle = profile.lifestyleChoice;
     _selectedRelationshipGoals = List.from(profile.relationshipGoals);
     _selectedHeight = profile.height; // Use real data only
     _selectedReligion = profile.religion;
-    
+
     // Map backend enum values to UI labels
     _selectedPolitics = ProfilePhysicalAttributesSection.mapPoliticsFromBackend(
       profile.politics,
@@ -162,15 +162,15 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
     _selectedExercise = ProfileLifestyleChoicesSection.mapExerciseFromBackend(
       profile.exercise,
     );
-    _selectedDrugs = ProfileLifestyleChoicesSection.mapDrugsFromBackend(
-      profile.drugs,
-    ) ?? 'Prefer not to say';
+    _selectedDrugs =
+        ProfileLifestyleChoicesSection.mapDrugsFromBackend(profile.drugs) ??
+        'Prefer not to say';
     _selectedChildren = ProfileLifestyleChoicesSection.mapChildrenFromBackend(
       profile.children,
     );
-    
+
     _selectedLanguages = List.from(profile.languages);
-    
+
     // Populate privacy settings from profile - all 8 backend fields
     logger.i(
       '🔍🔍🔍 CRITICAL DEBUG - BEFORE POPULATING PRIVACY SETTINGS 🔍🔍🔍',
@@ -187,7 +187,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
     logger.i('  profile.incognitoMode = ${profile.incognitoMode}');
     logger.i('  profile.whoCanMessageMe = ${profile.whoCanMessageMe}');
     logger.i('  profile.whoCanSeeMyProfile = ${profile.whoCanSeeMyProfile}');
-    
+
     _privacySettings = {
       'showAge': profile.showAge ?? true,
       'showDistance': profile.showDistance ?? true,
@@ -198,17 +198,17 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
       'whoCanMessageMe': profile.whoCanMessageMe ?? 'everyone',
       'whoCanSeeMyProfile': profile.whoCanSeeMyProfile ?? 'everyone',
     };
-    
+
     logger.i(
       '🔍 [_populateFields] readReceipts from profile: ${profile.readReceipts}',
     );
     logger.i(
       '🔍 [_populateFields] readReceipts in _privacySettings: ${_privacySettings['readReceipts']}',
     );
-    
+
     _currentProfile = profile;
   }
-  
+
   /// Normalize gender from backend format to UI format
   String? _normalizeGender(String? backendGender) {
     if (backendGender == null) return null;
@@ -270,7 +270,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
   void _handleDeletePhoto(ProfilePhoto photo) {
     final photoUrl = photo.url;
     final photoId = photo.id;
-    
+
     // Check if this is a temp photo (not yet saved)
     if (_tempPhotoUrls.contains(photoUrl)) {
       // Remove from temp list and local photos
@@ -286,11 +286,11 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
         _photosMarkedForDeletion.add(photoUrl);
         _photos.removeWhere((p) => p.url == photoUrl);
       });
-      
+
       // Clear cache for this specific photo immediately
       logger.i('🧹 Clearing cache for deleted photo: $photoUrl');
       CachedNetworkImage.evictFromCache(photoUrl);
-      
+
       // Dispatch DeletePhoto event with media ID for backend deletion
       context.read<ProfileBloc>().add(DeletePhoto(photoId: photoId));
       logger.i(
@@ -360,7 +360,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
           duration: const Duration(seconds: 1),
         );
       }
-      
+
       // Wait a bit before allowing another reload
       await Future.delayed(const Duration(milliseconds: 1000));
     } finally {
@@ -420,25 +420,30 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
   UserProfile _buildPreviewProfile() {
     return UserProfile(
       id: _currentProfile?.id ?? 'preview',
-      name: _nameController.text.trim().isEmpty ? 'Your Name' : _nameController.text.trim(),
-      bio: _bioController.text.trim().isEmpty ? 'Your bio will appear here...' : _bioController.text.trim(),
+      name: _nameController.text.trim().isEmpty
+          ? 'Your Name'
+          : _nameController.text.trim(),
+      bio: _bioController.text.trim().isEmpty
+          ? 'Your bio will appear here...'
+          : _bioController.text.trim(),
       age: _calculateAge(
         _dateOfBirth ?? DateTime.now().subtract(const Duration(days: 365 * 25)),
       ),
       dateOfBirth: _dateOfBirth,
-      photos: _photos.isEmpty ? [
-        ProfilePhoto(
-          id: 'placeholder',
-          url: 'https://via.placeholder.com/400x600/6E3BFF/FFFFFF?text=Add+Photo',
-          order: 0,
-        )
-      ] : _photos,
+      photos: _photos.isEmpty
+          ? [
+              ProfilePhoto(
+                id: 'placeholder',
+                url:
+                    'https://via.placeholder.com/400x600/6E3BFF/FFFFFF?text=Add+Photo',
+                order: 0,
+              ),
+            ]
+          : _photos,
       interests: _selectedInterests,
-      location: _currentProfile?.location ?? UserLocation(
-        latitude: 0.0,
-        longitude: 0.0,
-        city: 'Current City',
-      ),
+      location:
+          _currentProfile?.location ??
+          UserLocation(latitude: 0.0, longitude: 0.0, city: 'Current City'),
       gender: _selectedGender,
       job: _jobController.text.trim(),
       company: _companyController.text.trim(),
@@ -465,7 +470,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
     if (_currentPageIndex < 4) {
       // Save current section before moving to next
       _saveCurrentSection();
-      
+
       _pageController.nextPage(
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
@@ -685,8 +690,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
     logger.i(
       '  Exercise: $_selectedExercise → ${ProfileLifestyleChoicesSection.mapExerciseToBackend(_selectedExercise)}',
     );
-    logger.i('  Drugs: $_selectedDrugs',
-    );
+    logger.i('  Drugs: $_selectedDrugs');
     logger.i(
       '  Children: $_selectedChildren → ${ProfileLifestyleChoicesSection.mapChildrenToBackend(_selectedChildren)}',
     );
@@ -728,9 +732,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
       exercise: ProfileLifestyleChoicesSection.mapExerciseToBackend(
         _selectedExercise,
       ),
-      drugs: ProfileLifestyleChoicesSection.mapDrugsToBackend(
-        _selectedDrugs,
-      ),
+      drugs: ProfileLifestyleChoicesSection.mapDrugsToBackend(_selectedDrugs),
       children: ProfileLifestyleChoicesSection.mapChildrenToBackend(
         _selectedChildren,
       ),
@@ -748,22 +750,22 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
     logger.i('   - _privacySettings map: $_privacySettings');
     logger.i('   - _privacySettings keys: ${_privacySettings.keys.toList()}');
     logger.i('   - _privacySettings empty? ${_privacySettings.isEmpty}');
-    
+
     _privacySettings.forEach((key, value) {
       logger.i('  $key: $value');
     });
 
     logger.i('🚀 About to dispatch UpdatePrivacySettings event...');
-    
+
     // IMPORTANT: Privacy tab ONLY submits privacy settings
     // Does NOT send entire profile - uses dedicated /users/me/privacy endpoint
     // This is the final step that closes the profile editor
-    context.read<ProfileBloc>().add(UpdatePrivacySettings(
-      settings: _privacySettings,
-    ));
-    
+    context.read<ProfileBloc>().add(
+      UpdatePrivacySettings(settings: _privacySettings),
+    );
+
     logger.i('✅ UpdatePrivacySettings event dispatched');
-    
+
     // Mark as final save for navigation after success
     _isFinalSave = true;
   }
@@ -917,22 +919,22 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
           logger.d('   - Profile ID: ${state.profile?.id}');
           logger.d('   - Profile name: ${state.profile?.name}');
           logger.d('   - _currentProfile: ${_currentProfile?.name ?? "null"}');
-          
+
           if (state.status == ProfileStatus.loaded && state.profile != null) {
             logger.i(
               '📝 Calling _populateFields with profile: ${state.profile!.name}',
             );
-            
+
             // Save current tab/page index before refresh
             final currentTabIndex = _tabController.index;
             final currentPageIndex = _currentPageIndex;
-            
+
             // Wrap in setState to trigger UI rebuild for all populated fields (especially DOB)
             setState(() {
               _currentProfile = state.profile;
               _populateFields(state.profile!);
             });
-            
+
             // Restore tab/page position after refresh to keep user on same tab
             if (currentTabIndex != _tabController.index) {
               logger.i('📍 Restoring tab position to index: $currentTabIndex');
@@ -942,13 +944,13 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
                 _currentPageIndex = currentPageIndex;
               });
             }
-            
+
             logger.i(
               '✅ _populateFields completed, _currentProfile: ${_currentProfile?.name}',
             );
             logger.i('📅 DOB after populate: $_dateOfBirth');
           }
-          
+
           // Handle photo upload success/error
           if (state.uploadStatus == ProfileStatus.success) {
             logger.i('📸 Upload status SUCCESS detected');
@@ -956,7 +958,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
             logger.i(
               '📊 BLoC profile photos count: ${state.profile?.photos.length ?? 0}',
             );
-            
+
             if (state.profile != null) {
               logger.i('🔄 Syncing _photos with BLoC state photos');
 
@@ -969,7 +971,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
               // Sync _photos with BLoC state (includes uploads/deletions)
               setState(() {
                 _photos = List.from(state.profile!.photos);
-                
+
                 // Add temp URL to tracking list for new uploads
                 if (wasPhotoAdded && state.profile!.photos.isNotEmpty) {
                   final latestPhoto = state.profile!.photos.last;
@@ -983,11 +985,11 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
 
                 logger.i('✅ Photos synced: ${_photos.length} photos total');
               });
-              
+
               // Clear cache to force fresh images on next render
               logger.i('🧹 Clearing photo cache after photo change');
               _clearPhotoCache();
-              
+
               // Show appropriate toast based on action
               if (_hasShownInitialToast) {
                 if (wasPhotoAdded && _photos.length > previousPhotoCount) {
@@ -1018,18 +1020,16 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
               showDialog: true,
             );
           }
-          
+
           if (state.updateStatus == ProfileStatus.success) {
             // Clear photo cache on ANY successful update to prevent stale images
             logger.i('🧹 Clearing photo cache after successful update');
             _clearPhotoCache();
-            
+
             // Only navigate away on final save, not section saves
             if (_isFinalSave) {
-              logger.i(
-                '🎯 Final profile save successful',
-              );
-              
+              logger.i('🎯 Final profile save successful');
+
               // Privacy tab (index 4) - show success, refresh, but DON'T navigate
               if (_currentPageIndex == 4) {
                 logger.i('🔒 Privacy settings saved - staying on tab');
@@ -1063,7 +1063,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
             } else {
               // Section save successful - just clear cache, no reload needed
               logger.i('✅ Section $_currentPageIndex saved successfully');
-              
+
               // Clear photo cache to ensure fresh images on next render
               // NO RELOAD - BLoC already updated the state after the save
               logger.i('🧹 Clearing photo cache after section save');
@@ -1097,18 +1097,16 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
           logger.d(
             '   - _currentProfile: ${_currentProfile != null ? _currentProfile!.name : "null"}',
           );
-          
+
           if (state.status == ProfileStatus.loading) {
             logger.d('⏳ Showing loading indicator');
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
+            return const Center(child: CircularProgressIndicator());
           }
 
           logger.d(
             '🎨 Building profile UI, _currentProfile is: ${_currentProfile != null ? "NOT NULL" : "NULL"}',
           );
-          
+
           return Column(
             children: [
               // Profile completion card (collapsible)
@@ -1237,7 +1235,8 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
               'Name',
               _nameController,
               'Enter your name',
-              validator: (value) => value?.isEmpty == true ? 'Name is required' : null,
+              validator: (value) =>
+                  value?.isEmpty == true ? 'Name is required' : null,
             ),
             const SizedBox(height: 20),
             // Date of Birth Picker
@@ -1323,11 +1322,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
               maxLength: 500,
             ),
             const SizedBox(height: 20),
-            _buildFormField(
-              'Job Title',
-              _jobController,
-              'What do you do?',
-            ),
+            _buildFormField('Job Title', _jobController, 'What do you do?'),
             const SizedBox(height: 20),
             _buildFormField(
               'Company',
@@ -1372,7 +1367,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Photos auto-upload immediately - no pending changes banner needed
-          
+
           // Photo grid with BLoC state for upload progress
           BlocBuilder<ProfileBloc, ProfileState>(
             builder: (context, state) {
@@ -1667,10 +1662,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
             ),
           ),
           items: options.map((option) {
-            return DropdownMenuItem(
-              value: option,
-              child: Text(option),
-            );
+            return DropdownMenuItem(value: option, child: Text(option));
           }).toList(),
         ),
       ],

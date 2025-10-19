@@ -10,14 +10,13 @@ class AiCompanionBloc extends Bloc<AiCompanionEvent, AiCompanionState> {
   final AiCompanionService _aiCompanionService;
   final Logger _logger = Logger();
   static const String _tag = 'AiCompanionBloc';
-  
+
   StreamSubscription<CompanionMessage>? _messageSubscription;
   StreamSubscription<Map<String, dynamic>>? _errorSubscription;
 
-  AiCompanionBloc({
-    required AiCompanionService aiCompanionService,
-  })  : _aiCompanionService = aiCompanionService,
-        super(AiCompanionInitial()) {
+  AiCompanionBloc({required AiCompanionService aiCompanionService})
+    : _aiCompanionService = aiCompanionService,
+      super(AiCompanionInitial()) {
     on<LoadUserCompanions>(_onLoadUserCompanions);
     on<CreateCompanion>(_onCreateCompanion);
     on<UpdateCompanion>(_onUpdateCompanion);
@@ -69,7 +68,11 @@ class AiCompanionBloc extends Bloc<AiCompanionEvent, AiCompanionState> {
       emit(AiCompanionLoaded(companions: companions));
       _logger.d('$_tag: Loaded ${companions.length} companions');
     } catch (e, stackTrace) {
-      _logger.e('$_tag: Failed to load companions', error: e, stackTrace: stackTrace);
+      _logger.e(
+        '$_tag: Failed to load companions',
+        error: e,
+        stackTrace: stackTrace,
+      );
       emit(AiCompanionError('Failed to load companions: ${e.toString()}'));
     }
   }
@@ -96,14 +99,18 @@ class AiCompanionBloc extends Bloc<AiCompanionEvent, AiCompanionState> {
       if (companion != null) {
         emit(AiCompanionCreated(companion));
         _logger.d('$_tag: Companion created successfully: ${companion.id}');
-        
+
         // Refresh companions list to get back to loaded state
         add(RefreshCompanionData());
       } else {
         emit(AiCompanionError('Failed to create companion'));
       }
     } catch (e, stackTrace) {
-      _logger.e('$_tag: Failed to create companion', error: e, stackTrace: stackTrace);
+      _logger.e(
+        '$_tag: Failed to create companion',
+        error: e,
+        stackTrace: stackTrace,
+      );
       emit(AiCompanionError('Failed to create companion: ${e.toString()}'));
     }
   }
@@ -126,14 +133,18 @@ class AiCompanionBloc extends Bloc<AiCompanionEvent, AiCompanionState> {
       if (companion != null) {
         emit(AiCompanionUpdated(companion));
         _logger.d('$_tag: Companion updated successfully');
-        
+
         // Refresh companions list
         add(RefreshCompanionData());
       } else {
         emit(AiCompanionError('Failed to update companion'));
       }
     } catch (e, stackTrace) {
-      _logger.e('$_tag: Failed to update companion', error: e, stackTrace: stackTrace);
+      _logger.e(
+        '$_tag: Failed to update companion',
+        error: e,
+        stackTrace: stackTrace,
+      );
       emit(AiCompanionError('Failed to update companion: ${e.toString()}'));
     }
   }
@@ -146,20 +157,26 @@ class AiCompanionBloc extends Bloc<AiCompanionEvent, AiCompanionState> {
       emit(AiCompanionDeleting(event.companionId));
       _logger.d('$_tag: Deleting companion: ${event.companionId}');
 
-      final success = await _aiCompanionService.deleteCompanion(event.companionId);
+      final success = await _aiCompanionService.deleteCompanion(
+        event.companionId,
+      );
 
       if (success) {
         emit(AiCompanionDeleted(event.companionId));
         _logger.d('$_tag: Companion deleted successfully');
-        
+
         // Refresh companions list to get back to loaded state
         add(RefreshCompanionData());
       } else {
         emit(AiCompanionError('Failed to delete companion'));
       }
     } catch (e, stackTrace) {
-      _logger.e('$_tag: Failed to delete companion', error: e, stackTrace: stackTrace);
-      
+      _logger.e(
+        '$_tag: Failed to delete companion',
+        error: e,
+        stackTrace: stackTrace,
+      );
+
       // Provide user-friendly error messages
       String errorMessage = 'Failed to delete companion';
       if (e.toString().contains('Active conversations exist')) {
@@ -268,7 +285,7 @@ class AiCompanionBloc extends Bloc<AiCompanionEvent, AiCompanionState> {
     // Update the current state with the new message
     if (state is AiCompanionLoaded) {
       final currentState = state as AiCompanionLoaded;
-      
+
       // Check if message already exists to avoid duplicates
       final existingMessageIndex = currentState.conversationHistory.indexWhere(
         (msg) => msg.id == event.message.id,
@@ -289,7 +306,7 @@ class AiCompanionBloc extends Bloc<AiCompanionEvent, AiCompanionState> {
             : event.message;
         updatedMessages = [...currentState.conversationHistory, newMessage];
       }
-      
+
       emit(currentState.copyWith(conversationHistory: updatedMessages));
     } else {
       // Initialize state with this message if no state exists
@@ -362,7 +379,7 @@ class AiCompanionBloc extends Bloc<AiCompanionEvent, AiCompanionState> {
       if (result != null) {
         emit(AiCompanionMessageSent(result, null));
         _logger.d('$_tag: Audio message sent successfully');
-        
+
         // Refresh conversation history
         add(
           LoadConversationHistory(
@@ -389,7 +406,9 @@ class AiCompanionBloc extends Bloc<AiCompanionEvent, AiCompanionState> {
   ) async {
     try {
       emit(AiCompanionConversationLoading(event.companionId));
-      _logger.d('$_tag: Loading conversation history for: ${event.companionId}');
+      _logger.d(
+        '$_tag: Loading conversation history for: ${event.companionId}',
+      );
 
       final messages = await _aiCompanionService.getConversationHistory(
         companionId: event.companionId,
@@ -407,7 +426,11 @@ class AiCompanionBloc extends Bloc<AiCompanionEvent, AiCompanionState> {
 
       _logger.d('$_tag: Loaded ${messages.length} conversation messages');
     } catch (e, stackTrace) {
-      _logger.e('$_tag: Failed to load conversation history', error: e, stackTrace: stackTrace);
+      _logger.e(
+        '$_tag: Failed to load conversation history',
+        error: e,
+        stackTrace: stackTrace,
+      );
       emit(AiCompanionError('Failed to load conversation: ${e.toString()}'));
     }
   }
@@ -428,14 +451,18 @@ class AiCompanionBloc extends Bloc<AiCompanionEvent, AiCompanionState> {
       if (success) {
         emit(AiCompanionSettingsUpdated(event.companionId, event.settings));
         _logger.d('$_tag: Settings updated successfully');
-        
+
         // Refresh companions list
         add(RefreshCompanionData());
       } else {
         emit(AiCompanionError('Failed to update settings'));
       }
     } catch (e, stackTrace) {
-      _logger.e('$_tag: Failed to update settings', error: e, stackTrace: stackTrace);
+      _logger.e(
+        '$_tag: Failed to update settings',
+        error: e,
+        stackTrace: stackTrace,
+      );
       emit(AiCompanionError('Failed to update settings: ${e.toString()}'));
     }
   }
@@ -448,23 +475,29 @@ class AiCompanionBloc extends Bloc<AiCompanionEvent, AiCompanionState> {
       emit(AiCompanionAnalyticsLoading(event.companionId));
       _logger.d('$_tag: Loading analytics for companion: ${event.companionId}');
 
-      final analytics = await _aiCompanionService.getCompanionAnalytics(event.companionId);
+      final analytics = await _aiCompanionService.getCompanionAnalytics(
+        event.companionId,
+      );
 
       if (analytics != null) {
         emit(AiCompanionAnalyticsLoaded(analytics));
-        
+
         // Also update the main state if loaded
         if (state is AiCompanionLoaded) {
           final currentState = state as AiCompanionLoaded;
           emit(currentState.copyWith(analytics: analytics));
         }
-        
+
         _logger.d('$_tag: Analytics loaded successfully');
       } else {
         emit(AiCompanionError('Failed to load analytics'));
       }
     } catch (e, stackTrace) {
-      _logger.e('$_tag: Failed to load analytics', error: e, stackTrace: stackTrace);
+      _logger.e(
+        '$_tag: Failed to load analytics',
+        error: e,
+        stackTrace: stackTrace,
+      );
       emit(AiCompanionError('Failed to load analytics: ${e.toString()}'));
     }
   }
@@ -481,7 +514,11 @@ class AiCompanionBloc extends Bloc<AiCompanionEvent, AiCompanionState> {
       emit(AiCompanionSuggestionGenerated(suggestion));
       _logger.d('$_tag: Redirected to regular messaging');
     } catch (e, stackTrace) {
-      _logger.e('$_tag: Failed to generate suggestion', error: e, stackTrace: stackTrace);
+      _logger.e(
+        '$_tag: Failed to generate suggestion',
+        error: e,
+        stackTrace: stackTrace,
+      );
       emit(AiCompanionError('Failed to generate suggestion: ${e.toString()}'));
     }
   }

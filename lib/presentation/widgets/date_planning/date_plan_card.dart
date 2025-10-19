@@ -88,19 +88,14 @@ class DatePlanCard extends StatelessWidget {
                     ),
                 ],
               ),
-              
+
               if (description.isNotEmpty) ...[
                 const SizedBox(height: 8),
-                Text(
-                  description,
-                  style: TextStyle(
-                    color: Colors.grey[600],
-                  ),
-                ),
+                Text(description, style: TextStyle(color: Colors.grey[600])),
               ],
-              
+
               const SizedBox(height: 12),
-              
+
               // Plan details
               Column(
                 children: [
@@ -112,13 +107,13 @@ class DatePlanCard extends StatelessWidget {
                     _buildDetailRow(Icons.attach_money, 'Budget', budget),
                   if (activities.isNotEmpty)
                     _buildDetailRow(
-                      Icons.local_activity, 
-                      'Activities', 
+                      Icons.local_activity,
+                      'Activities',
                       '${activities.length} activities planned',
                     ),
                 ],
               ),
-              
+
               if (showInvitationActions) ...[
                 const SizedBox(height: 16),
                 Row(
@@ -167,10 +162,7 @@ class DatePlanCard extends StatelessWidget {
             ),
           ),
           Expanded(
-            child: Text(
-              value,
-              style: TextStyle(color: Colors.grey[600]),
-            ),
+            child: Text(value, style: TextStyle(color: Colors.grey[600])),
           ),
         ],
       ),

@@ -5,7 +5,7 @@ import '../models/location_models.dart' show LocationCoordinates;
 import 'location_service.dart';
 
 /// Manages location tracking initialization and lifecycle for the app
-/// 
+///
 /// Best practices for dating apps:
 /// - Start tracking immediately after user logs in
 /// - Update location when user moves >1km (privacy + battery optimization)
@@ -13,7 +13,8 @@ import 'location_service.dart';
 /// - Handle permission requests gracefully
 /// - Continue tracking in background (when app is backgrounded)
 class LocationTrackingInitializer {
-  static final LocationTrackingInitializer _instance = LocationTrackingInitializer._internal();
+  static final LocationTrackingInitializer _instance =
+      LocationTrackingInitializer._internal();
   factory LocationTrackingInitializer() => _instance;
   LocationTrackingInitializer._internal();
 
@@ -30,7 +31,10 @@ class LocationTrackingInitializer {
   /// Initialize location tracking with user-friendly permission dialogs (recommended)
   /// Should be called immediately after successful login
   Future<bool> initializeWithDialogs(BuildContext context) async {
-    return await _initializeWithPermissions(showDialogs: true, context: context);
+    return await _initializeWithPermissions(
+      showDialogs: true,
+      context: context,
+    );
   }
 
   /// Internal initialization method
@@ -72,9 +76,8 @@ class LocationTrackingInitializer {
       }
 
       // Get current location immediately
-      final currentLocation = await _locationService.getCurrentLocationCoordinates(
-        accuracy: LocationAccuracyLevel.high,
-      );
+      final currentLocation = await _locationService
+          .getCurrentLocationCoordinates(accuracy: LocationAccuracyLevel.high);
 
       if (currentLocation != null) {
         AppLogger.info(
@@ -95,8 +98,10 @@ class LocationTrackingInitializer {
       _isTracking = true;
 
       AppLogger.info('✅ Location tracking initialized successfully');
-      AppLogger.info('📍 Tracking with 1km update threshold (dating app best practice)');
-      
+      AppLogger.info(
+        '📍 Tracking with 1km update threshold (dating app best practice)',
+      );
+
       return true;
     } catch (e) {
       AppLogger.error('❌ Failed to initialize location tracking: $e');
@@ -177,7 +182,8 @@ class LocationTrackingInitializer {
   bool get isTracking => _isTracking;
 
   /// Get last known location
-  LocationCoordinates? get lastKnownLocation => _locationService.lastKnownLocation;
+  LocationCoordinates? get lastKnownLocation =>
+      _locationService.lastKnownLocation;
 
   /// Check if location services are available
   Future<bool> isLocationAvailable() async {

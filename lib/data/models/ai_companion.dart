@@ -5,7 +5,11 @@ enum CompanionPersonality {
   mentor('Dating Mentor', '🧭', 'Wise and experienced dating coach'),
   friend('Supportive Friend', '💛', 'Encouraging and understanding companion'),
   coach('Conversation Coach', '💪', 'Helps improve dating conversations'),
-  therapist('Relationship Therapist', '🧠', 'Provides emotional support and insights'),
+  therapist(
+    'Relationship Therapist',
+    '🧠',
+    'Provides emotional support and insights',
+  ),
   wingman('Digital Wingman', '😎', 'Fun and confident dating assistant'),
   custom('Custom Companion', '✨', 'Personalized AI companion');
 
@@ -111,7 +115,9 @@ class AICompanion extends Equatable {
       createdAt: DateTime.parse(json['createdAt'] as String),
       lastInteractionAt: DateTime.parse(json['lastInteractionAt'] as String),
       isActive: json['isActive'] as bool? ?? true,
-      learningData: Map<String, dynamic>.from(json['learningData'] as Map? ?? {}),
+      learningData: Map<String, dynamic>.from(
+        json['learningData'] as Map? ?? {},
+      ),
     );
   }
 
@@ -203,24 +209,24 @@ class AICompanion extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        userId,
-        name,
-        personality,
+    id,
+    userId,
+    name,
+    personality,
     gender,
     ageGroup,
-        avatarUrl,
-        description,
+    avatarUrl,
+    description,
     interests,
     voiceSettings,
-        traits,
-        relationshipLevel,
-        conversationCount,
-        createdAt,
-        lastInteractionAt,
-        isActive,
-        learningData,
-      ];
+    traits,
+    relationshipLevel,
+    conversationCount,
+    createdAt,
+    lastInteractionAt,
+    isActive,
+    learningData,
+  ];
 }
 
 /// AI Companion conversation message
@@ -259,7 +265,9 @@ class CompanionMessage extends Equatable {
       content: json['content'] as String,
       isFromCompanion:
           json['isFromCompanion'] ?? !(json['isFromUser'] ?? false),
-      timestamp: DateTime.parse((json['timestamp'] ?? json['sentAt']) as String),
+      timestamp: DateTime.parse(
+        (json['timestamp'] ?? json['sentAt']) as String,
+      ),
       type: MessageType.values.firstWhere(
         (e) => e.name == (json['type'] ?? json['messageType'] ?? 'text'),
         orElse: () => MessageType.text,
@@ -270,7 +278,8 @@ class CompanionMessage extends Equatable {
       ),
       metadata: json['metadata'] as Map<String, dynamic>?,
       sentimentScore: (json['sentimentScore'] as num?)?.toDouble(),
-      suggestedResponses: (json['suggestedResponses'] as List<dynamic>?)
+      suggestedResponses:
+          (json['suggestedResponses'] as List<dynamic>?)
               ?.map((e) => e as String)
               .toList() ??
           [],
@@ -295,18 +304,18 @@ class CompanionMessage extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        companionId,
-        userId,
-        content,
-        isFromCompanion,
-        timestamp,
-        type,
+    id,
+    companionId,
+    userId,
+    content,
+    isFromCompanion,
+    timestamp,
+    type,
     status,
-        metadata,
-        sentimentScore,
-        suggestedResponses,
-      ];
+    metadata,
+    sentimentScore,
+    suggestedResponses,
+  ];
 
   /// Create a copy of this message with updated fields
   CompanionMessage copyWith({
@@ -402,7 +411,8 @@ class CompanionSession extends Equatable {
       messageCount: json['messageCount'] as int? ?? 0,
       sessionTopic: json['sessionTopic'] as String? ?? 'General Chat',
       satisfactionRating: (json['satisfactionRating'] as num?)?.toDouble(),
-      topicsDiscussed: (json['topicsDiscussed'] as List<dynamic>?)
+      topicsDiscussed:
+          (json['topicsDiscussed'] as List<dynamic>?)
               ?.map((e) => e as String)
               .toList() ??
           [],
@@ -433,17 +443,17 @@ class CompanionSession extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        companionId,
-        userId,
-        startTime,
-        endTime,
-        messageCount,
-        sessionTopic,
-        satisfactionRating,
-        topicsDiscussed,
-        insights,
-      ];
+    id,
+    companionId,
+    userId,
+    startTime,
+    endTime,
+    messageCount,
+    sessionTopic,
+    satisfactionRating,
+    topicsDiscussed,
+    insights,
+  ];
 }
 
 /// AI Companion learning progress
@@ -470,9 +480,14 @@ class CompanionLearning extends Equatable {
     return CompanionLearning(
       companionId: json['companionId'] as String,
       userId: json['userId'] as String,
-      userPreferences: Map<String, double>.from(json['userPreferences'] as Map? ?? {}),
-      topicInteractions: Map<String, int>.from(json['topicInteractions'] as Map? ?? {}),
-      learnedInsights: (json['learnedInsights'] as List<dynamic>?)
+      userPreferences: Map<String, double>.from(
+        json['userPreferences'] as Map? ?? {},
+      ),
+      topicInteractions: Map<String, int>.from(
+        json['topicInteractions'] as Map? ?? {},
+      ),
+      learnedInsights:
+          (json['learnedInsights'] as List<dynamic>?)
               ?.map((e) => e as String)
               .toList() ??
           [],
@@ -495,14 +510,14 @@ class CompanionLearning extends Equatable {
 
   @override
   List<Object?> get props => [
-        companionId,
-        userId,
-        userPreferences,
-        topicInteractions,
-        learnedInsights,
-        adaptationScore,
-        lastLearningUpdate,
-      ];
+    companionId,
+    userId,
+    userPreferences,
+    topicInteractions,
+    learnedInsights,
+    adaptationScore,
+    lastLearningUpdate,
+  ];
 }
 
 /// AI Companion appearance settings
@@ -533,7 +548,9 @@ class CompanionAppearance extends Equatable {
       skinTone: json['skinTone'] as String? ?? 'medium',
       clothing: json['clothing'] as String? ?? 'casual',
       accessories: json['accessories'] as String? ?? 'none',
-      customFeatures: Map<String, dynamic>.from(json['customFeatures'] as Map? ?? {}),
+      customFeatures: Map<String, dynamic>.from(
+        json['customFeatures'] as Map? ?? {},
+      ),
     );
   }
 
@@ -571,14 +588,14 @@ class CompanionAppearance extends Equatable {
 
   @override
   List<Object?> get props => [
-        avatarStyle,
-        hairColor,
-        eyeColor,
-        skinTone,
-        clothing,
-        accessories,
-        customFeatures,
-      ];
+    avatarStyle,
+    hairColor,
+    eyeColor,
+    skinTone,
+    clothing,
+    accessories,
+    customFeatures,
+  ];
 }
 
 /// AI Companion analytics data
@@ -610,10 +627,16 @@ class CompanionAnalytics extends Equatable {
       companionId: json['companionId'] as String,
       totalInteractions: json['totalInteractions'] as int? ?? 0,
       totalMessages: json['totalMessages'] as int? ?? 0,
-      averageResponseTime: (json['averageResponseTime'] as num?)?.toDouble() ?? 0.0,
-      userSatisfactionScore: (json['userSatisfactionScore'] as num?)?.toDouble() ?? 0.0,
-      topicFrequency: Map<String, int>.from(json['topicFrequency'] as Map? ?? {}),
-      emotionalTones: Map<String, double>.from(json['emotionalTones'] as Map? ?? {}),
+      averageResponseTime:
+          (json['averageResponseTime'] as num?)?.toDouble() ?? 0.0,
+      userSatisfactionScore:
+          (json['userSatisfactionScore'] as num?)?.toDouble() ?? 0.0,
+      topicFrequency: Map<String, int>.from(
+        json['topicFrequency'] as Map? ?? {},
+      ),
+      emotionalTones: Map<String, double>.from(
+        json['emotionalTones'] as Map? ?? {},
+      ),
       mostUsedFeatures: List<String>.from(json['mostUsedFeatures'] ?? []),
       lastAnalysisDate: DateTime.parse(json['lastAnalysisDate'] as String),
     );
@@ -635,16 +658,16 @@ class CompanionAnalytics extends Equatable {
 
   @override
   List<Object?> get props => [
-        companionId,
-        totalInteractions,
-        totalMessages,
-        averageResponseTime,
-        userSatisfactionScore,
-        topicFrequency,
-        emotionalTones,
-        mostUsedFeatures,
-        lastAnalysisDate,
-      ];
+    companionId,
+    totalInteractions,
+    totalMessages,
+    averageResponseTime,
+    userSatisfactionScore,
+    topicFrequency,
+    emotionalTones,
+    mostUsedFeatures,
+    lastAnalysisDate,
+  ];
 }
 
 /// Feedback types for AI training
@@ -694,10 +717,13 @@ class CompanionSettings extends Equatable {
       creativityLevel: (json['creativityLevel'] as num?)?.toDouble() ?? 0.7,
       enableEmotionalSupport: json['enableEmotionalSupport'] as bool? ?? true,
       enableDatingAdvice: json['enableDatingAdvice'] as bool? ?? true,
-      enableProfileOptimization: json['enableProfileOptimization'] as bool? ?? true,
+      enableProfileOptimization:
+          json['enableProfileOptimization'] as bool? ?? true,
       preferredTopics: List<String>.from(json['preferredTopics'] ?? []),
       avoidedTopics: List<String>.from(json['avoidedTopics'] ?? []),
-      customSettings: Map<String, dynamic>.from(json['customSettings'] as Map? ?? {}),
+      customSettings: Map<String, dynamic>.from(
+        json['customSettings'] as Map? ?? {},
+      ),
     );
   }
 
@@ -736,9 +762,11 @@ class CompanionSettings extends Equatable {
       enableLearning: enableLearning ?? this.enableLearning,
       responseStyle: responseStyle ?? this.responseStyle,
       creativityLevel: creativityLevel ?? this.creativityLevel,
-      enableEmotionalSupport: enableEmotionalSupport ?? this.enableEmotionalSupport,
+      enableEmotionalSupport:
+          enableEmotionalSupport ?? this.enableEmotionalSupport,
       enableDatingAdvice: enableDatingAdvice ?? this.enableDatingAdvice,
-      enableProfileOptimization: enableProfileOptimization ?? this.enableProfileOptimization,
+      enableProfileOptimization:
+          enableProfileOptimization ?? this.enableProfileOptimization,
       preferredTopics: preferredTopics ?? this.preferredTopics,
       avoidedTopics: avoidedTopics ?? this.avoidedTopics,
       customSettings: customSettings ?? this.customSettings,
@@ -747,16 +775,16 @@ class CompanionSettings extends Equatable {
 
   @override
   List<Object?> get props => [
-        companionId,
-        enableNotifications,
-        enableLearning,
-        responseStyle,
-        creativityLevel,
-        enableEmotionalSupport,
-        enableDatingAdvice,
-        enableProfileOptimization,
-        preferredTopics,
-        avoidedTopics,
-        customSettings,
-      ];
+    companionId,
+    enableNotifications,
+    enableLearning,
+    responseStyle,
+    creativityLevel,
+    enableEmotionalSupport,
+    enableDatingAdvice,
+    enableProfileOptimization,
+    preferredTopics,
+    avoidedTopics,
+    customSettings,
+  ];
 }

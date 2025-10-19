@@ -11,11 +11,7 @@ class ProfilePreview extends StatelessWidget {
   final UserProfile profile;
   final VoidCallback? onClose;
 
-  const ProfilePreview({
-    super.key,
-    required this.profile,
-    this.onClose,
-  });
+  const ProfilePreview({super.key, required this.profile, this.onClose});
 
   @override
   Widget build(BuildContext context) {
@@ -78,18 +74,11 @@ class ProfilePreview extends StatelessWidget {
                   // Distance and online status
                   Row(
                     children: [
-                      Icon(
-                        Icons.location_on,
-                        color: Colors.white70,
-                        size: 16,
-                      ),
+                      Icon(Icons.location_on, color: Colors.white70, size: 16),
                       const SizedBox(width: 4),
                       Text(
                         '2 km away', // This would be calculated
-                        style: TextStyle(
-                          color: Colors.white70,
-                          fontSize: 14,
-                        ),
+                        style: TextStyle(color: Colors.white70, fontSize: 14),
                       ),
                       const SizedBox(width: 16),
                       if (profile.isOnline) ...[
@@ -104,10 +93,7 @@ class ProfilePreview extends StatelessWidget {
                         const SizedBox(width: 4),
                         Text(
                           'Online now',
-                          style: TextStyle(
-                            color: Colors.white70,
-                            fontSize: 14,
-                          ),
+                          style: TextStyle(color: Colors.white70, fontSize: 14),
                         ),
                       ],
                     ],
@@ -162,7 +148,10 @@ class ProfilePreview extends StatelessWidget {
             right: 0,
             child: SafeArea(
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
                 child: Row(
                   children: [
                     const Text(
@@ -250,18 +239,11 @@ class ProfilePreview extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.error_outline,
-            color: Colors.white70,
-            size: 48,
-          ),
+          Icon(Icons.error_outline, color: Colors.white70, size: 48),
           const SizedBox(height: 16),
           Text(
             'Failed to load photo',
-            style: TextStyle(
-              color: Colors.white70,
-              fontSize: 16,
-            ),
+            style: TextStyle(color: Colors.white70, fontSize: 16),
           ),
         ],
       ),
@@ -297,11 +279,7 @@ class ProfilePreview extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            icon,
-            color: Colors.white,
-            size: 14,
-          ),
+          Icon(icon, color: Colors.white, size: 14),
           const SizedBox(width: 6),
           Text(
             text,

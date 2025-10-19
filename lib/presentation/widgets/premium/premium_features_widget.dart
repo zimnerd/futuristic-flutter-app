@@ -5,15 +5,12 @@ import '../../theme/pulse_colors.dart';
 class PremiumFeaturesWidget extends StatelessWidget {
   final UserSubscription? subscription;
 
-  const PremiumFeaturesWidget({
-    super.key,
-    this.subscription,
-  });
+  const PremiumFeaturesWidget({super.key, this.subscription});
 
   @override
   Widget build(BuildContext context) {
     final isPremium = subscription?.status == SubscriptionStatus.active;
-    
+
     return Card(
       margin: const EdgeInsets.all(16),
       child: Padding(
@@ -23,25 +20,22 @@ class PremiumFeaturesWidget extends StatelessWidget {
           children: [
             Row(
               children: [
-                Icon(
-                  Icons.star,
-                  color: PulseColors.primary,
-                  size: 28,
-                ),
+                Icon(Icons.star, color: PulseColors.primary, size: 28),
                 const SizedBox(width: 12),
                 Text(
                   'Premium Features',
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
                 ),
               ],
             ),
-            
+
             const SizedBox(height: 16),
-            
-            ...PremiumFeatureType.values.map((feature) => 
-              _buildFeatureItem(context, feature, isPremium)),
+
+            ...PremiumFeatureType.values.map(
+              (feature) => _buildFeatureItem(context, feature, isPremium),
+            ),
           ],
         ),
       ),
@@ -49,22 +43,24 @@ class PremiumFeaturesWidget extends StatelessWidget {
   }
 
   Widget _buildFeatureItem(
-    BuildContext context, 
-    PremiumFeatureType feature, 
+    BuildContext context,
+    PremiumFeatureType feature,
     bool isUnlocked,
   ) {
     final featureInfo = _getFeatureInfo(feature);
-    
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: isUnlocked ? PulseColors.primary.withValues(alpha: 0.3) : Colors.grey[300]!,
+          color: isUnlocked
+              ? PulseColors.primary.withValues(alpha: 0.3)
+              : Colors.grey[300]!,
         ),
-        color: isUnlocked 
-            ? PulseColors.primary.withValues(alpha: 0.05) 
+        color: isUnlocked
+            ? PulseColors.primary.withValues(alpha: 0.05)
             : Colors.grey[50],
       ),
       child: Row(
@@ -72,8 +68,8 @@ class PremiumFeaturesWidget extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: isUnlocked 
-                  ? PulseColors.primary.withValues(alpha: 0.1) 
+              color: isUnlocked
+                  ? PulseColors.primary.withValues(alpha: 0.1)
                   : Colors.grey[200],
               borderRadius: BorderRadius.circular(8),
             ),
@@ -83,9 +79,9 @@ class PremiumFeaturesWidget extends StatelessWidget {
               size: 20,
             ),
           ),
-          
+
           const SizedBox(width: 12),
-          
+
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -108,11 +104,7 @@ class PremiumFeaturesWidget extends StatelessWidget {
                         size: 18,
                       )
                     else
-                      Icon(
-                        Icons.lock,
-                        color: Colors.grey[500],
-                        size: 18,
-                      ),
+                      Icon(Icons.lock, color: Colors.grey[500], size: 18),
                   ],
                 ),
                 const SizedBox(height: 4),

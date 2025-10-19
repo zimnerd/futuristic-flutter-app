@@ -120,7 +120,7 @@ class ProfileForm extends StatelessWidget {
   Widget _buildAboutSection(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final headingColor = isDark ? Colors.white : Colors.black87;
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -147,7 +147,7 @@ class ProfileForm extends StatelessWidget {
   Widget _buildWorkEducationSection(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final headingColor = isDark ? Colors.white : Colors.black87;
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -186,7 +186,7 @@ class ProfileForm extends StatelessWidget {
       builder: (context) {
         final isDark = Theme.of(context).brightness == Brightness.dark;
         final headingColor = isDark ? Colors.white : Colors.black87;
-        
+
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -213,17 +213,37 @@ class ProfileForm extends StatelessWidget {
 
   Widget _buildInterestsSection() {
     final availableInterests = [
-      'Photography', 'Travel', 'Music', 'Sports', 'Movies', 'Books',
-      'Cooking', 'Art', 'Gaming', 'Fitness', 'Dancing', 'Nature',
-      'Technology', 'Fashion', 'Food', 'Wine', 'Coffee', 'Hiking',
-      'Beach', 'Mountains', 'Concerts', 'Museums', 'Theatre', 'Yoga',
+      'Photography',
+      'Travel',
+      'Music',
+      'Sports',
+      'Movies',
+      'Books',
+      'Cooking',
+      'Art',
+      'Gaming',
+      'Fitness',
+      'Dancing',
+      'Nature',
+      'Technology',
+      'Fashion',
+      'Food',
+      'Wine',
+      'Coffee',
+      'Hiking',
+      'Beach',
+      'Mountains',
+      'Concerts',
+      'Museums',
+      'Theatre',
+      'Yoga',
     ];
 
     return Builder(
       builder: (context) {
         final isDark = Theme.of(context).brightness == Brightness.dark;
         final headingColor = isDark ? Colors.white : Colors.black87;
-        
+
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

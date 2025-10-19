@@ -45,9 +45,9 @@ class CurrentSubscriptionWidget extends StatelessWidget {
                   ),
               ],
             ),
-            
+
             const SizedBox(height: 16),
-            
+
             if (subscription == null) ...[
               _buildFreePlan(context),
             ] else ...[
@@ -78,25 +78,25 @@ class CurrentSubscriptionWidget extends StatelessWidget {
             ),
           ),
         ),
-        
+
         const SizedBox(height: 12),
-        
+
         Text(
           'You\'re currently on the free plan',
           style: Theme.of(context).textTheme.bodyLarge,
         ),
-        
+
         const SizedBox(height: 8),
-        
+
         Text(
           'Upgrade to unlock premium features and enhance your dating experience.',
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            color: Colors.grey[600],
-          ),
+          style: Theme.of(
+            context,
+          ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
         ),
-        
+
         const SizedBox(height: 16),
-        
+
         SizedBox(
           width: double.infinity,
           child: ElevatedButton(
@@ -123,7 +123,7 @@ class CurrentSubscriptionWidget extends StatelessWidget {
     final isActive = subscription.status == SubscriptionStatus.active;
     final statusColor = _getStatusColor(subscription.status);
     final statusText = _getStatusText(subscription.status);
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -147,65 +147,53 @@ class CurrentSubscriptionWidget extends StatelessWidget {
             ),
             const Spacer(),
             if (subscription.autoRenew)
-              Icon(
-                Icons.autorenew,
-                size: 16,
-                color: Colors.green[600],
-              ),
+              Icon(Icons.autorenew, size: 16, color: Colors.green[600]),
           ],
         ),
-        
+
         const SizedBox(height: 12),
-        
+
         Text(
           subscription.planName,
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
+          style: Theme.of(
+            context,
+          ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
         ),
-        
+
         const SizedBox(height: 8),
-        
+
         if (subscription.nextBillingDate != null) ...[
           Row(
             children: [
-              Icon(
-                Icons.schedule,
-                size: 16,
-                color: Colors.grey[600],
-              ),
+              Icon(Icons.schedule, size: 16, color: Colors.grey[600]),
               const SizedBox(width: 6),
               Text(
                 isActive
                     ? 'Next billing: ${_formatDate(subscription.nextBillingDate!)}'
                     : 'Expires: ${_formatDate(subscription.nextBillingDate!)}',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Colors.grey[600],
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
               ),
             ],
           ),
           const SizedBox(height: 8),
         ],
-        
+
         Row(
           children: [
-            Icon(
-              Icons.calendar_today,
-              size: 16,
-              color: Colors.grey[600],
-            ),
+            Icon(Icons.calendar_today, size: 16, color: Colors.grey[600]),
             const SizedBox(width: 6),
             Text(
               'Started: ${_formatDate(subscription.startDate)}',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Colors.grey[600],
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
             ),
           ],
         ),
         const SizedBox(height: 8),
-        
+
         // Auto-renewal toggle
         Row(
           children: [
@@ -222,7 +210,7 @@ class CurrentSubscriptionWidget extends StatelessWidget {
             ),
           ],
         ),
-        
+
         if (!isActive) ...[
           const SizedBox(height: 16),
           Container(
@@ -234,11 +222,7 @@ class CurrentSubscriptionWidget extends StatelessWidget {
             ),
             child: Row(
               children: [
-                Icon(
-                  Icons.warning_amber,
-                  color: Colors.amber[700],
-                  size: 20,
-                ),
+                Icon(Icons.warning_amber, color: Colors.amber[700], size: 20),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(

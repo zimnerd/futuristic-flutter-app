@@ -1,12 +1,7 @@
 part of 'matching_bloc.dart';
 
 /// Enum for matching status
-enum MatchingStatus {
-  initial,
-  loading,
-  loaded,
-  error,
-}
+enum MatchingStatus { initial, loading, loaded, error }
 
 /// State class for matching functionality
 class MatchingState extends Equatable {
@@ -70,17 +65,17 @@ class MatchingState extends Equatable {
 
   @override
   List<Object?> get props => [
-        status,
-        profiles,
-        swipeHistory,
-        filters,
-        hasReachedMax,
-        lastSwipeWasMatch,
-        matchedProfile,
-        superLikesRemaining,
-        undosRemaining,
+    status,
+    profiles,
+    swipeHistory,
+    filters,
+    hasReachedMax,
+    lastSwipeWasMatch,
+    matchedProfile,
+    superLikesRemaining,
+    undosRemaining,
     boostActive,
     boostExpiresAt,
-        error,
-      ];
+    error,
+  ];
 }

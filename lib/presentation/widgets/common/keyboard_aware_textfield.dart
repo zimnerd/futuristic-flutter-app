@@ -157,7 +157,8 @@ class _KeyboardAwareTextFieldState extends State<KeyboardAwareTextField> {
   @override
   Widget build(BuildContext context) {
     // Determine text input action
-    final inputAction = widget.textInputAction ??
+    final inputAction =
+        widget.textInputAction ??
         (widget.nextFocusNode != null
             ? TextInputAction.next
             : TextInputAction.done);
@@ -176,23 +177,22 @@ class _KeyboardAwareTextFieldState extends State<KeyboardAwareTextField> {
         minLines: widget.minLines,
         enabled: widget.enabled,
         inputFormatters: widget.inputFormatters,
-        decoration: widget.decoration ??
+        decoration:
+            widget.decoration ??
             InputDecoration(
               labelText: widget.label,
               hintText: widget.hint,
               prefixIcon: widget.prefixIcon,
               suffixIcon: widget.suffixIcon,
-              contentPadding: widget.contentPadding ??
+              contentPadding:
+                  widget.contentPadding ??
                   const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(
-                  color: Colors.grey.shade300,
-                  width: 1,
-                ),
+                borderSide: BorderSide(color: Colors.grey.shade300, width: 1),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
@@ -203,17 +203,11 @@ class _KeyboardAwareTextFieldState extends State<KeyboardAwareTextField> {
               ),
               errorBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(
-                  color: Colors.red,
-                  width: 1,
-                ),
+                borderSide: const BorderSide(color: Colors.red, width: 1),
               ),
               focusedErrorBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(
-                  color: Colors.red,
-                  width: 2,
-                ),
+                borderSide: const BorderSide(color: Colors.red, width: 2),
               ),
             ),
         onFieldSubmitted: (value) {
@@ -301,7 +295,8 @@ class _KeyboardAwareFormState extends State<KeyboardAwareForm> {
 
     return SingleChildScrollView(
       controller: _scrollController,
-      padding: widget.padding ??
+      padding:
+          widget.padding ??
           EdgeInsets.only(
             left: 24,
             right: 24,

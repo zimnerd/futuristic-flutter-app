@@ -41,11 +41,13 @@ class _NotificationScreenState extends State<NotificationScreen> {
         actions: [
           BlocBuilder<NotificationBloc, NotificationState>(
             builder: (context, state) {
-              if (state is NotificationsLoaded && 
+              if (state is NotificationsLoaded &&
                   state.notifications.any((n) => !n.isRead)) {
                 return TextButton(
                   onPressed: () {
-                    context.read<NotificationBloc>().add(const MarkAllNotificationsAsRead());
+                    context.read<NotificationBloc>().add(
+                      const MarkAllNotificationsAsRead(),
+                    );
                   },
                   child: const Text(
                     'Mark all read',
@@ -76,11 +78,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(
-                    Icons.error_outline,
-                    color: Colors.grey,
-                    size: 64,
-                  ),
+                  const Icon(Icons.error_outline, color: Colors.grey, size: 64),
                   const SizedBox(height: 16),
                   Text(
                     state.message,
@@ -90,7 +88,9 @@ class _NotificationScreenState extends State<NotificationScreen> {
                   const SizedBox(height: 16),
                   ElevatedButton(
                     onPressed: () {
-                      context.read<NotificationBloc>().add(const LoadNotifications());
+                      context.read<NotificationBloc>().add(
+                        const LoadNotifications(),
+                      );
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: PulseColors.primary,
@@ -126,10 +126,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                     SizedBox(height: 8),
                     Text(
                       'You\'ll receive notifications for matches, messages, and other activities here.',
-                      style: TextStyle(
-                        color: Colors.grey,
-                        fontSize: 14,
-                      ),
+                      style: TextStyle(color: Colors.grey, fontSize: 14),
                       textAlign: TextAlign.center,
                     ),
                   ],
@@ -163,11 +160,13 @@ class _NotificationScreenState extends State<NotificationScreen> {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       decoration: BoxDecoration(
-        color: notification.isRead ? Colors.white : Colors.blue.withValues(alpha: 0.05),
+        color: notification.isRead
+            ? Colors.white
+            : Colors.blue.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: notification.isRead 
-              ? Colors.grey.withValues(alpha: 0.2) 
+          color: notification.isRead
+              ? Colors.grey.withValues(alpha: 0.2)
               : PulseColors.primary.withValues(alpha: 0.3),
         ),
         boxShadow: [
@@ -188,27 +187,27 @@ class _NotificationScreenState extends State<NotificationScreen> {
           ),
           alignment: Alignment.centerRight,
           padding: const EdgeInsets.only(right: 20),
-          child: const Icon(
-            Icons.delete,
-            color: Colors.white,
-            size: 24,
-          ),
+          child: const Icon(Icons.delete, color: Colors.white, size: 24),
         ),
         onDismissed: (direction) {
           context.read<NotificationBloc>().add(
             DeleteNotification(notificationId: notification.id),
           );
-          
-          PulseToast.info(context, message: 'Notification deleted',
-          );
+
+          PulseToast.info(context, message: 'Notification deleted');
         },
         child: ListTile(
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 8,
+          ),
           leading: _buildNotificationIcon(notification.type),
           title: Text(
             notification.title,
             style: TextStyle(
-              fontWeight: notification.isRead ? FontWeight.w500 : FontWeight.w600,
+              fontWeight: notification.isRead
+                  ? FontWeight.w500
+                  : FontWeight.w600,
               fontSize: 16,
             ),
           ),
@@ -218,25 +217,19 @@ class _NotificationScreenState extends State<NotificationScreen> {
               const SizedBox(height: 4),
               Text(
                 notification.message,
-                style: TextStyle(
-                  color: Colors.grey[600],
-                  fontSize: 14,
-                ),
+                style: TextStyle(color: Colors.grey[600], fontSize: 14),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
               const SizedBox(height: 8),
               Text(
                 DateFormat('MMM d, h:mm a').format(notification.createdAt),
-                style: TextStyle(
-                  color: Colors.grey[500],
-                  fontSize: 12,
-                ),
+                style: TextStyle(color: Colors.grey[500], fontSize: 12),
               ),
             ],
           ),
-          trailing: notification.isRead 
-              ? null 
+          trailing: notification.isRead
+              ? null
               : Container(
                   width: 12,
                   height: 12,
@@ -298,11 +291,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
         color: iconColor.withValues(alpha: 0.1),
         shape: BoxShape.circle,
       ),
-      child: Icon(
-        iconData,
-        color: iconColor,
-        size: 24,
-      ),
+      child: Icon(iconData, color: iconColor, size: 24),
     );
   }
 

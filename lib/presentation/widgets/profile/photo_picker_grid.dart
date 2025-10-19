@@ -48,7 +48,9 @@ class _PhotoPickerGridState extends State<PhotoPickerGrid> {
           Text(
             'Add at least 2 photos to continue',
             style: PulseTextStyles.bodyMedium.copyWith(
-              color: _photos.length < 2 ? PulseColors.error : PulseColors.success,
+              color: _photos.length < 2
+                  ? PulseColors.error
+                  : PulseColors.success,
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -106,7 +108,7 @@ class _PhotoPickerGridState extends State<PhotoPickerGrid> {
                 // Add photo placeholder
                 _buildAddPhotoPlaceholder(index),
               ],
-              
+
               // Upload progress overlay
               if (isUploading) _buildUploadOverlay(),
             ],
@@ -152,11 +154,7 @@ class _PhotoPickerGridState extends State<PhotoPickerGrid> {
               ),
             ],
           ),
-          child: const Icon(
-            Icons.close,
-            color: Colors.white,
-            size: 16,
-          ),
+          child: const Icon(Icons.close, color: Colors.white, size: 16),
         ),
       ),
     );
@@ -301,10 +299,7 @@ class _PhotoPickerGridState extends State<PhotoPickerGrid> {
                   color: PulseColors.primaryContainer,
                   borderRadius: BorderRadius.circular(PulseRadii.md),
                 ),
-                child: const Icon(
-                  Icons.camera_alt,
-                  color: PulseColors.primary,
-                ),
+                child: const Icon(Icons.camera_alt, color: PulseColors.primary),
               ),
               title: const Text('Take Photo'),
               subtitle: const Text('Use camera to capture a new photo'),
@@ -389,7 +384,10 @@ class _PhotoPickerGridState extends State<PhotoPickerGrid> {
             ),
             ListTile(
               leading: Icon(Icons.delete, color: PulseColors.error),
-              title: Text('Remove Photo', style: TextStyle(color: PulseColors.error)),
+              title: Text(
+                'Remove Photo',
+                style: TextStyle(color: PulseColors.error),
+              ),
               subtitle: const Text('Delete this photo'),
               onTap: () {
                 Navigator.pop(context);
@@ -434,10 +432,8 @@ class _PhotoPickerGridState extends State<PhotoPickerGrid> {
       }
 
       final imageFiles = await _mediaUploadService
-          .pickMultipleImagesFromGallery(
-        maxImages: remainingSlots,
-      );
-      
+          .pickMultipleImagesFromGallery(maxImages: remainingSlots);
+
       for (final imageFile in imageFiles) {
         final currentIndex = _photos.length;
         await _uploadPhoto(imageFile, currentIndex);
@@ -468,7 +464,7 @@ class _PhotoPickerGridState extends State<PhotoPickerGrid> {
         category: MediaCategory.profilePhoto,
         type: MediaType.image,
       );
-      
+
       if (result.success && result.mediaUrl != null) {
         setState(() {
           if (targetIndex < _photos.length) {
@@ -478,7 +474,7 @@ class _PhotoPickerGridState extends State<PhotoPickerGrid> {
           }
           _uploadingIndices.remove(targetIndex);
         });
-        
+
         widget.onPhotosChanged(_photos);
         _showSuccessSnackBar('Photo uploaded successfully');
       } else {

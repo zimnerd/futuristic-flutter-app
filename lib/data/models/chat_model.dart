@@ -66,7 +66,9 @@ class ConversationModel extends Equatable {
 
     return ConversationModel(
       id: json['id']?.toString() ?? '',
-      type: ConversationType.values.byName(json['type']?.toString() ?? 'direct'),
+      type: ConversationType.values.byName(
+        json['type']?.toString() ?? 'direct',
+      ),
       participantIds: participantIds,
       name: json['name']?.toString(),
       description: json['description']?.toString(),
@@ -139,19 +141,19 @@ class ConversationModel extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        type,
-        participantIds,
-        name,
-        description,
-        imageUrl,
-        lastMessage,
-        lastMessageAt,
-        unreadCount,
-        settings,
-        createdAt,
-        updatedAt,
-      ];
+    id,
+    type,
+    participantIds,
+    name,
+    description,
+    imageUrl,
+    lastMessage,
+    lastMessageAt,
+    unreadCount,
+    settings,
+    createdAt,
+    updatedAt,
+  ];
 }
 
 /// Model representing a chat message
@@ -217,8 +219,8 @@ class MessageModel extends Equatable {
           : null,
       reactions: json['reactions'] != null
           ? (json['reactions'] as List)
-              .map((r) => MessageReaction.fromJson(r))
-              .toList()
+                .map((r) => MessageReaction.fromJson(r))
+                .toList()
           : null,
       editedAt: json['editedAt'] != null
           ? DateTime.parse(json['editedAt'] as String)
@@ -233,12 +235,12 @@ class MessageModel extends Equatable {
     );
   }
 
-  // Lightweight factory for lastMessage in conversation summaries  
+  // Lightweight factory for lastMessage in conversation summaries
   factory MessageModel.fromConversationSummary(Map<String, dynamic> json) {
     return MessageModel(
       id: json['id']?.toString() ?? '',
       conversationId: '', // Not provided in summary
-      senderId: '', // Not provided in summary 
+      senderId: '', // Not provided in summary
       senderUsername: json['senderUsername']?.toString() ?? '',
       senderAvatar: null,
       type: _parseMessageType(json['type']),
@@ -282,14 +284,15 @@ class MessageModel extends Equatable {
           : null,
       reactions: json['reactions'] != null
           ? (json['reactions'] as List)
-              .map((r) => MessageReaction.fromJson(r))
-              .toList()
+                .map((r) => MessageReaction.fromJson(r))
+                .toList()
           : null,
       editedAt: json['editedAt'] != null
           ? DateTime.tryParse(json['editedAt'].toString())
           : null,
       isForwarded: json['isForwarded'] ?? false,
-      forwardedFromConversationId: json['forwardedFromConversationId']?.toString(),
+      forwardedFromConversationId: json['forwardedFromConversationId']
+          ?.toString(),
       createdAt: json['createdAt'] != null
           ? DateTime.tryParse(json['createdAt'].toString()) ?? DateTime.now()
           : DateTime.now(),
@@ -376,7 +379,8 @@ class MessageModel extends Equatable {
       reactions: reactions ?? this.reactions,
       editedAt: editedAt ?? this.editedAt,
       isForwarded: isForwarded ?? this.isForwarded,
-      forwardedFromConversationId: forwardedFromConversationId ?? this.forwardedFromConversationId,
+      forwardedFromConversationId:
+          forwardedFromConversationId ?? this.forwardedFromConversationId,
       isBookmarked: isBookmarked ?? this.isBookmarked,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
@@ -386,26 +390,26 @@ class MessageModel extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        conversationId,
-        senderId,
-        senderUsername,
-        senderAvatar,
-        type,
-        content,
-        mediaUrls,
-        metadata,
-        status,
-        replyTo,
-        reactions,
-        editedAt,
-        isForwarded,
-        forwardedFromConversationId,
-        isBookmarked,
-        createdAt,
-        updatedAt,
+    id,
+    conversationId,
+    senderId,
+    senderUsername,
+    senderAvatar,
+    type,
+    content,
+    mediaUrls,
+    metadata,
+    status,
+    replyTo,
+    reactions,
+    editedAt,
+    isForwarded,
+    forwardedFromConversationId,
+    isBookmarked,
+    createdAt,
+    updatedAt,
     tempId,
-      ];
+  ];
 }
 
 /// Supporting classes
@@ -445,7 +449,12 @@ class ConversationSettings extends Equatable {
   }
 
   @override
-  List<Object?> get props => [isPrivate, allowMediaSharing, allowCalls, messageRetention];
+  List<Object?> get props => [
+    isPrivate,
+    allowMediaSharing,
+    allowCalls,
+    messageRetention,
+  ];
 }
 
 class MessageReaction extends Equatable {

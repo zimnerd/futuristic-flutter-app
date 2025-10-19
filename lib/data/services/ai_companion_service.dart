@@ -19,7 +19,7 @@ class AiCompanionService {
   final ApiClient _apiClient = ApiClient.instance;
   final LocalChatStorageService _localStorage = LocalChatStorageService();
   final Logger _logger = Logger();
-  
+
   StreamSubscription<Map<String, dynamic>>? _webSocketMessageSubscription;
   StreamSubscription<Map<String, dynamic>>? _webSocketErrorSubscription;
 
@@ -36,7 +36,7 @@ class AiCompanionService {
         // Handle ai_message_received events (only AI companion responses, not user message confirmations)
         if (data.containsKey('message') && data.containsKey('companionId')) {
           final messageData = data['message'] as Map<String, dynamic>;
-          
+
           // Only process messages from AI companions (not user message confirmations)
           // This prevents duplicate user messages in the chat
           final isFromUser = messageData['isFromUser'];
@@ -131,7 +131,7 @@ class AiCompanionService {
         _syncMessagesInBackground(companionId, page, limit);
         return localMessages;
       }
-      
+
       // If no local messages, fetch from server
       final response = await _apiClient.get(
         '/ai-companions/$companionId/conversation',
@@ -144,12 +144,12 @@ class AiCompanionService {
             .map((json) => CompanionMessage.fromJson(json))
             .toList();
         _logger.d('Fetched ${messages.length} messages via REST');
-        
+
         // Save to local storage for offline access
         for (final message in messages) {
           await _localStorage.saveAiMessage(message);
         }
-        
+
         return messages;
       } else {
         _logger.e(
@@ -352,7 +352,7 @@ class AiCompanionService {
       }
     } catch (e) {
       _logger.e('Error deleting AI companion: $e');
-      
+
       // Check if it's a foreign key constraint error
       final errorString = e.toString().toLowerCase();
       if (errorString.contains('foreign key') ||

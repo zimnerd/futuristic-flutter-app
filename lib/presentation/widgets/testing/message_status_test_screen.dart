@@ -4,9 +4,9 @@ import '../messaging/message_status_indicator.dart';
 import '../common/pulse_toast.dart';
 
 /// Test screen for visually verifying MessageStatusIndicator states
-/// 
+///
 /// Run this screen to see all 5 status states side-by-side for visual QA
-/// 
+///
 /// Usage:
 /// ```dart
 /// Navigator.push(
@@ -130,7 +130,10 @@ class MessageStatusTestScreen extends StatelessWidget {
                         readColor: Colors.blue.shade300,
                       ),
                       const SizedBox(width: 8),
-                      const Text('16px (default)', style: TextStyle(color: Colors.grey)),
+                      const Text(
+                        '16px (default)',
+                        style: TextStyle(color: Colors.grey),
+                      ),
                     ],
                   ),
                   const Divider(height: 32),
@@ -248,25 +251,16 @@ class MessageStatusTestScreen extends StatelessWidget {
                   const SizedBox(height: 4),
                   Text(
                     description,
-                    style: const TextStyle(
-                      color: Colors.grey,
-                      fontSize: 14,
-                    ),
+                    style: const TextStyle(color: Colors.grey, fontSize: 14),
                   ),
                   const SizedBox(height: 8),
                   Text(
                     'Icon: $expectedIcon',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey.shade700,
-                    ),
+                    style: TextStyle(fontSize: 12, color: Colors.grey.shade700),
                   ),
                   Text(
                     'Color: $expectedColor',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey.shade700,
-                    ),
+                    style: TextStyle(fontSize: 12, color: Colors.grey.shade700),
                   ),
                 ],
               ),

@@ -24,7 +24,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     required PhotoManagerService photoManager,
   }) : _profileService = profileService,
        _photoManager = photoManager,
-        super(const ProfileState()) {
+       super(const ProfileState()) {
     on<LoadProfile>(_onLoadProfile);
     on<UpdateProfile>(_onUpdateProfile);
     on<UploadPhoto>(_onUploadPhoto);
@@ -86,28 +86,28 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
         '🔄 Fetching profile from server (force: ${event.forceRefresh}, hasCache: ${state.profile != null}, stale: ${state.isCacheStale})',
       );
       emit(state.copyWith(status: ProfileStatus.loading));
-      
+
       final profile = await _profileService.getCurrentProfile();
       _originalProfile = profile; // Store for delta tracking
-      
+
       _logger.i('📊 Profile fetched from server:');
       _logger.i('   - ID: ${profile.id}');
       _logger.i('   - Name: ${profile.name}');
       _logger.i('   - Photos: ${profile.photos.length}');
-      
-      emit(state.copyWith(
-        status: ProfileStatus.loaded,
-        profile: profile,
+
+      emit(
+        state.copyWith(
+          status: ProfileStatus.loaded,
+          profile: profile,
           lastFetchTime: DateTime.now(), // Mark cache time
-        updateStatus: ProfileStatus.initial, // Reset update status on profile reload
-      ));
+          updateStatus:
+              ProfileStatus.initial, // Reset update status on profile reload
+        ),
+      );
     } catch (e) {
       _logger.e('❌ Failed to load profile: $e');
       final errorMessage = ErrorHandler.handleError(e, showDialog: false);
-      emit(state.copyWith(
-        status: ProfileStatus.error,
-        error: errorMessage,
-      ));
+      emit(state.copyWith(status: ProfileStatus.error, error: errorMessage));
     }
   }
 
@@ -171,10 +171,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
       _logger.e('❌ Profile update failed: $e');
       final errorMessage = ErrorHandler.handleError(e, showDialog: false);
       emit(
-        state.copyWith(
-          updateStatus: ProfileStatus.error,
-          error: errorMessage,
-        ),
+        state.copyWith(updateStatus: ProfileStatus.error, error: errorMessage),
       );
     }
   }
@@ -185,10 +182,10 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
   ) async {
     final tempId =
         'temp_${event.photoPath.split('/').last}_${DateTime.now().millisecondsSinceEpoch}';
-    
+
     try {
       _logger.i('📸 Uploading photo directly to permanent storage...');
-      
+
       // Add to uploading map with uploading state
       final newUploadingPhotos = Map<String, PhotoUploadProgress>.from(
         state.uploadingPhotos,
@@ -262,7 +259,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     } catch (e) {
       _logger.e('❌ Photo upload failed: $e');
       final errorMessage = ErrorHandler.handleError(e, showDialog: false);
-      
+
       // Update uploading state to failed
       final failedUploadingPhotos = Map<String, PhotoUploadProgress>.from(
         state.uploadingPhotos,
@@ -273,7 +270,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
         state: PhotoUploadState.failed,
         error: errorMessage,
       );
-      
+
       emit(
         state.copyWith(
           uploadStatus: ProfileStatus.error,
@@ -297,11 +294,11 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
 
       final newPhotos = <ProfilePhoto>[];
       final startOrder = state.profile?.photos.length ?? 0;
-      
+
       // Upload each photo directly to permanent storage
       for (int i = 0; i < event.photoPaths.length; i++) {
         final photoUrl = await _profileService.uploadPhoto(event.photoPaths[i]);
-        
+
         newPhotos.add(
           ProfilePhoto(
             id: photoUrl.split('/').last, // Use filename as temp ID
@@ -309,7 +306,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
             order: startOrder + i,
           ),
         );
-        
+
         _logger.i(
           '✅ Photo ${i + 1}/${event.photoPaths.length} uploaded: $photoUrl',
         );
@@ -334,10 +331,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
       _logger.e('❌ Multiple photo upload failed: $e');
       final errorMessage = ErrorHandler.handleError(e, showDialog: false);
       emit(
-        state.copyWith(
-          uploadStatus: ProfileStatus.error,
-          error: errorMessage,
-        ),
+        state.copyWith(uploadStatus: ProfileStatus.error, error: errorMessage),
       );
     }
   }
@@ -351,17 +345,17 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
 
       // Delete photo immediately via API using media ID
       await _profileService.deletePhotoWithDetails(photoId: event.photoId);
-      
+
       _logger.i('✅ Photo deleted from backend');
-      
+
       // Remove from UI immediately by finding photo with matching ID
       if (state.profile != null) {
         final updatedPhotos = state.profile!.photos
             .where((photo) => photo.id != event.photoId)
             .toList();
-        
+
         final updatedProfile = state.profile!.copyWith(photos: updatedPhotos);
-        
+
         // Reset updateStatus to prevent stale "saved successfully" message
         emit(
           state.copyWith(
@@ -374,10 +368,9 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     } catch (e) {
       _logger.e('❌ Failed to delete photo: $e');
       final errorMessage = ErrorHandler.handleError(e, showDialog: false);
-      emit(state.copyWith(
-        error: errorMessage,
-        uploadStatus: ProfileStatus.error,
-      ));
+      emit(
+        state.copyWith(error: errorMessage, uploadStatus: ProfileStatus.error),
+      );
     }
   }
 
@@ -437,38 +430,42 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
       _logger.i('   - Settings: ${event.settings}');
       _logger.i('   - Settings keys: ${event.settings.keys.toList()}');
       _logger.i('   - Settings empty? ${event.settings.isEmpty}');
-      
+
       emit(state.copyWith(updateStatus: ProfileStatus.loading));
       _logger.i('   - Emitted loading status');
-      
+
       // Call dedicated privacy update method
       _logger.i('🌐 Calling ProfileService.updatePrivacySettings...');
       await _profileService.updatePrivacySettings(event.settings);
       _logger.i('✅ ProfileService.updatePrivacySettings completed');
-      
+
       // Reload profile to get updated privacy settings
       _logger.i('🔄 Reloading profile from server...');
       final profile = await _profileService.getCurrentProfile();
       _logger.i('✅ Profile reloaded successfully');
-      
-      emit(state.copyWith(
-        status: ProfileStatus.success,
-        profile: profile,
-        updateStatus: ProfileStatus.success,
+
+      emit(
+        state.copyWith(
+          status: ProfileStatus.success,
+          profile: profile,
+          updateStatus: ProfileStatus.success,
           lastFetchTime: DateTime.now(), // Update cache time
-      ));
+        ),
+      );
       _logger.i('✅ Emitted success status');
-      
+
       _logger.i('✅ Privacy settings updated successfully');
     } catch (e) {
       _logger.e('❌ Error updating privacy settings: $e');
       _logger.e('   - Stack trace: ${StackTrace.current}');
       final errorMessage = ErrorHandler.handleError(e, showDialog: false);
-      emit(state.copyWith(
-        status: ProfileStatus.error,
+      emit(
+        state.copyWith(
+          status: ProfileStatus.error,
           error: errorMessage,
-        updateStatus: ProfileStatus.error,
-      ));
+          updateStatus: ProfileStatus.error,
+        ),
+      );
     }
   }
 

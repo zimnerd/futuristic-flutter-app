@@ -15,10 +15,7 @@ class VerificationCTABanner extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: PulseSpacing.lg),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [
-            Color(0xFF4ECDC4),
-            Color(0xFF44A08D),
-          ],
+          colors: [Color(0xFF4ECDC4), Color(0xFF44A08D)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -106,10 +103,7 @@ class VerifiedBadge extends StatelessWidget {
       ),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [
-            Color(0xFF4ECDC4),
-            Color(0xFF44A08D),
-          ],
+          colors: [Color(0xFF4ECDC4), Color(0xFF44A08D)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -118,11 +112,7 @@ class VerifiedBadge extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(
-            Icons.verified,
-            color: Colors.white,
-            size: 16,
-          ),
+          const Icon(Icons.verified, color: Colors.white, size: 16),
           const SizedBox(width: 6),
           Text(
             'Verified',

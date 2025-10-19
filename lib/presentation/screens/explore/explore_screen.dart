@@ -21,77 +21,93 @@ class ExploreScreen extends StatelessWidget {
           },
           child: CustomScrollView(
             slivers: [
-            // App Bar
-            SliverAppBar(
-              floating: true,
-              backgroundColor: PulseColors.surface,
-              elevation: 0,
-              title: Text(
-                'Explore',
-                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: PulseColors.onSurface,
-                    ),
-              ),
-            ),
-
-            // Content
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildSectionHeader(context, 'Premium Features',
-                        'Unlock exclusive experiences'),
-                    const SizedBox(height: 16),
-                    _buildFeatureGrid(context, _premiumFeatures),
-
-                    const SizedBox(height: 32),
-                    _buildSectionHeader(context, 'Communication',
-                        'Connect in different ways'),
-                    const SizedBox(height: 16),
-                    _buildFeatureGrid(context, _communicationFeatures),
-
-                    const SizedBox(height: 32),
-                    _buildSectionHeader(context, 'Social & Events',
-                        'Meet people IRL'),
-                    const SizedBox(height: 16),
-                    _buildFeatureGrid(context, _socialFeatures),
-
-                    const SizedBox(height: 32),
-                    _buildSectionHeader(context, 'Tools & Insights',
-                        'Enhance your experience'),
-                    const SizedBox(height: 16),
-                    _buildFeatureGrid(context, _toolsFeatures),
-                  ],
+              // App Bar
+              SliverAppBar(
+                floating: true,
+                backgroundColor: PulseColors.surface,
+                elevation: 0,
+                title: Text(
+                  'Explore',
+                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: PulseColors.onSurface,
+                  ),
                 ),
               ),
-            ),
-          ],
+
+              // Content
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildSectionHeader(
+                        context,
+                        'Premium Features',
+                        'Unlock exclusive experiences',
+                      ),
+                      const SizedBox(height: 16),
+                      _buildFeatureGrid(context, _premiumFeatures),
+
+                      const SizedBox(height: 32),
+                      _buildSectionHeader(
+                        context,
+                        'Communication',
+                        'Connect in different ways',
+                      ),
+                      const SizedBox(height: 16),
+                      _buildFeatureGrid(context, _communicationFeatures),
+
+                      const SizedBox(height: 32),
+                      _buildSectionHeader(
+                        context,
+                        'Social & Events',
+                        'Meet people IRL',
+                      ),
+                      const SizedBox(height: 16),
+                      _buildFeatureGrid(context, _socialFeatures),
+
+                      const SizedBox(height: 32),
+                      _buildSectionHeader(
+                        context,
+                        'Tools & Insights',
+                        'Enhance your experience',
+                      ),
+                      const SizedBox(height: 16),
+                      _buildFeatureGrid(context, _toolsFeatures),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ),
     );
   }
 
-  Widget _buildSectionHeader(BuildContext context, String title, String subtitle) {
+  Widget _buildSectionHeader(
+    BuildContext context,
+    String title,
+    String subtitle,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           title,
           style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: PulseColors.onSurface,
-              ),
+            fontWeight: FontWeight.bold,
+            color: PulseColors.onSurface,
+          ),
         ),
         const SizedBox(height: 4),
         Text(
           subtitle,
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: PulseColors.onSurfaceVariant,
-              ),
+          style: Theme.of(
+            context,
+          ).textTheme.bodyMedium?.copyWith(color: PulseColors.onSurfaceVariant),
         ),
       ],
     );
@@ -164,11 +180,7 @@ class ExploreScreen extends StatelessWidget {
                       ),
                     ],
                   ),
-                  child: Icon(
-                    feature.icon,
-                    color: Colors.white,
-                    size: 28,
-                  ),
+                  child: Icon(feature.icon, color: Colors.white, size: 28),
                 ),
                 const SizedBox(height: 12),
 
@@ -176,9 +188,9 @@ class ExploreScreen extends StatelessWidget {
                 Text(
                   feature.title,
                   style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: PulseColors.onSurface,
-                      ),
+                    fontWeight: FontWeight.bold,
+                    color: PulseColors.onSurface,
+                  ),
                   textAlign: TextAlign.center,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
@@ -189,8 +201,8 @@ class ExploreScreen extends StatelessWidget {
                 Text(
                   feature.description,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: PulseColors.onSurfaceVariant,
-                      ),
+                    color: PulseColors.onSurfaceVariant,
+                  ),
                   textAlign: TextAlign.center,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
@@ -200,7 +212,10 @@ class ExploreScreen extends StatelessWidget {
                 if (feature.isPremium) ...[
                   const SizedBox(height: 8),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.amber.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(8),

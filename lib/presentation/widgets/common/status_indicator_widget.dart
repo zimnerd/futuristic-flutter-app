@@ -32,25 +32,25 @@ class _StatusIndicatorWidgetState extends State<StatusIndicatorWidget>
   @override
   void initState() {
     super.initState();
-    
+
     _pulseController = AnimationController(
       duration: const Duration(seconds: 2),
       vsync: this,
     );
-    
+
     _typingController = AnimationController(
       duration: const Duration(milliseconds: 1200),
       vsync: this,
     );
-    
+
     _pulseAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
     );
-    
+
     _typingAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _typingController, curve: Curves.easeInOut),
     );
-    
+
     _startAnimations();
   }
 
@@ -72,9 +72,9 @@ class _StatusIndicatorWidgetState extends State<StatusIndicatorWidget>
   void _startAnimations() {
     _pulseController.stop();
     _typingController.stop();
-    
+
     if (!widget.isAnimated) return;
-    
+
     switch (widget.status) {
       case UserStatus.online:
         _pulseController.repeat(reverse: true);
@@ -90,7 +90,7 @@ class _StatusIndicatorWidgetState extends State<StatusIndicatorWidget>
   @override
   Widget build(BuildContext context) {
     final config = _getStatusConfig();
-    
+
     if (widget.showLabel) {
       return Row(
         mainAxisSize: MainAxisSize.min,
@@ -108,13 +108,13 @@ class _StatusIndicatorWidgetState extends State<StatusIndicatorWidget>
         ],
       );
     }
-    
+
     return _buildIndicator(config);
   }
 
   Widget _buildIndicator(StatusConfig config) {
     final size = _getIndicatorSize();
-    
+
     switch (widget.status) {
       case UserStatus.online:
         return AnimatedBuilder(
@@ -129,7 +129,9 @@ class _StatusIndicatorWidgetState extends State<StatusIndicatorWidget>
                 boxShadow: widget.isAnimated
                     ? [
                         BoxShadow(
-                          color: config.color.withValues(alpha: 0.3 * _pulseAnimation.value),
+                          color: config.color.withValues(
+                            alpha: 0.3 * _pulseAnimation.value,
+                          ),
                           blurRadius: 8 * _pulseAnimation.value,
                           spreadRadius: 2 * _pulseAnimation.value,
                         ),
@@ -139,7 +141,7 @@ class _StatusIndicatorWidgetState extends State<StatusIndicatorWidget>
             );
           },
         );
-        
+
       case UserStatus.typing:
         return AnimatedBuilder(
           animation: _typingAnimation,
@@ -157,7 +159,7 @@ class _StatusIndicatorWidgetState extends State<StatusIndicatorWidget>
                   final delay = index * 0.2;
                   final progress = (_typingAnimation.value + delay) % 1.0;
                   final scale = 0.5 + (0.5 * (1 - (progress - 0.5).abs() * 2));
-                  
+
                   return Container(
                     margin: const EdgeInsets.symmetric(horizontal: 1),
                     child: Transform.scale(
@@ -177,7 +179,7 @@ class _StatusIndicatorWidgetState extends State<StatusIndicatorWidget>
             );
           },
         );
-        
+
       case UserStatus.away:
         return Container(
           width: size,
@@ -186,13 +188,9 @@ class _StatusIndicatorWidgetState extends State<StatusIndicatorWidget>
             shape: BoxShape.circle,
             color: config.color,
           ),
-          child: Icon(
-            Icons.schedule,
-            color: Colors.white,
-            size: size * 0.6,
-          ),
+          child: Icon(Icons.schedule, color: Colors.white, size: size * 0.6),
         );
-        
+
       case UserStatus.busy:
         return Container(
           width: size,
@@ -207,7 +205,7 @@ class _StatusIndicatorWidgetState extends State<StatusIndicatorWidget>
             size: size * 0.6,
           ),
         );
-        
+
       case UserStatus.offline:
         return Container(
           width: size,
@@ -215,13 +213,10 @@ class _StatusIndicatorWidgetState extends State<StatusIndicatorWidget>
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             color: Colors.grey.shade300,
-            border: Border.all(
-              color: Colors.white,
-              width: 2,
-            ),
+            border: Border.all(color: Colors.white, width: 2),
           ),
         );
-        
+
       case UserStatus.recentlyActive:
         return Stack(
           children: [
@@ -252,7 +247,7 @@ class _StatusIndicatorWidgetState extends State<StatusIndicatorWidget>
             ),
           ],
         );
-        
+
       case UserStatus.inCall:
         return Container(
           width: size,
@@ -261,11 +256,7 @@ class _StatusIndicatorWidgetState extends State<StatusIndicatorWidget>
             shape: BoxShape.circle,
             color: config.color,
           ),
-          child: Icon(
-            Icons.call,
-            color: Colors.white,
-            size: size * 0.6,
-          ),
+          child: Icon(Icons.call, color: Colors.white, size: size * 0.6),
         );
     }
   }
@@ -273,40 +264,22 @@ class _StatusIndicatorWidgetState extends State<StatusIndicatorWidget>
   StatusConfig _getStatusConfig() {
     switch (widget.status) {
       case UserStatus.online:
-        return StatusConfig(
-          color: Colors.green,
-          label: 'Online',
-        );
+        return StatusConfig(color: Colors.green, label: 'Online');
       case UserStatus.typing:
-        return StatusConfig(
-          color: PulseColors.primary,
-          label: 'Typing...',
-        );
+        return StatusConfig(color: PulseColors.primary, label: 'Typing...');
       case UserStatus.away:
-        return StatusConfig(
-          color: Colors.orange,
-          label: 'Away',
-        );
+        return StatusConfig(color: Colors.orange, label: 'Away');
       case UserStatus.busy:
-        return StatusConfig(
-          color: Colors.red,
-          label: 'Busy',
-        );
+        return StatusConfig(color: Colors.red, label: 'Busy');
       case UserStatus.offline:
-        return StatusConfig(
-          color: Colors.grey,
-          label: 'Offline',
-        );
+        return StatusConfig(color: Colors.grey, label: 'Offline');
       case UserStatus.recentlyActive:
         return StatusConfig(
           color: Colors.green.shade300,
           label: 'Recently active',
         );
       case UserStatus.inCall:
-        return StatusConfig(
-          color: Colors.blue,
-          label: 'In call',
-        );
+        return StatusConfig(color: Colors.blue, label: 'In call');
     }
   }
 
@@ -353,15 +326,17 @@ class MultiStatusIndicator extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (statuses.isEmpty) return const SizedBox.shrink();
-    
+
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: statuses
-          .map((status) => StatusIndicatorWidget(
-                status: status,
-                size: size,
-                isAnimated: false,
-              ))
+          .map(
+            (status) => StatusIndicatorWidget(
+              status: status,
+              size: size,
+              isAnimated: false,
+            ),
+          )
           .expand((widget) => [widget, SizedBox(width: spacing)])
           .take(statuses.length * 2 - 1)
           .toList(),
@@ -395,10 +370,7 @@ class UserStatusIndicator extends StatelessWidget {
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             border: showBorder
-                ? Border.all(
-                    color: Colors.white,
-                    width: 2,
-                  )
+                ? Border.all(color: Colors.white, width: 2)
                 : null,
           ),
           child: ClipOval(
@@ -422,7 +394,7 @@ class UserStatusIndicator extends StatelessWidget {
             ),
           ),
         ),
-        
+
         // Status indicator
         if (status != UserStatus.offline)
           Positioned(
@@ -433,8 +405,8 @@ class UserStatusIndicator extends StatelessWidget {
               size: size < 40
                   ? StatusIndicatorSize.small
                   : size < 60
-                      ? StatusIndicatorSize.medium
-                      : StatusIndicatorSize.large,
+                  ? StatusIndicatorSize.medium
+                  : StatusIndicatorSize.large,
             ),
           ),
       ],
@@ -442,29 +414,13 @@ class UserStatusIndicator extends StatelessWidget {
   }
 }
 
-enum UserStatus {
-  online,
-  typing,
-  away,
-  busy,
-  offline,
-  recentlyActive,
-  inCall,
-}
+enum UserStatus { online, typing, away, busy, offline, recentlyActive, inCall }
 
-enum StatusIndicatorSize {
-  small,
-  medium,
-  large,
-  extraLarge,
-}
+enum StatusIndicatorSize { small, medium, large, extraLarge }
 
 class StatusConfig {
   final Color color;
   final String label;
 
-  StatusConfig({
-    required this.color,
-    required this.label,
-  });
+  StatusConfig({required this.color, required this.label});
 }

@@ -12,28 +12,34 @@ class LoadPaymentMethodsEvent extends PaymentEvent {}
 class AddPaymentMethodEvent extends PaymentEvent {
   final PaymentMethod type;
   final Map<String, dynamic> paymentData;
-  
+
   AddPaymentMethodEvent({required this.type, required this.paymentData});
 }
 
 class RemovePaymentMethodEvent extends PaymentEvent {
   final String paymentMethodId;
-  
+
   RemovePaymentMethodEvent(this.paymentMethodId);
 }
 
 class ProcessSubscriptionPaymentEvent extends PaymentEvent {
   final String planId;
   final String paymentMethodId;
-  
-  ProcessSubscriptionPaymentEvent({required this.planId, required this.paymentMethodId});
+
+  ProcessSubscriptionPaymentEvent({
+    required this.planId,
+    required this.paymentMethodId,
+  });
 }
 
 class ProcessBoostPaymentEvent extends PaymentEvent {
   final String boostType;
   final String paymentMethodId;
-  
-  ProcessBoostPaymentEvent({required this.boostType, required this.paymentMethodId});
+
+  ProcessBoostPaymentEvent({
+    required this.boostType,
+    required this.paymentMethodId,
+  });
 }
 
 class LoadPaymentHistoryEvent extends PaymentEvent {
@@ -46,7 +52,7 @@ class LoadPaymentHistoryEvent extends PaymentEvent {
 class RequestRefundEvent extends PaymentEvent {
   final String transactionId;
   final String reason;
-  
+
   RequestRefundEvent({required this.transactionId, required this.reason});
 }
 
@@ -59,7 +65,7 @@ class PaymentLoading extends PaymentState {}
 
 class PaymentMethodsLoaded extends PaymentState {
   final List<Map<String, dynamic>> paymentMethods;
-  
+
   PaymentMethodsLoaded(this.paymentMethods);
 }
 
@@ -72,13 +78,13 @@ class PaymentHistoryLoaded extends PaymentState {
 class PaymentSuccess extends PaymentState {
   final String message;
   final Map<String, dynamic>? data;
-  
+
   PaymentSuccess(this.message, {this.data});
 }
 
 class PaymentError extends PaymentState {
   final String message;
-  
+
   PaymentError(this.message);
 }
 
@@ -101,11 +107,11 @@ class PaymentBloc extends Bloc<PaymentEvent, PaymentState> {
     Emitter<PaymentState> emit,
   ) async {
     emit(PaymentLoading());
-    
+
     try {
       final paymentMethods = await _paymentService.getUserPaymentMethods();
       emit(PaymentMethodsLoaded(paymentMethods));
-      
+
       // Track analytics
       ServiceLocator.instance.analytics.trackEvent(
         eventType: AnalyticsEventType.featureUsed,
@@ -125,15 +131,15 @@ class PaymentBloc extends Bloc<PaymentEvent, PaymentState> {
     Emitter<PaymentState> emit,
   ) async {
     emit(PaymentLoading());
-    
+
     try {
       final result = await _paymentService.createPaymentMethod(
         type: event.type,
         paymentData: event.paymentData,
       );
-      
+
       emit(PaymentSuccess('Payment method added successfully', data: result));
-      
+
       // Track analytics
       ServiceLocator.instance.analytics.trackEvent(
         eventType: AnalyticsEventType.featureUsed,
@@ -142,7 +148,7 @@ class PaymentBloc extends Bloc<PaymentEvent, PaymentState> {
           'type': event.type.name,
         },
       );
-      
+
       // Reload payment methods
       add(LoadPaymentMethodsEvent());
     } catch (e) {
@@ -156,11 +162,11 @@ class PaymentBloc extends Bloc<PaymentEvent, PaymentState> {
     Emitter<PaymentState> emit,
   ) async {
     emit(PaymentLoading());
-    
+
     try {
       await _paymentService.deletePaymentMethod(event.paymentMethodId);
       emit(PaymentSuccess('Payment method removed successfully'));
-      
+
       // Track analytics
       ServiceLocator.instance.analytics.trackEvent(
         eventType: AnalyticsEventType.featureUsed,
@@ -169,7 +175,7 @@ class PaymentBloc extends Bloc<PaymentEvent, PaymentState> {
           'paymentMethodId': event.paymentMethodId,
         },
       );
-      
+
       // Reload payment methods
       add(LoadPaymentMethodsEvent());
     } catch (e) {
@@ -183,15 +189,20 @@ class PaymentBloc extends Bloc<PaymentEvent, PaymentState> {
     Emitter<PaymentState> emit,
   ) async {
     emit(PaymentLoading());
-    
+
     try {
       final result = await _paymentService.processSubscriptionPayment(
         planId: event.planId,
         paymentMethodId: event.paymentMethodId,
       );
-      
-      emit(PaymentSuccess('Subscription payment processed successfully', data: result));
-      
+
+      emit(
+        PaymentSuccess(
+          'Subscription payment processed successfully',
+          data: result,
+        ),
+      );
+
       // Track analytics
       ServiceLocator.instance.analytics.trackPremiumEvent(
         action: 'completed',
@@ -204,7 +215,7 @@ class PaymentBloc extends Bloc<PaymentEvent, PaymentState> {
     } catch (e) {
       AppLogger.error('Failed to process subscription payment: $e');
       emit(PaymentError('Failed to process subscription payment'));
-      
+
       // Track failed payment
       ServiceLocator.instance.analytics.trackError(
         errorType: 'subscription_payment_failed',
@@ -222,7 +233,7 @@ class PaymentBloc extends Bloc<PaymentEvent, PaymentState> {
     Emitter<PaymentState> emit,
   ) async {
     emit(PaymentLoading());
-    
+
     try {
       // Use one-time payment for boosts
       final result = await _paymentService.processOneTimePayment(
@@ -232,9 +243,11 @@ class PaymentBloc extends Bloc<PaymentEvent, PaymentState> {
         description: 'Profile Boost - ${event.boostType}',
         metadata: {'type': 'boost', 'boostType': event.boostType},
       );
-      
-      emit(PaymentSuccess('Boost payment processed successfully', data: result));
-      
+
+      emit(
+        PaymentSuccess('Boost payment processed successfully', data: result),
+      );
+
       // Track analytics
       ServiceLocator.instance.analytics.trackEvent(
         eventType: AnalyticsEventType.boostPurchased,
@@ -246,7 +259,7 @@ class PaymentBloc extends Bloc<PaymentEvent, PaymentState> {
     } catch (e) {
       AppLogger.error('Failed to process boost payment: $e');
       emit(PaymentError('Failed to process boost payment'));
-      
+
       // Track failed payment
       ServiceLocator.instance.analytics.trackError(
         errorType: 'boost_payment_failed',
@@ -278,11 +291,11 @@ class PaymentBloc extends Bloc<PaymentEvent, PaymentState> {
     Emitter<PaymentState> emit,
   ) async {
     emit(PaymentLoading());
-    
+
     try {
       final history = await _paymentService.getPaymentHistory();
       emit(PaymentHistoryLoaded(history));
-      
+
       // Track analytics
       ServiceLocator.instance.analytics.trackEvent(
         eventType: AnalyticsEventType.featureUsed,
@@ -302,15 +315,15 @@ class PaymentBloc extends Bloc<PaymentEvent, PaymentState> {
     Emitter<PaymentState> emit,
   ) async {
     emit(PaymentLoading());
-    
+
     try {
       await _paymentService.requestRefund(
         paymentId: event.transactionId,
         reason: event.reason,
       );
-      
+
       emit(PaymentSuccess('Refund request submitted successfully'));
-      
+
       // Track analytics
       ServiceLocator.instance.analytics.trackEvent(
         eventType: AnalyticsEventType.featureUsed,

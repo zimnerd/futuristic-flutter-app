@@ -64,14 +64,15 @@ class LeaderboardEntry extends Equatable {
   /// Get position change from previous position
   int? get positionChange {
     if (previousPosition == null) return null;
-    return previousPosition! - position; // Positive = moved up, negative = moved down
+    return previousPosition! -
+        position; // Positive = moved up, negative = moved down
   }
 
   /// Get position change text
   String? get positionChangeText {
     final change = positionChange;
     if (change == null || change == 0) return null;
-    
+
     if (change > 0) {
       return '+$change';
     } else {
@@ -83,7 +84,7 @@ class LeaderboardEntry extends Equatable {
   PositionChangeIndicator? get positionChangeIndicator {
     final change = positionChange;
     if (change == null || change == 0) return null;
-    
+
     if (change > 0) {
       return PositionChangeIndicator.up;
     } else {
@@ -106,7 +107,7 @@ class LeaderboardEntry extends Equatable {
     if (position >= 11 && position <= 13) {
       return '${position}th';
     }
-    
+
     switch (position % 10) {
       case 1:
         return '${position}st';
@@ -136,7 +137,7 @@ class LeaderboardEntry extends Equatable {
   String get timeSinceUpdate {
     final now = DateTime.now();
     final difference = now.difference(lastUpdated);
-    
+
     if (difference.inMinutes < 1) {
       return 'Just now';
     } else if (difference.inHours < 1) {
@@ -177,31 +178,21 @@ class LeaderboardEntry extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        userId,
-        user,
-        category,
-        score,
-        position,
-        previousPosition,
-        additionalData,
-        lastUpdated,
-        createdAt,
-      ];
+    id,
+    userId,
+    user,
+    category,
+    score,
+    position,
+    previousPosition,
+    additionalData,
+    lastUpdated,
+    createdAt,
+  ];
 }
 
 /// Position change indicator enum
-enum PositionChangeIndicator {
-  up,
-  down,
-}
+enum PositionChangeIndicator { up, down }
 
 /// Rank tier enum
-enum RankTier {
-  first,
-  podium,
-  top10,
-  top50,
-  top100,
-  other,
-}
+enum RankTier { first, podium, top10, top50, top100, other }

@@ -28,7 +28,9 @@ class _VoiceMessagesScreenState extends State<VoiceMessagesScreen>
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
-    context.read<VoiceMessageBloc>().add(LoadVoiceMessages(chatId: 'current_chat_id'));
+    context.read<VoiceMessageBloc>().add(
+      LoadVoiceMessages(chatId: 'current_chat_id'),
+    );
   }
 
   @override
@@ -45,18 +47,9 @@ class _VoiceMessagesScreenState extends State<VoiceMessagesScreen>
         bottom: TabBar(
           controller: _tabController,
           tabs: const [
-            Tab(
-              icon: Icon(Icons.mic),
-              text: 'Record',
-            ),
-            Tab(
-              icon: Icon(Icons.inbox),
-              text: 'Received',
-            ),
-            Tab(
-              icon: Icon(Icons.send),
-              text: 'Sent',
-            ),
+            Tab(icon: Icon(Icons.mic), text: 'Record'),
+            Tab(icon: Icon(Icons.inbox), text: 'Received'),
+            Tab(icon: Icon(Icons.send), text: 'Sent'),
           ],
         ),
       ),
@@ -69,9 +62,7 @@ class _VoiceMessagesScreenState extends State<VoiceMessagesScreen>
               decoration: BoxDecoration(
                 color: Theme.of(context).colorScheme.surfaceContainerHighest,
                 border: Border(
-                  bottom: BorderSide(
-                    color: Theme.of(context).dividerColor,
-                  ),
+                  bottom: BorderSide(color: Theme.of(context).dividerColor),
                 ),
               ),
               child: VoiceMessagePlayerWidget(
@@ -130,10 +121,7 @@ class _VoiceMessagesScreenState extends State<VoiceMessagesScreen>
           if (state.status == VoiceMessageStatus.recording)
             const Text(
               'Recording...',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-              ),
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
             ),
           if (state.status == VoiceMessageStatus.sending)
             const Column(

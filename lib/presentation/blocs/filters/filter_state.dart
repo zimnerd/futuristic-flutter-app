@@ -44,12 +44,17 @@ class FilterLoaded extends FilterState {
     return FilterLoaded(
       preferences: preferences ?? this.preferences,
       availableInterests: availableInterests ?? this.availableInterests,
-      availableEducationLevels: availableEducationLevels ?? this.availableEducationLevels,
+      availableEducationLevels:
+          availableEducationLevels ?? this.availableEducationLevels,
       availableOccupations: availableOccupations ?? this.availableOccupations,
-      availableRelationshipTypes: availableRelationshipTypes ?? this.availableRelationshipTypes,
-      availableDrinkingOptions: availableDrinkingOptions ?? this.availableDrinkingOptions,
-      availableSmokingOptions: availableSmokingOptions ?? this.availableSmokingOptions,
-      availableExerciseOptions: availableExerciseOptions ?? this.availableExerciseOptions,
+      availableRelationshipTypes:
+          availableRelationshipTypes ?? this.availableRelationshipTypes,
+      availableDrinkingOptions:
+          availableDrinkingOptions ?? this.availableDrinkingOptions,
+      availableSmokingOptions:
+          availableSmokingOptions ?? this.availableSmokingOptions,
+      availableExerciseOptions:
+          availableExerciseOptions ?? this.availableExerciseOptions,
     );
   }
 }

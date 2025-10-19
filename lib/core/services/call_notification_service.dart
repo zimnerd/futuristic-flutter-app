@@ -8,7 +8,7 @@ import 'call_invitation_service.dart';
 import '../../presentation/navigation/app_router.dart';
 
 /// Service for handling call notifications with native platform UI
-/// 
+///
 /// Integrates with CallInvitationService (WebSocket) and provides:
 /// - Android: Full-screen intent with native call UI
 /// - iOS: CallKit integration with native call screen
@@ -21,8 +21,7 @@ class CallNotificationService {
   static CallNotificationService get instance => _instance;
   CallNotificationService._internal();
 
-  final CallInvitationService _callInvitationService =
-      CallInvitationService();
+  final CallInvitationService _callInvitationService = CallInvitationService();
   final _uuid = const Uuid();
 
   /// Map of callId → flutter_callkit_incoming UUID for tracking
@@ -72,7 +71,7 @@ class CallNotificationService {
   }
 
   /// Handle incoming call push notification from FCM
-  /// 
+  ///
   /// This is called by FirebaseNotificationService when an incoming_call
   /// type notification is received
   Future<void> handleIncomingCallPush(Map<String, dynamic> data) async {
@@ -90,9 +89,7 @@ class CallNotificationService {
       final groupId = data['groupId'] as String?;
 
       if (callId == null || callerId == null || recipientId == null) {
-        AppLogger.error(
-          '❌ Invalid call data: missing required fields',
-        );
+        AppLogger.error('❌ Invalid call data: missing required fields');
         return;
       }
 
@@ -114,16 +111,14 @@ class CallNotificationService {
       // Show native call UI
       await _showNativeCallUI(invitation);
 
-      AppLogger.info(
-        '✅ Native call UI displayed for call: $callId',
-      );
+      AppLogger.info('✅ Native call UI displayed for call: $callId');
     } catch (e) {
       AppLogger.error('❌ Error handling incoming call push: $e');
     }
   }
 
   /// Show native platform call UI
-  /// 
+  ///
   /// Android: Full-screen intent with custom layout
   /// iOS: CallKit native call screen
   Future<void> _showNativeCallUI(CallInvitation invitation) async {
@@ -189,9 +184,7 @@ class CallNotificationService {
 
       await FlutterCallkitIncoming.showCallkitIncoming(params);
 
-      AppLogger.info(
-        '✅ Native call UI shown with CallKit UUID: $callKitUuid',
-      );
+      AppLogger.info('✅ Native call UI shown with CallKit UUID: $callKitUuid');
     } catch (e) {
       AppLogger.error('❌ Error showing native call UI: $e');
     }

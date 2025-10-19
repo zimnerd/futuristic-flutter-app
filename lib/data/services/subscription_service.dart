@@ -16,13 +16,15 @@ class SubscriptionService {
   final SavedPaymentMethodsService _savedMethodsService;
   final ApiClient _apiClient;
   final AuthService? _authService;
-  
+
   // Logger instance
   final Logger _logger = Logger();
-  
+
   // Stream controllers for reactive updates
-  final StreamController<Subscription?> _subscriptionController = StreamController<Subscription?>.broadcast();
-  final StreamController<SubscriptionUsage?> _usageController = StreamController<SubscriptionUsage?>.broadcast();
+  final StreamController<Subscription?> _subscriptionController =
+      StreamController<Subscription?>.broadcast();
+  final StreamController<SubscriptionUsage?> _usageController =
+      StreamController<SubscriptionUsage?>.broadcast();
 
   SubscriptionService({
     required SavedPaymentMethodsService savedMethodsService,
@@ -33,7 +35,8 @@ class SubscriptionService {
        _authService = authService;
 
   // Streams
-  Stream<Subscription?> get subscriptionStream => _subscriptionController.stream;
+  Stream<Subscription?> get subscriptionStream =>
+      _subscriptionController.stream;
   Stream<SubscriptionUsage?> get usageStream => _usageController.stream;
 
   /// Helper method to get current user ID
@@ -49,24 +52,24 @@ class SubscriptionService {
   }
 
   /// Calculate final amount after applying promo code discounts
-  Future<double> _calculateFinalAmount(SubscriptionPlan plan, String? promoCode) async {
+  Future<double> _calculateFinalAmount(
+    SubscriptionPlan plan,
+    String? promoCode,
+  ) async {
     double finalAmount = plan.amount;
-    
+
     if (promoCode != null && promoCode.isNotEmpty) {
       try {
         // Call backend to validate promo code and get discount
         final response = await _apiClient.post<Map<String, dynamic>>(
           '/subscriptions/validate-promo',
-          data: {
-            'promoCode': promoCode,
-            'planId': plan.id,
-          },
+          data: {'promoCode': promoCode, 'planId': plan.id},
         );
-        
+
         if (response.data?['valid'] == true) {
           final discount = response.data?['discount'] ?? 0.0;
           final discountType = response.data?['discountType'] ?? 'percentage';
-          
+
           if (discountType == 'percentage') {
             finalAmount = finalAmount * (1 - discount / 100);
           } else if (discountType == 'fixed') {
@@ -78,7 +81,7 @@ class SubscriptionService {
         // Continue with original price if promo validation fails
       }
     }
-    
+
     return finalAmount;
   }
 
@@ -87,12 +90,12 @@ class SubscriptionService {
     try {
       final prefs = await SharedPreferences.getInstance();
       final subscriptionData = prefs.getString('current_subscription');
-      
+
       if (subscriptionData != null) {
         final json = jsonDecode(subscriptionData) as Map<String, dynamic>;
         return Subscription.fromJson(json);
       }
-      
+
       return null;
     } catch (e) {
       _logger.e('Error getting current subscription: $e');
@@ -108,7 +111,9 @@ class SubscriptionService {
   }) async {
     try {
       // Validate payment method exists
-      final paymentMethod = await _savedMethodsService.getPaymentMethodById(paymentMethodId);
+      final paymentMethod = await _savedMethodsService.getPaymentMethodById(
+        paymentMethodId,
+      );
       if (paymentMethod == null) {
         return ApiResponse.error('Payment method not found');
       }
@@ -186,7 +191,9 @@ class SubscriptionService {
 
       // Update subscription status
       final updatedSubscription = subscription.copyWith(
-        status: cancelImmediately ? SubscriptionStatus.cancelled : SubscriptionStatus.pendingCancellation,
+        status: cancelImmediately
+            ? SubscriptionStatus.cancelled
+            : SubscriptionStatus.pendingCancellation,
         cancelledAt: DateTime.now(),
         cancellationReason: reason,
         autoRenew: false,
@@ -298,12 +305,12 @@ class SubscriptionService {
     try {
       final prefs = await SharedPreferences.getInstance();
       final usageData = prefs.getString('subscription_usage');
-      
+
       if (usageData != null) {
         final json = jsonDecode(usageData) as Map<String, dynamic>;
         return SubscriptionUsage.fromJson(json);
       }
-      
+
       return null;
     } catch (e) {
       _logger.e('Error getting subscription usage: $e');
@@ -316,7 +323,7 @@ class SubscriptionService {
     try {
       final subscription = await getCurrentSubscription();
       final usage = await getSubscriptionUsage() ?? SubscriptionUsage.empty();
-      
+
       if (subscription == null) return false;
 
       // Get current usage for this feature
@@ -344,8 +351,9 @@ class SubscriptionService {
     try {
       final subscription = await getCurrentSubscription();
       final usage = await getSubscriptionUsage();
-      
-      if (subscription == null || subscription.status != SubscriptionStatus.active) {
+
+      if (subscription == null ||
+          subscription.status != SubscriptionStatus.active) {
         return false;
       }
 
@@ -401,7 +409,9 @@ class SubscriptionService {
       // Successful renewal
       final renewedSubscription = subscription.copyWith(
         startDate: subscription.endDate ?? DateTime.now(),
-        endDate: _calculateNextBillingDate(_getBillingCycleFromMetadata(subscription)),
+        endDate: _calculateNextBillingDate(
+          _getBillingCycleFromMetadata(subscription),
+        ),
         status: SubscriptionStatus.active,
         metadata: {
           ...?subscription.metadata,
@@ -465,22 +475,28 @@ class SubscriptionService {
     }
   }
 
-  double _calculateProratedAmount(Subscription current, SubscriptionPlan newPlan) {
+  double _calculateProratedAmount(
+    Subscription current,
+    SubscriptionPlan newPlan,
+  ) {
     if (current.endDate == null) return newPlan.amount;
-    
+
     final now = DateTime.now();
     final remainingDays = current.endDate!.difference(now).inDays;
     final totalDays = current.endDate!.difference(current.startDate).inDays;
-    
+
     if (totalDays <= 0) return newPlan.amount;
-    
+
     final remainingValue = (current.amountPaid * remainingDays) / totalDays;
     return (newPlan.amount - remainingValue).clamp(0, newPlan.amount);
   }
 
   Future<void> _saveSubscription(Subscription subscription) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('current_subscription', jsonEncode(subscription.toJson()));
+    await prefs.setString(
+      'current_subscription',
+      jsonEncode(subscription.toJson()),
+    );
   }
 
   Future<void> _saveUsage(SubscriptionUsage usage) async {
@@ -488,12 +504,17 @@ class SubscriptionService {
     await prefs.setString('subscription_usage', jsonEncode(usage.toJson()));
   }
 
-  Future<void> _initializeUsageTracking(Subscription subscription, SubscriptionPlan plan) async {
+  Future<void> _initializeUsageTracking(
+    Subscription subscription,
+    SubscriptionPlan plan,
+  ) async {
     final usage = SubscriptionUsage(
       subscriptionId: subscription.id,
       planId: plan.id,
       periodStart: subscription.startDate,
-      periodEnd: subscription.endDate ?? _calculateNextBillingDate(_getBillingCycleFromMetadata(subscription)),
+      periodEnd:
+          subscription.endDate ??
+          _calculateNextBillingDate(_getBillingCycleFromMetadata(subscription)),
       usage: {},
       lastUpdated: DateTime.now(),
     );
@@ -502,7 +523,10 @@ class SubscriptionService {
     _usageController.add(usage);
   }
 
-  Future<void> _updateUsageLimits(Subscription subscription, SubscriptionPlan plan) async {
+  Future<void> _updateUsageLimits(
+    Subscription subscription,
+    SubscriptionPlan plan,
+  ) async {
     // Implementation would update usage limits based on new plan
     // For now, just reset usage tracking
     await _initializeUsageTracking(subscription, plan);

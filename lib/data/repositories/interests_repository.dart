@@ -18,14 +18,19 @@ class InterestsRepository {
         if (data['success'] == true && data['data'] != null) {
           final categories = data['data']['categories'] as List<dynamic>;
           return categories
-              .map((json) => InterestCategory.fromJson(json as Map<String, dynamic>))
+              .map(
+                (json) =>
+                    InterestCategory.fromJson(json as Map<String, dynamic>),
+              )
               .toList();
         }
         throw Exception('Invalid response format');
       } else if (response.statusCode == 401) {
         throw Exception('Unauthorized: Please log in again');
       } else {
-        throw Exception('Failed to fetch interest categories: ${response.statusCode}');
+        throw Exception(
+          'Failed to fetch interest categories: ${response.statusCode}',
+        );
       }
     } catch (e) {
       throw Exception('Error fetching interest categories: $e');
@@ -71,7 +76,9 @@ class InterestsRepository {
       } else if (response.statusCode == 401) {
         throw Exception('Unauthorized: Please log in again');
       } else {
-        throw Exception('Failed to fetch interest names: ${response.statusCode}');
+        throw Exception(
+          'Failed to fetch interest names: ${response.statusCode}',
+        );
       }
     } catch (e) {
       throw Exception('Error fetching interest names: $e');

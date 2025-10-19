@@ -229,14 +229,8 @@ class _SyncStatusIndicatorState extends State<SyncStatusIndicator>
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(
-          label,
-          style: const TextStyle(fontWeight: FontWeight.w500),
-        ),
-        Text(
-          value,
-          style: TextStyle(color: Colors.grey[600]),
-        ),
+        Text(label, style: const TextStyle(fontWeight: FontWeight.w500)),
+        Text(value, style: TextStyle(color: Colors.grey[600])),
       ],
     );
   }
@@ -269,9 +263,7 @@ class _SyncStatusIndicatorState extends State<SyncStatusIndicator>
         decoration: BoxDecoration(
           color: _getStatusColor().withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: _getStatusColor().withValues(alpha: 0.3),
-          ),
+          border: Border.all(color: _getStatusColor().withValues(alpha: 0.3)),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -294,7 +286,8 @@ class _SyncStatusIndicatorState extends State<SyncStatusIndicator>
 
   Widget _buildStatusDot() {
     final color = _getStatusColor();
-    final shouldAnimate = _status == ConnectionStatus.connecting ||
+    final shouldAnimate =
+        _status == ConnectionStatus.connecting ||
         _status == ConnectionStatus.reconnecting;
 
     if (shouldAnimate) {
@@ -339,9 +332,4 @@ class _SyncStatusIndicatorState extends State<SyncStatusIndicator>
 }
 
 /// Connection status enum
-enum ConnectionStatus {
-  connected,
-  connecting,
-  disconnected,
-  reconnecting,
-}
+enum ConnectionStatus { connected, connecting, disconnected, reconnecting }

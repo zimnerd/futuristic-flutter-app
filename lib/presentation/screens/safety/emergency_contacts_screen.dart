@@ -100,9 +100,7 @@ class _EmergencyContactsScreenState extends State<EmergencyContactsScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Remove Contact'),
-        content: Text(
-          'Remove ${contact.name} from your emergency contacts?',
-        ),
+        content: Text('Remove ${contact.name} from your emergency contacts?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -175,8 +173,8 @@ class _EmergencyContactsScreenState extends State<EmergencyContactsScreen> {
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _contacts.isEmpty
-              ? _buildEmptyState()
-              : _buildContactsList(),
+          ? _buildEmptyState()
+          : _buildContactsList(),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _addContact,
         icon: const Icon(Icons.add),
@@ -193,27 +191,17 @@ class _EmergencyContactsScreenState extends State<EmergencyContactsScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.contact_emergency,
-              size: 80,
-              color: Colors.grey[400],
-            ),
+            Icon(Icons.contact_emergency, size: 80, color: Colors.grey[400]),
             const SizedBox(height: 24),
             const Text(
               'No Emergency Contacts',
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
             Text(
               'Add trusted contacts who can be notified when you\'re on a date',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 15,
-                color: Colors.grey[600],
-              ),
+              style: TextStyle(fontSize: 15, color: Colors.grey[600]),
             ),
             const SizedBox(height: 32),
             ElevatedButton.icon(
@@ -223,7 +211,10 @@ class _EmergencyContactsScreenState extends State<EmergencyContactsScreen> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: PulseColors.primary,
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
               ),
             ),
           ],
@@ -242,9 +233,7 @@ class _EmergencyContactsScreenState extends State<EmergencyContactsScreen> {
           decoration: BoxDecoration(
             color: PulseColors.info.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: PulseColors.info.withValues(alpha: 0.3),
-            ),
+            border: Border.all(color: PulseColors.info.withValues(alpha: 0.3)),
           ),
           child: Row(
             children: [
@@ -253,10 +242,7 @@ class _EmergencyContactsScreenState extends State<EmergencyContactsScreen> {
               Expanded(
                 child: Text(
                   'Your contacts can be notified when you go on dates and receive your live location',
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: Colors.grey[700],
-                  ),
+                  style: TextStyle(fontSize: 13, color: Colors.grey[700]),
                 ),
               ),
             ],
@@ -300,19 +286,13 @@ class _EmergencyContactsScreenState extends State<EmergencyContactsScreen> {
         ),
         title: Text(
           contact.name,
-          style: const TextStyle(
-            fontWeight: FontWeight.w600,
-            fontSize: 16,
-          ),
+          style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
         ),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 4),
-            Text(
-              contact.phone,
-              style: TextStyle(color: Colors.grey[600]),
-            ),
+            Text(contact.phone, style: TextStyle(color: Colors.grey[600])),
             const SizedBox(height: 4),
             Text(
               contact.relationship,
@@ -344,7 +324,11 @@ class _EmergencyContactsScreenState extends State<EmergencyContactsScreen> {
               value: 'remove',
               child: Row(
                 children: [
-                  Icon(Icons.delete_outline, size: 20, color: PulseColors.error),
+                  Icon(
+                    Icons.delete_outline,
+                    size: 20,
+                    color: PulseColors.error,
+                  ),
                   SizedBox(width: 12),
                   Text('Remove', style: TextStyle(color: PulseColors.error)),
                 ],
@@ -547,10 +531,7 @@ class _SafetyTipsSheet extends StatelessWidget {
               const SizedBox(width: 12),
               const Text(
                 'Dating Safety Tips',
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
               ),
               const Spacer(),
               IconButton(
@@ -632,10 +613,7 @@ class _SafetyTipsSheet extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(
                   description,
-                  style: TextStyle(
-                    color: Colors.grey[600],
-                    fontSize: 13,
-                  ),
+                  style: TextStyle(color: Colors.grey[600], fontSize: 13),
                 ),
               ],
             ),

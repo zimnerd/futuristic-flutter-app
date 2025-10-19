@@ -5,7 +5,7 @@ class ApiConstants {
   // Base URLs - Uses AppConfig for environment-aware URLs
   static String get baseUrl => AppConfig.apiBaseUrl;
   static String get websocketUrl => AppConfig.websocketUrl;
-  
+
   // ================================
   // CORE MODULE ENDPOINTS
   // ================================
@@ -233,7 +233,7 @@ class ApiConstants {
   static const String analyticsTrack = '$analytics/track';
   static const String analyticsInsights = '$analytics/insights';
   static const String analyticsUserProperties = '$analytics/user-properties';
-  
+
   // Notifications endpoints (notifications.controller.ts)
   static const String notifications = '/notifications';
   static const String notificationsSettings = '$notifications/settings';
@@ -243,33 +243,33 @@ class ApiConstants {
   // ================================
   // ADDITIONAL SERVICES
   // ================================
-  
+
   // Maps endpoints (maps.controller.ts)
   static const String maps = '/maps';
   static const String mapsNearby = '$maps/nearby';
   static const String mapsGeocoding = '$maps/geocoding';
-  
+
   // Email endpoints (email.controller.ts)
   static const String email = '/email';
   static const String emailSend = '$email/send';
   static const String emailTemplates = '$email/templates';
-  
+
   // WhatsApp endpoints (whatsapp.controller.ts)
   static const String whatsapp = '/whatsapp';
   static const String whatsappSend = '$whatsapp/send';
   static const String whatsappStatus = '$whatsapp/status';
   static const String whatsappWebhook = '$whatsapp/webhook';
-  
+
   // Events endpoints (events.controller.ts)
   static const String events = '/events';
   static const String eventsCreate = '$events/create';
   static const String eventsJoin = '$events/join';
   static const String eventsNearby = '$events/nearby';
-  
+
   // ================================
   // WEBSOCKET EVENTS
   // ================================
-  
+
   static const String wsNewMessage = 'new_message';
   static const String wsMessageRead = 'message_read';
   static const String wsUserOnline = 'user_online';
@@ -280,20 +280,20 @@ class ApiConstants {
   static const String wsCallEnd = 'call_end';
   static const String wsTyping = 'typing';
   static const String wsStopTyping = 'stop_typing';
-  
+
   // ================================
   // CONFIGURATION
   // ================================
-  
+
   // Request timeouts
   static const int connectTimeout = 30000; // 30 seconds
   static const int receiveTimeout = 30000; // 30 seconds
   static const int sendTimeout = 30000; // 30 seconds
-  
+
   // Pagination
   static const int defaultPageSize = 20;
   static const int maxPageSize = 100;
-  
+
   // File upload limits
   static const int maxImageSize = 10 * 1024 * 1024; // 10MB
   static const int maxVideoSize = 100 * 1024 * 1024; // 100MB

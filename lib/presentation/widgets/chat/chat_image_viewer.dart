@@ -136,7 +136,9 @@ class _ChatImageViewerState extends State<ChatImageViewer> {
               bottom: 0,
               left: 0,
               right: 0,
-              child: _buildCaptionOverlay(widget.images[_currentIndex].caption!),
+              child: _buildCaptionOverlay(
+                widget.images[_currentIndex].caption!,
+              ),
             ),
 
           // Image counter dots (if multiple images)
@@ -169,10 +171,7 @@ class _ChatImageViewerState extends State<ChatImageViewer> {
       child: SafeArea(
         child: Text(
           caption,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 16,
-          ),
+          style: const TextStyle(color: Colors.white, fontSize: 16),
           textAlign: TextAlign.center,
         ),
       ),
@@ -238,8 +237,7 @@ class _ChatImageViewerState extends State<ChatImageViewer> {
       await file.writeAsBytes(response.bodyBytes);
 
       if (context.mounted) {
-        PulseToast.success(context, message: 'Image saved to ${file.path}',
-        );
+        PulseToast.success(context, message: 'Image saved to ${file.path}');
       }
     } catch (e) {
       if (context.mounted) {

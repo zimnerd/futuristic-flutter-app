@@ -127,10 +127,9 @@ class AiPreferencesError extends AiPreferencesState {
 class AiPreferencesBloc extends Bloc<AiPreferencesEvent, AiPreferencesState> {
   final AiPreferencesService _preferencesService;
 
-  AiPreferencesBloc({
-    required AiPreferencesService preferencesService,
-  })  : _preferencesService = preferencesService,
-        super(AiPreferencesInitial()) {
+  AiPreferencesBloc({required AiPreferencesService preferencesService})
+    : _preferencesService = preferencesService,
+      super(AiPreferencesInitial()) {
     on<LoadAiPreferences>(_onLoadAiPreferences);
     on<UpdateAiPreferences>(_onUpdateAiPreferences);
     on<SetAiEnabled>(_onSetAiEnabled);
@@ -150,14 +149,17 @@ class AiPreferencesBloc extends Bloc<AiPreferencesEvent, AiPreferencesState> {
   ) async {
     try {
       emit(AiPreferencesLoading());
-      
+
       final preferences = await _preferencesService.getAiPreferences();
-      final hasCompletedOnboarding = await _preferencesService.hasCompletedAiOnboarding();
-      
-      emit(AiPreferencesLoaded(
-        preferences: preferences,
-        hasCompletedOnboarding: hasCompletedOnboarding,
-      ));
+      final hasCompletedOnboarding = await _preferencesService
+          .hasCompletedAiOnboarding();
+
+      emit(
+        AiPreferencesLoaded(
+          preferences: preferences,
+          hasCompletedOnboarding: hasCompletedOnboarding,
+        ),
+      );
     } catch (e) {
       emit(AiPreferencesError('Failed to load AI preferences: $e'));
     }
@@ -169,13 +171,16 @@ class AiPreferencesBloc extends Bloc<AiPreferencesEvent, AiPreferencesState> {
   ) async {
     try {
       await _preferencesService.updateAiPreferences(event.preferences);
-      
-      final hasCompletedOnboarding = await _preferencesService.hasCompletedAiOnboarding();
-      
-      emit(AiPreferencesLoaded(
-        preferences: event.preferences,
-        hasCompletedOnboarding: hasCompletedOnboarding,
-      ));
+
+      final hasCompletedOnboarding = await _preferencesService
+          .hasCompletedAiOnboarding();
+
+      emit(
+        AiPreferencesLoaded(
+          preferences: event.preferences,
+          hasCompletedOnboarding: hasCompletedOnboarding,
+        ),
+      );
     } catch (e) {
       emit(AiPreferencesError('Failed to update AI preferences: $e'));
     }
@@ -187,14 +192,17 @@ class AiPreferencesBloc extends Bloc<AiPreferencesEvent, AiPreferencesState> {
   ) async {
     try {
       await _preferencesService.setAiEnabled(event.enabled);
-      
+
       final preferences = await _preferencesService.getAiPreferences();
-      final hasCompletedOnboarding = await _preferencesService.hasCompletedAiOnboarding();
-      
-      emit(AiPreferencesLoaded(
-        preferences: preferences,
-        hasCompletedOnboarding: hasCompletedOnboarding,
-      ));
+      final hasCompletedOnboarding = await _preferencesService
+          .hasCompletedAiOnboarding();
+
+      emit(
+        AiPreferencesLoaded(
+          preferences: preferences,
+          hasCompletedOnboarding: hasCompletedOnboarding,
+        ),
+      );
     } catch (e) {
       emit(AiPreferencesError('Failed to update AI enabled state: $e'));
     }
@@ -206,14 +214,17 @@ class AiPreferencesBloc extends Bloc<AiPreferencesEvent, AiPreferencesState> {
   ) async {
     try {
       await _preferencesService.updateConversationSettings(event.settings);
-      
+
       final preferences = await _preferencesService.getAiPreferences();
-      final hasCompletedOnboarding = await _preferencesService.hasCompletedAiOnboarding();
-      
-      emit(AiPreferencesLoaded(
-        preferences: preferences,
-        hasCompletedOnboarding: hasCompletedOnboarding,
-      ));
+      final hasCompletedOnboarding = await _preferencesService
+          .hasCompletedAiOnboarding();
+
+      emit(
+        AiPreferencesLoaded(
+          preferences: preferences,
+          hasCompletedOnboarding: hasCompletedOnboarding,
+        ),
+      );
     } catch (e) {
       emit(AiPreferencesError('Failed to update conversation settings: $e'));
     }
@@ -225,14 +236,17 @@ class AiPreferencesBloc extends Bloc<AiPreferencesEvent, AiPreferencesState> {
   ) async {
     try {
       await _preferencesService.updateCompanionSettings(event.settings);
-      
+
       final preferences = await _preferencesService.getAiPreferences();
-      final hasCompletedOnboarding = await _preferencesService.hasCompletedAiOnboarding();
-      
-      emit(AiPreferencesLoaded(
-        preferences: preferences,
-        hasCompletedOnboarding: hasCompletedOnboarding,
-      ));
+      final hasCompletedOnboarding = await _preferencesService
+          .hasCompletedAiOnboarding();
+
+      emit(
+        AiPreferencesLoaded(
+          preferences: preferences,
+          hasCompletedOnboarding: hasCompletedOnboarding,
+        ),
+      );
     } catch (e) {
       emit(AiPreferencesError('Failed to update companion settings: $e'));
     }
@@ -244,14 +258,17 @@ class AiPreferencesBloc extends Bloc<AiPreferencesEvent, AiPreferencesState> {
   ) async {
     try {
       await _preferencesService.updateProfileSettings(event.settings);
-      
+
       final preferences = await _preferencesService.getAiPreferences();
-      final hasCompletedOnboarding = await _preferencesService.hasCompletedAiOnboarding();
-      
-      emit(AiPreferencesLoaded(
-        preferences: preferences,
-        hasCompletedOnboarding: hasCompletedOnboarding,
-      ));
+      final hasCompletedOnboarding = await _preferencesService
+          .hasCompletedAiOnboarding();
+
+      emit(
+        AiPreferencesLoaded(
+          preferences: preferences,
+          hasCompletedOnboarding: hasCompletedOnboarding,
+        ),
+      );
     } catch (e) {
       emit(AiPreferencesError('Failed to update profile settings: $e'));
     }
@@ -263,14 +280,17 @@ class AiPreferencesBloc extends Bloc<AiPreferencesEvent, AiPreferencesState> {
   ) async {
     try {
       await _preferencesService.updateMatchingSettings(event.settings);
-      
+
       final preferences = await _preferencesService.getAiPreferences();
-      final hasCompletedOnboarding = await _preferencesService.hasCompletedAiOnboarding();
-      
-      emit(AiPreferencesLoaded(
-        preferences: preferences,
-        hasCompletedOnboarding: hasCompletedOnboarding,
-      ));
+      final hasCompletedOnboarding = await _preferencesService
+          .hasCompletedAiOnboarding();
+
+      emit(
+        AiPreferencesLoaded(
+          preferences: preferences,
+          hasCompletedOnboarding: hasCompletedOnboarding,
+        ),
+      );
     } catch (e) {
       emit(AiPreferencesError('Failed to update matching settings: $e'));
     }
@@ -282,14 +302,17 @@ class AiPreferencesBloc extends Bloc<AiPreferencesEvent, AiPreferencesState> {
   ) async {
     try {
       await _preferencesService.updateIcebreakerSettings(event.settings);
-      
+
       final preferences = await _preferencesService.getAiPreferences();
-      final hasCompletedOnboarding = await _preferencesService.hasCompletedAiOnboarding();
-      
-      emit(AiPreferencesLoaded(
-        preferences: preferences,
-        hasCompletedOnboarding: hasCompletedOnboarding,
-      ));
+      final hasCompletedOnboarding = await _preferencesService
+          .hasCompletedAiOnboarding();
+
+      emit(
+        AiPreferencesLoaded(
+          preferences: preferences,
+          hasCompletedOnboarding: hasCompletedOnboarding,
+        ),
+      );
     } catch (e) {
       emit(AiPreferencesError('Failed to update icebreaker settings: $e'));
     }
@@ -301,14 +324,17 @@ class AiPreferencesBloc extends Bloc<AiPreferencesEvent, AiPreferencesState> {
   ) async {
     try {
       await _preferencesService.updateGeneralSettings(event.settings);
-      
+
       final preferences = await _preferencesService.getAiPreferences();
-      final hasCompletedOnboarding = await _preferencesService.hasCompletedAiOnboarding();
-      
-      emit(AiPreferencesLoaded(
-        preferences: preferences,
-        hasCompletedOnboarding: hasCompletedOnboarding,
-      ));
+      final hasCompletedOnboarding = await _preferencesService
+          .hasCompletedAiOnboarding();
+
+      emit(
+        AiPreferencesLoaded(
+          preferences: preferences,
+          hasCompletedOnboarding: hasCompletedOnboarding,
+        ),
+      );
     } catch (e) {
       emit(AiPreferencesError('Failed to update general settings: $e'));
     }
@@ -320,14 +346,17 @@ class AiPreferencesBloc extends Bloc<AiPreferencesEvent, AiPreferencesState> {
   ) async {
     try {
       await _preferencesService.resetPreferences();
-      
+
       final preferences = await _preferencesService.getAiPreferences();
-      final hasCompletedOnboarding = await _preferencesService.hasCompletedAiOnboarding();
-      
-      emit(AiPreferencesLoaded(
-        preferences: preferences,
-        hasCompletedOnboarding: hasCompletedOnboarding,
-      ));
+      final hasCompletedOnboarding = await _preferencesService
+          .hasCompletedAiOnboarding();
+
+      emit(
+        AiPreferencesLoaded(
+          preferences: preferences,
+          hasCompletedOnboarding: hasCompletedOnboarding,
+        ),
+      );
     } catch (e) {
       emit(AiPreferencesError('Failed to reset AI preferences: $e'));
     }
@@ -339,14 +368,17 @@ class AiPreferencesBloc extends Bloc<AiPreferencesEvent, AiPreferencesState> {
   ) async {
     try {
       await _preferencesService.completeAiOnboarding();
-      
+
       final preferences = await _preferencesService.getAiPreferences();
-      final hasCompletedOnboarding = await _preferencesService.hasCompletedAiOnboarding();
-      
-      emit(AiPreferencesLoaded(
-        preferences: preferences,
-        hasCompletedOnboarding: hasCompletedOnboarding,
-      ));
+      final hasCompletedOnboarding = await _preferencesService
+          .hasCompletedAiOnboarding();
+
+      emit(
+        AiPreferencesLoaded(
+          preferences: preferences,
+          hasCompletedOnboarding: hasCompletedOnboarding,
+        ),
+      );
     } catch (e) {
       emit(AiPreferencesError('Failed to complete AI onboarding: $e'));
     }
@@ -357,7 +389,7 @@ class AiPreferencesBloc extends Bloc<AiPreferencesEvent, AiPreferencesState> {
     final currentState = state;
     if (currentState is AiPreferencesLoaded) {
       final preferences = currentState.preferences;
-      
+
       if (!preferences.isAiEnabled) {
         return false;
       }

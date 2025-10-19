@@ -4,7 +4,7 @@ import '../../theme/pulse_colors.dart';
 import '../common/robust_network_image.dart';
 
 /// Conversation Picker Sheet
-/// 
+///
 /// Modal bottom sheet for selecting conversations to forward messages to.
 /// Features:
 /// - Multi-select mode with checkboxes
@@ -17,7 +17,7 @@ class ConversationPickerSheet extends StatefulWidget {
   final List<Conversation> conversations;
   final Function(List<String> conversationIds) onConversationsSelected;
   final bool allowMultiSelect;
-  
+
   const ConversationPickerSheet({
     super.key,
     required this.conversations,
@@ -26,7 +26,8 @@ class ConversationPickerSheet extends StatefulWidget {
   });
 
   @override
-  State<ConversationPickerSheet> createState() => _ConversationPickerSheetState();
+  State<ConversationPickerSheet> createState() =>
+      _ConversationPickerSheetState();
 }
 
 class _ConversationPickerSheetState extends State<ConversationPickerSheet> {
@@ -105,7 +106,7 @@ class _ConversationPickerSheetState extends State<ConversationPickerSheet> {
               borderRadius: BorderRadius.circular(2),
             ),
           ),
-          
+
           // Header
           Padding(
             padding: const EdgeInsets.all(16.0),
@@ -121,9 +122,13 @@ class _ConversationPickerSheetState extends State<ConversationPickerSheet> {
                     ),
                   ),
                 ),
-                if (widget.allowMultiSelect && _selectedConversationIds.isNotEmpty)
+                if (widget.allowMultiSelect &&
+                    _selectedConversationIds.isNotEmpty)
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
                     decoration: BoxDecoration(
                       color: PulseColors.primary,
                       borderRadius: BorderRadius.circular(20),
@@ -188,14 +193,19 @@ class _ConversationPickerSheetState extends State<ConversationPickerSheet> {
                     itemCount: _filteredConversations.length,
                     itemBuilder: (context, index) {
                       final conversation = _filteredConversations[index];
-                      final isSelected = _selectedConversationIds.contains(conversation.id);
-                      
+                      final isSelected = _selectedConversationIds.contains(
+                        conversation.id,
+                      );
+
                       return InkWell(
                         onTap: () => _toggleConversation(conversation.id),
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 12,
+                          ),
                           decoration: BoxDecoration(
-                            color: isSelected 
+                            color: isSelected
                                 ? PulseColors.primary.withValues(alpha: 0.1)
                                 : Colors.transparent,
                           ),
@@ -209,7 +219,8 @@ class _ConversationPickerSheetState extends State<ConversationPickerSheet> {
                                     backgroundColor: Colors.grey.shade800,
                                     child: RobustNetworkImage(
                                       imageUrl: conversation.otherUserAvatar,
-                                      blurhash: conversation.otherUserAvatarBlurhash,
+                                      blurhash:
+                                          conversation.otherUserAvatarBlurhash,
                                       width: 48,
                                       height: 48,
                                       fit: BoxFit.cover,
@@ -258,8 +269,11 @@ class _ConversationPickerSheetState extends State<ConversationPickerSheet> {
                               if (widget.allowMultiSelect)
                                 Checkbox(
                                   value: isSelected,
-                                  onChanged: (_) => _toggleConversation(conversation.id),
-                                  fillColor: WidgetStateProperty.resolveWith((states) {
+                                  onChanged: (_) =>
+                                      _toggleConversation(conversation.id),
+                                  fillColor: WidgetStateProperty.resolveWith((
+                                    states,
+                                  ) {
                                     if (states.contains(WidgetState.selected)) {
                                       return PulseColors.primary;
                                     }
@@ -293,7 +307,9 @@ class _ConversationPickerSheetState extends State<ConversationPickerSheet> {
                 child: SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: _selectedConversationIds.isEmpty ? null : _confirmSelection,
+                    onPressed: _selectedConversationIds.isEmpty
+                        ? null
+                        : _confirmSelection,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: PulseColors.primary,
                       disabledBackgroundColor: Colors.grey.shade700,

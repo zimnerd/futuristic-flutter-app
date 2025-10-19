@@ -6,7 +6,8 @@ import 'package:path/path.dart' as path;
 import 'package:permission_handler/permission_handler.dart';
 
 /// Progress callback for upload operations
-typedef ProgressCallback = void Function(int sent, int total, double percentage);
+typedef ProgressCallback =
+    void Function(int sent, int total, double percentage);
 
 /// Upload task for queue management
 class UploadTask {
@@ -17,7 +18,7 @@ class UploadTask {
   final Map<String, dynamic> metadata;
   final ProgressCallback? onProgress;
   final Completer<MediaUploadResult> completer;
-  
+
   UploadTask({
     required this.id,
     required this.filePath,
@@ -34,18 +35,17 @@ class UploadTask {
 class MediaUploadService {
   final Dio _httpClient;
   final ImagePicker _picker = ImagePicker();
-  
+
   // Upload queue management
   final List<UploadTask> _uploadQueue = [];
   final Map<String, CancelToken> _activeCancelTokens = {};
-  final StreamController<List<UploadTask>> _queueController = StreamController.broadcast();
-  
+  final StreamController<List<UploadTask>> _queueController =
+      StreamController.broadcast();
+
   /// Stream of current upload queue
   Stream<List<UploadTask>> get uploadQueueStream => _queueController.stream;
 
-  MediaUploadService({
-    required Dio httpClient,
-  }) : _httpClient = httpClient;
+  MediaUploadService({required Dio httpClient}) : _httpClient = httpClient;
 
   // ===========================================
   // MEDIA PICKING METHODS
@@ -108,11 +108,11 @@ class MediaUploadService {
         maxHeight: maxHeight.toDouble(),
         imageQuality: imageQuality,
       );
-      
+
       if (images.length > maxImages) {
         return images.take(maxImages).toList();
       }
-      
+
       return images;
     } catch (e) {
       throw MediaUploadException('Failed to pick multiple images: $e');
@@ -167,7 +167,7 @@ class MediaUploadService {
     final taskId = DateTime.now().millisecondsSinceEpoch.toString();
     final cancelToken = CancelToken();
     final completer = Completer<MediaUploadResult>();
-    
+
     final task = UploadTask(
       id: taskId,
       filePath: filePath,
@@ -184,12 +184,12 @@ class MediaUploadService {
         'processingOptions': processingOptions,
       },
     );
-    
+
     // Add to queue and notify listeners
     _uploadQueue.add(task);
     _activeCancelTokens[taskId] = cancelToken;
     _queueController.add(List.from(_uploadQueue));
-    
+
     try {
       final result = await _performUpload(task, cancelToken);
       completer.complete(result);
@@ -206,9 +206,12 @@ class MediaUploadService {
   }
 
   /// Internal method to perform the actual upload
-  Future<MediaUploadResult> _performUpload(UploadTask task, CancelToken cancelToken) async {
+  Future<MediaUploadResult> _performUpload(
+    UploadTask task,
+    CancelToken cancelToken,
+  ) async {
     // Note: Authentication token is automatically added by Dio interceptors in httpClient
-    
+
     // Validate file before upload
     final validation = await validateMediaFile(task.filePath, task.type);
     if (!validation.isValid) {
@@ -226,9 +229,10 @@ class MediaUploadService {
       'isPublic': task.metadata['isPublic'].toString(),
       'requiresModeration': task.metadata['requiresModeration'].toString(),
       if (task.metadata['title'] != null) 'title': task.metadata['title'],
-      if (task.metadata['description'] != null) 'description': task.metadata['description'],
+      if (task.metadata['description'] != null)
+        'description': task.metadata['description'],
       if (task.metadata['tags'] != null) 'tags': task.metadata['tags'],
-      if (task.metadata['processingOptions'] != null) 
+      if (task.metadata['processingOptions'] != null)
         'processingOptions': task.metadata['processingOptions'].toJson(),
     });
 
@@ -237,11 +241,7 @@ class MediaUploadService {
       '/media/upload',
       data: formData,
       cancelToken: cancelToken,
-      options: Options(
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      ),
+      options: Options(headers: {'Content-Type': 'multipart/form-data'}),
       onSendProgress: (int sent, int total) {
         final percentage = (sent / total) * 100;
         task.onProgress?.call(sent, total, percentage);
@@ -293,7 +293,9 @@ class MediaUploadService {
       // Validate file before upload
       final validation = await validateMediaFile(filePath, type);
       if (!validation.isValid) {
-        throw MediaUploadException(validation.error ?? 'File validation failed');
+        throw MediaUploadException(
+          validation.error ?? 'File validation failed',
+        );
       }
 
       // Prepare multipart form data
@@ -309,7 +311,7 @@ class MediaUploadService {
         if (title != null) 'title': title,
         if (description != null) 'description': description,
         if (tags != null) 'tags': tags,
-        if (processingOptions != null) 
+        if (processingOptions != null)
           'processingOptions': processingOptions.toJson(),
       });
 
@@ -317,11 +319,7 @@ class MediaUploadService {
       final response = await _httpClient.post(
         '/media/upload',
         data: formData,
-        options: Options(
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-        ),
+        options: Options(headers: {'Content-Type': 'multipart/form-data'}),
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
@@ -429,16 +427,13 @@ class MediaUploadService {
     try {
       final file = File(filePath);
       if (!await file.exists()) {
-        return MediaValidationResult(
-          isValid: false,
-          error: 'File not found',
-        );
+        return MediaValidationResult(isValid: false, error: 'File not found');
       }
 
       // Check file size based on type
       final size = await file.length();
       final maxSize = _getMaxSizeForType(type);
-      
+
       if (size > maxSize) {
         final maxSizeMB = (maxSize / (1024 * 1024)).toStringAsFixed(1);
         return MediaValidationResult(
@@ -450,11 +445,12 @@ class MediaUploadService {
       // Check file extension
       final extension = path.extension(filePath).toLowerCase();
       final allowedExtensions = _getAllowedExtensionsForType(type);
-      
+
       if (!allowedExtensions.contains(extension)) {
         return MediaValidationResult(
           isValid: false,
-          error: 'File type not supported. Allowed: ${allowedExtensions.join(", ")}',
+          error:
+              'File type not supported. Allowed: ${allowedExtensions.join(", ")}',
         );
       }
 
@@ -557,11 +553,7 @@ class ResizeOptions {
   final int height;
   final int quality;
 
-  ResizeOptions({
-    required this.width,
-    required this.height,
-    this.quality = 85,
-  });
+  ResizeOptions({required this.width, required this.height, this.quality = 85});
 
   Map<String, dynamic> toJson() => {
     'width': width,
@@ -635,7 +627,7 @@ class MediaUploadResult {
   factory MediaUploadResult.fromJson(Map<String, dynamic> json) {
     // Backend response is wrapped in { success, statusCode, message, data: {...} }
     final dataObject = json['data'] ?? json;
-    
+
     return MediaUploadResult(
       success: json['success'] ?? false,
       mediaId:
@@ -667,10 +659,7 @@ class MediaValidationResult {
   final bool isValid;
   final String? error;
 
-  MediaValidationResult({
-    required this.isValid,
-    this.error,
-  });
+  MediaValidationResult({required this.isValid, this.error});
 }
 
 /// Exception thrown during media operations

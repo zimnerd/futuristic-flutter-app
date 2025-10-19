@@ -75,18 +75,12 @@ class _PremiumShowcaseScreenState extends State<PremiumShowcaseScreen>
     _fadeAnimation = Tween<double>(
       begin: 0.0,
       end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeOut,
-    ));
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut));
 
     _slideAnimation = Tween<Offset>(
       begin: const Offset(0, 0.2),
       end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeOut,
-    ));
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut));
 
     _controller.forward();
 
@@ -240,8 +234,7 @@ class _PremiumShowcaseScreenState extends State<PremiumShowcaseScreen>
                 ),
 
                 // Sticky CTA button
-                if (_showStickyButton)
-                  _buildStickyButton(context, state.plans),
+                if (_showStickyButton) _buildStickyButton(context, state.plans),
               ],
             );
           }
@@ -284,10 +277,7 @@ class _PremiumShowcaseScreenState extends State<PremiumShowcaseScreen>
                     child: Row(
                       children: [
                         IconButton(
-                          icon: const Icon(
-                            Icons.close,
-                            color: Colors.white,
-                          ),
+                          icon: const Icon(Icons.close, color: Colors.white),
                           onPressed: () => context.pop(),
                         ),
                         const Spacer(),
@@ -371,9 +361,9 @@ class _PremiumShowcaseScreenState extends State<PremiumShowcaseScreen>
           children: [
             Text(
               'Premium Features',
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             Text(
@@ -385,14 +375,15 @@ class _PremiumShowcaseScreenState extends State<PremiumShowcaseScreen>
             const SizedBox(height: 20),
 
             // Feature cards grid
-            ...features.map((feature) => Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: PremiumFeatureCard(
-                icon: feature['icon'] as IconData,
-                title: feature['title'] as String,
-                description: feature['description'] as String,
-                isPremium: feature['isPremium'] as bool,
-                isHighlighted: widget.highlightFeature == feature['key'],
+            ...features.map(
+              (feature) => Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: PremiumFeatureCard(
+                  icon: feature['icon'] as IconData,
+                  title: feature['title'] as String,
+                  description: feature['description'] as String,
+                  isPremium: feature['isPremium'] as bool,
+                  isHighlighted: widget.highlightFeature == feature['key'],
                   onTap: () {
                     // Track feature card tap
                     _trackFeatureCardTap(feature['key'] as String);
@@ -405,8 +396,9 @@ class _PremiumShowcaseScreenState extends State<PremiumShowcaseScreen>
                       feature['details'] as String,
                     );
                   },
+                ),
               ),
-            )),
+            ),
           ],
         ),
       ),
@@ -414,7 +406,8 @@ class _PremiumShowcaseScreenState extends State<PremiumShowcaseScreen>
   }
 
   Widget _buildPricingSection(BuildContext context, List<PremiumPlan> plans) {
-    if (plans.isEmpty) return const SliverToBoxAdapter(child: SizedBox.shrink());
+    if (plans.isEmpty)
+      return const SliverToBoxAdapter(child: SizedBox.shrink());
 
     // Sort plans: monthly, 3-month, 6-month
     final sortedPlans = _sortPlansByDuration(plans);
@@ -427,9 +420,9 @@ class _PremiumShowcaseScreenState extends State<PremiumShowcaseScreen>
           children: [
             Text(
               'Choose Your Plan',
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             Text(
@@ -441,20 +434,22 @@ class _PremiumShowcaseScreenState extends State<PremiumShowcaseScreen>
             const SizedBox(height: 20),
 
             // Pricing cards
-            ...sortedPlans.map((plan) => Padding(
-              padding: const EdgeInsets.only(bottom: 16),
-              child: PricingCard(
-                plan: plan,
-                isSelected: _selectedPlanId == plan.id,
-                isMostPopular: _isMostPopularPlan(plan, sortedPlans),
-                isBestValue: _isBestValuePlan(plan, sortedPlans),
-                onSelect: () {
+            ...sortedPlans.map(
+              (plan) => Padding(
+                padding: const EdgeInsets.only(bottom: 16),
+                child: PricingCard(
+                  plan: plan,
+                  isSelected: _selectedPlanId == plan.id,
+                  isMostPopular: _isMostPopularPlan(plan, sortedPlans),
+                  isBestValue: _isBestValuePlan(plan, sortedPlans),
+                  onSelect: () {
                     final previousPlanId = _selectedPlanId;
-                  setState(() => _selectedPlanId = plan.id);
+                    setState(() => _selectedPlanId = plan.id);
                     _trackPlanSelection(plan.id, previousPlanId);
-                },
+                  },
+                ),
               ),
-            )),
+            ),
           ],
         ),
       ),
@@ -477,57 +472,21 @@ class _PremiumShowcaseScreenState extends State<PremiumShowcaseScreen>
               children: [
                 Text(
                   'Free vs Premium',
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 20),
 
-                _buildComparisonRow(
-                  'Daily likes',
-                  'Limited',
-                  'Unlimited',
-                ),
-                _buildComparisonRow(
-                  'Super likes',
-                  '1/day',
-                  '5/day',
-                ),
-                _buildComparisonRow(
-                  'See who liked you',
-                  false,
-                  true,
-                ),
-                _buildComparisonRow(
-                  'Rewind (undo swipes)',
-                  false,
-                  true,
-                ),
-                _buildComparisonRow(
-                  'Profile boost',
-                  false,
-                  true,
-                ),
-                _buildComparisonRow(
-                  'Advanced filters',
-                  false,
-                  true,
-                ),
-                _buildComparisonRow(
-                  'Read receipts',
-                  false,
-                  true,
-                ),
-                _buildComparisonRow(
-                  'Profile viewers',
-                  false,
-                  true,
-                ),
-                _buildComparisonRow(
-                  'Ad-free experience',
-                  false,
-                  true,
-                ),
+                _buildComparisonRow('Daily likes', 'Limited', 'Unlimited'),
+                _buildComparisonRow('Super likes', '1/day', '5/day'),
+                _buildComparisonRow('See who liked you', false, true),
+                _buildComparisonRow('Rewind (undo swipes)', false, true),
+                _buildComparisonRow('Profile boost', false, true),
+                _buildComparisonRow('Advanced filters', false, true),
+                _buildComparisonRow('Read receipts', false, true),
+                _buildComparisonRow('Profile viewers', false, true),
+                _buildComparisonRow('Ad-free experience', false, true),
                 _buildComparisonRow(
                   'Priority support',
                   false,
@@ -562,20 +521,13 @@ class _PremiumShowcaseScreenState extends State<PremiumShowcaseScreen>
                 ),
               ),
             ),
-            Expanded(
-              child: _buildComparisonValue(freeValue, false),
-            ),
-            Expanded(
-              child: _buildComparisonValue(premiumValue, true),
-            ),
+            Expanded(child: _buildComparisonValue(freeValue, false)),
+            Expanded(child: _buildComparisonValue(premiumValue, true)),
           ],
         ),
         if (!isLast) ...[
           const SizedBox(height: 12),
-          Divider(
-            height: 1,
-            color: PulseColors.outline.withValues(alpha: 0.3),
-          ),
+          Divider(height: 1, color: PulseColors.outline.withValues(alpha: 0.3)),
           const SizedBox(height: 12),
         ],
       ],
@@ -661,11 +613,7 @@ class _PremiumShowcaseScreenState extends State<PremiumShowcaseScreen>
                 const SizedBox(height: 16),
                 Row(
                   children: [
-                    Icon(
-                      Icons.lock,
-                      color: PulseColors.success,
-                      size: 24,
-                    ),
+                    Icon(Icons.lock, color: PulseColors.success, size: 24),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Column(
@@ -741,17 +689,20 @@ class _PremiumShowcaseScreenState extends State<PremiumShowcaseScreen>
     final testimonials = [
       {
         'name': 'Sarah, 28',
-        'text': 'Premium helped me find my match in just 2 weeks! The advanced filters made all the difference.',
+        'text':
+            'Premium helped me find my match in just 2 weeks! The advanced filters made all the difference.',
         'rating': 5,
       },
       {
         'name': 'Mike, 32',
-        'text': 'Being able to see who liked me saved so much time. Best investment I made in my dating life!',
+        'text':
+            'Being able to see who liked me saved so much time. Best investment I made in my dating life!',
         'rating': 5,
       },
       {
         'name': 'Emma, 26',
-        'text': 'The boost feature really works! Got 10x more matches in one evening.',
+        'text':
+            'The boost feature really works! Got 10x more matches in one evening.',
         'rating': 5,
       },
     ];
@@ -764,52 +715,51 @@ class _PremiumShowcaseScreenState extends State<PremiumShowcaseScreen>
           children: [
             Text(
               'What Our Members Say',
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 20),
 
-            ...testimonials.map((testimonial) => Container(
-              margin: const EdgeInsets.only(bottom: 16),
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: PulseColors.surfaceVariant,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: List.generate(
-                      testimonial['rating'] as int,
-                      (index) => const Icon(
-                        Icons.star,
-                        color: Colors.amber,
-                        size: 16,
+            ...testimonials.map(
+              (testimonial) => Container(
+                margin: const EdgeInsets.only(bottom: 16),
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: PulseColors.surfaceVariant,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: List.generate(
+                        testimonial['rating'] as int,
+                        (index) => const Icon(
+                          Icons.star,
+                          color: Colors.amber,
+                          size: 16,
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    testimonial['text'] as String,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      height: 1.4,
+                    const SizedBox(height: 8),
+                    Text(
+                      testimonial['text'] as String,
+                      style: const TextStyle(fontSize: 14, height: 1.4),
                     ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    testimonial['name'] as String,
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      color: PulseColors.primary,
+                    const SizedBox(height: 8),
+                    Text(
+                      testimonial['name'] as String,
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: PulseColors.primary,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            )),
+            ),
           ],
         ),
       ),
@@ -860,9 +810,7 @@ class _PremiumShowcaseScreenState extends State<PremiumShowcaseScreen>
         backgroundColor: PulseColors.primary,
         foregroundColor: Colors.white,
         padding: const EdgeInsets.symmetric(vertical: 16),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         elevation: 2,
       ),
       child: Row(
@@ -870,10 +818,7 @@ class _PremiumShowcaseScreenState extends State<PremiumShowcaseScreen>
         children: [
           const Text(
             'Upgrade Now',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-            ),
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
           ),
           const SizedBox(width: 8),
           const Icon(Icons.arrow_forward, size: 20),
@@ -968,25 +913,29 @@ class _PremiumShowcaseScreenState extends State<PremiumShowcaseScreen>
                       ),
                     ),
                     const SizedBox(height: 12),
-                    ...plan.features.take(5).map((feature) => Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 4),
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.check_circle,
-                            color: PulseColors.success,
-                            size: 18,
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              feature,
-                              style: const TextStyle(fontSize: 13),
+                    ...plan.features
+                        .take(5)
+                        .map(
+                          (feature) => Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 4),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.check_circle,
+                                  color: PulseColors.success,
+                                  size: 18,
+                                ),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    feature,
+                                    style: const TextStyle(fontSize: 13),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                        ],
-                      ),
-                    )),
+                        ),
                   ],
                 ),
               ),
@@ -1101,10 +1050,7 @@ class _PremiumShowcaseScreenState extends State<PremiumShowcaseScreen>
                   children: [
                     Text(
                       description,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        height: 1.5,
-                      ),
+                      style: const TextStyle(fontSize: 16, height: 1.5),
                     ),
                     const SizedBox(height: 16),
                     Text(
@@ -1132,7 +1078,8 @@ class _PremiumShowcaseScreenState extends State<PremiumShowcaseScreen>
         'icon': Icons.favorite,
         'title': 'See Who Liked You',
         'description': 'View everyone who already liked your profile',
-        'details': 'No more guessing! See all your likes at once and match instantly with people who are already interested in you.',
+        'details':
+            'No more guessing! See all your likes at once and match instantly with people who are already interested in you.',
         'isPremium': true,
       },
       {
@@ -1140,7 +1087,8 @@ class _PremiumShowcaseScreenState extends State<PremiumShowcaseScreen>
         'icon': Icons.favorite_border,
         'title': 'Unlimited Likes',
         'description': 'Like as many profiles as you want, no limits',
-        'details': 'Swipe without restrictions. The more you like, the more matches you can make!',
+        'details':
+            'Swipe without restrictions. The more you like, the more matches you can make!',
         'isPremium': true,
       },
       {
@@ -1148,7 +1096,8 @@ class _PremiumShowcaseScreenState extends State<PremiumShowcaseScreen>
         'icon': Icons.replay,
         'title': 'Rewind',
         'description': 'Undo your last swipe and get another chance',
-        'details': 'Changed your mind? Take back your last swipe and give them another look. Perfect for those accidental left swipes!',
+        'details':
+            'Changed your mind? Take back your last swipe and give them another look. Perfect for those accidental left swipes!',
         'isPremium': true,
       },
       {
@@ -1156,7 +1105,8 @@ class _PremiumShowcaseScreenState extends State<PremiumShowcaseScreen>
         'icon': Icons.star,
         'title': '5 Super Likes per Day',
         'description': 'Stand out and make a great first impression',
-        'details': 'Get 5 Super Likes daily to show someone you\'re really interested. Super Likes get 3x more matches!',
+        'details':
+            'Get 5 Super Likes daily to show someone you\'re really interested. Super Likes get 3x more matches!',
         'isPremium': true,
       },
       {
@@ -1164,7 +1114,8 @@ class _PremiumShowcaseScreenState extends State<PremiumShowcaseScreen>
         'icon': Icons.trending_up,
         'title': 'Monthly Boost',
         'description': 'Be the top profile in your area for 30 minutes',
-        'details': 'Get 10x more profile views with monthly boost. Perfect for maximizing your visibility and matches!',
+        'details':
+            'Get 10x more profile views with monthly boost. Perfect for maximizing your visibility and matches!',
         'isPremium': true,
       },
       {
@@ -1172,7 +1123,8 @@ class _PremiumShowcaseScreenState extends State<PremiumShowcaseScreen>
         'icon': Icons.tune,
         'title': 'Advanced Filters',
         'description': 'Find exactly who you\'re looking for',
-        'details': 'Filter by education, lifestyle, interests, and more. Find matches that truly align with what you\'re looking for.',
+        'details':
+            'Filter by education, lifestyle, interests, and more. Find matches that truly align with what you\'re looking for.',
         'isPremium': true,
       },
       {
@@ -1180,7 +1132,8 @@ class _PremiumShowcaseScreenState extends State<PremiumShowcaseScreen>
         'icon': Icons.done_all,
         'title': 'Read Receipts',
         'description': 'See when your messages are read',
-        'details': 'Know exactly when your matches read your messages. No more wondering if they saw it!',
+        'details':
+            'Know exactly when your matches read your messages. No more wondering if they saw it!',
         'isPremium': true,
       },
       {
@@ -1188,7 +1141,8 @@ class _PremiumShowcaseScreenState extends State<PremiumShowcaseScreen>
         'icon': Icons.visibility,
         'title': 'See Who Viewed Your Profile',
         'description': 'Know who\'s checking you out',
-        'details': 'See everyone who viewed your profile in the last 30 days. Perfect for finding people interested in you!',
+        'details':
+            'See everyone who viewed your profile in the last 30 days. Perfect for finding people interested in you!',
         'isPremium': true,
       },
       {
@@ -1196,7 +1150,8 @@ class _PremiumShowcaseScreenState extends State<PremiumShowcaseScreen>
         'icon': Icons.block,
         'title': 'Ad-Free Experience',
         'description': 'Enjoy PulseLink without interruptions',
-        'details': 'Focus on finding your match without any distractions. Pure, uninterrupted dating experience.',
+        'details':
+            'Focus on finding your match without any distractions. Pure, uninterrupted dating experience.',
         'isPremium': true,
       },
       {
@@ -1204,7 +1159,8 @@ class _PremiumShowcaseScreenState extends State<PremiumShowcaseScreen>
         'icon': Icons.support_agent,
         'title': 'Priority Customer Support',
         'description': 'Get help when you need it, faster',
-        'details': 'Jump to the front of the line with priority support. We\'re here to help you succeed!',
+        'details':
+            'Jump to the front of the line with priority support. We\'re here to help you succeed!',
         'isPremium': true,
       },
     ];
@@ -1238,16 +1194,15 @@ class _PremiumShowcaseScreenState extends State<PremiumShowcaseScreen>
     if (popular != null) return popular.id;
 
     // Default to 3-month plan if available
-    final threeMonth = plans.where((p) =>
-      _getMonthsFromInterval(p.interval) == 3
-    ).firstOrNull;
+    final threeMonth = plans
+        .where((p) => _getMonthsFromInterval(p.interval) == 3)
+        .firstOrNull;
 
     return threeMonth?.id ?? plans.firstOrNull?.id;
   }
 
   bool _isMostPopularPlan(PremiumPlan plan, List<PremiumPlan> plans) {
-    return plan.isPopular ||
-           _getMonthsFromInterval(plan.interval) == 3;
+    return plan.isPopular || _getMonthsFromInterval(plan.interval) == 3;
   }
 
   bool _isBestValuePlan(PremiumPlan plan, List<PremiumPlan> plans) {

@@ -16,7 +16,7 @@ class MatchModel {
   final DateTime? expiredAt;
   final DateTime createdAt;
   final DateTime updatedAt;
-  
+
   // Added user profile data from API
   final UserProfile? userProfile;
   final String? otherUserId;
@@ -213,7 +213,7 @@ class MatchModel {
     } else {
       debugPrint('⚠️ No user data found in match JSON response');
     }
-    
+
     return MatchModel(
       id: json['id'] ?? '',
       user1Id: json['user1Id'] ?? '',
@@ -332,8 +332,7 @@ class MatchModel {
                     );
                   }
                   return null;
-                },
-                )
+                })
                 .where((photo) => photo != null)
                 .cast<ProfilePhoto>()
                 .toList() ??

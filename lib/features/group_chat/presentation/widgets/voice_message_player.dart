@@ -125,7 +125,9 @@ class _VoiceMessagePlayerState extends State<VoiceMessagePlayer> {
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
                         valueColor: AlwaysStoppedAnimation<Color>(
-                          widget.isMe ? Colors.white : Theme.of(context).primaryColor,
+                          widget.isMe
+                              ? Colors.white
+                              : Theme.of(context).primaryColor,
                         ),
                       ),
                     )
@@ -138,9 +140,9 @@ class _VoiceMessagePlayerState extends State<VoiceMessagePlayer> {
                     ),
             ),
           ),
-          
+
           const SizedBox(width: 8),
-          
+
           // Waveform and progress
           Expanded(
             child: Column(
@@ -158,9 +160,9 @@ class _VoiceMessagePlayerState extends State<VoiceMessagePlayer> {
                     size: const Size(double.infinity, 30),
                   ),
                 ),
-                
+
                 const SizedBox(height: 4),
-                
+
                 // Duration text
                 Text(
                   _isPlaying
@@ -209,16 +211,18 @@ class WaveformPainter extends CustomPainter {
 
     for (int i = 0; i < barCount; i++) {
       final x = i * (barWidth + spacing);
-      final normalizedHeight = (i % 3 == 0) ? 0.8 : (i % 2 == 0) ? 0.6 : 0.4;
+      final normalizedHeight = (i % 3 == 0)
+          ? 0.8
+          : (i % 2 == 0)
+          ? 0.6
+          : 0.4;
       final barHeight = size.height * normalizedHeight;
       final y = (size.height - barHeight) / 2;
 
       final barProgress = i / barCount;
       final isPast = barProgress <= progress;
 
-      paint.color = isPast
-          ? color
-          : color.withValues(alpha: color.a * 0.3);
+      paint.color = isPast ? color : color.withValues(alpha: color.a * 0.3);
 
       canvas.drawRRect(
         RRect.fromRectAndRadius(

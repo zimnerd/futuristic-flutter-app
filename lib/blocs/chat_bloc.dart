@@ -13,7 +13,6 @@ import '../domain/repositories/user_repository.dart';
 import '../data/services/background_sync_manager.dart';
 import '../domain/services/websocket_service.dart';
 
-
 // Events
 abstract class ChatEvent extends Equatable {
   const ChatEvent();
@@ -330,7 +329,13 @@ class ReactionAdded extends ChatEvent {
   });
 
   @override
-  List<Object?> get props => [messageId, conversationId, emoji, userId, username];
+  List<Object?> get props => [
+    messageId,
+    conversationId,
+    emoji,
+    userId,
+    username,
+  ];
 }
 
 class SearchMessages extends ChatEvent {
@@ -546,7 +551,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
   final UserRepository _userRepository;
   final WebSocketService _webSocketService;
   final Logger _logger = Logger();
-  
+
   // Stream subscriptions
   late StreamSubscription<MessageModel> _messageSubscription;
   late StreamSubscription<MessageDeliveryUpdate> _deliverySubscription;
@@ -560,7 +565,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
   }) : _chatRepository = chatRepository,
        _userRepository = userRepository,
        _webSocketService = webSocketService,
-        super(const ChatInitial()) {
+       super(const ChatInitial()) {
     on<LoadConversations>(_onLoadConversations);
     on<LoadMessages>(_onLoadMessages);
     on<LoadLatestMessages>(_onLoadLatestMessages);
@@ -607,7 +612,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       _logger.d(
         'ChatBloc: Received delivery update from repository stream - messageId: ${update.messageId}, status: ${update.status}',
       );
-      
+
       // Convert MessageStatus from message.dart to MessageStatus from chat_model.dart
       MessageStatus chatModelStatus;
       switch (update.status.name) {
@@ -629,7 +634,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
         default:
           chatModelStatus = MessageStatus.sent;
       }
-      
+
       add(
         MessageDeliveryStatusUpdated(
           messageId: update.messageId,
@@ -681,9 +686,9 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
   ) async {
     try {
       emit(const ChatLoading());
-      
+
       final conversations = await _chatRepository.getConversations();
-      
+
       emit(ConversationsLoaded(conversations: conversations));
       _logger.d('Loaded ${conversations.length} conversations');
     } catch (e) {
@@ -698,29 +703,33 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
   ) async {
     try {
       emit(const ChatLoading());
-      
+
       final messages = await _chatRepository.getMessages(
         conversationId: event.conversationId,
         page: event.page,
         limit: event.limit,
       );
-      
+
       // Join the conversation room for real-time updates
       await _chatRepository.joinConversation(event.conversationId);
       _logger.d('Joined conversation room: ${event.conversationId}');
-      
+
       // Check if there are more messages available
       final hasMoreMessages = await _chatRepository.hasMoreMessages(
         event.conversationId,
       );
-      
-      emit(MessagesLoaded(
-        conversationId: event.conversationId,
-        messages: messages,
-        hasMoreMessages: hasMoreMessages,
-      ));
-      
-      _logger.d('Loaded ${messages.length} messages for conversation ${event.conversationId}');
+
+      emit(
+        MessagesLoaded(
+          conversationId: event.conversationId,
+          messages: messages,
+          hasMoreMessages: hasMoreMessages,
+        ),
+      );
+
+      _logger.d(
+        'Loaded ${messages.length} messages for conversation ${event.conversationId}',
+      );
     } catch (e) {
       _logger.e('Error loading messages: $e');
       emit(ChatError(message: 'Failed to load messages: $e'));
@@ -939,13 +948,14 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       _logger.d(
         'ChatBloc: Sending message with currentUserId: ${event.currentUserId}',
       );
-      
+
       // Check if this conversation has any messages before sending
       final currentState = state;
-      final isFirstMessage = currentState is MessagesLoaded && 
-          currentState.conversationId == event.conversationId && 
+      final isFirstMessage =
+          currentState is MessagesLoaded &&
+          currentState.conversationId == event.conversationId &&
           currentState.messages.isEmpty;
-      
+
       final message = await _chatRepository.sendMessage(
         conversationId: event.conversationId,
         type: event.type,
@@ -955,11 +965,11 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
         replyToMessageId: event.replyToMessageId,
         currentUserId: event.currentUserId,
       );
-      
+
       _logger.d(
         'ChatBloc: Received optimistic message: ${message.id} from senderId: ${message.senderId}',
       );
-      
+
       // Update the current messages list if we're viewing this conversation
       if (currentState is MessagesLoaded &&
           currentState.conversationId == event.conversationId) {
@@ -969,7 +979,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
           'ChatBloc: Adding optimistic message to existing MessagesLoaded state with ${currentState.messages.length} messages',
         );
         emit(currentState.copyWith(messages: updatedMessages));
-        
+
         // If this was the first message, also emit FirstMessageSent state
         if (isFirstMessage) {
           _logger.d(
@@ -988,7 +998,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
         );
         emit(MessageSent(message: message));
       }
-      
+
       _logger.d('Message sent: ${message.id}');
     } catch (e) {
       _logger.e('Error sending message: $e');
@@ -1015,7 +1025,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
   ) async {
     try {
       await _chatRepository.deleteMessage(event.messageId);
-      
+
       // Emit state to update UI - remove message from local state
       if (state is MessagesLoaded) {
         final messagesState = state as MessagesLoaded;
@@ -1045,7 +1055,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
         event.isTyping,
       );
       _logger.d('Typing status updated: ${event.isTyping}');
-      
+
       // Don't add fake typing indicators - only real ones from backend WebSocket
       // should show typing status. The current implementation creates fake typing
       // indicators that confuse users.
@@ -1054,10 +1064,13 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     }
   }
 
-  void _onReceiveTypingEvent(ReceiveTypingEvent event, Emitter<ChatState> emit) {
+  void _onReceiveTypingEvent(
+    ReceiveTypingEvent event,
+    Emitter<ChatState> emit,
+  ) {
     if (state is MessagesLoaded) {
       final currentState = state as MessagesLoaded;
-      
+
       // Only update typing state for the current conversation
       if (currentState.conversationId == event.conversationId) {
         final typingUsers = Map<String, bool>.from(currentState.typingUsers);
@@ -1095,7 +1108,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
           return;
         }
       }
-      
+
       // Get current message IDs to mark as read
       List<String> messageIds = [];
       if (state is MessagesLoaded) {
@@ -1110,7 +1123,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
             .map((message) => message.id)
             .where((id) => uuidPattern.hasMatch(id))
             .toList();
-        
+
         _logger.d(
           'Filtered ${messagesState.messages.length} messages to ${messageIds.length} valid UUIDs',
         );
@@ -1139,11 +1152,11 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
   ) async {
     try {
       emit(const ChatLoading());
-      
+
       final conversation = await _chatRepository.createConversation(
         event.participantId,
       );
-      
+
       emit(ConversationCreated(conversation: conversation));
       _logger.d('Conversation created: ${conversation.id}');
     } catch (e) {
@@ -1288,7 +1301,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       _logger.d(
         'ChatBloc: Processing MessageReceived event - messageId: ${event.message.id}, senderId: ${event.message.senderId}',
       );
-      
+
       if (state is MessagesLoaded) {
         final currentState = state as MessagesLoaded;
         final messages = List<MessageModel>.from(currentState.messages);
@@ -1342,7 +1355,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
             event.message,
           ); // Insert at beginning for reverse ListView
         }
-        
+
         emit(
           MessagesLoaded(
             messages: messages,
@@ -1539,10 +1552,13 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
   }
 
   // Reaction event handlers
-  Future<void> _onAddReaction(AddReaction event, Emitter<ChatState> emit) async {
+  Future<void> _onAddReaction(
+    AddReaction event,
+    Emitter<ChatState> emit,
+  ) async {
     try {
       _logger.d('Adding reaction ${event.emoji} to message ${event.messageId}');
-      
+
       // Call repository to persist reaction via REST API
       await _chatRepository.addReaction(event.messageId, event.emoji);
       _logger.d('Reaction persisted via API successfully');
@@ -1562,7 +1578,10 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     }
   }
 
-  Future<void> _onReactionAdded(ReactionAdded event, Emitter<ChatState> emit) async {
+  Future<void> _onReactionAdded(
+    ReactionAdded event,
+    Emitter<ChatState> emit,
+  ) async {
     try {
       _logger.d(
         'Reaction added by ${event.userId}: ${event.emoji} on message ${event.messageId}',
@@ -1574,16 +1593,20 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
         final updatedMessages = messagesState.messages.map((message) {
           if (message.id == event.messageId) {
             // Add reaction to message's reactions list
-            final currentReactions = List<MessageReaction>.from(message.reactions ?? []);
-            
+            final currentReactions = List<MessageReaction>.from(
+              message.reactions ?? [],
+            );
+
             // Add the new reaction
-            currentReactions.add(MessageReaction(
-              emoji: event.emoji,
-              userId: event.userId,
-              username: event.username,
-              createdAt: DateTime.now(),
-            ));
-            
+            currentReactions.add(
+              MessageReaction(
+                emoji: event.emoji,
+                userId: event.userId,
+                username: event.username,
+                createdAt: DateTime.now(),
+              ),
+            );
+
             return message.copyWith(reactions: currentReactions);
           }
           return message;

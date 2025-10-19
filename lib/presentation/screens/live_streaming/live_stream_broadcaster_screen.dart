@@ -28,7 +28,8 @@ class LiveStreamBroadcasterScreen extends StatefulWidget {
 
 class _LiveStreamBroadcasterScreenState
     extends State<LiveStreamBroadcasterScreen> {
-  final VideoStreamingService _streamingService = VideoStreamingService.instance;
+  final VideoStreamingService _streamingService =
+      VideoStreamingService.instance;
   final LiveStreamingService _apiService = LiveStreamingService(
     ApiClient.instance,
   );
@@ -100,29 +101,33 @@ class _LiveStreamBroadcasterScreenState
       debugPrint('Stream state changed to: $state');
     });
 
-    _videoSubscription =
-        _streamingService.onLocalVideoEnabledChanged.listen((enabled) {
+    _videoSubscription = _streamingService.onLocalVideoEnabledChanged.listen((
+      enabled,
+    ) {
       setState(() {
         _isCameraOn = enabled;
       });
     });
 
-    _audioSubscription =
-        _streamingService.onLocalAudioEnabledChanged.listen((enabled) {
+    _audioSubscription = _streamingService.onLocalAudioEnabledChanged.listen((
+      enabled,
+    ) {
       setState(() {
         _isMicOn = enabled;
       });
     });
 
-    _viewerSubscription =
-        _streamingService.onViewerCountChanged.listen((count) {
+    _viewerSubscription = _streamingService.onViewerCountChanged.listen((
+      count,
+    ) {
       setState(() {
         _viewerCount = count;
       });
     });
 
-    _qualitySubscription =
-        _streamingService.onConnectionQualityChanged.listen((quality) {
+    _qualitySubscription = _streamingService.onConnectionQualityChanged.listen((
+      quality,
+    ) {
       setState(() {
         _connectionQuality = _getQualityText(quality);
       });
@@ -179,9 +184,7 @@ class _LiveStreamBroadcasterScreenState
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-            ),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
             child: const Text('End Stream'),
           ),
         ],
@@ -201,8 +204,7 @@ class _LiveStreamBroadcasterScreenState
         }
       } catch (e) {
         if (mounted) {
-          PulseToast.error(context, message: 'Error ending stream: $e',
-          );
+          PulseToast.error(context, message: 'Error ending stream: $e');
         }
       }
     }
@@ -237,9 +239,7 @@ class _LiveStreamBroadcasterScreenState
             )
           else
             const Center(
-              child: CircularProgressIndicator(
-                color: PulseColors.primary,
-              ),
+              child: CircularProgressIndicator(color: PulseColors.primary),
             ),
 
           // Error message overlay
@@ -357,10 +357,7 @@ class _LiveStreamBroadcasterScreenState
                         // Close button
                         IconButton(
                           onPressed: _endStream,
-                          icon: const Icon(
-                            Icons.close,
-                            color: Colors.white,
-                          ),
+                          icon: const Icon(Icons.close, color: Colors.white),
                         ),
                       ],
                     ),
@@ -452,7 +449,8 @@ class _LiveStreamBroadcasterScreenState
       children: [
         Container(
           decoration: BoxDecoration(
-            color: color ??
+            color:
+                color ??
                 (isActive
                     ? PulseColors.primary.withValues(alpha: 0.2)
                     : Colors.grey.withValues(alpha: 0.2)),

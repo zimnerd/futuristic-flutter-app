@@ -24,7 +24,7 @@ class SpeedDatingRoomScreen extends StatefulWidget {
 class _SpeedDatingRoomScreenState extends State<SpeedDatingRoomScreen> {
   final Logger _logger = Logger();
   final AudioCallService _audioService = AudioCallService.instance;
-  
+
   bool _isMuted = false;
   bool _isCameraOff = false;
   bool _isAudioInitialized = false;
@@ -266,7 +266,7 @@ class _SpeedDatingRoomScreenState extends State<SpeedDatingRoomScreen> {
                     ),
                   ),
                 ),
-                
+
                 // User video (bottom half)
                 Expanded(
                   child: Container(
@@ -280,52 +280,52 @@ class _SpeedDatingRoomScreenState extends State<SpeedDatingRoomScreen> {
                     ),
                     child: Center(
                       child: _isCameraOff
-                        ? Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              CircleAvatar(
-                                radius: 40,
+                          ? Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                CircleAvatar(
+                                  radius: 40,
                                   backgroundColor: PulseColors.secondary
                                       .withValues(alpha: 0.3),
-                                child: const Icon(
-                                  Icons.videocam_off,
-                                  size: 40,
-                                  color: Colors.white,
+                                  child: const Icon(
+                                    Icons.videocam_off,
+                                    size: 40,
+                                    color: Colors.white,
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(height: 12),
-                              const Text(
-                                'Camera Off',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 16,
+                                const SizedBox(height: 12),
+                                const Text(
+                                  'Camera Off',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 16,
+                                  ),
                                 ),
-                              ),
-                            ],
-                          )
-                        : Container(
-                            decoration: BoxDecoration(
+                              ],
+                            )
+                          : Container(
+                              decoration: BoxDecoration(
                                 color: PulseColors.secondary.withValues(
                                   alpha: 0.2,
                                 ),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: const Center(
-                              child: Text(
-                                'Your Video',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 16,
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: const Center(
+                                child: Text(
+                                  'Your Video',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 16,
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
                     ),
                   ),
                 ),
               ],
             ),
-            
+
             // Top overlay - timer and info
             Positioned(
               top: 16,
@@ -380,7 +380,7 @@ class _SpeedDatingRoomScreenState extends State<SpeedDatingRoomScreen> {
                 ),
               ),
             ),
-            
+
             // Bottom controls
             Positioned(
               bottom: 40,
@@ -395,7 +395,9 @@ class _SpeedDatingRoomScreenState extends State<SpeedDatingRoomScreen> {
                     child: Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: _isMuted ? Colors.red : Colors.white.withValues(alpha: 0.2),
+                        color: _isMuted
+                            ? Colors.red
+                            : Colors.white.withValues(alpha: 0.2),
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
@@ -405,7 +407,7 @@ class _SpeedDatingRoomScreenState extends State<SpeedDatingRoomScreen> {
                       ),
                     ),
                   ),
-                  
+
                   // End call button
                   GestureDetector(
                     onTap: () async {
@@ -427,7 +429,7 @@ class _SpeedDatingRoomScreenState extends State<SpeedDatingRoomScreen> {
                       ),
                     ),
                   ),
-                  
+
                   // Camera button
                   GestureDetector(
                     onTap: () {
@@ -438,7 +440,9 @@ class _SpeedDatingRoomScreenState extends State<SpeedDatingRoomScreen> {
                     child: Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: _isCameraOff ? Colors.red : Colors.white.withValues(alpha: 0.2),
+                        color: _isCameraOff
+                            ? Colors.red
+                            : Colors.white.withValues(alpha: 0.2),
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
@@ -451,7 +455,7 @@ class _SpeedDatingRoomScreenState extends State<SpeedDatingRoomScreen> {
                 ],
               ),
             ),
-            
+
             // Match/Pass buttons
             Positioned(
               right: 20,
@@ -513,16 +517,17 @@ class _SpeedDatingRoomScreenState extends State<SpeedDatingRoomScreen> {
   }
 
   void _showMatchDialog(bool isMatch) {
-    final String partnerName = widget.session['currentPartner'] ?? 'this person';
-    
+    final String partnerName =
+        widget.session['currentPartner'] ?? 'this person';
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: Text(isMatch ? 'Match!' : 'Pass'),
         content: Text(
-          isMatch 
-            ? 'You liked $partnerName! We\'ll let you know if it\'s a mutual match.'
-            : 'You passed on $partnerName. No worries, there are more great people to meet!',
+          isMatch
+              ? 'You liked $partnerName! We\'ll let you know if it\'s a mutual match.'
+              : 'You passed on $partnerName. No worries, there are more great people to meet!',
         ),
         actions: [
           TextButton(

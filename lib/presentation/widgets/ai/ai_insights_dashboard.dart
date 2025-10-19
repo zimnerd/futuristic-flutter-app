@@ -3,17 +3,13 @@ import 'package:dio/dio.dart';
 import '../../../data/services/ai_feedback_service.dart';
 import '../../../core/network/api_client.dart';
 
-/// AI Insights Dashboard - displays AI-generated analytics, compatibility scores, 
+/// AI Insights Dashboard - displays AI-generated analytics, compatibility scores,
 /// and personalized recommendations
 class AiInsightsDashboard extends StatefulWidget {
   final String userId;
   final VoidCallback? onRefresh;
 
-  const AiInsightsDashboard({
-    super.key,
-    required this.userId,
-    this.onRefresh,
-  });
+  const AiInsightsDashboard({super.key, required this.userId, this.onRefresh});
 
   @override
   State<AiInsightsDashboard> createState() => _AiInsightsDashboardState();
@@ -72,7 +68,7 @@ class _AiInsightsDashboardState extends State<AiInsightsDashboard>
 
   Future<void> _loadInsights() async {
     setState(() => _isLoading = true);
-    
+
     try {
       // Load insights from real AI services and analytics APIs
       final results = await Future.wait([
@@ -109,7 +105,7 @@ class _AiInsightsDashboardState extends State<AiInsightsDashboard>
       // Fallback to default data if API calls fail
       _insights = _fallbackInsights;
     }
-    
+
     if (mounted) {
       setState(() => _isLoading = false);
     }
@@ -179,11 +175,7 @@ class _AiInsightsDashboardState extends State<AiInsightsDashboard>
         children: [
           _buildHeader(),
           _buildTabBar(),
-          Expanded(
-            child: _isLoading 
-                ? _buildLoadingState() 
-                : _buildTabViews(),
-          ),
+          Expanded(child: _isLoading ? _buildLoadingState() : _buildTabViews()),
         ],
       ),
     );
@@ -223,10 +215,7 @@ class _AiInsightsDashboardState extends State<AiInsightsDashboard>
                 ),
                 Text(
                   'Personalized recommendations',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.white70,
-                  ),
+                  style: TextStyle(fontSize: 14, color: Colors.white70),
                 ),
               ],
             ),
@@ -281,10 +270,7 @@ class _AiInsightsDashboardState extends State<AiInsightsDashboard>
           SizedBox(height: 16),
           Text(
             'Analyzing your data...',
-            style: TextStyle(
-              color: Colors.white70,
-              fontSize: 16,
-            ),
+            style: TextStyle(color: Colors.white70, fontSize: 16),
           ),
         ],
       ),
@@ -306,7 +292,7 @@ class _AiInsightsDashboardState extends State<AiInsightsDashboard>
     final data =
         (_insights ?? _fallbackInsights)['compatibility']
             as Map<String, dynamic>;
-    
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
       child: Column(
@@ -338,7 +324,7 @@ class _AiInsightsDashboardState extends State<AiInsightsDashboard>
     final data =
         (_insights ?? _fallbackInsights)['conversations']
             as Map<String, dynamic>;
-    
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
       child: Column(
@@ -378,7 +364,7 @@ class _AiInsightsDashboardState extends State<AiInsightsDashboard>
   Widget _buildProfileTab() {
     final data =
         (_insights ?? _fallbackInsights)['profile'] as Map<String, dynamic>;
-    
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
       child: Column(
@@ -422,15 +408,13 @@ class _AiInsightsDashboardState extends State<AiInsightsDashboard>
     required IconData icon,
   }) {
     final color = _getScoreColor(score);
-    
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
         color: Colors.white.withValues(alpha: 0.1),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.2),
-        ),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -442,10 +426,7 @@ class _AiInsightsDashboardState extends State<AiInsightsDashboard>
               Expanded(
                 child: Text(
                   title,
-                  style: const TextStyle(
-                    color: Colors.white70,
-                    fontSize: 14,
-                  ),
+                  style: const TextStyle(color: Colors.white70, fontSize: 14),
                 ),
               ),
             ],
@@ -461,10 +442,7 @@ class _AiInsightsDashboardState extends State<AiInsightsDashboard>
           ),
           Text(
             subtitle,
-            style: const TextStyle(
-              color: Colors.white60,
-              fontSize: 12,
-            ),
+            style: const TextStyle(color: Colors.white60, fontSize: 12),
           ),
         ],
       ),
@@ -482,9 +460,7 @@ class _AiInsightsDashboardState extends State<AiInsightsDashboard>
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
         color: Colors.white.withValues(alpha: 0.1),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.2),
-        ),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -496,10 +472,7 @@ class _AiInsightsDashboardState extends State<AiInsightsDashboard>
               Expanded(
                 child: Text(
                   title,
-                  style: const TextStyle(
-                    color: Colors.white70,
-                    fontSize: 14,
-                  ),
+                  style: const TextStyle(color: Colors.white70, fontSize: 14),
                 ),
               ),
             ],
@@ -515,10 +488,7 @@ class _AiInsightsDashboardState extends State<AiInsightsDashboard>
           ),
           Text(
             subtitle,
-            style: const TextStyle(
-              color: Colors.white60,
-              fontSize: 12,
-            ),
+            style: const TextStyle(color: Colors.white60, fontSize: 12),
           ),
         ],
       ),
@@ -531,15 +501,13 @@ class _AiInsightsDashboardState extends State<AiInsightsDashboard>
     required String description,
   }) {
     final isImproving = trend == 'improving';
-    
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
         color: Colors.white.withValues(alpha: 0.1),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.2),
-        ),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
       ),
       child: Row(
         children: [
@@ -547,11 +515,14 @@ class _AiInsightsDashboardState extends State<AiInsightsDashboard>
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(8),
-              color: (isImproving ? Colors.green : Colors.orange)
-                  .withValues(alpha: 0.2),
+              color: (isImproving ? Colors.green : Colors.orange).withValues(
+                alpha: 0.2,
+              ),
             ),
             child: Icon(
-              isImproving ? Icons.trending_up_rounded : Icons.trending_flat_rounded,
+              isImproving
+                  ? Icons.trending_up_rounded
+                  : Icons.trending_flat_rounded,
               color: isImproving ? Colors.green : Colors.orange,
             ),
           ),
@@ -570,10 +541,7 @@ class _AiInsightsDashboardState extends State<AiInsightsDashboard>
                 ),
                 Text(
                   description,
-                  style: const TextStyle(
-                    color: Colors.white70,
-                    fontSize: 14,
-                  ),
+                  style: const TextStyle(color: Colors.white70, fontSize: 14),
                 ),
               ],
             ),
@@ -592,9 +560,7 @@ class _AiInsightsDashboardState extends State<AiInsightsDashboard>
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
         color: Colors.white.withValues(alpha: 0.1),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.2),
-        ),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -618,31 +584,33 @@ class _AiInsightsDashboardState extends State<AiInsightsDashboard>
             ],
           ),
           const SizedBox(height: 12),
-          ...recommendations.map((recommendation) => Padding(
-            padding: const EdgeInsets.only(bottom: 8),
-            child: Row(
-              children: [
-                Container(
-                  width: 4,
-                  height: 4,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFF6E3BFF),
-                    shape: BoxShape.circle,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    recommendation,
-                    style: const TextStyle(
-                      color: Colors.white70,
-                      fontSize: 14,
+          ...recommendations.map(
+            (recommendation) => Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Row(
+                children: [
+                  Container(
+                    width: 4,
+                    height: 4,
+                    decoration: const BoxDecoration(
+                      color: Color(0xFF6E3BFF),
+                      shape: BoxShape.circle,
                     ),
                   ),
-                ),
-              ],
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      recommendation,
+                      style: const TextStyle(
+                        color: Colors.white70,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
-          )),
+          ),
         ],
       ),
     );

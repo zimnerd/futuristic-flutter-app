@@ -33,13 +33,13 @@ class AutoLoginService {
         );
         return;
       }
-      
+
       // If session validation failed and we're in development mode, try auto-login
       if (TestCredentials.isDevelopmentMode) {
         _logger.i(
           '🤖 Session validation failed - attempting auto-login for development',
         );
-        
+
         final testUser = TestCredentials.getByRole('USER');
 
         if (testUser == null) {
@@ -63,7 +63,11 @@ class AutoLoginService {
         _logger.i('🚫 Auto-login disabled - not in development mode');
       }
     } catch (e, stackTrace) {
-      _logger.e('💥 Auto-login service error', error: e, stackTrace: stackTrace);
+      _logger.e(
+        '💥 Auto-login service error',
+        error: e,
+        stackTrace: stackTrace,
+      );
     }
   }
 

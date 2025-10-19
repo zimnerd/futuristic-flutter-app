@@ -32,7 +32,7 @@ class _PremiumScreenState extends State<PremiumScreen>
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
-    
+
     // Load premium data
     context.read<PremiumBloc>().add(LoadPremiumData());
   }
@@ -65,10 +65,9 @@ class _PremiumScreenState extends State<PremiumScreen>
       body: BlocConsumer<PremiumBloc, PremiumState>(
         listener: (context, state) {
           if (state is PremiumError) {
-            PulseToast.error(context, message: state.message,
-            );
+            PulseToast.error(context, message: state.message);
           }
-          
+
           if (state is PremiumSubscriptionSuccess) {
             PulseToast.success(
               context,
@@ -101,9 +100,7 @@ class _PremiumScreenState extends State<PremiumScreen>
             );
           }
 
-          return const Center(
-            child: Text('Welcome to Premium!'),
-          );
+          return const Center(child: Text('Welcome to Premium!'));
         },
       ),
     );
@@ -119,20 +116,21 @@ class _PremiumScreenState extends State<PremiumScreen>
           if (state.subscription != null)
             CurrentSubscriptionWidget(
               subscription: state.subscription!,
-              onManageSubscription: () => _showSubscriptionManagement(state.subscription!),
+              onManageSubscription: () =>
+                  _showSubscriptionManagement(state.subscription!),
             ),
-          
+
           const SizedBox(height: 24),
-          
+
           // Subscription plans
           Text(
             'Choose Your Plan',
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
+            style: Theme.of(
+              context,
+            ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 16),
-          
+
           SubscriptionPlansWidget(
             plans: state.plans,
             currentSubscription: state.subscription,
@@ -151,14 +149,12 @@ class _PremiumScreenState extends State<PremiumScreen>
         children: [
           CurrentSubscriptionWidget(
             subscription: state.subscription,
-            onManageSubscription: state.subscription != null 
+            onManageSubscription: state.subscription != null
                 ? () => _showSubscriptionManagement(state.subscription!)
                 : null,
           ),
-          
-          PremiumFeaturesWidget(
-            subscription: state.subscription,
-          ),
+
+          PremiumFeaturesWidget(subscription: state.subscription),
         ],
       ),
     );
@@ -175,9 +171,9 @@ class _PremiumScreenState extends State<PremiumScreen>
             coinBalance: state.coinBalance,
             onBuyCoins: () => _showCoinPurchaseDialog(),
           ),
-          
+
           const SizedBox(height: 24),
-          
+
           // Account settings
           _buildAccountSettings(state),
         ],
@@ -259,22 +255,18 @@ class _PremiumScreenState extends State<PremiumScreen>
               ),
             ),
             const SizedBox(height: 24),
-            
-            Icon(
-              Icons.star,
-              size: 64,
-              color: PulseColors.primary,
-            ),
+
+            Icon(Icons.star, size: 64, color: PulseColors.primary),
             const SizedBox(height: 16),
-            
+
             Text(
               'Upgrade to ${plan.name}',
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
-            
+
             Text(
               plan.formattedPrice,
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
@@ -283,30 +275,34 @@ class _PremiumScreenState extends State<PremiumScreen>
               ),
             ),
             const SizedBox(height: 24),
-            
+
             // Features list
-            ...plan.features.take(3).map((feature) => Padding(
-              padding: const EdgeInsets.symmetric(vertical: 4),
-              child: Row(
-                children: [
+            ...plan.features
+                .take(3)
+                .map(
+                  (feature) => Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 4),
+                    child: Row(
+                      children: [
                         Icon(
                           Icons.check,
                           color: context.successColor,
                           size: 20,
                         ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      feature,
-                      style: Theme.of(context).textTheme.bodyMedium,
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            feature,
+                            style: Theme.of(context).textTheme.bodyMedium,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                ],
-              ),
-            )),
-            
+                ),
+
             const SizedBox(height: 32),
-            
+
             // Action buttons
             Row(
               children: [
@@ -334,9 +330,9 @@ class _PremiumScreenState extends State<PremiumScreen>
                 ),
               ],
             ),
-            
+
             const SizedBox(height: 16),
-            
+
             Text(
               'Cancel anytime. No commitment.',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -355,7 +351,8 @@ class _PremiumScreenState extends State<PremiumScreen>
     context.read<PremiumBloc>().add(
       SubscribeToPlan(
         planId: plan.id,
-        paymentMethodId: 'default_payment_method', // This would come from payment selection
+        paymentMethodId:
+            'default_payment_method', // This would come from payment selection
       ),
     );
   }
@@ -366,7 +363,9 @@ class _PremiumScreenState extends State<PremiumScreen>
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Manage Subscription'),
-        content: const Text('Subscription management functionality coming soon!'),
+        content: const Text(
+          'Subscription management functionality coming soon!',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),

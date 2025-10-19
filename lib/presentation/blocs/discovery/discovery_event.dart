@@ -3,7 +3,7 @@ import '../../../domain/entities/user_profile.dart';
 import '../../../domain/entities/discovery_types.dart';
 
 /// Events for the Discovery system - swipe-based user discovery and matching
-/// 
+///
 /// Handles all user interactions in the discovery interface including
 /// swiping, filtering, and advanced discovery features
 abstract class DiscoveryEvent extends Equatable {
@@ -15,10 +15,7 @@ abstract class DiscoveryEvent extends Equatable {
 
 /// Load initial set of discoverable users
 class LoadDiscoverableUsers extends DiscoveryEvent {
-  const LoadDiscoverableUsers({
-    this.resetStack = false,
-    this.filters,
-  });
+  const LoadDiscoverableUsers({this.resetStack = false, this.filters});
 
   final bool resetStack;
   final DiscoveryFilters? filters;
@@ -84,10 +81,7 @@ class LoadMoreUsers extends DiscoveryEvent {
 
 /// Handle when a match is detected
 class MatchDetected extends DiscoveryEvent {
-  const MatchDetected({
-    required this.matchedUser,
-    required this.isNewMatch,
-  });
+  const MatchDetected({required this.matchedUser, required this.isNewMatch});
 
   final UserProfile matchedUser;
   final bool isNewMatch;

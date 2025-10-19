@@ -1,7 +1,7 @@
 import 'package:equatable/equatable.dart';
 
 /// Boost feature states for BLoC pattern
-/// 
+///
 /// Represents the various states of the profile boost feature:
 /// - Initial state before any boost actions
 /// - Loading state during API calls
@@ -37,12 +37,12 @@ class BoostActive extends BoostState {
 
   @override
   List<Object?> get props => [
-        boostId,
-        startTime,
-        expiresAt,
-        durationMinutes,
-        remainingMinutes,
-      ];
+    boostId,
+    startTime,
+    expiresAt,
+    durationMinutes,
+    remainingMinutes,
+  ];
 
   /// Get remaining time as duration
   Duration get remainingDuration => Duration(minutes: remainingMinutes);

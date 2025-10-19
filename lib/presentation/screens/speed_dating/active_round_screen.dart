@@ -189,26 +189,26 @@ class _ActiveRoundScreenState extends State<ActiveRoundScreen>
   }
 
   void _listenToSession() {
-    _sessionSubscription = _speedDatingService.onCurrentSessionChanged.listen(
-      (session) {
-        if (session == null && mounted) {
-          // Session ended, navigate away
-          _handleRoundComplete();
-        }
-      },
-    );
+    _sessionSubscription = _speedDatingService.onCurrentSessionChanged.listen((
+      session,
+    ) {
+      if (session == null && mounted) {
+        // Session ended, navigate away
+        _handleRoundComplete();
+      }
+    });
   }
 
   void _listenToCallState() {
-    _callStateSubscription = _audioCallService.onCallStateChanged.listen(
-      (isInCall) {
-        if (mounted) {
-          setState(() {
-            _isCallActive = isInCall;
-          });
-        }
-      },
-    );
+    _callStateSubscription = _audioCallService.onCallStateChanged.listen((
+      isInCall,
+    ) {
+      if (mounted) {
+        setState(() {
+          _isCallActive = isInCall;
+        });
+      }
+    });
   }
 
   Future<void> _startAudioCall() async {
@@ -218,7 +218,7 @@ class _ActiveRoundScreenState extends State<ActiveRoundScreen>
 
       final channelName = 'speed_dating_${widget.sessionId}';
       final partnerId = _partnerProfile!['id'] as String;
-      
+
       final success = await _audioCallService.joinAudioCall(
         callId: widget.sessionId,
         recipientId: partnerId,
@@ -230,14 +230,12 @@ class _ActiveRoundScreenState extends State<ActiveRoundScreen>
           _isCallActive = true;
         });
       } else if (mounted) {
-        PulseToast.error(context, message: 'Failed to start audio call',
-        );
+        PulseToast.error(context, message: 'Failed to start audio call');
       }
     } catch (e) {
       debugPrint('Failed to start audio call: $e');
       if (mounted) {
-        PulseToast.error(context, message: 'Failed to start call: $e',
-        );
+        PulseToast.error(context, message: 'Failed to start call: $e');
       }
     }
   }
@@ -325,7 +323,7 @@ class _ActiveRoundScreenState extends State<ActiveRoundScreen>
       canPop: false,
       onPopInvokedWithResult: (didPop, result) async {
         if (didPop) return;
-        
+
         final confirmed = await showDialog<bool>(
           context: context,
           builder: (context) => AlertDialog(
@@ -346,7 +344,7 @@ class _ActiveRoundScreenState extends State<ActiveRoundScreen>
             ],
           ),
         );
-        
+
         if (confirmed == true) {
           await _audioCallService.leaveCall();
           if (context.mounted) {
@@ -354,10 +352,7 @@ class _ActiveRoundScreenState extends State<ActiveRoundScreen>
           }
         }
       },
-      child: Scaffold(
-        backgroundColor: Colors.black,
-        body: _buildBody(),
-      ),
+      child: Scaffold(backgroundColor: Colors.black, body: _buildBody()),
     );
   }
 
@@ -435,8 +430,8 @@ class _ActiveRoundScreenState extends State<ActiveRoundScreen>
                       _remainingSeconds < 30
                           ? Colors.red
                           : _remainingSeconds < 60
-                              ? Colors.orange
-                              : AppColors.primary,
+                          ? Colors.orange
+                          : AppColors.primary,
                     ),
                   ),
                 ),
@@ -460,10 +455,7 @@ class _ActiveRoundScreenState extends State<ActiveRoundScreen>
               children: [
                 const Text(
                   'Speed Dating',
-                  style: TextStyle(
-                    color: Colors.white70,
-                    fontSize: 14,
-                  ),
+                  style: TextStyle(color: Colors.white70, fontSize: 14),
                 ),
                 const SizedBox(height: 4),
                 Row(
@@ -534,10 +526,7 @@ class _ActiveRoundScreenState extends State<ActiveRoundScreen>
             height: 180,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              border: Border.all(
-                color: AppColors.primary,
-                width: 4,
-              ),
+              border: Border.all(color: AppColors.primary, width: 4),
               boxShadow: [
                 BoxShadow(
                   color: AppColors.primary.withValues(alpha: 0.3),
@@ -553,9 +542,7 @@ class _ActiveRoundScreenState extends State<ActiveRoundScreen>
                       fit: BoxFit.cover,
                       placeholder: (context, url) => Container(
                         color: Colors.grey[800],
-                        child: const Center(
-                          child: CircularProgressIndicator(),
-                        ),
+                        child: const Center(child: CircularProgressIndicator()),
                       ),
                       errorWidget: (context, url, error) => Container(
                         color: Colors.grey[800],
@@ -597,18 +584,11 @@ class _ActiveRoundScreenState extends State<ActiveRoundScreen>
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(
-                  Icons.location_on,
-                  color: Colors.white70,
-                  size: 18,
-                ),
+                const Icon(Icons.location_on, color: Colors.white70, size: 18),
                 const SizedBox(width: 4),
                 Text(
                   location,
-                  style: const TextStyle(
-                    color: Colors.white70,
-                    fontSize: 16,
-                  ),
+                  style: const TextStyle(color: Colors.white70, fontSize: 16),
                 ),
               ],
             ),
@@ -648,17 +628,11 @@ class _ActiveRoundScreenState extends State<ActiveRoundScreen>
                   decoration: BoxDecoration(
                     color: AppColors.primary.withValues(alpha: 0.3),
                     borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                      color: AppColors.primary,
-                      width: 1,
-                    ),
+                    border: Border.all(color: AppColors.primary, width: 1),
                   ),
                   child: Text(
                     interest.toString(),
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 14,
-                    ),
+                    style: const TextStyle(color: Colors.white, fontSize: 14),
                   ),
                 );
               }).toList(),
@@ -681,10 +655,7 @@ class _ActiveRoundScreenState extends State<ActiveRoundScreen>
                 children: [
                   const Text(
                     'Next Partner',
-                    style: TextStyle(
-                      color: Colors.white70,
-                      fontSize: 14,
-                    ),
+                    style: TextStyle(color: Colors.white70, fontSize: 14),
                   ),
                   const SizedBox(height: 8),
                   _buildNextPartnerPreview(),
@@ -810,13 +781,7 @@ class _ActiveRoundScreenState extends State<ActiveRoundScreen>
           ),
         ),
         const SizedBox(height: 8),
-        Text(
-          label,
-          style: TextStyle(
-            color: color,
-            fontSize: 12,
-          ),
-        ),
+        Text(label, style: TextStyle(color: color, fontSize: 12)),
       ],
     );
   }

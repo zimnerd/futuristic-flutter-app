@@ -4,7 +4,7 @@ import '../../../../core/network/api_client.dart';
 import '../../../../core/constants/api_constants.dart';
 
 /// Participant Picker Dialog for Group Creation
-/// 
+///
 /// Displays a searchable list of users to add as group participants.
 /// Features:
 /// - Real-time search with debouncing
@@ -49,9 +49,7 @@ class _ParticipantPickerDialogState extends State<ParticipantPickerDialog> {
     try {
       // Fetch matched users instead of all users
       // This ensures users can only add people they've matched with
-      final response = await _apiClient.get(
-        ApiConstants.matchingMatches,
-      );
+      final response = await _apiClient.get(ApiConstants.matchingMatches);
 
       if (response.statusCode == 200) {
         final data = response.data['data'] as List? ?? response.data as List;
@@ -141,7 +139,8 @@ class _ParticipantPickerDialogState extends State<ParticipantPickerDialog> {
                           '${_selectedIds.length} selected',
                           style: TextStyle(
                             fontSize: 14,
-                            color: Theme.of(context).textTheme.bodySmall?.color?.withValues(alpha: 0.7),
+                            color: Theme.of(context).textTheme.bodySmall?.color
+                                ?.withValues(alpha: 0.7),
                           ),
                         ),
                       ],
@@ -186,9 +185,7 @@ class _ParticipantPickerDialogState extends State<ParticipantPickerDialog> {
             ),
 
             // User list
-            Expanded(
-              child: _buildUserList(),
-            ),
+            Expanded(child: _buildUserList()),
 
             const Divider(height: 1),
 
@@ -256,9 +253,7 @@ class _ParticipantPickerDialogState extends State<ParticipantPickerDialog> {
 
   Widget _buildUserList() {
     if (_isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(),
-      );
+      return const Center(child: CircularProgressIndicator());
     }
 
     if (_error != null) {
@@ -291,20 +286,13 @@ class _ParticipantPickerDialogState extends State<ParticipantPickerDialog> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.person_search,
-              size: 64,
-              color: Colors.grey[400],
-            ),
+            Icon(Icons.person_search, size: 64, color: Colors.grey[400]),
             const SizedBox(height: 16),
             Text(
               _searchController.text.isEmpty
                   ? 'No users found'
                   : 'No users match your search',
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey[600],
-              ),
+              style: TextStyle(fontSize: 16, color: Colors.grey[600]),
             ),
           ],
         ),
@@ -369,11 +357,7 @@ class _ParticipantPickerDialogState extends State<ParticipantPickerDialog> {
                     width: 2,
                   ),
                 ),
-                child: const Icon(
-                  Icons.check,
-                  size: 12,
-                  color: Colors.white,
-                ),
+                child: const Icon(Icons.check, size: 12, color: Colors.white),
               ),
             ),
         ],

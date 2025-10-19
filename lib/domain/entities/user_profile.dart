@@ -629,24 +629,24 @@ class UserProfile extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        name,
-        age,
+    id,
+    name,
+    age,
     dateOfBirth,
     ageChangeCount,
-        bio,
-        photos,
-        location,
-        isVerified,
-        interests,
-        occupation,
-        education,
-        height,
-        zodiacSign,
-        lifestyle,
-        preferences,
-        lastActiveAt,
-        distanceKm,
+    bio,
+    photos,
+    location,
+    isVerified,
+    interests,
+    occupation,
+    education,
+    height,
+    zodiacSign,
+    lifestyle,
+    preferences,
+    lastActiveAt,
+    distanceKm,
     gender,
     showMe,
     job,
@@ -696,12 +696,12 @@ class UserProfile extends Equatable {
     verificationStatus,
     verifiedAt,
     profileCompletionPercentage,
-      ];
+  ];
 }
 
 /// Profile photo entity
 class ProfilePhoto extends Equatable {
-  const ProfilePhoto({  
+  const ProfilePhoto({
     required this.id,
     required this.url,
     required this.order,
@@ -757,7 +757,7 @@ class ProfilePhoto extends Equatable {
           ? DateTime.parse(json['uploadedAt'] as String)
           : json['createdAt'] != null
           ? DateTime.parse(json['createdAt'] as String)
-              : null,
+          : null,
     );
   }
 

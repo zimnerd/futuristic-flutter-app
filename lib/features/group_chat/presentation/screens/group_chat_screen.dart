@@ -26,10 +26,7 @@ import '../../../calls/presentation/screens/outgoing_call_screen.dart';
 class GroupChatScreen extends StatefulWidget {
   final GroupConversation group;
 
-  const GroupChatScreen({
-    super.key,
-    required this.group,
-  });
+  const GroupChatScreen({super.key, required this.group});
 
   @override
   State<GroupChatScreen> createState() => _GroupChatScreenState();
@@ -58,9 +55,7 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
   @override
   void dispose() {
     // Leave the group room
-    context.read<GroupChatBloc>().add(
-          LeaveGroup(widget.group.id),
-        );
+    context.read<GroupChatBloc>().add(LeaveGroup(widget.group.id));
     _messageController.dispose();
     _scrollController.dispose();
     super.dispose();
@@ -92,7 +87,7 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
         preferredSize: const Size.fromHeight(56),
         child: BlocBuilder<GroupChatBloc, GroupChatState>(
           builder: (context, state) {
-            final resultCount = state is GroupChatLoaded 
+            final resultCount = state is GroupChatLoaded
                 ? state.searchResults.length
                 : null;
             return MessageSearchBar(
@@ -230,7 +225,8 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
 
         if (state is GroupChatLoaded) {
           // Use search results if in search mode, otherwise use all messages
-          final messages = state.searchQuery != null && state.searchQuery!.isNotEmpty
+          final messages =
+              state.searchQuery != null && state.searchQuery!.isNotEmpty
               ? state.searchResults
               : state.messages;
 
@@ -251,7 +247,10 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                     state.searchQuery != null
                         ? 'No messages found'
                         : 'No messages yet',
-                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   const SizedBox(height: 8),
                   Text(
@@ -277,11 +276,11 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                     final message = messages[messages.length - 1 - index];
                     // Get current user ID from AuthBloc state
                     final authState = context.read<AuthBloc>().state;
-                    final currentUserId = authState is AuthAuthenticated 
-                        ? authState.user.id 
+                    final currentUserId = authState is AuthAuthenticated
+                        ? authState.user.id
                         : '';
                     final isMe = message.senderId == currentUserId;
-                    
+
                     return MessageBubble(
                       message: message,
                       isMe: isMe,
@@ -461,11 +460,11 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
       });
       // Send typing indicator
       context.read<GroupChatBloc>().add(
-            SendTypingIndicator(
-              conversationId: widget.group.id,
-              isTyping: isNowTyping,
-            ),
-          );
+        SendTypingIndicator(
+          conversationId: widget.group.id,
+          isTyping: isNowTyping,
+        ),
+      );
     }
   }
 
@@ -538,7 +537,7 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
 
       final tempId = const Uuid().v4();
       final voiceUrl = mediaData['url'] as String;
-      
+
       // Send voice message with uploaded URL
       // Note: Storing media info in content as JSON since metadata field not yet supported
       context.read<GroupChatBloc>().add(
@@ -593,7 +592,10 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.insert_drive_file, color: Colors.orange),
+              leading: const Icon(
+                Icons.insert_drive_file,
+                color: Colors.orange,
+              ),
               title: const Text('File'),
               onTap: () async {
                 Navigator.pop(context);
@@ -622,9 +624,7 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
       showDialog(
         context: context,
         barrierDismissible: false,
-        builder: (context) => const Center(
-          child: CircularProgressIndicator(),
-        ),
+        builder: (context) => const Center(child: CircularProgressIndicator()),
       );
 
       // Compress image
@@ -656,7 +656,7 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
 
       final tempId = const Uuid().v4();
       final imageUrl = mediaData['url'] as String;
-      
+
       // Note: Storing media info in content as JSON since metadata field not yet supported
       context.read<GroupChatBloc>().add(
         SendMessage(
@@ -681,7 +681,7 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
       if (mounted && Navigator.of(context).canPop()) {
         Navigator.of(context).pop();
       }
-      
+
       if (!mounted) return;
       PulseToast.error(context, message: 'Failed to pick image: $e');
     }
@@ -1042,7 +1042,8 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                         backgroundColor: const Color(0xFF6E3BFF),
                         backgroundImage: participant.profilePhoto != null
                             ? CachedNetworkImageProvider(
-                                participant.profilePhoto!)
+                                participant.profilePhoto!,
+                              )
                             : null,
                         child: participant.profilePhoto == null
                             ? Text(
@@ -1125,11 +1126,15 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                 ),
                 _buildSettingItem(
                   'Voice Chat',
-                  widget.group.settings!.enableVoiceChat ? 'Enabled' : 'Disabled',
+                  widget.group.settings!.enableVoiceChat
+                      ? 'Enabled'
+                      : 'Disabled',
                 ),
                 _buildSettingItem(
                   'Video Chat',
-                  widget.group.settings!.enableVideoChat ? 'Enabled' : 'Disabled',
+                  widget.group.settings!.enableVideoChat
+                      ? 'Enabled'
+                      : 'Disabled',
                 ),
               ],
             ],

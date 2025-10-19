@@ -16,11 +16,7 @@ class LoadEvents extends EventEvent {
   final double? longitude;
   final String? category;
 
-  const LoadEvents({
-    this.latitude,
-    this.longitude,
-    this.category,
-  });
+  const LoadEvents({this.latitude, this.longitude, this.category});
 
   @override
   List<Object?> get props => [latitude, longitude, category];
@@ -138,10 +134,9 @@ class EventError extends EventState {
 class EventBloc extends Bloc<EventEvent, EventState> {
   final EventService _eventService;
 
-  EventBloc({
-    EventService? eventService,
-  })  : _eventService = eventService ?? EventService.instance,
-        super(EventInitial()) {
+  EventBloc({EventService? eventService})
+    : _eventService = eventService ?? EventService.instance,
+      super(EventInitial()) {
     on<LoadEvents>(_onLoadEvents);
     on<CreateEvent>(_onCreateEvent);
     on<LoadEventDetails>(_onLoadEventDetails);
@@ -151,10 +146,7 @@ class EventBloc extends Bloc<EventEvent, EventState> {
     on<LoadUserAttendingEvents>(_onLoadUserAttendingEvents);
   }
 
-  Future<void> _onLoadEvents(
-    LoadEvents event,
-    Emitter<EventState> emit,
-  ) async {
+  Future<void> _onLoadEvents(LoadEvents event, Emitter<EventState> emit) async {
     emit(EventLoading());
     try {
       final events = await _eventService.getEvents(
@@ -215,10 +207,7 @@ class EventBloc extends Bloc<EventEvent, EventState> {
     }
   }
 
-  Future<void> _onLeaveEvent(
-    LeaveEvent event,
-    Emitter<EventState> emit,
-  ) async {
+  Future<void> _onLeaveEvent(LeaveEvent event, Emitter<EventState> emit) async {
     try {
       await _eventService.leaveEvent(event.eventId);
       emit(EventLeft(event.eventId));

@@ -59,15 +59,11 @@ class _MatchSuccessWidgetState extends State<MatchSuccessWidget> {
               color: Colors.white.withValues(alpha: 0.2),
               shape: BoxShape.circle,
             ),
-            child: const Icon(
-              Icons.favorite,
-              size: 60,
-              color: Colors.white,
-            ),
+            child: const Icon(Icons.favorite, size: 60, color: Colors.white),
           ),
-          
+
           const SizedBox(height: 24),
-          
+
           // Match announcement
           const Text(
             "It's a Match! 🎉",
@@ -77,9 +73,9 @@ class _MatchSuccessWidgetState extends State<MatchSuccessWidget> {
               fontWeight: FontWeight.bold,
             ),
           ),
-          
+
           const SizedBox(height: 8),
-          
+
           Text(
             'You and they both liked each other!',
             style: TextStyle(
@@ -87,9 +83,9 @@ class _MatchSuccessWidgetState extends State<MatchSuccessWidget> {
               fontSize: 16,
             ),
           ),
-          
+
           const SizedBox(height: 16),
-          
+
           // Compatibility score
           if (widget.match.compatibilityScore > 0)
             Container(
@@ -107,9 +103,9 @@ class _MatchSuccessWidgetState extends State<MatchSuccessWidget> {
                 ),
               ),
             ),
-          
+
           const SizedBox(height: 32),
-          
+
           // Profile cards placeholder
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -133,9 +129,9 @@ class _MatchSuccessWidgetState extends State<MatchSuccessWidget> {
               _ProfileCard(isCurrentUser: false),
             ],
           ),
-          
+
           const SizedBox(height: 40),
-          
+
           // Action buttons
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 32),
@@ -159,14 +155,16 @@ class _MatchSuccessWidgetState extends State<MatchSuccessWidget> {
                     ),
                   ),
                 ),
-                
+
                 const SizedBox(height: 12),
-                
+
                 // Keep swiping button
                 SizedBox(
                   width: double.infinity,
                   child: OutlinedButton.icon(
-                    onPressed: widget.onKeepSwiping ?? () => Navigator.of(context).pop(),
+                    onPressed:
+                        widget.onKeepSwiping ??
+                        () => Navigator.of(context).pop(),
                     icon: const Icon(Icons.explore),
                     label: const Text('Keep Swiping'),
                     style: OutlinedButton.styleFrom(
@@ -182,17 +180,13 @@ class _MatchSuccessWidgetState extends State<MatchSuccessWidget> {
               ],
             ),
           ),
-          
+
           const SizedBox(height: 20),
-          
+
           // Close button
           IconButton(
             onPressed: () => Navigator.of(context).pop(),
-            icon: const Icon(
-              Icons.close,
-              color: Colors.white,
-              size: 24,
-            ),
+            icon: const Icon(Icons.close, color: Colors.white, size: 24),
           ),
         ],
       ),
@@ -202,11 +196,9 @@ class _MatchSuccessWidgetState extends State<MatchSuccessWidget> {
   void _startChat(BuildContext context) {
     // Navigate to matches screen or directly to chat
     Navigator.of(context).pop(); // Close the match success modal
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => const MatchesScreen(),
-      ),
-    );
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (context) => const MatchesScreen()));
   }
 }
 
@@ -293,12 +285,10 @@ class MatchHandlerScreen extends StatelessWidget {
         initialMessage: "Hey! Great match! 😊",
       ),
     );
-    
+
     // Navigate to matches screen to see the new conversation
     Navigator.of(context).pushReplacement(
-      MaterialPageRoute(
-        builder: (context) => const MatchesScreen(),
-      ),
+      MaterialPageRoute(builder: (context) => const MatchesScreen()),
     );
   }
 }

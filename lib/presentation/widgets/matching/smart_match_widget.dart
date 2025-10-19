@@ -27,35 +27,28 @@ class SmartMatchWidget extends StatefulWidget {
 
 class _SmartMatchWidgetState extends State<SmartMatchWidget>
     with TickerProviderStateMixin {
-  
-  final AiMatchingService _aiService = AiMatchingService(
-    ApiClient.instance,
-  );
-  
+  final AiMatchingService _aiService = AiMatchingService(ApiClient.instance);
+
   List<MatchModel> _recommendations = [];
 
   bool _isLoading = false;
   String _selectedFilter = 'all';
-  
+
   late AnimationController _pulseController;
   late Animation<double> _pulseAnimation;
 
   @override
   void initState() {
     super.initState();
-    
+
     _pulseController = AnimationController(
       duration: const Duration(seconds: 2),
       vsync: this,
     )..repeat(reverse: true);
-    
-    _pulseAnimation = Tween<double>(
-      begin: 0.8,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _pulseController,
-      curve: Curves.easeInOut,
-    ));
+
+    _pulseAnimation = Tween<double>(begin: 0.8, end: 1.0).animate(
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
+    );
 
     _loadRecommendations();
   }
@@ -68,14 +61,14 @@ class _SmartMatchWidgetState extends State<SmartMatchWidget>
 
   Future<void> _loadRecommendations() async {
     setState(() => _isLoading = true);
-    
+
     try {
       final recommendations = await _aiService.getRecommendations(
         userId: widget.currentUser.id,
         limit: 20,
         minCompatibility: _getMinCompatibilityForFilter(),
       );
-      
+
       setState(() {
         _recommendations = recommendations;
         _isLoading = false;
@@ -116,7 +109,7 @@ class _SmartMatchWidgetState extends State<SmartMatchWidget>
     );
 
     widget.onMatchAction?.call(match, action);
-    
+
     // Remove from current recommendations
     setState(() {
       _recommendations.removeWhere((m) => m.id == match.id);
@@ -147,8 +140,8 @@ class _SmartMatchWidgetState extends State<SmartMatchWidget>
             child: _isLoading
                 ? _buildLoadingState()
                 : _recommendations.isEmpty
-                    ? _buildEmptyState()
-                    : _buildMatchesList(),
+                ? _buildEmptyState()
+                : _buildMatchesList(),
           ),
         ],
       ),
@@ -208,10 +201,7 @@ class _SmartMatchWidgetState extends State<SmartMatchWidget>
           ),
           IconButton(
             onPressed: _loadRecommendations,
-            icon: Icon(
-              Icons.refresh,
-              color: Theme.of(context).iconTheme.color,
-            ),
+            icon: Icon(Icons.refresh, color: Theme.of(context).iconTheme.color),
           ),
         ],
       ),
@@ -235,7 +225,7 @@ class _SmartMatchWidgetState extends State<SmartMatchWidget>
 
   Widget _buildFilterTab(String label, String value) {
     final isSelected = _selectedFilter == value;
-    
+
     return GestureDetector(
       onTap: () {
         setState(() => _selectedFilter = value);
@@ -246,15 +236,15 @@ class _SmartMatchWidgetState extends State<SmartMatchWidget>
         decoration: BoxDecoration(
           color: isSelected ? PulseColors.primary : Colors.transparent,
           borderRadius: BorderRadius.circular(20),
-          border: isSelected 
-              ? null 
+          border: isSelected
+              ? null
               : Border.all(color: Theme.of(context).dividerColor),
         ),
         child: Text(
           label,
           style: TextStyle(
-            color: isSelected 
-                ? Colors.white 
+            color: isSelected
+                ? Colors.white
                 : Theme.of(context).textTheme.bodyMedium?.color,
             fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
           ),
@@ -340,20 +330,20 @@ class _SmartMatchWidgetState extends State<SmartMatchWidget>
                 ClipRRect(
                   borderRadius: BorderRadius.circular(12),
                   child: RobustNetworkImage(
-                    imageUrl: match.userProfile?.photos.isNotEmpty == true 
-                        ? match.userProfile!.photos.first.url 
+                    imageUrl: match.userProfile?.photos.isNotEmpty == true
+                        ? match.userProfile!.photos.first.url
                         : 'https://via.placeholder.com/80',
-                    blurhash: match.userProfile?.photos.isNotEmpty == true 
-                        ? match.userProfile!.photos.first.blurhash 
+                    blurhash: match.userProfile?.photos.isNotEmpty == true
+                        ? match.userProfile!.photos.first.blurhash
                         : null,
                     width: 80,
                     height: 80,
                     fit: BoxFit.cover,
                   ),
                 ),
-                
+
                 const SizedBox(width: 16),
-                
+
                 // Match Info
                 Expanded(
                   child: Column(
@@ -368,38 +358,45 @@ class _SmartMatchWidgetState extends State<SmartMatchWidget>
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          if (match.userProfile?.age != null && match.userProfile!.age > 0) ...[
+                          if (match.userProfile?.age != null &&
+                              match.userProfile!.age > 0) ...[
                             const SizedBox(width: 8),
                             Text(
                               '${match.userProfile!.age}',
                               style: TextStyle(
                                 fontSize: 16,
-                                color: Theme.of(context).textTheme.bodyMedium?.color,
+                                color: Theme.of(
+                                  context,
+                                ).textTheme.bodyMedium?.color,
                               ),
                             ),
                           ],
                         ],
                       ),
-                      
+
                       const SizedBox(height: 4),
-                      
+
                       // Compatibility Score
                       CompatibilityBar(score: match.compatibilityScore),
-                      
+
                       const SizedBox(height: 8),
-                      
+
                       // Common Interests
                       if (match.userProfile?.interests.isNotEmpty == true)
                         Wrap(
                           spacing: 6,
-                          children: match.userProfile!.interests.take(3).map((interest) {
+                          children: match.userProfile!.interests.take(3).map((
+                            interest,
+                          ) {
                             return Container(
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 8,
                                 vertical: 4,
                               ),
                               decoration: BoxDecoration(
-                                color: PulseColors.primary.withValues(alpha: 0.1),
+                                color: PulseColors.primary.withValues(
+                                  alpha: 0.1,
+                                ),
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Text(
@@ -419,7 +416,7 @@ class _SmartMatchWidgetState extends State<SmartMatchWidget>
               ],
             ),
           ),
-          
+
           // Action Buttons
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
@@ -458,8 +455,6 @@ class _SmartMatchWidgetState extends State<SmartMatchWidget>
       ),
     );
   }
-
-
 
   Widget _buildActionButton({
     required IconData icon,

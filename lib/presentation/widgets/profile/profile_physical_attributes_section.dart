@@ -100,16 +100,13 @@ class ProfilePhysicalAttributesSection extends StatelessWidget {
     final textColor =
         Theme.of(context).textTheme.bodyLarge?.color ??
         (isDark ? Colors.white : Colors.black87);
-    
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: containerColor,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: borderColor,
-          width: 1,
-        ),
+        border: Border.all(color: borderColor, width: 1),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -198,7 +195,7 @@ class ProfilePhysicalAttributesSection extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 12),
-              
+
               // Slider
               SliderTheme(
                 data: SliderTheme.of(context).copyWith(
@@ -220,7 +217,7 @@ class ProfilePhysicalAttributesSection extends StatelessWidget {
                   onChanged: (value) => onHeightChanged(value.toInt()),
                 ),
               ),
-              
+
               // Direct input field
               const SizedBox(height: 8),
               Container(
@@ -322,9 +319,7 @@ class ProfilePhysicalAttributesSection extends StatelessWidget {
                     dropdownColor: isDark
                         ? const Color(0xFF1A1F3A)
                         : Colors.white,
-                    style: TextStyle(color: textColor,
-                      fontSize: 14,
-                    ),
+                    style: TextStyle(color: textColor, fontSize: 14),
                     icon: Icon(
                       Icons.arrow_drop_down,
                       color: textColor.withValues(alpha: 0.7),
@@ -396,9 +391,7 @@ class ProfilePhysicalAttributesSection extends StatelessWidget {
                     dropdownColor: isDark
                         ? const Color(0xFF1A1F3A)
                         : Colors.white,
-                    style: TextStyle(color: textColor,
-                      fontSize: 14,
-                    ),
+                    style: TextStyle(color: textColor, fontSize: 14),
                     icon: Icon(
                       Icons.arrow_drop_down,
                       color: textColor.withValues(alpha: 0.7),
@@ -447,10 +440,7 @@ class ProfilePhysicalAttributesSection extends StatelessWidget {
                 Expanded(
                   child: Text(
                     'This information is optional and helps find compatible matches',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: PulseColors.success,
-                    ),
+                    style: TextStyle(fontSize: 12, color: PulseColors.success),
                   ),
                 ),
               ],

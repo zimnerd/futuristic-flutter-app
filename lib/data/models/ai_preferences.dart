@@ -23,7 +23,9 @@ class AiPreferences extends Equatable {
   factory AiPreferences.fromJson(Map<String, dynamic> json) {
     return AiPreferences(
       isAiEnabled: json['isAiEnabled'] ?? false,
-      conversations: AiConversationSettings.fromJson(json['conversations'] ?? {}),
+      conversations: AiConversationSettings.fromJson(
+        json['conversations'] ?? {},
+      ),
       companion: AiCompanionSettings.fromJson(json['companion'] ?? {}),
       profile: AiProfileSettings.fromJson(json['profile'] ?? {}),
       matching: AiMatchingSettings.fromJson(json['matching'] ?? {}),
@@ -66,14 +68,14 @@ class AiPreferences extends Equatable {
 
   @override
   List<Object?> get props => [
-        isAiEnabled,
-        conversations,
-        companion,
-        profile,
-        matching,
-        icebreakers,
-        general,
-      ];
+    isAiEnabled,
+    conversations,
+    companion,
+    profile,
+    matching,
+    icebreakers,
+    general,
+  ];
 }
 
 /// AI settings for conversation features
@@ -133,7 +135,8 @@ class AiConversationSettings extends Equatable {
       smartRepliesEnabled: smartRepliesEnabled ?? this.smartRepliesEnabled,
       customReplyEnabled: customReplyEnabled ?? this.customReplyEnabled,
       contextAwareReplies: contextAwareReplies ?? this.contextAwareReplies,
-      autoSuggestionsEnabled: autoSuggestionsEnabled ?? this.autoSuggestionsEnabled,
+      autoSuggestionsEnabled:
+          autoSuggestionsEnabled ?? this.autoSuggestionsEnabled,
       maxSuggestions: maxSuggestions ?? this.maxSuggestions,
       replyTone: replyTone ?? this.replyTone,
       adaptToUserStyle: adaptToUserStyle ?? this.adaptToUserStyle,
@@ -142,14 +145,14 @@ class AiConversationSettings extends Equatable {
 
   @override
   List<Object?> get props => [
-        smartRepliesEnabled,
-        customReplyEnabled,
-        contextAwareReplies,
-        autoSuggestionsEnabled,
-        maxSuggestions,
-        replyTone,
-        adaptToUserStyle,
-      ];
+    smartRepliesEnabled,
+    customReplyEnabled,
+    contextAwareReplies,
+    autoSuggestionsEnabled,
+    maxSuggestions,
+    replyTone,
+    adaptToUserStyle,
+  ];
 }
 
 /// AI settings for companion features
@@ -176,7 +179,8 @@ class AiCompanionSettings extends Equatable {
       companionAdviceEnabled: json['companionAdviceEnabled'] ?? false,
       relationshipAnalysisEnabled: json['relationshipAnalysisEnabled'] ?? false,
       personalityMatchingEnabled: json['personalityMatchingEnabled'] ?? false,
-      preferredCompanionPersonality: json['preferredCompanionPersonality'] ?? 'friendly',
+      preferredCompanionPersonality:
+          json['preferredCompanionPersonality'] ?? 'friendly',
       companionLearningEnabled: json['companionLearningEnabled'] ?? false,
     );
   }
@@ -202,23 +206,28 @@ class AiCompanionSettings extends Equatable {
   }) {
     return AiCompanionSettings(
       companionChatEnabled: companionChatEnabled ?? this.companionChatEnabled,
-      companionAdviceEnabled: companionAdviceEnabled ?? this.companionAdviceEnabled,
-      relationshipAnalysisEnabled: relationshipAnalysisEnabled ?? this.relationshipAnalysisEnabled,
-      personalityMatchingEnabled: personalityMatchingEnabled ?? this.personalityMatchingEnabled,
-      preferredCompanionPersonality: preferredCompanionPersonality ?? this.preferredCompanionPersonality,
-      companionLearningEnabled: companionLearningEnabled ?? this.companionLearningEnabled,
+      companionAdviceEnabled:
+          companionAdviceEnabled ?? this.companionAdviceEnabled,
+      relationshipAnalysisEnabled:
+          relationshipAnalysisEnabled ?? this.relationshipAnalysisEnabled,
+      personalityMatchingEnabled:
+          personalityMatchingEnabled ?? this.personalityMatchingEnabled,
+      preferredCompanionPersonality:
+          preferredCompanionPersonality ?? this.preferredCompanionPersonality,
+      companionLearningEnabled:
+          companionLearningEnabled ?? this.companionLearningEnabled,
     );
   }
 
   @override
   List<Object?> get props => [
-        companionChatEnabled,
-        companionAdviceEnabled,
-        relationshipAnalysisEnabled,
-        personalityMatchingEnabled,
-        preferredCompanionPersonality,
-        companionLearningEnabled,
-      ];
+    companionChatEnabled,
+    companionAdviceEnabled,
+    relationshipAnalysisEnabled,
+    personalityMatchingEnabled,
+    preferredCompanionPersonality,
+    companionLearningEnabled,
+  ];
 }
 
 /// AI settings for profile features
@@ -270,24 +279,29 @@ class AiProfileSettings extends Equatable {
     bool? profileCompletionHelp,
   }) {
     return AiProfileSettings(
-      profileOptimizationEnabled: profileOptimizationEnabled ?? this.profileOptimizationEnabled,
-      bioSuggestionsEnabled: bioSuggestionsEnabled ?? this.bioSuggestionsEnabled,
+      profileOptimizationEnabled:
+          profileOptimizationEnabled ?? this.profileOptimizationEnabled,
+      bioSuggestionsEnabled:
+          bioSuggestionsEnabled ?? this.bioSuggestionsEnabled,
       photoAnalysisEnabled: photoAnalysisEnabled ?? this.photoAnalysisEnabled,
-      profileAnalyticsEnabled: profileAnalyticsEnabled ?? this.profileAnalyticsEnabled,
-      interestSuggestionsEnabled: interestSuggestionsEnabled ?? this.interestSuggestionsEnabled,
-      profileCompletionHelp: profileCompletionHelp ?? this.profileCompletionHelp,
+      profileAnalyticsEnabled:
+          profileAnalyticsEnabled ?? this.profileAnalyticsEnabled,
+      interestSuggestionsEnabled:
+          interestSuggestionsEnabled ?? this.interestSuggestionsEnabled,
+      profileCompletionHelp:
+          profileCompletionHelp ?? this.profileCompletionHelp,
     );
   }
 
   @override
   List<Object?> get props => [
-        profileOptimizationEnabled,
-        bioSuggestionsEnabled,
-        photoAnalysisEnabled,
-        profileAnalyticsEnabled,
-        interestSuggestionsEnabled,
-        profileCompletionHelp,
-      ];
+    profileOptimizationEnabled,
+    bioSuggestionsEnabled,
+    photoAnalysisEnabled,
+    profileAnalyticsEnabled,
+    interestSuggestionsEnabled,
+    profileCompletionHelp,
+  ];
 }
 
 /// AI settings for matching features
@@ -311,7 +325,8 @@ class AiMatchingSettings extends Equatable {
   factory AiMatchingSettings.fromJson(Map<String, dynamic> json) {
     return AiMatchingSettings(
       smartMatchingEnabled: json['smartMatchingEnabled'] ?? false,
-      compatibilityAnalysisEnabled: json['compatibilityAnalysisEnabled'] ?? false,
+      compatibilityAnalysisEnabled:
+          json['compatibilityAnalysisEnabled'] ?? false,
       personalityInsightsEnabled: json['personalityInsightsEnabled'] ?? false,
       behaviorAnalysisEnabled: json['behaviorAnalysisEnabled'] ?? false,
       matchPredictionEnabled: json['matchPredictionEnabled'] ?? false,
@@ -340,23 +355,27 @@ class AiMatchingSettings extends Equatable {
   }) {
     return AiMatchingSettings(
       smartMatchingEnabled: smartMatchingEnabled ?? this.smartMatchingEnabled,
-      compatibilityAnalysisEnabled: compatibilityAnalysisEnabled ?? this.compatibilityAnalysisEnabled,
-      personalityInsightsEnabled: personalityInsightsEnabled ?? this.personalityInsightsEnabled,
-      behaviorAnalysisEnabled: behaviorAnalysisEnabled ?? this.behaviorAnalysisEnabled,
-      matchPredictionEnabled: matchPredictionEnabled ?? this.matchPredictionEnabled,
+      compatibilityAnalysisEnabled:
+          compatibilityAnalysisEnabled ?? this.compatibilityAnalysisEnabled,
+      personalityInsightsEnabled:
+          personalityInsightsEnabled ?? this.personalityInsightsEnabled,
+      behaviorAnalysisEnabled:
+          behaviorAnalysisEnabled ?? this.behaviorAnalysisEnabled,
+      matchPredictionEnabled:
+          matchPredictionEnabled ?? this.matchPredictionEnabled,
       matchingThreshold: matchingThreshold ?? this.matchingThreshold,
     );
   }
 
   @override
   List<Object?> get props => [
-        smartMatchingEnabled,
-        compatibilityAnalysisEnabled,
-        personalityInsightsEnabled,
-        behaviorAnalysisEnabled,
-        matchPredictionEnabled,
-        matchingThreshold,
-      ];
+    smartMatchingEnabled,
+    compatibilityAnalysisEnabled,
+    personalityInsightsEnabled,
+    behaviorAnalysisEnabled,
+    matchPredictionEnabled,
+    matchingThreshold,
+  ];
 }
 
 /// AI settings for icebreaker features
@@ -379,9 +398,12 @@ class AiIcebreakerSettings extends Equatable {
 
   factory AiIcebreakerSettings.fromJson(Map<String, dynamic> json) {
     return AiIcebreakerSettings(
-      icebreakerSuggestionsEnabled: json['icebreakerSuggestionsEnabled'] ?? false,
-      personalizedIcebreakersEnabled: json['personalizedIcebreakersEnabled'] ?? false,
-      contextualIcebreakersEnabled: json['contextualIcebreakersEnabled'] ?? false,
+      icebreakerSuggestionsEnabled:
+          json['icebreakerSuggestionsEnabled'] ?? false,
+      personalizedIcebreakersEnabled:
+          json['personalizedIcebreakersEnabled'] ?? false,
+      contextualIcebreakersEnabled:
+          json['contextualIcebreakersEnabled'] ?? false,
       icebreakerAnalyticsEnabled: json['icebreakerAnalyticsEnabled'] ?? false,
       icebreakerStyle: json['icebreakerStyle'] ?? 'casual',
       maxIcebreakers: json['maxIcebreakers'] ?? 5,
@@ -408,10 +430,14 @@ class AiIcebreakerSettings extends Equatable {
     int? maxIcebreakers,
   }) {
     return AiIcebreakerSettings(
-      icebreakerSuggestionsEnabled: icebreakerSuggestionsEnabled ?? this.icebreakerSuggestionsEnabled,
-      personalizedIcebreakersEnabled: personalizedIcebreakersEnabled ?? this.personalizedIcebreakersEnabled,
-      contextualIcebreakersEnabled: contextualIcebreakersEnabled ?? this.contextualIcebreakersEnabled,
-      icebreakerAnalyticsEnabled: icebreakerAnalyticsEnabled ?? this.icebreakerAnalyticsEnabled,
+      icebreakerSuggestionsEnabled:
+          icebreakerSuggestionsEnabled ?? this.icebreakerSuggestionsEnabled,
+      personalizedIcebreakersEnabled:
+          personalizedIcebreakersEnabled ?? this.personalizedIcebreakersEnabled,
+      contextualIcebreakersEnabled:
+          contextualIcebreakersEnabled ?? this.contextualIcebreakersEnabled,
+      icebreakerAnalyticsEnabled:
+          icebreakerAnalyticsEnabled ?? this.icebreakerAnalyticsEnabled,
       icebreakerStyle: icebreakerStyle ?? this.icebreakerStyle,
       maxIcebreakers: maxIcebreakers ?? this.maxIcebreakers,
     );
@@ -419,13 +445,13 @@ class AiIcebreakerSettings extends Equatable {
 
   @override
   List<Object?> get props => [
-        icebreakerSuggestionsEnabled,
-        personalizedIcebreakersEnabled,
-        contextualIcebreakersEnabled,
-        icebreakerAnalyticsEnabled,
-        icebreakerStyle,
-        maxIcebreakers,
-      ];
+    icebreakerSuggestionsEnabled,
+    personalizedIcebreakersEnabled,
+    contextualIcebreakersEnabled,
+    icebreakerAnalyticsEnabled,
+    icebreakerStyle,
+    maxIcebreakers,
+  ];
 }
 
 /// General AI settings
@@ -449,7 +475,8 @@ class AiGeneralSettings extends Equatable {
   factory AiGeneralSettings.fromJson(Map<String, dynamic> json) {
     return AiGeneralSettings(
       dataCollectionConsent: json['dataCollectionConsent'] ?? false,
-      personalizedExperienceEnabled: json['personalizedExperienceEnabled'] ?? false,
+      personalizedExperienceEnabled:
+          json['personalizedExperienceEnabled'] ?? false,
       aiLearningEnabled: json['aiLearningEnabled'] ?? false,
       analyticsEnabled: json['analyticsEnabled'] ?? false,
       privacyLevel: json['privacyLevel'] ?? 'standard',
@@ -477,8 +504,10 @@ class AiGeneralSettings extends Equatable {
     bool? shareAnonymousUsage,
   }) {
     return AiGeneralSettings(
-      dataCollectionConsent: dataCollectionConsent ?? this.dataCollectionConsent,
-      personalizedExperienceEnabled: personalizedExperienceEnabled ?? this.personalizedExperienceEnabled,
+      dataCollectionConsent:
+          dataCollectionConsent ?? this.dataCollectionConsent,
+      personalizedExperienceEnabled:
+          personalizedExperienceEnabled ?? this.personalizedExperienceEnabled,
       aiLearningEnabled: aiLearningEnabled ?? this.aiLearningEnabled,
       analyticsEnabled: analyticsEnabled ?? this.analyticsEnabled,
       privacyLevel: privacyLevel ?? this.privacyLevel,
@@ -488,11 +517,11 @@ class AiGeneralSettings extends Equatable {
 
   @override
   List<Object?> get props => [
-        dataCollectionConsent,
-        personalizedExperienceEnabled,
-        aiLearningEnabled,
-        analyticsEnabled,
-        privacyLevel,
-        shareAnonymousUsage,
-      ];
+    dataCollectionConsent,
+    personalizedExperienceEnabled,
+    aiLearningEnabled,
+    analyticsEnabled,
+    privacyLevel,
+    shareAnonymousUsage,
+  ];
 }

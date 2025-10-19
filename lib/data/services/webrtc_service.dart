@@ -18,20 +18,25 @@ class WebRTCService {
   RtcEngine? _engine;
   WebSocketService? _webSocketService;
   final NetworkQualityService _networkQualityService = NetworkQualityService();
-  
+
   // Call state
   CallModel? _currentCall;
   bool _isInCall = false;
   bool _isMuted = false;
   bool _isVideoEnabled = true;
   bool _isSpeakerOn = false;
-  
+
   // Stream controllers for UI updates
-  final StreamController<CallModel?> _callStateController = StreamController<CallModel?>.broadcast();
-  final StreamController<bool> _muteStateController = StreamController<bool>.broadcast();
-  final StreamController<bool> _videoStateController = StreamController<bool>.broadcast();
-  final StreamController<bool> _speakerStateController = StreamController<bool>.broadcast();
-  final StreamController<List<int>> _remoteUsersController = StreamController<List<int>>.broadcast();
+  final StreamController<CallModel?> _callStateController =
+      StreamController<CallModel?>.broadcast();
+  final StreamController<bool> _muteStateController =
+      StreamController<bool>.broadcast();
+  final StreamController<bool> _videoStateController =
+      StreamController<bool>.broadcast();
+  final StreamController<bool> _speakerStateController =
+      StreamController<bool>.broadcast();
+  final StreamController<List<int>> _remoteUsersController =
+      StreamController<List<int>>.broadcast();
 
   // Getters for streams
   Stream<CallModel?> get callStateStream => _callStateController.stream;
@@ -46,14 +51,14 @@ class WebRTCService {
   bool get isMuted => _isMuted;
   bool get isVideoEnabled => _isVideoEnabled;
   bool get isSpeakerOn => _isSpeakerOn;
-  
+
   // ✅ ADDED: Getter for Agora engine (needed for video rendering)
   RtcEngine? get engine => _engine;
 
   // ✅ ADDED: Track remote users
   List<int> _remoteUsers = [];
   List<int> get remoteUsers => _remoteUsers;
-  
+
   // ✅ Network quality monitoring
   NetworkQualityService get networkQualityService => _networkQualityService;
 
@@ -64,44 +69,52 @@ class WebRTCService {
   }) async {
     try {
       _webSocketService = webSocketService;
-      
+
       // Create Agora RTC engine
       _engine = createAgoraRtcEngine();
-      await _engine!.initialize(RtcEngineContext(
-        appId: appId,
-        channelProfile: ChannelProfileType.channelProfileCommunication,
-      ));
+      await _engine!.initialize(
+        RtcEngineContext(
+          appId: appId,
+          channelProfile: ChannelProfileType.channelProfileCommunication,
+        ),
+      );
 
       // Set event handlers
-      _engine!.registerEventHandler(RtcEngineEventHandler(
-        onJoinChannelSuccess: (RtcConnection connection, int elapsed) {
-          _logger.i('Joined channel: ${connection.channelId}');
-          _isInCall = true;
-          _updateCallStatus(CallStatus.connected);
-        },
-        onUserJoined: (RtcConnection connection, int remoteUid, int elapsed) {
-          _logger.i('User joined: $remoteUid');
+      _engine!.registerEventHandler(
+        RtcEngineEventHandler(
+          onJoinChannelSuccess: (RtcConnection connection, int elapsed) {
+            _logger.i('Joined channel: ${connection.channelId}');
+            _isInCall = true;
+            _updateCallStatus(CallStatus.connected);
+          },
+          onUserJoined: (RtcConnection connection, int remoteUid, int elapsed) {
+            _logger.i('User joined: $remoteUid');
             _remoteUsers = [remoteUid]; // ✅ ADDED: Update remote users list
-          _remoteUsersController.add([remoteUid]);
-        },
-        onUserOffline: (RtcConnection connection, int remoteUid, UserOfflineReasonType reason) {
-          _logger.i('User offline: $remoteUid, reason: $reason');
+            _remoteUsersController.add([remoteUid]);
+          },
+          onUserOffline:
+              (
+                RtcConnection connection,
+                int remoteUid,
+                UserOfflineReasonType reason,
+              ) {
+                _logger.i('User offline: $remoteUid, reason: $reason');
                 _remoteUsers = []; // ✅ ADDED: Clear remote users list
-          _remoteUsersController.add([]);
-          if (reason == UserOfflineReasonType.userOfflineDropped ||
-              reason == UserOfflineReasonType.userOfflineQuit) {
-            _handleCallEnded();
-          }
-        },
-        onLeaveChannel: (RtcConnection connection, RtcStats stats) {
-          _logger.i('Left channel');
-          _isInCall = false;
-          _updateCallStatus(CallStatus.ended);
-        },
-        onError: (ErrorCodeType err, String msg) {
-          _logger.e('Agora error: $err - $msg');
-          _updateCallStatus(CallStatus.failed);
-        },
+                _remoteUsersController.add([]);
+                if (reason == UserOfflineReasonType.userOfflineDropped ||
+                    reason == UserOfflineReasonType.userOfflineQuit) {
+                  _handleCallEnded();
+                }
+              },
+          onLeaveChannel: (RtcConnection connection, RtcStats stats) {
+            _logger.i('Left channel');
+            _isInCall = false;
+            _updateCallStatus(CallStatus.ended);
+          },
+          onError: (ErrorCodeType err, String msg) {
+            _logger.e('Agora error: $err - $msg');
+            _updateCallStatus(CallStatus.failed);
+          },
           // ✅ Network quality monitoring callbacks
           onNetworkQuality:
               (
@@ -148,7 +161,8 @@ class WebRTCService {
                   audioLossRate: stats.audioLossRate ?? 0,
                 );
               },
-      ));
+        ),
+      );
 
       _logger.i('WebRTC service initialized successfully');
     } catch (e) {
@@ -317,7 +331,7 @@ class WebRTCService {
       await _engine?.leaveChannel();
 
       _handleCallEnded();
-      
+
       _logger.i('Call ended');
     } catch (e) {
       _logger.e('Error ending call: $e');
@@ -364,14 +378,16 @@ class WebRTCService {
       if (_currentCall?.type != CallType.video) return;
 
       _isVideoEnabled = !_isVideoEnabled;
-      
+
       // ✅ FIXED: Use enableLocalVideo instead of muteLocalVideoStream
       // enableLocalVideo actually stops the camera, muteLocalVideoStream just stops sending
       await _engine?.enableLocalVideo(_isVideoEnabled);
       _videoStateController.add(_isVideoEnabled);
 
       // Send camera signal
-      _sendCallSignal(_isVideoEnabled ? CallSignalType.cameraOn : CallSignalType.cameraOff);
+      _sendCallSignal(
+        _isVideoEnabled ? CallSignalType.cameraOn : CallSignalType.cameraOff,
+      );
 
       _logger.i('Camera ${_isVideoEnabled ? 'enabled' : 'disabled'}');
     } catch (e) {
@@ -424,7 +440,7 @@ class WebRTCService {
   Future<void> _configureEngineForCall(CallType callType) async {
     // Enable audio
     await _engine!.enableAudio();
-    
+
     if (callType == CallType.video) {
       // Enable video for video calls
       await _engine!.enableVideo();
@@ -443,7 +459,8 @@ class WebRTCService {
     // Set default states
     _isMuted = false;
     _isVideoEnabled = callType == CallType.video;
-    _isSpeakerOn = callType == CallType.video; // Default to speaker for video calls
+    _isSpeakerOn =
+        callType == CallType.video; // Default to speaker for video calls
 
     await _engine!.muteLocalAudioStream(_isMuted);
     await _engine!.setEnableSpeakerphone(_isSpeakerOn);
@@ -490,8 +507,12 @@ class WebRTCService {
       _currentCall = _currentCall!.copyWith(
         status: status,
         updatedAt: DateTime.now(),
-        startedAt: status == CallStatus.connected ? DateTime.now() : _currentCall!.startedAt,
-        endedAt: status == CallStatus.ended ? DateTime.now() : _currentCall!.endedAt,
+        startedAt: status == CallStatus.connected
+            ? DateTime.now()
+            : _currentCall!.startedAt,
+        endedAt: status == CallStatus.ended
+            ? DateTime.now()
+            : _currentCall!.endedAt,
       );
       _callStateController.add(_currentCall);
     }
@@ -519,13 +540,13 @@ class WebRTCService {
   }
 
   /// Get RTC token from backend for a specific channel
-  /// 
+  ///
   /// This calls the POST /api/v1/webrtc/rtc-token endpoint
-  /// 
+  ///
   /// Parameters:
   /// - [channelName]: The name of the channel to join
   /// - [role]: 1 = PUBLISHER/Host (default), 2 = SUBSCRIBER/Audience
-  /// 
+  ///
   /// Returns a Map with:
   /// - token: The Agora RTC token
   /// - channelName: The channel name
@@ -539,22 +560,19 @@ class WebRTCService {
   }) async {
     try {
       final apiClient = ApiClient.instance;
-      
+
       final response = await apiClient.post(
         ApiConstants.webrtcRtcToken,
-        data: {
-          'channelName': channelName,
-          'role': role,
-        },
+        data: {'channelName': channelName, 'role': role},
       );
 
       final data = response.data as Map<String, dynamic>;
-      
+
       // Backend returns { data: { token, channelName, uid, appId, expiresIn, role } }
       if (data.containsKey('data')) {
         return data['data'] as Map<String, dynamic>;
       }
-      
+
       // Fallback if response structure is different
       return data;
     } catch (e) {

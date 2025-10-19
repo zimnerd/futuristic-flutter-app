@@ -18,10 +18,7 @@ import '../../navigation/app_router.dart';
 class AiMatchingScreen extends StatefulWidget {
   final UserModel currentUser;
 
-  const AiMatchingScreen({
-    super.key,
-    required this.currentUser,
-  });
+  const AiMatchingScreen({super.key, required this.currentUser});
 
   @override
   State<AiMatchingScreen> createState() => _AiMatchingScreenState();
@@ -29,14 +26,11 @@ class AiMatchingScreen extends StatefulWidget {
 
 class _AiMatchingScreenState extends State<AiMatchingScreen>
     with TickerProviderStateMixin {
-  
-  final AiMatchingService _aiService = AiMatchingService(
-    ApiClient.instance,
-  );
+  final AiMatchingService _aiService = AiMatchingService(ApiClient.instance);
 
   late TabController _tabController;
   bool _isLoading = false;
-  
+
   Map<String, dynamic> _aiInsights = {};
   List<MatchModel> _topMatches = [];
 
@@ -55,14 +49,11 @@ class _AiMatchingScreenState extends State<AiMatchingScreen>
 
   Future<void> _loadInitialData() async {
     setState(() => _isLoading = true);
-    
+
     try {
       // Load AI insights and top matches in parallel
-      await Future.wait([
-        _loadAiInsights(),
-        _loadTopMatches(),
-      ]);
-      
+      await Future.wait([_loadAiInsights(), _loadTopMatches()]);
+
       setState(() => _isLoading = false);
     } catch (e) {
       setState(() => _isLoading = false);
@@ -93,7 +84,7 @@ class _AiMatchingScreenState extends State<AiMatchingScreen>
         limit: 5,
         minCompatibility: 0.7,
       );
-      
+
       _topMatches = matches;
     } catch (e) {
       AppLogger.debug('Error loading top matches: $e');
@@ -101,8 +92,7 @@ class _AiMatchingScreenState extends State<AiMatchingScreen>
   }
 
   void _showErrorMessage(String message) {
-    PulseToast.error(context, message: message,
-    );
+    PulseToast.error(context, message: message);
   }
 
   @override
@@ -181,7 +171,7 @@ class _AiMatchingScreenState extends State<AiMatchingScreen>
             ],
           ),
         ),
-        
+
         // Smart Match Widget
         Expanded(
           child: Padding(
@@ -214,7 +204,10 @@ class _AiMatchingScreenState extends State<AiMatchingScreen>
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [PulseColors.primary.withValues(alpha: 0.1), Colors.transparent],
+                colors: [
+                  PulseColors.primary.withValues(alpha: 0.1),
+                  Colors.transparent,
+                ],
               ),
               borderRadius: BorderRadius.circular(16),
             ),
@@ -244,9 +237,9 @@ class _AiMatchingScreenState extends State<AiMatchingScreen>
               ],
             ),
           ),
-          
+
           const SizedBox(height: 24),
-          
+
           // Profile Completion
           _buildAnalyticsCard(
             'Profile Optimization',
@@ -258,8 +251,8 @@ class _AiMatchingScreenState extends State<AiMatchingScreen>
                     value: (_aiInsights['profile_completion'] ?? 0) / 100,
                     backgroundColor: Colors.grey[300],
                     valueColor: AlwaysStoppedAnimation<Color>(
-                      (_aiInsights['profile_completion'] ?? 0) >= 80 
-                          ? Colors.green 
+                      (_aiInsights['profile_completion'] ?? 0) >= 80
+                          ? Colors.green
                           : Colors.orange,
                     ),
                   ),
@@ -272,9 +265,9 @@ class _AiMatchingScreenState extends State<AiMatchingScreen>
               ],
             ),
           ),
-          
+
           const SizedBox(height: 16),
-          
+
           // Top Matches Preview
           _buildAnalyticsCard(
             'Your Best Matches',
@@ -288,14 +281,17 @@ class _AiMatchingScreenState extends State<AiMatchingScreen>
                     color: Theme.of(context).scaffoldBackgroundColor,
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                      color: Theme.of(context).dividerColor.withValues(alpha: 0.5),
+                      color: Theme.of(
+                        context,
+                      ).dividerColor.withValues(alpha: 0.5),
                     ),
                   ),
                   child: Row(
                     children: [
                       CircleAvatar(
                         radius: 20,
-                        backgroundImage: match.userProfile?.photos.isNotEmpty == true
+                        backgroundImage:
+                            match.userProfile?.photos.isNotEmpty == true
                             ? NetworkImage(match.userProfile!.photos.first.url)
                             : null,
                         child: match.userProfile?.photos.isEmpty != false
@@ -309,13 +305,17 @@ class _AiMatchingScreenState extends State<AiMatchingScreen>
                           children: [
                             Text(
                               match.userProfile?.name ?? 'Unknown',
-                              style: const TextStyle(fontWeight: FontWeight.w600),
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
                             Text(
                               '${(match.compatibilityScore * 100).round()}% compatibility',
                               style: TextStyle(
                                 fontSize: 12,
-                                color: Theme.of(context).textTheme.bodySmall?.color,
+                                color: Theme.of(
+                                  context,
+                                ).textTheme.bodySmall?.color,
                               ),
                             ),
                           ],
@@ -332,20 +332,29 @@ class _AiMatchingScreenState extends State<AiMatchingScreen>
               }).toList(),
             ),
           ),
-          
+
           const SizedBox(height: 16),
-          
+
           // Matching Stats
           _buildAnalyticsCard(
             'Matching Statistics',
             'Your AI-powered matching performance',
             child: Column(
               children: [
-                _buildStatRow('Total Potential Matches', '${_aiInsights['total_potential_matches'] ?? 0}'),
+                _buildStatRow(
+                  'Total Potential Matches',
+                  '${_aiInsights['total_potential_matches'] ?? 0}',
+                ),
                 const SizedBox(height: 12),
-                _buildStatRow('High Compatibility (80%+)', '${_aiInsights['high_compatibility_matches'] ?? 0}'),
+                _buildStatRow(
+                  'High Compatibility (80%+)',
+                  '${_aiInsights['high_compatibility_matches'] ?? 0}',
+                ),
                 const SizedBox(height: 12),
-                _buildStatRow('Algorithm Accuracy', '${((_aiInsights['recommendation_accuracy'] ?? 0.0) * 100).round()}%'),
+                _buildStatRow(
+                  'Algorithm Accuracy',
+                  '${((_aiInsights['recommendation_accuracy'] ?? 0.0) * 100).round()}%',
+                ),
               ],
             ),
           ),
@@ -375,9 +384,9 @@ class _AiMatchingScreenState extends State<AiMatchingScreen>
               color: Theme.of(context).textTheme.bodyMedium?.color,
             ),
           ),
-          
+
           const SizedBox(height: 24),
-          
+
           // Preference Cards
           _buildPreferenceCard(
             'Compatibility Threshold',
@@ -393,9 +402,9 @@ class _AiMatchingScreenState extends State<AiMatchingScreen>
               },
             ),
           ),
-          
+
           const SizedBox(height: 16),
-          
+
           _buildPreferenceCard(
             'Discovery Range',
             'How far to look for matches',
@@ -403,7 +412,10 @@ class _AiMatchingScreenState extends State<AiMatchingScreen>
               initialValue: '25km',
               decoration: const InputDecoration(
                 border: OutlineInputBorder(),
-                contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
               ),
               items: const [
                 DropdownMenuItem(value: '10km', child: Text('10km')),
@@ -416,9 +428,9 @@ class _AiMatchingScreenState extends State<AiMatchingScreen>
               },
             ),
           ),
-          
+
           const SizedBox(height: 16),
-          
+
           _buildPreferenceCard(
             'Age Range',
             'Preferred age range for matches',
@@ -433,9 +445,9 @@ class _AiMatchingScreenState extends State<AiMatchingScreen>
               },
             ),
           ),
-          
+
           const SizedBox(height: 32),
-          
+
           // Save Button
           SizedBox(
             width: double.infinity,
@@ -454,10 +466,7 @@ class _AiMatchingScreenState extends State<AiMatchingScreen>
               ),
               child: const Text(
                 'Save Preferences',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
               ),
             ),
           ),
@@ -466,7 +475,12 @@ class _AiMatchingScreenState extends State<AiMatchingScreen>
     );
   }
 
-  Widget _buildStatCard(String title, String value, IconData icon, Color color) {
+  Widget _buildStatCard(
+    String title,
+    String value,
+    IconData icon,
+    Color color,
+  ) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -505,7 +519,11 @@ class _AiMatchingScreenState extends State<AiMatchingScreen>
     );
   }
 
-  Widget _buildAnalyticsCard(String title, String subtitle, {required Widget child}) {
+  Widget _buildAnalyticsCard(
+    String title,
+    String subtitle, {
+    required Widget child,
+  }) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -524,10 +542,7 @@ class _AiMatchingScreenState extends State<AiMatchingScreen>
         children: [
           Text(
             title,
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           Text(
             subtitle,
@@ -543,7 +558,11 @@ class _AiMatchingScreenState extends State<AiMatchingScreen>
     );
   }
 
-  Widget _buildPreferenceCard(String title, String subtitle, {required Widget child}) {
+  Widget _buildPreferenceCard(
+    String title,
+    String subtitle, {
+    required Widget child,
+  }) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -558,10 +577,7 @@ class _AiMatchingScreenState extends State<AiMatchingScreen>
         children: [
           Text(
             title,
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-            ),
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
           ),
           Text(
             subtitle,
@@ -587,12 +603,7 @@ class _AiMatchingScreenState extends State<AiMatchingScreen>
             color: Theme.of(context).textTheme.bodyMedium?.color,
           ),
         ),
-        Text(
-          value,
-          style: const TextStyle(
-            fontWeight: FontWeight.w600,
-          ),
-        ),
+        Text(value, style: const TextStyle(fontWeight: FontWeight.w600)),
       ],
     );
   }
@@ -635,8 +646,7 @@ class _AiMatchingScreenState extends State<AiMatchingScreen>
         break;
       case 'super_like':
         matchingBloc.add(SuperLikeProfile(profileId: match.userProfile!.id));
-        PulseToast.info(context, message: 'Super Like sent! 💫',
-        );
+        PulseToast.info(context, message: 'Super Like sent! 💫');
         break;
     }
   }
@@ -670,8 +680,7 @@ class _AiMatchingScreenState extends State<AiMatchingScreen>
       }
     } catch (e) {
       if (mounted) {
-        PulseToast.error(context, message: 'Failed to save preferences: $e',
-        );
+        PulseToast.error(context, message: 'Failed to save preferences: $e');
       }
     }
   }

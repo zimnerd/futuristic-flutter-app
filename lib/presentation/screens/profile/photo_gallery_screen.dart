@@ -6,7 +6,7 @@ import '../../../domain/entities/user_profile.dart';
 import '../../theme/pulse_colors.dart';
 
 /// Full-screen photo gallery with swipe and zoom capabilities
-/// 
+///
 /// Features:
 /// - Swipe left/right to navigate photos
 /// - Pinch-to-zoom on any photo
@@ -87,7 +87,10 @@ class _PhotoGalleryScreenState extends State<PhotoGalleryScreen> {
               actions: widget.showDetails
                   ? [
                       IconButton(
-                        icon: const Icon(Icons.info_outline, color: Colors.white),
+                        icon: const Icon(
+                          Icons.info_outline,
+                          color: Colors.white,
+                        ),
                         onPressed: () => _showPhotoDetails(),
                       ),
                     ]
@@ -105,7 +108,8 @@ class _PhotoGalleryScreenState extends State<PhotoGalleryScreen> {
               initialScale: PhotoViewComputedScale.contained,
               minScale: PhotoViewComputedScale.contained,
               maxScale: PhotoViewComputedScale.covered * 3,
-              heroAttributes: widget.heroTag != null && index == widget.initialIndex
+              heroAttributes:
+                  widget.heroTag != null && index == widget.initialIndex
                   ? PhotoViewHeroAttributes(tag: '${widget.heroTag}_$index')
                   : null,
               errorBuilder: (context, error, stackTrace) {
@@ -121,10 +125,7 @@ class _PhotoGalleryScreenState extends State<PhotoGalleryScreen> {
                       const SizedBox(height: 16),
                       Text(
                         'Failed to load image',
-                        style: TextStyle(
-                          color: Colors.grey[400],
-                          fontSize: 14,
-                        ),
+                        style: TextStyle(color: Colors.grey[400], fontSize: 14),
                       ),
                     ],
                   ),
@@ -137,13 +138,14 @@ class _PhotoGalleryScreenState extends State<PhotoGalleryScreen> {
             child: CircularProgressIndicator(
               value: event == null
                   ? 0
-                  : event.cumulativeBytesLoaded / (event.expectedTotalBytes ?? 1),
-              valueColor: const AlwaysStoppedAnimation<Color>(PulseColors.primary),
+                  : event.cumulativeBytesLoaded /
+                        (event.expectedTotalBytes ?? 1),
+              valueColor: const AlwaysStoppedAnimation<Color>(
+                PulseColors.primary,
+              ),
             ),
           ),
-          backgroundDecoration: const BoxDecoration(
-            color: Colors.black,
-          ),
+          backgroundDecoration: const BoxDecoration(color: Colors.black),
           pageController: _pageController,
           onPageChanged: _onPageChanged,
         ),
@@ -189,9 +191,7 @@ class _PhotoGalleryScreenState extends State<PhotoGalleryScreen> {
       builder: (context) => Container(
         decoration: BoxDecoration(
           color: Theme.of(context).colorScheme.surface,
-          borderRadius: const BorderRadius.vertical(
-            top: Radius.circular(20),
-          ),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
         ),
         padding: const EdgeInsets.all(24),
         child: Column(
@@ -214,11 +214,7 @@ class _PhotoGalleryScreenState extends State<PhotoGalleryScreen> {
             // Photo info
             Row(
               children: [
-                Icon(
-                  Icons.photo,
-                  color: PulseColors.primary,
-                  size: 24,
-                ),
+                Icon(Icons.photo, color: PulseColors.primary, size: 24),
                 const SizedBox(width: 12),
                 Text(
                   'Photo ${_currentIndex + 1}',
@@ -262,11 +258,7 @@ class _PhotoGalleryScreenState extends State<PhotoGalleryScreen> {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(
-                      Icons.star,
-                      color: PulseColors.primary,
-                      size: 16,
-                    ),
+                    Icon(Icons.star, color: PulseColors.primary, size: 16),
                     const SizedBox(width: 6),
                     Text(
                       'Primary Photo',

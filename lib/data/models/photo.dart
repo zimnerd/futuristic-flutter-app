@@ -49,10 +49,7 @@ class Photo {
 
   /// Create Photo from simple string URL (backward compatibility)
   factory Photo.fromUrl(String url) {
-    return Photo(
-      id: url.hashCode.toString(),
-      url: url,
-    );
+    return Photo(id: url.hashCode.toString(), url: url);
   }
 
   Map<String, dynamic> toJson() {

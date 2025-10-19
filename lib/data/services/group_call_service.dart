@@ -7,23 +7,25 @@ import '../../core/constants/api_constants.dart';
 class GroupCallService {
   static GroupCallService? _instance;
   static GroupCallService get instance => _instance ??= GroupCallService._();
-  
+
   GroupCallService._();
 
   final ApiServiceImpl _apiService = ApiServiceImpl();
-  
+
   // Stream controllers for group call events
-  final StreamController<List<CallParticipant>> _participantsController = 
+  final StreamController<List<CallParticipant>> _participantsController =
       StreamController.broadcast();
-  final StreamController<GroupCallSettings> _settingsController = 
+  final StreamController<GroupCallSettings> _settingsController =
       StreamController.broadcast();
-  final StreamController<Map<String, dynamic>> _moderationController = 
+  final StreamController<Map<String, dynamic>> _moderationController =
       StreamController.broadcast();
 
   // Public streams
-  Stream<List<CallParticipant>> get onParticipantsChanged => _participantsController.stream;
+  Stream<List<CallParticipant>> get onParticipantsChanged =>
+      _participantsController.stream;
   Stream<GroupCallSettings> get onSettingsChanged => _settingsController.stream;
-  Stream<Map<String, dynamic>> get onModerationEvent => _moderationController.stream;
+  Stream<Map<String, dynamic>> get onModerationEvent =>
+      _moderationController.stream;
 
   /// Update group call settings
   Future<bool> updateGroupCallSettings({
@@ -40,7 +42,7 @@ class GroupCallService {
         _settingsController.add(settings);
         return true;
       }
-      
+
       return false;
     } catch (e) {
       debugPrint('Error updating group call settings: $e');
@@ -64,7 +66,7 @@ class GroupCallService {
         await getCallParticipants(callId);
         return true;
       }
-      
+
       return false;
     } catch (e) {
       debugPrint('Error adding participant: $e');
@@ -87,7 +89,7 @@ class GroupCallService {
         await getCallParticipants(callId);
         return true;
       }
-      
+
       return false;
     } catch (e) {
       debugPrint('Error removing participant: $e');
@@ -112,7 +114,7 @@ class GroupCallService {
         await getCallParticipants(callId);
         return true;
       }
-      
+
       return false;
     } catch (e) {
       debugPrint('Error updating participant role: $e');
@@ -141,12 +143,12 @@ class GroupCallService {
             .where((r) => r['success'] == true)
             .map((r) => r['userId'] as String)
             .toList();
-        
+
         // Refresh participants list
         await getCallParticipants(callId);
         return successfulInvites;
       }
-      
+
       return [];
     } catch (e) {
       debugPrint('Error bulk inviting participants: $e');
@@ -173,7 +175,7 @@ class GroupCallService {
         });
         return true;
       }
-      
+
       return false;
     } catch (e) {
       debugPrint('Error applying moderation action: $e');
@@ -197,7 +199,7 @@ class GroupCallService {
         });
         return true;
       }
-      
+
       return false;
     } catch (e) {
       debugPrint('Error ending call: $e');
@@ -217,11 +219,11 @@ class GroupCallService {
         final participants = participantsData
             .map((p) => CallParticipant.fromJson(p))
             .toList();
-        
+
         _participantsController.add(participants);
         return participants;
       }
-      
+
       return [];
     } catch (e) {
       debugPrint('Error getting call participants: $e');
@@ -239,7 +241,7 @@ class GroupCallService {
       if (response.data['success'] == true) {
         return GroupCallAnalytics.fromJson(response.data['data']);
       }
-      
+
       return null;
     } catch (e) {
       debugPrint('Error getting call analytics: $e');
@@ -280,7 +282,9 @@ class GroupCallSettings {
       allowScreenShare: json['allowScreenShare'] ?? true,
       recordingEnabled: json['recordingEnabled'] ?? false,
       joinMode: json['joinMode'] ?? 'OPEN',
-      moderationSettings: Map<String, dynamic>.from(json['moderationSettings'] ?? {}),
+      moderationSettings: Map<String, dynamic>.from(
+        json['moderationSettings'] ?? {},
+      ),
     );
   }
 
@@ -334,7 +338,9 @@ class CallParticipant {
       isMuted: json['isMuted'] ?? false,
       isVideoEnabled: json['isVideoEnabled'] ?? true,
       isScreenSharing: json['isScreenSharing'] ?? false,
-      joinedAt: json['joinedAt'] != null ? DateTime.parse(json['joinedAt']) : null,
+      joinedAt: json['joinedAt'] != null
+          ? DateTime.parse(json['joinedAt'])
+          : null,
       displayName: json['displayName'],
       avatarUrl: json['avatarUrl'],
     );
@@ -427,7 +433,9 @@ class GroupCallAnalytics {
       participantStats: (json['participantStats'] as List? ?? [])
           .map((p) => ParticipantStats.fromJson(p))
           .toList(),
-      generatedAt: DateTime.parse(json['generatedAt'] ?? DateTime.now().toIso8601String()),
+      generatedAt: DateTime.parse(
+        json['generatedAt'] ?? DateTime.now().toIso8601String(),
+      ),
     );
   }
 }
@@ -455,7 +463,9 @@ class ParticipantStats {
       userId: json['userId'] ?? '',
       role: json['role'] ?? 'PARTICIPANT',
       status: json['status'] ?? 'UNKNOWN',
-      joinedAt: json['joinedAt'] != null ? DateTime.parse(json['joinedAt']) : null,
+      joinedAt: json['joinedAt'] != null
+          ? DateTime.parse(json['joinedAt'])
+          : null,
       leftAt: json['leftAt'] != null ? DateTime.parse(json['leftAt']) : null,
       duration: json['duration'],
     );

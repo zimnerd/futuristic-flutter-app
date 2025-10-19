@@ -123,17 +123,12 @@ class PulseToast {
     required Duration duration,
   }) {
     final snackBar = SnackBar(
-      content: _ToastContent(
-        message: message,
-        icon: icon,
-      ),
+      content: _ToastContent(message: message, icon: icon),
       backgroundColor: backgroundColor,
       duration: duration,
       behavior: SnackBarBehavior.floating,
       margin: const EdgeInsets.all(PulseSpacing.md),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       action: action != null
           ? SnackBarAction(
               label: action.label,
@@ -153,10 +148,7 @@ class ToastAction {
   final String label;
   final VoidCallback onPressed;
 
-  const ToastAction({
-    required this.label,
-    required this.onPressed,
-  });
+  const ToastAction({required this.label, required this.onPressed});
 }
 
 /// Internal widget for toast content
@@ -164,20 +156,13 @@ class _ToastContent extends StatelessWidget {
   final String message;
   final IconData icon;
 
-  const _ToastContent({
-    required this.message,
-    required this.icon,
-  });
+  const _ToastContent({required this.message, required this.icon});
 
   @override
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Icon(
-          icon,
-          color: Colors.white,
-          size: 24,
-        ),
+        Icon(icon, color: Colors.white, size: 24),
         const SizedBox(width: PulseSpacing.sm),
         Expanded(
           child: Text(

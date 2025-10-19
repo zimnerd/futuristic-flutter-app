@@ -35,7 +35,9 @@ class UserProfile {
   factory UserProfile.fromUser(User user) {
     return UserProfile(
       id: user.id,
-      displayName: user.displayName ?? '${user.firstName ?? ''} ${user.lastName ?? ''}'.trim(),
+      displayName:
+          user.displayName ??
+          '${user.firstName ?? ''} ${user.lastName ?? ''}'.trim(),
       bio: user.bio,
       age: user.age,
       gender: user.gender,
@@ -43,9 +45,15 @@ class UserProfile {
       interests: user.interests,
       photos: user.photos, // Already Photo objects
       preferences: user.preferences,
-      personality: user.metadata != null ? ProfilePersonality.fromJson(user.metadata!) : null,
-      lifestyle: user.metadata?['lifestyle'] != null ? List<String>.from(user.metadata!['lifestyle']) : [],
-      relationshipGoals: user.metadata?['relationshipGoals'] != null ? List<String>.from(user.metadata!['relationshipGoals']) : [],
+      personality: user.metadata != null
+          ? ProfilePersonality.fromJson(user.metadata!)
+          : null,
+      lifestyle: user.metadata?['lifestyle'] != null
+          ? List<String>.from(user.metadata!['lifestyle'])
+          : [],
+      relationshipGoals: user.metadata?['relationshipGoals'] != null
+          ? List<String>.from(user.metadata!['relationshipGoals'])
+          : [],
     );
   }
 
@@ -74,33 +82,42 @@ class UserProfile {
       age: json['age'],
       gender: json['gender'],
       location: json['location'],
-      interests: (json['interests'] as List?)?.map((item) {
-        // Handle new nested structure: {id, interest: {id, name}}
-        if (item is String) return item; // Backward compatibility
-        if (item is Map<String, dynamic>) {
-          // Extract interest.name from nested structure
-          return item['interest']?['name'] as String? ?? '';
-        }
-        return item.toString();
-      }).where((name) => name.isNotEmpty).toList() ?? [],
-      photos:
-          (json['photos'] as List?)
-              ?.map((photo) {
-            // Handle both string URLs (backward compatibility) and Photo objects
-                if (photo is String) {
-              return Photo.fromUrl(photo);
+      interests:
+          (json['interests'] as List?)
+              ?.map((item) {
+                // Handle new nested structure: {id, interest: {id, name}}
+                if (item is String) return item; // Backward compatibility
+                if (item is Map<String, dynamic>) {
+                  // Extract interest.name from nested structure
+                  return item['interest']?['name'] as String? ?? '';
                 }
-                if (photo is Map<String, dynamic>) {
-              return Photo.fromJson(photo);
-                }
-            return Photo.fromUrl(photo.toString());
-          })
+                return item.toString();
+              })
+              .where((name) => name.isNotEmpty)
               .toList() ??
           [],
+      photos:
+          (json['photos'] as List?)?.map((photo) {
+            // Handle both string URLs (backward compatibility) and Photo objects
+            if (photo is String) {
+              return Photo.fromUrl(photo);
+            }
+            if (photo is Map<String, dynamic>) {
+              return Photo.fromJson(photo);
+            }
+            return Photo.fromUrl(photo.toString());
+          }).toList() ??
+          [],
       preferences: json['preferences'],
-      personality: json['personality'] != null ? ProfilePersonality.fromJson(json['personality']) : null,
-      lifestyle: json['lifestyle'] != null ? List<String>.from(json['lifestyle']) : [],
-      relationshipGoals: json['relationshipGoals'] != null ? List<String>.from(json['relationshipGoals']) : [],
+      personality: json['personality'] != null
+          ? ProfilePersonality.fromJson(json['personality'])
+          : null,
+      lifestyle: json['lifestyle'] != null
+          ? List<String>.from(json['lifestyle'])
+          : [],
+      relationshipGoals: json['relationshipGoals'] != null
+          ? List<String>.from(json['relationshipGoals'])
+          : [],
     );
   }
 }
@@ -144,8 +161,12 @@ class ProfilePersonality {
       extraversion: json['extraversion'] ?? 0.5,
       agreeableness: json['agreeableness'] ?? 0.5,
       neuroticism: json['neuroticism'] ?? 0.5,
-      communicationStyle: json['communicationStyle'] != null ? List<String>.from(json['communicationStyle']) : [],
-      loveLanguages: json['loveLanguages'] != null ? List<String>.from(json['loveLanguages']) : [],
+      communicationStyle: json['communicationStyle'] != null
+          ? List<String>.from(json['communicationStyle'])
+          : [],
+      loveLanguages: json['loveLanguages'] != null
+          ? List<String>.from(json['loveLanguages'])
+          : [],
     );
   }
 }

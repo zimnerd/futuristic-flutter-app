@@ -145,9 +145,7 @@ class _RoundTransitionScreenState extends State<RoundTransitionScreen>
       // Last round - navigate to matches screen
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
-          builder: (_) => SpeedDatingMatchesScreen(
-            eventId: widget.eventId,
-          ),
+          builder: (_) => SpeedDatingMatchesScreen(eventId: widget.eventId),
         ),
       );
     }
@@ -232,10 +230,7 @@ class _RoundTransitionScreenState extends State<RoundTransitionScreen>
           widget.nextSession != null
               ? 'How was your conversation?'
               : 'How was your last conversation?',
-          style: const TextStyle(
-            color: Colors.white70,
-            fontSize: 16,
-          ),
+          style: const TextStyle(color: Colors.white70, fontSize: 16),
         ),
       ],
     );
@@ -272,10 +267,7 @@ class _RoundTransitionScreenState extends State<RoundTransitionScreen>
             height: 80,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              border: Border.all(
-                color: AppColors.primary,
-                width: 2,
-              ),
+              border: Border.all(color: AppColors.primary, width: 2),
             ),
             child: ClipOval(
               child: photoUrl != null
@@ -284,9 +276,7 @@ class _RoundTransitionScreenState extends State<RoundTransitionScreen>
                       fit: BoxFit.cover,
                       placeholder: (context, url) => Container(
                         color: Colors.grey[800],
-                        child: const Center(
-                          child: CircularProgressIndicator(),
-                        ),
+                        child: const Center(child: CircularProgressIndicator()),
                       ),
                       errorWidget: (context, url, error) => Container(
                         color: Colors.grey[800],
@@ -556,8 +546,9 @@ class _RoundTransitionScreenState extends State<RoundTransitionScreen>
             children: [
               CircleAvatar(
                 radius: 30,
-                backgroundImage:
-                    photoUrl != null ? CachedNetworkImageProvider(photoUrl) : null,
+                backgroundImage: photoUrl != null
+                    ? CachedNetworkImageProvider(photoUrl)
+                    : null,
                 child: photoUrl == null
                     ? Text(
                         name[0].toUpperCase(),
@@ -584,10 +575,7 @@ class _RoundTransitionScreenState extends State<RoundTransitionScreen>
                     const SizedBox(height: 4),
                     const Text(
                       'Get ready for your next conversation!',
-                      style: TextStyle(
-                        color: Colors.white60,
-                        fontSize: 12,
-                      ),
+                      style: TextStyle(color: Colors.white60, fontSize: 12),
                     ),
                   ],
                 ),
@@ -605,9 +593,7 @@ class _RoundTransitionScreenState extends State<RoundTransitionScreen>
       style: ElevatedButton.styleFrom(
         backgroundColor: AppColors.primary,
         padding: const EdgeInsets.symmetric(vertical: 16),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         elevation: 8,
       ),
       child: _isSubmitting
@@ -708,19 +694,13 @@ class _RoundTransitionScreenState extends State<RoundTransitionScreen>
             const SizedBox(height: 16),
             const Text(
               'You both rated each other highly!',
-              style: TextStyle(
-                color: Colors.white70,
-                fontSize: 18,
-              ),
+              style: TextStyle(color: Colors.white70, fontSize: 18),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
             const Text(
               "You'll see them in your matches",
-              style: TextStyle(
-                color: Colors.white60,
-                fontSize: 14,
-              ),
+              style: TextStyle(color: Colors.white60, fontSize: 14),
             ),
           ],
         ),

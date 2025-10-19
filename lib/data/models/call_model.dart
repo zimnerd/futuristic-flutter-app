@@ -54,9 +54,7 @@ class CallModel extends Equatable {
       startedAt: json['startedAt'] != null
           ? DateTime.parse(json['startedAt'])
           : null,
-      endedAt: json['endedAt'] != null
-          ? DateTime.parse(json['endedAt'])
-          : null,
+      endedAt: json['endedAt'] != null ? DateTime.parse(json['endedAt']) : null,
       duration: json['duration'],
       createdAt: DateTime.parse(json['createdAt']),
       updatedAt: DateTime.parse(json['updatedAt']),
@@ -124,37 +122,37 @@ class CallModel extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        callerId,
-        callerName,
-        callerAvatar,
-        receiverId,
-        receiverName,
-        receiverAvatar,
-        type,
-        status,
-        channelName,
-        token,
-        startedAt,
-        endedAt,
-        duration,
-        createdAt,
-        updatedAt,
-      ];
+    id,
+    callerId,
+    callerName,
+    callerAvatar,
+    receiverId,
+    receiverName,
+    receiverAvatar,
+    type,
+    status,
+    channelName,
+    token,
+    startedAt,
+    endedAt,
+    duration,
+    createdAt,
+    updatedAt,
+  ];
 }
 
 /// Enum representing call types
 enum CallType { audio, video }
 
 /// Enum representing call status
-enum CallStatus { 
-  initiating, 
-  ringing, 
-  connected, 
-  ended, 
-  declined, 
-  missed, 
-  failed 
+enum CallStatus {
+  initiating,
+  ringing,
+  connected,
+  ended,
+  declined,
+  missed,
+  failed,
 }
 
 /// Model for call signaling data

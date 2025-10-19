@@ -25,12 +25,12 @@ class VoiceRecorderWidget extends StatefulWidget {
 class _VoiceRecorderWidgetState extends State<VoiceRecorderWidget>
     with TickerProviderStateMixin {
   final AudioRecorder _recorder = AudioRecorder();
-  
+
   bool _isRecording = false;
   bool _isPaused = false;
   Duration _recordedDuration = Duration.zero;
   Timer? _recordingTimer;
-  
+
   late AnimationController _pulseController;
   late AnimationController _waveController;
   late Animation<double> _pulseAnimation;
@@ -46,19 +46,14 @@ class _VoiceRecorderWidgetState extends State<VoiceRecorderWidget>
       duration: const Duration(milliseconds: 1500),
       vsync: this,
     );
-    
+
     _waveController = AnimationController(
       duration: const Duration(milliseconds: 800),
       vsync: this,
     );
 
-    _pulseAnimation = Tween<double>(
-      begin: 1.0,
-      end: 1.3,
-    ).animate(CurvedAnimation(
-      parent: _pulseController,
-      curve: Curves.easeInOut,
-    ),
+    _pulseAnimation = Tween<double>(begin: 1.0, end: 1.3).animate(
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
     );
   }
 
@@ -74,8 +69,9 @@ class _VoiceRecorderWidgetState extends State<VoiceRecorderWidget>
   Future<void> _startRecording() async {
     try {
       if (await _recorder.hasPermission()) {
-        final path = '/tmp/voice_message_${DateTime.now().millisecondsSinceEpoch}.m4a';
-        
+        final path =
+            '/tmp/voice_message_${DateTime.now().millisecondsSinceEpoch}.m4a';
+
         await _recorder.start(
           const RecordConfig(
             encoder: AudioEncoder.aacLc,
@@ -127,7 +123,7 @@ class _VoiceRecorderWidgetState extends State<VoiceRecorderWidget>
   Future<void> _stopRecording() async {
     try {
       final path = await _recorder.stop();
-      
+
       _recordingTimer?.cancel();
       _pulseController.stop();
       _waveController.stop();
@@ -137,25 +133,27 @@ class _VoiceRecorderWidgetState extends State<VoiceRecorderWidget>
         _isPaused = false;
       });
 
-        if (path != null && _recordedDuration.inSeconds > 0) {
-          final file = File(path);
-          if (await file.exists()) {
-            // Generate simple waveform data (in a real app, you'd analyze the audio)
-            final waveformData = List.generate(50, (index) => 
-              0.3 + (index % 3) * 0.2 + (index % 7) * 0.1);
-              
-            final message = VoiceMessage(
-              id: DateTime.now().millisecondsSinceEpoch.toString(),
-              conversationId: 'temp_conversation', // Will be set when sending
-              senderId: 'current_user', // Replace with actual user ID
-              audioUrl: path, // Local file path for now
-              duration: _recordedDuration.inSeconds,
-              waveformData: waveformData,
-              createdAt: DateTime.now(),
-            );
-            
-            widget.onMessageRecorded(message);
-          }
+      if (path != null && _recordedDuration.inSeconds > 0) {
+        final file = File(path);
+        if (await file.exists()) {
+          // Generate simple waveform data (in a real app, you'd analyze the audio)
+          final waveformData = List.generate(
+            50,
+            (index) => 0.3 + (index % 3) * 0.2 + (index % 7) * 0.1,
+          );
+
+          final message = VoiceMessage(
+            id: DateTime.now().millisecondsSinceEpoch.toString(),
+            conversationId: 'temp_conversation', // Will be set when sending
+            senderId: 'current_user', // Replace with actual user ID
+            audioUrl: path, // Local file path for now
+            duration: _recordedDuration.inSeconds,
+            waveformData: waveformData,
+            createdAt: DateTime.now(),
+          );
+
+          widget.onMessageRecorded(message);
+        }
       }
 
       setState(() {
@@ -188,9 +186,7 @@ class _VoiceRecorderWidgetState extends State<VoiceRecorderWidget>
   Widget build(BuildContext context) {
     return Card(
       elevation: 4,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       child: Padding(
         padding: const EdgeInsets.all(24),
         child: Column(
@@ -220,7 +216,7 @@ class _VoiceRecorderWidgetState extends State<VoiceRecorderWidget>
                 height: 80,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: _isRecording 
+                  color: _isRecording
                       ? (_isPaused ? Colors.orange : Colors.red)
                       : PulseColors.primary,
                   boxShadow: _isRecording && !_isPaused
@@ -234,7 +230,7 @@ class _VoiceRecorderWidgetState extends State<VoiceRecorderWidget>
                       : null,
                 ),
                 child: Icon(
-                  _isRecording 
+                  _isRecording
                       ? (_isPaused ? Icons.pause : Icons.mic)
                       : Icons.mic_none,
                   color: Colors.white,
@@ -260,7 +256,9 @@ class _VoiceRecorderWidgetState extends State<VoiceRecorderWidget>
         ),
         const SizedBox(height: 8),
         LinearProgressIndicator(
-          value: _recordedDuration.inMilliseconds / widget.maxDuration.inMilliseconds,
+          value:
+              _recordedDuration.inMilliseconds /
+              widget.maxDuration.inMilliseconds,
           backgroundColor: Colors.grey[300],
           valueColor: AlwaysStoppedAnimation<Color>(
             _recordedDuration.inSeconds > (widget.maxDuration.inSeconds * 0.8)
@@ -271,9 +269,9 @@ class _VoiceRecorderWidgetState extends State<VoiceRecorderWidget>
         const SizedBox(height: 4),
         Text(
           'Max: ${_formatDuration(widget.maxDuration)}',
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-            color: Colors.grey[600],
-          ),
+          style: Theme.of(
+            context,
+          ).textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
         ),
       ],
     );
@@ -312,7 +310,7 @@ class _VoiceRecorderWidgetState extends State<VoiceRecorderWidget>
             ),
           ),
         ),
-        
+
         // Stop Button
         ElevatedButton.icon(
           onPressed: _stopRecording,

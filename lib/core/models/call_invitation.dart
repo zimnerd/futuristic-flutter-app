@@ -4,7 +4,7 @@ enum CallType {
   video;
 
   String toJson() => name;
-  
+
   static CallType fromJson(String value) {
     return CallType.values.firstWhere(
       (e) => e.name == value,
@@ -23,7 +23,7 @@ enum CallInvitationStatus {
   cancelled;
 
   String toJson() => name;
-  
+
   static CallInvitationStatus fromJson(String value) {
     return CallInvitationStatus.values.firstWhere(
       (e) => e.name == value,
@@ -41,7 +41,7 @@ enum CallRejectionReason {
   userOffline;
 
   String toJson() => name;
-  
+
   static CallRejectionReason fromJson(String value) {
     return CallRejectionReason.values.firstWhere(
       (e) => e.name == value,

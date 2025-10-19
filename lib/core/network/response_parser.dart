@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
 
 /// Centralized response parser for consistent API response handling
-/// 
+///
 /// All backend responses follow the format:
 /// ```json
 /// {
@@ -20,7 +20,7 @@ class ResponseParser {
     }
 
     final responseData = response.data;
-    
+
     // If response is wrapped in standard format, extract data field
     if (responseData is Map<String, dynamic>) {
       return responseData['data'] ?? responseData;

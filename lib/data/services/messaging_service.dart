@@ -8,8 +8,7 @@ import '../../../domain/entities/message.dart';
 class MessagingService {
   final ApiClient _apiClient;
 
-  MessagingService({required ApiClient apiClient})
-    : _apiClient = apiClient;
+  MessagingService({required ApiClient apiClient}) : _apiClient = apiClient;
 
   /// Get conversations for current user
   Future<List<Conversation>> getConversations({
@@ -45,17 +44,23 @@ class MessagingService {
         limit: limit,
       );
 
-      AppLogger.debug('MessagingService getMessages - Raw response: ${response.data}');
+      AppLogger.debug(
+        'MessagingService getMessages - Raw response: ${response.data}',
+      );
 
       final responseBody = response.data as Map<String, dynamic>;
-      AppLogger.debug('MessagingService getMessages - Response body: $responseBody');
+      AppLogger.debug(
+        'MessagingService getMessages - Response body: $responseBody',
+      );
 
       // Messages are directly in the 'data' field as an array
       final messagesData = responseBody['data'];
       AppLogger.debug(
         'MessagingService getMessages - Messages data type: ${messagesData.runtimeType}',
       );
-      AppLogger.debug('MessagingService getMessages - Messages data: $messagesData');
+      AppLogger.debug(
+        'MessagingService getMessages - Messages data: $messagesData',
+      );
 
       if (messagesData is! List) {
         AppLogger.error(
@@ -72,7 +77,7 @@ class MessagingService {
       final parsedMessages = messages
           .map((msg) => _messageFromJson(msg as Map<String, dynamic>))
           .toList();
-      
+
       AppLogger.debug(
         'MessagingService getMessages - Parsed ${parsedMessages.length} messages',
       );
@@ -213,7 +218,8 @@ class MessagingService {
       mediaUrl: json['mediaUrl'] as String?,
       mediaType: json['mediaType'] as String?,
       mediaDuration: json['mediaDuration'] as int?,
-      reactions: (json['reactions'] as List<dynamic>?)
+      reactions:
+          (json['reactions'] as List<dynamic>?)
               ?.map((r) => _messageReactionFromJson(r as Map<String, dynamic>))
               .toList() ??
           [],
@@ -263,9 +269,13 @@ class MessagingService {
       case DioExceptionType.connectionTimeout:
       case DioExceptionType.receiveTimeout:
       case DioExceptionType.sendTimeout:
-        return Exception('Request timeout. Please check your internet connection.');
+        return Exception(
+          'Request timeout. Please check your internet connection.',
+        );
       case DioExceptionType.connectionError:
-        return Exception('No internet connection. Please check your network settings.');
+        return Exception(
+          'No internet connection. Please check your network settings.',
+        );
       case DioExceptionType.badResponse:
         final statusCode = e.response?.statusCode;
         final message = e.response?.data?['message'] ?? 'An error occurred';

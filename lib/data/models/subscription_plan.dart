@@ -1,10 +1,5 @@
 /// Billing cycle enum
-enum BillingCycle {
-  weekly,
-  monthly,
-  quarterly,
-  yearly,
-}
+enum BillingCycle { weekly, monthly, quarterly, yearly }
 
 extension BillingCycleExtension on BillingCycle {
   String get displayName {
@@ -125,14 +120,16 @@ class SubscriptionPlan {
         (e) => e.name == json['billingCycle'],
         orElse: () => BillingCycle.monthly,
       ),
-      features: (json['features'] as List?)
-          ?.map((f) => PlanFeature.fromJson(f as Map<String, dynamic>))
-          .toList() ?? [],
+      features:
+          (json['features'] as List?)
+              ?.map((f) => PlanFeature.fromJson(f as Map<String, dynamic>))
+              .toList() ??
+          [],
       isPopular: json['isPopular'] as bool? ?? false,
       isActive: json['isActive'] as bool? ?? true,
       promoText: json['promoText'] as String?,
-      originalAmount: json['originalAmount'] != null 
-          ? (json['originalAmount'] as num).toDouble() 
+      originalAmount: json['originalAmount'] != null
+          ? (json['originalAmount'] as num).toDouble()
           : null,
       metadata: json['metadata'] as Map<String, dynamic>?,
       createdAt: DateTime.parse(json['createdAt'] as String),
@@ -247,7 +244,7 @@ class SubscriptionPlan {
 /// Predefined subscription plans
 class PredefinedPlans {
   static final DateTime _defaultDate = DateTime(2024, 1, 1);
-  
+
   static final List<SubscriptionPlan> plans = [
     SubscriptionPlan(
       id: 'basic_monthly',

@@ -26,7 +26,8 @@ class CompanionCreationWidget extends StatefulWidget {
   });
 
   @override
-  State<CompanionCreationWidget> createState() => _CompanionCreationWidgetState();
+  State<CompanionCreationWidget> createState() =>
+      _CompanionCreationWidgetState();
 }
 
 class _CompanionCreationWidgetState extends State<CompanionCreationWidget> {
@@ -34,17 +35,17 @@ class _CompanionCreationWidgetState extends State<CompanionCreationWidget> {
   final _nameController = TextEditingController();
   final _descriptionController = TextEditingController();
   final _interestsController = TextEditingController();
-  
+
   CompanionPersonality _selectedPersonality = CompanionPersonality.mentor;
   CompanionGender? _selectedGender;
   CompanionAge? _selectedAgeGroup;
   String _selectedAvatarStyle = 'realistic';
   String _selectedVoiceType = 'warm';
   String _selectedSpeechSpeed = 'normal';
-  
+
   final String _selectedHairColor = 'brown';
   final String _selectedEyeColor = 'brown';
-  
+
   final List<Map<String, dynamic>> _avatarStyles = [
     {'value': 'realistic', 'label': 'Realistic', 'icon': Icons.person},
     {'value': 'cartoon', 'label': 'Cartoon', 'icon': Icons.emoji_emotions},
@@ -72,7 +73,7 @@ class _CompanionCreationWidgetState extends State<CompanionCreationWidget> {
     {'value': 'normal', 'label': 'Normal', 'description': 'Natural pace'},
     {'value': 'fast', 'label': 'Fast', 'description': 'Quick and dynamic'},
   ];
-  
+
   @override
   void initState() {
     super.initState();
@@ -131,7 +132,7 @@ class _CompanionCreationWidgetState extends State<CompanionCreationWidget> {
               ],
             ),
             const SizedBox(height: 24),
-            
+
             // Scrollable content
             Expanded(
               child: SingleChildScrollView(
@@ -292,7 +293,7 @@ class _CompanionCreationWidgetState extends State<CompanionCreationWidget> {
       itemBuilder: (context, index) {
         final personality = CompanionPersonality.values[index];
         final isSelected = personality == _selectedPersonality;
-        
+
         return GestureDetector(
           onTap: () {
             setState(() {
@@ -302,13 +303,11 @@ class _CompanionCreationWidgetState extends State<CompanionCreationWidget> {
           child: Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: isSelected 
-                ? PulseColors.primary.withValues(alpha: 0.1)
-                : Colors.grey[100],
+              color: isSelected
+                  ? PulseColors.primary.withValues(alpha: 0.1)
+                  : Colors.grey[100],
               border: Border.all(
-                color: isSelected 
-                  ? PulseColors.primary
-                  : Colors.grey[300]!,
+                color: isSelected ? PulseColors.primary : Colors.grey[300]!,
                 width: isSelected ? 2 : 1,
               ),
               borderRadius: BorderRadius.circular(12),
@@ -370,7 +369,7 @@ class _CompanionCreationWidgetState extends State<CompanionCreationWidget> {
       itemBuilder: (context, index) {
         final style = _avatarStyles[index];
         final isSelected = style['value'] == _selectedAvatarStyle;
-        
+
         return GestureDetector(
           onTap: () {
             setState(() {
@@ -380,13 +379,11 @@ class _CompanionCreationWidgetState extends State<CompanionCreationWidget> {
           child: Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: isSelected 
-                ? PulseColors.secondary.withValues(alpha: 0.1)
-                : Colors.grey[100],
+              color: isSelected
+                  ? PulseColors.secondary.withValues(alpha: 0.1)
+                  : Colors.grey[100],
               border: Border.all(
-                color: isSelected 
-                  ? PulseColors.secondary
-                  : Colors.grey[300]!,
+                color: isSelected ? PulseColors.secondary : Colors.grey[300]!,
                 width: isSelected ? 2 : 1,
               ),
               borderRadius: BorderRadius.circular(12),
@@ -424,7 +421,7 @@ class _CompanionCreationWidgetState extends State<CompanionCreationWidget> {
         hairColor: _selectedHairColor,
         eyeColor: _selectedEyeColor,
       );
-      
+
       final interests = _interestsController.text.trim().isNotEmpty
           ? _interestsController.text
                 .split(',')
@@ -437,7 +434,7 @@ class _CompanionCreationWidgetState extends State<CompanionCreationWidget> {
         'voiceType': _selectedVoiceType,
         'speechSpeed': _selectedSpeechSpeed,
       };
-      
+
       widget.onCompanionCreated(
         _nameController.text.trim(),
         _selectedPersonality,

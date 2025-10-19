@@ -1,12 +1,7 @@
 /// Payment-related entities for the PulseLink payment system
 library;
 
-enum PaymentType {
-  boost,
-  premium,
-  gift,
-  credit,
-}
+enum PaymentType { boost, premium, gift, credit }
 
 enum PaymentStatus {
   pending,
@@ -17,13 +12,7 @@ enum PaymentStatus {
   refunded,
 }
 
-enum CardType {
-  visa,
-  mastercard,
-  amex,
-  discover,
-  unknown,
-}
+enum CardType { visa, mastercard, amex, discover, unknown }
 
 /// Payment method entity representing saved payment methods
 class PaymentMethod {

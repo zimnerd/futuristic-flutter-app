@@ -9,8 +9,9 @@ import '../../core/config/app_config.dart';
 /// Documentation: https://developer.peachpayments.com/
 class PeachPaymentsService {
   static PeachPaymentsService? _instance;
-  static PeachPaymentsService get instance => _instance ??= PeachPaymentsService._();
-  
+  static PeachPaymentsService get instance =>
+      _instance ??= PeachPaymentsService._();
+
   PeachPaymentsService._();
 
   // Logger instance
@@ -20,19 +21,16 @@ class PeachPaymentsService {
   String get _baseUrl => AppConfig.peachPaymentsBaseUrl;
   static const String _checkoutEndpoint = '/v1/checkouts';
   static const String _paymentStatusEndpoint = '/v1/payments';
-  
+
   // API credentials (should be from environment variables in production)
   late String _entityId;
   late String _accessToken;
-  
+
   /// Initialize PeachPayments with credentials
-  void initialize({
-    required String entityId,
-    required String accessToken,
-  }) {
+  void initialize({required String entityId, required String accessToken}) {
     _entityId = entityId;
     _accessToken = accessToken;
-    
+
     AppLogger.info('PeachPayments initialized with entity: $entityId');
   }
 
@@ -49,14 +47,15 @@ class PeachPaymentsService {
   }) async {
     try {
       final url = Uri.parse('$_baseUrl$_checkoutEndpoint');
-      
+
       // Prepare checkout data
       final checkoutData = {
         'entityId': _entityId,
         'amount': amount.toStringAsFixed(2),
         'currency': currency.toUpperCase(),
         'paymentType': paymentType, // 'DB' for debit, 'PA' for preauthorization
-        if (merchantTransactionId != null) 'merchantTransactionId': merchantTransactionId,
+        if (merchantTransactionId != null)
+          'merchantTransactionId': merchantTransactionId,
         if (notificationUrl != null) 'notificationUrl': notificationUrl,
         'testMode': 'EXTERNAL', // Remove for production
       };
@@ -87,8 +86,9 @@ class PeachPaymentsService {
       );
 
       final responseData = json.decode(response.body);
-      
-      if (response.statusCode == 200 && responseData['result']['code'] == '000.200.100') {
+
+      if (response.statusCode == 200 &&
+          responseData['result']['code'] == '000.200.100') {
         AppLogger.info('Checkout created successfully: ${responseData['id']}');
         return {
           'success': true,
@@ -109,10 +109,7 @@ class PeachPaymentsService {
       }
     } catch (e) {
       AppLogger.error('Error creating checkout: $e');
-      return {
-        'success': false,
-        'error': 'Network error: $e',
-      };
+      return {'success': false, 'error': 'Network error: $e'};
     }
   }
 
@@ -120,29 +117,29 @@ class PeachPaymentsService {
   Future<Map<String, dynamic>> getPaymentStatus(String paymentId) async {
     try {
       final url = Uri.parse('$_baseUrl$_paymentStatusEndpoint/$paymentId');
-      
+
       final response = await http.get(
         url,
-        headers: {
-          'Authorization': 'Bearer $_accessToken',
-        },
+        headers: {'Authorization': 'Bearer $_accessToken'},
       );
 
       final responseData = json.decode(response.body);
-      
+
       if (response.statusCode == 200) {
         final result = responseData['result'];
         final code = result['code'] as String;
-        
+
         // PeachPayments success codes
-        final isSuccess = code.startsWith('000.000.') || 
-                         code.startsWith('000.100.1') || 
-                         code == '000.200.100';
-        
-        final isPending = code.startsWith('000.200.') || 
-                         code.startsWith('800.400.5') ||
-                         code == '000.000.100';
-        
+        final isSuccess =
+            code.startsWith('000.000.') ||
+            code.startsWith('000.100.1') ||
+            code == '000.200.100';
+
+        final isPending =
+            code.startsWith('000.200.') ||
+            code.startsWith('800.400.5') ||
+            code == '000.000.100';
+
         final isFailure = !isSuccess && !isPending;
 
         _logger.i('Payment status retrieved: $code - ${result['description']}');
@@ -162,17 +159,11 @@ class PeachPaymentsService {
         };
       } else {
         _logger.i('Failed to get payment status: $responseData');
-        return {
-          'success': false,
-          'error': 'Failed to retrieve payment status',
-        };
+        return {'success': false, 'error': 'Failed to retrieve payment status'};
       }
     } catch (e) {
       _logger.e('Error getting payment status: $e');
-      return {
-        'success': false,
-        'error': 'Network error: $e',
-      };
+      return {'success': false, 'error': 'Network error: $e'};
     }
   }
 
@@ -185,14 +176,15 @@ class PeachPaymentsService {
   }) async {
     try {
       final url = Uri.parse('$_baseUrl$_paymentStatusEndpoint');
-      
+
       final paymentData = {
         'entityId': _entityId,
         'amount': amount.toStringAsFixed(2),
         'currency': currency.toUpperCase(),
         'paymentType': 'DB',
         'registrationId': registrationId,
-        if (merchantTransactionId != null) 'merchantTransactionId': merchantTransactionId,
+        if (merchantTransactionId != null)
+          'merchantTransactionId': merchantTransactionId,
       };
 
       _logger.i('Creating recurring payment: $paymentData');
@@ -207,11 +199,12 @@ class PeachPaymentsService {
       );
 
       final responseData = json.decode(response.body);
-      
+
       if (response.statusCode == 200) {
         final result = responseData['result'];
         final code = result['code'] as String;
-        final isSuccess = code.startsWith('000.000.') || code.startsWith('000.100.1');
+        final isSuccess =
+            code.startsWith('000.000.') || code.startsWith('000.100.1');
 
         _logger.i('Recurring payment result: $code - ${result['description']}');
 
@@ -232,10 +225,7 @@ class PeachPaymentsService {
       }
     } catch (e) {
       _logger.e('Error creating recurring payment: $e');
-      return {
-        'success': false,
-        'error': 'Network error: $e',
-      };
+      return {'success': false, 'error': 'Network error: $e'};
     }
   }
 
@@ -248,7 +238,7 @@ class PeachPaymentsService {
   }) async {
     try {
       final url = Uri.parse('$_baseUrl$_paymentStatusEndpoint');
-      
+
       final refundData = {
         'entityId': _entityId,
         'amount': amount.toStringAsFixed(2),
@@ -270,11 +260,12 @@ class PeachPaymentsService {
       );
 
       final responseData = json.decode(response.body);
-      
+
       if (response.statusCode == 200) {
         final result = responseData['result'];
         final code = result['code'] as String;
-        final isSuccess = code.startsWith('000.000.') || code.startsWith('000.100.1');
+        final isSuccess =
+            code.startsWith('000.000.') || code.startsWith('000.100.1');
 
         _logger.i('Refund result: $code - ${result['description']}');
 
@@ -288,17 +279,11 @@ class PeachPaymentsService {
         };
       } else {
         _logger.i('Failed to create refund: $responseData');
-        return {
-          'success': false,
-          'error': 'Failed to create refund',
-        };
+        return {'success': false, 'error': 'Failed to create refund'};
       }
     } catch (e) {
       _logger.e('Error creating refund: $e');
-      return {
-        'success': false,
-        'error': 'Network error: $e',
-      };
+      return {'success': false, 'error': 'Network error: $e'};
     }
   }
 
@@ -325,16 +310,22 @@ class PeachPaymentsService {
   /// Build form-encoded data for API requests
   String _buildFormData(Map<String, dynamic> data) {
     return data.entries
-        .map((entry) => '${Uri.encodeComponent(entry.key)}=${Uri.encodeComponent(entry.value.toString())}')
+        .map(
+          (entry) =>
+              '${Uri.encodeComponent(entry.key)}=${Uri.encodeComponent(entry.value.toString())}',
+        )
         .join('&');
   }
 
   /// Validate webhook notification from PeachPayments
-  bool validateWebhookNotification(Map<String, dynamic> notification, String signature) {
+  bool validateWebhookNotification(
+    Map<String, dynamic> notification,
+    String signature,
+  ) {
     // Implement webhook signature validation based on PeachPayments documentation
     // This is crucial for security in production
     _logger.i('Validating webhook notification: ${notification['id']}');
-    
+
     // For now, return true - implement proper validation in production
     return true;
   }
@@ -353,7 +344,9 @@ class PeachPaymentsService {
   }
 
   /// Submit payment with card or external payment method
-  Future<Map<String, dynamic>> submitPayment(Map<String, dynamic> paymentData) async {
+  Future<Map<String, dynamic>> submitPayment(
+    Map<String, dynamic> paymentData,
+  ) async {
     try {
       // For card payments, use the payments endpoint
       if (paymentData.containsKey('cardNumber')) {
@@ -364,16 +357,15 @@ class PeachPaymentsService {
       }
     } catch (e) {
       _logger.e('Error submitting payment: $e');
-      return {
-        'success': false,
-        'error': 'Payment submission failed: $e',
-      };
+      return {'success': false, 'error': 'Payment submission failed: $e'};
     }
   }
 
-  Future<Map<String, dynamic>> _submitCardPayment(Map<String, dynamic> paymentData) async {
+  Future<Map<String, dynamic>> _submitCardPayment(
+    Map<String, dynamic> paymentData,
+  ) async {
     final url = Uri.parse('$_baseUrl$_paymentStatusEndpoint');
-    
+
     final body = {
       'entityId': _entityId,
       'amount': paymentData['amount'] ?? '99.99',
@@ -397,20 +389,24 @@ class PeachPaymentsService {
     );
 
     final result = json.decode(response.body);
-    
+
     return {
-      'success': response.statusCode == 200 && result['result']?['code']?.startsWith('000.'),
+      'success':
+          response.statusCode == 200 &&
+          result['result']?['code']?.startsWith('000.'),
       'response': result,
       'transactionId': result['id'],
       'status': result['result']?['description'],
     };
   }
 
-  Future<Map<String, dynamic>> _submitExternalPayment(Map<String, dynamic> paymentData) async {
+  Future<Map<String, dynamic>> _submitExternalPayment(
+    Map<String, dynamic> paymentData,
+  ) async {
     // For external payments, return a redirect URL
     final paymentMethod = paymentData['paymentMethod'];
     final checkoutId = paymentData['checkoutId'];
-    
+
     // Simulate external payment redirect
     return {
       'success': true,

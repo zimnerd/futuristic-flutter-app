@@ -10,18 +10,18 @@ enum AnalyticsEventType {
   userLogin,
   userLogout,
   profileUpdated,
-  
+
   // Messaging
   messageSent,
   messageReceived,
   conversationStarted,
-  
+
   // Matching
   profileViewed,
   profileLiked,
   profilePassed,
   matchCreated,
-  
+
   // Premium
   premiumViewed,
   subscriptionStarted,
@@ -29,20 +29,20 @@ enum AnalyticsEventType {
   subscriptionCancelled,
   boostPurchased,
   boostUsed,
-  
+
   // Social
   achievementUnlocked,
   leaderboardViewed,
   challengeCreated,
   challengeCompleted,
-  
+
   // Engagement
   appOpened,
   appClosed,
   screenViewed,
   featureUsed,
   buttonClicked,
-  
+
   // Errors
   errorOccurred,
   crashReported,
@@ -63,7 +63,7 @@ class AnalyticsService {
   void setUser({required String authToken, required String userId}) {
     _authToken = authToken;
     _userId = userId;
-    
+
     // Send any queued events
     _flushEventQueue();
   }
@@ -96,10 +96,7 @@ class AnalyticsService {
   }) async {
     await trackEvent(
       eventType: AnalyticsEventType.screenViewed,
-      properties: {
-        'screenName': screenName,
-        ...?properties,
-      },
+      properties: {'screenName': screenName, ...?properties},
     );
   }
 
@@ -126,10 +123,7 @@ class AnalyticsService {
   }) async {
     await trackEvent(
       eventType: AnalyticsEventType.featureUsed,
-      properties: {
-        'featureName': featureName,
-        ...?properties,
-      },
+      properties: {'featureName': featureName, ...?properties},
     );
   }
 
@@ -278,19 +272,20 @@ class AnalyticsService {
 
     try {
       final response = await http.patch(
-        Uri.parse('${ApiConstants.baseUrl}${ApiConstants.analytics}/user-properties'),
+        Uri.parse(
+          '${ApiConstants.baseUrl}${ApiConstants.analytics}/user-properties',
+        ),
         headers: {
           'Authorization': 'Bearer $_authToken',
           'Content-Type': 'application/json',
         },
-        body: json.encode({
-          'userId': _userId,
-          'properties': properties,
-        }),
+        body: json.encode({'userId': _userId, 'properties': properties}),
       );
 
       if (response.statusCode != 200) {
-        AppLogger.warning('Failed to set user properties: ${response.statusCode}');
+        AppLogger.warning(
+          'Failed to set user properties: ${response.statusCode}',
+        );
       }
     } catch (e) {
       AppLogger.error('Error setting user properties: $e');
@@ -303,7 +298,9 @@ class AnalyticsService {
 
     try {
       final response = await http.get(
-        Uri.parse('${ApiConstants.baseUrl}${ApiConstants.analytics}/insights/$_userId'),
+        Uri.parse(
+          '${ApiConstants.baseUrl}${ApiConstants.analytics}/insights/$_userId',
+        ),
         headers: {
           'Authorization': 'Bearer $_authToken',
           'Content-Type': 'application/json',
@@ -314,7 +311,9 @@ class AnalyticsService {
         final data = json.decode(response.body);
         return data['insights'] as Map<String, dynamic>;
       } else {
-        AppLogger.warning('Failed to get user insights: ${response.statusCode}');
+        AppLogger.warning(
+          'Failed to get user insights: ${response.statusCode}',
+        );
         return null;
       }
     } catch (e) {
@@ -336,7 +335,9 @@ class AnalyticsService {
       );
 
       if (response.statusCode != 201) {
-        AppLogger.warning('Failed to send analytics event: ${response.statusCode}');
+        AppLogger.warning(
+          'Failed to send analytics event: ${response.statusCode}',
+        );
         // Queue the event for retry
         _queueEvent(event);
       }
@@ -350,7 +351,7 @@ class AnalyticsService {
   /// Queue event for later sending
   void _queueEvent(Map<String, dynamic> event) {
     _eventQueue.add(event);
-    
+
     // Limit queue size to prevent memory issues
     if (_eventQueue.length > 100) {
       _eventQueue.removeAt(0);
@@ -372,7 +373,7 @@ class AnalyticsService {
   /// Set online/offline status
   void setOnlineStatus(bool isOnline) {
     _isOnline = isOnline;
-    
+
     if (isOnline) {
       _flushEventQueue();
     }

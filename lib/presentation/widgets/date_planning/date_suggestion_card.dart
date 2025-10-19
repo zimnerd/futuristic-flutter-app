@@ -6,11 +6,7 @@ class DateSuggestionCard extends StatelessWidget {
   final Map<String, dynamic> suggestion;
   final VoidCallback? onTap;
 
-  const DateSuggestionCard({
-    super.key,
-    required this.suggestion,
-    this.onTap,
-  });
+  const DateSuggestionCard({super.key, required this.suggestion, this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -55,36 +51,25 @@ class DateSuggestionCard extends StatelessWidget {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(
-                            Icons.star,
-                            size: 16,
-                            color: Colors.amber,
-                          ),
+                          const Icon(Icons.star, size: 16, color: Colors.amber),
                           const SizedBox(width: 4),
                           Text(
                             rating.toStringAsFixed(1),
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                            ),
+                            style: const TextStyle(fontWeight: FontWeight.bold),
                           ),
                         ],
                       ),
                     ),
                 ],
               ),
-              
+
               if (description.isNotEmpty) ...[
                 const SizedBox(height: 8),
-                Text(
-                  description,
-                  style: TextStyle(
-                    color: Colors.grey[600],
-                  ),
-                ),
+                Text(description, style: TextStyle(color: Colors.grey[600])),
               ],
-              
+
               const SizedBox(height: 12),
-              
+
               // Suggestion details
               Column(
                 children: [
@@ -93,14 +78,22 @@ class DateSuggestionCard extends StatelessWidget {
                   if (category.isNotEmpty)
                     _buildDetailRow(Icons.category, 'Category', category),
                   if (estimatedCost.isNotEmpty)
-                    _buildDetailRow(Icons.attach_money, 'Estimated Cost', estimatedCost),
+                    _buildDetailRow(
+                      Icons.attach_money,
+                      'Estimated Cost',
+                      estimatedCost,
+                    ),
                   if (duration > 0)
-                    _buildDetailRow(Icons.access_time, 'Duration', '${duration}h'),
+                    _buildDetailRow(
+                      Icons.access_time,
+                      'Duration',
+                      '${duration}h',
+                    ),
                 ],
               ),
-              
+
               const SizedBox(height: 16),
-              
+
               // Action button
               SizedBox(
                 width: double.infinity,
@@ -137,10 +130,7 @@ class DateSuggestionCard extends StatelessWidget {
             ),
           ),
           Expanded(
-            child: Text(
-              value,
-              style: TextStyle(color: Colors.grey[600]),
-            ),
+            child: Text(value, style: TextStyle(color: Colors.grey[600])),
           ),
         ],
       ),

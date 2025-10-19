@@ -14,10 +14,7 @@ import '../../widgets/events/event_analytics_indicators.dart';
 class EventDetailsScreen extends StatefulWidget {
   final String eventId;
 
-  const EventDetailsScreen({
-    super.key,
-    required this.eventId,
-  });
+  const EventDetailsScreen({super.key, required this.eventId});
 
   @override
   State<EventDetailsScreen> createState() => _EventDetailsScreenState();
@@ -39,16 +36,14 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
           // 🔧 FIX: Read from cached event details instead of state
           final bloc = context.read<EventBloc>();
           final cachedDetails = bloc.currentEventDetails;
-          
+
           // If we have cached details for this event, show them
           if (cachedDetails != null && cachedDetails.id == widget.eventId) {
             return _buildEventDetails(context, cachedDetails);
           }
-          
+
           if (state is EventLoading) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
+            return const Center(child: CircularProgressIndicator());
           }
 
           if (state is EventError) {
@@ -56,31 +51,27 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(
-                    Icons.error_outline,
-                    size: 64,
-                    color: Colors.red[300],
-                  ),
+                  Icon(Icons.error_outline, size: 64, color: Colors.red[300]),
                   const SizedBox(height: 16),
                   Text(
                     'Failed to load event details',
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          color: Colors.red[300],
-                        ),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.titleLarge?.copyWith(color: Colors.red[300]),
                   ),
                   const SizedBox(height: 8),
                   Text(
                     state.message,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: Colors.grey[600],
-                        ),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 24),
                   ElevatedButton(
                     onPressed: () => context.read<EventBloc>().add(
-                          LoadEventDetails(widget.eventId),
-                        ),
+                      LoadEventDetails(widget.eventId),
+                    ),
                     child: const Text('Retry'),
                   ),
                 ],
@@ -97,21 +88,17 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
               return _buildEventDetails(context, event);
             } catch (e) {
               // Event not in the loaded list, show loading
-              return const Center(
-                child: CircularProgressIndicator(),
-              );
+              return const Center(child: CircularProgressIndicator());
             }
           }
-          
+
           // For EventDetailsLoaded state (legacy), also check it
           if (state is EventDetailsLoaded && state.event.id == widget.eventId) {
             return _buildEventDetails(context, state.event);
           }
 
           // Still loading or not found
-          return const Center(
-            child: CircularProgressIndicator(),
-          );
+          return const Center(child: CircularProgressIndicator());
         },
       ),
     );
@@ -120,7 +107,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
   Widget _buildEventDetails(BuildContext context, Event event) {
     // Only show image if available
     final bool hasImage = event.image != null && event.image!.isNotEmpty;
-    
+
     return CustomScrollView(
       slivers: [
         // App bar with event image (only if image exists)
@@ -158,7 +145,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
         else
           // Simple app bar without image
           SliverAppBar(pinned: true, title: const Text('Event Details')),
-        
+
         // Event content
         SliverPadding(
           padding: const EdgeInsets.all(20),
@@ -179,15 +166,15 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                 compact: false,
               ),
               const SizedBox(height: 24),
-              
+
               // Event description
               _buildDescription(context, event),
               const SizedBox(height: 24),
-              
+
               // Event details
               _buildEventInfo(context, event),
               const SizedBox(height: 24),
-              
+
               // Action buttons
               _buildActionButtons(context, event),
               const SizedBox(height: 40),
@@ -244,8 +231,8 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                   ),
                 const SizedBox(width: 6),
                 Text(
-                  event.categoryDetails?.name.toUpperCase() ?? 
-                  event.category.toUpperCase(),
+                  event.categoryDetails?.name.toUpperCase() ??
+                      event.category.toUpperCase(),
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 12,
@@ -257,7 +244,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
             ),
           ),
           const SizedBox(height: 16),
-          
+
           // Event title
           Text(
             event.title,
@@ -266,13 +253,16 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
               height: 1.2,
             ),
           ),
-          
+
           // Attendance badge
           if (event.isAttending)
             Padding(
               padding: const EdgeInsets.only(top: 12),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.green[50],
                   borderRadius: BorderRadius.circular(12),
@@ -281,7 +271,11 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.check_circle, color: Colors.green[700], size: 18),
+                    Icon(
+                      Icons.check_circle,
+                      color: Colors.green[700],
+                      size: 18,
+                    ),
                     const SizedBox(width: 6),
                     Text(
                       'You\'re going!',
@@ -409,7 +403,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
             '${event.attendeeCount} going${event.maxAttendees != null ? ' / ${event.maxAttendees} max' : ''}',
             Colors.green[400]!,
           ),
-          
+
           // Category description if available
           if (event.categoryDetails?.description != null) ...[
             const SizedBox(height: 16),
@@ -447,8 +441,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
             color: iconColor.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(10),
           ),
-          child: Icon(icon,
-            size: 22, color: iconColor),
+          child: Icon(icon, size: 22, color: iconColor),
         ),
         const SizedBox(width: 16),
         Expanded(
@@ -458,11 +451,11 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
               Text(
                 label,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Colors.grey[600],
+                  color: Colors.grey[600],
                   fontWeight: FontWeight.w600,
                   fontSize: 12,
                   letterSpacing: 0.5,
-                    ),
+                ),
               ),
               const SizedBox(height: 4),
               Text(
@@ -539,7 +532,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
           ),
         ),
         const SizedBox(height: 12),
-        
+
         // Secondary action buttons
         Row(
           children: [
@@ -552,7 +545,9 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                     borderRadius: BorderRadius.circular(16),
                   ),
                   side: BorderSide(
-                    color: Theme.of(context).primaryColor.withValues(alpha: 0.3),
+                    color: Theme.of(
+                      context,
+                    ).primaryColor.withValues(alpha: 0.3),
                   ),
                 ),
                 icon: Icon(
@@ -598,18 +593,12 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
 
   void _joinEvent(BuildContext context, Event event) {
     context.read<EventBloc>().add(AttendEvent(event.id));
-    PulseToast.success(
-      context,
-      message: 'Joined "${event.title}"',
-    );
+    PulseToast.success(context, message: 'Joined "${event.title}"');
   }
 
   void _leaveEvent(BuildContext context, Event event) {
     context.read<EventBloc>().add(LeaveEvent(event.id));
-    PulseToast.info(
-      context,
-      message: 'Left "${event.title}"',
-    );
+    PulseToast.info(context, message: 'Left "${event.title}"');
   }
 
   void _shareEvent(BuildContext context, Event event) {
@@ -642,14 +631,10 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
       }
     } catch (e) {
       if (mounted) {
-        PulseToast.error(
-          this.context,
-          message: 'Failed to report event: $e',
-        );
+        PulseToast.error(this.context, message: 'Failed to report event: $e');
       }
     }
   }
-
 }
 
 class AttendeeAvatar extends StatelessWidget {

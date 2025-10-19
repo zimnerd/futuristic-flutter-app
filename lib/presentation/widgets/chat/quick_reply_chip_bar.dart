@@ -4,7 +4,7 @@ import '../../theme/pulse_colors.dart';
 import '../../../core/utils/logger.dart';
 
 /// Quick Reply Chip Bar Widget
-/// 
+///
 /// Displays AI-generated reply suggestions as horizontal scrollable chips
 /// Features:
 /// - One-tap to populate message field
@@ -19,7 +19,7 @@ class QuickReplyChipBar extends StatefulWidget {
   final Function(String) onChipTap;
   final Function(String) onChipLongPress;
   final Function(String) onChipDismiss;
-  
+
   const QuickReplyChipBar({
     super.key,
     required this.suggestions,
@@ -83,16 +83,9 @@ class _QuickReplyChipBarState extends State<QuickReplyChipBar>
         padding: const EdgeInsets.symmetric(vertical: 8),
         decoration: BoxDecoration(
           color: Colors.grey[50],
-          border: Border(
-            top: BorderSide(
-              color: Colors.grey[200]!,
-              width: 1,
-            ),
-          ),
+          border: Border(top: BorderSide(color: Colors.grey[200]!, width: 1)),
         ),
-        child: widget.isLoading
-            ? _buildShimmerLoading()
-            : _buildChipList(),
+        child: widget.isLoading ? _buildShimmerLoading() : _buildChipList(),
       ),
     );
   }
@@ -151,20 +144,12 @@ class _QuickReplyChipBarState extends State<QuickReplyChipBar>
       background: Container(
         alignment: Alignment.centerLeft,
         padding: const EdgeInsets.only(left: 16),
-        child: const Icon(
-          Icons.delete_outline,
-          color: Colors.red,
-          size: 20,
-        ),
+        child: const Icon(Icons.delete_outline, color: Colors.red, size: 20),
       ),
       secondaryBackground: Container(
         alignment: Alignment.centerRight,
         padding: const EdgeInsets.only(right: 16),
-        child: const Icon(
-          Icons.delete_outline,
-          color: Colors.red,
-          size: 20,
-        ),
+        child: const Icon(Icons.delete_outline, color: Colors.red, size: 20),
       ),
       child: _buildSuggestionChip(suggestion),
     );
@@ -200,11 +185,7 @@ class _QuickReplyChipBarState extends State<QuickReplyChipBar>
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              Icons.auto_awesome,
-              size: 16,
-              color: PulseColors.primary,
-            ),
+            Icon(Icons.auto_awesome, size: 16, color: PulseColors.primary),
             const SizedBox(width: 6),
             ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 200),

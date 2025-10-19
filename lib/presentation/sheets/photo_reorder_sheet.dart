@@ -5,7 +5,7 @@ import '../../domain/entities/user_profile.dart';
 import '../theme/pulse_colors.dart';
 
 /// Bottom sheet for reordering profile photos with drag-and-drop
-/// 
+///
 /// Features:
 /// - Drag and drop to reorder photos
 /// - Visual feedback during drag (elevation, scale)
@@ -71,9 +71,7 @@ class _PhotoReorderSheetState extends State<PhotoReorderSheet> {
       height: screenHeight * 0.8,
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
-        borderRadius: const BorderRadius.vertical(
-          top: Radius.circular(20),
-        ),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
       ),
       child: Column(
         children: [
@@ -107,10 +105,7 @@ class _PhotoReorderSheetState extends State<PhotoReorderSheet> {
                       const SizedBox(height: 4),
                       Text(
                         'Long press and drag to reorder',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey[600],
-                        ),
+                        style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                       ),
                     ],
                   ),
@@ -133,11 +128,7 @@ class _PhotoReorderSheetState extends State<PhotoReorderSheet> {
             ),
             child: Row(
               children: [
-                Icon(
-                  Icons.info_outline,
-                  color: PulseColors.primary,
-                  size: 20,
-                ),
+                Icon(Icons.info_outline, color: PulseColors.primary, size: 20),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
@@ -236,10 +227,7 @@ class _PhotoReorderSheetState extends State<PhotoReorderSheet> {
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
         border: isPrimary
-            ? Border.all(
-                color: PulseColors.primary,
-                width: 3,
-              )
+            ? Border.all(color: PulseColors.primary, width: 3)
             : null,
       ),
       child: Stack(
@@ -253,9 +241,7 @@ class _PhotoReorderSheetState extends State<PhotoReorderSheet> {
               fit: BoxFit.cover,
               placeholder: (context, url) => Container(
                 color: Colors.grey[200],
-                child: const Center(
-                  child: CircularProgressIndicator(),
-                ),
+                child: const Center(child: CircularProgressIndicator()),
               ),
               errorWidget: (context, url, error) => Container(
                 color: Colors.grey[300],
@@ -274,10 +260,7 @@ class _PhotoReorderSheetState extends State<PhotoReorderSheet> {
               top: 8,
               left: 8,
               child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 8,
-                  vertical: 4,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
                   color: PulseColors.primary,
                   borderRadius: BorderRadius.circular(6),
@@ -285,11 +268,7 @@ class _PhotoReorderSheetState extends State<PhotoReorderSheet> {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: const [
-                    Icon(
-                      Icons.star,
-                      color: Colors.white,
-                      size: 14,
-                    ),
+                    Icon(Icons.star, color: Colors.white, size: 14),
                     SizedBox(width: 4),
                     Text(
                       'Primary',
@@ -397,10 +376,7 @@ class ReorderableGridView extends StatelessWidget {
               ),
             ),
           ),
-          childWhenDragging: Opacity(
-            opacity: 0.3,
-            child: children[index],
-          ),
+          childWhenDragging: Opacity(opacity: 0.3, child: children[index]),
           child: DragTarget<int>(
             onAcceptWithDetails: (details) {
               onReorder(details.data, index);
@@ -411,10 +387,7 @@ class ReorderableGridView extends StatelessWidget {
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(12),
                   border: candidateData.isNotEmpty
-                      ? Border.all(
-                          color: PulseColors.primary,
-                          width: 2,
-                        )
+                      ? Border.all(color: PulseColors.primary, width: 2)
                       : null,
                 ),
                 child: children[index],

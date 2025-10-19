@@ -43,10 +43,7 @@ class DateInvitationSent extends DatePlanningState {
   final String planId;
   final String inviteeId;
 
-  const DateInvitationSent({
-    required this.planId,
-    required this.inviteeId,
-  });
+  const DateInvitationSent({required this.planId, required this.inviteeId});
 
   @override
   List<Object> get props => [planId, inviteeId];
@@ -71,10 +68,7 @@ class DatePlanUpdated extends DatePlanningState {
   final String planId;
   final Map<String, dynamic> updatedPlan;
 
-  const DatePlanUpdated({
-    required this.planId,
-    required this.updatedPlan,
-  });
+  const DatePlanUpdated({required this.planId, required this.updatedPlan});
 
   @override
   List<Object> get props => [planId, updatedPlan];
@@ -161,10 +155,7 @@ class DateRated extends DatePlanningState {
   final String planId;
   final int rating;
 
-  const DateRated({
-    required this.planId,
-    required this.rating,
-  });
+  const DateRated({required this.planId, required this.rating});
 
   @override
   List<Object> get props => [planId, rating];
@@ -175,10 +166,7 @@ class DateActivityAdded extends DatePlanningState {
   final String planId;
   final Map<String, dynamic> activity;
 
-  const DateActivityAdded({
-    required this.planId,
-    required this.activity,
-  });
+  const DateActivityAdded({required this.planId, required this.activity});
 
   @override
   List<Object> get props => [planId, activity];
@@ -189,10 +177,7 @@ class DateActivityRemoved extends DatePlanningState {
   final String planId;
   final String activityId;
 
-  const DateActivityRemoved({
-    required this.planId,
-    required this.activityId,
-  });
+  const DateActivityRemoved({required this.planId, required this.activityId});
 
   @override
   List<Object> get props => [planId, activityId];

@@ -13,8 +13,8 @@ class PhotoBloc extends Bloc<PhotoEvent, PhotoState> {
   final UserRepository _userRepository;
 
   PhotoBloc({required UserRepository userRepository})
-      : _userRepository = userRepository,
-        super(const PhotoInitial()) {
+    : _userRepository = userRepository,
+      super(const PhotoInitial()) {
     on<LoadPhotos>(_onLoadPhotos);
     on<UploadPhoto>(_onUploadPhoto);
     on<ReorderPhotos>(_onReorderPhotos);
@@ -25,10 +25,7 @@ class PhotoBloc extends Bloc<PhotoEvent, PhotoState> {
   }
 
   /// Load user's photos
-  Future<void> _onLoadPhotos(
-    LoadPhotos event,
-    Emitter<PhotoState> emit,
-  ) async {
+  Future<void> _onLoadPhotos(LoadPhotos event, Emitter<PhotoState> emit) async {
     emit(const PhotoLoading());
 
     try {
@@ -43,13 +40,15 @@ class PhotoBloc extends Bloc<PhotoEvent, PhotoState> {
       final photos = <ProfilePhoto>[];
       if (user.photos.isNotEmpty) {
         for (final photo in user.photos) {
-          photos.add(ProfilePhoto(
-            id: photo['id'] as String? ?? '',
-            url: photo['url'] as String? ?? '',
-            order: photo['order'] as int? ?? 0,
-            isMain: photo['isMain'] as bool? ?? false,
-            isVerified: photo['isVerified'] as bool? ?? false,
-          ));
+          photos.add(
+            ProfilePhoto(
+              id: photo['id'] as String? ?? '',
+              url: photo['url'] as String? ?? '',
+              order: photo['order'] as int? ?? 0,
+              isMain: photo['isMain'] as bool? ?? false,
+              isVerified: photo['isVerified'] as bool? ?? false,
+            ),
+          );
         }
       }
 
@@ -57,10 +56,7 @@ class PhotoBloc extends Bloc<PhotoEvent, PhotoState> {
           ? photos.firstWhere((photo) => photo.isMain).id
           : (photos.isNotEmpty ? photos.first.id : null);
 
-      emit(PhotosLoaded(
-        photos: photos,
-        mainPhotoId: mainPhotoId,
-      ));
+      emit(PhotosLoaded(photos: photos, mainPhotoId: mainPhotoId));
     } catch (e) {
       AppLogger.error('Failed to load photos: $e');
       emit(PhotoError(message: 'Failed to load photos: ${e.toString()}'));
@@ -82,16 +78,17 @@ class PhotoBloc extends Bloc<PhotoEvent, PhotoState> {
       }
 
       // Upload multiple photos (API expects list)
-      final result = await _userRepository.uploadMultiplePhotos(
-        user.id,
-        [event.photoFile.path],
-      );
+      final result = await _userRepository.uploadMultiplePhotos(user.id, [
+        event.photoFile.path,
+      ]);
 
       if (result['success'] == true) {
-        emit(PhotoOperationSuccess(
-          message: 'Photo uploaded successfully',
-          photos: [], // Will be refreshed by LoadPhotos
-        ));
+        emit(
+          PhotoOperationSuccess(
+            message: 'Photo uploaded successfully',
+            photos: [], // Will be refreshed by LoadPhotos
+          ),
+        );
         // Automatically load photos after upload
         add(const LoadPhotos());
       } else {
@@ -119,10 +116,12 @@ class PhotoBloc extends Bloc<PhotoEvent, PhotoState> {
 
       await _userRepository.reorderPhotos(user.id, event.photoIds);
 
-      emit(PhotoOperationSuccess(
-        message: 'Photos reordered successfully',
-        photos: [], // Will be refreshed by LoadPhotos
-      ));
+      emit(
+        PhotoOperationSuccess(
+          message: 'Photos reordered successfully',
+          photos: [], // Will be refreshed by LoadPhotos
+        ),
+      );
       // Automatically load photos after reorder
       add(const LoadPhotos());
     } catch (e) {
@@ -147,10 +146,12 @@ class PhotoBloc extends Bloc<PhotoEvent, PhotoState> {
 
       await _userRepository.deletePhoto(user.id, event.photoId);
 
-      emit(PhotoOperationSuccess(
-        message: 'Photo deleted successfully',
-        photos: [], // Will be refreshed by LoadPhotos
-      ));
+      emit(
+        PhotoOperationSuccess(
+          message: 'Photo deleted successfully',
+          photos: [], // Will be refreshed by LoadPhotos
+        ),
+      );
       // Automatically load photos after delete
       add(const LoadPhotos());
     } catch (e) {
@@ -175,10 +176,12 @@ class PhotoBloc extends Bloc<PhotoEvent, PhotoState> {
 
       await _userRepository.setMainPhoto(user.id, event.photoId);
 
-      emit(PhotoOperationSuccess(
-        message: 'Main photo updated successfully',
-        photos: [], // Will be refreshed by LoadPhotos
-      ));
+      emit(
+        PhotoOperationSuccess(
+          message: 'Main photo updated successfully',
+          photos: [], // Will be refreshed by LoadPhotos
+        ),
+      );
       // Automatically load photos after setting main
       add(const LoadPhotos());
     } catch (e) {

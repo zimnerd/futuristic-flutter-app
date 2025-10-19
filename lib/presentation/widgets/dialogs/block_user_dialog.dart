@@ -35,13 +35,13 @@ class _BlockUserDialogState extends State<BlockUserDialog> {
     });
 
     context.read<BlockReportBloc>().add(
-          BlockUser(
-            blockedUserId: widget.userId,
-            reason: _reasonController.text.trim().isEmpty
-                ? null
-                : _reasonController.text.trim(),
-          ),
-        );
+      BlockUser(
+        blockedUserId: widget.userId,
+        reason: _reasonController.text.trim().isEmpty
+            ? null
+            : _reasonController.text.trim(),
+      ),
+    );
 
     // Close dialog after a short delay to show loading state
     await Future.delayed(const Duration(milliseconds: 500));
@@ -53,16 +53,10 @@ class _BlockUserDialogState extends State<BlockUserDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       title: Row(
         children: [
-          Icon(
-            Icons.block,
-            color: PulseColors.error,
-            size: 28,
-          ),
+          Icon(Icons.block, color: PulseColors.error, size: 28),
           const SizedBox(width: 12),
           Text(
             'Block User',
@@ -139,11 +133,13 @@ class _BlockUserDialogState extends State<BlockUserDialog> {
       ),
       actions: [
         TextButton(
-          onPressed: _isBlocking ? null : () => Navigator.of(context).pop(false),
+          onPressed: _isBlocking
+              ? null
+              : () => Navigator.of(context).pop(false),
           child: Text(
             'Cancel',
             style: PulseTextStyles.labelLarge.copyWith(
-              color: _isBlocking 
+              color: _isBlocking
                   ? PulseColors.onSurface.withValues(alpha: 0.3)
                   : PulseColors.onSurface.withValues(alpha: 0.7),
             ),

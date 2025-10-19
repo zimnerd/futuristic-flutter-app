@@ -11,7 +11,7 @@ class BiometricService {
     try {
       final isAvailable = await _localAuth.canCheckBiometrics;
       final isDeviceSupported = await _localAuth.isDeviceSupported();
-      
+
       return isAvailable && isDeviceSupported;
     } catch (e) {
       _logger.e('Error checking biometric availability: $e');
@@ -72,13 +72,13 @@ class BiometricService {
   Future<String> getBiometricTypeDescription() async {
     try {
       final availableBiometrics = await getAvailableBiometrics();
-      
+
       if (availableBiometrics.isEmpty) {
         return 'No biometric authentication available';
       }
 
       final types = <String>[];
-      
+
       for (final type in availableBiometrics) {
         switch (type) {
           case BiometricType.face:

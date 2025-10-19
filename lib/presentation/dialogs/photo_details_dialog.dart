@@ -5,7 +5,7 @@ import '../../domain/entities/user_profile.dart';
 import '../theme/pulse_colors.dart';
 
 /// Dialog for viewing and editing photo details
-/// 
+///
 /// Features:
 /// - View full photo
 /// - Set as primary photo
@@ -91,9 +91,7 @@ class _PhotoDetailsDialogState extends State<PhotoDetailsDialog> {
               }
               Navigator.of(context).pop(); // Close details dialog
             },
-            style: TextButton.styleFrom(
-              foregroundColor: Colors.red,
-            ),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
             child: const Text('Delete'),
           ),
         ],
@@ -119,9 +117,7 @@ class _PhotoDetailsDialogState extends State<PhotoDetailsDialog> {
             Container(
               height: 300,
               decoration: const BoxDecoration(
-                borderRadius: BorderRadius.vertical(
-                  top: Radius.circular(20),
-                ),
+                borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
               ),
               child: Stack(
                 children: [
@@ -136,9 +132,7 @@ class _PhotoDetailsDialogState extends State<PhotoDetailsDialog> {
                       fit: BoxFit.cover,
                       placeholder: (context, url) => Container(
                         color: Colors.grey[200],
-                        child: const Center(
-                          child: CircularProgressIndicator(),
-                        ),
+                        child: const Center(child: CircularProgressIndicator()),
                       ),
                       errorWidget: (context, url, error) => Container(
                         color: Colors.grey[300],
@@ -168,11 +162,7 @@ class _PhotoDetailsDialogState extends State<PhotoDetailsDialog> {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: const [
-                            Icon(
-                              Icons.star,
-                              color: Colors.white,
-                              size: 16,
-                            ),
+                            Icon(Icons.star, color: Colors.white, size: 16),
                             SizedBox(width: 6),
                             Text(
                               'Primary Photo',
@@ -231,7 +221,8 @@ class _PhotoDetailsDialogState extends State<PhotoDetailsDialog> {
                         ),
                       ),
                       const Spacer(),
-                      if (!_isEditingDescription && widget.onUpdateDescription != null)
+                      if (!_isEditingDescription &&
+                          widget.onUpdateDescription != null)
                         TextButton.icon(
                           onPressed: () {
                             setState(() {
@@ -304,7 +295,9 @@ class _PhotoDetailsDialogState extends State<PhotoDetailsDialog> {
                   // Action buttons
                   Column(
                     children: [
-                      if (!widget.isPrimary && widget.canSetPrimary && widget.onSetPrimary != null)
+                      if (!widget.isPrimary &&
+                          widget.canSetPrimary &&
+                          widget.onSetPrimary != null)
                         _buildActionButton(
                           icon: Icons.star_border,
                           label: 'Set as Primary Photo',
@@ -349,22 +342,14 @@ class _PhotoDetailsDialogState extends State<PhotoDetailsDialog> {
             label: 'Views',
             value: _formatNumber(analytics.views),
           ),
-          Container(
-            width: 1,
-            height: 40,
-            color: Colors.grey[300],
-          ),
+          Container(width: 1, height: 40, color: Colors.grey[300]),
           _buildAnalyticItem(
             icon: Icons.favorite,
             label: 'Likes',
             value: _formatNumber(analytics.likes),
           ),
           if (analytics.swipeRightRate != null) ...[
-            Container(
-              width: 1,
-              height: 40,
-              color: Colors.grey[300],
-            ),
+            Container(width: 1, height: 40, color: Colors.grey[300]),
             _buildAnalyticItem(
               icon: Icons.trending_up,
               label: 'Match Rate',
@@ -387,19 +372,10 @@ class _PhotoDetailsDialogState extends State<PhotoDetailsDialog> {
         const SizedBox(height: 4),
         Text(
           value,
-          style: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 2),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 12,
-            color: Colors.grey[600],
-          ),
-        ),
+        Text(label, style: TextStyle(fontSize: 12, color: Colors.grey[600])),
       ],
     );
   }

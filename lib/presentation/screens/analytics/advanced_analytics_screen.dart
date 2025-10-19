@@ -6,7 +6,7 @@ import '../../theme/pulse_colors.dart' hide PulseTextStyles;
 import '../../theme/pulse_theme.dart';
 
 /// Advanced Analytics Screen
-/// 
+///
 /// Comprehensive analytics dashboard showing:
 /// - Profile performance metrics (views, likes, matches)
 /// - Engagement trends over time
@@ -18,19 +18,20 @@ class AdvancedAnalyticsScreen extends StatefulWidget {
   const AdvancedAnalyticsScreen({super.key});
 
   @override
-  State<AdvancedAnalyticsScreen> createState() => _AdvancedAnalyticsScreenState();
+  State<AdvancedAnalyticsScreen> createState() =>
+      _AdvancedAnalyticsScreenState();
 }
 
-class _AdvancedAnalyticsScreenState extends State<AdvancedAnalyticsScreen> 
+class _AdvancedAnalyticsScreenState extends State<AdvancedAnalyticsScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  
+
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
   }
-  
+
   @override
   void dispose() {
     _tabController.dispose();
@@ -70,7 +71,7 @@ class _AdvancedAnalyticsScreenState extends State<AdvancedAnalyticsScreen>
               ),
             );
           }
-          
+
           if (snapshot.hasError) {
             return Center(
               child: Column(
@@ -84,7 +85,9 @@ class _AdvancedAnalyticsScreenState extends State<AdvancedAnalyticsScreen>
                   const SizedBox(height: 16),
                   Text(
                     'Failed to load analytics',
-                    style: PulseTextStyles.bodyLarge.copyWith(color: Colors.white70),
+                    style: PulseTextStyles.bodyLarge.copyWith(
+                      color: Colors.white70,
+                    ),
                   ),
                   const SizedBox(height: 8),
                   TextButton(
@@ -95,9 +98,9 @@ class _AdvancedAnalyticsScreenState extends State<AdvancedAnalyticsScreen>
               ),
             );
           }
-          
+
           final stats = snapshot.data!;
-          
+
           return TabBarView(
             controller: _tabController,
             children: [
@@ -124,9 +127,9 @@ class _AdvancedAnalyticsScreenState extends State<AdvancedAnalyticsScreen>
           ),
           const SizedBox(height: 16),
           _buildMetricsGrid(stats),
-          
+
           const SizedBox(height: 24),
-          
+
           // Profile strength
           Text(
             'Profile Strength',
@@ -134,9 +137,9 @@ class _AdvancedAnalyticsScreenState extends State<AdvancedAnalyticsScreen>
           ),
           const SizedBox(height: 16),
           _buildProfileStrengthCard(stats),
-          
+
           const SizedBox(height: 24),
-          
+
           // Success rates
           Text(
             'Success Rates',
@@ -161,9 +164,9 @@ class _AdvancedAnalyticsScreenState extends State<AdvancedAnalyticsScreen>
           ),
           const SizedBox(height: 16),
           _buildEngagementMetrics(stats),
-          
+
           const SizedBox(height: 24),
-          
+
           Text(
             'Activity Trends',
             style: PulseTextStyles.titleLarge.copyWith(color: Colors.white),
@@ -187,9 +190,9 @@ class _AdvancedAnalyticsScreenState extends State<AdvancedAnalyticsScreen>
           ),
           const SizedBox(height: 16),
           _buildPeakActivityCard(stats),
-          
+
           const SizedBox(height: 24),
-          
+
           Text(
             'Demographics',
             style: PulseTextStyles.titleLarge.copyWith(color: Colors.white),
@@ -238,15 +241,18 @@ class _AdvancedAnalyticsScreenState extends State<AdvancedAnalyticsScreen>
     );
   }
 
-  Widget _buildMetricCard(String label, String value, IconData icon, Color color) {
+  Widget _buildMetricCard(
+    String label,
+    String value,
+    IconData icon,
+    Color color,
+  ) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.1),
-        ),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -271,9 +277,7 @@ class _AdvancedAnalyticsScreenState extends State<AdvancedAnalyticsScreen>
           const SizedBox(height: 4),
           Text(
             label,
-            style: PulseTextStyles.bodySmall.copyWith(
-              color: Colors.white60,
-            ),
+            style: PulseTextStyles.bodySmall.copyWith(color: Colors.white60),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
@@ -284,10 +288,11 @@ class _AdvancedAnalyticsScreenState extends State<AdvancedAnalyticsScreen>
 
   Widget _buildProfileStrengthCard(UserStatistics stats) {
     // Calculate profile strength based on activity
-    final totalInteractions = stats.totalLikes + stats.totalMatches + stats.messagesCount;
+    final totalInteractions =
+        stats.totalLikes + stats.totalMatches + stats.messagesCount;
     final strength = totalInteractions > 100 ? 0.9 : totalInteractions / 100;
     final percentage = (strength * 100).toInt();
-    
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -298,9 +303,7 @@ class _AdvancedAnalyticsScreenState extends State<AdvancedAnalyticsScreen>
           ],
         ),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.1),
-        ),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -332,20 +335,18 @@ class _AdvancedAnalyticsScreenState extends State<AdvancedAnalyticsScreen>
               minHeight: 8,
               backgroundColor: Colors.white.withValues(alpha: 0.1),
               valueColor: AlwaysStoppedAnimation<Color>(
-                strength > 0.7 
+                strength > 0.7
                     ? const Color(0xFF4CAF50)
                     : strength > 0.4
-                        ? const Color(0xFFFFC107)
-                        : const Color(0xFFFF5722),
+                    ? const Color(0xFFFFC107)
+                    : const Color(0xFFFF5722),
               ),
             ),
           ),
           const SizedBox(height: 12),
           Text(
             _getProfileStrengthMessage(strength),
-            style: PulseTextStyles.bodySmall.copyWith(
-              color: Colors.white70,
-            ),
+            style: PulseTextStyles.bodySmall.copyWith(color: Colors.white70),
           ),
         ],
       ),
@@ -370,9 +371,7 @@ class _AdvancedAnalyticsScreenState extends State<AdvancedAnalyticsScreen>
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.1),
-        ),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: Column(
         children: [
@@ -396,7 +395,7 @@ class _AdvancedAnalyticsScreenState extends State<AdvancedAnalyticsScreen>
 
   Widget _buildRateRow(String label, double rate, IconData icon, Color color) {
     final percentage = (rate * 100).toStringAsFixed(1);
-    
+
     return Row(
       children: [
         Container(
@@ -414,9 +413,7 @@ class _AdvancedAnalyticsScreenState extends State<AdvancedAnalyticsScreen>
             children: [
               Text(
                 label,
-                style: PulseTextStyles.bodyMedium.copyWith(
-                  color: Colors.white,
-                ),
+                style: PulseTextStyles.bodyMedium.copyWith(color: Colors.white),
               ),
               const SizedBox(height: 4),
               ClipRRect(
@@ -470,15 +467,18 @@ class _AdvancedAnalyticsScreenState extends State<AdvancedAnalyticsScreen>
     );
   }
 
-  Widget _buildEngagementCard(String label, String value, IconData icon, Color color) {
+  Widget _buildEngagementCard(
+    String label,
+    String value,
+    IconData icon,
+    Color color,
+  ) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.1),
-        ),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: Row(
         children: [
@@ -494,9 +494,7 @@ class _AdvancedAnalyticsScreenState extends State<AdvancedAnalyticsScreen>
           Expanded(
             child: Text(
               label,
-              style: PulseTextStyles.bodyLarge.copyWith(
-                color: Colors.white,
-              ),
+              style: PulseTextStyles.bodyLarge.copyWith(color: Colors.white),
             ),
           ),
           Text(
@@ -524,24 +522,22 @@ class _AdvancedAnalyticsScreenState extends State<AdvancedAnalyticsScreen>
         child: Center(
           child: Text(
             'No activity data available yet',
-            style: PulseTextStyles.bodyMedium.copyWith(
-              color: Colors.white60,
-            ),
+            style: PulseTextStyles.bodyMedium.copyWith(color: Colors.white60),
           ),
         ),
       );
     }
-    
-    final maxCount = activities.map((e) => e.value).reduce((a, b) => a > b ? a : b);
-    
+
+    final maxCount = activities
+        .map((e) => e.value)
+        .reduce((a, b) => a > b ? a : b);
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.1),
-        ),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: Column(
         children: [
@@ -604,9 +600,7 @@ class _AdvancedAnalyticsScreenState extends State<AdvancedAnalyticsScreen>
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.1),
-        ),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -657,9 +651,7 @@ class _AdvancedAnalyticsScreenState extends State<AdvancedAnalyticsScreen>
           children: [
             Text(
               label,
-              style: PulseTextStyles.bodyMedium.copyWith(
-                color: Colors.white70,
-              ),
+              style: PulseTextStyles.bodyMedium.copyWith(color: Colors.white70),
             ),
             Text(
               '${(activity * 100).toInt()}%',
@@ -681,8 +673,8 @@ class _AdvancedAnalyticsScreenState extends State<AdvancedAnalyticsScreen>
               activity > 0.7
                   ? const Color(0xFF4CAF50)
                   : activity > 0.4
-                      ? const Color(0xFFFFC107)
-                      : const Color(0xFFFF5722),
+                  ? const Color(0xFFFFC107)
+                  : const Color(0xFFFF5722),
             ),
           ),
         ),
@@ -696,9 +688,7 @@ class _AdvancedAnalyticsScreenState extends State<AdvancedAnalyticsScreen>
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.1),
-        ),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -714,9 +704,7 @@ class _AdvancedAnalyticsScreenState extends State<AdvancedAnalyticsScreen>
           if (stats.ageDistribution.isEmpty)
             Text(
               'No data available yet',
-              style: PulseTextStyles.bodyMedium.copyWith(
-                color: Colors.white60,
-              ),
+              style: PulseTextStyles.bodyMedium.copyWith(color: Colors.white60),
             )
           else
             ...stats.ageDistribution.entries.map((entry) {
@@ -736,9 +724,7 @@ class _AdvancedAnalyticsScreenState extends State<AdvancedAnalyticsScreen>
         Expanded(
           child: Text(
             label,
-            style: PulseTextStyles.bodyMedium.copyWith(
-              color: Colors.white70,
-            ),
+            style: PulseTextStyles.bodyMedium.copyWith(color: Colors.white70),
           ),
         ),
         Container(

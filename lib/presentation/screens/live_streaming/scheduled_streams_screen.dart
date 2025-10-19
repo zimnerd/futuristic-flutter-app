@@ -14,8 +14,7 @@ class ScheduledStreamsScreen extends StatefulWidget {
   const ScheduledStreamsScreen({super.key});
 
   @override
-  State<ScheduledStreamsScreen> createState() =>
-      _ScheduledStreamsScreenState();
+  State<ScheduledStreamsScreen> createState() => _ScheduledStreamsScreenState();
 }
 
 class _ScheduledStreamsScreenState extends State<ScheduledStreamsScreen> {
@@ -36,7 +35,7 @@ class _ScheduledStreamsScreenState extends State<ScheduledStreamsScreen> {
   void initState() {
     super.initState();
     _loadScheduledStreams();
-    
+
     // Update countdown every second
     _countdownTimer = Timer.periodic(const Duration(seconds: 1), (_) {
       if (mounted) {
@@ -57,9 +56,7 @@ class _ScheduledStreamsScreenState extends State<ScheduledStreamsScreen> {
 
   Future<void> _navigateToScheduleScreen() async {
     final result = await Navigator.of(context).push<bool>(
-      MaterialPageRoute(
-        builder: (context) => const ScheduleStreamScreen(),
-      ),
+      MaterialPageRoute(builder: (context) => const ScheduleStreamScreen()),
     );
 
     if (result == true) {
@@ -89,9 +86,9 @@ class _ScheduledStreamsScreenState extends State<ScheduledStreamsScreen> {
             onPressed: () {
               Navigator.pop(context);
               context.read<LiveStreamingBloc>().add(
-                    CancelScheduledStream(streamId),
-                  );
-              
+                CancelScheduledStream(streamId),
+              );
+
               // Show loading and refresh after a delay
               Future.delayed(const Duration(seconds: 1), () {
                 if (mounted) {
@@ -175,16 +172,13 @@ class _ScheduledStreamsScreenState extends State<ScheduledStreamsScreen> {
               message: 'Stream canceled successfully',
             );
           } else if (state is LiveStreamingError) {
-            PulseToast.error(context, message: state.message,
-            );
+            PulseToast.error(context, message: state.message);
           }
         },
         child: BlocBuilder<LiveStreamingBloc, LiveStreamingState>(
           builder: (context, state) {
             if (state is LiveStreamingLoading) {
-              return const Center(
-                child: CircularProgressIndicator(),
-              );
+              return const Center(child: CircularProgressIndicator());
             }
 
             if (state is ScheduledStreamsLoaded) {
@@ -221,26 +215,23 @@ class _ScheduledStreamsScreenState extends State<ScheduledStreamsScreen> {
         icon: const Icon(Icons.add, color: Colors.white),
         label: const Text(
           'Schedule Stream',
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.w600,
-          ),
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
         ),
       ),
     );
   }
 
   Widget _buildStreamCard(Map<String, dynamic> stream) {
-    final scheduledTime = DateTime.parse(stream['scheduledStartTime'] as String);
+    final scheduledTime = DateTime.parse(
+      stream['scheduledStartTime'] as String,
+    );
     final countdown = _formatCountdown(scheduledTime);
     final isPast = scheduledTime.isBefore(DateTime.now());
 
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
       color: const Color(0xFF1E1E1E),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -296,10 +287,7 @@ class _ScheduledStreamsScreenState extends State<ScheduledStreamsScreen> {
                     padding: const EdgeInsets.only(bottom: 8),
                     child: Text(
                       stream['description'] as String,
-                      style: const TextStyle(
-                        color: Colors.grey,
-                        fontSize: 14,
-                      ),
+                      style: const TextStyle(color: Colors.grey, fontSize: 14),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -347,11 +335,10 @@ class _ScheduledStreamsScreenState extends State<ScheduledStreamsScreen> {
                     ),
                     const SizedBox(width: 4),
                     Text(
-                      DateFormat('MMM dd, yyyy • hh:mm a').format(scheduledTime),
-                      style: const TextStyle(
-                        color: Colors.grey,
-                        fontSize: 12,
-                      ),
+                      DateFormat(
+                        'MMM dd, yyyy • hh:mm a',
+                      ).format(scheduledTime),
+                      style: const TextStyle(color: Colors.grey, fontSize: 12),
                     ),
                   ],
                 ),
@@ -394,32 +381,35 @@ class _ScheduledStreamsScreenState extends State<ScheduledStreamsScreen> {
                 ),
 
                 // Tags
-                if (stream['tags'] != null && (stream['tags'] as List).isNotEmpty)
+                if (stream['tags'] != null &&
+                    (stream['tags'] as List).isNotEmpty)
                   Padding(
                     padding: const EdgeInsets.only(top: 12),
                     child: Wrap(
                       spacing: 8,
                       runSpacing: 8,
                       children: (stream['tags'] as List)
-                          .map((tag) => Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 8,
-                                  vertical: 4,
-                                ),
-                                decoration: BoxDecoration(
+                          .map(
+                            (tag) => Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 4,
+                              ),
+                              decoration: BoxDecoration(
                                 color: Theme.of(
                                   context,
                                 ).primaryColor.withValues(alpha: 0.1),
-                                  borderRadius: BorderRadius.circular(8),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(
+                                '#$tag',
+                                style: TextStyle(
+                                  color: Theme.of(context).primaryColor,
+                                  fontSize: 12,
                                 ),
-                                child: Text(
-                                  '#$tag',
-                                  style: TextStyle(
-                                    color: Theme.of(context).primaryColor,
-                                    fontSize: 12,
-                                  ),
-                                ),
-                              ))
+                              ),
+                            ),
+                          )
                           .toList(),
                     ),
                   ),
@@ -496,10 +486,7 @@ class _ScheduledStreamsScreenState extends State<ScheduledStreamsScreen> {
     }
 
     return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 8,
-        vertical: 4,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(8),
@@ -527,11 +514,7 @@ class _ScheduledStreamsScreenState extends State<ScheduledStreamsScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.schedule,
-            size: 80,
-            color: Colors.grey[700],
-          ),
+          Icon(Icons.schedule, size: 80, color: Colors.grey[700]),
           const SizedBox(height: 24),
           const Text(
             'No Scheduled Streams',
@@ -544,10 +527,7 @@ class _ScheduledStreamsScreenState extends State<ScheduledStreamsScreen> {
           const SizedBox(height: 8),
           Text(
             'Tap the + button to schedule a stream',
-            style: TextStyle(
-              color: Colors.grey[600],
-              fontSize: 14,
-            ),
+            style: TextStyle(color: Colors.grey[600], fontSize: 14),
           ),
         ],
       ),
@@ -559,11 +539,7 @@ class _ScheduledStreamsScreenState extends State<ScheduledStreamsScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(
-            Icons.error_outline,
-            size: 80,
-            color: Colors.red,
-          ),
+          const Icon(Icons.error_outline, size: 80, color: Colors.red),
           const SizedBox(height: 24),
           const Text(
             'Error Loading Streams',
@@ -579,10 +555,7 @@ class _ScheduledStreamsScreenState extends State<ScheduledStreamsScreen> {
             child: Text(
               message,
               textAlign: TextAlign.center,
-              style: const TextStyle(
-                color: Colors.grey,
-                fontSize: 14,
-              ),
+              style: const TextStyle(color: Colors.grey, fontSize: 14),
             ),
           ),
           const SizedBox(height: 24),
@@ -593,10 +566,7 @@ class _ScheduledStreamsScreenState extends State<ScheduledStreamsScreen> {
             style: ElevatedButton.styleFrom(
               backgroundColor: Theme.of(context).primaryColor,
               foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(
-                horizontal: 24,
-                vertical: 12,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),

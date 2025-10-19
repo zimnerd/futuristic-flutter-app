@@ -1,16 +1,16 @@
 part of 'safety_bloc.dart';
 
-enum SafetyStatus { 
-  initial, 
-  loading, 
-  loaded, 
-  reporting, 
-  reported, 
+enum SafetyStatus {
+  initial,
+  loading,
+  loaded,
+  reporting,
+  reported,
   blocking,
   blocked,
   alerting,
   alerted,
-  error 
+  error,
 }
 
 class SafetyState extends Equatable {
@@ -79,9 +79,12 @@ class SafetyState extends Equatable {
       safetySettings: safetySettings ?? this.safetySettings,
       safetyScore: safetyScore ?? this.safetyScore,
       userSafetyCheck: userSafetyCheck ?? this.userSafetyCheck,
-      locationSharingEnabled: locationSharingEnabled ?? this.locationSharingEnabled,
-      emergencyContactsEnabled: emergencyContactsEnabled ?? this.emergencyContactsEnabled,
-      incidentReportingEnabled: incidentReportingEnabled ?? this.incidentReportingEnabled,
+      locationSharingEnabled:
+          locationSharingEnabled ?? this.locationSharingEnabled,
+      emergencyContactsEnabled:
+          emergencyContactsEnabled ?? this.emergencyContactsEnabled,
+      incidentReportingEnabled:
+          incidentReportingEnabled ?? this.incidentReportingEnabled,
       errorMessage: errorMessage ?? this.errorMessage,
       isLoading: isLoading ?? this.isLoading,
       lastReport: lastReport ?? this.lastReport,
@@ -96,22 +99,22 @@ class SafetyState extends Equatable {
 
   @override
   List<Object?> get props => [
-        status,
-        userReports,
-        blockedUsers,
-        safetyTips,
+    status,
+    userReports,
+    blockedUsers,
+    safetyTips,
     safetySettings,
     safetyScore,
     userSafetyCheck,
-        locationSharingEnabled,
-        emergencyContactsEnabled,
-        incidentReportingEnabled,
-        errorMessage,
-        isLoading,
-        lastReport,
-        lastLocationShare,
-        isEmergencyMode,
+    locationSharingEnabled,
+    emergencyContactsEnabled,
+    incidentReportingEnabled,
+    errorMessage,
+    isLoading,
+    lastReport,
+    lastLocationShare,
+    isEmergencyMode,
     photoVerificationSubmitted,
     idVerificationSubmitted,
-      ];
+  ];
 }

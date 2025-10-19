@@ -9,45 +9,68 @@ class GroupChatWebSocketService {
   final String accessToken;
 
   // Stream controllers for real-time events
-  final _joinRequestReceivedController = StreamController<JoinRequest>.broadcast();
-  final _joinRequestApprovedController = StreamController<JoinRequest>.broadcast();
-  final _joinRequestRejectedController = StreamController<JoinRequest>.broadcast();
-  final _participantJoinedController = StreamController<GroupParticipant>.broadcast();
-  final _participantLeftController = StreamController<GroupParticipant>.broadcast();
-  final _liveSessionStartedController = StreamController<LiveSession>.broadcast();
+  final _joinRequestReceivedController =
+      StreamController<JoinRequest>.broadcast();
+  final _joinRequestApprovedController =
+      StreamController<JoinRequest>.broadcast();
+  final _joinRequestRejectedController =
+      StreamController<JoinRequest>.broadcast();
+  final _participantJoinedController =
+      StreamController<GroupParticipant>.broadcast();
+  final _participantLeftController =
+      StreamController<GroupParticipant>.broadcast();
+  final _liveSessionStartedController =
+      StreamController<LiveSession>.broadcast();
   final _liveSessionEndedController = StreamController<LiveSession>.broadcast();
-  final _participantRemovedController = StreamController<Map<String, dynamic>>.broadcast();
-  final _groupSettingsUpdatedController = StreamController<GroupSettings>.broadcast();
+  final _participantRemovedController =
+      StreamController<Map<String, dynamic>>.broadcast();
+  final _groupSettingsUpdatedController =
+      StreamController<GroupSettings>.broadcast();
   final _typingController = StreamController<Map<String, dynamic>>.broadcast();
   final _messageReceivedController = StreamController<GroupMessage>.broadcast();
-  final _messageConfirmedController = StreamController<GroupMessage>.broadcast();
+  final _messageConfirmedController =
+      StreamController<GroupMessage>.broadcast();
   final _messageDeletedController = StreamController<String>.broadcast();
-  final _reactionAddedController = StreamController<Map<String, dynamic>>.broadcast();
-  final _reactionRemovedController = StreamController<Map<String, dynamic>>.broadcast();
-  final _messageReadController = StreamController<Map<String, dynamic>>.broadcast();
+  final _reactionAddedController =
+      StreamController<Map<String, dynamic>>.broadcast();
+  final _reactionRemovedController =
+      StreamController<Map<String, dynamic>>.broadcast();
+  final _messageReadController =
+      StreamController<Map<String, dynamic>>.broadcast();
 
   // Public streams
-  Stream<JoinRequest> get onJoinRequestReceived => _joinRequestReceivedController.stream;
-  Stream<JoinRequest> get onJoinRequestApproved => _joinRequestApprovedController.stream;
-  Stream<JoinRequest> get onJoinRequestRejected => _joinRequestRejectedController.stream;
-  Stream<GroupParticipant> get onParticipantJoined => _participantJoinedController.stream;
-  Stream<GroupParticipant> get onParticipantLeft => _participantLeftController.stream;
-  Stream<LiveSession> get onLiveSessionStarted => _liveSessionStartedController.stream;
-  Stream<LiveSession> get onLiveSessionEnded => _liveSessionEndedController.stream;
-  Stream<Map<String, dynamic>> get onParticipantRemoved => _participantRemovedController.stream;
-  Stream<GroupSettings> get onGroupSettingsUpdated => _groupSettingsUpdatedController.stream;
+  Stream<JoinRequest> get onJoinRequestReceived =>
+      _joinRequestReceivedController.stream;
+  Stream<JoinRequest> get onJoinRequestApproved =>
+      _joinRequestApprovedController.stream;
+  Stream<JoinRequest> get onJoinRequestRejected =>
+      _joinRequestRejectedController.stream;
+  Stream<GroupParticipant> get onParticipantJoined =>
+      _participantJoinedController.stream;
+  Stream<GroupParticipant> get onParticipantLeft =>
+      _participantLeftController.stream;
+  Stream<LiveSession> get onLiveSessionStarted =>
+      _liveSessionStartedController.stream;
+  Stream<LiveSession> get onLiveSessionEnded =>
+      _liveSessionEndedController.stream;
+  Stream<Map<String, dynamic>> get onParticipantRemoved =>
+      _participantRemovedController.stream;
+  Stream<GroupSettings> get onGroupSettingsUpdated =>
+      _groupSettingsUpdatedController.stream;
   Stream<Map<String, dynamic>> get onTyping => _typingController.stream;
-  Stream<GroupMessage> get onMessageReceived => _messageReceivedController.stream;
-  Stream<GroupMessage> get onMessageConfirmed => _messageConfirmedController.stream;
+  Stream<GroupMessage> get onMessageReceived =>
+      _messageReceivedController.stream;
+  Stream<GroupMessage> get onMessageConfirmed =>
+      _messageConfirmedController.stream;
   Stream<String> get onMessageDeleted => _messageDeletedController.stream;
-  Stream<Map<String, dynamic>> get onReactionAdded => _reactionAddedController.stream;
-  Stream<Map<String, dynamic>> get onReactionRemoved => _reactionRemovedController.stream;
-  Stream<Map<String, dynamic>> get onMessageRead => _messageReadController.stream;
+  Stream<Map<String, dynamic>> get onReactionAdded =>
+      _reactionAddedController.stream;
+  Stream<Map<String, dynamic>> get onReactionRemoved =>
+      _reactionRemovedController.stream;
+  Stream<Map<String, dynamic>> get onMessageRead =>
+      _messageReadController.stream;
 
-  GroupChatWebSocketService({
-    required this.baseUrl,
-    required this.accessToken,
-  });
+  GroupChatWebSocketService({required this.baseUrl, required this.accessToken});
 
   /// Connect to the WebSocket server
   void connect() {
@@ -118,7 +141,9 @@ class GroupChatWebSocketService {
     // Participant joined
     socket.on('participant_joined', (data) {
       try {
-        final participant = GroupParticipant.fromJson(data as Map<String, dynamic>);
+        final participant = GroupParticipant.fromJson(
+          data as Map<String, dynamic>,
+        );
         _participantJoinedController.add(participant);
       } catch (e) {
         AppLogger.debug('Error parsing participant_joined: $e');
@@ -128,7 +153,9 @@ class GroupChatWebSocketService {
     // Participant left
     socket.on('participant_left', (data) {
       try {
-        final participant = GroupParticipant.fromJson(data as Map<String, dynamic>);
+        final participant = GroupParticipant.fromJson(
+          data as Map<String, dynamic>,
+        );
         _participantLeftController.add(participant);
       } catch (e) {
         AppLogger.debug('Error parsing participant_left: $e');
@@ -191,7 +218,9 @@ class GroupChatWebSocketService {
       try {
         final messageData = (data as Map<String, dynamic>)['data'];
         if (messageData != null) {
-          final message = GroupMessage.fromJson(messageData as Map<String, dynamic>);
+          final message = GroupMessage.fromJson(
+            messageData as Map<String, dynamic>,
+          );
           _messageConfirmedController.add(message);
           AppLogger.debug('✅ Message confirmed: ${message.id}');
         }
@@ -256,7 +285,6 @@ class GroupChatWebSocketService {
   void joinGroup(String conversationId) {
     socket.emit('join_group', {'conversationId': conversationId});
   }
-
 
   /// Leave a group conversation room
   void leaveGroup(String conversationId) {
@@ -366,4 +394,3 @@ class GroupChatWebSocketService {
     _messageReadController.close();
   }
 }
-

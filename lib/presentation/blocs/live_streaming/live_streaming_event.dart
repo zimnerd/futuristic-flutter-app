@@ -14,11 +14,7 @@ class LoadLiveStreams extends LiveStreamingEvent {
   final int page;
   final int limit;
 
-  const LoadLiveStreams({
-    this.category,
-    this.page = 1,
-    this.limit = 20,
-  });
+  const LoadLiveStreams({this.category, this.page = 1, this.limit = 20});
 
   @override
   List<Object?> get props => [category, page, limit];
@@ -109,10 +105,7 @@ class SendStreamMessage extends LiveStreamingEvent {
   final String streamId;
   final String message;
 
-  const SendStreamMessage({
-    required this.streamId,
-    required this.message,
-  });
+  const SendStreamMessage({required this.streamId, required this.message});
 
   @override
   List<Object> get props => [streamId, message];
@@ -169,10 +162,7 @@ class UpdateStreamSettings extends LiveStreamingEvent {
   final String streamId;
   final Map<String, dynamic> settings;
 
-  const UpdateStreamSettings({
-    required this.streamId,
-    required this.settings,
-  });
+  const UpdateStreamSettings({required this.streamId, required this.settings});
 
   @override
   List<Object> get props => [streamId, settings];
@@ -188,10 +178,7 @@ class LoadStreamingHistory extends LiveStreamingEvent {
   final int page;
   final int limit;
 
-  const LoadStreamingHistory({
-    this.page = 1,
-    this.limit = 20,
-  });
+  const LoadStreamingHistory({this.page = 1, this.limit = 20});
 
   @override
   List<Object> get props => [page, limit];

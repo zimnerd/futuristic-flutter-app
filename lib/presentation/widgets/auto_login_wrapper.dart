@@ -18,10 +18,7 @@ import '../widgets/common/pulse_toast.dart';
 class AutoLoginWrapper extends StatefulWidget {
   final Widget child;
 
-  const AutoLoginWrapper({
-    super.key,
-    required this.child,
-  });
+  const AutoLoginWrapper({super.key, required this.child});
 
   @override
   State<AutoLoginWrapper> createState() => _AutoLoginWrapperState();
@@ -37,16 +34,16 @@ class _AutoLoginWrapperState extends State<AutoLoginWrapper> {
   @override
   void initState() {
     super.initState();
-    
+
     // Register global auth logout callback
     GlobalAuthHandler.instance.registerLogoutCallback(() {
       _logger.w('🚨 Global auth failure - triggering logout');
       context.read<AuthBloc>().add(const AuthSignOutRequested());
     });
-    
+
     // Set up global notification listener for in-app popups
     _setupNotificationListener();
-    
+
     // Attempt auto-login after the first frame is rendered
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _attemptAutoLoginIfNeeded();
@@ -62,13 +59,15 @@ class _AutoLoginWrapperState extends State<AutoLoginWrapper> {
     _autoLoginAttempted = true;
 
     final authState = context.read<AuthBloc>().state;
-    
+
     // Only auto-login if not already authenticated and not in a loading state
     if (authState is! AuthAuthenticated && authState is! AuthLoading) {
       _logger.i('🤖 Triggering auto-login on app startup');
       AutoLoginService.attemptAutoLogin(context);
     } else {
-      _logger.d('🚫 Skipping auto-login - user already authenticated or loading');
+      _logger.d(
+        '🚫 Skipping auto-login - user already authenticated or loading',
+      );
     }
   }
 
@@ -87,8 +86,7 @@ class _AutoLoginWrapperState extends State<AutoLoginWrapper> {
             if (mounted) {
               PulseToast.info(
                 context,
-                message:
-                    '${notification['title']}: ${notification['body']}',
+                message: '${notification['title']}: ${notification['body']}',
               );
               // Auto-navigate to messages after a delay
               Future.delayed(const Duration(seconds: 2), () {
@@ -154,7 +152,7 @@ class _AutoLoginWrapperState extends State<AutoLoginWrapper> {
     _notificationSubscription?.cancel();
     super.dispose();
   }
-  
+
   @override
   Widget build(BuildContext context) {
     return BlocListener<AuthBloc, AuthState>(
@@ -209,9 +207,7 @@ class _AutoLoginWrapperState extends State<AutoLoginWrapper> {
               'ℹ️  Please register the user or use a different test account',
             );
           } else if (state.message.toLowerCase().contains('register first')) {
-            _logger.i(
-              '⚠️ Auto-login skipped: User registration required',
-            );
+            _logger.i('⚠️ Auto-login skipped: User registration required');
           } else {
             _logger.w('❌ 🤖 Auto-login failed: ${state.message}');
           }

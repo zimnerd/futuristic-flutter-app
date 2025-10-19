@@ -84,14 +84,15 @@ class VoiceMessageService {
 
       if (_currentSession != null) {
         final path = _currentSession!.filePath;
-        
+
         if (path != null) {
           final file = File(path);
           if (await file.exists()) {
             // Get file duration (simplified - would need actual audio analysis)
             final fileStat = await file.stat();
-            final estimatedDuration = (fileStat.size / 16000).ceil(); // Rough estimate
-            
+            final estimatedDuration = (fileStat.size / 16000)
+                .ceil(); // Rough estimate
+
             _currentSession = _currentSession!.copyWith(
               state: VoiceRecordingState.finished,
               duration: estimatedDuration,
@@ -157,10 +158,10 @@ class VoiceMessageService {
 
       if (response.statusCode == 200 && response.data != null) {
         final voiceMessage = VoiceMessage.fromJson(response.data!);
-        
+
         // Clean up temporary file
         await file.delete();
-        
+
         _logger.d('Voice message sent successfully: ${voiceMessage.id}');
         return voiceMessage;
       } else {
@@ -232,7 +233,9 @@ class VoiceMessageService {
         _logger.d('Voice message marked as played: $messageId');
         return true;
       } else {
-        _logger.e('Failed to mark voice message as played: ${response.statusMessage}');
+        _logger.e(
+          'Failed to mark voice message as played: ${response.statusMessage}',
+        );
         return false;
       }
     } catch (e) {
@@ -250,9 +253,13 @@ class VoiceMessageService {
 
       if (response.statusCode == 200 && response.data != null) {
         final List<dynamic> data = response.data['messages'] ?? [];
-        final messages = data.map((json) => VoiceMessage.fromJson(json)).toList();
-        
-        _logger.d('Retrieved ${messages.length} voice messages for conversation: $conversationId');
+        final messages = data
+            .map((json) => VoiceMessage.fromJson(json))
+            .toList();
+
+        _logger.d(
+          'Retrieved ${messages.length} voice messages for conversation: $conversationId',
+        );
         return messages;
       } else {
         _logger.e('Failed to get voice messages: ${response.statusMessage}');
@@ -271,7 +278,8 @@ class VoiceMessageService {
   String? get currentPlayingMessageId => _currentPlayingMessageId;
 
   /// Check if currently recording
-  bool get isRecording => _currentSession?.state == VoiceRecordingState.recording;
+  bool get isRecording =>
+      _currentSession?.state == VoiceRecordingState.recording;
 
   /// Dispose of resources
   void dispose() {

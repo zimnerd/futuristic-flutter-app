@@ -32,8 +32,12 @@ class CompatibilityAnalysis {
       userId1: json['userId1'],
       userId2: json['userId2'],
       score: CompatibilityScore.fromJson(json['score']),
-      factors: (json['factors'] as List).map((f) => CompatibilityFactor.fromJson(f)).toList(),
-      insights: (json['insights'] as List).map((i) => CompatibilityInsight.fromJson(i)).toList(),
+      factors: (json['factors'] as List)
+          .map((f) => CompatibilityFactor.fromJson(f))
+          .toList(),
+      insights: (json['insights'] as List)
+          .map((i) => CompatibilityInsight.fromJson(i))
+          .toList(),
       analyzedAt: DateTime.parse(json['analyzedAt']),
     );
   }
@@ -129,7 +133,9 @@ class CompatibilityFactor {
 
   factory CompatibilityFactor.fromJson(Map<String, dynamic> json) {
     return CompatibilityFactor(
-      type: FactorType.values.firstWhere((t) => t.toString().split('.').last == json['type']),
+      type: FactorType.values.firstWhere(
+        (t) => t.toString().split('.').last == json['type'],
+      ),
       name: json['name'],
       score: json['score'],
       description: json['description'],
@@ -179,30 +185,24 @@ class CompatibilityInsight {
 
   factory CompatibilityInsight.fromJson(Map<String, dynamic> json) {
     return CompatibilityInsight(
-      category: InsightCategory.values.firstWhere((c) => c.toString().split('.').last == json['category']),
+      category: InsightCategory.values.firstWhere(
+        (c) => c.toString().split('.').last == json['category'],
+      ),
       title: json['title'],
       description: json['description'],
-      level: InsightLevel.values.firstWhere((l) => l.toString().split('.').last == json['level']),
+      level: InsightLevel.values.firstWhere(
+        (l) => l.toString().split('.').last == json['level'],
+      ),
       recommendations: List<String>.from(json['recommendations']),
     );
   }
 }
 
 /// Categories of compatibility insights
-enum InsightCategory {
-  strength,
-  opportunity,
-  challenge,
-  warning,
-}
+enum InsightCategory { strength, opportunity, challenge, warning }
 
 /// Levels of insight importance
-enum InsightLevel {
-  low,
-  medium,
-  high,
-  critical,
-}
+enum InsightLevel { low, medium, high, critical }
 
 /// Personality compatibility analysis
 class PersonalityCompatibility {

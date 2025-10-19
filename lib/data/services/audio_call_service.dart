@@ -11,15 +11,15 @@ import '../../domain/services/websocket_service.dart';
 class AudioCallService {
   static AudioCallService? _instance;
   static AudioCallService get instance => _instance ??= AudioCallService._();
-  
+
   AudioCallService._();
 
   final Logger _logger = Logger();
   final ApiClient _apiClient = ApiClient.instance;
-  
+
   RtcEngine? _engine;
   WebSocketService? _webSocketService;
-  
+
   // Call state
   String? _currentCallId;
   String? _currentChannelName;
@@ -27,24 +27,24 @@ class AudioCallService {
   bool _isInCall = false;
   bool _isMuted = false;
   bool _isSpeakerOn = false;
-  
+
   // Connection quality tracking
   QualityType _connectionQuality = QualityType.qualityUnknown;
-  
+
   // Stream controllers for UI updates
-  final StreamController<bool> _callStateController = 
+  final StreamController<bool> _callStateController =
       StreamController<bool>.broadcast();
-  final StreamController<bool> _muteStateController = 
+  final StreamController<bool> _muteStateController =
       StreamController<bool>.broadcast();
-  final StreamController<bool> _speakerStateController = 
+  final StreamController<bool> _speakerStateController =
       StreamController<bool>.broadcast();
-  final StreamController<int> _remoteUserController = 
+  final StreamController<int> _remoteUserController =
       StreamController<int>.broadcast();
-  final StreamController<QualityType> _qualityController = 
+  final StreamController<QualityType> _qualityController =
       StreamController<QualityType>.broadcast();
-  final StreamController<String> _callErrorController = 
+  final StreamController<String> _callErrorController =
       StreamController<String>.broadcast();
-  final StreamController<Duration> _callDurationController = 
+  final StreamController<Duration> _callDurationController =
       StreamController<Duration>.broadcast();
 
   // Getters for streams
@@ -75,25 +75,27 @@ class AudioCallService {
   }) async {
     try {
       _webSocketService = webSocketService;
-      
+
       _logger.i('🔧 Creating Agora RTC engine...');
-      
+
       // Create Agora RTC engine
       _engine = createAgoraRtcEngine();
-      
+
       _logger.i(
         '🔧 Initializing Agora engine with appId: ${appId.substring(0, 8)}...',
       );
-      await _engine!.initialize(RtcEngineContext(
-        appId: appId,
-        channelProfile: ChannelProfileType.channelProfileCommunication,
-        audioScenario: AudioScenarioType.audioScenarioChatroom,
-      ));
+      await _engine!.initialize(
+        RtcEngineContext(
+          appId: appId,
+          channelProfile: ChannelProfileType.channelProfileCommunication,
+          audioScenario: AudioScenarioType.audioScenarioChatroom,
+        ),
+      );
 
       _logger.i('🔧 Enabling audio module...');
       // Enable audio explicitly (don't disable video, just don't enable it)
       await _engine!.enableAudio();
-      
+
       _logger.i('🔧 Enabling local audio capture...');
       // Enable local audio capture (microphone)
       await _engine!.enableLocalAudio(true);
@@ -107,67 +109,74 @@ class AudioCallService {
 
       _logger.i('🔧 Registering event handlers...');
       // Set event handlers
-      _engine!.registerEventHandler(RtcEngineEventHandler(
-        onJoinChannelSuccess: (RtcConnection connection, int elapsed) {
-          _logger.i('✅ Joined audio channel: ${connection.channelId}');
-          _isInCall = true;
-          _callStateController.add(true);
-          _startCallDurationTimer();
-        },
-        onUserJoined: (RtcConnection connection, int remoteUid, int elapsed) {
-          _logger.i('🎤 Remote user joined audio call: $remoteUid');
-          _currentRemoteUid = remoteUid;
-          _remoteUserController.add(remoteUid);
-        },
-        onUserOffline: (
-          RtcConnection connection, 
-          int remoteUid, 
-          UserOfflineReasonType reason,
-        ) {
-          _logger.i('👋 Remote user left audio call: $remoteUid, reason: $reason');
-          if (_currentRemoteUid == remoteUid) {
-            _currentRemoteUid = null;
-            _handleCallEnded('Remote user left');
-          }
-        },
-        onLeaveChannel: (RtcConnection connection, RtcStats stats) {
-          _logger.i('📞 Left audio channel');
-          _isInCall = false;
-          _callStateController.add(false);
-          _stopCallDurationTimer();
-        },
-        onNetworkQuality: (
-          RtcConnection connection,
-          int remoteUid,
-          QualityType txQuality,
-          QualityType rxQuality,
-        ) {
-          _connectionQuality = rxQuality;
-          _qualityController.add(rxQuality);
-        },
-        onAudioVolumeIndication: (
-          RtcConnection connection,
-          List<AudioVolumeInfo> speakers,
-          int speakerNumber,
-          int totalVolume,
-        ) {
-          // Can be used for audio level indicators
-          // _logger.d('Audio volume: $totalVolume');
-        },
-        onError: (ErrorCodeType err, String msg) {
-          _logger.e('❌ Agora audio error: $err - $msg');
-          _callErrorController.add('Call error: $msg');
-        },
-        onConnectionStateChanged: (
-          RtcConnection connection,
-          ConnectionStateType state,
-          ConnectionChangedReasonType reason,
-        ) {
-          _logger.i('📡 Connection state: $state, reason: $reason');
-          if (state == ConnectionStateType.connectionStateFailed) {
-            _handleCallEnded('Connection failed');
-          }
-        },
+      _engine!.registerEventHandler(
+        RtcEngineEventHandler(
+          onJoinChannelSuccess: (RtcConnection connection, int elapsed) {
+            _logger.i('✅ Joined audio channel: ${connection.channelId}');
+            _isInCall = true;
+            _callStateController.add(true);
+            _startCallDurationTimer();
+          },
+          onUserJoined: (RtcConnection connection, int remoteUid, int elapsed) {
+            _logger.i('🎤 Remote user joined audio call: $remoteUid');
+            _currentRemoteUid = remoteUid;
+            _remoteUserController.add(remoteUid);
+          },
+          onUserOffline:
+              (
+                RtcConnection connection,
+                int remoteUid,
+                UserOfflineReasonType reason,
+              ) {
+                _logger.i(
+                  '👋 Remote user left audio call: $remoteUid, reason: $reason',
+                );
+                if (_currentRemoteUid == remoteUid) {
+                  _currentRemoteUid = null;
+                  _handleCallEnded('Remote user left');
+                }
+              },
+          onLeaveChannel: (RtcConnection connection, RtcStats stats) {
+            _logger.i('📞 Left audio channel');
+            _isInCall = false;
+            _callStateController.add(false);
+            _stopCallDurationTimer();
+          },
+          onNetworkQuality:
+              (
+                RtcConnection connection,
+                int remoteUid,
+                QualityType txQuality,
+                QualityType rxQuality,
+              ) {
+                _connectionQuality = rxQuality;
+                _qualityController.add(rxQuality);
+              },
+          onAudioVolumeIndication:
+              (
+                RtcConnection connection,
+                List<AudioVolumeInfo> speakers,
+                int speakerNumber,
+                int totalVolume,
+              ) {
+                // Can be used for audio level indicators
+                // _logger.d('Audio volume: $totalVolume');
+              },
+          onError: (ErrorCodeType err, String msg) {
+            _logger.e('❌ Agora audio error: $err - $msg');
+            _callErrorController.add('Call error: $msg');
+          },
+          onConnectionStateChanged:
+              (
+                RtcConnection connection,
+                ConnectionStateType state,
+                ConnectionChangedReasonType reason,
+              ) {
+                _logger.i('📡 Connection state: $state, reason: $reason');
+                if (state == ConnectionStateType.connectionStateFailed) {
+                  _handleCallEnded('Connection failed');
+                }
+              },
           onTokenPrivilegeWillExpire: (RtcConnection connection, String token) {
             _logger.w('⚠️ Token will expire in 30 seconds, refreshing...');
             _refreshToken();
@@ -215,7 +224,8 @@ class AudioCallService {
                   _logger.w('⚠️ Remote user $remoteUid audio failed');
                 }
               },
-      ));
+        ),
+      );
 
       _logger.i('✅ Audio call service initialized successfully');
     } catch (e) {
@@ -228,7 +238,7 @@ class AudioCallService {
   Future<bool> requestMicrophonePermission() async {
     try {
       final status = await Permission.microphone.request();
-      
+
       if (status != PermissionStatus.granted) {
         _logger.w('⚠️ Microphone permission denied');
         return false;
@@ -292,7 +302,7 @@ class AudioCallService {
       String agoraToken = token ?? '';
       String agoraChannel = channelName ?? '';
       int tokenUid = 0; // UID from token response
-      
+
       if (token == null || channelName == null) {
         _logger.i('🔑 Requesting audio call token for call: $callId');
         final response = await _apiClient.getCallToken(
@@ -334,7 +344,7 @@ class AudioCallService {
           autoSubscribeVideo: false, // Audio-only
         ),
       );
-      
+
       _logger.i('✅ Join channel request sent successfully');
 
       return true;
@@ -351,7 +361,7 @@ class AudioCallService {
       if (_engine != null && _isInCall) {
         await _engine!.leaveChannel();
       }
-      
+
       _resetCallState();
       _logger.i('✅ Left audio call successfully');
     } catch (e) {
@@ -393,7 +403,7 @@ class AudioCallService {
     try {
       final callType = isVideo ? 'VIDEO' : 'AUDIO';
       _logger.i('📞 Initiating $callType call to: $recipientId');
-      
+
       // Create call through backend API
       final response = await _apiClient.initiateCall(
         participantIds: [recipientId],
@@ -436,20 +446,15 @@ class AudioCallService {
   }) async {
     try {
       _logger.i('✅ Accepting incoming audio call: $callId');
-      
+
       // Notify backend of call acceptance
       await _apiClient.acceptCall(callId);
 
       // Send acceptance through WebSocket
-      _webSocketService?.emit('call:accept', {
-        'callId': callId,
-      });
+      _webSocketService?.emit('call:accept', {'callId': callId});
 
       // Join the audio call
-      return await joinAudioCall(
-        callId: callId,
-        recipientId: callerId,
-      );
+      return await joinAudioCall(callId: callId, recipientId: callerId);
     } catch (e) {
       _logger.e('❌ Failed to accept call: $e');
       _callErrorController.add('Failed to accept call: $e');
@@ -458,13 +463,10 @@ class AudioCallService {
   }
 
   /// Reject an incoming audio call
-  Future<void> rejectCall({
-    required String callId,
-    String? reason,
-  }) async {
+  Future<void> rejectCall({required String callId, String? reason}) async {
     try {
       _logger.i('❌ Rejecting call: $callId');
-      
+
       // Notify backend
       await _apiClient.rejectCall(callId, reason: reason ?? 'User declined');
 
@@ -482,7 +484,7 @@ class AudioCallService {
   void _startCallDurationTimer() {
     _callStartTime = DateTime.now();
     _callDuration = Duration.zero;
-    
+
     _durationTimer?.cancel();
     _durationTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (_callStartTime != null) {
@@ -572,7 +574,7 @@ class AudioCallService {
       await leaveCall();
       await _engine?.release();
       _engine = null;
-      
+
       await _callStateController.close();
       await _muteStateController.close();
       await _speakerStateController.close();
@@ -580,9 +582,9 @@ class AudioCallService {
       await _qualityController.close();
       await _callErrorController.close();
       await _callDurationController.close();
-      
+
       _durationTimer?.cancel();
-      
+
       _logger.i('✅ Audio call service disposed');
     } catch (e) {
       _logger.e('❌ Error disposing audio call service: $e');

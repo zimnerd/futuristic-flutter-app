@@ -27,20 +27,22 @@ class SubscriptionPlanCard extends StatelessWidget {
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: isCurrentPlan 
-              ? AppColors.primary 
-              : isPopular 
-                  ? AppColors.warning 
-                  : AppColors.border,
+          color: isCurrentPlan
+              ? AppColors.primary
+              : isPopular
+              ? AppColors.warning
+              : AppColors.border,
           width: isCurrentPlan || isPopular ? 2 : 1,
         ),
-        boxShadow: isPopular ? [
-          BoxShadow(
-            color: AppColors.warning.withValues(alpha: 0.2),
-            blurRadius: 8,
-            offset: const Offset(0, 4),
-          ),
-        ] : null,
+        boxShadow: isPopular
+            ? [
+                BoxShadow(
+                  color: AppColors.warning.withValues(alpha: 0.2),
+                  blurRadius: 8,
+                  offset: const Offset(0, 4),
+                ),
+              ]
+            : null,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -158,7 +160,9 @@ class SubscriptionPlanCard extends StatelessWidget {
 
   Widget _buildFeatures() {
     return Column(
-      children: plan.features.map((feature) => _buildFeatureItem(feature.name)).toList(),
+      children: plan.features
+          .map((feature) => _buildFeatureItem(feature.name))
+          .toList(),
     );
   }
 
@@ -167,11 +171,7 @@ class SubscriptionPlanCard extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 8),
       child: Row(
         children: [
-          Icon(
-            Icons.check,
-            color: AppColors.success,
-            size: 20,
-          ),
+          Icon(Icons.check, color: AppColors.success, size: 20),
           const SizedBox(width: 12),
           Expanded(
             child: Text(

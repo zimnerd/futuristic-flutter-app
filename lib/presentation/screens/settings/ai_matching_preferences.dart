@@ -38,7 +38,10 @@ class _AiMatchingPreferencesState extends State<AiMatchingPreferences> {
     context.read<PremiumBloc>().add(LoadPremiumData());
   }
 
-  Future<void> _updatePreference(PremiumFeatureType feature, bool enabled) async {
+  Future<void> _updatePreference(
+    PremiumFeatureType feature,
+    bool enabled,
+  ) async {
     try {
       // Check premium access for this feature
       // Note: Feature access checking would typically be handled in BLoC
@@ -50,7 +53,7 @@ class _AiMatchingPreferencesState extends State<AiMatchingPreferences> {
 
       // Show success feedback
       _showSuccessFeedback(feature, enabled);
-      
+
       AppLogger.debug('Updated AI preference: ${feature.name} = $enabled');
     } catch (e) {
       AppLogger.error('Failed to update AI preference: $e');
@@ -85,9 +88,7 @@ class _AiMatchingPreferencesState extends State<AiMatchingPreferences> {
               // Navigate to premium upgrade screen
               context.push('/premium-upgrade');
             },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
-            ),
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
             child: const Text('Upgrade Now'),
           ),
         ],
@@ -130,7 +131,9 @@ class _AiMatchingPreferencesState extends State<AiMatchingPreferences> {
   }
 
   bool _isFeaturePremium(PremiumFeatureType feature) {
-    return feature != PremiumFeatureType.aiProfileOptimization; // Profile optimization is free
+    return feature !=
+        PremiumFeatureType
+            .aiProfileOptimization; // Profile optimization is free
   }
 
   @override
@@ -152,8 +155,7 @@ class _AiMatchingPreferencesState extends State<AiMatchingPreferences> {
       body: BlocConsumer<PremiumBloc, PremiumState>(
         listener: (context, state) {
           if (state is PremiumError) {
-            PulseToast.error(context, message: state.message,
-            );
+            PulseToast.error(context, message: state.message);
           } else if (state is PremiumError) {
             // Handle premium access error
             debugPrint('Premium access error: ${state.message}');
@@ -181,11 +183,7 @@ class _AiMatchingPreferencesState extends State<AiMatchingPreferences> {
                     children: [
                       Row(
                         children: [
-                          Icon(
-                            Icons.psychology,
-                            color: Colors.white,
-                            size: 28,
-                          ),
+                          Icon(Icons.psychology, color: Colors.white, size: 28),
                           SizedBox(width: 12),
                           Text(
                             'AI-Powered Dating',
@@ -200,10 +198,7 @@ class _AiMatchingPreferencesState extends State<AiMatchingPreferences> {
                       SizedBox(height: 8),
                       Text(
                         'Enhance your dating experience with advanced AI features',
-                        style: TextStyle(
-                          color: Colors.white70,
-                          fontSize: 14,
-                        ),
+                        style: TextStyle(color: Colors.white70, fontSize: 14),
                       ),
                     ],
                   ),
@@ -212,10 +207,14 @@ class _AiMatchingPreferencesState extends State<AiMatchingPreferences> {
                 const SizedBox(height: 24),
 
                 // Feature List
-                ..._aiPreferences.keys.map((feature) => _buildFeatureCard(
-                      feature,
-                      premiumState is PremiumLoaded && premiumState.subscription?.status == SubscriptionStatus.active,
-                    )),
+                ..._aiPreferences.keys.map(
+                  (feature) => _buildFeatureCard(
+                    feature,
+                    premiumState is PremiumLoaded &&
+                        premiumState.subscription?.status ==
+                            SubscriptionStatus.active,
+                  ),
+                ),
 
                 const SizedBox(height: 24),
 
@@ -278,7 +277,9 @@ class _AiMatchingPreferencesState extends State<AiMatchingPreferences> {
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: isEnabled ? AppColors.primary.withValues(alpha: 0.3) : AppColors.border,
+          color: isEnabled
+              ? AppColors.primary.withValues(alpha: 0.3)
+              : AppColors.border,
         ),
       ),
       child: ListTile(
@@ -329,10 +330,7 @@ class _AiMatchingPreferencesState extends State<AiMatchingPreferences> {
           padding: const EdgeInsets.only(top: 4),
           child: Text(
             _getFeatureDescription(feature),
-            style: TextStyle(
-              color: AppColors.textSecondary,
-              fontSize: 12,
-            ),
+            style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
           ),
         ),
         trailing: Switch(

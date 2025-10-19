@@ -63,7 +63,10 @@ abstract class ChatRemoteDataSource {
   Future<String> uploadMedia(String filePath, MessageType type);
 
   // Search
-  Future<List<MessageModel>> searchMessages(String query, {String? conversationId});
+  Future<List<MessageModel>> searchMessages(
+    String query, {
+    String? conversationId,
+  });
 
   // Online status
   Future<void> updateOnlineStatus(bool isOnline);
@@ -105,36 +108,36 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
 
       if (response.statusCode == 200) {
         _logger.d('Raw conversation response: ${response.data}');
-        
+
         // Use centralized response parser
         final conversationsData = ResponseParser.extractList(
           response,
           'conversations',
         );
-        
-        _logger.d('Extracted ${conversationsData.length} conversations from response');
-        
+
+        _logger.d(
+          'Extracted ${conversationsData.length} conversations from response',
+        );
+
         // Get current user ID for proper participant identification
         final currentUserId = await _apiService.getCurrentUserId();
-        
-        final conversations = conversationsData
-            .map((json) {
-              try {
-                _logger.d('Processing conversation JSON: $json');
+
+        final conversations = conversationsData.map((json) {
+          try {
+            _logger.d('Processing conversation JSON: $json');
             final conversation = ConversationModel.fromBackendJson(
               json,
               currentUserId: currentUserId,
             );
-                _logger.d('Parsed conversation: ${conversation.lastMessage}');
-                return conversation;
-              } catch (e) {
-                _logger.e('Error parsing conversation: $e');
-                _logger.e('Conversation data: $json');
-                rethrow;
-              }
-            })
-            .toList();
-            
+            _logger.d('Parsed conversation: ${conversation.lastMessage}');
+            return conversation;
+          } catch (e) {
+            _logger.e('Error parsing conversation: $e');
+            _logger.e('Conversation data: $json');
+            rethrow;
+          }
+        }).toList();
+
         return conversations;
       } else {
         throw ApiException(
@@ -153,7 +156,9 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
     try {
       _logger.i('Getting conversation: $conversationId');
 
-      final response = await _apiService.get('/chat/conversations/$conversationId');
+      final response = await _apiService.get(
+        '/chat/conversations/$conversationId',
+      );
 
       if (response.statusCode == 200) {
         final responseData = ResponseParser.extractData(response);
@@ -184,7 +189,9 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
     ConversationSettings? settings,
   }) async {
     try {
-      _logger.i('Creating conversation with ${participantIds.length} participants');
+      _logger.i(
+        'Creating conversation with ${participantIds.length} participants',
+      );
 
       final response = await _apiService.post(
         '/chat/conversations',
@@ -422,7 +429,9 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
     } catch (e) {
       _logger.e('Mark conversation as read error: $e');
       if (e is ApiException) rethrow;
-      throw ApiException('Failed to mark conversation as read: ${e.toString()}');
+      throw ApiException(
+        'Failed to mark conversation as read: ${e.toString()}',
+      );
     }
   }
 
@@ -534,7 +543,9 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
         final messagesData = ResponseParser.extractListDirect(response);
         return messagesData.map((json) => MessageModel.fromJson(json)).toList();
       } else {
-        throw ApiException('Failed to search messages: ${response.statusMessage}');
+        throw ApiException(
+          'Failed to search messages: ${response.statusMessage}',
+        );
       }
     } catch (e) {
       _logger.e('Search messages error: $e');
@@ -548,10 +559,7 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
     try {
       _logger.i('Updating online status: $isOnline');
 
-      await _apiService.patch(
-        '/chat/status',
-        data: {'isOnline': isOnline},
-      );
+      await _apiService.patch('/chat/status', data: {'isOnline': isOnline});
       _logger.i('Online status updated');
     } catch (e) {
       _logger.e('Update online status error: $e');

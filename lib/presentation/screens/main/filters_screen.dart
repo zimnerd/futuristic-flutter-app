@@ -33,10 +33,7 @@ class _FiltersScreenState extends State<FiltersScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          'Filter Preferences',
-          style: PulseTextStyles.titleLarge,
-        ),
+        title: Text('Filter Preferences', style: PulseTextStyles.titleLarge),
         backgroundColor: PulseColors.primary,
         foregroundColor: Colors.white,
         actions: [
@@ -57,12 +54,10 @@ class _FiltersScreenState extends State<FiltersScreen> {
       body: BlocConsumer<FilterBLoC, FilterState>(
         listener: (context, state) {
           if (state is FilterError) {
-            PulseToast.error(context, message: state.message,
-            );
+            PulseToast.error(context, message: state.message);
           } else if (state is FilterSaved) {
-            PulseToast.success(context, message: 'Filter preferences saved!',
-            );
-            
+            PulseToast.success(context, message: 'Filter preferences saved!');
+
             // ✅ Apply saved filters to discovery automatically
             _applyFiltersToDiscovery(state.preferences);
           }
@@ -70,9 +65,7 @@ class _FiltersScreenState extends State<FiltersScreen> {
         builder: (context, state) {
           if (state is FilterLoading) {
             return const Center(
-              child: CircularProgressIndicator(
-                color: PulseColors.primary,
-              ),
+              child: CircularProgressIndicator(color: PulseColors.primary),
             );
           }
 
@@ -128,10 +121,7 @@ class _FiltersScreenState extends State<FiltersScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Age Range',
-          style: PulseTextStyles.titleMedium,
-        ),
+        Text('Age Range', style: PulseTextStyles.titleMedium),
         const SizedBox(height: 16),
         Text(
           '${state.preferences.minAge} - ${state.preferences.maxAge} years',
@@ -157,10 +147,7 @@ class _FiltersScreenState extends State<FiltersScreen> {
             divisions: 81,
             onChanged: (RangeValues values) {
               context.read<FilterBLoC>().add(
-                UpdateAgeRange(
-                  values.start.round(),
-                  values.end.round(),
-                ),
+                UpdateAgeRange(values.start.round(), values.end.round()),
               );
             },
           ),
@@ -173,10 +160,7 @@ class _FiltersScreenState extends State<FiltersScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Maximum Distance',
-          style: PulseTextStyles.titleMedium,
-        ),
+        Text('Maximum Distance', style: PulseTextStyles.titleMedium),
         const SizedBox(height: 16),
         Text(
           '${state.preferences.maxDistance.round()} km',
@@ -210,10 +194,7 @@ class _FiltersScreenState extends State<FiltersScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Interests',
-          style: PulseTextStyles.titleMedium,
-        ),
+        Text('Interests', style: PulseTextStyles.titleMedium),
         const SizedBox(height: 16),
         if (state.availableInterests.isEmpty)
           Text(
@@ -248,13 +229,17 @@ class _FiltersScreenState extends State<FiltersScreen> {
                 ),
                 showCheckmark: true,
                 onSelected: (bool selected) {
-                  final updatedInterests = List<String>.from(state.preferences.interests);
+                  final updatedInterests = List<String>.from(
+                    state.preferences.interests,
+                  );
                   if (selected) {
                     updatedInterests.add(interest);
                   } else {
                     updatedInterests.remove(interest);
                   }
-                  context.read<FilterBLoC>().add(UpdateInterests(updatedInterests));
+                  context.read<FilterBLoC>().add(
+                    UpdateInterests(updatedInterests),
+                  );
                 },
               );
             }).toList(),
@@ -267,10 +252,7 @@ class _FiltersScreenState extends State<FiltersScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Education Level',
-          style: PulseTextStyles.titleMedium,
-        ),
+        Text('Education Level', style: PulseTextStyles.titleMedium),
         const SizedBox(height: 16),
         DropdownButtonFormField<String>(
           initialValue: state.preferences.education,
@@ -291,10 +273,7 @@ class _FiltersScreenState extends State<FiltersScreen> {
               child: Text('Any education level'),
             ),
             ...state.availableEducationLevels.map((level) {
-              return DropdownMenuItem<String>(
-                value: level,
-                child: Text(level),
-              );
+              return DropdownMenuItem<String>(value: level, child: Text(level));
             }),
           ],
           onChanged: (String? value) {
@@ -530,10 +509,7 @@ class _FiltersScreenState extends State<FiltersScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Additional Preferences',
-          style: PulseTextStyles.titleMedium,
-        ),
+        Text('Additional Preferences', style: PulseTextStyles.titleMedium),
         const SizedBox(height: 16),
         SwitchListTile(
           title: Text(
@@ -622,7 +598,7 @@ class _FiltersScreenState extends State<FiltersScreen> {
     return Stack(
       children: [
         _buildFilterContent(
-          context, 
+          context,
           FilterLoaded(preferences: state.preferences),
         ),
         Container(
@@ -652,17 +628,13 @@ class _FiltersScreenState extends State<FiltersScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.error_outline,
-            size: 64,
-            color: PulseColors.error,
-          ),
-                            const SizedBox(height: 16),
+          Icon(Icons.error_outline, size: 64, color: PulseColors.error),
+          const SizedBox(height: 16),
           Text(
             'Failed to load filter preferences',
             style: PulseTextStyles.titleMedium,
           ),
-                            const SizedBox(height: 24),
+          const SizedBox(height: 24),
           PulseButton(
             text: 'Retry',
             onPressed: () {
@@ -674,7 +646,7 @@ class _FiltersScreenState extends State<FiltersScreen> {
     );
   }
 
-  /// Apply filter preferences to discovery 
+  /// Apply filter preferences to discovery
   void _applyFiltersToDiscovery(FilterPreferences preferences) {
     try {
       // Convert FilterPreferences to DiscoveryFilters format

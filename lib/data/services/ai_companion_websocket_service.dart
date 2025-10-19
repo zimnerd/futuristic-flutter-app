@@ -52,7 +52,9 @@ class AiCompanionWebSocketService {
   Future<void> connect(String authToken) async {
     try {
       _authToken = authToken;
-      _logger.d('[AI Companion WS] Connecting with token: ${authToken.substring(0, 20)}...');
+      _logger.d(
+        '[AI Companion WS] Connecting with token: ${authToken.substring(0, 20)}...',
+      );
 
       if (_socket != null) {
         await disconnect();
@@ -67,9 +69,7 @@ class AiCompanionWebSocketService {
             .setTransports(['websocket'])
             .enableForceNew()
             .enableAutoConnect()
-            .setAuth({
-              'token': authToken,
-            })
+            .setAuth({'token': authToken})
             .build(),
       );
 
@@ -90,13 +90,13 @@ class AiCompanionWebSocketService {
       _logger.d('[AI Companion WS] Disconnecting...');
       _heartbeatTimer?.cancel();
       _reconnectTimer?.cancel();
-      
+
       if (_socket != null) {
         _socket!.disconnect();
         _socket!.dispose();
         _socket = null;
       }
-      
+
       _isConnected = false;
       _connectionStatusController.add(false);
       _logger.d('[AI Companion WS] Disconnected');
@@ -122,16 +122,27 @@ class AiCompanionWebSocketService {
     void handler(dynamic data) {
       try {
         final List<dynamic> messagesJson = data['messages'] ?? [];
-        final messages = messagesJson.map((json) => CompanionMessage.fromJson(json as Map<String, dynamic>)).toList();
-        _logger.d('[AI Companion WS] Received conversation history: ${messages.length} messages');
+        final messages = messagesJson
+            .map(
+              (json) => CompanionMessage.fromJson(json as Map<String, dynamic>),
+            )
+            .toList();
+        _logger.d(
+          '[AI Companion WS] Received conversation history: ${messages.length} messages',
+        );
         completer.complete(messages);
       } catch (e) {
-        _logger.e('[AI Companion WS] Error parsing conversation history: ${e.toString()}');
+        _logger.e(
+          '[AI Companion WS] Error parsing conversation history: ${e.toString()}',
+        );
         completer.completeError(e);
       }
     }
+
     _socket!.once('conversationHistory', handler);
-    _logger.d('[AI Companion WS] Requesting conversation history for companionId=$companionId, conversationId=$conversationId, page=$page, limit=$limit');
+    _logger.d(
+      '[AI Companion WS] Requesting conversation history for companionId=$companionId, conversationId=$conversationId, page=$page, limit=$limit',
+    );
     _socket!.emit('getConversationHistory', {
       'companionId': companionId,
       'conversationId': conversationId,
@@ -190,7 +201,7 @@ class AiCompanionWebSocketService {
       _isConnected = false;
       _connectionStatusController.add(false);
       _heartbeatTimer?.cancel();
-      
+
       if (_autoReconnectEnabled) {
         _scheduleReconnect();
       }
@@ -204,36 +215,50 @@ class AiCompanionWebSocketService {
 
     // AI Companion specific events
     _socket!.on('connected', (data) {
-  _logger.d('[AI Companion WS] [EVENT] connected | Payload: ${data.toString()}');
+      _logger.d(
+        '[AI Companion WS] [EVENT] connected | Payload: ${data.toString()}',
+      );
     });
 
     _socket!.on('aiMessageSent', (data) {
-  _logger.d('[AI Companion WS] [EVENT] aiMessageSent | Payload: ${data.toString()}');
+      _logger.d(
+        '[AI Companion WS] [EVENT] aiMessageSent | Payload: ${data.toString()}',
+      );
       // Don't forward user message confirmations to stream - BLoC handles user messages immediately
       // This prevents duplicate user messages from appearing in the chat
     });
 
     _socket!.on('ai_message_received', (data) {
-  _logger.d('[AI Companion WS] [EVENT] ai_message_received | RAW Payload: ${data.toString()}');
-  final dataMap = data as Map<String, dynamic>;
-  _logger.d('[AI Companion WS] [EVENT] ai_message_received | MAPPED Payload: $dataMap');
+      _logger.d(
+        '[AI Companion WS] [EVENT] ai_message_received | RAW Payload: ${data.toString()}',
+      );
+      final dataMap = data as Map<String, dynamic>;
+      _logger.d(
+        '[AI Companion WS] [EVENT] ai_message_received | MAPPED Payload: $dataMap',
+      );
       // Only forward AI companion responses to the stream, not user message confirmations
-  _messageController.add(dataMap);
+      _messageController.add(dataMap);
     });
 
     _socket!.on('ai_message_failed', (data) {
-  _logger.e('[AI Companion WS] [EVENT] ai_message_failed | Payload: ${data.toString()}');
-  _errorController.add(data as Map<String, dynamic>);
+      _logger.e(
+        '[AI Companion WS] [EVENT] ai_message_failed | Payload: ${data.toString()}',
+      );
+      _errorController.add(data as Map<String, dynamic>);
     });
 
     _socket!.on('ai_companion_typing', (data) {
-  _logger.d('[AI Companion WS] [EVENT] ai_companion_typing | Payload: ${data.toString()}');
-  // You can add typing indicator handling here if needed
+      _logger.d(
+        '[AI Companion WS] [EVENT] ai_companion_typing | Payload: ${data.toString()}',
+      );
+      // You can add typing indicator handling here if needed
     });
 
     _socket!.on('error', (error) {
-  _logger.e('[AI Companion WS] [EVENT] error | Payload: ${error.toString()}');
-  _errorController.add(error as Map<String, dynamic>);
+      _logger.e(
+        '[AI Companion WS] [EVENT] error | Payload: ${error.toString()}',
+      );
+      _errorController.add(error as Map<String, dynamic>);
     });
   }
 
@@ -253,9 +278,7 @@ class AiCompanionWebSocketService {
     timeoutTimer = Timer(const Duration(seconds: 10), () {
       subscription.cancel();
       if (!completer.isCompleted) {
-        completer.completeError(
-          Exception('Connection timeout'),
-        );
+        completer.completeError(Exception('Connection timeout'));
       }
     });
 
@@ -279,16 +302,19 @@ class AiCompanionWebSocketService {
 
     _currentReconnectAttempt++;
     final delay = Duration(
-      milliseconds: (_initialReconnectDelay.inMilliseconds *
-              (_backoffFactor * _currentReconnectAttempt))
-          .clamp(
-        _initialReconnectDelay.inMilliseconds.toDouble(),
-        _maxReconnectDelay.inMilliseconds.toDouble(),
-      )
-          .round(),
+      milliseconds:
+          (_initialReconnectDelay.inMilliseconds *
+                  (_backoffFactor * _currentReconnectAttempt))
+              .clamp(
+                _initialReconnectDelay.inMilliseconds.toDouble(),
+                _maxReconnectDelay.inMilliseconds.toDouble(),
+              )
+              .round(),
     );
 
-    _logger.d('[AI Companion WS] Scheduling reconnect in $delay (attempt $_currentReconnectAttempt)');
+    _logger.d(
+      '[AI Companion WS] Scheduling reconnect in $delay (attempt $_currentReconnectAttempt)',
+    );
 
     _reconnectTimer?.cancel();
     _reconnectTimer = Timer(delay, () async {

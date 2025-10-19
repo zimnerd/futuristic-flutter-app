@@ -5,7 +5,6 @@ import '../../domain/entities/message.dart' show MessageType;
 /// Utility class for converting between API models and database models
 /// Handles data transformation for local caching and network synchronization
 class ModelConverters {
-  
   // ================== MESSAGE CONVERSIONS ==================
 
   /// Convert API MessageModel to database MessageDbModel
@@ -56,7 +55,9 @@ class ModelConverters {
   }
 
   /// Convert list of database models to API messages
-  static List<MessageModel> dbModelsToMessages(List<MessageDbModel> dbMessages) {
+  static List<MessageModel> dbModelsToMessages(
+    List<MessageDbModel> dbMessages,
+  ) {
     return dbMessages.map((dbMessage) => dbModelToMessage(dbMessage)).toList();
   }
 
@@ -74,7 +75,7 @@ class ModelConverters {
     String? senderAvatar,
   }) {
     final now = DateTime.now();
-    
+
     return MessageDbModel(
       id: tempId, // Use tempId as ID for optimistic messages
       conversationId: conversationId,
@@ -98,7 +99,9 @@ class ModelConverters {
   // ================== CONVERSATION CONVERSIONS ==================
 
   /// Convert API ConversationModel to database ConversationDbModel
-  static ConversationDbModel conversationToDbModel(ConversationModel conversation) {
+  static ConversationDbModel conversationToDbModel(
+    ConversationModel conversation,
+  ) {
     return ConversationDbModel(
       id: conversation.id,
       type: conversation.type.name,
@@ -131,7 +134,7 @@ class ModelConverters {
       lastMessage: lastMessage,
       lastMessageAt: dbConversation.lastMessageAt,
       unreadCount: dbConversation.unreadCount,
-      settings: dbConversation.settings != null 
+      settings: dbConversation.settings != null
           ? ConversationSettings.fromJson(dbConversation.settings!)
           : null,
       createdAt: dbConversation.createdAt,
@@ -140,8 +143,12 @@ class ModelConverters {
   }
 
   /// Convert list of API conversations to database models
-  static List<ConversationDbModel> conversationsToDbModels(List<ConversationModel> conversations) {
-    return conversations.map((conversation) => conversationToDbModel(conversation)).toList();
+  static List<ConversationDbModel> conversationsToDbModels(
+    List<ConversationModel> conversations,
+  ) {
+    return conversations
+        .map((conversation) => conversationToDbModel(conversation))
+        .toList();
   }
 
   /// Convert list of database models to API conversations
@@ -177,20 +184,21 @@ class ModelConverters {
     bool hasMore,
   ) {
     String? oldestMessageId = currentMetadata.oldestMessageId;
-    
+
     if (loadedMessages.isNotEmpty) {
       // Find the oldest message from the loaded batch
-      final oldestMessage = loadedMessages.reduce((a, b) => 
-        a.createdAt.isBefore(b.createdAt) ? a : b
+      final oldestMessage = loadedMessages.reduce(
+        (a, b) => a.createdAt.isBefore(b.createdAt) ? a : b,
       );
       oldestMessageId = oldestMessage.id;
     }
-    
+
     return currentMetadata.copyWith(
       oldestMessageId: oldestMessageId,
       hasMoreMessages: hasMore,
       lastSyncAt: DateTime.now(),
-      totalMessagesCount: currentMetadata.totalMessagesCount + loadedMessages.length,
+      totalMessagesCount:
+          currentMetadata.totalMessagesCount + loadedMessages.length,
     );
   }
 
@@ -199,36 +207,31 @@ class ModelConverters {
   /// Validate if a message can be converted to database model
   static bool isValidForDatabase(MessageModel message) {
     return message.id.isNotEmpty &&
-           message.conversationId.isNotEmpty &&
-           message.senderId.isNotEmpty;
+        message.conversationId.isNotEmpty &&
+        message.senderId.isNotEmpty;
   }
 
   /// Validate if a conversation can be converted to database model
   static bool isValidConversationForDatabase(ConversationModel conversation) {
-    return conversation.id.isNotEmpty &&
-           conversation.participantIds.isNotEmpty;
+    return conversation.id.isNotEmpty && conversation.participantIds.isNotEmpty;
   }
 
   // ================== SYNC STATUS HELPERS ==================
 
   /// Mark database message as needing sync
   static MessageDbModel markAsNeedsSync(MessageDbModel dbMessage) {
-    return dbMessage.copyWith(
-      syncStatus: 'pending',
-      updatedAt: DateTime.now(),
-    );
+    return dbMessage.copyWith(syncStatus: 'pending', updatedAt: DateTime.now());
   }
 
   /// Mark database message as synced
   static MessageDbModel markAsSynced(MessageDbModel dbMessage) {
-    return dbMessage.copyWith(
-      syncStatus: 'synced',
-      updatedAt: DateTime.now(),
-    );
+    return dbMessage.copyWith(syncStatus: 'synced', updatedAt: DateTime.now());
   }
 
   /// Mark database conversation as needing sync
-  static ConversationDbModel markConversationAsNeedsSync(ConversationDbModel dbConversation) {
+  static ConversationDbModel markConversationAsNeedsSync(
+    ConversationDbModel dbConversation,
+  ) {
     return dbConversation.copyWith(
       syncStatus: 'pending',
       updatedAt: DateTime.now(),
@@ -236,7 +239,9 @@ class ModelConverters {
   }
 
   /// Mark database conversation as synced
-  static ConversationDbModel markConversationAsSynced(ConversationDbModel dbConversation) {
+  static ConversationDbModel markConversationAsSynced(
+    ConversationDbModel dbConversation,
+  ) {
     return dbConversation.copyWith(
       syncStatus: 'synced',
       updatedAt: DateTime.now(),
@@ -264,11 +269,13 @@ class ModelConverters {
     MessageDbModel optimisticMessage, {
     String? errorMessage,
   }) {
-    final metadata = Map<String, dynamic>.from(optimisticMessage.metadata ?? {});
+    final metadata = Map<String, dynamic>.from(
+      optimisticMessage.metadata ?? {},
+    );
     if (errorMessage != null) {
       metadata['error'] = errorMessage;
     }
-    
+
     return optimisticMessage.copyWith(
       status: 'failed',
       metadata: metadata,
@@ -280,9 +287,11 @@ class ModelConverters {
   // ================== PRIVATE HELPER METHODS ==================
 
   /// Convert reactions list to map for database storage
-  static Map<String, dynamic>? _reactionsToMap(List<MessageReaction>? reactions) {
+  static Map<String, dynamic>? _reactionsToMap(
+    List<MessageReaction>? reactions,
+  ) {
     if (reactions == null || reactions.isEmpty) return null;
-    
+
     final Map<String, dynamic> reactionMap = {};
     for (final reaction in reactions) {
       final emoji = reaction.emoji;
@@ -290,7 +299,9 @@ class ModelConverters {
         final data = reactionMap[emoji] as Map<String, dynamic>;
         (data['userIds'] as List<String>).add(reaction.userId);
         (data['usernames'] as List<String>).add(reaction.username);
-        (data['timestamps'] as List<int>).add(reaction.createdAt.millisecondsSinceEpoch);
+        (data['timestamps'] as List<int>).add(
+          reaction.createdAt.millisecondsSinceEpoch,
+        );
       } else {
         reactionMap[emoji] = {
           'userIds': [reaction.userId],
@@ -303,36 +314,44 @@ class ModelConverters {
   }
 
   /// Convert reactions map to list for API model
-  static List<MessageReaction>? _mapToReactions(Map<String, dynamic>? reactionsMap) {
+  static List<MessageReaction>? _mapToReactions(
+    Map<String, dynamic>? reactionsMap,
+  ) {
     if (reactionsMap == null || reactionsMap.isEmpty) return null;
-    
+
     final List<MessageReaction> reactions = [];
     reactionsMap.forEach((emoji, reactionData) {
       if (reactionData is List) {
         // Legacy format: just user IDs
         for (final userId in reactionData) {
-          reactions.add(MessageReaction(
-            emoji: emoji,
-            userId: userId.toString(),
-            username: 'Unknown', // Default username for legacy data
-            createdAt: DateTime.now(),
-          ));
+          reactions.add(
+            MessageReaction(
+              emoji: emoji,
+              userId: userId.toString(),
+              username: 'Unknown', // Default username for legacy data
+              createdAt: DateTime.now(),
+            ),
+          );
         }
       } else if (reactionData is Map) {
         // New format: with usernames and timestamps
         final userIds = reactionData['userIds'] as List? ?? [];
         final usernames = reactionData['usernames'] as List? ?? [];
         final timestamps = reactionData['timestamps'] as List? ?? [];
-        
+
         for (int i = 0; i < userIds.length; i++) {
-          reactions.add(MessageReaction(
-            emoji: emoji,
-            userId: userIds[i].toString(),
-            username: i < usernames.length ? usernames[i].toString() : 'Unknown',
-            createdAt: i < timestamps.length 
-                ? DateTime.fromMillisecondsSinceEpoch(timestamps[i] as int)
-                : DateTime.now(),
-          ));
+          reactions.add(
+            MessageReaction(
+              emoji: emoji,
+              userId: userIds[i].toString(),
+              username: i < usernames.length
+                  ? usernames[i].toString()
+                  : 'Unknown',
+              createdAt: i < timestamps.length
+                  ? DateTime.fromMillisecondsSinceEpoch(timestamps[i] as int)
+                  : DateTime.now(),
+            ),
+          );
         }
       }
     });

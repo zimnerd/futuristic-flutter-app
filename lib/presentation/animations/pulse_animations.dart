@@ -13,18 +13,18 @@ class PulseCurves {
   static const Curve easeInOutQuint = Cubic(0.83, 0, 0.17, 1);
   static const Curve easeOutQuart = Cubic(0.25, 1, 0.5, 1);
   static const Curve easeInQuart = Cubic(0.5, 0, 0.75, 0);
-  
+
   // Bouncy curves for playful interactions
   static const Curve bounceOut = Curves.bounceOut;
   static const Curve elasticOut = Curves.elasticOut;
-  
+
   // Spring physics
   static const SpringDescription spring = SpringDescription(
     mass: 1,
     stiffness: 500,
     damping: 30,
   );
-  
+
   static const SpringDescription gentleSpring = SpringDescription(
     mass: 1,
     stiffness: 300,
@@ -55,10 +55,7 @@ class SlideTransitionAnimation extends StatelessWidget {
       position: Tween<Offset>(
         begin: begin,
         end: end,
-      ).animate(CurvedAnimation(
-        parent: animation,
-        curve: curve,
-      )),
+      ).animate(CurvedAnimation(parent: animation, curve: curve)),
       child: child,
     );
   }
@@ -87,10 +84,7 @@ class BounceScaleTransition extends StatelessWidget {
       scale: Tween<double>(
         begin: beginScale,
         end: endScale,
-      ).animate(CurvedAnimation(
-        parent: animation,
-        curve: curve,
-      )),
+      ).animate(CurvedAnimation(parent: animation, curve: curve)),
       child: child,
     );
   }
@@ -119,10 +113,7 @@ class FadeTransitionAnimation extends StatelessWidget {
       opacity: Tween<double>(
         begin: beginOpacity,
         end: endOpacity,
-      ).animate(CurvedAnimation(
-        parent: animation,
-        curve: curve,
-      )),
+      ).animate(CurvedAnimation(parent: animation, curve: curve)),
       child: child,
     );
   }
@@ -155,18 +146,12 @@ class SlideFadeTransition extends StatelessWidget {
       position: Tween<Offset>(
         begin: slideBegin,
         end: slideEnd,
-      ).animate(CurvedAnimation(
-        parent: animation,
-        curve: curve,
-      )),
+      ).animate(CurvedAnimation(parent: animation, curve: curve)),
       child: FadeTransition(
         opacity: Tween<double>(
           begin: fadeBegin,
           end: fadeEnd,
-        ).animate(CurvedAnimation(
-          parent: animation,
-          curve: curve,
-        )),
+        ).animate(CurvedAnimation(parent: animation, curve: curve)),
         child: child,
       ),
     );
@@ -215,10 +200,7 @@ class _StaggeredAnimationState extends State<StaggeredAnimation>
       final animation = Tween<double>(
         begin: 0.0,
         end: 1.0,
-      ).animate(CurvedAnimation(
-        parent: controller,
-        curve: widget.curve,
-      ));
+      ).animate(CurvedAnimation(parent: controller, curve: widget.curve));
       _animations.add(animation);
 
       // Start animation with staggered delay
@@ -286,17 +268,11 @@ class _ShimmerWidgetState extends State<ShimmerWidget>
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
-      duration: widget.duration,
-      vsync: this,
-    );
+    _controller = AnimationController(duration: widget.duration, vsync: this);
     _animation = Tween<double>(
       begin: -1.0,
       end: 2.0,
-    ).animate(CurvedAnimation(
-      parent: _controller,
-      curve: Curves.linear,
-    ));
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.linear));
     _controller.repeat();
   }
 
@@ -365,17 +341,11 @@ class _PulseAnimationState extends State<PulseAnimation>
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
-      duration: widget.duration,
-      vsync: this,
-    );
+    _controller = AnimationController(duration: widget.duration, vsync: this);
     _animation = Tween<double>(
       begin: widget.minScale,
       end: widget.maxScale,
-    ).animate(CurvedAnimation(
-      parent: _controller,
-      curve: widget.curve,
-    ));
+    ).animate(CurvedAnimation(parent: _controller, curve: widget.curve));
     _controller.repeat(reverse: true);
   }
 
@@ -387,10 +357,7 @@ class _PulseAnimationState extends State<PulseAnimation>
 
   @override
   Widget build(BuildContext context) {
-    return ScaleTransition(
-      scale: _animation,
-      child: widget.child,
-    );
+    return ScaleTransition(scale: _animation, child: widget.child);
   }
 }
 
@@ -405,35 +372,32 @@ class HeroPageRoute<T> extends PageRouteBuilder<T> {
     required this.heroTag,
     this.duration = const Duration(milliseconds: 400),
   }) : super(
-          pageBuilder: (context, animation, secondaryAnimation) => child,
-          transitionDuration: duration,
-          reverseTransitionDuration: duration,
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            return SlideTransition(
-              position: Tween<Offset>(
-                begin: const Offset(1.0, 0.0),
-                end: Offset.zero,
-              ).animate(CurvedAnimation(
-                parent: animation,
-                curve: PulseCurves.easeOutQuart,
-              )),
-              child: FadeTransition(
-                opacity: animation,
-                child: child,
-              ),
-            );
-          },
-        );
+         pageBuilder: (context, animation, secondaryAnimation) => child,
+         transitionDuration: duration,
+         reverseTransitionDuration: duration,
+         transitionsBuilder: (context, animation, secondaryAnimation, child) {
+           return SlideTransition(
+             position:
+                 Tween<Offset>(
+                   begin: const Offset(1.0, 0.0),
+                   end: Offset.zero,
+                 ).animate(
+                   CurvedAnimation(
+                     parent: animation,
+                     curve: PulseCurves.easeOutQuart,
+                   ),
+                 ),
+             child: FadeTransition(opacity: animation, child: child),
+           );
+         },
+       );
 }
 
 /// Match celebration animation
 class MatchCelebrationWidget extends StatefulWidget {
   final VoidCallback? onComplete;
 
-  const MatchCelebrationWidget({
-    super.key,
-    this.onComplete,
-  });
+  const MatchCelebrationWidget({super.key, this.onComplete});
 
   @override
   State<MatchCelebrationWidget> createState() => _MatchCelebrationWidgetState();
@@ -449,32 +413,24 @@ class _MatchCelebrationWidgetState extends State<MatchCelebrationWidget>
   @override
   void initState() {
     super.initState();
-    
+
     _scaleController = AnimationController(
       duration: const Duration(milliseconds: 800),
       vsync: this,
     );
-    
+
     _pulseController = AnimationController(
       duration: const Duration(milliseconds: 1000),
       vsync: this,
     );
 
-    _scaleAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _scaleController,
-      curve: PulseCurves.bounceOut,
-    ));
+    _scaleAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _scaleController, curve: PulseCurves.bounceOut),
+    );
 
-    _pulseAnimation = Tween<double>(
-      begin: 1.0,
-      end: 1.2,
-    ).animate(CurvedAnimation(
-      parent: _pulseController,
-      curve: Curves.easeInOut,
-    ));
+    _pulseAnimation = Tween<double>(begin: 1.0, end: 1.2).animate(
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
+    );
 
     _startAnimation();
   }
@@ -482,7 +438,7 @@ class _MatchCelebrationWidgetState extends State<MatchCelebrationWidget>
   void _startAnimation() async {
     await _scaleController.forward();
     _pulseController.repeat(reverse: true);
-    
+
     Future.delayed(const Duration(milliseconds: 2000), () {
       if (mounted) {
         widget.onComplete?.call();
@@ -522,11 +478,7 @@ class _MatchCelebrationWidgetState extends State<MatchCelebrationWidget>
                 ),
               ],
             ),
-            child: const Icon(
-              Icons.favorite,
-              color: Colors.white,
-              size: 60,
-            ),
+            child: const Icon(Icons.favorite, color: Colors.white, size: 60),
           ),
         ),
       ),

@@ -71,10 +71,7 @@ class _MessageStatusIndicatorState extends State<MessageStatusIndicator>
     );
 
     _scaleAnimation = Tween<double>(begin: 0.8, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _animationController,
-        curve: Curves.easeOutBack,
-      ),
+      CurvedAnimation(parent: _animationController, curve: Curves.easeOutBack),
     );
 
     _animationController.forward();
@@ -101,7 +98,8 @@ class _MessageStatusIndicatorState extends State<MessageStatusIndicator>
   Widget build(BuildContext context) {
     final defaultColor = widget.color ?? Colors.grey.shade600;
     // More prominent blue for read status
-    final defaultReadColor = widget.readColor ?? const Color(0xFF2196F3); // Material Blue
+    final defaultReadColor =
+        widget.readColor ?? const Color(0xFF2196F3); // Material Blue
     final defaultErrorColor = widget.errorColor ?? Colors.red;
 
     return ScaleTransition(
@@ -118,29 +116,17 @@ class _MessageStatusIndicatorState extends State<MessageStatusIndicator>
 
   /// Sending state: clock icon (message queued/sending)
   Widget _buildSendingIndicator(Color color) {
-    return Icon(
-      Icons.schedule,
-      size: widget.size,
-      color: color,
-    );
+    return Icon(Icons.schedule, size: widget.size, color: color);
   }
 
   /// Sent state: single check mark (server received)
   Widget _buildSentIndicator(Color color) {
-    return Icon(
-      Icons.check,
-      size: widget.size,
-      color: color,
-    );
+    return Icon(Icons.check, size: widget.size, color: color);
   }
 
   /// Delivered state: double check mark grey (delivered to recipient device)
   Widget _buildDeliveredIndicator(Color color) {
-    return Icon(
-      Icons.done_all,
-      size: widget.size,
-      color: color,
-    );
+    return Icon(Icons.done_all, size: widget.size, color: color);
   }
 
   /// Read state: double check mark BLUE (read by recipient) - PROMINENT
@@ -151,11 +137,7 @@ class _MessageStatusIndicatorState extends State<MessageStatusIndicator>
         borderRadius: BorderRadius.circular(4),
       ),
       padding: const EdgeInsets.all(2),
-      child: Icon(
-        Icons.done_all,
-        size: widget.size,
-        color: color,
-      ),
+      child: Icon(Icons.done_all, size: widget.size, color: color),
     );
   }
 
@@ -164,11 +146,7 @@ class _MessageStatusIndicatorState extends State<MessageStatusIndicator>
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(
-          Icons.error_outline,
-          size: widget.size,
-          color: color,
-        ),
+        Icon(Icons.error_outline, size: widget.size, color: color),
         if (widget.onRetry != null) ...[
           const SizedBox(width: 4),
           InkWell(
@@ -180,11 +158,7 @@ class _MessageStatusIndicatorState extends State<MessageStatusIndicator>
                 color: color.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Icon(
-                Icons.refresh,
-                size: widget.size,
-                color: color,
-              ),
+              child: Icon(Icons.refresh, size: widget.size, color: color),
             ),
           ),
         ],

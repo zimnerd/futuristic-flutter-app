@@ -27,7 +27,7 @@ enum DmSortBy { recent, name, distance, unreadCount }
 class _ChatListScreenState extends State<ChatListScreen> {
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
-  
+
   // Enhanced filtering and sorting
   DmFilterBy _currentFilter = DmFilterBy.all;
   DmSortBy _currentSort = DmSortBy.recent;
@@ -65,6 +65,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
     _searchController.dispose();
     super.dispose();
   }
+
   @override
   void initState() {
     super.initState();
@@ -324,8 +325,8 @@ class _ChatListScreenState extends State<ChatListScreen> {
         case DmFilterBy.recent:
           return DateTime.now()
                   .difference(conversation.lastMessageTime)
-                      .inDays <
-                  7;
+                  .inDays <
+              7;
         case DmFilterBy.unread:
           return conversation.unreadCount > 0;
         case DmFilterBy.online:
@@ -447,12 +448,12 @@ class _ChatListScreenState extends State<ChatListScreen> {
   Widget _buildConversationTile(BuildContext context, conversation) {
     // Get the current user ID from auth state
     final currentUserId = _currentUserId;
-    
+
     // Don't show conversations if we don't have a valid current user ID
     if (currentUserId == null) {
       return const SizedBox.shrink();
     }
-    
+
     // Use the conversation's built-in otherUserName and otherUserAvatar
     // The ConversationModel already constructed the proper name from firstName + lastName
     final otherUserName = conversation.otherUserName.isNotEmpty
@@ -477,7 +478,10 @@ class _ChatListScreenState extends State<ChatListScreen> {
         ],
       ),
       child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 12,
+        ),
         leading: CircleAvatar(
           radius: 28,
           backgroundImage: otherUserPhoto != null
@@ -497,10 +501,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
         ),
         title: Text(
           otherUserName,
-          style: const TextStyle(
-            fontWeight: FontWeight.w600,
-            fontSize: 16,
-          ),
+          style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
         ),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -509,11 +510,11 @@ class _ChatListScreenState extends State<ChatListScreen> {
             Text(
               conversation.lastMessage, // Use the string directly
               style: TextStyle(
-                color: conversation.unreadCount > 0 
-                    ? Colors.black87 
+                color: conversation.unreadCount > 0
+                    ? Colors.black87
                     : Colors.grey[600],
-                fontWeight: conversation.unreadCount > 0 
-                    ? FontWeight.w500 
+                fontWeight: conversation.unreadCount > 0
+                    ? FontWeight.w500
                     : FontWeight.normal,
               ),
               maxLines: 1,
@@ -522,10 +523,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
             const SizedBox(height: 4),
             Text(
               _formatMessageTime(conversation.lastMessageTime),
-              style: TextStyle(
-                color: Colors.grey[500],
-                fontSize: 12,
-              ),
+              style: TextStyle(color: Colors.grey[500], fontSize: 12),
             ),
           ],
         ),
@@ -536,10 +534,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
                   color: PulseColors.primary,
                   shape: BoxShape.circle,
                 ),
-                constraints: const BoxConstraints(
-                  minWidth: 20,
-                  minHeight: 20,
-                ),
+                constraints: const BoxConstraints(minWidth: 20, minHeight: 20),
                 child: Text(
                   '${conversation.unreadCount}',
                   style: const TextStyle(

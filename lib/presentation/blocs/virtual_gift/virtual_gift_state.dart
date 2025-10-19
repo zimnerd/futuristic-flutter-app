@@ -1,15 +1,15 @@
 import 'package:equatable/equatable.dart';
 import '../../../data/models/virtual_gift.dart';
 
-enum VirtualGiftStatus { 
-  initial, 
-  loading, 
-  loaded, 
-  sending, 
-  sent, 
+enum VirtualGiftStatus {
+  initial,
+  loading,
+  loaded,
+  sending,
+  sent,
   filtering,
   filtered,
-  error 
+  error,
 }
 
 class VirtualGiftState extends Equatable {
@@ -77,18 +77,18 @@ class VirtualGiftState extends Equatable {
 
   @override
   List<Object?> get props => [
-        status,
-        catalog,
-        filteredCatalog,
-        receivedGifts,
-        sentGifts,
-        categories,
-        userStats,
-        selectedCategory,
-        priceRange,
-        searchQuery,
-        errorMessage,
-        isLoading,
-        lastSentGift,
-      ];
+    status,
+    catalog,
+    filteredCatalog,
+    receivedGifts,
+    sentGifts,
+    categories,
+    userStats,
+    selectedCategory,
+    priceRange,
+    searchQuery,
+    errorMessage,
+    isLoading,
+    lastSentGift,
+  ];
 }

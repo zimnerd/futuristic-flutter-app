@@ -41,11 +41,7 @@ class ProfileCompletionService {
     }
 
     // Optional fields (weight: 0.5 each)
-    final optionalFields = [
-      user.occupation,
-      user.education,
-      user.location,
-    ];
+    final optionalFields = [user.occupation, user.education, user.location];
 
     for (final field in optionalFields) {
       totalFields++;
@@ -63,17 +59,22 @@ class ProfileCompletionService {
   static List<String> getMissingFields(UserModel user) {
     final missing = <String>[];
 
-    if (user.firstName == null || user.firstName!.isEmpty) missing.add('First Name');
-    if (user.lastName == null || user.lastName!.isEmpty) missing.add('Last Name');
+    if (user.firstName == null || user.firstName!.isEmpty)
+      missing.add('First Name');
+    if (user.lastName == null || user.lastName!.isEmpty)
+      missing.add('Last Name');
     if (user.age == null) missing.add('Age');
     if (user.gender == null || user.gender!.isEmpty) missing.add('Gender');
     if (user.bio == null || user.bio!.isEmpty) missing.add('Bio');
     if (user.photos.isEmpty) missing.add('Photos');
     if (user.photos.length < 3) missing.add('More Photos');
     if (user.interests.isEmpty) missing.add('Interests');
-    if (user.occupation == null || user.occupation!.isEmpty) missing.add('Occupation');
-    if (user.education == null || user.education!.isEmpty) missing.add('Education');
-    if (user.location == null || user.location!.isEmpty) missing.add('Location');
+    if (user.occupation == null || user.occupation!.isEmpty)
+      missing.add('Occupation');
+    if (user.education == null || user.education!.isEmpty)
+      missing.add('Education');
+    if (user.location == null || user.location!.isEmpty)
+      missing.add('Location');
 
     return missing;
   }
@@ -85,9 +86,12 @@ class ProfileCompletionService {
     if (user.bio == null || user.bio!.isEmpty) return 'Write your bio';
     if (user.photos.length < 3) return 'Add more photos (3+ recommended)';
     if (user.interests.isEmpty) return 'Add your interests';
-    if (user.occupation == null || user.occupation!.isEmpty) return 'Add your occupation';
-    if (user.education == null || user.education!.isEmpty) return 'Add your education';
-    if (user.location == null || user.location!.isEmpty) return 'Add your location';
+    if (user.occupation == null || user.occupation!.isEmpty)
+      return 'Add your occupation';
+    if (user.education == null || user.education!.isEmpty)
+      return 'Add your education';
+    if (user.location == null || user.location!.isEmpty)
+      return 'Add your location';
 
     return null; // Profile is complete!
   }

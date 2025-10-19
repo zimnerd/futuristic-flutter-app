@@ -27,10 +27,7 @@ class EnhancedCallControls extends StatelessWidget {
             gradient: LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
-              colors: [
-                Colors.transparent,
-                Colors.black.withValues(alpha: 0.7),
-              ],
+              colors: [Colors.transparent, Colors.black.withValues(alpha: 0.7)],
             ),
           ),
           child: SafeArea(
@@ -43,10 +40,10 @@ class EnhancedCallControls extends StatelessWidget {
                   _buildCallStatus(state),
                   const SizedBox(height: 16),
                 ],
-                
+
                 // Main control buttons
                 _buildMainControls(context, state),
-                
+
                 // Additional controls
                 if (showCameraSwitch || showScreenShare) ...[
                   const SizedBox(height: 16),
@@ -86,9 +83,9 @@ class EnhancedCallControls extends StatelessWidget {
             ),
           ],
         ),
-        
+
         const SizedBox(height: 4),
-        
+
         // Call duration
         Text(
           state.formattedDuration,
@@ -98,7 +95,7 @@ class EnhancedCallControls extends StatelessWidget {
             fontWeight: FontWeight.w600,
           ),
         ),
-        
+
         // Call quality indicator
         if (state.quality != CallQuality.excellent) ...[
           const SizedBox(height: 4),
@@ -137,9 +134,11 @@ class EnhancedCallControls extends StatelessWidget {
           onTap: () => context.read<CallBloc>().add(
             ToggleSpeaker(enabled: !state.isSpeakerEnabled),
           ),
-          tooltip: state.isSpeakerEnabled ? 'Turn off speaker' : 'Turn on speaker',
+          tooltip: state.isSpeakerEnabled
+              ? 'Turn off speaker'
+              : 'Turn on speaker',
         ),
-        
+
         // Video toggle
         _buildControlButton(
           icon: state.isVideoEnabled ? Icons.videocam : Icons.videocam_off,
@@ -149,10 +148,10 @@ class EnhancedCallControls extends StatelessWidget {
           ),
           tooltip: state.isVideoEnabled ? 'Turn off camera' : 'Turn on camera',
         ),
-        
+
         // End call
         _buildEndCallButton(context, state),
-        
+
         // Audio toggle
         _buildControlButton(
           icon: state.isAudioEnabled ? Icons.mic : Icons.mic_off,
@@ -160,7 +159,9 @@ class EnhancedCallControls extends StatelessWidget {
           onTap: () => context.read<CallBloc>().add(
             ToggleAudio(enabled: !state.isAudioEnabled),
           ),
-          tooltip: state.isAudioEnabled ? 'Mute microphone' : 'Unmute microphone',
+          tooltip: state.isAudioEnabled
+              ? 'Mute microphone'
+              : 'Unmute microphone',
         ),
       ],
     );
@@ -177,11 +178,11 @@ class EnhancedCallControls extends StatelessWidget {
             onTap: () => context.read<CallBloc>().add(const SwitchCamera()),
             tooltip: 'Switch camera',
           ),
-        
+
         if (showScreenShare)
           _buildControlButton(
-            icon: state.isScreenSharing 
-                ? Icons.stop_screen_share 
+            icon: state.isScreenSharing
+                ? Icons.stop_screen_share
                 : Icons.screen_share,
             isEnabled: state.isScreenSharing,
             onTap: () {
@@ -189,8 +190,8 @@ class EnhancedCallControls extends StatelessWidget {
                 ToggleScreenShare(enabled: !state.isScreenSharing),
               );
             },
-            tooltip: state.isScreenSharing 
-                ? 'Stop sharing screen' 
+            tooltip: state.isScreenSharing
+                ? 'Stop sharing screen'
                 : 'Share screen',
           ),
       ],
@@ -210,11 +211,11 @@ class EnhancedCallControls extends StatelessWidget {
         height: 56,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          color: isEnabled 
+          color: isEnabled
               ? PulseColors.primary.withValues(alpha: 0.2)
               : Colors.white.withValues(alpha: 0.2),
           border: Border.all(
-            color: isEnabled 
+            color: isEnabled
                 ? PulseColors.primary
                 : Colors.white.withValues(alpha: 0.5),
             width: 1.5,
@@ -257,11 +258,7 @@ class EnhancedCallControls extends StatelessWidget {
                 );
               }
             },
-            child: const Icon(
-              Icons.call_end,
-              color: Colors.white,
-              size: 28,
-            ),
+            child: const Icon(Icons.call_end, color: Colors.white, size: 28),
           ),
         ),
       ),

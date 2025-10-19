@@ -44,9 +44,7 @@ class CallBackConfirmationDialog extends StatelessWidget {
     final userName = otherUser?.firstName ?? 'this person';
 
     return AlertDialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       title: Row(
         children: [
           Icon(
@@ -54,9 +52,7 @@ class CallBackConfirmationDialog extends StatelessWidget {
             color: PulseColors.primary,
           ),
           const SizedBox(width: 12),
-          const Expanded(
-            child: Text('Call Back?'),
-          ),
+          const Expanded(child: Text('Call Back?')),
         ],
       ),
       content: Column(
@@ -67,7 +63,7 @@ class CallBackConfirmationDialog extends StatelessWidget {
             'Do you want to call $userName?',
             style: const TextStyle(fontSize: 15),
           ),
-          
+
           if (isMissed) ...[
             const SizedBox(height: 12),
             Container(
@@ -113,10 +109,7 @@ class CallBackConfirmationDialog extends StatelessWidget {
         // Cancel button
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: Text(
-            'Cancel',
-            style: TextStyle(color: Colors.grey[600]),
-          ),
+          child: Text('Cancel', style: TextStyle(color: Colors.grey[600])),
         ),
 
         // Call buttons
@@ -129,11 +122,9 @@ class CallBackConfirmationDialog extends StatelessWidget {
             },
             icon: const Icon(Icons.phone, size: 18),
             label: const Text('Audio'),
-            style: TextButton.styleFrom(
-              foregroundColor: Colors.green[700],
-            ),
+            style: TextButton.styleFrom(foregroundColor: Colors.green[700]),
           ),
-          
+
           // Video call option
           ElevatedButton.icon(
             onPressed: () {

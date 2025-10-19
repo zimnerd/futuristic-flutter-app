@@ -49,13 +49,10 @@ class _ReplyInputWidgetState extends State<ReplyInputWidget>
       vsync: this,
     );
 
-    _slideAnimation = Tween<Offset>(
-      begin: const Offset(0, 1),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _slideController,
-      curve: Curves.easeOutCubic,
-    ));
+    _slideAnimation = Tween<Offset>(begin: const Offset(0, 1), end: Offset.zero)
+        .animate(
+          CurvedAnimation(parent: _slideController, curve: Curves.easeOutCubic),
+        );
 
     _replyPreviewAnimation = CurvedAnimation(
       parent: _replyPreviewController,
@@ -87,13 +84,13 @@ class _ReplyInputWidgetState extends State<ReplyInputWidget>
     final content = _textController.text.trim();
     if (content.isNotEmpty) {
       context.read<ChatBloc>().add(
-            ReplyToMessage(
-              originalMessageId: widget.originalMessage.id,
-              conversationId: widget.conversationId,
-              content: content,
-              type: MessageType.text,
-            ),
-          );
+        ReplyToMessage(
+          originalMessageId: widget.originalMessage.id,
+          conversationId: widget.conversationId,
+          content: content,
+          type: MessageType.text,
+        ),
+      );
       _animateOut();
     }
   }
@@ -159,9 +156,7 @@ class _ReplyInputWidgetState extends State<ReplyInputWidget>
                       decoration: BoxDecoration(
                         color: Colors.grey[100],
                         borderRadius: BorderRadius.circular(25),
-                        border: Border.all(
-                          color: Colors.grey[300]!,
-                        ),
+                        border: Border.all(color: Colors.grey[300]!),
                       ),
                       child: TextField(
                         controller: _textController,
@@ -218,22 +213,14 @@ class _ReplyInputWidgetState extends State<ReplyInputWidget>
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.grey[50],
-        border: Border(
-          bottom: BorderSide(
-            color: Colors.grey[200]!,
-          ),
-        ),
+        border: Border(bottom: BorderSide(color: Colors.grey[200]!)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(
-                Icons.reply,
-                size: 16,
-                color: PulseColors.primary,
-              ),
+              Icon(Icons.reply, size: 16, color: PulseColors.primary),
               const SizedBox(width: 8),
               Text(
                 'Replying to ${_getSenderName()}',
@@ -252,10 +239,7 @@ class _ReplyInputWidgetState extends State<ReplyInputWidget>
               color: Colors.white,
               borderRadius: BorderRadius.circular(12),
               border: Border(
-                left: BorderSide(
-                  color: PulseColors.primary,
-                  width: 3,
-                ),
+                left: BorderSide(color: PulseColors.primary, width: 3),
               ),
             ),
             child: Column(
@@ -263,20 +247,14 @@ class _ReplyInputWidgetState extends State<ReplyInputWidget>
               children: [
                 Text(
                   _getPreviewContent(),
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey[700],
-                  ),
+                  style: TextStyle(fontSize: 14, color: Colors.grey[700]),
                   maxLines: 3,
                   overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 4),
                 Text(
                   _formatTimestamp(widget.originalMessage.createdAt),
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey[500],
-                  ),
+                  style: TextStyle(fontSize: 12, color: Colors.grey[500]),
                 ),
               ],
             ),

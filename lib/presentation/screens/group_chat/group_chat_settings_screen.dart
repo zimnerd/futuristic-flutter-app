@@ -14,7 +14,7 @@ import '../../widgets/common/pulse_toast.dart';
 final sl = GetIt.instance;
 
 /// Comprehensive Group Chat Settings Screen
-/// 
+///
 /// Features:
 /// - Group information editing (name, description, photo)
 /// - Privacy & security settings
@@ -22,7 +22,7 @@ final sl = GetIt.instance;
 /// - Participant management (view, add, remove, change roles)
 /// - Moderation tools (mute, block, report)
 /// - Group actions (leave, delete)
-/// 
+///
 /// Admin-only features:
 /// - Update group settings
 /// - Change participant roles
@@ -31,20 +31,18 @@ final sl = GetIt.instance;
 class GroupChatSettingsScreen extends StatefulWidget {
   final GroupConversation group;
 
-  const GroupChatSettingsScreen({
-    super.key,
-    required this.group,
-  });
+  const GroupChatSettingsScreen({super.key, required this.group});
 
   @override
-  State<GroupChatSettingsScreen> createState() => _GroupChatSettingsScreenState();
+  State<GroupChatSettingsScreen> createState() =>
+      _GroupChatSettingsScreenState();
 }
 
 class _GroupChatSettingsScreenState extends State<GroupChatSettingsScreen> {
   final _formKey = GlobalKey<FormState>();
   final _groupNameController = TextEditingController();
   final _descriptionController = TextEditingController();
-  
+
   // Settings state
   late bool _allowParticipantInvite;
   late bool _requireApproval;
@@ -52,11 +50,11 @@ class _GroupChatSettingsScreenState extends State<GroupChatSettingsScreen> {
   late bool _enableVoiceChat;
   late bool _enableVideoChat;
   late int _maxParticipants;
-  
+
   // Notification settings
   bool _muteNotifications = false;
   bool _showPreviews = true;
-  
+
   // UI state
   bool _hasUnsavedChanges = false;
 
@@ -72,7 +70,7 @@ class _GroupChatSettingsScreenState extends State<GroupChatSettingsScreen> {
   void _initializeSettings() {
     _groupNameController.text = widget.group.title;
     _descriptionController.text = widget.group.description ?? '';
-    
+
     final settings = widget.group.settings;
     _allowParticipantInvite = settings?.allowParticipantInvite ?? true;
     _requireApproval = settings?.requireApproval ?? false;
@@ -80,7 +78,7 @@ class _GroupChatSettingsScreenState extends State<GroupChatSettingsScreen> {
     _enableVoiceChat = settings?.enableVoiceChat ?? true;
     _enableVideoChat = settings?.enableVideoChat ?? false;
     _maxParticipants = settings?.maxParticipants ?? 50;
-    
+
     // Listen for text changes
     _groupNameController.addListener(_markAsChanged);
     _descriptionController.addListener(_markAsChanged);
@@ -253,7 +251,9 @@ class _GroupChatSettingsScreenState extends State<GroupChatSettingsScreen> {
                       children: [
                         CircleAvatar(
                           radius: 50,
-                          backgroundColor: PulseColors.primary.withValues(alpha: 0.2),
+                          backgroundColor: PulseColors.primary.withValues(
+                            alpha: 0.2,
+                          ),
                           child: const Icon(
                             Icons.group,
                             size: 50,
@@ -295,7 +295,9 @@ class _GroupChatSettingsScreenState extends State<GroupChatSettingsScreen> {
                     enabled: _isAdmin(),
                     decoration: InputDecoration(
                       labelText: 'Group Name',
-                      labelStyle: TextStyle(color: Colors.white.withValues(alpha: 0.7)),
+                      labelStyle: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.7),
+                      ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                         borderSide: BorderSide(
@@ -334,7 +336,9 @@ class _GroupChatSettingsScreenState extends State<GroupChatSettingsScreen> {
                     maxLines: 3,
                     decoration: InputDecoration(
                       labelText: 'Description',
-                      labelStyle: TextStyle(color: Colors.white.withValues(alpha: 0.7)),
+                      labelStyle: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.7),
+                      ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                         borderSide: BorderSide(
@@ -528,14 +532,19 @@ class _GroupChatSettingsScreenState extends State<GroupChatSettingsScreen> {
             )
           : null,
       children: [
-        ...widget.group.participants.map((participant) => _buildParticipantTile(participant)),
+        ...widget.group.participants.map(
+          (participant) => _buildParticipantTile(participant),
+        ),
       ],
     );
   }
 
   Widget _buildParticipantTile(GroupParticipant participant) {
     final isCurrentUser = participant.userId == _currentUserId;
-    final canModify = _isAdmin() && !isCurrentUser && participant.role != ParticipantRole.owner;
+    final canModify =
+        _isAdmin() &&
+        !isCurrentUser &&
+        participant.role != ParticipantRole.owner;
 
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -607,8 +616,12 @@ class _GroupChatSettingsScreenState extends State<GroupChatSettingsScreen> {
       ),
       trailing: canModify
           ? PopupMenuButton<String>(
-              icon: Icon(Icons.more_vert, color: Colors.white.withValues(alpha: 0.7)),
-              onSelected: (value) => _handleParticipantAction(value, participant),
+              icon: Icon(
+                Icons.more_vert,
+                color: Colors.white.withValues(alpha: 0.7),
+              ),
+              onSelected: (value) =>
+                  _handleParticipantAction(value, participant),
               itemBuilder: (context) => [
                 const PopupMenuItem(
                   value: 'change_role',
@@ -686,9 +699,15 @@ class _GroupChatSettingsScreenState extends State<GroupChatSettingsScreen> {
           ),
           subtitle: Text(
             'Manage blocked participants',
-            style: TextStyle(color: Colors.white.withValues(alpha: 0.6), fontSize: 12),
+            style: TextStyle(
+              color: Colors.white.withValues(alpha: 0.6),
+              fontSize: 12,
+            ),
           ),
-          trailing: Icon(Icons.chevron_right, color: Colors.white.withValues(alpha: 0.5)),
+          trailing: Icon(
+            Icons.chevron_right,
+            color: Colors.white.withValues(alpha: 0.5),
+          ),
           onTap: _showBlockedUsers,
         ),
         const Divider(height: 1, color: Colors.white12),
@@ -700,9 +719,15 @@ class _GroupChatSettingsScreenState extends State<GroupChatSettingsScreen> {
           ),
           subtitle: Text(
             'Review reports from members',
-            style: TextStyle(color: Colors.white.withValues(alpha: 0.6), fontSize: 12),
+            style: TextStyle(
+              color: Colors.white.withValues(alpha: 0.6),
+              fontSize: 12,
+            ),
           ),
-          trailing: Icon(Icons.chevron_right, color: Colors.white.withValues(alpha: 0.5)),
+          trailing: Icon(
+            Icons.chevron_right,
+            color: Colors.white.withValues(alpha: 0.5),
+          ),
           onTap: _showReportedContent,
         ),
       ],
@@ -724,9 +749,15 @@ class _GroupChatSettingsScreenState extends State<GroupChatSettingsScreen> {
           ),
           subtitle: Text(
             'You can rejoin later if group is public',
-            style: TextStyle(color: Colors.white.withValues(alpha: 0.6), fontSize: 12),
+            style: TextStyle(
+              color: Colors.white.withValues(alpha: 0.6),
+              fontSize: 12,
+            ),
           ),
-          trailing: Icon(Icons.chevron_right, color: Colors.white.withValues(alpha: 0.5)),
+          trailing: Icon(
+            Icons.chevron_right,
+            color: Colors.white.withValues(alpha: 0.5),
+          ),
           onTap: _confirmLeaveGroup,
         ),
         if (_isOwner()) ...[
@@ -739,9 +770,15 @@ class _GroupChatSettingsScreenState extends State<GroupChatSettingsScreen> {
             ),
             subtitle: Text(
               'Permanently delete this group and all messages',
-              style: TextStyle(color: Colors.white.withValues(alpha: 0.6), fontSize: 12),
+              style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.6),
+                fontSize: 12,
+              ),
             ),
-            trailing: Icon(Icons.chevron_right, color: Colors.white.withValues(alpha: 0.5)),
+            trailing: Icon(
+              Icons.chevron_right,
+              color: Colors.white.withValues(alpha: 0.5),
+            ),
             onTap: _confirmDeleteGroup,
           ),
         ],
@@ -821,11 +858,17 @@ class _GroupChatSettingsScreenState extends State<GroupChatSettingsScreen> {
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       title: Text(
         title,
-        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
+        style: const TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.w500,
+        ),
       ),
       subtitle: Text(
         subtitle,
-        style: TextStyle(color: Colors.white.withValues(alpha: 0.6), fontSize: 12),
+        style: TextStyle(
+          color: Colors.white.withValues(alpha: 0.6),
+          fontSize: 12,
+        ),
       ),
       value: value,
       activeThumbColor: PulseColors.primary,
@@ -850,14 +893,20 @@ class _GroupChatSettingsScreenState extends State<GroupChatSettingsScreen> {
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
           child: Text(
             title,
-            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w500,
+            ),
           ),
         ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Text(
             subtitle,
-            style: TextStyle(color: Colors.white.withValues(alpha: 0.6), fontSize: 12),
+            style: TextStyle(
+              color: Colors.white.withValues(alpha: 0.6),
+              fontSize: 12,
+            ),
           ),
         ),
         SliderTheme(
@@ -887,7 +936,10 @@ class _GroupChatSettingsScreenState extends State<GroupChatSettingsScreen> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: const Color(0xFF1A1F3A),
-        title: const Text('Unsaved Changes', style: TextStyle(color: Colors.white)),
+        title: const Text(
+          'Unsaved Changes',
+          style: TextStyle(color: Colors.white),
+        ),
         content: const Text(
           'You have unsaved changes. Do you want to discard them?',
           style: TextStyle(color: Colors.white70),
@@ -957,12 +1009,10 @@ class _GroupChatSettingsScreenState extends State<GroupChatSettingsScreen> {
         // Show error message
         PulseToast.error(
           context,
-          message: 'Failed to save settings: ${e.toString().replaceAll('Exception: ', '')}',
+          message:
+              'Failed to save settings: ${e.toString().replaceAll('Exception: ', '')}',
           duration: const Duration(seconds: 5),
-          action: ToastAction(
-            label: 'Retry',
-            onPressed: _saveSettings,
-          ),
+          action: ToastAction(label: 'Retry', onPressed: _saveSettings),
         );
       }
     }
@@ -977,7 +1027,10 @@ class _GroupChatSettingsScreenState extends State<GroupChatSettingsScreen> {
           children: [
             ListTile(
               leading: const Icon(Icons.photo_library, color: Colors.white),
-              title: const Text('Choose from gallery', style: TextStyle(color: Colors.white)),
+              title: const Text(
+                'Choose from gallery',
+                style: TextStyle(color: Colors.white),
+              ),
               onTap: () {
                 Navigator.pop(context);
                 _pickImageFromGallery();
@@ -985,7 +1038,10 @@ class _GroupChatSettingsScreenState extends State<GroupChatSettingsScreen> {
             ),
             ListTile(
               leading: const Icon(Icons.camera_alt, color: Colors.white),
-              title: const Text('Take photo', style: TextStyle(color: Colors.white)),
+              title: const Text(
+                'Take photo',
+                style: TextStyle(color: Colors.white),
+              ),
               onTap: () {
                 Navigator.pop(context);
                 _takePhotoWithCamera();
@@ -993,7 +1049,10 @@ class _GroupChatSettingsScreenState extends State<GroupChatSettingsScreen> {
             ),
             ListTile(
               leading: const Icon(Icons.delete, color: Colors.red),
-              title: const Text('Remove photo', style: TextStyle(color: Colors.red)),
+              title: const Text(
+                'Remove photo',
+                style: TextStyle(color: Colors.red),
+              ),
               onTap: () {
                 Navigator.pop(context);
                 _removeGroupPhoto();
@@ -1010,7 +1069,9 @@ class _GroupChatSettingsScreenState extends State<GroupChatSettingsScreen> {
       context: context,
       builder: (context) => AddParticipantsDialog(
         groupId: widget.group.id,
-        existingParticipantIds: widget.group.participants.map((p) => p.userId).toList(),
+        existingParticipantIds: widget.group.participants
+            .map((p) => p.userId)
+            .toList(),
         onParticipantsAdded: () {
           // Refresh group data
           setState(() {});
@@ -1035,12 +1096,19 @@ class _GroupChatSettingsScreenState extends State<GroupChatSettingsScreen> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: const Color(0xFF1A1F3A),
-        title: Text('Change Role for ${participant.fullName}', style: const TextStyle(color: Colors.white)),
+        title: Text(
+          'Change Role for ${participant.fullName}',
+          style: const TextStyle(color: Colors.white),
+        ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             _buildRoleOption('Admin', ParticipantRole.admin, participant),
-            _buildRoleOption('Moderator', ParticipantRole.moderator, participant),
+            _buildRoleOption(
+              'Moderator',
+              ParticipantRole.moderator,
+              participant,
+            ),
             _buildRoleOption('Member', ParticipantRole.member, participant),
           ],
         ),
@@ -1048,11 +1116,17 @@ class _GroupChatSettingsScreenState extends State<GroupChatSettingsScreen> {
     );
   }
 
-  Widget _buildRoleOption(String label, ParticipantRole role, GroupParticipant participant) {
+  Widget _buildRoleOption(
+    String label,
+    ParticipantRole role,
+    GroupParticipant participant,
+  ) {
     final isSelected = participant.role == role;
     return ListTile(
       title: Text(label, style: const TextStyle(color: Colors.white)),
-      trailing: isSelected ? const Icon(Icons.check, color: Colors.green) : null,
+      trailing: isSelected
+          ? const Icon(Icons.check, color: Colors.green)
+          : null,
       onTap: () {
         Navigator.pop(context);
         _changeParticipantRole(participant, role);
@@ -1060,7 +1134,10 @@ class _GroupChatSettingsScreenState extends State<GroupChatSettingsScreen> {
     );
   }
 
-  Future<void> _changeParticipantRole(GroupParticipant participant, ParticipantRole newRole) async {
+  Future<void> _changeParticipantRole(
+    GroupParticipant participant,
+    ParticipantRole newRole,
+  ) async {
     try {
       final service = sl<GroupChatService>();
       await service.changeParticipantRole(
@@ -1069,7 +1146,7 @@ class _GroupChatSettingsScreenState extends State<GroupChatSettingsScreen> {
         role: newRole,
         reason: 'Role changed by admin',
       );
-      
+
       if (mounted) {
         PulseToast.success(
           context,
@@ -1078,10 +1155,7 @@ class _GroupChatSettingsScreenState extends State<GroupChatSettingsScreen> {
       }
     } catch (e) {
       if (mounted) {
-        PulseToast.error(
-          context,
-          message: 'Failed to change role: $e',
-        );
+        PulseToast.error(context, message: 'Failed to change role: $e');
       }
     }
   }
@@ -1091,7 +1165,10 @@ class _GroupChatSettingsScreenState extends State<GroupChatSettingsScreen> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: const Color(0xFF1A1F3A),
-        title: const Text('Remove Participant', style: TextStyle(color: Colors.white)),
+        title: const Text(
+          'Remove Participant',
+          style: TextStyle(color: Colors.white),
+        ),
         content: Text(
           'Are you sure you want to remove ${participant.fullName} from this group?',
           style: const TextStyle(color: Colors.white70),
@@ -1121,7 +1198,7 @@ class _GroupChatSettingsScreenState extends State<GroupChatSettingsScreen> {
         userId: participant.userId,
         reason: 'Removed by admin',
       );
-      
+
       if (mounted) {
         PulseToast.success(
           context,
@@ -1130,10 +1207,7 @@ class _GroupChatSettingsScreenState extends State<GroupChatSettingsScreen> {
       }
     } catch (e) {
       if (mounted) {
-        PulseToast.error(
-          context,
-          message: 'Failed to remove participant: $e',
-        );
+        PulseToast.error(context, message: 'Failed to remove participant: $e');
       }
     }
   }
@@ -1142,9 +1216,8 @@ class _GroupChatSettingsScreenState extends State<GroupChatSettingsScreen> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => BlockedUsersScreen(
-          conversationId: widget.group.id,
-        ),
+        builder: (context) =>
+            BlockedUsersScreen(conversationId: widget.group.id),
       ),
     );
   }
@@ -1153,9 +1226,8 @@ class _GroupChatSettingsScreenState extends State<GroupChatSettingsScreen> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => ReportedContentScreen(
-          conversationId: widget.group.id,
-        ),
+        builder: (context) =>
+            ReportedContentScreen(conversationId: widget.group.id),
       ),
     );
   }
@@ -1194,21 +1266,15 @@ class _GroupChatSettingsScreenState extends State<GroupChatSettingsScreen> {
         conversationId: widget.group.id,
         message: 'Left the group',
       );
-      
+
       if (mounted) {
         Navigator.pop(context); // Close settings screen
         Navigator.pop(context); // Close chat screen
-        PulseToast.info(
-          context,
-          message: 'You left the group',
-        );
+        PulseToast.info(context, message: 'You left the group');
       }
     } catch (e) {
       if (mounted) {
-        PulseToast.error(
-          context,
-          message: 'Failed to leave group: $e',
-        );
+        PulseToast.error(context, message: 'Failed to leave group: $e');
       }
     }
   }
@@ -1243,24 +1309,16 @@ class _GroupChatSettingsScreenState extends State<GroupChatSettingsScreen> {
   Future<void> _deleteGroup() async {
     try {
       final service = sl<GroupChatService>();
-      await service.deleteGroup(
-        conversationId: widget.group.id,
-      );
-      
+      await service.deleteGroup(conversationId: widget.group.id);
+
       if (mounted) {
         Navigator.pop(context); // Close settings screen
         Navigator.pop(context); // Close chat screen
-        PulseToast.error(
-          context,
-          message: 'Group deleted permanently',
-        );
+        PulseToast.error(context, message: 'Group deleted permanently');
       }
     } catch (e) {
       if (mounted) {
-        PulseToast.error(
-          context,
-          message: 'Failed to delete group: $e',
-        );
+        PulseToast.error(context, message: 'Failed to delete group: $e');
       }
     }
   }
@@ -1283,10 +1341,7 @@ class _GroupChatSettingsScreenState extends State<GroupChatSettingsScreen> {
       }
     } catch (e) {
       if (mounted) {
-        PulseToast.error(
-          context,
-          message: 'Failed to pick image: $e',
-        );
+        PulseToast.error(context, message: 'Failed to pick image: $e');
       }
     }
   }
@@ -1307,10 +1362,7 @@ class _GroupChatSettingsScreenState extends State<GroupChatSettingsScreen> {
       }
     } catch (e) {
       if (mounted) {
-        PulseToast.error(
-          context,
-          message: 'Failed to take photo: $e',
-        );
+        PulseToast.error(context, message: 'Failed to take photo: $e');
       }
     }
   }
@@ -1344,10 +1396,7 @@ class _GroupChatSettingsScreenState extends State<GroupChatSettingsScreen> {
       }
     } catch (e) {
       if (mounted) {
-        PulseToast.error(
-          context,
-          message: 'Failed to upload photo: $e',
-        );
+        PulseToast.error(context, message: 'Failed to upload photo: $e');
       }
     }
   }
@@ -1359,7 +1408,10 @@ class _GroupChatSettingsScreenState extends State<GroupChatSettingsScreen> {
         context: context,
         builder: (context) => AlertDialog(
           backgroundColor: const Color(0xFF1A1F3A),
-          title: const Text('Remove Photo', style: TextStyle(color: Colors.white)),
+          title: const Text(
+            'Remove Photo',
+            style: TextStyle(color: Colors.white),
+          ),
           content: const Text(
             'Are you sure you want to remove the group photo?',
             style: TextStyle(color: Colors.white70),
@@ -1382,20 +1434,14 @@ class _GroupChatSettingsScreenState extends State<GroupChatSettingsScreen> {
         await service.removeGroupPhoto(conversationId: widget.group.id);
 
         if (mounted) {
-          PulseToast.success(
-            context,
-            message: 'Group photo removed',
-          );
+          PulseToast.success(context, message: 'Group photo removed');
           // Refresh the screen
           setState(() {});
         }
       }
     } catch (e) {
       if (mounted) {
-        PulseToast.error(
-          context,
-          message: 'Failed to remove photo: $e',
-        );
+        PulseToast.error(context, message: 'Failed to remove photo: $e');
       }
     }
   }
@@ -1404,7 +1450,7 @@ class _GroupChatSettingsScreenState extends State<GroupChatSettingsScreen> {
     if (date == null) return 'Unknown';
     final now = DateTime.now();
     final difference = now.difference(date);
-    
+
     if (difference.inDays > 365) {
       return '${(difference.inDays / 365).floor()}y ago';
     } else if (difference.inDays > 30) {
@@ -1541,63 +1587,68 @@ class _AddParticipantsDialogState extends State<AddParticipantsDialog> {
                 child: _isSearching
                     ? const Center(child: CircularProgressIndicator())
                     : _searchResults.isEmpty
-                        ? const Center(
-                            child: Text(
-                              'Search for users to add',
-                              style: TextStyle(color: Colors.white54),
-                            ),
-                          )
-                        : ListView.builder(
-                            itemCount: _searchResults.length,
-                            padding: const EdgeInsets.all(8),
-                            itemBuilder: (context, index) {
-                              final user = _searchResults[index];
-                              final userId = user['id'] as String;
-                              final isSelected = _selectedUserIds.contains(userId);
-                              final isExisting = widget.existingParticipantIds.contains(userId);
+                    ? const Center(
+                        child: Text(
+                          'Search for users to add',
+                          style: TextStyle(color: Colors.white54),
+                        ),
+                      )
+                    : ListView.builder(
+                        itemCount: _searchResults.length,
+                        padding: const EdgeInsets.all(8),
+                        itemBuilder: (context, index) {
+                          final user = _searchResults[index];
+                          final userId = user['id'] as String;
+                          final isSelected = _selectedUserIds.contains(userId);
+                          final isExisting = widget.existingParticipantIds
+                              .contains(userId);
 
-                              return ListTile(
-                                enabled: !isExisting,
-                                leading: CircleAvatar(
-                                  backgroundImage: user['photoUrl'] != null
-                                      ? CachedNetworkImageProvider(user['photoUrl'])
-                                      : null,
-                                  child: user['photoUrl'] == null
-                                      ? Text(user['firstName'][0].toUpperCase())
-                                      : null,
-                                ),
-                                title: Text(
-                                  '${user['firstName']} ${user['lastName']}',
-                                  style: TextStyle(
-                                    color: isExisting ? Colors.grey : Colors.white,
-                                    fontWeight: FontWeight.bold,
+                          return ListTile(
+                            enabled: !isExisting,
+                            leading: CircleAvatar(
+                              backgroundImage: user['photoUrl'] != null
+                                  ? CachedNetworkImageProvider(user['photoUrl'])
+                                  : null,
+                              child: user['photoUrl'] == null
+                                  ? Text(user['firstName'][0].toUpperCase())
+                                  : null,
+                            ),
+                            title: Text(
+                              '${user['firstName']} ${user['lastName']}',
+                              style: TextStyle(
+                                color: isExisting ? Colors.grey : Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            subtitle: Text(
+                              isExisting
+                                  ? 'Already in group'
+                                  : '@${user['username']}',
+                              style: TextStyle(
+                                color: isExisting
+                                    ? Colors.grey
+                                    : Colors.white70,
+                              ),
+                            ),
+                            trailing: isExisting
+                                ? const Icon(Icons.check, color: Colors.grey)
+                                : Checkbox(
+                                    value: isSelected,
+                                    onChanged: (value) {
+                                      setState(() {
+                                        if (value == true) {
+                                          _selectedUserIds.add(userId);
+                                          _selectedUsers[userId] = user;
+                                        } else {
+                                          _selectedUserIds.remove(userId);
+                                          _selectedUsers.remove(userId);
+                                        }
+                                      });
+                                    },
                                   ),
-                                ),
-                                subtitle: Text(
-                                  isExisting ? 'Already in group' : '@${user['username']}',
-                                  style: TextStyle(
-                                    color: isExisting ? Colors.grey : Colors.white70,
-                                  ),
-                                ),
-                                trailing: isExisting
-                                    ? const Icon(Icons.check, color: Colors.grey)
-                                    : Checkbox(
-                                        value: isSelected,
-                                        onChanged: (value) {
-                                          setState(() {
-                                            if (value == true) {
-                                              _selectedUserIds.add(userId);
-                                              _selectedUsers[userId] = user;
-                                            } else {
-                                              _selectedUserIds.remove(userId);
-                                              _selectedUsers.remove(userId);
-                                            }
-                                          });
-                                        },
-                                      ),
-                              );
-                            },
-                          ),
+                          );
+                        },
+                      ),
               ),
             ),
             const SizedBox(height: 16),
@@ -1657,17 +1708,11 @@ class _AddParticipantsDialogState extends State<AddParticipantsDialog> {
       if (mounted) {
         Navigator.pop(context);
         widget.onParticipantsAdded();
-        PulseToast.success(
-          context,
-          message: 'Participants added successfully',
-        );
+        PulseToast.success(context, message: 'Participants added successfully');
       }
     } catch (e) {
       if (mounted) {
-        PulseToast.error(
-          context,
-          message: 'Failed to add participants: $e',
-        );
+        PulseToast.error(context, message: 'Failed to add participants: $e');
       }
     } finally {
       if (mounted) {
@@ -1693,10 +1738,7 @@ class _AddParticipantsDialogState extends State<AddParticipantsDialog> {
     } catch (e) {
       if (mounted) {
         setState(() => _isSearching = false);
-        PulseToast.error(
-          context,
-          message: 'Search failed: $e',
-        );
+        PulseToast.error(context, message: 'Search failed: $e');
       }
     }
   }
@@ -1707,10 +1749,7 @@ class _AddParticipantsDialogState extends State<AddParticipantsDialog> {
 class BlockedUsersScreen extends StatefulWidget {
   final String conversationId;
 
-  const BlockedUsersScreen({
-    super.key,
-    required this.conversationId,
-  });
+  const BlockedUsersScreen({super.key, required this.conversationId});
 
   @override
   State<BlockedUsersScreen> createState() => _BlockedUsersScreenState();
@@ -1729,8 +1768,10 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
   Future<void> _loadBlockedUsers() async {
     try {
       final service = sl<GroupChatService>();
-      final users = await service.getBlockedUsers(conversationId: widget.conversationId);
-      
+      final users = await service.getBlockedUsers(
+        conversationId: widget.conversationId,
+      );
+
       if (mounted) {
         setState(() {
           _blockedUsers = users;
@@ -1740,10 +1781,7 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
     } catch (e) {
       if (mounted) {
         setState(() => _isLoading = false);
-        PulseToast.error(
-          context,
-          message: 'Failed to load blocked users: $e',
-        );
+        PulseToast.error(context, message: 'Failed to load blocked users: $e');
       }
     }
   }
@@ -1760,82 +1798,82 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _blockedUsers == null || _blockedUsers!.isEmpty
-              ? const Center(
-                  child: Text(
-                    'No blocked users',
-                    style: TextStyle(color: Colors.white54, fontSize: 16),
+          ? const Center(
+              child: Text(
+                'No blocked users',
+                style: TextStyle(color: Colors.white54, fontSize: 16),
+              ),
+            )
+          : ListView.builder(
+              itemCount: _blockedUsers!.length,
+              padding: const EdgeInsets.all(16),
+              itemBuilder: (context, index) {
+                final user = _blockedUsers![index];
+                return Card(
+                  color: const Color(0xFF1A1F3A),
+                  margin: const EdgeInsets.only(bottom: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                )
-              : ListView.builder(
-                  itemCount: _blockedUsers!.length,
-                  padding: const EdgeInsets.all(16),
-                  itemBuilder: (context, index) {
-                    final user = _blockedUsers![index];
-                    return Card(
-                      color: const Color(0xFF1A1F3A),
-                      margin: const EdgeInsets.only(bottom: 12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: ListTile(
-                        contentPadding: const EdgeInsets.all(12),
-                        leading: CircleAvatar(
-                          radius: 25,
-                          backgroundImage: user.photoUrl != null
-                              ? CachedNetworkImageProvider(user.photoUrl!)
-                              : null,
-                          child: user.photoUrl == null
-                              ? Text(
-                                  user.fullName[0].toUpperCase(),
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                )
-                              : null,
-                        ),
-                        title: Text(
-                          user.fullName,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        subtitle: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              '@${user.username}',
-                              style: const TextStyle(color: Colors.white70),
-                            ),
-                            if (user.reason != null) ...[
-                              const SizedBox(height: 4),
-                              Text(
-                                'Reason: ${user.reason}',
-                                style: const TextStyle(
-                                  color: Colors.white54,
-                                  fontSize: 12,
-                                ),
+                  child: ListTile(
+                    contentPadding: const EdgeInsets.all(12),
+                    leading: CircleAvatar(
+                      radius: 25,
+                      backgroundImage: user.photoUrl != null
+                          ? CachedNetworkImageProvider(user.photoUrl!)
+                          : null,
+                      child: user.photoUrl == null
+                          ? Text(
+                              user.fullName[0].toUpperCase(),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
                               ),
-                            ],
-                          ],
+                            )
+                          : null,
+                    ),
+                    title: Text(
+                      user.fullName,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '@${user.username}',
+                          style: const TextStyle(color: Colors.white70),
                         ),
-                        trailing: ElevatedButton(
-                          onPressed: () => _unblockUser(user),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.green,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 8,
+                        if (user.reason != null) ...[
+                          const SizedBox(height: 4),
+                          Text(
+                            'Reason: ${user.reason}',
+                            style: const TextStyle(
+                              color: Colors.white54,
+                              fontSize: 12,
                             ),
                           ),
-                          child: const Text('Unblock'),
+                        ],
+                      ],
+                    ),
+                    trailing: ElevatedButton(
+                      onPressed: () => _unblockUser(user),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
                         ),
                       ),
-                    );
-                  },
-                ),
+                      child: const Text('Unblock'),
+                    ),
+                  ),
+                );
+              },
+            ),
     );
   }
 
@@ -1848,18 +1886,12 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
       );
 
       if (mounted) {
-        PulseToast.success(
-          context,
-          message: '${user.fullName} unblocked',
-        );
+        PulseToast.success(context, message: '${user.fullName} unblocked');
         _loadBlockedUsers(); // Reload the list
       }
     } catch (e) {
       if (mounted) {
-        PulseToast.error(
-          context,
-          message: 'Failed to unblock user: $e',
-        );
+        PulseToast.error(context, message: 'Failed to unblock user: $e');
       }
     }
   }
@@ -1870,10 +1902,7 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
 class ReportedContentScreen extends StatefulWidget {
   final String conversationId;
 
-  const ReportedContentScreen({
-    super.key,
-    required this.conversationId,
-  });
+  const ReportedContentScreen({super.key, required this.conversationId});
 
   @override
   State<ReportedContentScreen> createState() => _ReportedContentScreenState();
@@ -1895,7 +1924,7 @@ class _ReportedContentScreenState extends State<ReportedContentScreen> {
       final reports = await service.getReportedContent(
         conversationId: widget.conversationId,
       );
-      
+
       if (mounted) {
         setState(() {
           _reports = reports;
@@ -1925,162 +1954,170 @@ class _ReportedContentScreenState extends State<ReportedContentScreen> {
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _reports == null || _reports!.isEmpty
-              ? const Center(
-                  child: Text(
-                    'No reported content',
-                    style: TextStyle(color: Colors.white54, fontSize: 16),
+          ? const Center(
+              child: Text(
+                'No reported content',
+                style: TextStyle(color: Colors.white54, fontSize: 16),
+              ),
+            )
+          : ListView.builder(
+              itemCount: _reports!.length,
+              padding: const EdgeInsets.all(16),
+              itemBuilder: (context, index) {
+                final report = _reports![index];
+                return Card(
+                  color: const Color(0xFF1A1F3A),
+                  margin: const EdgeInsets.only(bottom: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                )
-              : ListView.builder(
-                  itemCount: _reports!.length,
-                  padding: const EdgeInsets.all(16),
-                  itemBuilder: (context, index) {
-                    final report = _reports![index];
-                    return Card(
-                      color: const Color(0xFF1A1F3A),
-                      margin: const EdgeInsets.only(bottom: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
                           children: [
-                            Row(
-                              children: [
-                                CircleAvatar(
-                                  radius: 20,
-                                  backgroundImage: report.reporterPhotoUrl != null
-                                      ? CachedNetworkImageProvider(report.reporterPhotoUrl!)
-                                      : null,
-                                  child: report.reporterPhotoUrl == null
-                                      ? Text(
-                                          report.reporterUsername[0].toUpperCase(),
-                                          style: const TextStyle(color: Colors.white),
-                                        )
-                                      : null,
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        'Reported by @${report.reporterUsername}',
-                                        style: const TextStyle(
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.bold,
-                                        ),
+                            CircleAvatar(
+                              radius: 20,
+                              backgroundImage: report.reporterPhotoUrl != null
+                                  ? CachedNetworkImageProvider(
+                                      report.reporterPhotoUrl!,
+                                    )
+                                  : null,
+                              child: report.reporterPhotoUrl == null
+                                  ? Text(
+                                      report.reporterUsername[0].toUpperCase(),
+                                      style: const TextStyle(
+                                        color: Colors.white,
                                       ),
-                                      Text(
-                                        _formatDate(report.reportedAt),
-                                        style: const TextStyle(
-                                          color: Colors.white54,
-                                          fontSize: 12,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 12,
-                                    vertical: 6,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: _getStatusColor(report.status),
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: Text(
-                                    report.status.toUpperCase(),
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                              ],
+                                    )
+                                  : null,
                             ),
-                            const SizedBox(height: 12),
-                            Container(
-                              padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(
-                                color: Colors.red.withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(8),
-                                border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
-                              ),
+                            const SizedBox(width: 12),
+                            Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    'Reason: ${report.reason}',
+                                    'Reported by @${report.reporterUsername}',
                                     style: const TextStyle(
-                                      color: Colors.red,
+                                      color: Colors.white,
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
-                                  if (report.description != null) ...[
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      report.description!,
-                                      style: const TextStyle(color: Colors.white70),
+                                  Text(
+                                    _formatDate(report.reportedAt),
+                                    style: const TextStyle(
+                                      color: Colors.white54,
+                                      fontSize: 12,
                                     ),
-                                  ],
+                                  ),
                                 ],
                               ),
                             ),
-                            if (report.message != null) ...[
-                              const SizedBox(height: 12),
-                              Container(
-                                padding: const EdgeInsets.all(12),
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withValues(alpha: 0.05),
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Text(
-                                  report.message!.content,
-                                  style: const TextStyle(color: Colors.white70),
-                                  maxLines: 3,
-                                  overflow: TextOverflow.ellipsis,
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 6,
+                              ),
+                              decoration: BoxDecoration(
+                                color: _getStatusColor(report.status),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Text(
+                                report.status.toUpperCase(),
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
                                 ),
                               ),
-                            ],
-                            if (report.status == 'pending') ...[
-                              const SizedBox(height: 12),
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: ElevatedButton.icon(
-                                      onPressed: () => _reviewReport(report, 'dismissed'),
-                                      icon: const Icon(Icons.close, size: 18),
-                                      label: const Text('Dismiss'),
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: Colors.grey,
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Expanded(
-                                    child: ElevatedButton.icon(
-                                      onPressed: () => _reviewReport(report, 'action_taken'),
-                                      icon: const Icon(Icons.check, size: 18),
-                                      label: const Text('Take Action'),
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: Colors.red,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
+                            ),
                           ],
                         ),
-                      ),
-                    );
-                  },
-                ),
+                        const SizedBox(height: 12),
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Colors.red.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: Colors.red.withValues(alpha: 0.3),
+                            ),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Reason: ${report.reason}',
+                                style: const TextStyle(
+                                  color: Colors.red,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              if (report.description != null) ...[
+                                const SizedBox(height: 4),
+                                Text(
+                                  report.description!,
+                                  style: const TextStyle(color: Colors.white70),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
+                        if (report.message != null) ...[
+                          const SizedBox(height: 12),
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.05),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              report.message!.content,
+                              style: const TextStyle(color: Colors.white70),
+                              maxLines: 3,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                        if (report.status == 'pending') ...[
+                          const SizedBox(height: 12),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: ElevatedButton.icon(
+                                  onPressed: () =>
+                                      _reviewReport(report, 'dismissed'),
+                                  icon: const Icon(Icons.close, size: 18),
+                                  label: const Text('Dismiss'),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.grey,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: ElevatedButton.icon(
+                                  onPressed: () =>
+                                      _reviewReport(report, 'action_taken'),
+                                  icon: const Icon(Icons.check, size: 18),
+                                  label: const Text('Take Action'),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.red,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
     );
   }
 
@@ -2124,20 +2161,13 @@ class _ReportedContentScreenState extends State<ReportedContentScreen> {
       );
 
       if (mounted) {
-        PulseToast.success(
-          context,
-          message: 'Report $action successfully',
-        );
+        PulseToast.success(context, message: 'Report $action successfully');
         _loadReportedContent(); // Reload the list
       }
     } catch (e) {
       if (mounted) {
-        PulseToast.error(
-          context,
-          message: 'Failed to review report: $e',
-        );
+        PulseToast.error(context, message: 'Failed to review report: $e');
       }
     }
   }
 }
-

@@ -47,7 +47,9 @@ class PremiumApiService {
   Future<Subscription?> getCurrentSubscription(String userId) async {
     try {
       final response = await http.get(
-        Uri.parse('${ApiConstants.baseUrl}${ApiConstants.premium}/subscription/$userId'),
+        Uri.parse(
+          '${ApiConstants.baseUrl}${ApiConstants.premium}/subscription/$userId',
+        ),
         headers: {
           'Authorization': 'Bearer $_authToken',
           'Content-Type': 'application/json',
@@ -107,7 +109,9 @@ class PremiumApiService {
   Future<void> cancelSubscription(String subscriptionId) async {
     try {
       final response = await http.patch(
-        Uri.parse('${ApiConstants.baseUrl}${ApiConstants.premium}/subscription/$subscriptionId/cancel'),
+        Uri.parse(
+          '${ApiConstants.baseUrl}${ApiConstants.premium}/subscription/$subscriptionId/cancel',
+        ),
         headers: {
           'Authorization': 'Bearer $_authToken',
           'Content-Type': 'application/json',
@@ -116,7 +120,9 @@ class PremiumApiService {
 
       if (response.statusCode != 200) {
         final errorData = json.decode(response.body);
-        throw Exception(errorData['message'] ?? 'Failed to cancel subscription');
+        throw Exception(
+          errorData['message'] ?? 'Failed to cancel subscription',
+        );
       }
     } catch (e) {
       AppLogger.error('Error cancelling subscription: $e');
@@ -132,7 +138,9 @@ class PremiumApiService {
   }) async {
     try {
       final response = await http.patch(
-        Uri.parse('${ApiConstants.baseUrl}${ApiConstants.premium}/subscription/$subscriptionId'),
+        Uri.parse(
+          '${ApiConstants.baseUrl}${ApiConstants.premium}/subscription/$subscriptionId',
+        ),
         headers: {
           'Authorization': 'Bearer $_authToken',
           'Content-Type': 'application/json',
@@ -148,7 +156,9 @@ class PremiumApiService {
         return Subscription.fromJson(data['subscription']);
       } else {
         final errorData = json.decode(response.body);
-        throw Exception(errorData['message'] ?? 'Failed to update subscription');
+        throw Exception(
+          errorData['message'] ?? 'Failed to update subscription',
+        );
       }
     } catch (e) {
       AppLogger.error('Error updating subscription: $e');
@@ -160,7 +170,9 @@ class PremiumApiService {
   Future<List<Subscription>> getSubscriptionHistory(String userId) async {
     try {
       final response = await http.get(
-        Uri.parse('${ApiConstants.baseUrl}${ApiConstants.premium}/subscription/$userId/history'),
+        Uri.parse(
+          '${ApiConstants.baseUrl}${ApiConstants.premium}/subscription/$userId/history',
+        ),
         headers: {
           'Authorization': 'Bearer $_authToken',
           'Content-Type': 'application/json',
@@ -173,7 +185,9 @@ class PremiumApiService {
             .map((json) => Subscription.fromJson(json))
             .toList();
       } else {
-        throw Exception('Failed to load subscription history: ${response.statusCode}');
+        throw Exception(
+          'Failed to load subscription history: ${response.statusCode}',
+        );
       }
     } catch (e) {
       AppLogger.error('Error fetching subscription history: $e');
@@ -196,7 +210,9 @@ class PremiumApiService {
         final data = json.decode(response.body);
         return data['features'] as Map<String, dynamic>;
       } else {
-        throw Exception('Failed to load premium features: ${response.statusCode}');
+        throw Exception(
+          'Failed to load premium features: ${response.statusCode}',
+        );
       }
     } catch (e) {
       AppLogger.error('Error fetching premium features: $e');
@@ -241,7 +257,9 @@ class PremiumApiService {
   Future<Map<String, int>> getBoostCredits(String userId) async {
     try {
       final response = await http.get(
-        Uri.parse('${ApiConstants.baseUrl}${ApiConstants.premium}/boost/$userId/credits'),
+        Uri.parse(
+          '${ApiConstants.baseUrl}${ApiConstants.premium}/boost/$userId/credits',
+        ),
         headers: {
           'Authorization': 'Bearer $_authToken',
           'Content-Type': 'application/json',
@@ -272,10 +290,7 @@ class PremiumApiService {
           'Authorization': 'Bearer $_authToken',
           'Content-Type': 'application/json',
         },
-        body: json.encode({
-          'boostType': boostType,
-          'targetData': targetData,
-        }),
+        body: json.encode({'boostType': boostType, 'targetData': targetData}),
       );
 
       if (response.statusCode != 200) {

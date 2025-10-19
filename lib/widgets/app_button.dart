@@ -3,21 +3,10 @@ import '../core/theme/app_colors.dart';
 import '../core/theme/app_text_styles.dart';
 
 /// Button variants for different styles
-enum AppButtonVariant {
-  primary,
-  secondary,
-  outline,
-  ghost,
-  danger,
-  success,
-}
+enum AppButtonVariant { primary, secondary, outline, ghost, danger, success }
 
 /// Button sizes
-enum AppButtonSize {
-  small,
-  medium,
-  large,
-}
+enum AppButtonSize { small, medium, large }
 
 /// Custom app button widget following PulseLink design system
 class AppButton extends StatelessWidget {
@@ -63,14 +52,8 @@ class AppButton extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  if (icon != null) ...[
-                    icon!,
-                    const SizedBox(width: 8),
-                  ],
-                  Text(
-                    text,
-                    style: _getTextStyle(),
-                  ),
+                  if (icon != null) ...[icon!, const SizedBox(width: 8)],
+                  Text(text, style: _getTextStyle()),
                 ],
               ),
       ),
@@ -93,7 +76,7 @@ class AppButton extends StatelessWidget {
 
   Color _getBackgroundColor() {
     if (!enabled) return AppColors.disabled;
-    
+
     switch (variant) {
       case AppButtonVariant.primary:
         return AppColors.primary;
@@ -112,7 +95,7 @@ class AppButton extends StatelessWidget {
 
   Color _getTextColor() {
     if (!enabled) return AppColors.disabledText;
-    
+
     switch (variant) {
       case AppButtonVariant.primary:
       case AppButtonVariant.danger:

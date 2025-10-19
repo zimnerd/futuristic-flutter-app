@@ -15,9 +15,9 @@ class SpeedDatingBloc extends Bloc<SpeedDatingEvent, SpeedDatingState> {
   SpeedDatingBloc({
     required SpeedDatingService speedDatingService,
     required AuthBloc authBloc,
-  })  : _speedDatingService = speedDatingService,
-        _authBloc = authBloc,
-        super(SpeedDatingInitial()) {
+  }) : _speedDatingService = speedDatingService,
+       _authBloc = authBloc,
+       super(SpeedDatingInitial()) {
     on<LoadSpeedDatingEvents>(_onLoadSpeedDatingEvents);
     on<LoadUserSpeedDatingSessions>(_onLoadUserSpeedDatingSessions);
     on<JoinSpeedDatingEvent>(_onJoinSpeedDatingEvent);
@@ -62,7 +62,11 @@ class SpeedDatingBloc extends Bloc<SpeedDatingEvent, SpeedDatingState> {
 
       _logger.d('$_tag: Loaded ${events.length} speed dating events');
     } catch (e, stackTrace) {
-      _logger.e('$_tag: Failed to load events', error: e, stackTrace: stackTrace);
+      _logger.e(
+        '$_tag: Failed to load events',
+        error: e,
+        stackTrace: stackTrace,
+      );
       emit(SpeedDatingError('Failed to load events: ${e.toString()}'));
     }
   }
@@ -85,7 +89,11 @@ class SpeedDatingBloc extends Bloc<SpeedDatingEvent, SpeedDatingState> {
 
       _logger.d('$_tag: Loaded ${sessions.length} user sessions');
     } catch (e, stackTrace) {
-      _logger.e('$_tag: Failed to load user sessions', error: e, stackTrace: stackTrace);
+      _logger.e(
+        '$_tag: Failed to load user sessions',
+        error: e,
+        stackTrace: stackTrace,
+      );
       emit(SpeedDatingError('Failed to load sessions: ${e.toString()}'));
     }
   }
@@ -99,20 +107,23 @@ class SpeedDatingBloc extends Bloc<SpeedDatingEvent, SpeedDatingState> {
       _logger.d('$_tag: Joining speed dating event: ${event.eventId}');
 
       final userId = _getCurrentUserId();
-      final result = await _speedDatingService.joinEvent(event.eventId, userId,
-      );
+      final result = await _speedDatingService.joinEvent(event.eventId, userId);
 
       if (result != null) {
         emit(SpeedDatingJoined(event.eventId));
         _logger.d('$_tag: Successfully joined event');
-        
+
         // Refresh user sessions
         add(LoadUserSpeedDatingSessions());
       } else {
         emit(SpeedDatingError('Failed to join event'));
       }
     } catch (e, stackTrace) {
-      _logger.e('$_tag: Failed to join event', error: e, stackTrace: stackTrace);
+      _logger.e(
+        '$_tag: Failed to join event',
+        error: e,
+        stackTrace: stackTrace,
+      );
       emit(SpeedDatingError('Failed to join event: ${e.toString()}'));
     }
   }
@@ -134,14 +145,18 @@ class SpeedDatingBloc extends Bloc<SpeedDatingEvent, SpeedDatingState> {
       if (success) {
         emit(SpeedDatingLeft(event.eventId));
         _logger.d('$_tag: Successfully left event');
-        
+
         // Refresh user sessions
         add(LoadUserSpeedDatingSessions());
       } else {
         emit(SpeedDatingError('Failed to leave event'));
       }
     } catch (e, stackTrace) {
-      _logger.e('$_tag: Failed to leave event', error: e, stackTrace: stackTrace);
+      _logger.e(
+        '$_tag: Failed to leave event',
+        error: e,
+        stackTrace: stackTrace,
+      );
       emit(SpeedDatingError('Failed to leave event: ${e.toString()}'));
     }
   }
@@ -152,7 +167,9 @@ class SpeedDatingBloc extends Bloc<SpeedDatingEvent, SpeedDatingState> {
   ) async {
     try {
       emit(SpeedDatingSessionStarting(event.eventId));
-      _logger.d('$_tag: Starting speed dating session for event: ${event.eventId}');
+      _logger.d(
+        '$_tag: Starting speed dating session for event: ${event.eventId}',
+      );
 
       // Note: Service doesn't have startSession method - using join instead
       final userId = _getCurrentUserId();
@@ -163,19 +180,23 @@ class SpeedDatingBloc extends Bloc<SpeedDatingEvent, SpeedDatingState> {
 
       if (session != null) {
         emit(SpeedDatingSessionStarted(session));
-        
+
         // Update the current session in loaded state
         if (state is SpeedDatingLoaded) {
           final currentState = state as SpeedDatingLoaded;
           emit(currentState.copyWith(currentSession: session));
         }
-        
+
         _logger.d('$_tag: Session started successfully');
       } else {
         emit(SpeedDatingError('Failed to start session'));
       }
     } catch (e, stackTrace) {
-      _logger.e('$_tag: Failed to start session', error: e, stackTrace: stackTrace);
+      _logger.e(
+        '$_tag: Failed to start session',
+        error: e,
+        stackTrace: stackTrace,
+      );
       emit(SpeedDatingError('Failed to start session: ${e.toString()}'));
     }
   }
@@ -197,19 +218,23 @@ class SpeedDatingBloc extends Bloc<SpeedDatingEvent, SpeedDatingState> {
 
       if (success) {
         emit(SpeedDatingSessionEnded(event.sessionId));
-        
+
         // Clear current session
         if (state is SpeedDatingLoaded) {
           final currentState = state as SpeedDatingLoaded;
           emit(currentState.copyWith(currentSession: null));
         }
-        
+
         _logger.d('$_tag: Session ended successfully');
       } else {
         emit(SpeedDatingError('Failed to end session'));
       }
     } catch (e, stackTrace) {
-      _logger.e('$_tag: Failed to end session', error: e, stackTrace: stackTrace);
+      _logger.e(
+        '$_tag: Failed to end session',
+        error: e,
+        stackTrace: stackTrace,
+      );
       emit(SpeedDatingError('Failed to end session: ${e.toString()}'));
     }
   }
@@ -224,10 +249,16 @@ class SpeedDatingBloc extends Bloc<SpeedDatingEvent, SpeedDatingState> {
 
       // Note: Service doesn't have sendMessage method
       // This would typically be handled by a separate chat service
-      emit(SpeedDatingError('Messaging not implemented in speed dating service'));
+      emit(
+        SpeedDatingError('Messaging not implemented in speed dating service'),
+      );
       return;
     } catch (e, stackTrace) {
-      _logger.e('$_tag: Failed to send message', error: e, stackTrace: stackTrace);
+      _logger.e(
+        '$_tag: Failed to send message',
+        error: e,
+        stackTrace: stackTrace,
+      );
       emit(SpeedDatingError('Failed to send message: ${e.toString()}'));
     }
   }
@@ -238,7 +269,9 @@ class SpeedDatingBloc extends Bloc<SpeedDatingEvent, SpeedDatingState> {
   ) async {
     try {
       emit(SpeedDatingRatingSubmitting(event.sessionId, event.matchUserId));
-      _logger.d('$_tag: Rating match: ${event.matchUserId} with ${event.rating}');
+      _logger.d(
+        '$_tag: Rating match: ${event.matchUserId} with ${event.rating}',
+      );
 
       final result = await _speedDatingService.rateSession(
         event.sessionId,
@@ -248,13 +281,23 @@ class SpeedDatingBloc extends Bloc<SpeedDatingEvent, SpeedDatingState> {
       );
 
       if (result != null) {
-        emit(SpeedDatingRatingSubmitted(event.sessionId, event.matchUserId, event.rating));
+        emit(
+          SpeedDatingRatingSubmitted(
+            event.sessionId,
+            event.matchUserId,
+            event.rating,
+          ),
+        );
         _logger.d('$_tag: Rating submitted successfully');
       } else {
         emit(SpeedDatingError('Failed to submit rating'));
       }
     } catch (e, stackTrace) {
-      _logger.e('$_tag: Failed to submit rating', error: e, stackTrace: stackTrace);
+      _logger.e(
+        '$_tag: Failed to submit rating',
+        error: e,
+        stackTrace: stackTrace,
+      );
       emit(SpeedDatingError('Failed to submit rating: ${e.toString()}'));
     }
   }
@@ -274,7 +317,7 @@ class SpeedDatingBloc extends Bloc<SpeedDatingEvent, SpeedDatingState> {
       );
 
       emit(SpeedDatingMatchesLoaded(matches));
-      
+
       // Update matches in loaded state
       if (state is SpeedDatingLoaded) {
         final currentState = state as SpeedDatingLoaded;
@@ -283,7 +326,11 @@ class SpeedDatingBloc extends Bloc<SpeedDatingEvent, SpeedDatingState> {
 
       _logger.d('$_tag: Loaded ${matches.length} matches');
     } catch (e, stackTrace) {
-      _logger.e('$_tag: Failed to load matches', error: e, stackTrace: stackTrace);
+      _logger.e(
+        '$_tag: Failed to load matches',
+        error: e,
+        stackTrace: stackTrace,
+      );
       emit(SpeedDatingError('Failed to load matches: ${e.toString()}'));
     }
   }
@@ -298,10 +345,18 @@ class SpeedDatingBloc extends Bloc<SpeedDatingEvent, SpeedDatingState> {
 
       // Note: Service doesn't have createEvent method
       // This would need to be implemented in the backend first
-      emit(SpeedDatingError('Event creation not implemented in speed dating service'));
+      emit(
+        SpeedDatingError(
+          'Event creation not implemented in speed dating service',
+        ),
+      );
       return;
     } catch (e, stackTrace) {
-      _logger.e('$_tag: Failed to create event', error: e, stackTrace: stackTrace);
+      _logger.e(
+        '$_tag: Failed to create event',
+        error: e,
+        stackTrace: stackTrace,
+      );
       emit(SpeedDatingError('Failed to create event: ${e.toString()}'));
     }
   }
@@ -326,7 +381,11 @@ class SpeedDatingBloc extends Bloc<SpeedDatingEvent, SpeedDatingState> {
 
       _logger.d('$_tag: Loaded ${history.length} historical sessions');
     } catch (e, stackTrace) {
-      _logger.e('$_tag: Failed to load history', error: e, stackTrace: stackTrace);
+      _logger.e(
+        '$_tag: Failed to load history',
+        error: e,
+        stackTrace: stackTrace,
+      );
       emit(SpeedDatingError('Failed to load history: ${e.toString()}'));
     }
   }

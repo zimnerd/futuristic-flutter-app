@@ -42,10 +42,7 @@ class SafetyCenterScreen extends StatelessWidget {
             subtitle: 'Manage your password and security options',
             onTap: () {
               // Navigate to account security (can be implemented later)
-              PulseToast.info(
-                context,
-                message: 'Account Security coming soon',
-              );
+              PulseToast.info(context, message: 'Account Security coming soon');
             },
             color: Colors.blue,
           ),
@@ -201,11 +198,7 @@ class SafetyCenterScreen extends StatelessWidget {
                   color: color.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: Icon(
-                  icon,
-                  size: 24,
-                  color: color,
-                ),
+                child: Icon(icon, size: 24, color: color),
               ),
               const SizedBox(width: 16),
               Expanded(
@@ -245,20 +238,13 @@ class SafetyCenterScreen extends StatelessWidget {
       color: Colors.red.withValues(alpha: 0.1),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
-        side: BorderSide(
-          color: Colors.red.withValues(alpha: 0.3),
-          width: 1,
-        ),
+        side: BorderSide(color: Colors.red.withValues(alpha: 0.3), width: 1),
       ),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Row(
           children: [
-            Icon(
-              Icons.emergency,
-              size: 32,
-              color: Colors.red.shade700,
-            ),
+            Icon(Icons.emergency, size: 32, color: Colors.red.shade700),
             const SizedBox(width: 16),
             Expanded(
               child: Column(

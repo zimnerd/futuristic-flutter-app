@@ -4,11 +4,7 @@ import '../core/theme/app_colors.dart';
 import '../core/theme/app_text_styles.dart';
 
 /// Text field variants
-enum AppTextFieldVariant {
-  standard,
-  outlined,
-  filled,
-}
+enum AppTextFieldVariant { standard, outlined, filled }
 
 /// Custom app text field widget following PulseLink design system
 class AppTextField extends StatefulWidget {
@@ -93,10 +89,7 @@ class _AppTextFieldState extends State<AppTextField> {
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        if (widget.label != null) ...[
-          _buildLabel(),
-          const SizedBox(height: 8),
-        ],
+        if (widget.label != null) ...[_buildLabel(), const SizedBox(height: 8)],
         _buildTextField(),
         if (_errorText != null || widget.helperText != null) ...[
           const SizedBox(height: 4),
@@ -117,9 +110,7 @@ class _AppTextFieldState extends State<AppTextField> {
           if (widget.isRequired)
             TextSpan(
               text: ' *',
-              style: AppTextStyles.labelMedium.copyWith(
-                color: AppColors.error,
-              ),
+              style: AppTextStyles.labelMedium.copyWith(color: AppColors.error),
             ),
         ],
       ),
@@ -152,7 +143,7 @@ class _AppTextFieldState extends State<AppTextField> {
               _errorText = null;
             });
           }
-          
+
           widget.onChanged?.call(value);
         },
         onFieldSubmitted: widget.onSubmitted,
@@ -170,7 +161,9 @@ class _AppTextFieldState extends State<AppTextField> {
           return validationResult;
         },
         style: AppTextStyles.bodyMedium.copyWith(
-          color: widget.enabled ? AppColors.textPrimary : AppColors.disabledText,
+          color: widget.enabled
+              ? AppColors.textPrimary
+              : AppColors.disabledText,
         ),
         decoration: _buildInputDecoration(),
       ),
@@ -179,7 +172,7 @@ class _AppTextFieldState extends State<AppTextField> {
 
   InputDecoration _buildInputDecoration() {
     final hasError = _errorText != null;
-    
+
     return InputDecoration(
       hintText: widget.placeholder,
       hintStyle: AppTextStyles.bodyMedium.copyWith(
@@ -223,7 +216,7 @@ class _AppTextFieldState extends State<AppTextField> {
   InputBorder _buildBorder(bool isFocused, bool hasError) {
     Color borderColor;
     double borderWidth;
-    
+
     if (!widget.enabled) {
       borderColor = AppColors.disabled;
       borderWidth = 1;
@@ -268,16 +261,15 @@ class _AppTextFieldState extends State<AppTextField> {
 
   Widget _buildHelperText() {
     final text = _errorText ?? widget.helperText;
-    final color = _errorText != null ? AppColors.error : AppColors.textSecondary;
-    
+    final color = _errorText != null
+        ? AppColors.error
+        : AppColors.textSecondary;
+
     if (text == null) return const SizedBox.shrink();
-    
+
     return Padding(
       padding: const EdgeInsets.only(left: 16),
-      child: Text(
-        text,
-        style: AppTextStyles.caption.copyWith(color: color),
-      ),
+      child: Text(text, style: AppTextStyles.caption.copyWith(color: color)),
     );
   }
 }
@@ -377,14 +369,14 @@ class AppEmailField extends StatelessWidget {
     if (value == null || value.isEmpty) {
       return isRequired ? 'Email is required' : null;
     }
-    
+
     const pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$';
     final regex = RegExp(pattern);
-    
+
     if (!regex.hasMatch(value)) {
       return 'Please enter a valid email address';
     }
-    
+
     return null;
   }
 }

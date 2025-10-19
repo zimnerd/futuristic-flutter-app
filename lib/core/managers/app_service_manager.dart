@@ -41,7 +41,6 @@ class AppServiceManager {
 
       // Track app launch
       await _trackAppLaunch();
-
     } catch (e) {
       AppLogger.error('Failed to initialize App Service Manager: $e');
       rethrow;
@@ -52,10 +51,15 @@ class AppServiceManager {
   void _setupServiceListeners() {
     try {
       // Listen to push notifications
-      final notificationSubscription = ServiceLocator.instance.pushNotification.onNotification.listen(
-        _handleNotification,
-        onError: (error) => AppLogger.error('Notification stream error: $error'),
-      );
+      final notificationSubscription = ServiceLocator
+          .instance
+          .pushNotification
+          .onNotification
+          .listen(
+            _handleNotification,
+            onError: (error) =>
+                AppLogger.error('Notification stream error: $error'),
+          );
       _subscriptions.add(notificationSubscription);
 
       AppLogger.info('Service listeners set up successfully');
@@ -68,7 +72,7 @@ class AppServiceManager {
   void _handleNotification(Map<String, dynamic> notification) {
     try {
       final type = notification['type'] as String?;
-      
+
       // Track notification received
       ServiceLocator.instance.analytics.trackEvent(
         eventType: AnalyticsEventType.messageReceived,
@@ -106,14 +110,11 @@ class AppServiceManager {
     final senderId = notification['senderId'] as String?;
     final senderName = notification['senderName'] as String? ?? 'Someone';
     final message = notification['message'] as String? ?? 'New message';
-    
+
     ServiceLocator.instance.analytics.trackMessagingEvent(
       action: 'received',
       conversationId: conversationId,
-      properties: {
-        'senderId': senderId,
-        'source': 'notification',
-      },
+      properties: {'senderId': senderId, 'source': 'notification'},
     );
 
     // Show in-app notification snackbar
@@ -135,13 +136,11 @@ class AppServiceManager {
   /// Handle new match notification
   void _handleNewMatch(Map<String, dynamic> notification) {
     final matchId = notification['matchId'] as String?;
-    
+
     ServiceLocator.instance.analytics.trackMatchingEvent(
       action: 'matched',
       targetUserId: matchId ?? 'unknown',
-      properties: {
-        'source': 'notification',
-      },
+      properties: {'source': 'notification'},
     );
   }
 
@@ -149,22 +148,17 @@ class AppServiceManager {
   void _handlePremiumExpiry(Map<String, dynamic> notification) {
     ServiceLocator.instance.analytics.trackPremiumEvent(
       action: 'expiry_notification',
-      properties: {
-        'source': 'notification',
-      },
+      properties: {'source': 'notification'},
     );
   }
 
   /// Handle achievement unlocked notification
   void _handleAchievementUnlocked(Map<String, dynamic> notification) {
     final achievementId = notification['achievementId'] as String?;
-    
+
     ServiceLocator.instance.analytics.trackEvent(
       eventType: AnalyticsEventType.achievementUnlocked,
-      properties: {
-        'achievementId': achievementId,
-        'source': 'notification',
-      },
+      properties: {'achievementId': achievementId, 'source': 'notification'},
     );
   }
 
@@ -223,11 +217,14 @@ class AppServiceManager {
   }
 
   /// Update user authentication
-  Future<void> updateAuth({required String authToken, required String userId}) async {
+  Future<void> updateAuth({
+    required String authToken,
+    required String userId,
+  }) async {
     try {
       _currentUserId = userId;
       await ServiceLocator.instance.setAuthToken(authToken);
-      
+
       // Track login
       await ServiceLocator.instance.analytics.trackEvent(
         eventType: AnalyticsEventType.userLogin,
@@ -259,9 +256,9 @@ class AppServiceManager {
 
       // Clear all service data
       await ServiceLocator.instance.clearAllData();
-      
+
       _currentUserId = null;
-      
+
       AppLogger.info('User logged out successfully');
     } catch (e) {
       AppLogger.error('Error during logout: $e');
@@ -352,7 +349,7 @@ class AppServiceManager {
           'timestamp': DateTime.now().toIso8601String(),
         },
       );
-      
+
       AppLogger.info('Analytics sync forced');
     } catch (e) {
       AppLogger.error('Error forcing analytics sync: $e');

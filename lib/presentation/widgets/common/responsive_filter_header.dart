@@ -51,7 +51,7 @@ class _ResponsiveFilterHeaderState extends State<ResponsiveFilterHeader> {
 
   Widget _buildCompactFilterButton(BuildContext context, FilterState state) {
     final hasActiveFilters = _hasActiveFilters(state);
-    
+
     return GestureDetector(
       onTap: () => _showFiltersModal(context),
       child: Container(
@@ -67,17 +67,18 @@ class _ResponsiveFilterHeaderState extends State<ResponsiveFilterHeader> {
               offset: const Offset(0, 2),
             ),
           ],
-          border: hasActiveFilters 
-            ? Border.all(color: PulseColors.primary, width: 2)
-            : null,
+          border: hasActiveFilters
+              ? Border.all(color: PulseColors.primary, width: 2)
+              : null,
         ),
         child: Stack(
           children: [
             Center(
               child: Icon(
                 Icons.tune,
-                color: widget.foregroundColor ?? 
-                  (hasActiveFilters ? PulseColors.primary : Colors.grey),
+                color:
+                    widget.foregroundColor ??
+                    (hasActiveFilters ? PulseColors.primary : Colors.grey),
                 size: 24,
               ),
             ),
@@ -102,7 +103,7 @@ class _ResponsiveFilterHeaderState extends State<ResponsiveFilterHeader> {
 
   Widget _buildFilterToggleHeader(BuildContext context, FilterState state) {
     final hasActiveFilters = _hasActiveFilters(state);
-    
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Row(
@@ -122,7 +123,7 @@ class _ResponsiveFilterHeaderState extends State<ResponsiveFilterHeader> {
               ),
             ),
           ),
-          
+
           // Expand/collapse button
           IconButton(
             onPressed: () {
@@ -135,14 +136,16 @@ class _ResponsiveFilterHeaderState extends State<ResponsiveFilterHeader> {
               color: PulseColors.primary,
             ),
           ),
-          
+
           // More filters button
           TextButton.icon(
             onPressed: () => _showFiltersModal(context),
             icon: const Icon(Icons.tune, size: 18),
             label: const Text('Filters'),
             style: TextButton.styleFrom(
-              foregroundColor: hasActiveFilters ? PulseColors.primary : Colors.grey[600],
+              foregroundColor: hasActiveFilters
+                  ? PulseColors.primary
+                  : Colors.grey[600],
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             ),
           ),
@@ -180,9 +183,7 @@ class _ResponsiveFilterHeaderState extends State<ResponsiveFilterHeader> {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.grey[50],
-        border: Border(
-          top: BorderSide(color: Colors.grey[200]!),
-        ),
+        border: Border(top: BorderSide(color: Colors.grey[200]!)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -190,11 +191,11 @@ class _ResponsiveFilterHeaderState extends State<ResponsiveFilterHeader> {
           // Age range quick selector
           _buildQuickAgeSelector(),
           const SizedBox(height: 16),
-          
+
           // Distance quick selector
           _buildQuickDistanceSelector(),
           const SizedBox(height: 16),
-          
+
           // Action buttons
           Row(
             children: [
@@ -280,10 +281,7 @@ class _ResponsiveFilterHeaderState extends State<ResponsiveFilterHeader> {
   Widget _buildAgeChip(String range) {
     final isSelected = _isAgeRangeSelected(range);
     return FilterChip(
-      label: Text(
-        range,
-        style: const TextStyle(fontSize: 12),
-      ),
+      label: Text(range, style: const TextStyle(fontSize: 12)),
       selected: isSelected,
       selectedColor: PulseColors.primary.withValues(alpha: 0.2),
       onSelected: (selected) {
@@ -295,10 +293,7 @@ class _ResponsiveFilterHeaderState extends State<ResponsiveFilterHeader> {
   Widget _buildDistanceChip(String distance) {
     final isSelected = _isDistanceSelected(distance);
     return FilterChip(
-      label: Text(
-        distance,
-        style: const TextStyle(fontSize: 12),
-      ),
+      label: Text(distance, style: const TextStyle(fontSize: 12)),
       selected: isSelected,
       selectedColor: PulseColors.primary.withValues(alpha: 0.2),
       onSelected: (selected) {
@@ -311,14 +306,14 @@ class _ResponsiveFilterHeaderState extends State<ResponsiveFilterHeader> {
     if (state is FilterLoaded) {
       final prefs = state.preferences;
       return prefs.minAge != 18 ||
-             prefs.maxAge != 99 ||
-             prefs.maxDistance != 50.0 ||
-             prefs.interests.isNotEmpty ||
-             prefs.education?.isNotEmpty == true ||
-             prefs.occupation?.isNotEmpty == true ||
-             prefs.showOnlyVerified ||
-             !prefs.showOnlyWithPhotos ||
-             prefs.dealBreakers.isNotEmpty;
+          prefs.maxAge != 99 ||
+          prefs.maxDistance != 50.0 ||
+          prefs.interests.isNotEmpty ||
+          prefs.education?.isNotEmpty == true ||
+          prefs.occupation?.isNotEmpty == true ||
+          prefs.showOnlyVerified ||
+          !prefs.showOnlyWithPhotos ||
+          prefs.dealBreakers.isNotEmpty;
     }
     return false;
   }
@@ -348,10 +343,10 @@ class _ResponsiveFilterHeaderState extends State<ResponsiveFilterHeader> {
     // Parse range and check against current filter state
     final parts = range.split('-');
     if (parts.length != 2) return false;
-    
+
     final minAge = int.tryParse(parts[0]) ?? 18;
     final maxAge = parts[1] == '+' ? 99 : int.tryParse(parts[1]) ?? 99;
-    
+
     final currentState = context.read<FilterBLoC>().state;
     if (currentState is FilterLoaded) {
       final prefs = currentState.preferences;
@@ -361,8 +356,9 @@ class _ResponsiveFilterHeaderState extends State<ResponsiveFilterHeader> {
   }
 
   bool _isDistanceSelected(String distance) {
-    final distanceValue = double.tryParse(distance.replaceAll('km', '')) ?? 50.0;
-    
+    final distanceValue =
+        double.tryParse(distance.replaceAll('km', '')) ?? 50.0;
+
     final currentState = context.read<FilterBLoC>().state;
     if (currentState is FilterLoaded) {
       final prefs = currentState.preferences;
@@ -374,16 +370,17 @@ class _ResponsiveFilterHeaderState extends State<ResponsiveFilterHeader> {
   void _updateAgeFilter(String range) {
     final parts = range.split('-');
     if (parts.length != 2) return;
-    
+
     final minAge = int.tryParse(parts[0]) ?? 18;
     final maxAge = parts[1] == '+' ? 99 : int.tryParse(parts[1]) ?? 99;
-    
+
     context.read<FilterBLoC>().add(UpdateAgeRange(minAge, maxAge));
   }
 
   void _updateDistanceFilter(String distance) {
-    final distanceValue = double.tryParse(distance.replaceAll('km', '')) ?? 50.0;
-    
+    final distanceValue =
+        double.tryParse(distance.replaceAll('km', '')) ?? 50.0;
+
     context.read<FilterBLoC>().add(UpdateMaxDistance(distanceValue));
   }
 }

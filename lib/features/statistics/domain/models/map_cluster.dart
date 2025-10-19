@@ -25,30 +25,25 @@ class MapCluster {
 
     double totalLat = 0;
     double totalLng = 0;
-    
+
     for (final point in points) {
       totalLat += point.coordinates.latitude;
       totalLng += point.coordinates.longitude;
     }
 
-    return LatLng(
-      totalLat / points.length,
-      totalLng / points.length,
-    );
+    return LatLng(totalLat / points.length, totalLng / points.length);
   }
 
   /// Get the dominant status in this cluster
   String get dominantStatus {
     final statusCounts = <String, int>{};
-    
+
     for (final point in dataPoints) {
       final status = point.label ?? 'unknown';
       statusCounts[status] = (statusCounts[status] ?? 0) + point.density;
     }
 
-    return statusCounts.entries
-        .reduce((a, b) => a.value > b.value ? a : b)
-        .key;
+    return statusCounts.entries.reduce((a, b) => a.value > b.value ? a : b).key;
   }
 
   /// Get total count of all users in this cluster

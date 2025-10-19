@@ -36,11 +36,11 @@ class ChatRepositoryImpl implements ChatRepository {
       StreamController<Map<String, dynamic>>.broadcast();
   final StreamController<Map<String, dynamic>> _typingEventsController =
       StreamController<Map<String, dynamic>>.broadcast();
-  
+
   // Track optimistic message tempId to real message ID mapping
   final Map<String, String> _tempIdToRealIdMap = {};
   final Map<String, MessageModel> _pendingOptimisticMessages = {};
-  
+
   // Stream subscription for WebSocket messages
   StreamSubscription<Map<String, dynamic>>? _messageSubscription;
 
@@ -88,70 +88,70 @@ class ChatRepositoryImpl implements ChatRepository {
     _webSocketService.on('disconnect', (reason) {
       _logger.w('WebSocket disconnected: $reason');
     });
-    
+
     // Listen for incoming messages via messageStream (AI companion pattern)
     final webSocketImpl = _webSocketService as WebSocketServiceImpl;
     _messageSubscription = webSocketImpl.messageStream
         .where((event) => event['type'] == 'messageReceived')
         .listen((data) async {
-      try {
+          try {
             _logger.d('Processing incoming messageReceived event');
 
-        // Parse the backend event structure: { type, data, timestamp }
-        // The structure is: { type: 'messageReceived', data: { type: 'message_sent', data: {...actual message...} } }
-        if (data.containsKey('data')) {
+            // Parse the backend event structure: { type, data, timestamp }
+            // The structure is: { type: 'messageReceived', data: { type: 'message_sent', data: {...actual message...} } }
+            if (data.containsKey('data')) {
               final outerData = data['data'] as Map<String, dynamic>;
-          
-          // Extract the actual message data from the nested structure
+
+              // Extract the actual message data from the nested structure
               // Backend sends: {type: 'messageReceived', data: {type: 'message_sent', data: {actual_message}}}
-          if (outerData.containsKey('data')) {
+              if (outerData.containsKey('data')) {
                 final messageData = outerData['data'] as Map<String, dynamic>;
-            final message = MessageModel.fromJson(messageData);
-            
+                final message = MessageModel.fromJson(messageData);
+
                 _logger.d(
                   'Parsed message: ${message.id} from ${message.senderUsername}',
                 );
-            
+
                 // Handle optimistic message correlation if tempId exists
-            if (message.tempId != null && message.tempId!.isNotEmpty) {
-              final tempId = message.tempId!;
-              
+                if (message.tempId != null && message.tempId!.isNotEmpty) {
+                  final tempId = message.tempId!;
+
                   _logger.d('Processing messageReceived with tempId: $tempId');
 
                   // Always update optimistic message mapping (messageConfirmed might have done this already)
                   _tempIdToRealIdMap[tempId] = message.id;
-              _pendingOptimisticMessages.remove(tempId);
-              
-              // Replace optimistic message in database with real message
-              await _databaseService.replaceOptimisticMessage(
-                tempId: tempId,
-                serverMessage: ModelConverters.messageToDbModel(message),
-              );
-              
+                  _pendingOptimisticMessages.remove(tempId);
+
+                  // Replace optimistic message in database with real message
+                  await _databaseService.replaceOptimisticMessage(
+                    tempId: tempId,
+                    serverMessage: ModelConverters.messageToDbModel(message),
+                  );
+
                   _logger.d(
                     'Processed messageReceived: $tempId -> ${message.id}',
                   );
-            } else {
-              // Save new incoming message to database
-              await _databaseService.saveMessage(
-                ModelConverters.messageToDbModel(message),
-              );
+                } else {
+                  // Save new incoming message to database
+                  await _databaseService.saveMessage(
+                    ModelConverters.messageToDbModel(message),
+                  );
                   _logger.d('Saved new message: ${message.id}');
-            }
-            
+                }
+
                 // Forward message to stream for UI updates
-            _incomingMessagesController.add(message);
+                _incomingMessagesController.add(message);
                 _logger.d('Added message to stream: ${message.id}');
-          } else {
+              } else {
                 _logger.w('messageReceived: missing nested data field');
-          }
-        } else {
+              }
+            } else {
               _logger.w('messageReceived: missing data field');
-        }
-      } catch (e) {
-        _logger.e('Repository: Error processing incoming message: $e');
-      }
-    });
+            }
+          } catch (e) {
+            _logger.e('Repository: Error processing incoming message: $e');
+          }
+        });
 
     // Listen for message delivery confirmations
     _webSocketService.on('messageDelivered', (data) {
@@ -160,7 +160,7 @@ class ChatRepositoryImpl implements ChatRepository {
 
         if (data is Map<String, dynamic>) {
           final update = MessageDeliveryUpdate.fromJson(data);
-          
+
           // Check if this delivery update is for an optimistic message
           // If so, create a delivery update with the optimistic ID instead
           final optimisticId = _tempIdToRealIdMap.entries
@@ -282,7 +282,7 @@ class ChatRepositoryImpl implements ChatRepository {
     _webSocketService.onTypingStart((data) {
       try {
         _logger.d('Received typing start event: $data');
-        
+
         final typingEvent = {
           'type': 'typing_start',
           'userId': data['userId'],
@@ -290,9 +290,11 @@ class ChatRepositoryImpl implements ChatRepository {
           'conversationId': data['conversationId'],
           'timestamp': DateTime.now().toIso8601String(),
         };
-        
+
         _typingEventsController.add(typingEvent);
-        _logger.d('Added typing start event to stream for user: ${data['username']}');
+        _logger.d(
+          'Added typing start event to stream for user: ${data['username']}',
+        );
       } catch (e) {
         _logger.e('Error processing typing start event: $e');
       }
@@ -301,7 +303,7 @@ class ChatRepositoryImpl implements ChatRepository {
     _webSocketService.onTypingStop((data) {
       try {
         _logger.d('Received typing stop event: $data');
-        
+
         final typingEvent = {
           'type': 'typing_stop',
           'userId': data['userId'],
@@ -309,9 +311,11 @@ class ChatRepositoryImpl implements ChatRepository {
           'conversationId': data['conversationId'],
           'timestamp': DateTime.now().toIso8601String(),
         };
-        
+
         _typingEventsController.add(typingEvent);
-        _logger.d('Added typing stop event to stream for user: ${data['username']}');
+        _logger.d(
+          'Added typing stop event to stream for user: ${data['username']}',
+        );
       } catch (e) {
         _logger.e('Error processing typing stop event: $e');
       }
@@ -335,10 +339,10 @@ class ChatRepositoryImpl implements ChatRepository {
     try {
       _logger.d('Fetching conversations');
       final conversations = await _remoteDataSource.getConversations();
-      
+
       // Enhance conversations with cached message data
       final enhancedConversations = <ConversationModel>[];
-      
+
       for (final conversation in conversations) {
         try {
           // Try to get the latest message from cache for this conversation
@@ -346,10 +350,10 @@ class ChatRepositoryImpl implements ChatRepository {
             conversationId: conversation.id,
             limit: 1,
           );
-          
+
           if (latestMessages.isNotEmpty) {
             final latestMessage = latestMessages.first;
-            
+
             // Create an updated conversation with the latest message data
             final enhancedConversation = ConversationModel(
               id: conversation.id,
@@ -368,13 +372,17 @@ class ChatRepositoryImpl implements ChatRepository {
               isPinned: conversation.isPinned,
               matchedAt: conversation.matchedAt,
             );
-            
+
             enhancedConversations.add(enhancedConversation);
-            _logger.d('Enhanced conversation ${conversation.id} with cached message: "${latestMessage.content}"');
+            _logger.d(
+              'Enhanced conversation ${conversation.id} with cached message: "${latestMessage.content}"',
+            );
           } else {
             // No cached messages, use original conversation
             enhancedConversations.add(conversation);
-            _logger.d('No cached messages for conversation ${conversation.id}, using: "${conversation.lastMessage}"');
+            _logger.d(
+              'No cached messages for conversation ${conversation.id}, using: "${conversation.lastMessage}"',
+            );
           }
         } catch (e) {
           // If there's an error getting cached messages, use original conversation
@@ -382,7 +390,7 @@ class ChatRepositoryImpl implements ChatRepository {
           enhancedConversations.add(conversation);
         }
       }
-      
+
       // Sort conversations by last message time (most recent first)
       enhancedConversations.sort(
         (a, b) => b.lastMessageTime.compareTo(a.lastMessageTime),
@@ -408,10 +416,10 @@ class ChatRepositoryImpl implements ChatRepository {
       _logger.d(
         'Fetching messages for conversation: $conversationId (page: $page, limit: $limit)',
       );
-      
+
       // Join conversation for real-time updates
       _webSocketService.joinRoom(conversationId);
-      
+
       // Use the new paginated method for consistency and caching
       return await getMessagesPaginated(
         conversationId: conversationId,
@@ -436,9 +444,11 @@ class ChatRepositoryImpl implements ChatRepository {
     String? currentUserId,
   }) async {
     try {
-      _logger.d('Sending message to conversation: $conversationId via Socket.IO');
+      _logger.d(
+        'Sending message to conversation: $conversationId via Socket.IO',
+      );
       _logger.d('Current user ID for optimistic message: $currentUserId');
-      
+
       // Generate unique temporary ID for correlation
       final tempId = _uuid.v4();
       _logger.d('Generated tempId for message: $tempId');
@@ -452,7 +462,7 @@ class ChatRepositoryImpl implements ChatRepository {
         'mediaIds': mediaIds, // 🆕 Send mediaIds to backend
         'tempId': tempId, // Include tempId for correlation
       });
-      
+
       // Create optimistic message for immediate UI update
       final optimisticId = 'optimistic_$tempId';
       // Create optimistic message WITHOUT mediaUrls
@@ -476,7 +486,7 @@ class ChatRepositoryImpl implements ChatRepository {
         updatedAt: DateTime.now(),
         tempId: tempId, // Store tempId for correlation
       );
-      
+
       // Store the optimistic message and mapping
       _pendingOptimisticMessages[tempId] = optimisticMessage;
       _tempIdToRealIdMap[tempId] =
@@ -486,7 +496,7 @@ class ChatRepositoryImpl implements ChatRepository {
       await _databaseService.saveMessage(
         ModelConverters.messageToDbModel(optimisticMessage),
       );
-      
+
       _logger.d(
         'Successfully sent message via Socket.IO with tempId: $tempId, optimistic ID: $optimisticId',
       );
@@ -552,8 +562,10 @@ class ChatRepositoryImpl implements ChatRepository {
   @override
   Future<void> updateTypingStatus(String conversationId, bool isTyping) async {
     try {
-      _logger.d('Updating typing status for conversation: $conversationId via Socket.IO');
-      
+      _logger.d(
+        'Updating typing status for conversation: $conversationId via Socket.IO',
+      );
+
       // Use Socket.IO for real-time typing indicators
       if (isTyping) {
         _webSocketService.emit('typing_start', {
@@ -564,7 +576,7 @@ class ChatRepositoryImpl implements ChatRepository {
           'conversationId': conversationId,
         });
       }
-      
+
       _logger.d('Successfully updated typing status');
     } catch (e) {
       _logger.e('Error updating typing status: $e');
@@ -578,7 +590,7 @@ class ChatRepositoryImpl implements ChatRepository {
       _logger.d(
         'Creating conversation with participant: $matchId via REST API',
       );
-      
+
       final response = await _apiClient.createConversation(
         participantId: matchId,
         isGroup: false,
@@ -590,7 +602,7 @@ class ChatRepositoryImpl implements ChatRepository {
         // Check if response is wrapped in 'data' field like other endpoints
         final responseData = response.data['data'] ?? response.data;
         _logger.d('🐛 Extracted response data: $responseData');
-        
+
         final conversation = _conversationFromApiResponse(
           responseData,
           matchId,
@@ -613,7 +625,6 @@ class ChatRepositoryImpl implements ChatRepository {
     Map<String, dynamic> data,
     String otherUserId,
   ) {
-    
     // Log the conversation ID to debug - check multiple possible fields
     final conversationId =
         data['id']?.toString() ??
@@ -652,7 +663,9 @@ class ChatRepositoryImpl implements ChatRepository {
   Future<ConversationModel?> getConversation(String conversationId) async {
     try {
       _logger.d('Fetching conversation: $conversationId');
-      final conversation = await _remoteDataSource.getConversation(conversationId);
+      final conversation = await _remoteDataSource.getConversation(
+        conversationId,
+      );
       _logger.d('Successfully fetched conversation');
       return conversation;
     } catch (e) {
@@ -857,8 +870,6 @@ class ChatRepositoryImpl implements ChatRepository {
       rethrow;
     }
   }
-
-
 
   @override
   bool isOptimisticMessage(String? messageId, String realMessageId) {
@@ -1086,8 +1097,6 @@ class ChatRepositoryImpl implements ChatRepository {
       rethrow;
     }
   }
-
-
 
   // ================== HELPER METHODS ==================
 

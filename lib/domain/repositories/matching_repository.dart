@@ -48,10 +48,7 @@ abstract class MatchingRepository {
   Future<Either<Failure, UserLimits>> getUserLimits();
 
   /// Purchase additional super likes or undos
-  Future<Either<Failure, bool>> purchaseLimits({
-    int? superLikes,
-    int? undos,
-  });
+  Future<Either<Failure, bool>> purchaseLimits({int? superLikes, int? undos});
 }
 
 /// Match statistics

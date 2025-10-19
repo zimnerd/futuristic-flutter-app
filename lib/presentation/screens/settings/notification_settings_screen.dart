@@ -29,8 +29,7 @@ class _NotificationSettingsScreenState
     return BlocListener<NotificationBloc, NotificationState>(
       listener: (context, state) {
         if (state is NotificationError) {
-          PulseToast.error(context, message: state.message,
-          );
+          PulseToast.error(context, message: state.message);
         } else if (state is NotificationPreferencesUpdated) {
           PulseToast.success(
             context,
@@ -191,16 +190,14 @@ class _NotificationSettingsScreenState
           subtitle: 'Learn about new app features',
           value: preferences.newFeatures,
           onChanged: (value) =>
-              _updatePreference(
-            preferences.copyWith({'newFeatures': value})),
+              _updatePreference(preferences.copyWith({'newFeatures': value})),
         ),
         _buildSwitchTile(
           title: 'Tips & Tricks',
           subtitle: 'Get helpful tips for using the app',
           value: preferences.tipsTricks,
           onChanged: (value) =>
-              _updatePreference(
-            preferences.copyWith({'tipsTricks': value})),
+              _updatePreference(preferences.copyWith({'tipsTricks': value})),
         ),
       ],
     );

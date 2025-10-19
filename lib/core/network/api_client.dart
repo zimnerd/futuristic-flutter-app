@@ -128,11 +128,13 @@ class ApiClient {
           if (error.response?.statusCode == 401) {
             // Skip 401 handling for logout endpoint - logout failure is expected when auth is invalid
             if (error.requestOptions.path.contains('/auth/logout')) {
-              _logger.d('🔓 401 on logout endpoint - this is expected, not triggering auth failure');
+              _logger.d(
+                '🔓 401 on logout endpoint - this is expected, not triggering auth failure',
+              );
               handler.next(error);
               return;
             }
-            
+
             // Try to refresh token if we have one
             if (_authToken != null) {
               try {
@@ -153,13 +155,13 @@ class ApiClient {
                 return handler.resolve(clonedRequest);
               } catch (refreshError) {
                 _logger.e('❌ Token refresh failed: $refreshError');
-                
+
                 // Token refresh failed - trigger global logout
                 await GlobalAuthHandler.instance.handleAuthenticationFailure(
                   reason: 'Token refresh failed after 401 response',
                   clearTokens: true,
                 );
-                
+
                 handler.next(error);
               }
             } else {
@@ -169,7 +171,7 @@ class ApiClient {
                 reason: 'Received 401 with no authentication token',
                 clearTokens: true,
               );
-              
+
               handler.next(error);
             }
           } else {
@@ -317,15 +319,19 @@ class ApiClient {
     try {
       // Check if we have an auth token
       if (_authToken == null || _authToken!.isEmpty) {
-        _logger.w('🔓 No auth token available for logout - skipping server call');
+        _logger.w(
+          '🔓 No auth token available for logout - skipping server call',
+        );
         return null;
       }
-      
+
       return await _dio.post(ApiConstants.authLogout);
     } catch (e) {
       // If logout fails (e.g., 401), don't throw - just log and continue
       // The local cleanup will still happen
-      _logger.w('⚠️ Server logout failed (this is expected if token is invalid): $e');
+      _logger.w(
+        '⚠️ Server logout failed (this is expected if token is invalid): $e',
+      );
       return null;
     }
   }
@@ -358,7 +364,7 @@ class ApiClient {
   }) async {
     // Determine if email is actually a phone number
     final isPhone = email.startsWith('+') || RegExp(r'^\d+$').hasMatch(email);
-    
+
     return await _dio.post(
       ApiConstants.authVerifyOTP,
       data: {
@@ -531,16 +537,16 @@ class ApiClient {
       'offset': offset,
       'excludeWithConversations': excludeWithConversations.toString(),
     };
-    
+
     _logger.d('🔍 Getting matches with params: $queryParams');
-    
+
     final response = await _dio.get(
       '/matching/matches',
       queryParameters: queryParams,
     );
-    
+
     _logger.d('🔍 Matches response: ${response.data}');
-    
+
     return response;
   }
 
@@ -1514,15 +1520,13 @@ class ApiClient {
     int page = 1,
     int limit = 20,
   }) async {
-    final queryParams = <String, dynamic>{
-      'page': page,
-      'limit': limit,
-    };
+    final queryParams = <String, dynamic>{'page': page, 'limit': limit};
 
     if (latitude != null) queryParams['lat'] = latitude;
     if (longitude != null) queryParams['lng'] = longitude;
     if (radiusKm != null) queryParams['radius'] = radiusKm;
-    if (category != null && category.isNotEmpty) queryParams['category'] = category;
+    if (category != null && category.isNotEmpty)
+      queryParams['category'] = category;
 
     return await _dio.get('/events', queryParameters: queryParams);
   }
@@ -1535,11 +1539,7 @@ class ApiClient {
   }) async {
     return await _dio.get(
       '/events/nearby',
-      queryParameters: {
-        'lat': latitude,
-        'lng': longitude,
-        'radius': radiusKm,
-      },
+      queryParameters: {'lat': latitude, 'lng': longitude, 'radius': radiusKm},
     );
   }
 
@@ -1666,10 +1666,7 @@ class ApiClient {
     required String eventId,
     required String status,
   }) async {
-    return await _dio.patch(
-      '/events/$eventId/rsvp',
-      data: {'status': status},
-    );
+    return await _dio.patch('/events/$eventId/rsvp', data: {'status': status});
   }
 
   /// Get event categories
@@ -1756,9 +1753,7 @@ class ApiClient {
   }) async {
     return await _dio.post(
       '/group-chat/live-session/$sessionId/join',
-      data: {
-        if (message != null) 'message': message,
-      },
+      data: {if (message != null) 'message': message},
     );
   }
 
@@ -1779,9 +1774,7 @@ class ApiClient {
   }) async {
     return await _dio.patch(
       '/group-chat/join-request/$requestId/reject',
-      data: {
-        if (reason != null) 'reason': reason,
-      },
+      data: {if (reason != null) 'reason': reason},
     );
   }
 
@@ -1792,10 +1785,7 @@ class ApiClient {
   }) async {
     return await _dio.post(
       '/group-chat/participants/add',
-      data: {
-        'conversationId': conversationId,
-        'userId': userId,
-      },
+      data: {'conversationId': conversationId, 'userId': userId},
     );
   }
 
@@ -1834,10 +1824,7 @@ class ApiClient {
   }) async {
     return await _dio.patch(
       '/group-chat/conversation/$conversationId/participants/$targetUserId/role',
-      data: {
-        'role': role,
-        if (reason != null) 'reason': reason,
-      },
+      data: {'role': role, if (reason != null) 'reason': reason},
     );
   }
 
@@ -1891,4 +1878,3 @@ class ApiClient {
     );
   }
 }
-

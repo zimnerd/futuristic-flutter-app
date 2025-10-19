@@ -2,9 +2,9 @@ import 'package:equatable/equatable.dart';
 
 /// Enum for tracking swipe actions
 enum SwipeAction {
-  left,   // Pass/Reject
-  right,  // Like
-  up,     // Super Like
+  left, // Pass/Reject
+  right, // Like
+  up, // Super Like
 }
 
 extension SwipeActionExtension on SwipeAction {
@@ -73,14 +73,14 @@ class DiscoveryFilters extends Equatable {
 
   @override
   List<Object?> get props => [
-        minAge,
-        maxAge,
-        maxDistance,
-        interests,
-        verifiedOnly,
-        premiumOnly,
-        recentlyActive,
-      ];
+    minAge,
+    maxAge,
+    maxDistance,
+    interests,
+    verifiedOnly,
+    premiumOnly,
+    recentlyActive,
+  ];
 }
 
 /// Result of a swipe action

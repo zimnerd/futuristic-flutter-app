@@ -104,7 +104,7 @@ abstract class WebSocketService {
   // Connection Status
   Stream<bool> get connectionStatus;
   Stream<String>
-      get connectionState; // connecting, connected, disconnected, error
+  get connectionState; // connecting, connected, disconnected, error
 
   // Message Queue (for offline scenarios)
   void queueMessage(String event, dynamic data);

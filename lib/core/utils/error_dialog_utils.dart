@@ -26,11 +26,7 @@ class ErrorDialogUtils {
           ),
           title: Row(
             children: [
-              Icon(
-                errorInfo.icon,
-                color: errorInfo.color,
-                size: 28,
-              ),
+              Icon(errorInfo.icon, color: errorInfo.color, size: 28),
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
@@ -50,10 +46,7 @@ class ErrorDialogUtils {
               children: [
                 Text(
                   customMessage ?? errorInfo.message,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    height: 1.5,
-                  ),
+                  style: const TextStyle(fontSize: 16, height: 1.5),
                 ),
                 if (errorInfo.details != null) ...[
                   const SizedBox(height: 16),
@@ -138,10 +131,7 @@ class ErrorDialogUtils {
                 },
                 child: const Text(
                   'Retry',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                 ),
               ),
             TextButton(
@@ -154,7 +144,9 @@ class ErrorDialogUtils {
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
-                  color: onRetry != null ? Colors.grey[600] : PulseColors.primary,
+                  color: onRetry != null
+                      ? Colors.grey[600]
+                      : PulseColors.primary,
                 ),
               ),
             ),
@@ -265,7 +257,8 @@ class ErrorDialogUtils {
         message = 'This action conflicts with existing data.';
         icon = Icons.sync_problem;
         color = Colors.orange[700]!;
-        if (error.response?.data != null && error.response!.data['message'] != null) {
+        if (error.response?.data != null &&
+            error.response!.data['message'] != null) {
           details = error.response!.data['message'].toString();
         }
         break;
@@ -275,7 +268,8 @@ class ErrorDialogUtils {
         message = 'The provided data failed validation.';
         icon = Icons.error_outline;
         color = Colors.orange;
-        if (error.response?.data != null && error.response!.data['message'] != null) {
+        if (error.response?.data != null &&
+            error.response!.data['message'] != null) {
           if (error.response!.data['message'] is List) {
             details = (error.response!.data['message'] as List).join('\n• ');
             details = '• $details';
@@ -287,7 +281,8 @@ class ErrorDialogUtils {
 
       case 429:
         title = 'Too Many Requests';
-        message = 'You\'re making too many requests. Please wait a moment and try again.';
+        message =
+            'You\'re making too many requests. Please wait a moment and try again.';
         icon = Icons.speed;
         color = Colors.amber[700]!;
         break;
@@ -309,12 +304,14 @@ class ErrorDialogUtils {
             error.type == DioExceptionType.sendTimeout ||
             error.type == DioExceptionType.receiveTimeout) {
           title = 'Connection Timeout';
-          message = 'The request took too long. Please check your internet connection and try again.';
+          message =
+              'The request took too long. Please check your internet connection and try again.';
           icon = Icons.timer_off;
           color = Colors.orange[700]!;
         } else if (error.type == DioExceptionType.connectionError) {
           title = 'Connection Error';
-          message = 'Unable to connect to the server. Please check your internet connection.';
+          message =
+              'Unable to connect to the server. Please check your internet connection.';
           icon = Icons.wifi_off;
           color = Colors.grey[700]!;
         } else if (error.type == DioExceptionType.cancel) {

@@ -6,7 +6,8 @@ import '../../domain/entities/message.dart';
 /// Advanced AI analysis service for conversation insights and compatibility
 class ConversationAnalysisService {
   static ConversationAnalysisService? _instance;
-  static ConversationAnalysisService get instance => _instance ??= ConversationAnalysisService._();
+  static ConversationAnalysisService get instance =>
+      _instance ??= ConversationAnalysisService._();
   ConversationAnalysisService._();
 
   final List<StreamController<ConversationHealth>> _healthControllers = [];
@@ -21,24 +22,29 @@ class ConversationAnalysisService {
     try {
       // Analyze conversation metrics
       final metrics = _calculateConversationMetrics(messages, currentUser.id);
-      
+
       // Detect emotional tone and sentiment
       final emotionalAnalysis = await _analyzeEmotionalDynamics(messages);
-      
+
       // Assess compatibility indicators
       final compatibilityScore = await _assessCompatibility(
-        messages, currentUser, matchProfile
+        messages,
+        currentUser,
+        matchProfile,
       );
-      
+
       // Check for red flags or safety concerns
       final safetyAnalysis = await _analyzeSafety(messages);
-      
+
       // Determine conversation health
       final health = _determineConversationHealth(metrics, emotionalAnalysis);
-      
+
       // Generate actionable insights
       final insights = await _generateInsights(
-        metrics, emotionalAnalysis, compatibilityScore, safetyAnalysis
+        metrics,
+        emotionalAnalysis,
+        compatibilityScore,
+        safetyAnalysis,
       );
 
       return ConversationAnalysis(
@@ -61,7 +67,7 @@ class ConversationAnalysisService {
   Stream<ConversationHealth> monitorConversationHealth(String conversationId) {
     final controller = StreamController<ConversationHealth>.broadcast();
     _healthControllers.add(controller);
-    
+
     // Start monitoring (in real app, this would connect to real-time data)
     Timer.periodic(const Duration(seconds: 30), (timer) {
       if (controller.isClosed) {
@@ -74,28 +80,31 @@ class ConversationAnalysisService {
         }
       });
     });
-    
+
     return controller.stream;
   }
 
   /// Detect if conversation is dying or needs intervention
-  Future<ConversationHealth> _checkConversationHealth(String conversationId) async {
+  Future<ConversationHealth> _checkConversationHealth(
+    String conversationId,
+  ) async {
     // Get recent messages
     final messages = await _getRecentMessages(conversationId);
-    
+
     if (messages.isEmpty) {
       return ConversationHealth.stagnant;
     }
-    
+
     final now = DateTime.now();
     final lastMessage = messages.first;
     final hoursSinceLastMessage = now.difference(lastMessage.timestamp).inHours;
-    
+
     // Analyze response patterns
     final responseMetrics = _analyzeResponsePatterns(messages);
-    
+
     // Determine health status
-    if (hoursSinceLastMessage > 48 && responseMetrics.averageResponseTime > 12) {
+    if (hoursSinceLastMessage > 48 &&
+        responseMetrics.averageResponseTime > 12) {
       return ConversationHealth.dying;
     } else if (hoursSinceLastMessage > 24) {
       return ConversationHealth.declining;
@@ -109,29 +118,32 @@ class ConversationAnalysisService {
   }
 
   /// Analyze emotional tone and sentiment in messages
-  Future<EmotionalAnalysis> _analyzeEmotionalDynamics(List<Message> messages) async {
+  Future<EmotionalAnalysis> _analyzeEmotionalDynamics(
+    List<Message> messages,
+  ) async {
     final sentiments = <MessageSentiment>[];
     double overallPositivity = 0.0;
     double emotionalVariance = 0.0;
-    
+
     for (final message in messages) {
       final sentiment = await _analyzeSentiment(message.content);
       sentiments.add(sentiment);
       overallPositivity += sentiment.positivity;
     }
-    
+
     if (sentiments.isNotEmpty) {
       overallPositivity /= sentiments.length;
-      
+
       // Calculate emotional variance
       double variance = 0.0;
       for (final sentiment in sentiments) {
-        variance += (sentiment.positivity - overallPositivity) * 
-                   (sentiment.positivity - overallPositivity);
+        variance +=
+            (sentiment.positivity - overallPositivity) *
+            (sentiment.positivity - overallPositivity);
       }
       emotionalVariance = variance / sentiments.length;
     }
-    
+
     return EmotionalAnalysis(
       overallPositivity: overallPositivity,
       emotionalVariance: emotionalVariance,
@@ -148,13 +160,18 @@ class ConversationAnalysisService {
     UserProfile user2,
   ) async {
     double communicationStyle = _assessCommunicationCompatibility(messages);
-    double interests = await _assessInterestCompatibility(messages, user1, user2);
+    double interests = await _assessInterestCompatibility(
+      messages,
+      user1,
+      user2,
+    );
     double values = await _assessValueCompatibility(messages, user1, user2);
     double humor = _assessHumorCompatibility(messages);
     double pace = _assessConversationPaceCompatibility(messages);
-    
-    final overall = (communicationStyle + interests + values + humor + pace) / 5;
-    
+
+    final overall =
+        (communicationStyle + interests + values + humor + pace) / 5;
+
     // Determine compatibility level based on overall score
     CompatibilityLevel level = CompatibilityLevel.incompatible;
     if (overall >= 0.9) {
@@ -170,7 +187,7 @@ class ConversationAnalysisService {
     } else {
       level = CompatibilityLevel.incompatible;
     }
-    
+
     return CompatibilityScore(
       overallScore: overall,
       personalityMatch: humor,
@@ -197,34 +214,42 @@ class ConversationAnalysisService {
   Future<SafetyAnalysis> _analyzeSafety(List<Message> messages) async {
     final redFlags = <RedFlag>[];
     final concerns = <SafetyConcern>[];
-    
+
     for (final message in messages) {
       // Check for inappropriate content
-      final inappropriateContent = await _detectInappropriateContent(message.content);
+      final inappropriateContent = await _detectInappropriateContent(
+        message.content,
+      );
       if (inappropriateContent.isNotEmpty) {
         redFlags.addAll(inappropriateContent);
       }
-      
+
       // Check for manipulation tactics
-      final manipulationTactics = await _detectManipulationTactics(message.content);
+      final manipulationTactics = await _detectManipulationTactics(
+        message.content,
+      );
       if (manipulationTactics.isNotEmpty) {
         concerns.addAll(manipulationTactics);
       }
-      
+
       // Check for pressure tactics
       final pressureTactics = await _detectPressureTactics(message.content);
       if (pressureTactics.isNotEmpty) {
         redFlags.addAll(pressureTactics);
       }
     }
-    
+
     final riskLevel = _calculateRiskLevel(redFlags, concerns);
-    
+
     return SafetyAnalysis(
       riskLevel: riskLevel,
       redFlags: redFlags,
       concerns: concerns,
-      recommendations: _generateSafetyRecommendations(riskLevel, redFlags, concerns),
+      recommendations: _generateSafetyRecommendations(
+        riskLevel,
+        redFlags,
+        concerns,
+      ),
     );
   }
 
@@ -236,51 +261,76 @@ class ConversationAnalysisService {
     SafetyAnalysis safety,
   ) async {
     final insights = <ConversationInsight>[];
-    
+
     // Response time insights
     if (metrics.averageResponseTime > 6) {
-      insights.add(ConversationInsight(
-        type: InsightType.timing,
-        title: 'Slow Response Pattern',
-        description: 'Response times are longer than average. Consider more engaging topics.',
-        actionable: true,
-        suggestions: ['Ask open-ended questions', 'Share something interesting about yourself'],
-      ));
+      insights.add(
+        ConversationInsight(
+          type: InsightType.timing,
+          title: 'Slow Response Pattern',
+          description:
+              'Response times are longer than average. Consider more engaging topics.',
+          actionable: true,
+          suggestions: [
+            'Ask open-ended questions',
+            'Share something interesting about yourself',
+          ],
+        ),
+      );
     }
-    
+
     // Engagement insights
     if (metrics.engagementScore < 0.4) {
-      insights.add(ConversationInsight(
-        type: InsightType.engagement,
-        title: 'Low Engagement',
-        description: 'The conversation could be more engaging.',
-        actionable: true,
-        suggestions: ['Ask about their interests', 'Share a fun story', 'Suggest a shared activity'],
-      ));
+      insights.add(
+        ConversationInsight(
+          type: InsightType.engagement,
+          title: 'Low Engagement',
+          description: 'The conversation could be more engaging.',
+          actionable: true,
+          suggestions: [
+            'Ask about their interests',
+            'Share a fun story',
+            'Suggest a shared activity',
+          ],
+        ),
+      );
     }
-    
+
     // Emotional insights
     if (emotional.emotionalVariance > 0.5) {
-      insights.add(ConversationInsight(
-        type: InsightType.emotional,
-        title: 'Mixed Emotional Signals',
-        description: 'Emotional tone varies significantly. Be mindful of their mood.',
-        actionable: true,
-        suggestions: ['Check in on how they\'re feeling', 'Be supportive', 'Keep topics light'],
-      ));
+      insights.add(
+        ConversationInsight(
+          type: InsightType.emotional,
+          title: 'Mixed Emotional Signals',
+          description:
+              'Emotional tone varies significantly. Be mindful of their mood.',
+          actionable: true,
+          suggestions: [
+            'Check in on how they\'re feeling',
+            'Be supportive',
+            'Keep topics light',
+          ],
+        ),
+      );
     }
-    
+
     // Compatibility insights
     if (compatibility.overallScore > 0.7) {
-      insights.add(ConversationInsight(
-        type: InsightType.compatibility,
-        title: 'Great Compatibility!',
-        description: 'You two seem very compatible across multiple dimensions.',
-        actionable: false,
-        suggestions: ['Consider meeting in person', 'Plan a date around shared interests'],
-      ));
+      insights.add(
+        ConversationInsight(
+          type: InsightType.compatibility,
+          title: 'Great Compatibility!',
+          description:
+              'You two seem very compatible across multiple dimensions.',
+          actionable: false,
+          suggestions: [
+            'Consider meeting in person',
+            'Plan a date around shared interests',
+          ],
+        ),
+      );
     }
-    
+
     return insights;
   }
 
@@ -290,7 +340,7 @@ class ConversationAnalysisService {
     ConversationHealth health,
   ) async {
     final suggestions = <ConversationSuggestion>[];
-    
+
     switch (health) {
       case ConversationHealth.dying:
         suggestions.addAll([
@@ -308,7 +358,7 @@ class ConversationAnalysisService {
           ),
         ]);
         break;
-        
+
       case ConversationHealth.declining:
         suggestions.addAll([
           ConversationSuggestion(
@@ -319,7 +369,7 @@ class ConversationAnalysisService {
           ),
         ]);
         break;
-        
+
       case ConversationHealth.good:
       case ConversationHealth.excellent:
         suggestions.addAll([
@@ -331,44 +381,48 @@ class ConversationAnalysisService {
           ),
         ]);
         break;
-        
+
       default:
         break;
     }
-    
+
     return suggestions;
   }
 
   // Helper methods for analysis implementation
-  ConversationMetrics _calculateConversationMetrics(List<Message> messages, String userId) {
+  ConversationMetrics _calculateConversationMetrics(
+    List<Message> messages,
+    String userId,
+  ) {
     if (messages.isEmpty) {
       return ConversationMetrics.empty();
     }
-    
+
     final userMessages = messages.where((m) => m.senderId == userId).toList();
-    
+
     double averageResponseTime = 0.0;
     if (messages.length > 1) {
       Duration totalResponseTime = Duration.zero;
       int responseCount = 0;
-      
+
       for (int i = 1; i < messages.length; i++) {
-        if (messages[i].senderId != messages[i-1].senderId) {
+        if (messages[i].senderId != messages[i - 1].senderId) {
           totalResponseTime += messages[i].timestamp.difference(
             messages[i - 1].timestamp,
           );
           responseCount++;
         }
       }
-      
+
       if (responseCount > 0) {
-        averageResponseTime = totalResponseTime.inHours.toDouble() / responseCount;
+        averageResponseTime =
+            totalResponseTime.inHours.toDouble() / responseCount;
       }
     }
-    
+
     final messageBalance = userMessages.length / messages.length;
     final engagementScore = _calculateEngagementScore(messages);
-    
+
     return ConversationMetrics(
       messageCount: messages.length,
       averageResponseTime: averageResponseTime,
@@ -380,21 +434,24 @@ class ConversationAnalysisService {
 
   double _calculateEngagementScore(List<Message> messages) {
     double score = 0.0;
-    
+
     for (final message in messages) {
       // Length score (longer messages = more engagement)
       score += (message.content.length / 100).clamp(0.0, 1.0) * 0.3;
-      
+
       // Question score (questions = engagement)
       if (message.content.contains('?')) {
         score += 0.5;
       }
-      
+
       // Emotion score (emojis = engagement)
-      final emojiCount = RegExp(r'\p{Emoji}', unicode: true).allMatches(message.content).length;
+      final emojiCount = RegExp(
+        r'\p{Emoji}',
+        unicode: true,
+      ).allMatches(message.content).length;
       score += (emojiCount * 0.1).clamp(0.0, 0.3);
     }
-    
+
     return (score / messages.length).clamp(0.0, 1.0);
   }
 
@@ -404,7 +461,8 @@ class ConversationAnalysisService {
   ) {
     if (metrics.engagementScore > 0.7 && emotional.overallPositivity > 0.6) {
       return ConversationHealth.excellent;
-    } else if (metrics.engagementScore > 0.5 && emotional.overallPositivity > 0.4) {
+    } else if (metrics.engagementScore > 0.5 &&
+        emotional.overallPositivity > 0.4) {
       return ConversationHealth.good;
     } else if (metrics.engagementScore > 0.3) {
       return ConversationHealth.moderate;
@@ -515,7 +573,7 @@ class ConversationAnalysisService {
     if (emotions.isEmpty) {
       emotions.add('neutral');
     }
-    
+
     return MessageSentiment(
       positivity: positivity.clamp(0.0, 1.0),
       emotions: emotions.toSet().toList(),
@@ -587,7 +645,7 @@ class ConversationAnalysisService {
         emotionCounts[emotion] = (emotionCounts[emotion] ?? 0) + 1;
       }
     }
-    
+
     // Sort by frequency and take top 3
     final sortedEmotions = emotionCounts.entries.toList()
       ..sort((a, b) => b.value.compareTo(a.value));
@@ -705,8 +763,16 @@ class ConversationAnalysisService {
   }
 
   double _assessCommunicationCompatibility(List<Message> messages) => 0.8;
-  Future<double> _assessInterestCompatibility(List<Message> messages, UserProfile user1, UserProfile user2) async => 0.7;
-  Future<double> _assessValueCompatibility(List<Message> messages, UserProfile user1, UserProfile user2) async => 0.6;
+  Future<double> _assessInterestCompatibility(
+    List<Message> messages,
+    UserProfile user1,
+    UserProfile user2,
+  ) async => 0.7;
+  Future<double> _assessValueCompatibility(
+    List<Message> messages,
+    UserProfile user1,
+    UserProfile user2,
+  ) async => 0.6;
   double _assessHumorCompatibility(List<Message> messages) => 0.8;
   double _assessConversationPaceCompatibility(List<Message> messages) => 0.7;
 
@@ -739,16 +805,24 @@ class ConversationAnalysisService {
   }
 
   Future<List<RedFlag>> _detectInappropriateContent(String text) async => [];
-  Future<List<SafetyConcern>> _detectManipulationTactics(String text) async => [];
+  Future<List<SafetyConcern>> _detectManipulationTactics(String text) async =>
+      [];
   Future<List<RedFlag>> _detectPressureTactics(String text) async => [];
-  
-  RiskLevel _calculateRiskLevel(List<RedFlag> redFlags, List<SafetyConcern> concerns) {
+
+  RiskLevel _calculateRiskLevel(
+    List<RedFlag> redFlags,
+    List<SafetyConcern> concerns,
+  ) {
     if (redFlags.isNotEmpty) return RiskLevel.high;
     if (concerns.isNotEmpty) return RiskLevel.medium;
     return RiskLevel.low;
   }
 
-  List<String> _generateSafetyRecommendations(RiskLevel risk, List<RedFlag> flags, List<SafetyConcern> concerns) {
+  List<String> _generateSafetyRecommendations(
+    RiskLevel risk,
+    List<RedFlag> flags,
+    List<SafetyConcern> concerns,
+  ) {
     return ['Trust your instincts', 'Take your time getting to know them'];
   }
 

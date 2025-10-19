@@ -6,8 +6,7 @@ import '../exceptions/app_exceptions.dart';
 class BlockService {
   final ApiClient _apiClient;
 
-  BlockService({required ApiClient apiClient})
-    : _apiClient = apiClient;
+  BlockService({required ApiClient apiClient}) : _apiClient = apiClient;
 
   /// Block a user
   Future<void> blockUser(String userId) async {
@@ -31,7 +30,7 @@ class BlockService {
   Future<List<String>> getBlockedUsers() async {
     try {
       final response = await _apiClient.get('/users/blocked');
-      
+
       final data = response.data as Map<String, dynamic>;
       final blockedUsers = data['blockedUsers'] as List<dynamic>;
 
@@ -58,10 +57,13 @@ class BlockService {
       case DioExceptionType.connectionTimeout:
       case DioExceptionType.sendTimeout:
       case DioExceptionType.receiveTimeout:
-        return NetworkException('Connection timeout. Please check your internet connection.');
+        return NetworkException(
+          'Connection timeout. Please check your internet connection.',
+        );
       case DioExceptionType.badResponse:
         final statusCode = e.response?.statusCode;
-        final message = e.response?.data?['message'] ?? 'Unknown error occurred';
+        final message =
+            e.response?.data?['message'] ?? 'Unknown error occurred';
         return NetworkException('Server error ($statusCode): $message');
       case DioExceptionType.cancel:
         return NetworkException('Request was cancelled');

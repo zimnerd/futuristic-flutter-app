@@ -61,7 +61,7 @@ class Call extends Equatable {
   /// Get formatted duration
   String get formattedDuration {
     if (duration == null) return '00:00';
-    
+
     final hours = duration!.inHours;
     final minutes = duration!.inMinutes % 60;
     final seconds = duration!.inSeconds % 60;
@@ -78,36 +78,36 @@ class Call extends Equatable {
 
   /// Check if call is active
   bool get isActive => [
-        CallStatus.outgoing,
-        CallStatus.incoming,
-        CallStatus.connecting,
-        CallStatus.connected,
-      ].contains(status);
+    CallStatus.outgoing,
+    CallStatus.incoming,
+    CallStatus.connecting,
+    CallStatus.connected,
+  ].contains(status);
 
   /// Check if call has ended
   bool get hasEnded => [
-        CallStatus.ended,
-        CallStatus.failed,
-        CallStatus.declined,
-      ].contains(status);
+    CallStatus.ended,
+    CallStatus.failed,
+    CallStatus.declined,
+  ].contains(status);
 
   @override
   List<Object?> get props => [
-        id,
-        callerId,
-        recipientId,
-        type,
-        status,
-        createdAt,
-        startedAt,
-        endedAt,
-        callerProfile,
-        recipientProfile,
-        duration,
-        quality,
-        endReason,
-        signalingData,
-      ];
+    id,
+    callerId,
+    recipientId,
+    type,
+    status,
+    createdAt,
+    startedAt,
+    endedAt,
+    callerProfile,
+    recipientProfile,
+    duration,
+    quality,
+    endReason,
+    signalingData,
+  ];
 
   Call copyWith({
     String? id,
@@ -168,7 +168,9 @@ class Call extends Equatable {
           ? UserProfile.fromJson(json['callerProfile'] as Map<String, dynamic>)
           : null,
       recipientProfile: json['recipientProfile'] != null
-          ? UserProfile.fromJson(json['recipientProfile'] as Map<String, dynamic>)
+          ? UserProfile.fromJson(
+              json['recipientProfile'] as Map<String, dynamic>,
+            )
           : null,
       duration: json['duration'] != null
           ? Duration(seconds: json['duration'] as int)
@@ -211,10 +213,7 @@ class Call extends Equatable {
 }
 
 /// Enum for call types
-enum CallType {
-  video,
-  audio,
-}
+enum CallType { video, audio }
 
 /// Enum for call status
 enum CallStatus {
@@ -229,12 +228,7 @@ enum CallStatus {
 }
 
 /// Enum for call quality levels
-enum CallQuality {
-  poor,
-  fair,
-  good,
-  excellent,
-}
+enum CallQuality { poor, fair, good, excellent }
 
 /// Enum for call connection states
 enum CallConnectionState {

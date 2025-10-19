@@ -4,7 +4,7 @@ import '../../theme/pulse_colors.dart' hide PulseTextStyles;
 import '../../theme/pulse_theme.dart';
 
 /// Match Explanation Screen
-/// 
+///
 /// Shows detailed breakdown of why two users were matched:
 /// - Compatibility score with visual breakdown
 /// - Shared interests with icons
@@ -15,7 +15,7 @@ class MatchExplanationScreen extends StatelessWidget {
   final UserProfile profile;
   final double compatibilityScore;
   final Map<String, dynamic>? matchReasons;
-  
+
   const MatchExplanationScreen({
     super.key,
     required this.profile,
@@ -26,47 +26,44 @@ class MatchExplanationScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final reasons = matchReasons ?? {};
-    
+
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Match Breakdown'),
-        centerTitle: true,
-      ),
+      appBar: AppBar(title: const Text('Match Breakdown'), centerTitle: true),
       body: SingleChildScrollView(
         child: Column(
           children: [
             // Header with profile and overall score
             _buildHeader(context),
-            
+
             const SizedBox(height: 24),
-            
+
             // Compatibility breakdown
             _buildCompatibilityBreakdown(context, reasons),
-            
+
             const SizedBox(height: 24),
-            
+
             // Shared interests
             if (reasons['sharedInterests'] != null)
               _buildSharedInterests(context, reasons['sharedInterests']),
-            
+
             const SizedBox(height: 24),
-            
+
             // Location compatibility
             if (reasons['locationScore'] != null)
               _buildLocationCompatibility(context, reasons),
-            
+
             const SizedBox(height: 24),
-            
+
             // Lifestyle compatibility
             if (reasons['lifestyleScore'] != null)
               _buildLifestyleCompatibility(context, reasons),
-            
+
             const SizedBox(height: 24),
-            
+
             // Activity patterns
             if (reasons['activityScore'] != null)
               _buildActivityPatterns(context, reasons),
-            
+
             const SizedBox(height: 32),
           ],
         ),
@@ -99,17 +96,17 @@ class MatchExplanationScreen extends StatelessWidget {
                 ? const Icon(Icons.person, size: 50)
                 : null,
           ),
-          
+
           const SizedBox(height: 16),
-          
+
           // Name and age
           Text(
             '${profile.name}, ${profile.age}',
             style: PulseTextStyles.headlineMedium,
           ),
-          
+
           const SizedBox(height: 24),
-          
+
           // Overall compatibility score
           _buildOverallScore(),
         ],
@@ -120,7 +117,7 @@ class MatchExplanationScreen extends StatelessWidget {
   Widget _buildOverallScore() {
     final percentage = (compatibilityScore * 100).round();
     final color = _getScoreColor(compatibilityScore);
-    
+
     return Column(
       children: [
         Stack(
@@ -136,7 +133,7 @@ class MatchExplanationScreen extends StatelessWidget {
                 valueColor: AlwaysStoppedAnimation<Color>(color),
               ),
             ),
-              Column(
+            Column(
               children: [
                 Text(
                   '$percentage%',
@@ -155,9 +152,9 @@ class MatchExplanationScreen extends StatelessWidget {
             ),
           ],
         ),
-        
+
         const SizedBox(height: 16),
-        
+
         Text(
           _getScoreLabel(compatibilityScore),
           style: PulseTextStyles.titleMedium.copyWith(
@@ -220,13 +217,10 @@ class MatchExplanationScreen extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Compatibility Breakdown',
-            style: PulseTextStyles.headlineSmall,
-          ),
-          
+          Text('Compatibility Breakdown', style: PulseTextStyles.headlineSmall),
+
           const SizedBox(height: 16),
-          
+
           ...categories.map((category) => _buildCategoryBar(category)),
         ],
       ),
@@ -235,7 +229,7 @@ class MatchExplanationScreen extends StatelessWidget {
 
   Widget _buildCategoryBar(_CompatibilityCategory category) {
     final percentage = (category.score * 100).round();
-    
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: Column(
@@ -243,11 +237,7 @@ class MatchExplanationScreen extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(
-                category.icon,
-                size: 20,
-                color: category.color,
-              ),
+              Icon(category.icon, size: 20, color: category.color),
               const SizedBox(width: 8),
               Text(
                 category.name,
@@ -265,9 +255,9 @@ class MatchExplanationScreen extends StatelessWidget {
               ),
             ],
           ),
-          
+
           const SizedBox(height: 8),
-          
+
           ClipRRect(
             borderRadius: BorderRadius.circular(8),
             child: LinearProgressIndicator(
@@ -297,21 +287,14 @@ class MatchExplanationScreen extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(
-                Icons.favorite,
-                color: Colors.red.shade400,
-                size: 24,
-              ),
+              Icon(Icons.favorite, color: Colors.red.shade400, size: 24),
               const SizedBox(width: 8),
-              Text(
-                'Shared Interests',
-                style: PulseTextStyles.headlineSmall,
-              ),
+              Text('Shared Interests', style: PulseTextStyles.headlineSmall),
             ],
           ),
-          
+
           const SizedBox(height: 16),
-          
+
           Wrap(
             spacing: 8,
             runSpacing: 8,
@@ -340,7 +323,7 @@ class MatchExplanationScreen extends StatelessWidget {
   ) {
     final distance = reasons['distance'] as double?;
     final locationScore = reasons['locationScore'] as double? ?? 0.0;
-    
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Card(
@@ -357,21 +340,18 @@ class MatchExplanationScreen extends StatelessWidget {
                     size: 24,
                   ),
                   const SizedBox(width: 8),
-                  Text(
-                    'Location',
-                    style: PulseTextStyles.titleLarge,
-                  ),
+                  Text('Location', style: PulseTextStyles.titleLarge),
                 ],
               ),
-              
+
               const SizedBox(height: 16),
-              
+
               if (distance != null)
                 _buildInfoRow(
                   'Distance',
                   '${distance.toStringAsFixed(1)} km away',
                 ),
-              
+
               _buildInfoRow(
                 'Compatibility',
                 _getLocationCompatibilityText(locationScore),
@@ -389,7 +369,7 @@ class MatchExplanationScreen extends StatelessWidget {
   ) {
     final lifestyleScore = reasons['lifestyleScore'] as double? ?? 0.0;
     final lifestyleFactors = reasons['lifestyleFactors'] as List<dynamic>?;
-    
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Card(
@@ -400,26 +380,19 @@ class MatchExplanationScreen extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  Icon(
-                    Icons.wb_sunny,
-                    color: Colors.orange.shade400,
-                    size: 24,
-                  ),
+                  Icon(Icons.wb_sunny, color: Colors.orange.shade400, size: 24),
                   const SizedBox(width: 8),
-                  Text(
-                    'Lifestyle',
-                    style: PulseTextStyles.titleLarge,
-                  ),
+                  Text('Lifestyle', style: PulseTextStyles.titleLarge),
                 ],
               ),
-              
+
               const SizedBox(height: 16),
-              
+
               _buildInfoRow(
                 'Compatibility',
                 _getLifestyleCompatibilityText(lifestyleScore),
               ),
-              
+
               if (lifestyleFactors != null && lifestyleFactors.isNotEmpty) ...[
                 const SizedBox(height: 12),
                 const Divider(),
@@ -459,7 +432,7 @@ class MatchExplanationScreen extends StatelessWidget {
   ) {
     final activityScore = reasons['activityScore'] as double? ?? 0.0;
     final activityFactors = reasons['activityFactors'] as List<dynamic>?;
-    
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Card(
@@ -476,20 +449,17 @@ class MatchExplanationScreen extends StatelessWidget {
                     size: 24,
                   ),
                   const SizedBox(width: 8),
-                  Text(
-                    'Activity Patterns',
-                    style: PulseTextStyles.titleLarge,
-                  ),
+                  Text('Activity Patterns', style: PulseTextStyles.titleLarge),
                 ],
               ),
-              
+
               const SizedBox(height: 16),
-              
+
               _buildInfoRow(
                 'Match Level',
                 _getActivityCompatibilityText(activityScore),
               ),
-              
+
               if (activityFactors != null && activityFactors.isNotEmpty) ...[
                 const SizedBox(height: 12),
                 const Divider(),

@@ -57,18 +57,18 @@ class _CallHistoryScreenState extends State<CallHistoryScreen> {
           setState(() {
             _currentFilters = filters;
           });
-          context
-              .read<CallHistoryBloc>()
-              .add(ApplyCallHistoryFilters(filters: filters));
+          context.read<CallHistoryBloc>().add(
+            ApplyCallHistoryFilters(filters: filters),
+          );
         },
       ),
     );
   }
 
   Future<void> _onRefresh() async {
-    context
-        .read<CallHistoryBloc>()
-        .add(RefreshCallHistory(filters: _currentFilters));
+    context.read<CallHistoryBloc>().add(
+      RefreshCallHistory(filters: _currentFilters),
+    );
     // Wait for refresh to complete
     await Future.delayed(const Duration(milliseconds: 500));
   }
@@ -101,11 +101,9 @@ class _CallHistoryScreenState extends State<CallHistoryScreen> {
       body: BlocConsumer<CallHistoryBloc, CallHistoryState>(
         listener: (context, state) {
           if (state is CallHistoryError) {
-            PulseToast.error(context, message: state.message,
-            );
+            PulseToast.error(context, message: state.message);
           } else if (state is CallHistoryDeleted) {
-            PulseToast.success(context, message: 'Call deleted successfully',
-            );
+            PulseToast.success(context, message: 'Call deleted successfully');
           }
         },
         builder: (context, state) {
@@ -144,9 +142,7 @@ class _CallHistoryScreenState extends State<CallHistoryScreen> {
           }
 
           // Initial state
-          return const Center(
-            child: Text('Pull down to refresh call history'),
-          );
+          return const Center(child: Text('Pull down to refresh call history'));
         },
       ),
     );
@@ -165,20 +161,13 @@ class _CallHistoryScreenState extends State<CallHistoryScreen> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(
-                      Icons.call_end,
-                      size: 64,
-                      color: Colors.grey[400],
-                    ),
+                    Icon(Icons.call_end, size: 64, color: Colors.grey[400]),
                     const SizedBox(height: 16),
                     Text(
                       _currentFilters != null
                           ? 'No calls found with current filters'
                           : 'No call history yet',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.grey[600],
-                      ),
+                      style: TextStyle(fontSize: 16, color: Colors.grey[600]),
                     ),
                     if (_currentFilters != null) ...[
                       const SizedBox(height: 8),
@@ -187,9 +176,9 @@ class _CallHistoryScreenState extends State<CallHistoryScreen> {
                           setState(() {
                             _currentFilters = null;
                           });
-                          context
-                              .read<CallHistoryBloc>()
-                              .add(const ApplyCallHistoryFilters());
+                          context.read<CallHistoryBloc>().add(
+                            const ApplyCallHistoryFilters(),
+                          );
                         },
                         child: const Text('Clear filters'),
                       ),
@@ -216,8 +205,7 @@ class _CallHistoryScreenState extends State<CallHistoryScreen> {
             child: ListView.builder(
               controller: _scrollController,
               physics: const AlwaysScrollableScrollPhysics(),
-              itemCount:
-                  state.calls.length + (state.isLoadingMore ? 1 : 0),
+              itemCount: state.calls.length + (state.isLoadingMore ? 1 : 0),
               itemBuilder: (context, index) {
                 if (index == state.calls.length) {
                   return const Padding(
@@ -241,9 +229,7 @@ class _CallHistoryScreenState extends State<CallHistoryScreen> {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
-        border: Border(
-          bottom: BorderSide(color: Colors.grey[300]!),
-        ),
+        border: Border(bottom: BorderSide(color: Colors.grey[300]!)),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -293,13 +279,7 @@ class _CallHistoryScreenState extends State<CallHistoryScreen> {
             color: color,
           ),
         ),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 12,
-            color: Colors.grey[600],
-          ),
-        ),
+        Text(label, style: TextStyle(fontSize: 12, color: Colors.grey[600])),
       ],
     );
   }
@@ -326,9 +306,9 @@ class _CallHistoryScreenState extends State<CallHistoryScreen> {
               setState(() {
                 _currentFilters = null;
               });
-              context
-                  .read<CallHistoryBloc>()
-                  .add(const ApplyCallHistoryFilters());
+              context.read<CallHistoryBloc>().add(
+                const ApplyCallHistoryFilters(),
+              );
             },
             child: const Text('Clear'),
           ),
@@ -343,8 +323,7 @@ class _CallHistoryScreenState extends State<CallHistoryScreen> {
       orElse: () => call.participants.first,
     );
 
-    final callTypeIcon =
-        call.type == 'VIDEO' ? Icons.videocam : Icons.phone;
+    final callTypeIcon = call.type == 'VIDEO' ? Icons.videocam : Icons.phone;
     final statusIcon = _getStatusIcon(call.status);
     final statusColor = _getStatusColor(call.status);
 
@@ -519,7 +498,10 @@ class _FilterDialogState extends State<_FilterDialog> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Call Type', style: TextStyle(fontWeight: FontWeight.bold)),
+            const Text(
+              'Call Type',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 8),
             Wrap(
               spacing: 8,
@@ -560,24 +542,30 @@ class _FilterDialogState extends State<_FilterDialog> {
                   label: const Text('Completed'),
                   selected: _selectedStatus == 'ANSWERED',
                   onSelected: (selected) => setState(
-                      () => _selectedStatus = selected ? 'ANSWERED' : null),
+                    () => _selectedStatus = selected ? 'ANSWERED' : null,
+                  ),
                 ),
                 ChoiceChip(
                   label: const Text('Missed'),
                   selected: _selectedStatus == 'MISSED',
                   onSelected: (selected) => setState(
-                      () => _selectedStatus = selected ? 'MISSED' : null),
+                    () => _selectedStatus = selected ? 'MISSED' : null,
+                  ),
                 ),
                 ChoiceChip(
                   label: const Text('Rejected'),
                   selected: _selectedStatus == 'REJECTED',
                   onSelected: (selected) => setState(
-                      () => _selectedStatus = selected ? 'REJECTED' : null),
+                    () => _selectedStatus = selected ? 'REJECTED' : null,
+                  ),
                 ),
               ],
             ),
             const SizedBox(height: 16),
-            const Text('Date Range', style: TextStyle(fontWeight: FontWeight.bold)),
+            const Text(
+              'Date Range',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 8),
             Row(
               children: [
@@ -649,7 +637,8 @@ class _FilterDialogState extends State<_FilterDialog> {
         ),
         ElevatedButton(
           onPressed: () {
-            final filters = (_selectedType != null ||
+            final filters =
+                (_selectedType != null ||
                     _selectedStatus != null ||
                     _startDate != null ||
                     _endDate != null)

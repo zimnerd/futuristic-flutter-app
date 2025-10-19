@@ -44,270 +44,187 @@ class MessageBubble extends StatelessWidget {
       child: GestureDetector(
         onLongPress: onLongPress,
         child: Padding(
-        padding: const EdgeInsets.only(bottom: 4),
-        child: Column(
-          children: [
-            // Reply preview (if replying to another message)
-            if (message.replyTo != null) _buildReplyPreview(context),
+          padding: const EdgeInsets.only(bottom: 4),
+          child: Column(
+            children: [
+              // Reply preview (if replying to another message)
+              if (message.replyTo != null) _buildReplyPreview(context),
 
-            // Forwarded message indicator
-            if (message.isForwarded) _buildForwardedIndicator(context),
+              // Forwarded message indicator
+              if (message.isForwarded) _buildForwardedIndicator(context),
 
-            // Main message row
-            Row(
-              mainAxisAlignment: isCurrentUser
-                  ? MainAxisAlignment.end
-                  : MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                // Avatar for received messages
-                if (!isCurrentUser) _buildAvatar(),
+              // Main message row
+              Row(
+                mainAxisAlignment: isCurrentUser
+                    ? MainAxisAlignment.end
+                    : MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  // Avatar for received messages
+                  if (!isCurrentUser) _buildAvatar(),
 
-                // Message bubble - keeping existing structure for now
-                Flexible(
-                  child: Container(
-                    constraints: BoxConstraints(
-                      maxWidth: MediaQuery.of(context).size.width * 0.75,
-                    ),
-                    padding: _hasMedia()
-                        ? EdgeInsets.zero
-                        : const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 12,
-                    ),
-                    decoration: BoxDecoration(
-                      color: _hasMedia()
-                          ? Colors.transparent
-                          : isHighlighted
-                          ? (isCurrentUser
-                                ? PulseColors.primary.withValues(alpha: 0.9)
-                                : PulseColors.secondary.withValues(alpha: 0.2))
-                          : (isCurrentUser
-                                ? PulseColors.primary
-                                : Colors.grey[50]),
-                      border: isHighlighted
-                          ? Border.all(color: PulseColors.primary, width: 2)
-                          : null,
-                      borderRadius: BorderRadius.only(
-                        topLeft: const Radius.circular(20),
-                        topRight: const Radius.circular(20),
-                        bottomLeft: Radius.circular(isCurrentUser ? 20 : 6),
-                        bottomRight: Radius.circular(isCurrentUser ? 6 : 20),
+                  // Message bubble - keeping existing structure for now
+                  Flexible(
+                    child: Container(
+                      constraints: BoxConstraints(
+                        maxWidth: MediaQuery.of(context).size.width * 0.75,
                       ),
-                      boxShadow: _hasMedia()
-                          ? []
-                          : [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.05),
-                                blurRadius: 8,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Media content (images, videos, etc.)
-                        if (_hasMedia()) ...[
-                          ClipRRect(
-                            borderRadius: BorderRadius.only(
-                              topLeft: const Radius.circular(20),
-                              topRight: const Radius.circular(20),
-                              bottomLeft: Radius.circular(
-                                message.content?.isNotEmpty == true
-                                    ? 4
-                                    : (isCurrentUser ? 20 : 6),
-                              ),
-                              bottomRight: Radius.circular(
-                                message.content?.isNotEmpty == true
-                                    ? 4
-                                    : (isCurrentUser ? 6 : 20),
-                              ),
-                            ),
-                            child: _buildMediaContent(context),
-                          ),
-                        ],
-
-                        // Location content
-                        if (_hasLocation()) ...[
-                          ClipRRect(
-                            borderRadius: BorderRadius.only(
-                              topLeft: const Radius.circular(20),
-                              topRight: const Radius.circular(20),
-                              bottomLeft: Radius.circular(
-                                message.content?.isNotEmpty == true
-                                    ? 4
-                                    : (isCurrentUser ? 20 : 6),
-                              ),
-                              bottomRight: Radius.circular(
-                                message.content?.isNotEmpty == true
-                                    ? 4
-                                    : (isCurrentUser ? 6 : 20),
-                              ),
-                            ),
-                            child: _buildLocationContent(context),
-                          ),
-                        ],
-
-                        // Voice message content
-                        if (_hasVoiceMessage()) ...[
-                          ClipRRect(
-                            borderRadius: BorderRadius.only(
-                              topLeft: const Radius.circular(20),
-                              topRight: const Radius.circular(20),
-                              bottomLeft: Radius.circular(
-                                message.content?.isNotEmpty == true
-                                    ? 4
-                                    : (isCurrentUser ? 20 : 6),
-                              ),
-                              bottomRight: Radius.circular(
-                                message.content?.isNotEmpty == true
-                                    ? 4
-                                    : (isCurrentUser ? 6 : 20),
-                              ),
-                            ),
-                            child: _buildVoiceMessageContent(context),
-                          ),
-                        ],
-
-                        // Text content with media or location
-                        if ((_hasMedia() ||
-                                _hasLocation() ||
-                                _hasVoiceMessage()) &&
-                            message.content != null &&
-                            message.content!.isNotEmpty) ...[
-                          Container(
-                            width: double.infinity,
-                            padding: const EdgeInsets.symmetric(
+                      padding: _hasMedia()
+                          ? EdgeInsets.zero
+                          : const EdgeInsets.symmetric(
                               horizontal: 16,
                               vertical: 12,
                             ),
-                            decoration: BoxDecoration(
-                              color: isCurrentUser
+                      decoration: BoxDecoration(
+                        color: _hasMedia()
+                            ? Colors.transparent
+                            : isHighlighted
+                            ? (isCurrentUser
+                                  ? PulseColors.primary.withValues(alpha: 0.9)
+                                  : PulseColors.secondary.withValues(
+                                      alpha: 0.2,
+                                    ))
+                            : (isCurrentUser
                                   ? PulseColors.primary
-                                  : Colors.grey[50],
+                                  : Colors.grey[50]),
+                        border: isHighlighted
+                            ? Border.all(color: PulseColors.primary, width: 2)
+                            : null,
+                        borderRadius: BorderRadius.only(
+                          topLeft: const Radius.circular(20),
+                          topRight: const Radius.circular(20),
+                          bottomLeft: Radius.circular(isCurrentUser ? 20 : 6),
+                          bottomRight: Radius.circular(isCurrentUser ? 6 : 20),
+                        ),
+                        boxShadow: _hasMedia()
+                            ? []
+                            : [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.05),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Media content (images, videos, etc.)
+                          if (_hasMedia()) ...[
+                            ClipRRect(
                               borderRadius: BorderRadius.only(
+                                topLeft: const Radius.circular(20),
+                                topRight: const Radius.circular(20),
                                 bottomLeft: Radius.circular(
-                                  isCurrentUser ? 20 : 6,
+                                  message.content?.isNotEmpty == true
+                                      ? 4
+                                      : (isCurrentUser ? 20 : 6),
                                 ),
                                 bottomRight: Radius.circular(
-                                  isCurrentUser ? 6 : 20,
+                                  message.content?.isNotEmpty == true
+                                      ? 4
+                                      : (isCurrentUser ? 6 : 20),
                                 ),
                               ),
+                              child: _buildMediaContent(context),
                             ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  message.content!,
-                                  style: TextStyle(
-                                    color: isCurrentUser
-                                        ? Colors.white
-                                        : Colors.black87,
-                                    fontSize: 16,
-                                    height: 1.3,
+                          ],
+
+                          // Location content
+                          if (_hasLocation()) ...[
+                            ClipRRect(
+                              borderRadius: BorderRadius.only(
+                                topLeft: const Radius.circular(20),
+                                topRight: const Radius.circular(20),
+                                bottomLeft: Radius.circular(
+                                  message.content?.isNotEmpty == true
+                                      ? 4
+                                      : (isCurrentUser ? 20 : 6),
+                                ),
+                                bottomRight: Radius.circular(
+                                  message.content?.isNotEmpty == true
+                                      ? 4
+                                      : (isCurrentUser ? 6 : 20),
+                                ),
+                              ),
+                              child: _buildLocationContent(context),
+                            ),
+                          ],
+
+                          // Voice message content
+                          if (_hasVoiceMessage()) ...[
+                            ClipRRect(
+                              borderRadius: BorderRadius.only(
+                                topLeft: const Radius.circular(20),
+                                topRight: const Radius.circular(20),
+                                bottomLeft: Radius.circular(
+                                  message.content?.isNotEmpty == true
+                                      ? 4
+                                      : (isCurrentUser ? 20 : 6),
+                                ),
+                                bottomRight: Radius.circular(
+                                  message.content?.isNotEmpty == true
+                                      ? 4
+                                      : (isCurrentUser ? 6 : 20),
+                                ),
+                              ),
+                              child: _buildVoiceMessageContent(context),
+                            ),
+                          ],
+
+                          // Text content with media or location
+                          if ((_hasMedia() ||
+                                  _hasLocation() ||
+                                  _hasVoiceMessage()) &&
+                              message.content != null &&
+                              message.content!.isNotEmpty) ...[
+                            Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 12,
+                              ),
+                              decoration: BoxDecoration(
+                                color: isCurrentUser
+                                    ? PulseColors.primary
+                                    : Colors.grey[50],
+                                borderRadius: BorderRadius.only(
+                                  bottomLeft: Radius.circular(
+                                    isCurrentUser ? 20 : 6,
+                                  ),
+                                  bottomRight: Radius.circular(
+                                    isCurrentUser ? 6 : 20,
                                   ),
                                 ),
-                                const SizedBox(height: 4),
-                                Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Text(
-                                      DateFormat(
-                                        'h:mm a',
-                                      ).format(message.createdAt),
-                                      style: TextStyle(
-                                        color: isCurrentUser
-                                            ? Colors.white.withValues(
-                                                alpha: 0.7,
-                                              )
-                                            : Colors.grey[600],
-                                        fontSize: 12,
-                                      ),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    message.content!,
+                                    style: TextStyle(
+                                      color: isCurrentUser
+                                          ? Colors.white
+                                          : Colors.black87,
+                                      fontSize: 16,
+                                      height: 1.3,
                                     ),
-                                    if (isCurrentUser) ...[
-                                      const SizedBox(width: 4),
-                                      MessageStatusIndicator(
-                                        status: message.status,
-                                        onRetry: onRetry,
-                                        size: 16,
-                                        color: Colors.white.withValues(
-                                          alpha: 0.7,
-                                        ),
-                                        readColor: Colors.blue.shade300,
-                                      ),
-                                    ],
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                        ]
-                        // Text-only content
-                        else if (!_hasMedia() &&
-                            !_hasLocation() &&
-                            message.content != null &&
-                            message.content!.isNotEmpty) ...[
-                          _buildHighlightedText(
-                            message.content!,
-                            isCurrentUser,
-                          ),
-                          const SizedBox(height: 4),
-                          Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                DateFormat('h:mm a').format(message.createdAt),
-                                style: TextStyle(
-                                  color: isCurrentUser
-                                      ? Colors.white.withValues(alpha: 0.7)
-                                      : Colors.grey[600],
-                                  fontSize: 12,
-                                ),
-                              ),
-                              if (isCurrentUser) ...[
-                                const SizedBox(width: 4),
-                                MessageStatusIndicator(
-                                  status: message.status,
-                                  onRetry: onRetry,
-                                  size: 16,
-                                  color: Colors.white.withValues(alpha: 0.7),
-                                  readColor: Colors.blue.shade300,
-                                ),
-                              ],
-                            ],
-                          ),
-                        ],
-                        
-                        // Media-only content timestamp
-                        if (_hasMedia() &&
-                            (message.content == null ||
-                                message.content!.isEmpty)) ...[
-                          Padding(
-                            padding: const EdgeInsets.all(8),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 8,
-                                    vertical: 4,
                                   ),
-                                  decoration: BoxDecoration(
-                                    color: Colors.black.withValues(alpha: 0.6),
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: Row(
+                                  const SizedBox(height: 4),
+                                  Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
                                       Text(
                                         DateFormat(
                                           'h:mm a',
                                         ).format(message.createdAt),
-                                        style: const TextStyle(
-                                          color: Colors.white,
+                                        style: TextStyle(
+                                          color: isCurrentUser
+                                              ? Colors.white.withValues(
+                                                  alpha: 0.7,
+                                                )
+                                              : Colors.grey[600],
                                           fontSize: 12,
-                                          fontWeight: FontWeight.w500,
                                         ),
                                       ),
                                       if (isCurrentUser) ...[
@@ -315,32 +232,122 @@ class MessageBubble extends StatelessWidget {
                                         MessageStatusIndicator(
                                           status: message.status,
                                           onRetry: onRetry,
-                                          size: 14,
-                                          color: Colors.white,
+                                          size: 16,
+                                          color: Colors.white.withValues(
+                                            alpha: 0.7,
+                                          ),
                                           readColor: Colors.blue.shade300,
                                         ),
                                       ],
                                     ],
                                   ),
+                                ],
+                              ),
+                            ),
+                          ]
+                          // Text-only content
+                          else if (!_hasMedia() &&
+                              !_hasLocation() &&
+                              message.content != null &&
+                              message.content!.isNotEmpty) ...[
+                            _buildHighlightedText(
+                              message.content!,
+                              isCurrentUser,
+                            ),
+                            const SizedBox(height: 4),
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  DateFormat(
+                                    'h:mm a',
+                                  ).format(message.createdAt),
+                                  style: TextStyle(
+                                    color: isCurrentUser
+                                        ? Colors.white.withValues(alpha: 0.7)
+                                        : Colors.grey[600],
+                                    fontSize: 12,
+                                  ),
                                 ),
+                                if (isCurrentUser) ...[
+                                  const SizedBox(width: 4),
+                                  MessageStatusIndicator(
+                                    status: message.status,
+                                    onRetry: onRetry,
+                                    size: 16,
+                                    color: Colors.white.withValues(alpha: 0.7),
+                                    readColor: Colors.blue.shade300,
+                                  ),
+                                ],
                               ],
                             ),
-                          ),
+                          ],
+
+                          // Media-only content timestamp
+                          if (_hasMedia() &&
+                              (message.content == null ||
+                                  message.content!.isEmpty)) ...[
+                            Padding(
+                              padding: const EdgeInsets.all(8),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                      vertical: 4,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: Colors.black.withValues(
+                                        alpha: 0.6,
+                                      ),
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Text(
+                                          DateFormat(
+                                            'h:mm a',
+                                          ).format(message.createdAt),
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                        if (isCurrentUser) ...[
+                                          const SizedBox(width: 4),
+                                          MessageStatusIndicator(
+                                            status: message.status,
+                                            onRetry: onRetry,
+                                            size: 14,
+                                            color: Colors.white,
+                                            readColor: Colors.blue.shade300,
+                                          ),
+                                        ],
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
                         ],
-                      ],
+                      ),
                     ),
                   ),
-                ),
-                
-                if (isCurrentUser) const SizedBox(width: 8),
-              ],
-            ),
-            
-            // Reactions row
-            if (message.reactions?.isNotEmpty == true) _buildReactions(context),
-          ],
+
+                  if (isCurrentUser) const SizedBox(width: 8),
+                ],
+              ),
+
+              // Reactions row
+              if (message.reactions?.isNotEmpty == true)
+                _buildReactions(context),
+            ],
+          ),
         ),
-      ),
       ),
     );
   }
@@ -953,10 +960,7 @@ class MessageBubble extends StatelessWidget {
       // Add timestamp query parameter to force cache refresh
       return uri
           .replace(
-            queryParameters: {
-              ...uri.queryParameters,
-              't': now.toString(),
-            },
+            queryParameters: {...uri.queryParameters, 't': now.toString()},
           )
           .toString();
     } catch (e) {
@@ -1010,7 +1014,7 @@ class MessageBubble extends StatelessWidget {
         return message.content ?? '';
     }
   }
-  
+
   Widget _buildHighlightedText(String content, bool isCurrentUser) {
     // If no search query or not highlighted, show normal text
     if (searchQuery == null || searchQuery!.isEmpty || !isHighlighted) {
@@ -1023,60 +1027,64 @@ class MessageBubble extends StatelessWidget {
         ),
       );
     }
-    
+
     // Build highlighted text
     final List<TextSpan> spans = [];
     final String lowerContent = content.toLowerCase();
     final String lowerQuery = searchQuery!.toLowerCase();
-    
+
     int start = 0;
     int index = lowerContent.indexOf(lowerQuery, start);
-    
+
     while (index != -1) {
       // Add text before the match
       if (index > start) {
-        spans.add(TextSpan(
-          text: content.substring(start, index),
+        spans.add(
+          TextSpan(
+            text: content.substring(start, index),
+            style: TextStyle(
+              color: isCurrentUser ? Colors.white : Colors.black87,
+              fontSize: 16,
+              height: 1.3,
+            ),
+          ),
+        );
+      }
+
+      // Add highlighted match
+      spans.add(
+        TextSpan(
+          text: content.substring(index, index + searchQuery!.length),
+          style: TextStyle(
+            color: isCurrentUser ? Colors.black : Colors.white,
+            backgroundColor: isCurrentUser
+                ? Colors.yellow.withValues(alpha: 0.8)
+                : PulseColors.primary.withValues(alpha: 0.8),
+            fontSize: 16,
+            height: 1.3,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      );
+
+      start = index + searchQuery!.length;
+      index = lowerContent.indexOf(lowerQuery, start);
+    }
+
+    // Add remaining text
+    if (start < content.length) {
+      spans.add(
+        TextSpan(
+          text: content.substring(start),
           style: TextStyle(
             color: isCurrentUser ? Colors.white : Colors.black87,
             fontSize: 16,
             height: 1.3,
           ),
-        ));
-      }
-      
-      // Add highlighted match
-      spans.add(TextSpan(
-        text: content.substring(index, index + searchQuery!.length),
-        style: TextStyle(
-          color: isCurrentUser ? Colors.black : Colors.white,
-          backgroundColor: isCurrentUser 
-              ? Colors.yellow.withValues(alpha: 0.8) 
-              : PulseColors.primary.withValues(alpha: 0.8),
-          fontSize: 16,
-          height: 1.3,
-          fontWeight: FontWeight.bold,
         ),
-      ));
-      
-      start = index + searchQuery!.length;
-      index = lowerContent.indexOf(lowerQuery, start);
+      );
     }
-    
-    // Add remaining text
-    if (start < content.length) {
-      spans.add(TextSpan(
-        text: content.substring(start),
-        style: TextStyle(
-          color: isCurrentUser ? Colors.white : Colors.black87,
-          fontSize: 16,
-          height: 1.3,
-        ),
-      ));
-    }
-    
-    return RichText(
-      text: TextSpan(children: spans),
-    );
+
+    return RichText(text: TextSpan(children: spans));
   }
 }

@@ -64,17 +64,17 @@ class VirtualGift extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        name,
-        description,
-        iconUrl,
-        animationUrl,
-        price,
-        category,
-        rarity,
-        isActive,
-        createdAt,
-      ];
+    id,
+    name,
+    description,
+    iconUrl,
+    animationUrl,
+    price,
+    category,
+    rarity,
+    isActive,
+    createdAt,
+  ];
 }
 
 /// Gift categories for organization
@@ -203,19 +203,19 @@ class GiftTransaction extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        senderId,
-        receiverId,
-        giftId,
-        message,
-        sentAt,
-        isOpened,
-        openedAt,
-        gift,
-        senderName,
-        senderAvatarUrl,
-        receiverName,
-      ];
+    id,
+    senderId,
+    receiverId,
+    giftId,
+    message,
+    sentAt,
+    isOpened,
+    openedAt,
+    gift,
+    senderName,
+    senderAvatarUrl,
+    receiverName,
+  ];
 }
 
 /// User's credits and gift statistics
@@ -246,7 +246,8 @@ class UserGiftStats extends Equatable {
       giftsReceived: json['giftsReceived'] as int? ?? 0,
       totalSpent: json['totalSpent'] as int? ?? 0,
       totalEarned: json['totalEarned'] as int? ?? 0,
-      recentTransactions: (json['recentTransactions'] as List<dynamic>?)
+      recentTransactions:
+          (json['recentTransactions'] as List<dynamic>?)
               ?.map((e) => GiftTransaction.fromJson(e as Map<String, dynamic>))
               .toList() ??
           [],
@@ -267,12 +268,12 @@ class UserGiftStats extends Equatable {
 
   @override
   List<Object?> get props => [
-        userId,
-        credits,
-        giftsSent,
-        giftsReceived,
-        totalSpent,
-        totalEarned,
-        recentTransactions,
-      ];
+    userId,
+    credits,
+    giftsSent,
+    giftsReceived,
+    totalSpent,
+    totalEarned,
+    recentTransactions,
+  ];
 }

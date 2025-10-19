@@ -8,6 +8,7 @@ import 'package:logger/logger.dart';
 /// Comprehensive error handling for AI services with categorization and recovery strategies
 class AiErrorHandler {
   static final Logger _logger = Logger();
+
   /// Handle API errors and provide structured error information
   static AiErrorResult handleError(dynamic error, String operationType) {
     if (error is DioException) {
@@ -39,7 +40,10 @@ class AiErrorHandler {
     }
   }
 
-  static AiErrorResult _handleDioError(DioException error, String operationType) {
+  static AiErrorResult _handleDioError(
+    DioException error,
+    String operationType,
+  ) {
     switch (error.type) {
       case DioExceptionType.connectionTimeout:
       case DioExceptionType.sendTimeout:
@@ -54,7 +58,11 @@ class AiErrorHandler {
 
       case DioExceptionType.badResponse:
         final statusCode = error.response?.statusCode ?? 0;
-        return _handleHttpError(statusCode, error.response?.data, operationType);
+        return _handleHttpError(
+          statusCode,
+          error.response?.data,
+          operationType,
+        );
 
       case DioExceptionType.cancel:
         return AiErrorResult(
@@ -144,7 +152,7 @@ class AiErrorHandler {
   /// Log error with appropriate level based on error type
   static void logError(AiErrorResult error) {
     final message = '[AI Error] ${error.operationType}: ${error.message}';
-    
+
     switch (error.type) {
       case AiErrorType.network:
       case AiErrorType.server:

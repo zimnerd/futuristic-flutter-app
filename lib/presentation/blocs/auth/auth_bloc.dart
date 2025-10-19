@@ -60,7 +60,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       if (user != null) {
         _logger.i('✅ User is authenticated: ${user.username}');
         emit(AuthAuthenticated(user: user));
-        
+
         // Initialize real-time services after successful authentication
         await _initializeRealTimeServices(user);
       } else {
@@ -101,7 +101,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       if (user != null) {
         _logger.i('✅ Sign in successful: ${user.username}');
         emit(AuthAuthenticated(user: user));
-        
+
         // Initialize real-time services after successful authentication
         await _initializeRealTimeServices(user);
       } else {
@@ -141,7 +141,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       if (user != null) {
         _logger.i('✅ 🤖 Auto-login successful: ${user.username}');
         emit(AuthAuthenticated(user: user));
-        
+
         // Initialize real-time services after successful authentication
         await _initializeRealTimeServices(user);
       } else {
@@ -298,10 +298,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       _logger.e('❌ Unexpected error during password reset: $e');
       final errorMessage = ErrorHandler.handleError(e, showDialog: false);
       emit(
-        AuthFailure(
-          message: errorMessage,
-          errorCode: 'password_reset_error',
-        ),
+        AuthFailure(message: errorMessage, errorCode: 'password_reset_error'),
       );
     }
   }
@@ -396,18 +393,19 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       _logger.i('OTP sent successfully');
     } catch (e, stackTrace) {
       _logger.e('Send OTP error', error: e, stackTrace: stackTrace);
-      
+
       // Extract user-friendly error message
       String errorMessage = 'Failed to send OTP';
       String? errorCode;
-      
+
       if (e is AppException) {
         errorMessage = e.message;
         errorCode = e.code;
-        
+
         // Special handling for specific error types
         if (e is UserNotRegisteredException) {
-          errorMessage = 'No account found with this phone number. Please register first.';
+          errorMessage =
+              'No account found with this phone number. Please register first.';
           errorCode = 'USER_NOT_REGISTERED';
         } else if (e is ValidationException) {
           errorMessage = e.message;
@@ -420,13 +418,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         // Fallback for non-AppException errors
         _logger.w('Unexpected error type: ${e.runtimeType}');
       }
-      
-      emit(
-        AuthError(
-          message: errorMessage,
-          errorCode: errorCode,
-        ),
-      );
+
+      emit(AuthError(message: errorMessage, errorCode: errorCode));
     }
   }
 
@@ -527,15 +520,15 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       _logger.i('OTP resent successfully');
     } catch (e, stackTrace) {
       _logger.e('Resend OTP error', error: e, stackTrace: stackTrace);
-      
+
       // Extract user-friendly error message (same pattern as sendOTP)
       String errorMessage = 'Failed to resend OTP';
       String? errorCode;
-      
+
       if (e is AppException) {
         errorMessage = e.message;
         errorCode = e.code;
-        
+
         // Special handling for specific error types
         if (e is NoInternetException) {
           errorMessage = 'No internet connection. Please check your network.';
@@ -545,13 +538,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       } else {
         _logger.w('Unexpected error type: ${e.runtimeType}');
       }
-      
-      emit(
-        AuthError(
-          message: errorMessage,
-          errorCode: errorCode,
-        ),
-      );
+
+      emit(AuthError(message: errorMessage, errorCode: errorCode));
     }
   }
 
@@ -570,7 +558,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     Emitter<AuthState> emit,
   ) async {
     try {
-      _logger.i('📱 Validating phone number: ${event.phone} with country code: ${event.countryCode}');
+      _logger.i(
+        '📱 Validating phone number: ${event.phone} with country code: ${event.countryCode}',
+      );
       emit(const AuthPhoneValidating());
 
       final response = await _userRepository.validatePhone(
@@ -580,17 +570,21 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
       if (response['isValid'] == true) {
         _logger.i('✅ Phone validation successful');
-        emit(AuthPhoneValidationSuccess(
-          formattedPhone: response['formattedPhone'] ?? event.phone,
-          isValid: true,
-          message: response['message'],
-        ));
+        emit(
+          AuthPhoneValidationSuccess(
+            formattedPhone: response['formattedPhone'] ?? event.phone,
+            isValid: true,
+            message: response['message'],
+          ),
+        );
       } else {
         _logger.w('❌ Phone validation failed: ${response['message']}');
-        emit(AuthPhoneValidationError(
-          message: response['message'] ?? 'Invalid phone number',
-          errorCode: response['errorCode'] ?? 'INVALID_PHONE',
-        ));
+        emit(
+          AuthPhoneValidationError(
+            message: response['message'] ?? 'Invalid phone number',
+            errorCode: response['errorCode'] ?? 'INVALID_PHONE',
+          ),
+        );
       }
     } catch (e, stackTrace) {
       _logger.e(
@@ -603,7 +597,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           message: e is AppException
               ? e.message
               : 'Failed to validate phone number',
-          errorCode: e is AppException ? (e.code ?? 'VALIDATION_ERROR') : 'VALIDATION_ERROR',
+          errorCode: e is AppException
+              ? (e.code ?? 'VALIDATION_ERROR')
+              : 'VALIDATION_ERROR',
         ),
       );
     }

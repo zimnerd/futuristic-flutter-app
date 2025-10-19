@@ -25,8 +25,8 @@ class CategoryChip extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected 
-              ? PulseColors.primary 
+          color: isSelected
+              ? PulseColors.primary
               : PulseColors.primary.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
@@ -137,7 +137,7 @@ class CategoryChip extends StatelessWidget {
   IconData _mapStringToIcon(String iconName) {
     // Normalize icon name (remove spaces, convert to lowercase)
     final normalized = iconName.toLowerCase().replaceAll(' ', '_');
-    
+
     // Comprehensive icon mapping
     final iconMap = <String, IconData>{
       // Common event icons
@@ -225,7 +225,7 @@ class CategoryChip extends StatelessWidget {
       'craft': Icons.color_lens,
       'diy': Icons.handyman,
     };
-    
+
     return iconMap[normalized] ?? Icons.event;
   }
 }
@@ -269,8 +269,7 @@ class _CategoryFilterChipsState extends State<CategoryFilterChips> {
   Widget build(BuildContext context) {
     return BlocListener<EventBloc, EventState>(
       listenWhen: (previous, current) =>
-          current is EventCategoriesLoaded ||
-          current is EventError,
+          current is EventCategoriesLoaded || current is EventError,
       listener: (context, state) {
         if (state is EventCategoriesLoaded) {
           setState(() {
@@ -316,7 +315,7 @@ class _CategoryFilterChipsState extends State<CategoryFilterChips> {
     final categoriesWithEvents = categories
         .where((cat) => cat.eventCount > 0)
         .toList();
-    
+
     return Container(
       height: 50,
       padding: const EdgeInsets.symmetric(vertical: 8),
@@ -369,8 +368,8 @@ class _CategoryFilterChipsState extends State<CategoryFilterChips> {
           // Legacy Category chips
           ...EventCategories.all.map(
             (categorySlug) => Padding(
-            padding: const EdgeInsets.only(right: 8),
-            child: CategoryChip(
+              padding: const EdgeInsets.only(right: 8),
+              child: CategoryChip(
                 category: EventCategory(
                   id: 'legacy-$categorySlug',
                   name: EventCategories.getDisplayName(categorySlug),
@@ -380,8 +379,9 @@ class _CategoryFilterChipsState extends State<CategoryFilterChips> {
                 ),
                 isSelected: widget.selectedCategorySlug == categorySlug,
                 onTap: () => widget.onCategorySelected(categorySlug),
+              ),
             ),
-          )),
+          ),
         ],
       ),
     );

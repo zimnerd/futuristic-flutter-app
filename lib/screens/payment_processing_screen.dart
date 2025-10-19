@@ -23,7 +23,8 @@ class PaymentProcessingScreen extends StatefulWidget {
   });
 
   @override
-  State<PaymentProcessingScreen> createState() => _PaymentProcessingScreenState();
+  State<PaymentProcessingScreen> createState() =>
+      _PaymentProcessingScreenState();
 }
 
 class _PaymentProcessingScreenState extends State<PaymentProcessingScreen> {
@@ -32,7 +33,7 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen> {
   final _cvvController = TextEditingController();
   final _nameController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
-  
+
   PaymentMethod? _selectedPaymentMethod;
   bool _saveCard = false;
 
@@ -63,10 +64,7 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen> {
           icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
           onPressed: () => Navigator.of(context).pop(),
         ),
-        title: Text(
-          _getAppBarTitle(),
-          style: AppTextStyles.headlineSmall,
-        ),
+        title: Text(_getAppBarTitle(), style: AppTextStyles.headlineSmall),
       ),
       body: BlocConsumer<PaymentBloc, PaymentState>(
         listener: (context, state) {
@@ -187,13 +185,15 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen> {
             ),
           ),
           const SizedBox(height: 12),
-          ...state.paymentMethods.map((methodData) => 
-            _buildPaymentMethodTile(PaymentMethod.fromJson(methodData))),
+          ...state.paymentMethods.map(
+            (methodData) =>
+                _buildPaymentMethodTile(PaymentMethod.fromJson(methodData)),
+          ),
           _buildAddNewCardTile(),
         ],
       );
     }
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -216,7 +216,7 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen> {
 
   Widget _buildPaymentMethodTile(PaymentMethod method) {
     final isSelected = _selectedPaymentMethod?.id == method.id;
-    
+
     return GestureDetector(
       onTap: () {
         setState(() {
@@ -227,7 +227,9 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen> {
         margin: const EdgeInsets.only(bottom: 8),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.primary.withValues(alpha: 0.1) : AppColors.background,
+          color: isSelected
+              ? AppColors.primary.withValues(alpha: 0.1)
+              : AppColors.background,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
             color: isSelected ? AppColors.primary : AppColors.border,
@@ -275,7 +277,7 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen> {
 
   Widget _buildAddNewCardTile() {
     final isSelected = _selectedPaymentMethod == null;
-    
+
     return GestureDetector(
       onTap: () {
         setState(() {
@@ -286,7 +288,9 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen> {
         margin: const EdgeInsets.only(bottom: 8),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.primary.withValues(alpha: 0.1) : AppColors.background,
+          color: isSelected
+              ? AppColors.primary.withValues(alpha: 0.1)
+              : AppColors.background,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
             color: isSelected ? AppColors.primary : AppColors.border,
@@ -411,7 +415,7 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen> {
   Widget _buildPaymentButton(PaymentState state) {
     final isLoading = state is PaymentLoading;
     final canProceed = _selectedPaymentMethod != null || _isNewCardFormValid();
-    
+
     return AppButton(
       text: isLoading ? 'Processing...' : 'Complete Payment',
       onPressed: canProceed ? _processPayment : null,
@@ -422,9 +426,9 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen> {
 
   bool _isNewCardFormValid() {
     return _cardNumberController.text.isNotEmpty &&
-           _expiryController.text.isNotEmpty &&
-           _cvvController.text.isNotEmpty &&
-           _nameController.text.isNotEmpty;
+        _expiryController.text.isNotEmpty &&
+        _cvvController.text.isNotEmpty &&
+        _nameController.text.isNotEmpty;
   }
 
   void _processPayment() {
@@ -467,14 +471,16 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen> {
       id: DateTime.now().millisecondsSinceEpoch.toString(),
       userId: 'current_user', // This should come from auth state
       cardType: _detectCardType(_cardNumberController.text),
-      lastFourDigits: _cardNumberController.text.substring(_cardNumberController.text.length - 4),
+      lastFourDigits: _cardNumberController.text.substring(
+        _cardNumberController.text.length - 4,
+      ),
       expiryDate: _expiryController.text,
       cardholderName: _nameController.text,
       isDefault: false,
       createdAt: DateTime.now(),
       updatedAt: DateTime.now(),
     );
-    
+
     switch (widget.paymentType) {
       case PaymentType.boost:
       case PaymentType.gift:
@@ -538,15 +544,16 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen> {
 
   String _detectCardType(String cardNumber) {
     final cleaned = cardNumber.replaceAll(RegExp(r'\D'), '');
-    
+
     if (cleaned.startsWith('4')) {
       return 'visa';
-    } else if (cleaned.startsWith(RegExp(r'5[1-5]')) || cleaned.startsWith(RegExp(r'2[2-7]'))) {
+    } else if (cleaned.startsWith(RegExp(r'5[1-5]')) ||
+        cleaned.startsWith(RegExp(r'2[2-7]'))) {
       return 'mastercard';
     } else if (cleaned.startsWith(RegExp(r'3[47]'))) {
       return 'amex';
     }
-    
+
     return 'unknown';
   }
 
@@ -554,12 +561,12 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen> {
     if (value == null || value.isEmpty) {
       return 'Card number is required';
     }
-    
+
     final cleaned = value.replaceAll(RegExp(r'\D'), '');
     if (cleaned.length < 13 || cleaned.length > 19) {
       return 'Please enter a valid card number';
     }
-    
+
     return null;
   }
 
@@ -567,26 +574,26 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen> {
     if (value == null || value.isEmpty) {
       return 'Expiry date is required';
     }
-    
+
     final parts = value.split('/');
     if (parts.length != 2) {
       return 'Use MM/YY format';
     }
-    
+
     final month = int.tryParse(parts[0]);
     final year = int.tryParse(parts[1]);
-    
+
     if (month == null || year == null || month < 1 || month > 12) {
       return 'Please enter a valid expiry date';
     }
-    
+
     final now = DateTime.now();
     final expiry = DateTime(2000 + year, month);
-    
+
     if (expiry.isBefore(now)) {
       return 'Card has expired';
     }
-    
+
     return null;
   }
 
@@ -594,11 +601,11 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen> {
     if (value == null || value.isEmpty) {
       return 'CVV is required';
     }
-    
+
     if (value.length < 3 || value.length > 4) {
       return 'Please enter a valid CVV';
     }
-    
+
     return null;
   }
 
@@ -606,11 +613,11 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen> {
     if (value == null || value.isEmpty) {
       return 'Cardholder name is required';
     }
-    
+
     if (value.length < 2) {
       return 'Please enter a valid name';
     }
-    
+
     return null;
   }
 
@@ -623,9 +630,7 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen> {
           backgroundColor: AppColors.surface,
           title: Text(
             'Payment Successful!',
-            style: AppTextStyles.titleLarge.copyWith(
-              color: AppColors.success,
-            ),
+            style: AppTextStyles.titleLarge.copyWith(color: AppColors.success),
           ),
           content: Text(
             'Your payment has been processed successfully.',
@@ -656,9 +661,7 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen> {
           backgroundColor: AppColors.surface,
           title: Text(
             'Payment Failed',
-            style: AppTextStyles.titleLarge.copyWith(
-              color: AppColors.error,
-            ),
+            style: AppTextStyles.titleLarge.copyWith(color: AppColors.error),
           ),
           content: Text(
             message,

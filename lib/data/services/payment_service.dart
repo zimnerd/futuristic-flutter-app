@@ -45,10 +45,7 @@ class PaymentService {
     required String entityId,
     required String accessToken,
   }) {
-    _peachPayments.initialize(
-      entityId: entityId,
-      accessToken: accessToken,
-    );
+    _peachPayments.initialize(entityId: entityId, accessToken: accessToken);
   }
 
   /// Create payment method
@@ -63,10 +60,7 @@ class PaymentService {
           'Authorization': 'Bearer $_authToken',
           'Content-Type': 'application/json',
         },
-        body: json.encode({
-          'type': type.name,
-          'paymentData': paymentData,
-        }),
+        body: json.encode({'type': type.name, 'paymentData': paymentData}),
       );
 
       if (response.statusCode == 201) {
@@ -74,7 +68,9 @@ class PaymentService {
         return data['paymentMethod'] as Map<String, dynamic>;
       } else {
         final errorData = json.decode(response.body);
-        throw PaymentException(errorData['message'] ?? 'Failed to create payment method');
+        throw PaymentException(
+          errorData['message'] ?? 'Failed to create payment method',
+        );
       }
     } catch (e) {
       AppLogger.error('Error creating payment method: $e');
@@ -98,7 +94,9 @@ class PaymentService {
         final data = json.decode(response.body);
         return (data['paymentMethods'] as List).cast<Map<String, dynamic>>();
       } else {
-        throw PaymentException('Failed to load payment methods: ${response.statusCode}');
+        throw PaymentException(
+          'Failed to load payment methods: ${response.statusCode}',
+        );
       }
     } catch (e) {
       AppLogger.error('Error fetching payment methods: $e');
@@ -116,7 +114,9 @@ class PaymentService {
   }) async {
     try {
       final response = await http.post(
-        Uri.parse('${ApiConstants.baseUrl}${ApiConstants.payment}/subscription'),
+        Uri.parse(
+          '${ApiConstants.baseUrl}${ApiConstants.payment}/subscription',
+        ),
         headers: {
           'Authorization': 'Bearer $_authToken',
           'Content-Type': 'application/json',
@@ -188,11 +188,11 @@ class PaymentService {
   }) async {
     try {
       final response = await http.get(
-        Uri.parse('${ApiConstants.baseUrl}${ApiConstants.payment}/history')
-            .replace(queryParameters: {
-          'page': page.toString(),
-          'limit': limit.toString(),
-        }),
+        Uri.parse(
+          '${ApiConstants.baseUrl}${ApiConstants.payment}/history',
+        ).replace(
+          queryParameters: {'page': page.toString(), 'limit': limit.toString()},
+        ),
         headers: {
           'Authorization': 'Bearer $_authToken',
           'Content-Type': 'application/json',
@@ -203,7 +203,9 @@ class PaymentService {
         final data = json.decode(response.body);
         return (data['payments'] as List).cast<Map<String, dynamic>>();
       } else {
-        throw PaymentException('Failed to load payment history: ${response.statusCode}');
+        throw PaymentException(
+          'Failed to load payment history: ${response.statusCode}',
+        );
       }
     } catch (e) {
       AppLogger.error('Error fetching payment history: $e');
@@ -216,7 +218,9 @@ class PaymentService {
   Future<Map<String, dynamic>?> validatePromoCode(String promoCode) async {
     try {
       final response = await http.post(
-        Uri.parse('${ApiConstants.baseUrl}${ApiConstants.payment}/promo/validate'),
+        Uri.parse(
+          '${ApiConstants.baseUrl}${ApiConstants.payment}/promo/validate',
+        ),
         headers: {
           'Authorization': 'Bearer $_authToken',
           'Content-Type': 'application/json',
@@ -230,7 +234,9 @@ class PaymentService {
       } else if (response.statusCode == 404) {
         return null; // Invalid promo code
       } else {
-        throw PaymentException('Failed to validate promo code: ${response.statusCode}');
+        throw PaymentException(
+          'Failed to validate promo code: ${response.statusCode}',
+        );
       }
     } catch (e) {
       AppLogger.error('Error validating promo code: $e');
@@ -251,15 +257,14 @@ class PaymentService {
           'Authorization': 'Bearer $_authToken',
           'Content-Type': 'application/json',
         },
-        body: json.encode({
-          'paymentId': paymentId,
-          'reason': reason,
-        }),
+        body: json.encode({'paymentId': paymentId, 'reason': reason}),
       );
 
       if (response.statusCode != 200) {
         final errorData = json.decode(response.body);
-        throw PaymentException(errorData['message'] ?? 'Failed to request refund');
+        throw PaymentException(
+          errorData['message'] ?? 'Failed to request refund',
+        );
       }
     } catch (e) {
       AppLogger.error('Error requesting refund: $e');
@@ -272,7 +277,9 @@ class PaymentService {
   Future<void> deletePaymentMethod(String paymentMethodId) async {
     try {
       final response = await http.delete(
-        Uri.parse('${ApiConstants.baseUrl}${ApiConstants.payment}/methods/$paymentMethodId'),
+        Uri.parse(
+          '${ApiConstants.baseUrl}${ApiConstants.payment}/methods/$paymentMethodId',
+        ),
         headers: {
           'Authorization': 'Bearer $_authToken',
           'Content-Type': 'application/json',
@@ -281,7 +288,9 @@ class PaymentService {
 
       if (response.statusCode != 200) {
         final errorData = json.decode(response.body);
-        throw PaymentException(errorData['message'] ?? 'Failed to delete payment method');
+        throw PaymentException(
+          errorData['message'] ?? 'Failed to delete payment method',
+        );
       }
     } catch (e) {
       AppLogger.error('Error deleting payment method: $e');
@@ -309,12 +318,16 @@ class PaymentService {
         merchantTransactionId: merchantTransactionId,
         customerData: customerData,
         billingData: billingData,
-        notificationUrl: '${ApiConstants.baseUrl}${ApiConstants.payment}/webhook/peach',
+        notificationUrl:
+            '${ApiConstants.baseUrl}${ApiConstants.payment}/webhook/peach',
       );
 
       if (result['success'] == true) {
         // Store checkout information in backend
-        await _storeCheckoutSession(result['checkoutId'], merchantTransactionId);
+        await _storeCheckoutSession(
+          result['checkoutId'],
+          merchantTransactionId,
+        );
         return result;
       } else {
         throw PaymentException(result['error'] ?? 'Failed to create checkout');
@@ -330,13 +343,15 @@ class PaymentService {
   Future<Map<String, dynamic>> checkPeachPaymentStatus(String paymentId) async {
     try {
       final result = await _peachPayments.getPaymentStatus(paymentId);
-      
+
       if (result['success'] == true) {
         // Update payment status in backend
         await _updatePaymentStatus(paymentId, result);
         return result;
       } else {
-        throw PaymentException(result['error'] ?? 'Failed to check payment status');
+        throw PaymentException(
+          result['error'] ?? 'Failed to check payment status',
+        );
       }
     } catch (e) {
       AppLogger.error('Error checking payment status: $e');
@@ -404,13 +419,15 @@ class PaymentService {
   }
 
   /// Submit payment using PeachPayments API
-  Future<Map<String, dynamic>> submitPeachPayment(Map<String, dynamic> paymentData) async {
+  Future<Map<String, dynamic>> submitPeachPayment(
+    Map<String, dynamic> paymentData,
+  ) async {
     try {
       final result = await _peachPayments.submitPayment(paymentData);
-      
+
       // Sync with backend
       await _syncPaymentWithBackend(result);
-      
+
       return result;
     } catch (e) {
       AppLogger.error('Error submitting PeachPayments payment: $e');
@@ -448,12 +465,15 @@ class PaymentService {
   }
 
   /// Sync payment result with backend
-  Future<void> _syncPaymentWithBackend(Map<String, dynamic> paymentResult) async {
+  Future<void> _syncPaymentWithBackend(
+    Map<String, dynamic> paymentResult,
+  ) async {
     try {
-      if (paymentResult['success'] == true && paymentResult['transactionId'] != null) {
+      if (paymentResult['success'] == true &&
+          paymentResult['transactionId'] != null) {
         // Send payment confirmation to backend
         final url = Uri.parse('$_baseUrl/payments/confirm');
-        
+
         final response = await http.post(
           url,
           headers: {
@@ -488,10 +508,15 @@ class PaymentService {
   // HELPER METHODS
 
   /// Store checkout session in backend
-  Future<void> _storeCheckoutSession(String checkoutId, String? transactionId) async {
+  Future<void> _storeCheckoutSession(
+    String checkoutId,
+    String? transactionId,
+  ) async {
     try {
       await http.post(
-        Uri.parse('${ApiConstants.baseUrl}${ApiConstants.payment}/checkout/store'),
+        Uri.parse(
+          '${ApiConstants.baseUrl}${ApiConstants.payment}/checkout/store',
+        ),
         headers: {
           'Authorization': 'Bearer $_authToken',
           'Content-Type': 'application/json',
@@ -509,10 +534,15 @@ class PaymentService {
   }
 
   /// Update payment status in backend
-  Future<void> _updatePaymentStatus(String paymentId, Map<String, dynamic> result) async {
+  Future<void> _updatePaymentStatus(
+    String paymentId,
+    Map<String, dynamic> result,
+  ) async {
     try {
       await http.post(
-        Uri.parse('${ApiConstants.baseUrl}${ApiConstants.payment}/status/update'),
+        Uri.parse(
+          '${ApiConstants.baseUrl}${ApiConstants.payment}/status/update',
+        ),
         headers: {
           'Authorization': 'Bearer $_authToken',
           'Content-Type': 'application/json',
@@ -537,7 +567,9 @@ class PaymentService {
   Future<void> _updateRecurringPayment(Map<String, dynamic> result) async {
     try {
       await http.post(
-        Uri.parse('${ApiConstants.baseUrl}${ApiConstants.payment}/recurring/update'),
+        Uri.parse(
+          '${ApiConstants.baseUrl}${ApiConstants.payment}/recurring/update',
+        ),
         headers: {
           'Authorization': 'Bearer $_authToken',
           'Content-Type': 'application/json',
@@ -560,7 +592,9 @@ class PaymentService {
   Future<void> _updateRefundStatus(Map<String, dynamic> result) async {
     try {
       await http.post(
-        Uri.parse('${ApiConstants.baseUrl}${ApiConstants.payment}/refund/update'),
+        Uri.parse(
+          '${ApiConstants.baseUrl}${ApiConstants.payment}/refund/update',
+        ),
         headers: {
           'Authorization': 'Bearer $_authToken',
           'Content-Type': 'application/json',
@@ -583,9 +617,9 @@ class PaymentService {
 /// Custom exception for payment-related errors
 class PaymentException implements Exception {
   final String message;
-  
+
   const PaymentException(this.message);
-  
+
   @override
   String toString() => 'PaymentException: $message';
 }

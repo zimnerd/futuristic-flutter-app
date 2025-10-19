@@ -36,17 +36,17 @@ class _MessageComposerState extends State<MessageComposer>
     with TickerProviderStateMixin {
   final TextEditingController _textController = TextEditingController();
   final FocusNode _focusNode = FocusNode();
-  
+
   late AnimationController _sendButtonController;
   late AnimationController _attachmentController;
   late Animation<double> _sendButtonScale;
   late Animation<double> _attachmentRotation;
-  
+
   bool _isComposing = false;
   bool _isRecording = false;
   bool _showAttachments = false;
   Duration _recordingDuration = Duration.zero;
-  
+
   // Media functionality
   final AudioRecorder _audioRecorder = AudioRecorder();
   final ImagePicker _imagePicker = ImagePicker();
@@ -56,25 +56,25 @@ class _MessageComposerState extends State<MessageComposer>
   @override
   void initState() {
     super.initState();
-    
+
     _sendButtonController = AnimationController(
       duration: const Duration(milliseconds: 200),
       vsync: this,
     );
-    
+
     _attachmentController = AnimationController(
       duration: const Duration(milliseconds: 300),
       vsync: this,
     );
-    
+
     _sendButtonScale = Tween<double>(begin: 0.8, end: 1.0).animate(
       CurvedAnimation(parent: _sendButtonController, curve: Curves.elasticOut),
     );
-    
+
     _attachmentRotation = Tween<double>(begin: 0.0, end: 0.125).animate(
       CurvedAnimation(parent: _attachmentController, curve: Curves.easeInOut),
     );
-    
+
     _textController.addListener(_onTextChanged);
     _focusNode.addListener(_onFocusChanged);
   }
@@ -94,7 +94,7 @@ class _MessageComposerState extends State<MessageComposer>
       setState(() {
         _isComposing = isComposing;
       });
-      
+
       if (isComposing) {
         _sendButtonController.forward();
         context.read<MessagingBloc>().add(
@@ -131,7 +131,7 @@ class _MessageComposerState extends State<MessageComposer>
 
     _textController.clear();
     _focusNode.unfocus();
-    
+
     if (widget.replyToMessage != null) {
       widget.onCancelReply?.call();
     }
@@ -141,7 +141,7 @@ class _MessageComposerState extends State<MessageComposer>
     setState(() {
       _showAttachments = !_showAttachments;
     });
-    
+
     if (_showAttachments) {
       _attachmentController.forward();
       _focusNode.unfocus();
@@ -186,7 +186,8 @@ class _MessageComposerState extends State<MessageComposer>
 
       // Get recording path
       final directory = await getApplicationDocumentsDirectory();
-      final recordingPath = '${directory.path}/voice_message_${DateTime.now().millisecondsSinceEpoch}.m4a';
+      final recordingPath =
+          '${directory.path}/voice_message_${DateTime.now().millisecondsSinceEpoch}.m4a';
 
       // Configure recording
       const config = RecordConfig(
@@ -204,7 +205,7 @@ class _MessageComposerState extends State<MessageComposer>
 
       // Start recording
       await _audioRecorder.start(config, path: recordingPath);
-      
+
       // Start recording timer
       _recordingTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
         if (!_isRecording) {
@@ -212,7 +213,9 @@ class _MessageComposerState extends State<MessageComposer>
           return;
         }
         setState(() {
-          _recordingDuration = Duration(seconds: _recordingDuration.inSeconds + 1);
+          _recordingDuration = Duration(
+            seconds: _recordingDuration.inSeconds + 1,
+          );
         });
       });
 
@@ -231,17 +234,17 @@ class _MessageComposerState extends State<MessageComposer>
       setState(() {
         _isRecording = false;
       });
-      
+
       _recordingTimer?.cancel();
-      
+
       // Stop recording and get the path
       final path = await _audioRecorder.stop();
-      
+
       if (path != null && _recordingPath != null) {
         final file = File(_recordingPath!);
         if (await file.exists()) {
           final duration = _recordingDuration.inSeconds;
-          
+
           // Send voice message through BLoC
           if (mounted) {
             context.read<MessagingBloc>().add(
@@ -254,7 +257,7 @@ class _MessageComposerState extends State<MessageComposer>
               ),
             );
           }
-          
+
           if (mounted) {
             PulseToast.success(
               context,
@@ -289,12 +292,12 @@ class _MessageComposerState extends State<MessageComposer>
         _isRecording = false;
         _recordingDuration = Duration.zero;
       });
-      
+
       _recordingTimer?.cancel();
-      
+
       // Stop recording without saving
       await _audioRecorder.stop();
-      
+
       // Delete the recording file if it exists
       if (_recordingPath != null) {
         final file = File(_recordingPath!);
@@ -303,7 +306,7 @@ class _MessageComposerState extends State<MessageComposer>
         }
         _recordingPath = null;
       }
-      
+
       if (mounted) {
         PulseToast.info(context, message: 'Voice recording cancelled');
       }
@@ -319,9 +322,7 @@ class _MessageComposerState extends State<MessageComposer>
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        border: const Border(
-          top: BorderSide(color: Colors.grey, width: 0.2),
-        ),
+        border: const Border(top: BorderSide(color: Colors.grey, width: 0.2)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.05),
@@ -334,20 +335,18 @@ class _MessageComposerState extends State<MessageComposer>
         child: Column(
           children: [
             // Reply preview
-            if (widget.replyToMessage != null)
-              _buildReplyPreview(),
-            
+            if (widget.replyToMessage != null) _buildReplyPreview(),
+
             // Main composer
             Padding(
               padding: const EdgeInsets.all(12),
-              child: _isRecording 
+              child: _isRecording
                   ? _buildVoiceRecorder()
                   : _buildTextComposer(),
             ),
-            
+
             // Attachments panel
-            if (_showAttachments)
-              _buildAttachmentsPanel(),
+            if (_showAttachments) _buildAttachmentsPanel(),
           ],
         ),
       ),
@@ -356,7 +355,7 @@ class _MessageComposerState extends State<MessageComposer>
 
   Widget _buildReplyPreview() {
     final message = widget.replyToMessage!;
-    
+
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -381,20 +380,17 @@ class _MessageComposerState extends State<MessageComposer>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                'Replying to message',
-                style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: PulseColors.primary,
+                  'Replying to message',
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: PulseColors.primary,
+                  ),
                 ),
-              ),
                 const SizedBox(height: 2),
                 Text(
                   message.content,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey[700],
-                  ),
+                  style: TextStyle(fontSize: 14, color: Colors.grey[700]),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -424,14 +420,16 @@ class _MessageComposerState extends State<MessageComposer>
               child: IconButton(
                 icon: Icon(
                   _showAttachments ? Icons.close : Icons.add,
-                  color: _showAttachments ? PulseColors.primary : Colors.grey[600],
+                  color: _showAttachments
+                      ? PulseColors.primary
+                      : Colors.grey[600],
                 ),
                 onPressed: _toggleAttachments,
               ),
             );
           },
         ),
-        
+
         // Text input
         Expanded(
           child: Container(
@@ -455,9 +453,9 @@ class _MessageComposerState extends State<MessageComposer>
             ),
           ),
         ),
-        
+
         const SizedBox(width: 8),
-        
+
         // Send/Voice button
         AnimatedSwitcher(
           duration: const Duration(milliseconds: 200),
@@ -485,10 +483,7 @@ class _MessageComposerState extends State<MessageComposer>
                       color: Colors.grey[200],
                       shape: BoxShape.circle,
                     ),
-                    child: Icon(
-                      Icons.mic,
-                      color: Colors.grey[600],
-                    ),
+                    child: Icon(Icons.mic, color: Colors.grey[600]),
                   ),
                 ),
         ),
@@ -516,7 +511,7 @@ class _MessageComposerState extends State<MessageComposer>
             ),
           ),
           const SizedBox(width: 12),
-          
+
           // Recording duration
           Text(
             _formatDuration(_recordingDuration),
@@ -526,9 +521,9 @@ class _MessageComposerState extends State<MessageComposer>
               color: Colors.red,
             ),
           ),
-          
+
           const Spacer(),
-          
+
           // Cancel button
           GestureDetector(
             onTap: _cancelVoiceRecording,
@@ -538,16 +533,12 @@ class _MessageComposerState extends State<MessageComposer>
                 color: Colors.red.withValues(alpha: 0.2),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
-                Icons.close,
-                color: Colors.red,
-                size: 20,
-              ),
+              child: const Icon(Icons.close, color: Colors.red, size: 20),
             ),
           ),
-          
+
           const SizedBox(width: 12),
-          
+
           // Send button
           GestureDetector(
             onTap: _stopVoiceRecording,
@@ -557,11 +548,7 @@ class _MessageComposerState extends State<MessageComposer>
                 color: Colors.red,
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
-                Icons.send,
-                color: Colors.white,
-                size: 20,
-              ),
+              child: const Icon(Icons.send, color: Colors.white, size: 20),
             ),
           ),
         ],
@@ -574,9 +561,7 @@ class _MessageComposerState extends State<MessageComposer>
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.grey[50],
-        border: const Border(
-          top: BorderSide(color: Colors.grey, width: 0.2),
-        ),
+        border: const Border(top: BorderSide(color: Colors.grey, width: 0.2)),
       ),
       child: Column(
         children: [
@@ -684,20 +669,10 @@ class _MessageComposerState extends State<MessageComposer>
               color: color.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
-            child: Icon(
-              icon,
-              color: color,
-              size: 24,
-            ),
+            child: Icon(icon, color: color, size: 24),
           ),
           const SizedBox(height: 8),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 12,
-              color: Colors.grey[700],
-            ),
-          ),
+          Text(label, style: TextStyle(fontSize: 12, color: Colors.grey[700])),
         ],
       ),
     );
@@ -751,7 +726,7 @@ class _MessageComposerState extends State<MessageComposer>
             ),
           );
         }
-        
+
         if (mounted) {
           PulseToast.success(context, message: 'Photo sent');
         }
@@ -797,7 +772,7 @@ class _MessageComposerState extends State<MessageComposer>
             ),
           );
         }
-        
+
         _showSnackbar('Image sent');
         _hideAttachments();
       }
@@ -852,9 +827,7 @@ class _MessageComposerState extends State<MessageComposer>
             maxDuration: const Duration(seconds: 30), // Limit to 30 seconds
           );
         } else {
-          video = await _imagePicker.pickVideo(
-            source: ImageSource.gallery,
-          );
+          video = await _imagePicker.pickVideo(source: ImageSource.gallery);
         }
 
         if (video != null) {
@@ -870,7 +843,7 @@ class _MessageComposerState extends State<MessageComposer>
               ),
             );
           }
-          
+
           _showSnackbar('Video sent');
           _hideAttachments();
         }
@@ -884,17 +857,21 @@ class _MessageComposerState extends State<MessageComposer>
     try {
       // Request location permission using the consistent PermissionService pattern
       final permissionService = PermissionService();
-      final hasPermission = await permissionService.requestLocationWhenInUsePermission(context);
+      final hasPermission = await permissionService
+          .requestLocationWhenInUsePermission(context);
 
       if (!hasPermission) {
-        _showSnackbar('Location permission is required to share your location.');
+        _showSnackbar(
+          'Location permission is required to share your location.',
+        );
         return;
       }
 
       _showSnackbar('Getting your location...');
 
       // Use the location service from service locator
-      final position = await ServiceLocator.instance.location.getCurrentLocation();
+      final position = await ServiceLocator.instance.location
+          .getCurrentLocation();
 
       if (position == null) {
         _showSnackbar('Unable to get location. Please check permissions.');
@@ -940,7 +917,7 @@ class _MessageComposerState extends State<MessageComposer>
           ],
         ),
       );
-      
+
       _showSnackbar('Document sharing coming soon');
       _hideAttachments();
     } catch (e) {
@@ -967,7 +944,7 @@ class _MessageComposerState extends State<MessageComposer>
           ],
         ),
       );
-      
+
       _showSnackbar('Use voice recorder for audio messages');
       _hideAttachments();
     } catch (e) {
@@ -1021,7 +998,7 @@ class _MessageComposerState extends State<MessageComposer>
           ],
         ),
       );
-      
+
       _showSnackbar('GIF sharing coming soon');
       _hideAttachments();
     } catch (e) {

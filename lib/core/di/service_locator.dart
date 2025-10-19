@@ -50,9 +50,7 @@ Future<void> initializeDependencies() async {
   );
 
   // Group Chat Services - now use ApiClient singleton internally
-  sl.registerLazySingleton<GroupChatService>(
-    () => GroupChatService(),
-  );
+  sl.registerLazySingleton<GroupChatService>(() => GroupChatService());
   sl.registerLazySingleton<GroupChatWebSocketService>(
     () => GroupChatWebSocketService(
       baseUrl: ApiConstants.websocketUrl,
@@ -64,9 +62,7 @@ Future<void> initializeDependencies() async {
   sl.registerFactory<MessagingBloc>(
     () => MessagingBloc(messagingService: sl()),
   );
-  sl.registerFactory<MatchingBloc>(
-    () => MatchingBloc(matchingService: sl()),
-  );
+  sl.registerFactory<MatchingBloc>(() => MatchingBloc(matchingService: sl()));
   sl.registerFactory<GroupChatBloc>(
     () => GroupChatBloc(
       service: sl<GroupChatService>(),

@@ -45,10 +45,7 @@ class _BoostBannerWidgetState extends State<BoostBannerWidget>
     )..repeat(reverse: true);
 
     _pulseAnimation = Tween<double>(begin: 1.0, end: 1.2).animate(
-      CurvedAnimation(
-        parent: _pulseController,
-        curve: Curves.easeInOut,
-      ),
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
     );
   }
 
@@ -80,13 +77,19 @@ class _BoostBannerWidgetState extends State<BoostBannerWidget>
         // Calculate real-time remaining time
         final now = DateTime.now();
         final remainingDuration = state.expiresAt.difference(now);
-        final remainingMinutes = remainingDuration.inMinutes.clamp(0, state.durationMinutes);
+        final remainingMinutes = remainingDuration.inMinutes.clamp(
+          0,
+          state.durationMinutes,
+        );
         final remainingSeconds = remainingDuration.inSeconds % 60;
 
         // Calculate progress
         final elapsed = now.difference(state.startTime);
         final totalDuration = state.expiresAt.difference(state.startTime);
-        final progress = (elapsed.inSeconds / totalDuration.inSeconds).clamp(0.0, 1.0);
+        final progress = (elapsed.inSeconds / totalDuration.inSeconds).clamp(
+          0.0,
+          1.0,
+        );
 
         final isExpiringSoon = remainingMinutes <= 5;
 
@@ -104,10 +107,9 @@ class _BoostBannerWidgetState extends State<BoostBannerWidget>
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: (isExpiringSoon
-                        ? PulseColors.warning
-                        : PulseColors.primary)
-                    .withValues(alpha: 0.3),
+                color:
+                    (isExpiringSoon ? PulseColors.warning : PulseColors.primary)
+                        .withValues(alpha: 0.3),
                 blurRadius: 12,
                 offset: const Offset(0, 4),
               ),
@@ -152,10 +154,7 @@ class _BoostBannerWidgetState extends State<BoostBannerWidget>
                         ),
                         Text(
                           'You\'re getting 10x more visibility!',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 12,
-                          ),
+                          style: TextStyle(color: Colors.white, fontSize: 12),
                         ),
                       ],
                     ),
@@ -163,8 +162,10 @@ class _BoostBannerWidgetState extends State<BoostBannerWidget>
 
                   // Remaining time with seconds
                   Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.white.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(20),
@@ -172,14 +173,13 @@ class _BoostBannerWidgetState extends State<BoostBannerWidget>
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(
-                          Icons.timer,
-                          color: Colors.white,
-                          size: 16,
-                        ),
+                        const Icon(Icons.timer, color: Colors.white, size: 16),
                         const SizedBox(width: 4),
                         Text(
-                          _formatRemainingTimeWithSeconds(remainingMinutes, remainingSeconds),
+                          _formatRemainingTimeWithSeconds(
+                            remainingMinutes,
+                            remainingSeconds,
+                          ),
                           style: const TextStyle(
                             color: Colors.white,
                             fontSize: 14,

@@ -18,7 +18,7 @@ class PremiumService {
       if (response.statusCode == 200 && response.data != null) {
         final List<dynamic> data = response.data['plans'] ?? [];
         final plans = data.map((json) => PremiumPlan.fromJson(json)).toList();
-        
+
         _logger.d('Retrieved ${plans.length} premium plans');
         return plans;
       } else {
@@ -44,7 +44,9 @@ class PremiumService {
         _logger.d('No active subscription found');
         return null;
       } else {
-        _logger.e('Failed to get current subscription: ${response.statusMessage}');
+        _logger.e(
+          'Failed to get current subscription: ${response.statusMessage}',
+        );
         return null;
       }
     } catch (e) {
@@ -117,7 +119,9 @@ class PremiumService {
         _logger.d('Subscription reactivated successfully');
         return subscription;
       } else {
-        _logger.e('Failed to reactivate subscription: ${response.statusMessage}');
+        _logger.e(
+          'Failed to reactivate subscription: ${response.statusMessage}',
+        );
         return null;
       }
     } catch (e) {
@@ -181,17 +185,18 @@ class PremiumService {
     try {
       final response = await _apiClient.get(
         '/api/v1/premium/coins/transactions',
-        queryParameters: {
-          'page': page.toString(),
-          'limit': limit.toString(),
-        },
+        queryParameters: {'page': page.toString(), 'limit': limit.toString()},
       );
 
       if (response.statusCode == 200 && response.data != null) {
         final List<dynamic> data = response.data['transactions'] ?? [];
-        final transactions = data.map((json) => CoinTransaction.fromJson(json)).toList();
-        
-        _logger.d('Retrieved ${transactions.length} coin transactions (page $page)');
+        final transactions = data
+            .map((json) => CoinTransaction.fromJson(json))
+            .toList();
+
+        _logger.d(
+          'Retrieved ${transactions.length} coin transactions (page $page)',
+        );
         return transactions;
       } else {
         _logger.e('Failed to get coin transactions: ${response.statusMessage}');
@@ -238,18 +243,22 @@ class PremiumService {
 
       if (response.statusCode == 200 && response.data != null) {
         final List<dynamic> data = response.data['features'] ?? [];
-        final features = data.map((featureName) {
-          // Convert string feature name to enum
-          try {
-            return PremiumFeature.values.firstWhere(
-              (feature) => feature.name == featureName,
-            );
-          } catch (e) {
-            _logger.w('Unknown premium feature: $featureName');
-            return null;
-          }
-        }).where((feature) => feature != null).cast<PremiumFeature>().toList();
-        
+        final features = data
+            .map((featureName) {
+              // Convert string feature name to enum
+              try {
+                return PremiumFeature.values.firstWhere(
+                  (feature) => feature.name == featureName,
+                );
+              } catch (e) {
+                _logger.w('Unknown premium feature: $featureName');
+                return null;
+              }
+            })
+            .where((feature) => feature != null)
+            .cast<PremiumFeature>()
+            .toList();
+
         _logger.d('Retrieved ${features.length} premium features');
         return features;
       } else {
@@ -280,11 +289,13 @@ class PremiumService {
           'currentPeriodStart': response.data['currentPeriodStart'],
           'currentPeriodEnd': response.data['currentPeriodEnd'],
         };
-        
+
         _logger.d('Retrieved premium feature usage stats');
         return stats;
       } else {
-        _logger.e('Failed to get feature usage stats: ${response.statusMessage}');
+        _logger.e(
+          'Failed to get feature usage stats: ${response.statusMessage}',
+        );
         return null;
       }
     } catch (e) {
@@ -324,12 +335,16 @@ class PremiumService {
 
       if (response.statusCode == 200 && response.data != null) {
         final List<dynamic> data = response.data['subscriptions'] ?? [];
-        final subscriptions = data.map((json) => UserSubscription.fromJson(json)).toList();
-        
+        final subscriptions = data
+            .map((json) => UserSubscription.fromJson(json))
+            .toList();
+
         _logger.d('Retrieved ${subscriptions.length} subscription records');
         return subscriptions;
       } else {
-        _logger.e('Failed to get subscription history: ${response.statusMessage}');
+        _logger.e(
+          'Failed to get subscription history: ${response.statusMessage}',
+        );
         return [];
       }
     } catch (e) {
@@ -374,7 +389,7 @@ class PremiumService {
           'taxAmount': response.data['taxAmount'],
           'totalAmount': response.data['totalAmount'],
         };
-        
+
         _logger.d('Retrieved billing information');
         return billingInfo;
       } else {

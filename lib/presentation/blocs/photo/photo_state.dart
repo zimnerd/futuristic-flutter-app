@@ -25,19 +25,13 @@ class PhotosLoaded extends PhotoState {
   final List<ProfilePhoto> photos;
   final String? mainPhotoId;
 
-  const PhotosLoaded({
-    required this.photos,
-    this.mainPhotoId,
-  });
+  const PhotosLoaded({required this.photos, this.mainPhotoId});
 
   @override
   List<Object?> get props => [photos, mainPhotoId];
 
   /// Create a copy with updated fields
-  PhotosLoaded copyWith({
-    List<ProfilePhoto>? photos,
-    String? mainPhotoId,
-  }) {
+  PhotosLoaded copyWith({List<ProfilePhoto>? photos, String? mainPhotoId}) {
     return PhotosLoaded(
       photos: photos ?? this.photos,
       mainPhotoId: mainPhotoId ?? this.mainPhotoId,
@@ -50,10 +44,7 @@ class PhotoUploading extends PhotoState {
   final double progress; // 0.0 to 1.0
   final String? message;
 
-  const PhotoUploading({
-    required this.progress,
-    this.message,
-  });
+  const PhotoUploading({required this.progress, this.message});
 
   @override
   List<Object?> get props => [progress, message];
@@ -64,10 +55,7 @@ class PhotoOperationSuccess extends PhotoState {
   final String message;
   final List<ProfilePhoto> photos;
 
-  const PhotoOperationSuccess({
-    required this.message,
-    required this.photos,
-  });
+  const PhotoOperationSuccess({required this.message, required this.photos});
 
   @override
   List<Object?> get props => [message, photos];
@@ -78,10 +66,7 @@ class PhotoError extends PhotoState {
   final String message;
   final String? errorCode;
 
-  const PhotoError({
-    required this.message,
-    this.errorCode,
-  });
+  const PhotoError({required this.message, this.errorCode});
 
   @override
   List<Object?> get props => [message, errorCode];

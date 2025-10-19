@@ -11,7 +11,7 @@ abstract class ChatRepository {
 
   /// Stream of message delivery confirmations
   Stream<MessageDeliveryUpdate> get messageDeliveryUpdates;
-  
+
   /// Stream of message read updates
   Stream<MessageReadUpdate> get messageReadUpdates;
 
@@ -20,6 +20,7 @@ abstract class ChatRepository {
 
   /// Stream of typing indicator events
   Stream<Map<String, dynamic>> get typingEvents;
+
   /// Get list of conversations for the current user
   Future<List<ConversationModel>> getConversations();
 

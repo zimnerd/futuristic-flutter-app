@@ -13,26 +13,33 @@ import '../../core/constants/api_constants.dart';
 class CallService {
   static CallService? _instance;
   static CallService get instance => _instance ??= CallService._();
-  
+
   CallService._();
 
   final WebSocketService _webSocketService = WebSocketServiceImpl.instance;
   final WebRTCService _webRTCService = WebRTCService();
   final ApiService _apiService = ApiServiceImpl();
-  
+
   // Stream controllers for call events
-  final StreamController<Call> _incomingCallController = StreamController.broadcast();
-  final StreamController<String> _callEndedController = StreamController.broadcast();
-  final StreamController<CallConnectionState> _connectionStateController = StreamController.broadcast();
-  final StreamController<CallQuality> _callQualityController = StreamController.broadcast();
-  final StreamController<Map<String, dynamic>> _signalingController = StreamController.broadcast();
+  final StreamController<Call> _incomingCallController =
+      StreamController.broadcast();
+  final StreamController<String> _callEndedController =
+      StreamController.broadcast();
+  final StreamController<CallConnectionState> _connectionStateController =
+      StreamController.broadcast();
+  final StreamController<CallQuality> _callQualityController =
+      StreamController.broadcast();
+  final StreamController<Map<String, dynamic>> _signalingController =
+      StreamController.broadcast();
 
   // Public streams
   Stream<Call> get onIncomingCall => _incomingCallController.stream;
   Stream<String> get onCallEnded => _callEndedController.stream;
-  Stream<CallConnectionState> get onConnectionStateChanged => _connectionStateController.stream;
+  Stream<CallConnectionState> get onConnectionStateChanged =>
+      _connectionStateController.stream;
   Stream<CallQuality> get onCallQualityChanged => _callQualityController.stream;
-  Stream<Map<String, dynamic>> get onSignalingReceived => _signalingController.stream;
+  Stream<Map<String, dynamic>> get onSignalingReceived =>
+      _signalingController.stream;
 
   bool _isInitialized = false;
 
@@ -92,19 +99,21 @@ class CallService {
       final tokenData = tokenResponse.data;
       final token = tokenData['token'] as String;
       final channelName = tokenData['channelName'] as String;
-      
+
       // Send call initiation through WebSocket
       _webSocketService.initiateCall(recipientId, type.name);
-      
+
       // Start WebRTC call with real token from backend
       await _webRTCService.startCall(
         receiverId: recipientId,
         receiverName: 'User $recipientId', // Should come from user data
-        callType: type == CallType.video ? model.CallType.video : model.CallType.audio,
+        callType: type == CallType.video
+            ? model.CallType.video
+            : model.CallType.audio,
         channelName: channelName,
         token: token,
       );
-      
+
       return callId;
     } catch (e) {
       throw CallException('Failed to initiate call: $e');
@@ -116,7 +125,7 @@ class CallService {
     try {
       _webSocketService.acceptCall(callId);
       _connectionStateController.add(CallConnectionState.connecting);
-      
+
       // Answer WebRTC call with channel name and token from incoming call
       // Get call token from backend API
       final tokenResponse = await _apiService.post(
@@ -127,10 +136,8 @@ class CallService {
       final responseData = tokenResponse.data as Map<String, dynamic>;
       final String token = responseData['token'];
       final String channelName = responseData['channelName'];
-      
-      await _webRTCService.answerCall(
-        channelName: channelName, token: token,
-      );
+
+      await _webRTCService.answerCall(channelName: channelName, token: token);
     } catch (e) {
       throw CallException('Failed to accept call: $e');
     }
@@ -149,7 +156,7 @@ class CallService {
   Future<void> endCall(String callId) async {
     try {
       _webSocketService.endCall(callId);
-      
+
       // End WebRTC call
       await _webRTCService.endCall();
     } catch (e) {
@@ -225,17 +232,11 @@ class CallService {
   }
 
   /// Get call history for current user
-  Future<List<Call>> getCallHistory({
-    int limit = 50,
-    int offset = 0,
-  }) async {
+  Future<List<Call>> getCallHistory({int limit = 50, int offset = 0}) async {
     try {
       final response = await _apiService.get<Map<String, dynamic>>(
         ApiConstants.webrtcCallHistory,
-        queryParameters: {
-          'limit': limit,
-          'offset': offset,
-        },
+        queryParameters: {'limit': limit, 'offset': offset},
       );
 
       if (response.statusCode == 200 && response.data != null) {
@@ -249,9 +250,15 @@ class CallService {
             type: _parseCallType(call['type'] as String),
             status: _parseCallStatus(call['status'] as String),
             createdAt: DateTime.parse(call['createdAt'] as String),
-            startedAt: call['startedAt'] != null ? DateTime.parse(call['startedAt'] as String) : null,
-            endedAt: call['endedAt'] != null ? DateTime.parse(call['endedAt'] as String) : null,
-            duration: call['duration'] != null ? Duration(seconds: call['duration'] as int) : null,
+            startedAt: call['startedAt'] != null
+                ? DateTime.parse(call['startedAt'] as String)
+                : null,
+            endedAt: call['endedAt'] != null
+                ? DateTime.parse(call['endedAt'] as String)
+                : null,
+            duration: call['duration'] != null
+                ? Duration(seconds: call['duration'] as int)
+                : null,
           );
         }).toList();
       } else {
@@ -333,9 +340,9 @@ class CallService {
 /// Exception class for call-related errors
 class CallException implements Exception {
   final String message;
-  
+
   const CallException(this.message);
-  
+
   @override
   String toString() => 'CallException: $message';
 }
@@ -371,5 +378,6 @@ extension CallQualityExtension on CallQuality {
   }
 
   /// Check if quality is acceptable
-  bool get isAcceptable => [CallQuality.good, CallQuality.excellent].contains(this);
+  bool get isAcceptable =>
+      [CallQuality.good, CallQuality.excellent].contains(this);
 }

@@ -68,10 +68,7 @@ class GroupChatSessionsLoaded extends GroupChatState {
   final List<LiveSession> sessions;
   final GroupType? filterType;
 
-  const GroupChatSessionsLoaded({
-    required this.sessions,
-    this.filterType,
-  });
+  const GroupChatSessionsLoaded({required this.sessions, this.filterType});
 
   @override
   List<Object?> get props => [sessions, filterType];
@@ -301,10 +298,7 @@ class GroupChatReactionAdded extends GroupChatState {
   final String messageId;
   final String emoji;
 
-  const GroupChatReactionAdded({
-    required this.messageId,
-    required this.emoji,
-  });
+  const GroupChatReactionAdded({required this.messageId, required this.emoji});
 
   @override
   List<Object?> get props => [messageId, emoji];

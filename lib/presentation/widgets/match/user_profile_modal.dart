@@ -24,15 +24,13 @@ class UserProfileModal extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final userProfile = match.userProfile;
-    
+
     if (userProfile == null) {
       return _buildErrorModal(context, 'User profile not available');
     }
 
     return Dialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       child: Container(
         constraints: BoxConstraints(
           maxHeight: MediaQuery.of(context).size.height * 0.8,
@@ -69,19 +67,13 @@ class UserProfileModal extends StatelessWidget {
 
   Widget _buildErrorModal(BuildContext context, String message) {
     return Dialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       child: Padding(
         padding: const EdgeInsets.all(24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(
-              Icons.error_outline,
-              color: Colors.red,
-              size: 48,
-            ),
+            const Icon(Icons.error_outline, color: Colors.red, size: 48),
             const SizedBox(height: 16),
             Text(
               message,
@@ -114,9 +106,9 @@ class UserProfileModal extends StatelessWidget {
           Expanded(
             child: Text(
               match.userProfile?.name ?? 'Unknown User',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
             ),
           ),
           IconButton(
@@ -138,11 +130,7 @@ class UserProfileModal extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
         ),
         child: const Center(
-          child: Icon(
-            Icons.person,
-            size: 80,
-            color: Colors.grey,
-          ),
+          child: Icon(Icons.person, size: 80, color: Colors.grey),
         ),
       );
     }
@@ -157,7 +145,9 @@ class UserProfileModal extends StatelessWidget {
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(12),
               image: DecorationImage(
-                image: CachedNetworkImageProvider(userProfile.photos[index].url),
+                image: CachedNetworkImageProvider(
+                  userProfile.photos[index].url,
+                ),
                 fit: BoxFit.cover,
               ),
             ),
@@ -192,7 +182,12 @@ class UserProfileModal extends StatelessWidget {
     );
   }
 
-  Widget _buildInfoCard(BuildContext context, String label, String value, IconData icon) {
+  Widget _buildInfoCard(
+    BuildContext context,
+    String label,
+    String value,
+    IconData icon,
+  ) {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -209,15 +204,15 @@ class UserProfileModal extends StatelessWidget {
               children: [
                 Text(
                   label,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Colors.grey[600],
-                      ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
                 ),
                 Text(
                   value,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        fontWeight: FontWeight.w500,
-                      ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
                 ),
               ],
             ),
@@ -244,15 +239,12 @@ class UserProfileModal extends StatelessWidget {
         children: [
           Text(
             'About',
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
-          Text(
-            userProfile.bio,
-            style: Theme.of(context).textTheme.bodyMedium,
-          ),
+          Text(userProfile.bio, style: Theme.of(context).textTheme.bodyMedium),
         ],
       ),
     );
@@ -268,9 +260,9 @@ class UserProfileModal extends StatelessWidget {
       children: [
         Text(
           'Interests',
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+          style: Theme.of(
+            context,
+          ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 8),
         Wrap(
@@ -280,11 +272,10 @@ class UserProfileModal extends StatelessWidget {
               .take(10) // Limit to avoid overflow
               .map(
                 (interest) => Chip(
-                  label: Text(
-                    interest,
-                    style: const TextStyle(fontSize: 12),
-                  ),
-                  backgroundColor: Theme.of(context).primaryColor.withValues(alpha: 0.1),
+                  label: Text(interest, style: const TextStyle(fontSize: 12)),
+                  backgroundColor: Theme.of(
+                    context,
+                  ).primaryColor.withValues(alpha: 0.1),
                   side: BorderSide.none,
                 ),
               )
@@ -300,7 +291,7 @@ class UserProfileModal extends StatelessWidget {
     }
 
     final percentage = (match.compatibilityScore * 100).round();
-    
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -314,10 +305,7 @@ class UserProfileModal extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Icon(
-            Icons.favorite,
-            color: Theme.of(context).primaryColor,
-          ),
+          Icon(Icons.favorite, color: Theme.of(context).primaryColor),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -326,8 +314,8 @@ class UserProfileModal extends StatelessWidget {
                 Text(
                   'Compatibility Score',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 Text(
                   '$percentage% match',
@@ -339,9 +327,9 @@ class UserProfileModal extends StatelessWidget {
           Text(
             '$percentage%',
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: Theme.of(context).primaryColor,
-                ),
+              fontWeight: FontWeight.bold,
+              color: Theme.of(context).primaryColor,
+            ),
           ),
         ],
       ),
@@ -370,9 +358,9 @@ class UserProfileModal extends StatelessWidget {
                 ),
               ),
             ),
-          
+
           const SizedBox(height: 12),
-          
+
           // Secondary actions
           Row(
             children: [

@@ -9,10 +9,7 @@ import '../../widgets/common/loading_indicator.dart';
 class CallDetailsScreen extends StatefulWidget {
   final String callId;
 
-  const CallDetailsScreen({
-    super.key,
-    required this.callId,
-  });
+  const CallDetailsScreen({super.key, required this.callId});
 
   @override
   State<CallDetailsScreen> createState() => _CallDetailsScreenState();
@@ -29,9 +26,7 @@ class _CallDetailsScreenState extends State<CallDetailsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Call Details'),
-      ),
+      appBar: AppBar(title: const Text('Call Details')),
       body: BlocBuilder<CallHistoryBloc, CallHistoryState>(
         builder: (context, state) {
           if (state is CallDetailsLoading) {
@@ -43,11 +38,7 @@ class _CallDetailsScreenState extends State<CallDetailsScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(
-                    Icons.error_outline,
-                    size: 64,
-                    color: Colors.red,
-                  ),
+                  const Icon(Icons.error_outline, size: 64, color: Colors.red),
                   const SizedBox(height: 16),
                   Text(
                     state.message,
@@ -57,9 +48,9 @@ class _CallDetailsScreenState extends State<CallDetailsScreen> {
                   const SizedBox(height: 16),
                   ElevatedButton(
                     onPressed: () {
-                      context
-                          .read<CallHistoryBloc>()
-                          .add(ViewCallDetails(widget.callId));
+                      context.read<CallHistoryBloc>().add(
+                        ViewCallDetails(widget.callId),
+                      );
                     },
                     child: const Text('Retry'),
                   ),
@@ -72,9 +63,7 @@ class _CallDetailsScreenState extends State<CallDetailsScreen> {
             return _buildDetailsContent(state.details);
           }
 
-          return const Center(
-            child: Text('Loading call details...'),
-          );
+          return const Center(child: Text('Loading call details...'));
         },
       ),
     );
@@ -132,10 +121,7 @@ class _CallDetailsScreenState extends State<CallDetailsScreen> {
                       ),
                       Text(
                         dateFormat.format(details.startedAt ?? DateTime.now()),
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey[600],
-                        ),
+                        style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                       ),
                     ],
                   ),
@@ -146,10 +132,7 @@ class _CallDetailsScreenState extends State<CallDetailsScreen> {
             _buildInfoRow('Status', _formatStatus(details.status)),
             _buildInfoRow('Duration', duration),
             if (details.endedAt != null)
-              _buildInfoRow(
-                'Ended At',
-                dateFormat.format(details.endedAt!),
-              ),
+              _buildInfoRow('Ended At', dateFormat.format(details.endedAt!)),
           ],
         ),
       ),
@@ -165,10 +148,7 @@ class _CallDetailsScreenState extends State<CallDetailsScreen> {
           children: [
             const Text(
               'Participants',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
             ...details.participants.map((participant) {
@@ -181,8 +161,7 @@ class _CallDetailsScreenState extends State<CallDetailsScreen> {
                           ? NetworkImage(participant.user.profileImage!)
                           : null,
                       child: participant.user.profileImage == null
-                          ? Text(
-                              participant.user.displayName[0].toUpperCase())
+                          ? Text(participant.user.displayName[0].toUpperCase())
                           : null,
                     ),
                     const SizedBox(width: 12),
@@ -226,10 +205,7 @@ class _CallDetailsScreenState extends State<CallDetailsScreen> {
           children: [
             const Text(
               'Call Quality',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
             Row(
@@ -258,10 +234,7 @@ class _CallDetailsScreenState extends State<CallDetailsScreen> {
               const SizedBox(height: 8),
               Text(
                 'Quality tracked over ${stats.snapshots.length} snapshots',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey[600],
-                ),
+                style: TextStyle(fontSize: 14, color: Colors.grey[600]),
               ),
             ],
             const SizedBox(height: 16),
@@ -269,10 +242,7 @@ class _CallDetailsScreenState extends State<CallDetailsScreen> {
             const SizedBox(height: 8),
             const Text(
               'Distribution',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-              ),
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 8),
             _buildDistributionBars(stats.distribution),
@@ -283,7 +253,8 @@ class _CallDetailsScreenState extends State<CallDetailsScreen> {
   }
 
   Widget _buildDistributionBars(QualityDistribution distribution) {
-    final total = distribution.excellent +
+    final total =
+        distribution.excellent +
         distribution.good +
         distribution.fair +
         distribution.poor;
@@ -316,12 +287,7 @@ class _CallDetailsScreenState extends State<CallDetailsScreen> {
             Colors.orange,
           ),
         if (distribution.poor > 0)
-          _buildDistributionBar(
-            'Poor',
-            distribution.poor,
-            total,
-            Colors.red,
-          ),
+          _buildDistributionBar('Poor', distribution.poor, total, Colors.red),
       ],
     );
   }
@@ -350,10 +316,7 @@ class _CallDetailsScreenState extends State<CallDetailsScreen> {
               ),
               Text(
                 '$count ($percentage%)',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey[600],
-                ),
+                style: TextStyle(fontSize: 14, color: Colors.grey[600]),
               ),
             ],
           ),
@@ -384,13 +347,7 @@ class _CallDetailsScreenState extends State<CallDetailsScreen> {
           ),
         ),
         const SizedBox(height: 4),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 14,
-            color: Colors.grey[600],
-          ),
-        ),
+        Text(label, style: TextStyle(fontSize: 14, color: Colors.grey[600])),
       ],
     );
   }
@@ -401,19 +358,10 @@ class _CallDetailsScreenState extends State<CallDetailsScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.grey[600],
-            ),
-          ),
+          Text(label, style: TextStyle(fontSize: 14, color: Colors.grey[600])),
           Text(
             value,
-            style: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-            ),
+            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
           ),
         ],
       ),

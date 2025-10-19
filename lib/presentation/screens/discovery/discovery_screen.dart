@@ -30,7 +30,7 @@ import '../../widgets/common/sync_status_indicator.dart';
 import '../ai_companion/ai_companion_screen.dart';
 
 /// Modern Discovery Screen - PulseLink's unique swipe interface
-/// 
+///
 /// Features:
 /// - Smooth Tinder-like card animations with improved physics
 /// - Modern action buttons with rewind functionality
@@ -62,7 +62,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
   late Animation<double> _cardScaleAnimation;
   late Animation<double> _actionScaleAnimation;
   late Animation<double> _headerOpacityAnimation;
-  
+
   bool _isDragging = false;
   Offset _dragOffset = Offset.zero;
   SwipeAction? _currentSwipeDirection;
@@ -71,37 +71,35 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
   @override
   void initState() {
     super.initState();
-    
+
     // Enhanced animation controllers for smoother interactions
     _cardController = AnimationController(
       duration: PulseAnimations.cardSwipe,
       vsync: this,
     );
-    
+
     _actionController = AnimationController(
       duration: PulseAnimations.buttonPress,
       vsync: this,
     );
-    
+
     _headerController = AnimationController(
       duration: PulseAnimations.cardEntry,
       vsync: this,
     );
 
     // Improved card animations with better easing
-    _cardSlideAnimation = Tween<Offset>(
-      begin: Offset.zero,
-      end: const Offset(1.5, 0),
-    ).animate(CurvedAnimation(
-      parent: _cardController,
+    _cardSlideAnimation =
+        Tween<Offset>(begin: Offset.zero, end: const Offset(1.5, 0)).animate(
+          CurvedAnimation(
+            parent: _cardController,
             curve: PulseAnimations.smoothCurve,
-    ));
-    
-    _cardRotationAnimation = Tween<double>(
-      begin: 0,
-      end: 0.3,
-    ).animate(CurvedAnimation(
-      parent: _cardController,
+          ),
+        );
+
+    _cardRotationAnimation = Tween<double>(begin: 0, end: 0.3).animate(
+      CurvedAnimation(
+        parent: _cardController,
         curve: PulseAnimations.smoothCurve,
       ),
     );
@@ -110,16 +108,16 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
       CurvedAnimation(
         parent: _cardController,
         curve: PulseAnimations.smoothCurve,
-    ));
-    
-    _actionScaleAnimation = Tween<double>(
-      begin: 1.0,
-      end: 1.15,
-    ).animate(CurvedAnimation(
-      parent: _actionController,
+      ),
+    );
+
+    _actionScaleAnimation = Tween<double>(begin: 1.0, end: 1.15).animate(
+      CurvedAnimation(
+        parent: _actionController,
         curve: PulseAnimations.bouncyCurve,
-    ));
-    
+      ),
+    );
+
     _headerOpacityAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(
         parent: _headerController,
@@ -131,7 +129,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _headerController.forward();
       _loadDiscoveryWithPreferences();
-      
+
       // Prefetch discovery images on screen entry for instant loading
       // This will use cached profiles from app launch and prefetch images
       _prefetchDiscoveryImages();
@@ -152,7 +150,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
         .catchError((error) {
           // Silently fail - this is a performance optimization, not critical
           debugPrint('Discovery image prefetch error: $error');
-    });
+        });
   }
 
   @override
@@ -179,7 +177,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
     final screenWidth = MediaQuery.of(context).size.width;
     final deltaX = details.delta.dx / screenWidth;
     final deltaY = details.delta.dy / MediaQuery.of(context).size.height;
-    
+
     final newDragOffset = _dragOffset + Offset(deltaX, deltaY);
 
     // Only setState if movement is significant (>1% screen movement)
@@ -209,13 +207,13 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
 
   void _handlePanEnd(DragEndDetails details) {
     if (!mounted) return;
-    
+
     // Improved swipe detection with velocity consideration
     final shouldSwipe =
         _dragOffset.dx.abs() > 0.35 ||
         _dragOffset.dy < -0.25 ||
         details.velocity.pixelsPerSecond.dx.abs() > 500;
-    
+
     if (shouldSwipe && _currentSwipeDirection != null) {
       HapticFeedback.mediumImpact();
       _executeSwipe(_currentSwipeDirection!);
@@ -317,11 +315,11 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
           );
           break;
       }
-      
+
       // Update animations
       _cardSlideAnimation = directionAnimation;
       _cardRotationAnimation = rotationAnimation;
-      
+
       // Smooth exit animation
       _cardController.forward().then((_) {
         if (!mounted) return;
@@ -332,7 +330,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
           _isDragging = false;
         });
       });
-      
+
       // Execute swipe action and track for rewind
       _rewindHistory.add(direction);
       switch (direction) {
@@ -376,7 +374,8 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
       child: Center(
         child: BlocBuilder<PremiumBloc, PremiumState>(
           builder: (context, premiumState) {
-            final isPremium = premiumState is PremiumLoaded &&
+            final isPremium =
+                premiumState is PremiumLoaded &&
                 premiumState.subscription != null &&
                 premiumState.subscription!.isActive;
 
@@ -405,18 +404,16 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
                           end: Alignment.bottomRight,
                         )
                       : LinearGradient(
-                          colors: [
-                            PulseColors.grey400,
-                            PulseColors.grey500,
-                          ],
+                          colors: [PulseColors.grey400, PulseColors.grey500],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ),
                   borderRadius: BorderRadius.circular(30),
                   boxShadow: [
                     BoxShadow(
-                      color: (isPremium ? PulseColors.accent : PulseColors.grey500)
-                          .withValues(alpha: 0.3),
+                      color:
+                          (isPremium ? PulseColors.accent : PulseColors.grey500)
+                              .withValues(alpha: 0.3),
                       blurRadius: 12,
                       offset: const Offset(0, 4),
                     ),
@@ -425,11 +422,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(
-                      Icons.undo,
-                      color: Colors.white,
-                      size: 20,
-                    ),
+                    Icon(Icons.undo, color: Colors.white, size: 20),
                     const SizedBox(width: 8),
                     Text(
                       isPremium ? 'Undo last action' : 'Undo (Premium)',
@@ -441,11 +434,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
                     ),
                     if (!isPremium) ...[
                       const SizedBox(width: 4),
-                      Icon(
-                        Icons.lock,
-                        color: Colors.white,
-                        size: 16,
-                      ),
+                      Icon(Icons.lock, color: Colors.white, size: 16),
                     ],
                   ],
                 ),
@@ -462,9 +451,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Row(
           children: [
             Container(
@@ -491,10 +478,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
           children: [
             const Text(
               'Undo your last swipe with Premium!',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-              ),
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 12),
             const Text(
@@ -556,7 +540,8 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
     return MultiBlocProvider(
       providers: [
         BlocProvider(
-          create: (context) => BoostBloc(BoostService())..add(CheckBoostStatus()),
+          create: (context) =>
+              BoostBloc(BoostService())..add(CheckBoostStatus()),
         ),
         BlocProvider(
           create: (context) => PremiumBloc(
@@ -572,36 +557,37 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
             listener: (context, state) {
               // Handle rewind success/error feedback
               if (state is DiscoveryLoaded && state.rewindJustCompleted) {
-              // Rewind was successful
-              PulseToast.success(
-                context,
-                message: 'Rewound last action',
-                duration: const Duration(seconds: 2),
-              );
+                // Rewind was successful
+                PulseToast.success(
+                  context,
+                  message: 'Rewound last action',
+                  duration: const Duration(seconds: 2),
+                );
 
-              // Reset the flag to prevent showing the toast again
-              context.read<DiscoveryBloc>().add(const ClearRewindFlag());
-            }
+                // Reset the flag to prevent showing the toast again
+                context.read<DiscoveryBloc>().add(const ClearRewindFlag());
+              }
 
-            // Handle boost success feedback
-            if (state is DiscoveryBoostActivated) {
-              PulseToast.success(
-                context,
-                message: 'Boost activated for ${state.boostDuration.inMinutes} minutes!',
-                duration: const Duration(seconds: 3),
-              );
-            }
+              // Handle boost success feedback
+              if (state is DiscoveryBoostActivated) {
+                PulseToast.success(
+                  context,
+                  message:
+                      'Boost activated for ${state.boostDuration.inMinutes} minutes!',
+                  duration: const Duration(seconds: 3),
+                );
+              }
 
-            // Handle errors
-            if (state is DiscoveryError) {
-              PulseToast.error(
-                context,
-                message: state.message,
-                duration: const Duration(seconds: 3),
-              );
-            }
-          },
-          child: BlocBuilder<DiscoveryBloc, DiscoveryState>(
+              // Handle errors
+              if (state is DiscoveryError) {
+                PulseToast.error(
+                  context,
+                  message: state.message,
+                  duration: const Duration(seconds: 3),
+                );
+              }
+            },
+            child: BlocBuilder<DiscoveryBloc, DiscoveryState>(
               buildWhen: (previous, current) {
                 // Only rebuild when user stack data actually changes
                 if (previous is DiscoveryLoaded && current is DiscoveryLoaded) {
@@ -611,11 +597,11 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
                 // Always rebuild for state type changes
                 return previous.runtimeType != current.runtimeType;
               },
-            builder: (context, state) {
-              return Stack(
-                children: [
-                  // Modern curved header
-                  _buildModernHeader(),
+              builder: (context, state) {
+                return Stack(
+                  children: [
+                    // Modern curved header
+                    _buildModernHeader(),
 
                     // Boost banner (appears below header when boost is active)
                     Positioned(
@@ -625,32 +611,34 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
                       child: const BoostBannerWidget(),
                     ),
 
-                  // Main content area
-                  Positioned.fill(top: 120, child: _buildMainContent(state)),
+                    // Main content area
+                    Positioned.fill(top: 120, child: _buildMainContent(state)),
 
-                  // Prominent undo button (below card stack)
-                  if (state is DiscoveryLoaded && state.hasUsers && _rewindHistory.isNotEmpty)
-                    _buildProminentUndoButton(),
+                    // Prominent undo button (below card stack)
+                    if (state is DiscoveryLoaded &&
+                        state.hasUsers &&
+                        _rewindHistory.isNotEmpty)
+                      _buildProminentUndoButton(),
 
-                  // Enhanced action buttons
-                  if (state is DiscoveryLoaded && state.hasUsers)
-                    _buildModernActionButtons(),
+                    // Enhanced action buttons
+                    if (state is DiscoveryLoaded && state.hasUsers)
+                      _buildModernActionButtons(),
 
                     // Floating boost button (bottom-right corner)
                     if (state is DiscoveryLoaded && state.hasUsers)
                       _buildFloatingBoostButton(),
 
-                  // Floating AI Companion button (QUICK WIN - Easy AI access)
-                  if (state is DiscoveryLoaded && state.hasUsers)
-                    const Positioned(
-                      left: 16,
-                      bottom: 140,
-                      child: FloatingAIButton(),
-                    ),
+                    // Floating AI Companion button (QUICK WIN - Easy AI access)
+                    if (state is DiscoveryLoaded && state.hasUsers)
+                      const Positioned(
+                        left: 16,
+                        bottom: 140,
+                        child: FloatingAIButton(),
+                      ),
 
-                  // Match celebration
-                  if (state is DiscoveryMatchFound) _buildMatchDialog(state),
-                ],
+                    // Match celebration
+                    if (state is DiscoveryMatchFound) _buildMatchDialog(state),
+                  ],
                 ); // Stack
               }, // BlocBuilder builder
             ), // BlocBuilder
@@ -887,7 +875,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
   Widget _buildCardStack(DiscoveryLoaded state) {
     final users = state.userStack;
     if (users.isEmpty) return const SizedBox.shrink();
-    
+
     return RepaintBoundary(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(
@@ -900,42 +888,42 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
           children: [
             // Background cards with modern stacking effect
             if (users.length > 1)
-            SizedBox.expand(
-              child: Transform.scale(
-                scale: 0.96,
-                child: Transform.translate(
-                  offset: const Offset(0, 4),
-                  child: Container(
-                    decoration: PulseDecorations.swipeCard(),
-                    child: swipe_widget.SwipeCard(
-                      user: users[1],
-                      showDetails: false,
+              SizedBox.expand(
+                child: Transform.scale(
+                  scale: 0.96,
+                  child: Transform.translate(
+                    offset: const Offset(0, 4),
+                    child: Container(
+                      decoration: PulseDecorations.swipeCard(),
+                      child: swipe_widget.SwipeCard(
+                        user: users[1],
+                        showDetails: false,
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
-          
-          if (users.length > 2)
-            SizedBox.expand(
-              child: Transform.scale(
-                scale: 0.92,
-                child: Transform.translate(
-                  offset: const Offset(0, 8),
-                  child: Container(
-                    decoration: PulseDecorations.swipeCard(),
-                    child: swipe_widget.SwipeCard(
-                      user: users[2],
-                      showDetails: false,
+
+            if (users.length > 2)
+              SizedBox.expand(
+                child: Transform.scale(
+                  scale: 0.92,
+                  child: Transform.translate(
+                    offset: const Offset(0, 8),
+                    child: Container(
+                      decoration: PulseDecorations.swipeCard(),
+                      child: swipe_widget.SwipeCard(
+                        user: users[2],
+                        showDetails: false,
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
-          
-          // Main interactive card
-          SizedBox.expand(
-            child: GestureDetector(
+
+            // Main interactive card
+            SizedBox.expand(
+              child: GestureDetector(
                 onPanStart: _handlePanStart,
                 onPanUpdate: _handlePanUpdate,
                 onPanEnd: _handlePanEnd,
@@ -977,11 +965,12 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
                               swipeDirection: _convertToWidgetSwipeDirection(
                                 _currentSwipeDirection,
                               ),
-                            // Pass swipe handlers for profile detail page buttons
-                            onSwipeLeft: () => _executeSwipe(SwipeAction.left),
-                            onSwipeRight: () =>
-                                _executeSwipe(SwipeAction.right),
-                            onSwipeUp: () => _executeSwipe(SwipeAction.up),
+                              // Pass swipe handlers for profile detail page buttons
+                              onSwipeLeft: () =>
+                                  _executeSwipe(SwipeAction.left),
+                              onSwipeRight: () =>
+                                  _executeSwipe(SwipeAction.right),
+                              onSwipeUp: () => _executeSwipe(SwipeAction.up),
                             ),
                           ),
                         ),
@@ -989,10 +978,10 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
                     );
                   },
                 ),
+              ),
             ),
-          ),
-        ],
-      ),
+          ],
+        ),
       ), // RepaintBoundary closing
     );
   }

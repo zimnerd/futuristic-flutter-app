@@ -22,14 +22,11 @@ class MediaGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (mediaUrls.isEmpty) return const SizedBox.shrink();
-    
+
     final mediaCount = mediaUrls.length;
-    
+
     return Container(
-      constraints: const BoxConstraints(
-        maxWidth: 280,
-        maxHeight: 300,
-      ),
+      constraints: const BoxConstraints(maxWidth: 280, maxHeight: 300),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(12),
         child: _buildMediaLayout(context, mediaCount),
@@ -82,13 +79,9 @@ class MediaGrid extends StatelessWidget {
       height: 200,
       child: Row(
         children: [
-          Expanded(
-            child: _buildMediaItem(context, 0),
-          ),
+          Expanded(child: _buildMediaItem(context, 0)),
           const SizedBox(width: 2),
-          Expanded(
-            child: _buildMediaItem(context, 1),
-          ),
+          Expanded(child: _buildMediaItem(context, 1)),
         ],
       ),
     );
@@ -99,21 +92,14 @@ class MediaGrid extends StatelessWidget {
       height: 200,
       child: Row(
         children: [
-          Expanded(
-            flex: 2,
-            child: _buildMediaItem(context, 0),
-          ),
+          Expanded(flex: 2, child: _buildMediaItem(context, 0)),
           const SizedBox(width: 2),
           Expanded(
             child: Column(
               children: [
-                Expanded(
-                  child: _buildMediaItem(context, 1),
-                ),
+                Expanded(child: _buildMediaItem(context, 1)),
                 const SizedBox(height: 2),
-                Expanded(
-                  child: _buildMediaItem(context, 2),
-                ),
+                Expanded(child: _buildMediaItem(context, 2)),
               ],
             ),
           ),
@@ -153,7 +139,7 @@ class MediaGrid extends StatelessWidget {
 
   Widget _buildMoreMedia(BuildContext context) {
     final remainingCount = mediaUrls.length - 3;
-    
+
     return SizedBox(
       height: 200,
       child: Column(
@@ -217,7 +203,7 @@ class MediaGrid extends StatelessWidget {
 
   Widget _buildMediaItem(BuildContext context, int index) {
     if (index >= mediaUrls.length) return const SizedBox.shrink();
-    
+
     return GestureDetector(
       onTap: () => _openMediaViewer(context, index),
       child: Hero(
@@ -284,7 +270,7 @@ class MediaGrid extends StatelessWidget {
   }
 
   String _getHeroTag(int index) {
-    return heroTagPrefix != null 
+    return heroTagPrefix != null
         ? '${heroTagPrefix}_$index'
         : 'media_grid_$index';
   }
@@ -299,10 +285,7 @@ class MediaGrid extends StatelessWidget {
           heroTag: heroTagPrefix,
         ),
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          return FadeTransition(
-            opacity: animation,
-            child: child,
-          );
+          return FadeTransition(opacity: animation, child: child);
         },
         transitionDuration: const Duration(milliseconds: 300),
       ),

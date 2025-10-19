@@ -58,8 +58,8 @@ class PricingCard extends StatelessWidget {
             color: isSelected
                 ? PulseColors.primary
                 : isMostPopular
-                    ? PulseColors.primary.withValues(alpha: 0.3)
-                    : PulseColors.outline.withValues(alpha: 0.3),
+                ? PulseColors.primary.withValues(alpha: 0.3)
+                : PulseColors.outline.withValues(alpha: 0.3),
             width: isSelected ? 2.5 : 1.5,
           ),
           boxShadow: [
@@ -101,11 +101,7 @@ class PricingCard extends StatelessWidget {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(
-                        Icons.star,
-                        color: Colors.white,
-                        size: 14,
-                      ),
+                      const Icon(Icons.star, color: Colors.white, size: 14),
                       const SizedBox(width: 4),
                       Text(
                         ribbonText,
@@ -201,12 +197,14 @@ class PricingCard extends StatelessWidget {
                                   vertical: 4,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFFFF3B5C)
-                                      .withValues(alpha: 0.1),
+                                  color: const Color(
+                                    0xFFFF3B5C,
+                                  ).withValues(alpha: 0.1),
                                   borderRadius: BorderRadius.circular(6),
                                   border: Border.all(
-                                    color: const Color(0xFFFF3B5C)
-                                        .withValues(alpha: 0.3),
+                                    color: const Color(
+                                      0xFFFF3B5C,
+                                    ).withValues(alpha: 0.3),
                                   ),
                                 ),
                                 child: Text(
@@ -286,39 +284,43 @@ class PricingCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 12),
 
-                  ...plan.features.take(5).map((feature) => Padding(
-                        padding: const EdgeInsets.only(bottom: 10),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Container(
-                              margin: const EdgeInsets.only(top: 2),
-                              padding: const EdgeInsets.all(2),
-                              decoration: BoxDecoration(
-                                color: isSelected
-                                    ? PulseColors.primary
-                                    : PulseColors.success,
-                                shape: BoxShape.circle,
-                              ),
-                              child: const Icon(
-                                Icons.check,
-                                color: Colors.white,
-                                size: 14,
-                              ),
-                            ),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: Text(
-                                feature,
-                                style: const TextStyle(
-                                  fontSize: 14,
-                                  height: 1.4,
+                  ...plan.features
+                      .take(5)
+                      .map(
+                        (feature) => Padding(
+                          padding: const EdgeInsets.only(bottom: 10),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Container(
+                                margin: const EdgeInsets.only(top: 2),
+                                padding: const EdgeInsets.all(2),
+                                decoration: BoxDecoration(
+                                  color: isSelected
+                                      ? PulseColors.primary
+                                      : PulseColors.success,
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(
+                                  Icons.check,
+                                  color: Colors.white,
+                                  size: 14,
                                 ),
                               ),
-                            ),
-                          ],
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Text(
+                                  feature,
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    height: 1.4,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                      )),
+                      ),
 
                   // Show more features indicator
                   if (plan.features.length > 5) ...[
@@ -415,7 +417,9 @@ class PricingCard extends StatelessWidget {
 
     if (interval.contains('year')) {
       months = 12;
-    } else if (interval.contains('quarter') || interval == '3-month' || interval.contains('3')) {
+    } else if (interval.contains('quarter') ||
+        interval == '3-month' ||
+        interval.contains('3')) {
       months = 3;
     } else if (interval == '6-month' || interval.contains('6')) {
       months = 6;
@@ -488,18 +492,12 @@ class CompactPricingCard extends StatelessWidget {
                 shape: BoxShape.circle,
                 color: isSelected ? PulseColors.primary : Colors.transparent,
                 border: Border.all(
-                  color: isSelected
-                      ? PulseColors.primary
-                      : PulseColors.outline,
+                  color: isSelected ? PulseColors.primary : PulseColors.outline,
                   width: 2,
                 ),
               ),
               child: isSelected
-                  ? const Icon(
-                      Icons.check,
-                      color: Colors.white,
-                      size: 16,
-                    )
+                  ? const Icon(Icons.check, color: Colors.white, size: 16)
                   : null,
             ),
           ],

@@ -60,10 +60,7 @@ class _FloatingAIButtonState extends State<FloatingAIButton>
           child: Container(
             decoration: BoxDecoration(
               gradient: const LinearGradient(
-                colors: [
-                  Color(0xFF6E3BFF),
-                  Color(0xFF9D5CFF),
-                ],
+                colors: [Color(0xFF6E3BFF), Color(0xFF9D5CFF)],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
@@ -132,10 +129,7 @@ class _FloatingAIButtonState extends State<FloatingAIButton>
             height: 56,
             decoration: BoxDecoration(
               gradient: const LinearGradient(
-                colors: [
-                  Color(0xFF6E3BFF),
-                  Color(0xFF9D5CFF),
-                ],
+                colors: [Color(0xFF6E3BFF), Color(0xFF9D5CFF)],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
@@ -168,8 +162,4 @@ class _FloatingAIButtonState extends State<FloatingAIButton>
   }
 }
 
-enum FloatingAIButtonPosition {
-  bottomRight,
-  bottomLeft,
-  topRight,
-}
+enum FloatingAIButtonPosition { bottomRight, bottomLeft, topRight }

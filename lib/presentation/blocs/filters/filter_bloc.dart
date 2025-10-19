@@ -48,16 +48,18 @@ class FilterBLoC extends Bloc<FilterEvent, FilterState> {
       final smokingOptions = await _preferencesService.getSmokingOptions();
       final exerciseOptions = await _preferencesService.getExerciseOptions();
 
-      emit(FilterLoaded(
-        preferences: preferences,
-        availableInterests: interests,
-        availableEducationLevels: educationLevels,
+      emit(
+        FilterLoaded(
+          preferences: preferences,
+          availableInterests: interests,
+          availableEducationLevels: educationLevels,
           availableOccupations: occupations,
           availableRelationshipTypes: relationshipTypes,
           availableDrinkingOptions: drinkingOptions,
           availableSmokingOptions: smokingOptions,
           availableExerciseOptions: exerciseOptions,
-      ));
+        ),
+      );
 
       _logger.d('Filter preferences loaded successfully');
     } catch (e) {
@@ -72,7 +74,7 @@ class FilterBLoC extends Bloc<FilterEvent, FilterState> {
   ) async {
     if (state is FilterLoaded) {
       final currentState = state as FilterLoaded;
-      
+
       if (_preferencesService.validatePreferences(event.preferences)) {
         emit(currentState.copyWith(preferences: event.preferences));
         _logger.d('Filter preferences updated');
@@ -173,7 +175,9 @@ class FilterBLoC extends Bloc<FilterEvent, FilterState> {
       );
 
       emit(currentState.copyWith(preferences: updatedPreferences));
-      _logger.d('Relationship type preference updated: ${event.relationshipType}');
+      _logger.d(
+        'Relationship type preference updated: ${event.relationshipType}',
+      );
     }
   }
 
@@ -273,7 +277,7 @@ class FilterBLoC extends Bloc<FilterEvent, FilterState> {
   ) async {
     if (state is FilterLoaded) {
       final currentState = state as FilterLoaded;
-      
+
       try {
         emit(FilterSaving(currentState.preferences));
         _logger.d('Saving filter preferences');
@@ -285,7 +289,7 @@ class FilterBLoC extends Bloc<FilterEvent, FilterState> {
         if (success) {
           emit(FilterSaved(currentState.preferences));
           _logger.d('Filter preferences saved successfully');
-          
+
           // Return to loaded state after brief success indication
           await Future.delayed(const Duration(seconds: 1));
           emit(currentState);
@@ -308,7 +312,7 @@ class FilterBLoC extends Bloc<FilterEvent, FilterState> {
       _logger.d('Resetting filter preferences');
 
       final success = await _preferencesService.resetFilters();
-      
+
       if (success) {
         // Reload preferences after reset
         add(LoadFilterPreferences());
@@ -327,7 +331,7 @@ class FilterBLoC extends Bloc<FilterEvent, FilterState> {
   ) async {
     if (state is FilterLoaded) {
       final currentState = state as FilterLoaded;
-      
+
       try {
         _logger.d('Loading filter options');
 
@@ -340,15 +344,17 @@ class FilterBLoC extends Bloc<FilterEvent, FilterState> {
         final smokingOptions = await _preferencesService.getSmokingOptions();
         final exerciseOptions = await _preferencesService.getExerciseOptions();
 
-        emit(currentState.copyWith(
-          availableInterests: interests,
-          availableEducationLevels: educationLevels,
+        emit(
+          currentState.copyWith(
+            availableInterests: interests,
+            availableEducationLevels: educationLevels,
             availableOccupations: occupations,
             availableRelationshipTypes: relationshipTypes,
             availableDrinkingOptions: drinkingOptions,
             availableSmokingOptions: smokingOptions,
             availableExerciseOptions: exerciseOptions,
-        ));
+          ),
+        );
 
         _logger.d('Filter options loaded successfully');
       } catch (e) {

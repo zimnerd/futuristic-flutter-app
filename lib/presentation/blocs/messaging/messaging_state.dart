@@ -1,12 +1,7 @@
 part of 'messaging_bloc.dart';
 
 /// Enum for messaging status
-enum MessagingStatus {
-  initial,
-  loading,
-  loaded,
-  error,
-}
+enum MessagingStatus { initial, loading, loaded, error }
 
 /// State class for messaging functionality
 class MessagingState extends Equatable {
@@ -78,9 +73,12 @@ class MessagingState extends Equatable {
       messagesStatus: messagesStatus ?? this.messagesStatus,
       conversations: conversations ?? this.conversations,
       currentMessages: currentMessages ?? this.currentMessages,
-      currentConversationId: currentConversationId ?? this.currentConversationId,
-      hasReachedMaxConversations: hasReachedMaxConversations ?? this.hasReachedMaxConversations,
-      hasReachedMaxMessages: hasReachedMaxMessages ?? this.hasReachedMaxMessages,
+      currentConversationId:
+          currentConversationId ?? this.currentConversationId,
+      hasReachedMaxConversations:
+          hasReachedMaxConversations ?? this.hasReachedMaxConversations,
+      hasReachedMaxMessages:
+          hasReachedMaxMessages ?? this.hasReachedMaxMessages,
       typingUsers: typingUsers ?? this.typingUsers,
       onlineUsers: onlineUsers ?? this.onlineUsers,
       error: error,
@@ -89,15 +87,15 @@ class MessagingState extends Equatable {
 
   @override
   List<Object?> get props => [
-        conversationsStatus,
-        messagesStatus,
-        conversations,
-        currentMessages,
-        currentConversationId,
-        hasReachedMaxConversations,
-        hasReachedMaxMessages,
-        typingUsers,
-        onlineUsers,
-        error,
-      ];
+    conversationsStatus,
+    messagesStatus,
+    conversations,
+    currentMessages,
+    currentConversationId,
+    hasReachedMaxConversations,
+    hasReachedMaxMessages,
+    typingUsers,
+    onlineUsers,
+    error,
+  ];
 }

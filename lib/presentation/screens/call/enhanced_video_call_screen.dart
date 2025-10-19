@@ -25,23 +25,24 @@ class EnhancedVideoCallScreen extends StatefulWidget {
   });
 
   @override
-  State<EnhancedVideoCallScreen> createState() => _EnhancedVideoCallScreenState();
+  State<EnhancedVideoCallScreen> createState() =>
+      _EnhancedVideoCallScreenState();
 }
 
 class _EnhancedVideoCallScreenState extends State<EnhancedVideoCallScreen> {
   bool _showControls = true;
-  
+
   @override
   void initState() {
     super.initState();
-    
+
     // Set landscape orientation for video calls
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
       DeviceOrientation.landscapeLeft,
       DeviceOrientation.landscapeRight,
     ]);
-    
+
     // Auto-hide controls after 5 seconds
     _startControlsTimer();
   }
@@ -49,9 +50,7 @@ class _EnhancedVideoCallScreenState extends State<EnhancedVideoCallScreen> {
   @override
   void dispose() {
     // Reset orientation
-    SystemChrome.setPreferredOrientations([
-      DeviceOrientation.portraitUp,
-    ]);
+    SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     super.dispose();
   }
 
@@ -69,7 +68,7 @@ class _EnhancedVideoCallScreenState extends State<EnhancedVideoCallScreen> {
     setState(() {
       _showControls = !_showControls;
     });
-    
+
     if (_showControls) {
       _startControlsTimer();
     }
@@ -80,7 +79,7 @@ class _EnhancedVideoCallScreenState extends State<EnhancedVideoCallScreen> {
     return BlocListener<CallBloc, CallState>(
       listener: (context, state) {
         // Handle call state changes
-        if (state.status == CallStatus.ended || 
+        if (state.status == CallStatus.ended ||
             state.status == CallStatus.failed ||
             state.status == CallStatus.declined) {
           Navigator.of(context).pop();
@@ -94,14 +93,14 @@ class _EnhancedVideoCallScreenState extends State<EnhancedVideoCallScreen> {
               children: [
                 // Main video area
                 _buildVideoArea(state),
-                
+
                 // Controls overlay
                 if (_showControls) _buildControlsOverlay(state),
-                
+
                 // Connection status overlay
                 if (state.connectionState != CallConnectionState.connected)
                   _buildConnectionStatusOverlay(state),
-                
+
                 // ✅ Network quality indicator (top-right)
                 if (state.connectionState == CallConnectionState.connected)
                   Positioned(
@@ -116,7 +115,7 @@ class _EnhancedVideoCallScreenState extends State<EnhancedVideoCallScreen> {
                       },
                     ),
                   ),
-                
+
                 // Tap detector to show/hide controls
                 GestureDetector(
                   onTap: _toggleControls,
@@ -140,26 +139,25 @@ class _EnhancedVideoCallScreenState extends State<EnhancedVideoCallScreen> {
         children: [
           // Remote video (main area)
           _buildRemoteVideo(state),
-          
+
           // Local video (small overlay)
-          if (state.isVideoEnabled)
-            _buildLocalVideoOverlay(state),
+          if (state.isVideoEnabled) _buildLocalVideoOverlay(state),
         ],
       ),
     );
   }
 
   Widget _buildRemoteVideo(CallState state) {
-    if (state.status == CallStatus.connecting || 
+    if (state.status == CallStatus.connecting ||
         state.connectionState == CallConnectionState.connecting) {
       return _buildConnectingView();
     }
-    
-    if (!state.isVideoEnabled || 
+
+    if (!state.isVideoEnabled ||
         state.connectionState != CallConnectionState.connected) {
       return _buildAudioOnlyView();
     }
-    
+
     // WebRTC Video Integration - Use AgoraVideoView for remote video
     // Example: AgoraVideoView(controller: AgoraVideoViewController.remote(
     //   rtcEngine: _webRTCService.engine,
@@ -170,10 +168,7 @@ class _EnhancedVideoCallScreenState extends State<EnhancedVideoCallScreen> {
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [
-            PulseColors.primary,
-            PulseColors.secondary,
-          ],
+          colors: [PulseColors.primary, PulseColors.secondary],
         ),
       ),
       child: const Center(
@@ -214,14 +209,10 @@ class _EnhancedVideoCallScreenState extends State<EnhancedVideoCallScreen> {
               Container(
                 color: Colors.grey[800],
                 child: const Center(
-                  child: Icon(
-                    Icons.person,
-                    color: Colors.white,
-                    size: 40,
-                  ),
+                  child: Icon(Icons.person, color: Colors.white, size: 40),
                 ),
               ),
-              
+
               // Camera switch button
               Positioned(
                 bottom: 8,
@@ -261,10 +252,7 @@ class _EnhancedVideoCallScreenState extends State<EnhancedVideoCallScreen> {
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [
-            PulseColors.primary,
-            PulseColors.secondary,
-          ],
+          colors: [PulseColors.primary, PulseColors.secondary],
         ),
       ),
       child: Center(
@@ -314,9 +302,9 @@ class _EnhancedVideoCallScreenState extends State<EnhancedVideoCallScreen> {
                       ),
               ),
             ),
-            
+
             const SizedBox(height: 24),
-            
+
             // User name
             Text(
               widget.remoteUser.name,
@@ -326,9 +314,9 @@ class _EnhancedVideoCallScreenState extends State<EnhancedVideoCallScreen> {
                 fontWeight: FontWeight.w600,
               ),
             ),
-            
+
             const SizedBox(height: 16),
-            
+
             // Connection status
             const Text(
               'Connecting...',
@@ -338,9 +326,9 @@ class _EnhancedVideoCallScreenState extends State<EnhancedVideoCallScreen> {
                 fontWeight: FontWeight.w400,
               ),
             ),
-            
+
             const SizedBox(height: 24),
-            
+
             // Loading indicator
             const CircularProgressIndicator(
               valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
@@ -357,10 +345,7 @@ class _EnhancedVideoCallScreenState extends State<EnhancedVideoCallScreen> {
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [
-            PulseColors.primary,
-            PulseColors.secondary,
-          ],
+          colors: [PulseColors.primary, PulseColors.secondary],
         ),
       ),
       child: Center(
@@ -410,9 +395,9 @@ class _EnhancedVideoCallScreenState extends State<EnhancedVideoCallScreen> {
                       ),
               ),
             ),
-            
+
             const SizedBox(height: 32),
-            
+
             // User name
             Text(
               widget.remoteUser.name,
@@ -422,9 +407,9 @@ class _EnhancedVideoCallScreenState extends State<EnhancedVideoCallScreen> {
                 fontWeight: FontWeight.w600,
               ),
             ),
-            
+
             const SizedBox(height: 8),
-            
+
             // Audio indicator
             const Text(
               'Audio Call',
@@ -450,10 +435,7 @@ class _EnhancedVideoCallScreenState extends State<EnhancedVideoCallScreen> {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [
-              Colors.transparent,
-              Colors.black.withValues(alpha: 0.8),
-            ],
+            colors: [Colors.transparent, Colors.black.withValues(alpha: 0.8)],
           ),
         ),
         child: SafeArea(
@@ -478,10 +460,7 @@ class _EnhancedVideoCallScreenState extends State<EnhancedVideoCallScreen> {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [
-              Colors.black.withValues(alpha: 0.8),
-              Colors.transparent,
-            ],
+            colors: [Colors.black.withValues(alpha: 0.8), Colors.transparent],
           ),
         ),
         child: SafeArea(
@@ -490,7 +469,8 @@ class _EnhancedVideoCallScreenState extends State<EnhancedVideoCallScreen> {
             padding: const EdgeInsets.all(16),
             child: Column(
               children: [
-                if (state.connectionState == CallConnectionState.reconnecting) ...[
+                if (state.connectionState ==
+                    CallConnectionState.reconnecting) ...[
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -499,7 +479,9 @@ class _EnhancedVideoCallScreenState extends State<EnhancedVideoCallScreen> {
                         height: 16,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(Colors.orange),
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            Colors.orange,
+                          ),
                         ),
                       ),
                       const SizedBox(width: 8),
@@ -513,15 +495,12 @@ class _EnhancedVideoCallScreenState extends State<EnhancedVideoCallScreen> {
                       ),
                     ],
                   ),
-                ] else if (state.connectionState == CallConnectionState.failed) ...[
+                ] else if (state.connectionState ==
+                    CallConnectionState.failed) ...[
                   const Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(
-                        Icons.error_outline,
-                        color: Colors.red,
-                        size: 16,
-                      ),
+                      Icon(Icons.error_outline, color: Colors.red, size: 16),
                       SizedBox(width: 8),
                       Text(
                         'Connection failed',

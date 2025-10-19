@@ -22,7 +22,7 @@ class AutoReplyService {
       // Check if smart replies are enabled
       final aiPreferences = ServiceLocator.instance.aiPreferences;
       final isEnabled = await aiPreferences.isFeatureEnabled('smart_replies');
-      
+
       if (!isEnabled) {
         _logger.d('Smart replies disabled in preferences');
         return [];
@@ -30,7 +30,7 @@ class AutoReplyService {
 
       // Get conversation preferences
       final preferences = await aiPreferences.getConversationPreferences();
-      
+
       final response = await _apiClient.post(
         '/api/v1/ai/response-suggestions',
         data: {
@@ -46,13 +46,16 @@ class AutoReplyService {
       );
 
       if (response.statusCode == 200) {
-        final List<dynamic> suggestionsData = response.data['suggestions'] ?? [];
+        final List<dynamic> suggestionsData =
+            response.data['suggestions'] ?? [];
         final List<String> suggestions = suggestionsData.cast<String>();
-        
+
         _logger.d('Generated ${suggestions.length} reply suggestions');
         return suggestions;
       } else {
-        _logger.e('Failed to generate reply suggestions: ${response.statusMessage}');
+        _logger.e(
+          'Failed to generate reply suggestions: ${response.statusMessage}',
+        );
         return [];
       }
     } catch (e) {
@@ -85,7 +88,7 @@ class AutoReplyService {
 
       if (response.statusCode == 200) {
         final String? customReply = response.data['reply'];
-        
+
         _logger.d('Generated custom reply');
         return customReply;
       } else {
@@ -118,7 +121,7 @@ class AutoReplyService {
 
       if (response.statusCode == 200) {
         final String? refinedReply = response.data['refinedReply'];
-        
+
         _logger.d('Refined reply successfully');
         return refinedReply;
       } else {
@@ -147,7 +150,7 @@ class AutoReplyService {
 
       if (response.statusCode == 200) {
         final analysis = response.data['analysis'];
-        
+
         _logger.d('Analyzed conversation style');
         return analysis;
       } else {
@@ -177,7 +180,7 @@ class AutoReplyService {
       if (response.statusCode == 200) {
         final List<dynamic> topicsData = response.data['topics'] ?? [];
         final List<String> topics = topicsData.cast<String>();
-        
+
         _logger.d('Retrieved ${topics.length} trending topics');
         return topics;
       } else {
@@ -198,17 +201,16 @@ class AutoReplyService {
     try {
       final response = await _apiClient.post(
         '/api/v1/ai/reply-preferences',
-        data: {
-          'preferenceType': preferenceType,
-          'preferences': preferences,
-        },
+        data: {'preferenceType': preferenceType, 'preferences': preferences},
       );
 
       if (response.statusCode == 200) {
         _logger.d('Saved reply preferences');
         return true;
       } else {
-        _logger.e('Failed to save reply preferences: ${response.statusMessage}');
+        _logger.e(
+          'Failed to save reply preferences: ${response.statusMessage}',
+        );
         return false;
       }
     } catch (e) {
@@ -224,7 +226,7 @@ class AutoReplyService {
 
       if (response.statusCode == 200) {
         final preferences = response.data['preferences'];
-        
+
         _logger.d('Retrieved reply preferences');
         return preferences;
       } else {

@@ -6,13 +6,13 @@ import '../../theme/pulse_colors.dart';
 class AnimatedTypingIndicator extends StatefulWidget {
   /// List of user names currently typing
   final List<String> typingUsers;
-  
+
   /// Optional custom color for the dots
   final Color? dotColor;
-  
+
   /// Optional custom text color
   final Color? textColor;
-  
+
   const AnimatedTypingIndicator({
     super.key,
     required this.typingUsers,
@@ -21,7 +21,8 @@ class AnimatedTypingIndicator extends StatefulWidget {
   });
 
   @override
-  State<AnimatedTypingIndicator> createState() => _AnimatedTypingIndicatorState();
+  State<AnimatedTypingIndicator> createState() =>
+      _AnimatedTypingIndicatorState();
 }
 
 class _AnimatedTypingIndicatorState extends State<AnimatedTypingIndicator>
@@ -32,7 +33,7 @@ class _AnimatedTypingIndicatorState extends State<AnimatedTypingIndicator>
   @override
   void initState() {
     super.initState();
-    
+
     // Create animation controller with 1.2 second duration
     _controller = AnimationController(
       duration: const Duration(milliseconds: 1200),
@@ -43,7 +44,7 @@ class _AnimatedTypingIndicatorState extends State<AnimatedTypingIndicator>
     _dotAnimations = List.generate(3, (index) {
       // Each dot starts at a different point in the cycle
       final begin = (index * 0.33).clamp(0.0, 1.0);
-      
+
       return CurvedAnimation(
         parent: _controller,
         curve: Interval(
@@ -64,7 +65,7 @@ class _AnimatedTypingIndicatorState extends State<AnimatedTypingIndicator>
   /// Get display text based on number of typing users
   String _getTypingText() {
     if (widget.typingUsers.isEmpty) return '';
-    
+
     if (widget.typingUsers.length == 1) {
       return '${widget.typingUsers.first} is typing';
     } else if (widget.typingUsers.length == 2) {
@@ -91,7 +92,7 @@ class _AnimatedTypingIndicatorState extends State<AnimatedTypingIndicator>
               builder: (context, child) {
                 // Scale animation from 0.5 to 1.0
                 final scale = 0.5 + (_dotAnimations[index].value * 0.5);
-                
+
                 return Transform.scale(
                   scale: scale,
                   child: Container(
@@ -101,7 +102,9 @@ class _AnimatedTypingIndicatorState extends State<AnimatedTypingIndicator>
                     width: 8,
                     height: 8,
                     decoration: BoxDecoration(
-                      color: widget.dotColor ?? PulseColors.onSurfaceVariant.withValues(alpha: 0.6),
+                      color:
+                          widget.dotColor ??
+                          PulseColors.onSurfaceVariant.withValues(alpha: 0.6),
                       shape: BoxShape.circle,
                     ),
                   ),
@@ -109,14 +112,16 @@ class _AnimatedTypingIndicatorState extends State<AnimatedTypingIndicator>
               },
             );
           }),
-          
+
           // Typing text
           Flexible(
             child: Text(
               _getTypingText(),
               style: TextStyle(
                 fontSize: 13,
-                color: widget.textColor ?? PulseColors.onSurfaceVariant.withValues(alpha: 0.8),
+                color:
+                    widget.textColor ??
+                    PulseColors.onSurfaceVariant.withValues(alpha: 0.8),
                 fontStyle: FontStyle.italic,
               ),
               overflow: TextOverflow.ellipsis,

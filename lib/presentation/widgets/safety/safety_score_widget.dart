@@ -6,16 +6,13 @@ import '../../theme/pulse_colors.dart';
 class SafetyScoreWidget extends StatelessWidget {
   final double score;
 
-  const SafetyScoreWidget({
-    super.key,
-    required this.score,
-  });
+  const SafetyScoreWidget({super.key, required this.score});
 
   @override
   Widget build(BuildContext context) {
     final percentage = (score * 100).round();
     final color = _getScoreColor(score);
-    
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -33,11 +30,7 @@ class SafetyScoreWidget extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(
-                Icons.shield,
-                color: color,
-                size: 32,
-              ),
+              Icon(Icons.shield, color: color, size: 32),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
@@ -122,22 +115,19 @@ class SafetyScoreWidget extends StatelessWidget {
     required String label,
     required bool value,
   }) {
-    final color = value ? Colors.green : PulseColors.onSurface.withValues(alpha: 0.4);
-    
+    final color = value
+        ? Colors.green
+        : PulseColors.onSurface.withValues(alpha: 0.4);
+
     return Column(
       children: [
-        Icon(
-          value ? Icons.check_circle : icon,
-          color: color,
-          size: 20,
-        ),
+        Icon(value ? Icons.check_circle : icon, color: color, size: 20),
         const SizedBox(height: 4),
         Text(
           label,
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-            color: color,
-            fontSize: 10,
-          ),
+          style: Theme.of(
+            context,
+          ).textTheme.bodySmall?.copyWith(color: color, fontSize: 10),
         ),
       ],
     );

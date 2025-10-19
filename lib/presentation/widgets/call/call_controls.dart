@@ -50,7 +50,7 @@ class CallControls extends StatelessWidget {
               onFlipCamera ??
               () {
                 // Camera flip only available when video is enabled
-          },
+              },
         ),
       ],
     );
@@ -67,7 +67,7 @@ class CallControls extends StatelessWidget {
         width: 56,
         height: 56,
         decoration: BoxDecoration(
-          color: isEnabled 
+          color: isEnabled
               ? Colors.white.withValues(alpha: 0.2)
               : Colors.red.withValues(alpha: 0.8),
           shape: BoxShape.circle,
@@ -76,11 +76,7 @@ class CallControls extends StatelessWidget {
             width: 1,
           ),
         ),
-        child: Icon(
-          icon,
-          color: Colors.white,
-          size: 24,
-        ),
+        child: Icon(icon, color: Colors.white, size: 24),
       ),
     );
   }
@@ -95,11 +91,7 @@ class CallControls extends StatelessWidget {
           color: Colors.red,
           shape: BoxShape.circle,
         ),
-        child: const Icon(
-          Icons.call_end,
-          color: Colors.white,
-          size: 28,
-        ),
+        child: const Icon(Icons.call_end, color: Colors.white, size: 28),
       ),
     );
   }

@@ -36,7 +36,9 @@ class SubscriptionUsage extends Equatable {
     final usageMap = <String, UsageCounter>{};
     if (json['usage'] is Map<String, dynamic>) {
       for (final entry in (json['usage'] as Map<String, dynamic>).entries) {
-        usageMap[entry.key] = UsageCounter.fromJson(entry.value as Map<String, dynamic>);
+        usageMap[entry.key] = UsageCounter.fromJson(
+          entry.value as Map<String, dynamic>,
+        );
       }
     }
 
@@ -99,13 +101,13 @@ class SubscriptionUsage extends Equatable {
 
   @override
   List<Object?> get props => [
-        subscriptionId,
-        planId,
-        periodStart,
-        periodEnd,
-        usage,
-        lastUpdated,
-      ];
+    subscriptionId,
+    planId,
+    periodStart,
+    periodEnd,
+    usage,
+    lastUpdated,
+  ];
 }
 
 /// Individual feature usage counter

@@ -48,7 +48,7 @@ class _MessageInputState extends State<MessageInput> {
         _isComposing = isComposing;
       });
     }
-    
+
     widget.onTyping?.call();
   }
 
@@ -114,10 +114,7 @@ class _MessageInputState extends State<MessageInput> {
         decoration: const InputDecoration(
           hintText: 'Type a message...',
           border: InputBorder.none,
-          contentPadding: EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 12,
-          ),
+          contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         ),
         onSubmitted: (_) => _onSendPressed(),
       ),
@@ -175,7 +172,10 @@ class _MessageInputState extends State<MessageInput> {
               onTap: () {
                 // Implement location sharing
                 Navigator.pop(context);
-                PulseToast.info(context, message: 'Sharing current location...');
+                PulseToast.info(
+                  context,
+                  message: 'Sharing current location...',
+                );
                 // In real implementation: get current location and send as message
               },
             ),
@@ -198,15 +198,8 @@ class _MessageInputState extends State<MessageInput> {
           Container(
             width: 40,
             height: 40,
-            decoration: BoxDecoration(
-              color: color,
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              icon,
-              color: context.surfaceColor,
-              size: 20,
-            ),
+            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+            child: Icon(icon, color: context.surfaceColor, size: 20),
           ),
           const SizedBox(height: 4),
           Text(

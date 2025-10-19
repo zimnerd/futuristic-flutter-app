@@ -11,7 +11,7 @@ class MatchingRepositoryServiceWrapper implements MatchingRepository {
   final MatchingService _matchingService;
 
   MatchingRepositoryServiceWrapper({required MatchingService matchingService})
-      : _matchingService = matchingService;
+    : _matchingService = matchingService;
 
   @override
   Future<Either<Failure, List<UserProfile>>> getPotentialMatches({
@@ -20,14 +20,17 @@ class MatchingRepositoryServiceWrapper implements MatchingRepository {
     int offset = 0,
   }) async {
     try {
-      final filterMap = filters != null ? {
-        'minAge': filters.minAge,
-        'maxAge': filters.maxAge,
-        'maxDistance': filters.maxDistance,
-        if (filters.showMeGender != null) 'showMeGender': filters.showMeGender,
-        'verifiedOnly': filters.verifiedOnly,
-        'hasPhotos': filters.hasPhotos,
-      } : null;
+      final filterMap = filters != null
+          ? {
+              'minAge': filters.minAge,
+              'maxAge': filters.maxAge,
+              'maxDistance': filters.maxDistance,
+              if (filters.showMeGender != null)
+                'showMeGender': filters.showMeGender,
+              'verifiedOnly': filters.verifiedOnly,
+              'hasPhotos': filters.hasPhotos,
+            }
+          : null;
 
       final profiles = await _matchingService.getPotentialMatches(
         limit: limit,
@@ -50,13 +53,17 @@ class MatchingRepositoryServiceWrapper implements MatchingRepository {
         profileId: profileId,
         isLike: direction == discovery_types.SwipeAction.right, // right = like
       );
-      
-      return Right(discovery_types.SwipeResult(
-        isMatch: result['isMatch'] ?? false,
-        targetUserId: profileId,
-        action: direction == discovery_types.SwipeAction.right ? discovery_types.SwipeAction.right : discovery_types.SwipeAction.left,
-        conversationId: result['matchId'],
-      ));
+
+      return Right(
+        discovery_types.SwipeResult(
+          isMatch: result['isMatch'] ?? false,
+          targetUserId: profileId,
+          action: direction == discovery_types.SwipeAction.right
+              ? discovery_types.SwipeAction.right
+              : discovery_types.SwipeAction.left,
+          conversationId: result['matchId'],
+        ),
+      );
     } catch (e) {
       return Left(ServerFailure(message: e.toString()));
     }
@@ -107,14 +114,16 @@ class MatchingRepositoryServiceWrapper implements MatchingRepository {
   Future<Either<Failure, MatchStats>> getMatchStats() async {
     try {
       // MatchingService doesn't have getMatchStats, return default values
-      return const Right(MatchStats(
-        totalLikes: 0,
-        totalPasses: 0,
-        totalSuperLikes: 0,
-        totalMatches: 0,
-        likesReceived: 0,
-        matchRate: 0.0,
-      ));
+      return const Right(
+        MatchStats(
+          totalLikes: 0,
+          totalPasses: 0,
+          totalSuperLikes: 0,
+          totalMatches: 0,
+          likesReceived: 0,
+          matchRate: 0.0,
+        ),
+      );
     } catch (e) {
       return Left(ServerFailure(message: e.toString()));
     }
@@ -138,12 +147,14 @@ class MatchingRepositoryServiceWrapper implements MatchingRepository {
     try {
       // MatchingService doesn't have getUserLimits, return default values
       final now = DateTime.now();
-      return Right(UserLimits(
-        superLikesRemaining: 1,
-        undosRemaining: 1,
-        superLikesResetAt: now.add(const Duration(hours: 24)),
-        undosResetAt: now.add(const Duration(hours: 24)),
-      ));
+      return Right(
+        UserLimits(
+          superLikesRemaining: 1,
+          undosRemaining: 1,
+          superLikesResetAt: now.add(const Duration(hours: 24)),
+          undosResetAt: now.add(const Duration(hours: 24)),
+        ),
+      );
     } catch (e) {
       return Left(ServerFailure(message: e.toString()));
     }

@@ -47,18 +47,9 @@ class _SpeedDatingScreenState extends State<SpeedDatingScreen>
         bottom: TabBar(
           controller: _tabController,
           tabs: const [
-            Tab(
-              icon: Icon(Icons.event),
-              text: 'Events',
-            ),
-            Tab(
-              icon: Icon(Icons.speed),
-              text: 'Active',
-            ),
-            Tab(
-              icon: Icon(Icons.history),
-              text: 'History',
-            ),
+            Tab(icon: Icon(Icons.event), text: 'Events'),
+            Tab(icon: Icon(Icons.speed), text: 'Active'),
+            Tab(icon: Icon(Icons.history), text: 'History'),
           ],
         ),
       ),
@@ -73,7 +64,9 @@ class _SpeedDatingScreenState extends State<SpeedDatingScreen>
               message: state.message,
               onRetry: () {
                 context.read<SpeedDatingBloc>().add(LoadSpeedDatingEvents());
-                context.read<SpeedDatingBloc>().add(LoadUserSpeedDatingSessions());
+                context.read<SpeedDatingBloc>().add(
+                  LoadUserSpeedDatingSessions(),
+                );
               },
             );
           }
@@ -141,16 +134,14 @@ class _SpeedDatingScreenState extends State<SpeedDatingScreen>
           ActiveSessionWidget(
             session: state.currentSession!,
             onEnterRoom: () => _enterSpeedDatingRoom(state.currentSession!),
-            onLeaveSession: () => _leaveSession(state.currentSession!['eventId']),
+            onLeaveSession: () =>
+                _leaveSession(state.currentSession!['eventId']),
           ),
           const SizedBox(height: 24),
           if (state.matches.isNotEmpty) ...[
             const Text(
               'Recent Matches',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
             _buildMatchesList(state.matches),
@@ -182,27 +173,17 @@ class _SpeedDatingScreenState extends State<SpeedDatingScreen>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.event_available,
-              size: 80,
-              color: Colors.grey[400],
-            ),
+            Icon(Icons.event_available, size: 80, color: Colors.grey[400]),
             const SizedBox(height: 24),
             const Text(
               'No Speed Dating Events',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
             Text(
               'Be the first to create a speed dating event in your area!',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey[600],
-              ),
+              style: TextStyle(fontSize: 16, color: Colors.grey[600]),
             ),
           ],
         ),
@@ -217,27 +198,17 @@ class _SpeedDatingScreenState extends State<SpeedDatingScreen>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.timer_off,
-              size: 80,
-              color: Colors.grey[400],
-            ),
+            Icon(Icons.timer_off, size: 80, color: Colors.grey[400]),
             const SizedBox(height: 24),
             const Text(
               'No Active Session',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
             Text(
               'Join a speed dating event to start meeting new people!',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey[600],
-              ),
+              style: TextStyle(fontSize: 16, color: Colors.grey[600]),
             ),
             const SizedBox(height: 24),
             ElevatedButton(
@@ -261,27 +232,17 @@ class _SpeedDatingScreenState extends State<SpeedDatingScreen>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.history,
-              size: 80,
-              color: Colors.grey[400],
-            ),
+            Icon(Icons.history, size: 80, color: Colors.grey[400]),
             const SizedBox(height: 24),
             const Text(
               'No Dating History',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
             Text(
               'Your past speed dating sessions will appear here',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey[600],
-              ),
+              style: TextStyle(fontSize: 16, color: Colors.grey[600]),
             ),
           ],
         ),
@@ -325,10 +286,7 @@ class _SpeedDatingScreenState extends State<SpeedDatingScreen>
                 ),
                 Text(
                   '${match['matchScore'] ?? 0}% match',
-                  style: TextStyle(
-                    fontSize: 10,
-                    color: Colors.grey[600],
-                  ),
+                  style: TextStyle(fontSize: 10, color: Colors.grey[600]),
                 ),
               ],
             ),
@@ -355,12 +313,8 @@ class _SpeedDatingScreenState extends State<SpeedDatingScreen>
           ],
         ),
         trailing: Icon(
-          session['completed'] == true 
-            ? Icons.check_circle
-            : Icons.schedule,
-          color: session['completed'] == true 
-            ? Colors.green
-            : Colors.orange,
+          session['completed'] == true ? Icons.check_circle : Icons.schedule,
+          color: session['completed'] == true ? Colors.green : Colors.orange,
         ),
         onTap: () => _viewSessionDetails(session),
       ),
@@ -378,27 +332,18 @@ class _SpeedDatingScreenState extends State<SpeedDatingScreen>
   void _enterSpeedDatingRoom(Map<String, dynamic> session) {
     context.push(
       AppRoutes.speedDatingRoom,
-      extra: {
-        'session': session,
-        'eventId': session['eventId'] ?? '',
-      },
+      extra: {'session': session, 'eventId': session['eventId'] ?? ''},
     );
   }
 
   void _viewEventDetails(Map<String, dynamic> event) {
-    context.push(
-      AppRoutes.speedDatingEventDetails,
-      extra: event,
-    );
+    context.push(AppRoutes.speedDatingEventDetails, extra: event);
   }
 
   void _viewSessionDetails(Map<String, dynamic> session) {
     context.push(
       AppRoutes.speedDatingRoom,
-      extra: {
-        'session': session,
-        'eventId': session['eventId'] ?? '',
-      },
+      extra: {'session': session, 'eventId': session['eventId'] ?? ''},
     );
   }
 

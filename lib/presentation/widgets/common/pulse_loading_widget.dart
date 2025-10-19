@@ -7,11 +7,7 @@ class PulseLoadingWidget extends StatefulWidget {
   final String? message;
   final double size;
 
-  const PulseLoadingWidget({
-    super.key,
-    this.message,
-    this.size = 50.0,
-  });
+  const PulseLoadingWidget({super.key, this.message, this.size = 50.0});
 
   @override
   State<PulseLoadingWidget> createState() => _PulseLoadingWidgetState();
@@ -27,32 +23,24 @@ class _PulseLoadingWidgetState extends State<PulseLoadingWidget>
   @override
   void initState() {
     super.initState();
-    
+
     _rotationController = AnimationController(
       duration: const Duration(seconds: 2),
       vsync: this,
     );
-    
+
     _pulseController = AnimationController(
       duration: const Duration(milliseconds: 1500),
       vsync: this,
     );
 
-    _rotationAnimation = Tween<double>(
-      begin: 0,
-      end: 1,
-    ).animate(CurvedAnimation(
-      parent: _rotationController,
-      curve: Curves.linear,
-    ));
+    _rotationAnimation = Tween<double>(begin: 0, end: 1).animate(
+      CurvedAnimation(parent: _rotationController, curve: Curves.linear),
+    );
 
-    _pulseAnimation = Tween<double>(
-      begin: 0.8,
-      end: 1.2,
-    ).animate(CurvedAnimation(
-      parent: _pulseController,
-      curve: Curves.easeInOut,
-    ));
+    _pulseAnimation = Tween<double>(begin: 0.8, end: 1.2).animate(
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
+    );
 
     _rotationController.repeat();
     _pulseController.repeat(reverse: true);
@@ -113,9 +101,9 @@ class _PulseLoadingWidgetState extends State<PulseLoadingWidget>
             const SizedBox(height: 16),
             Text(
               widget.message!,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Colors.grey[600],
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
               textAlign: TextAlign.center,
             ),
           ],

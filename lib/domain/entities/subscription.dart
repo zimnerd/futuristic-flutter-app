@@ -162,20 +162,20 @@ class Subscription extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        name,
-        description,
-        price,
-        originalPrice,
-        period,
-        features,
-        isPopular,
-        discountPercent,
-        trialDays,
-        isActive,
-        expiresAt,
-        createdAt,
-      ];
+    id,
+    name,
+    description,
+    price,
+    originalPrice,
+    period,
+    features,
+    isPopular,
+    discountPercent,
+    trialDays,
+    isActive,
+    expiresAt,
+    createdAt,
+  ];
 }
 
 /// Premium feature entity
@@ -216,11 +216,11 @@ class PremiumFeature extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        name,
-        description,
-        icon,
-        isEnabled,
-        requiredPlan,
-      ];
+    id,
+    name,
+    description,
+    icon,
+    isEnabled,
+    requiredPlan,
+  ];
 }

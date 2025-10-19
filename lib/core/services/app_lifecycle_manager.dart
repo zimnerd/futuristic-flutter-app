@@ -29,7 +29,7 @@ class AppLifecycleManager extends WidgetsBindingObserver {
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
-    
+
     if (_context == null) return;
 
     switch (state) {
@@ -53,7 +53,7 @@ class AppLifecycleManager extends WidgetsBindingObserver {
 
   void _onAppResumed() async {
     _logger.i('App resumed - reconnecting services');
-    
+
     // Reconnect WebSocket if needed
     final webSocketService = WebSocketServiceImpl.instance;
     if (!webSocketService.isConnected) {

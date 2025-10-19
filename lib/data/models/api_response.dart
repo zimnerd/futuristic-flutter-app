@@ -16,15 +16,15 @@ class ApiResponse<T> {
 
   /// Create successful response
   factory ApiResponse.success(T data, {Map<String, dynamic>? metadata}) {
-    return ApiResponse<T>(
-      success: true,
-      data: data,
-      metadata: metadata,
-    );
+    return ApiResponse<T>(success: true, data: data, metadata: metadata);
   }
 
   /// Create error response
-  factory ApiResponse.error(String error, {String? errorCode, Map<String, dynamic>? metadata}) {
+  factory ApiResponse.error(
+    String error, {
+    String? errorCode,
+    Map<String, dynamic>? metadata,
+  }) {
     return ApiResponse<T>(
       success: false,
       error: error,
@@ -34,10 +34,15 @@ class ApiResponse<T> {
   }
 
   /// Create from JSON
-  factory ApiResponse.fromJson(Map<String, dynamic> json, T Function(Map<String, dynamic>) fromJsonT) {
+  factory ApiResponse.fromJson(
+    Map<String, dynamic> json,
+    T Function(Map<String, dynamic>) fromJsonT,
+  ) {
     return ApiResponse<T>(
       success: json['success'] as bool,
-      data: json['data'] != null ? fromJsonT(json['data'] as Map<String, dynamic>) : null,
+      data: json['data'] != null
+          ? fromJsonT(json['data'] as Map<String, dynamic>)
+          : null,
       error: json['error'] as String?,
       errorCode: json['errorCode'] as String?,
       metadata: json['metadata'] as Map<String, dynamic>?,

@@ -34,7 +34,7 @@ class ReplyInputWidget extends StatelessWidget {
         children: [
           // Reply preview
           if (replyToMessage != null) _buildReplyPreview(context),
-          
+
           // Input area
           Padding(
             padding: const EdgeInsets.all(16),
@@ -93,9 +93,7 @@ class ReplyInputWidget extends StatelessWidget {
       decoration: BoxDecoration(
         color: PulseColors.primary.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: PulseColors.primary.withValues(alpha: 0.2),
-        ),
+        border: Border.all(color: PulseColors.primary.withValues(alpha: 0.2)),
       ),
       child: Row(
         children: [
@@ -114,11 +112,7 @@ class ReplyInputWidget extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    Icon(
-                      Icons.reply,
-                      size: 16,
-                      color: PulseColors.primary,
-                    ),
+                    Icon(Icons.reply, size: 16, color: PulseColors.primary),
                     const SizedBox(width: 4),
                     Text(
                       'Replying to ${replyToMessage!.senderUsername}',
@@ -133,10 +127,7 @@ class ReplyInputWidget extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(
                   _truncateContent(replyToMessage!.content ?? ''),
-                  style: const TextStyle(
-                    fontSize: 13,
-                    color: Colors.grey,
-                  ),
+                  style: const TextStyle(fontSize: 13, color: Colors.grey),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -151,11 +142,7 @@ class ReplyInputWidget extends StatelessWidget {
                 color: Colors.grey.withValues(alpha: 0.2),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
-                Icons.close,
-                size: 16,
-                color: Colors.grey,
-              ),
+              child: const Icon(Icons.close, size: 16, color: Colors.grey),
             ),
           ),
         ],
@@ -165,7 +152,7 @@ class ReplyInputWidget extends StatelessWidget {
 
   Widget _buildSendButton() {
     final hasText = textController.text.trim().isNotEmpty;
-    
+
     return GestureDetector(
       onTap: hasText && !isLoading ? onSend : null,
       child: AnimatedContainer(

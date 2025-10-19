@@ -60,7 +60,7 @@ class _MessageSearchBarState extends State<MessageSearchBar> {
               widget.onClose();
             },
           ),
-          
+
           // Search input
           Expanded(
             child: TextField(
@@ -86,17 +86,14 @@ class _MessageSearchBarState extends State<MessageSearchBar> {
               },
             ),
           ),
-          
+
           // Result count
           if (widget.resultCount != null && _controller.text.isNotEmpty)
             Padding(
               padding: const EdgeInsets.only(right: 8),
               child: Text(
                 '${widget.resultCount} results',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey[600],
-                ),
+                style: TextStyle(fontSize: 12, color: Colors.grey[600]),
               ),
             ),
         ],

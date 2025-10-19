@@ -33,7 +33,8 @@ class InterestCategory {
       isActive: json['isActive'] as bool? ?? true,
       createdAt: DateTime.parse(json['createdAt'] as String),
       updatedAt: DateTime.parse(json['updatedAt'] as String),
-      interests: (json['interests'] as List<dynamic>?)
+      interests:
+          (json['interests'] as List<dynamic>?)
               ?.map((e) => Interest.fromJson(e as Map<String, dynamic>))
               .toList() ??
           [],

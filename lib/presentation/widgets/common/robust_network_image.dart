@@ -51,10 +51,7 @@ class RobustNetworkImage extends StatelessWidget {
 
     // Apply border radius if specified
     if (borderRadius != null) {
-      imageWidget = ClipRRect(
-        borderRadius: borderRadius!,
-        child: imageWidget,
-      );
+      imageWidget = ClipRRect(borderRadius: borderRadius!, child: imageWidget);
     }
 
     return imageWidget;
@@ -71,10 +68,7 @@ class RobustNetworkImage extends StatelessWidget {
       return Stack(
         fit: StackFit.expand,
         children: [
-          BlurHash(
-            hash: blurhash!,
-            imageFit: fit,
-          ),
+          BlurHash(hash: blurhash!, imageFit: fit),
           // Small loading indicator over blurhash
           Center(
             child: Container(
@@ -123,7 +117,8 @@ class RobustNetworkImage extends StatelessWidget {
         width: width,
         height: height,
         fit: fit,
-        errorBuilder: (context, error, stackTrace) => _buildDefaultErrorWidget(),
+        errorBuilder: (context, error, stackTrace) =>
+            _buildDefaultErrorWidget(),
       );
     }
 
@@ -147,10 +142,7 @@ class RobustNetworkImage extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               'Image unavailable',
-              style: TextStyle(
-                color: Colors.grey[500],
-                fontSize: 12,
-              ),
+              style: TextStyle(color: Colors.grey[500], fontSize: 12),
               textAlign: TextAlign.center,
             ),
           ],
@@ -211,11 +203,7 @@ class ProfileNetworkImage extends StatelessWidget {
         color: Colors.grey[100],
         borderRadius: borderRadius ?? BorderRadius.circular(size / 2),
       ),
-      child: Icon(
-        avatarIcon,
-        color: avatarColor,
-        size: size * 0.6,
-      ),
+      child: Icon(avatarIcon, color: avatarColor, size: size * 0.6),
     );
   }
 }

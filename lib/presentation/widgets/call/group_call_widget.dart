@@ -30,10 +30,10 @@ class GroupCallWidget extends StatefulWidget {
 class _GroupCallWidgetState extends State<GroupCallWidget>
     with TickerProviderStateMixin {
   final GroupCallService _groupCallService = GroupCallService.instance;
-  
+
   late AnimationController _pulseController;
   late Animation<double> _pulseAnimation;
-  
+
   bool _isExpanded = false;
   bool _isLoading = false;
   bool _showParticipants = false;
@@ -48,14 +48,10 @@ class _GroupCallWidgetState extends State<GroupCallWidget>
       duration: const Duration(seconds: 1),
       vsync: this,
     )..repeat(reverse: true);
-    
-    _pulseAnimation = Tween<double>(
-      begin: 0.8,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _pulseController,
-      curve: Curves.easeInOut,
-    ));
+
+    _pulseAnimation = Tween<double>(begin: 0.8, end: 1.0).animate(
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
+    );
 
     _initializeGroupCall();
   }
@@ -68,14 +64,14 @@ class _GroupCallWidgetState extends State<GroupCallWidget>
 
   Future<void> _initializeGroupCall() async {
     setState(() => _isLoading = true);
-    
+
     try {
       // Initialize participant statuses
       for (final participant in widget.participants) {
         _participantAudioStatus[participant.id] = true;
         _participantVideoStatus[participant.id] = true;
       }
-      
+
       // Get call analytics to update UI
       final analytics = await _groupCallService.getCallAnalytics(widget.callId);
       if (analytics != null) {
@@ -83,7 +79,7 @@ class _GroupCallWidgetState extends State<GroupCallWidget>
           _callDuration = _formatDuration(analytics.averageDuration);
         });
       }
-      
+
       setState(() => _isLoading = false);
     } catch (e) {
       setState(() => _isLoading = false);
@@ -91,20 +87,18 @@ class _GroupCallWidgetState extends State<GroupCallWidget>
     }
   }
 
-
-
   Future<void> _removeParticipant(String userId) async {
     setState(() => _isLoading = true);
-    
+
     try {
       final success = await _groupCallService.removeParticipant(
         callId: widget.callId,
         userId: userId,
       );
-      
+
       if (success) {
         widget.onSuccess?.call('Participant removed from call');
-        
+
         // Update local state
         setState(() {
           _participantAudioStatus.remove(userId);
@@ -129,13 +123,15 @@ class _GroupCallWidgetState extends State<GroupCallWidget>
           targetUserId: userId,
         ),
       );
-      
+
       if (success) {
         setState(() {
           _participantAudioStatus[userId] = !shouldMute;
         });
       } else {
-        widget.onError?.call('Failed to ${shouldMute ? 'mute' : 'unmute'} participant');
+        widget.onError?.call(
+          'Failed to ${shouldMute ? 'mute' : 'unmute'} participant',
+        );
       }
     } catch (e) {
       widget.onError?.call(
@@ -153,25 +149,29 @@ class _GroupCallWidgetState extends State<GroupCallWidget>
           targetUserId: userId,
         ),
       );
-      
+
       if (success) {
         setState(() {
           _participantVideoStatus[userId] = shouldEnable;
         });
       } else {
-        widget.onError?.call('Failed to ${shouldEnable ? 'enable' : 'disable'} video for participant');
+        widget.onError?.call(
+          'Failed to ${shouldEnable ? 'enable' : 'disable'} video for participant',
+        );
       }
     } catch (e) {
-      widget.onError?.call('Error ${shouldEnable ? 'enabling' : 'disabling'} video: $e');
+      widget.onError?.call(
+        'Error ${shouldEnable ? 'enabling' : 'disabling'} video: $e',
+      );
     }
   }
 
   Future<void> _endGroupCall() async {
     setState(() => _isLoading = true);
-    
+
     try {
       final success = await _groupCallService.endCall(widget.callId);
-      
+
       if (success) {
         widget.onSuccess?.call('Group call ended');
         widget.onLeave?.call();
@@ -189,7 +189,7 @@ class _GroupCallWidgetState extends State<GroupCallWidget>
     final hours = seconds ~/ 3600;
     final minutes = (seconds % 3600) ~/ 60;
     final remainingSeconds = seconds % 60;
-    
+
     if (hours > 0) {
       return '${hours.toString().padLeft(2, '0')}:${minutes.toString().padLeft(2, '0')}:${remainingSeconds.toString().padLeft(2, '0')}';
     } else {
@@ -218,7 +218,7 @@ class _GroupCallWidgetState extends State<GroupCallWidget>
         children: [
           // Header
           _buildHeader(),
-          
+
           // Expanded Content
           if (_isExpanded) ...[
             const Divider(height: 1),
@@ -256,9 +256,9 @@ class _GroupCallWidgetState extends State<GroupCallWidget>
               );
             },
           ),
-          
+
           const SizedBox(width: 12),
-          
+
           // Call Info
           Expanded(
             child: Column(
@@ -282,22 +282,29 @@ class _GroupCallWidgetState extends State<GroupCallWidget>
               ],
             ),
           ),
-          
+
           // Action Buttons
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               IconButton(
-                onPressed: () => setState(() => _showParticipants = !_showParticipants),
+                onPressed: () =>
+                    setState(() => _showParticipants = !_showParticipants),
                 icon: Icon(
                   Icons.people,
-                  color: _showParticipants ? PulseColors.primary : Theme.of(context).iconTheme.color,
+                  color: _showParticipants
+                      ? PulseColors.primary
+                      : Theme.of(context).iconTheme.color,
                 ),
               ),
               IconButton(
-                onPressed: _isLoading ? null : () => setState(() => _isExpanded = !_isExpanded),
+                onPressed: _isLoading
+                    ? null
+                    : () => setState(() => _isExpanded = !_isExpanded),
                 icon: Icon(
-                  _isExpanded ? Icons.keyboard_arrow_down : Icons.keyboard_arrow_up,
+                  _isExpanded
+                      ? Icons.keyboard_arrow_down
+                      : Icons.keyboard_arrow_up,
                   color: Theme.of(context).iconTheme.color,
                 ),
               ),
@@ -316,17 +323,27 @@ class _GroupCallWidgetState extends State<GroupCallWidget>
           // Tab Bar
           Row(
             children: [
-              _buildTab('Participants', _showParticipants, () => setState(() => _showParticipants = true)),
+              _buildTab(
+                'Participants',
+                _showParticipants,
+                () => setState(() => _showParticipants = true),
+              ),
               const SizedBox(width: 16),
-              _buildTab('Controls', !_showParticipants, () => setState(() => _showParticipants = false)),
+              _buildTab(
+                'Controls',
+                !_showParticipants,
+                () => setState(() => _showParticipants = false),
+              ),
             ],
           ),
-          
+
           const SizedBox(height: 16),
-          
+
           // Content
           Expanded(
-            child: _showParticipants ? _buildParticipantsTab() : _buildControlsTab(),
+            child: _showParticipants
+                ? _buildParticipantsTab()
+                : _buildControlsTab(),
           ),
         ],
       ),
@@ -341,12 +358,16 @@ class _GroupCallWidgetState extends State<GroupCallWidget>
         decoration: BoxDecoration(
           color: isActive ? PulseColors.primary : Colors.transparent,
           borderRadius: BorderRadius.circular(20),
-          border: isActive ? null : Border.all(color: Theme.of(context).dividerColor),
+          border: isActive
+              ? null
+              : Border.all(color: Theme.of(context).dividerColor),
         ),
         child: Text(
           title,
           style: TextStyle(
-            color: isActive ? Colors.white : Theme.of(context).textTheme.bodyMedium?.color,
+            color: isActive
+                ? Colors.white
+                : Theme.of(context).textTheme.bodyMedium?.color,
             fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
           ),
         ),
@@ -362,7 +383,7 @@ class _GroupCallWidgetState extends State<GroupCallWidget>
         final isCurrentUser = participant.id == widget.currentUser.id;
         final hasAudio = _participantAudioStatus[participant.id] ?? true;
         final hasVideo = _participantVideoStatus[participant.id] ?? true;
-        
+
         return Padding(
           padding: const EdgeInsets.only(bottom: 8),
           child: Container(
@@ -385,7 +406,10 @@ class _GroupCallWidgetState extends State<GroupCallWidget>
                       : null,
                   child: participant.photos.isEmpty
                       ? Text(
-                          (participant.firstName?.isNotEmpty == true ? participant.firstName![0] : participant.username[0]).toUpperCase(),
+                          (participant.firstName?.isNotEmpty == true
+                                  ? participant.firstName![0]
+                                  : participant.username[0])
+                              .toUpperCase(),
                           style: const TextStyle(
                             color: PulseColors.primary,
                             fontWeight: FontWeight.bold,
@@ -393,9 +417,9 @@ class _GroupCallWidgetState extends State<GroupCallWidget>
                         )
                       : null,
                 ),
-                
+
                 const SizedBox(width: 12),
-                
+
                 // Participant Info
                 Expanded(
                   child: Column(
@@ -405,16 +429,19 @@ class _GroupCallWidgetState extends State<GroupCallWidget>
                         children: [
                           Text(
                             '${participant.firstName} ${participant.lastName}',
-                            style: const TextStyle(
-                              fontWeight: FontWeight.w600,
-                            ),
+                            style: const TextStyle(fontWeight: FontWeight.w600),
                           ),
                           if (isCurrentUser) ...[
                             const SizedBox(width: 8),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 6,
+                                vertical: 2,
+                              ),
                               decoration: BoxDecoration(
-                                color: PulseColors.primary.withValues(alpha: 0.1),
+                                color: PulseColors.primary.withValues(
+                                  alpha: 0.1,
+                                ),
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: Text(
@@ -447,19 +474,17 @@ class _GroupCallWidgetState extends State<GroupCallWidget>
                     ],
                   ),
                 ),
-                
+
                 // Actions (only for other participants if current user is host)
                 if (!isCurrentUser) ...[
                   IconButton(
                     onPressed: () => _muteParticipant(participant.id, hasAudio),
-                    icon: Icon(
-                      hasAudio ? Icons.mic_off : Icons.mic,
-                      size: 20,
-                    ),
+                    icon: Icon(hasAudio ? Icons.mic_off : Icons.mic, size: 20),
                     tooltip: hasAudio ? 'Mute' : 'Unmute',
                   ),
                   IconButton(
-                    onPressed: () => _enableParticipantVideo(participant.id, !hasVideo),
+                    onPressed: () =>
+                        _enableParticipantVideo(participant.id, !hasVideo),
                     icon: Icon(
                       hasVideo ? Icons.videocam_off : Icons.videocam,
                       size: 20,
@@ -519,9 +544,9 @@ class _GroupCallWidgetState extends State<GroupCallWidget>
             ],
           ),
         ),
-        
+
         const SizedBox(height: 16),
-        
+
         // Action Buttons
         Expanded(
           child: GridView.count(
@@ -615,12 +640,24 @@ class _GroupCallWidgetState extends State<GroupCallWidget>
             children: [
               const Text(
                 'This feature allows you to:',
-                style: TextStyle(color: Colors.white70, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  color: Colors.white70,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               const SizedBox(height: 8),
-              const Text('• Search for users', style: TextStyle(color: Colors.white70)),
-              const Text('• Invite them to join this call', style: TextStyle(color: Colors.white70)),
-              const Text('• Send real-time notifications', style: TextStyle(color: Colors.white70)),
+              const Text(
+                '• Search for users',
+                style: TextStyle(color: Colors.white70),
+              ),
+              const Text(
+                '• Invite them to join this call',
+                style: TextStyle(color: Colors.white70),
+              ),
+              const Text(
+                '• Send real-time notifications',
+                style: TextStyle(color: Colors.white70),
+              ),
               const SizedBox(height: 16),
               const Text(
                 'Integration ready - UI can be enhanced based on your design preferences.',

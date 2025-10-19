@@ -41,18 +41,14 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
       body: BlocConsumer<PaymentBloc, PaymentState>(
         listener: (context, state) {
           if (state is PaymentError) {
-            PulseToast.error(context, message: state.message,
-            );
+            PulseToast.error(context, message: state.message);
           } else if (state is PaymentSuccess) {
-            PulseToast.success(context, message: state.message,
-            );
+            PulseToast.success(context, message: state.message);
           }
         },
         builder: (context, state) {
           if (state is PaymentLoading) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
+            return const Center(child: CircularProgressIndicator());
           }
 
           if (state is PaymentMethodsLoaded) {
@@ -96,7 +92,7 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
             ),
           );
         }
-        
+
         final method = paymentMethods[index];
         return _buildPaymentMethodCard(method);
       },
@@ -176,7 +172,8 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
         iconData = Icons.apple;
         break;
       case 'google_pay':
-        iconData = Icons.account_balance_wallet; // Using wallet icon for Google Pay
+        iconData =
+            Icons.account_balance_wallet; // Using wallet icon for Google Pay
         break;
       case 'paypal':
         iconData = Icons.payment;
@@ -193,11 +190,7 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.credit_card_off,
-            size: 64,
-            color: AppColors.textSecondary,
-          ),
+          Icon(Icons.credit_card_off, size: 64, color: AppColors.textSecondary),
           const SizedBox(height: 16),
           Text(
             'No Payment Methods',
@@ -247,16 +240,17 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
     );
   }
 
-  void _showDeleteConfirmation(BuildContext context, Map<String, dynamic> method) {
+  void _showDeleteConfirmation(
+    BuildContext context,
+    Map<String, dynamic> method,
+  ) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.surface,
         title: Text(
           'Delete Payment Method',
-          style: AppTextStyles.heading3.copyWith(
-            color: AppColors.textPrimary,
-          ),
+          style: AppTextStyles.heading3.copyWith(color: AppColors.textPrimary),
         ),
         content: Text(
           'Are you sure you want to delete this payment method?',
@@ -494,10 +488,7 @@ class _AddPaymentMethodSheetState extends State<AddPaymentMethodSheet> {
       }
 
       context.read<PaymentBloc>().add(
-        AddPaymentMethodEvent(
-          type: _selectedType,
-          paymentData: paymentData,
-        ),
+        AddPaymentMethodEvent(type: _selectedType, paymentData: paymentData),
       );
 
       Navigator.of(context).pop();

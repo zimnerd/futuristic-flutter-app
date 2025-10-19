@@ -3,7 +3,7 @@ import 'dart:developer' as developer;
 /// Application logger utility with different log levels
 class AppLogger {
   static const String _tag = 'PulseLink';
-  
+
   /// Log debug message
   static void debug(String message, [dynamic error, StackTrace? stackTrace]) {
     developer.log(

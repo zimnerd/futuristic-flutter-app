@@ -44,9 +44,7 @@ class _PhotoVerificationScreenState extends State<PhotoVerificationScreen> {
       body: Column(
         children: [
           _buildProgressIndicator(),
-          Expanded(
-            child: _buildCurrentStepContent(),
-          ),
+          Expanded(child: _buildCurrentStepContent()),
         ],
       ),
     );
@@ -98,11 +96,7 @@ class _PhotoVerificationScreenState extends State<PhotoVerificationScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(
-            Icons.verified_user,
-            size: 80,
-            color: AppColors.primary,
-          ),
+          const Icon(Icons.verified_user, size: 80, color: AppColors.primary),
           const SizedBox(height: 24),
           const Text(
             'Get verified in 2 minutes',
@@ -165,10 +159,7 @@ class _PhotoVerificationScreenState extends State<PhotoVerificationScreen> {
               ),
               child: const Text(
                 'Start Verification',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
               ),
             ),
           ),
@@ -193,11 +184,7 @@ class _PhotoVerificationScreenState extends State<PhotoVerificationScreen> {
               color: AppColors.primary.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(
-              icon,
-              color: AppColors.primary,
-              size: 24,
-            ),
+            child: Icon(icon, color: AppColors.primary, size: 24),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -235,11 +222,7 @@ class _PhotoVerificationScreenState extends State<PhotoVerificationScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(
-            Icons.camera_alt,
-            size: 100,
-            color: AppColors.primary,
-          ),
+          const Icon(Icons.camera_alt, size: 100, color: AppColors.primary),
           const SizedBox(height: 32),
           const Text(
             'Take a selfie',
@@ -268,10 +251,7 @@ class _PhotoVerificationScreenState extends State<PhotoVerificationScreen> {
               icon: const Icon(Icons.camera_alt),
               label: const Text(
                 'Open Camera',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
               ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
@@ -291,10 +271,7 @@ class _PhotoVerificationScreenState extends State<PhotoVerificationScreen> {
               icon: const Icon(Icons.photo_library),
               label: const Text(
                 'Choose from Gallery',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
               ),
               style: OutlinedButton.styleFrom(
                 foregroundColor: AppColors.primary,
@@ -327,10 +304,7 @@ class _PhotoVerificationScreenState extends State<PhotoVerificationScreen> {
           const SizedBox(height: 12),
           const Text(
             'Make sure your face is clearly visible',
-            style: TextStyle(
-              color: AppColors.textSecondary,
-              fontSize: 16,
-            ),
+            style: TextStyle(color: AppColors.textSecondary, fontSize: 16),
           ),
           const SizedBox(height: 32),
           if (_capturedPhoto != null)
@@ -339,16 +313,10 @@ class _PhotoVerificationScreenState extends State<PhotoVerificationScreen> {
               height: 400,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(24),
-                border: Border.all(
-                  color: AppColors.border,
-                  width: 2,
-                ),
+                border: Border.all(color: AppColors.border, width: 2),
               ),
               clipBehavior: Clip.antiAlias,
-              child: Image.file(
-                _capturedPhoto!,
-                fit: BoxFit.cover,
-              ),
+              child: Image.file(_capturedPhoto!, fit: BoxFit.cover),
             ),
           const Spacer(),
           Row(
@@ -373,10 +341,7 @@ class _PhotoVerificationScreenState extends State<PhotoVerificationScreen> {
                     ),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: AppColors.textSecondary,
-                      side: BorderSide(
-                        color: AppColors.border,
-                        width: 2,
-                      ),
+                      side: BorderSide(color: AppColors.border, width: 2),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16),
                       ),
@@ -428,9 +393,7 @@ class _PhotoVerificationScreenState extends State<PhotoVerificationScreen> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           if (_isSubmitting) ...[
-            const CircularProgressIndicator(
-              color: AppColors.primary,
-            ),
+            const CircularProgressIndicator(color: AppColors.primary),
             const SizedBox(height: 32),
             const Text(
               'Submitting your verification...',
@@ -441,11 +404,7 @@ class _PhotoVerificationScreenState extends State<PhotoVerificationScreen> {
               ),
             ),
           ] else ...[
-            const Icon(
-              Icons.upload_file,
-              size: 100,
-              color: AppColors.primary,
-            ),
+            const Icon(Icons.upload_file, size: 100, color: AppColors.primary),
             const SizedBox(height: 32),
             const Text(
               'Ready to submit',
@@ -480,10 +439,7 @@ class _PhotoVerificationScreenState extends State<PhotoVerificationScreen> {
                 ),
                 child: const Text(
                   'Submit for Review',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                 ),
               ),
             ),
@@ -585,9 +541,7 @@ class _PhotoVerificationScreenState extends State<PhotoVerificationScreen> {
       barrierDismissible: false,
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.surface,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(24),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
         title: const Text(
           'Verification Submitted!',
           style: TextStyle(
@@ -625,9 +579,6 @@ class _PhotoVerificationScreenState extends State<PhotoVerificationScreen> {
   }
 
   void _showError(String message) {
-    PulseToast.error(
-      context,
-      message: message,
-    );
+    PulseToast.error(context, message: message);
   }
 }

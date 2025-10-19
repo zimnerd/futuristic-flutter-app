@@ -34,10 +34,7 @@ class PlayVoiceMessage extends VoiceMessageEvent {
   final String messageId;
   final String audioPath;
 
-  const PlayVoiceMessage({
-    required this.messageId,
-    required this.audioPath,
-  });
+  const PlayVoiceMessage({required this.messageId, required this.audioPath});
 
   @override
   List<Object?> get props => [messageId, audioPath];

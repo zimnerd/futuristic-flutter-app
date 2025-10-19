@@ -54,8 +54,7 @@ class _CallScreenState extends State<CallScreen> {
           if (state is CallEnded) {
             Navigator.of(context).pop();
           } else if (state is CallError) {
-            PulseToast.error(context, message: state.message,
-            );
+            PulseToast.error(context, message: state.message);
             Navigator.of(context).pop();
           }
         },
@@ -90,7 +89,7 @@ class _CallScreenState extends State<CallScreen> {
                   ),
                 )
               : _buildWaitingForVideo(state.call),
-          
+
           // Local video (small window)
           if (state.isVideoEnabled)
             Positioned(
@@ -138,10 +137,7 @@ class _CallScreenState extends State<CallScreen> {
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [
-            Color(0xFF6E3BFF),
-            Color(0xFF4CAF50),
-          ],
+          colors: [Color(0xFF6E3BFF), Color(0xFF4CAF50)],
         ),
       ),
       child: Column(
@@ -186,10 +182,7 @@ class _CallScreenState extends State<CallScreen> {
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [
-            Color(0xFF6E3BFF),
-            Color(0xFF4CAF50),
-          ],
+          colors: [Color(0xFF6E3BFF), Color(0xFF4CAF50)],
         ),
       ),
       child: Column(
@@ -279,7 +272,9 @@ class _CallScreenState extends State<CallScreen> {
             if (state is CallInProgress)
               _buildControlButton(
                 icon: state.isMuted ? Icons.mic_off : Icons.mic,
-                backgroundColor: state.isMuted ? Colors.red : Colors.white.withValues(alpha: 0.3),
+                backgroundColor: state.isMuted
+                    ? Colors.red
+                    : Colors.white.withValues(alpha: 0.3),
                 onPressed: () {
                   context.read<CallBloc>().add(const ToggleMute());
                 },
@@ -289,17 +284,24 @@ class _CallScreenState extends State<CallScreen> {
             if (state is CallInProgress && state.call.type == CallType.audio)
               _buildControlButton(
                 icon: state.isSpeakerOn ? Icons.volume_up : Icons.volume_down,
-                backgroundColor: state.isSpeakerOn ? PulseColors.primary : Colors.white.withValues(alpha: 0.3),
+                backgroundColor: state.isSpeakerOn
+                    ? PulseColors.primary
+                    : Colors.white.withValues(alpha: 0.3),
                 onPressed: () {
                   context.read<CallBloc>().add(const ToggleSpeaker());
                 },
               ),
 
             // Video controls (for video calls)
-            if (state is CallInProgress && state.call.type == CallType.video) ...[
+            if (state is CallInProgress &&
+                state.call.type == CallType.video) ...[
               _buildControlButton(
-                icon: state.isVideoEnabled ? Icons.videocam : Icons.videocam_off,
-                backgroundColor: state.isVideoEnabled ? Colors.white.withValues(alpha: 0.3) : Colors.red,
+                icon: state.isVideoEnabled
+                    ? Icons.videocam
+                    : Icons.videocam_off,
+                backgroundColor: state.isVideoEnabled
+                    ? Colors.white.withValues(alpha: 0.3)
+                    : Colors.red,
                 onPressed: () {
                   context.read<CallBloc>().add(const ToggleCamera());
                 },
@@ -378,16 +380,9 @@ class _CallScreenState extends State<CallScreen> {
     return Container(
       width: size,
       height: size,
-      decoration: BoxDecoration(
-        color: backgroundColor,
-        shape: BoxShape.circle,
-      ),
+      decoration: BoxDecoration(color: backgroundColor, shape: BoxShape.circle),
       child: IconButton(
-        icon: Icon(
-          icon,
-          color: Colors.white,
-          size: size * 0.4,
-        ),
+        icon: Icon(icon, color: Colors.white, size: size * 0.4),
         onPressed: onPressed,
       ),
     );

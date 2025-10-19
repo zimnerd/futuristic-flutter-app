@@ -20,7 +20,7 @@ class DatePlanningScreen extends StatefulWidget {
   State<DatePlanningScreen> createState() => _DatePlanningScreenState();
 }
 
-class _DatePlanningScreenState extends State<DatePlanningScreen> 
+class _DatePlanningScreenState extends State<DatePlanningScreen>
     with TickerProviderStateMixin {
   late TabController _tabController;
 
@@ -28,7 +28,7 @@ class _DatePlanningScreenState extends State<DatePlanningScreen>
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
-    
+
     // Load initial data
     context.read<DatePlanningBloc>().add(const LoadUserDatePlans());
     context.read<DatePlanningBloc>().add(const LoadDateSuggestions());
@@ -77,7 +77,7 @@ class _DatePlanningScreenState extends State<DatePlanningScreen>
         if (state is DatePlanningLoading) {
           return const PulseLoadingWidget();
         }
-        
+
         if (state is DatePlanningError) {
           return PulseErrorWidget(
             message: state.message,
@@ -86,14 +86,12 @@ class _DatePlanningScreenState extends State<DatePlanningScreen>
             },
           );
         }
-        
+
         if (state is UserDatePlansLoaded) {
           return _buildDatePlansList(state.datePlans);
         }
-        
-        return const Center(
-          child: Text('No date plans found'),
-        );
+
+        return const Center(child: Text('No date plans found'));
       },
     );
   }
@@ -126,7 +124,7 @@ class _DatePlanningScreenState extends State<DatePlanningScreen>
             ],
           ),
         ),
-        
+
         // Suggestions list
         Expanded(
           child: BlocBuilder<DatePlanningBloc, DatePlanningState>(
@@ -134,7 +132,7 @@ class _DatePlanningScreenState extends State<DatePlanningScreen>
               if (state is DatePlanningLoading) {
                 return const PulseLoadingWidget();
               }
-              
+
               if (state is DatePlanningError) {
                 return PulseErrorWidget(
                   message: state.message,
@@ -145,14 +143,12 @@ class _DatePlanningScreenState extends State<DatePlanningScreen>
                   },
                 );
               }
-              
+
               if (state is DateSuggestionsLoaded) {
                 return _buildSuggestionsList(state.suggestions);
               }
-              
-              return const Center(
-                child: Text('No suggestions available'),
-              );
+
+              return const Center(child: Text('No suggestions available'));
             },
           ),
         ),
@@ -166,7 +162,7 @@ class _DatePlanningScreenState extends State<DatePlanningScreen>
         if (state is DatePlanningLoading) {
           return const PulseLoadingWidget();
         }
-        
+
         if (state is DatePlanningError) {
           return PulseErrorWidget(
             message: state.message,
@@ -175,14 +171,12 @@ class _DatePlanningScreenState extends State<DatePlanningScreen>
             },
           );
         }
-        
+
         if (state is DateInvitationsLoaded) {
           return _buildInvitationsList(state.invitations);
         }
-        
-        return const Center(
-          child: Text('No invitations found'),
-        );
+
+        return const Center(child: Text('No invitations found'));
       },
     );
   }
@@ -193,26 +187,16 @@ class _DatePlanningScreenState extends State<DatePlanningScreen>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.calendar_today,
-              size: 80,
-              color: Colors.grey,
-            ),
+            Icon(Icons.calendar_today, size: 80, color: Colors.grey),
             SizedBox(height: 16),
             Text(
               'No date plans yet',
-              style: TextStyle(
-                fontSize: 18,
-                color: Colors.grey,
-              ),
+              style: TextStyle(fontSize: 18, color: Colors.grey),
             ),
             SizedBox(height: 8),
             Text(
               'Create your first date plan!',
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey,
-              ),
+              style: TextStyle(fontSize: 14, color: Colors.grey),
             ),
           ],
         ),
@@ -239,9 +223,7 @@ class _DatePlanningScreenState extends State<DatePlanningScreen>
 
   Widget _buildSuggestionsList(List<Map<String, dynamic>> suggestions) {
     if (suggestions.isEmpty) {
-      return const Center(
-        child: Text('No suggestions available'),
-      );
+      return const Center(child: Text('No suggestions available'));
     }
 
     return ListView.builder(
@@ -262,9 +244,7 @@ class _DatePlanningScreenState extends State<DatePlanningScreen>
 
   Widget _buildInvitationsList(List<Map<String, dynamic>> invitations) {
     if (invitations.isEmpty) {
-      return const Center(
-        child: Text('No invitations found'),
-      );
+      return const Center(child: Text('No invitations found'));
     }
 
     return ListView.builder(
@@ -287,24 +267,15 @@ class _DatePlanningScreenState extends State<DatePlanningScreen>
   }
 
   void _showFilterDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => _FilterDialog(),
-    );
+    showDialog(context: context, builder: (context) => _FilterDialog());
   }
 
   void _viewDatePlan(Map<String, dynamic> plan) {
-    context.push(
-      AppRoutes.datePlanDetails,
-      extra: plan,
-    );
+    context.push(AppRoutes.datePlanDetails, extra: plan);
   }
 
   void _editDatePlan(Map<String, dynamic> plan) {
-    context.push(
-      AppRoutes.createDatePlan,
-      extra: {'planToEdit': plan},
-    );
+    context.push(AppRoutes.createDatePlan, extra: {'planToEdit': plan});
   }
 
   void _deleteDatePlan(Map<String, dynamic> plan) {
@@ -312,9 +283,7 @@ class _DatePlanningScreenState extends State<DatePlanningScreen>
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Delete Date Plan'),
-        content: const Text(
-          'Are you sure you want to delete this date plan?',
-        ),
+        content: const Text('Are you sure you want to delete this date plan?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -329,9 +298,7 @@ class _DatePlanningScreenState extends State<DatePlanningScreen>
                 message: 'Date plan deleted successfully',
               );
             },
-            style: TextButton.styleFrom(
-              foregroundColor: Colors.red,
-            ),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
             child: const Text('Delete'),
           ),
         ],
@@ -340,10 +307,7 @@ class _DatePlanningScreenState extends State<DatePlanningScreen>
   }
 
   void _createPlanFromSuggestion(Map<String, dynamic> suggestion) {
-    context.push(
-      AppRoutes.createDatePlan,
-      extra: {'suggestion': suggestion},
-    );
+    context.push(AppRoutes.createDatePlan, extra: {'suggestion': suggestion});
   }
 
   void _acceptInvitation(Map<String, dynamic> invitation) {
@@ -354,8 +318,7 @@ class _DatePlanningScreenState extends State<DatePlanningScreen>
         updates: {'status': 'accepted'},
       ),
     );
-    PulseToast.success(context, message: 'Invitation accepted',
-    );
+    PulseToast.success(context, message: 'Invitation accepted');
   }
 
   void _declineInvitation(Map<String, dynamic> invitation) {
@@ -366,8 +329,7 @@ class _DatePlanningScreenState extends State<DatePlanningScreen>
         updates: {'status': 'declined'},
       ),
     );
-    PulseToast.info(context, message: 'Invitation declined',
-    );
+    PulseToast.info(context, message: 'Invitation declined');
   }
 }
 
@@ -391,27 +353,40 @@ class _FilterDialogState extends State<_FilterDialog> {
           DropdownButtonFormField<String>(
             initialValue: selectedPrice,
             decoration: const InputDecoration(labelText: 'Price Range'),
-            items: ['Any', '\$', '\$\$', '\$\$\$', '\$\$\$\$']
-                .map((e) => DropdownMenuItem(value: e, child: Text(e)))
-                .toList(),
+            items: [
+              'Any',
+              '\$',
+              '\$\$',
+              '\$\$\$',
+              '\$\$\$\$',
+            ].map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
             onChanged: (value) => setState(() => selectedPrice = value!),
           ),
           const SizedBox(height: 16),
           DropdownButtonFormField<String>(
             initialValue: selectedTime,
             decoration: const InputDecoration(labelText: 'Time of Day'),
-            items: ['Any', 'Morning', 'Afternoon', 'Evening', 'Night']
-                .map((e) => DropdownMenuItem(value: e, child: Text(e)))
-                .toList(),
+            items: [
+              'Any',
+              'Morning',
+              'Afternoon',
+              'Evening',
+              'Night',
+            ].map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
             onChanged: (value) => setState(() => selectedTime = value!),
           ),
           const SizedBox(height: 16),
           DropdownButtonFormField<String>(
             initialValue: selectedType,
             decoration: const InputDecoration(labelText: 'Activity Type'),
-            items: ['Any', 'Dining', 'Entertainment', 'Outdoor', 'Culture', 'Adventure']
-                .map((e) => DropdownMenuItem(value: e, child: Text(e)))
-                .toList(),
+            items: [
+              'Any',
+              'Dining',
+              'Entertainment',
+              'Outdoor',
+              'Culture',
+              'Adventure',
+            ].map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
             onChanged: (value) => setState(() => selectedType = value!),
           ),
         ],

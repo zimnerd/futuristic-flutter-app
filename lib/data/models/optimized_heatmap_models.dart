@@ -12,7 +12,8 @@ class OptimizedClusterData {
   final double avgAge;
   final Map<String, dynamic>? genderDistribution;
   final Map<String, dynamic>? ageDistribution;
-  final Map<String, int>? statusBreakdown; // matched, liked_me, unmatched, passed
+  final Map<String, int>?
+  statusBreakdown; // matched, liked_me, unmatched, passed
 
   const OptimizedClusterData({
     required this.id,
@@ -118,13 +119,18 @@ class OptimizedHeatmapResponse {
   });
 
   factory OptimizedHeatmapResponse.fromJson(Map<String, dynamic> json) {
-    final clusters = (json['clusters'] as List?)
-            ?.map((e) => OptimizedClusterData.fromJson(e as Map<String, dynamic>))
+    final clusters =
+        (json['clusters'] as List?)
+            ?.map(
+              (e) => OptimizedClusterData.fromJson(e as Map<String, dynamic>),
+            )
             .toList() ??
         [];
 
     final performance = json['performance'] != null
-        ? PerformanceMetrics.fromJson(json['performance'] as Map<String, dynamic>)
+        ? PerformanceMetrics.fromJson(
+            json['performance'] as Map<String, dynamic>,
+          )
         : const PerformanceMetrics(queryTimeMs: 0, clusteringTimeMs: 0);
 
     return OptimizedHeatmapResponse(

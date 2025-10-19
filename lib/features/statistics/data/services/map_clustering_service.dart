@@ -10,7 +10,7 @@ class MapClusteringService {
   // Cache for stable cluster positions across zoom levels
   static final Map<String, LatLng> _stableClusterPositions = {};
   static List<HeatMapDataPoint> _lastDataPoints = [];
-  
+
   // Performance optimization: Cache clusters by zoom level and viewport
   static final Map<String, List<MapCluster>> _clusterCache = {};
   static final Map<String, DateTime> _cacheTimestamps = {};
@@ -22,7 +22,7 @@ class MapClusteringService {
   static const int _debounceMs = 300;
   static const int _cacheValidityMs = 30000; // 30 seconds
   static const int _maxCacheSize = 50; // Maximum cache entries
-  
+
   // Zoom level thresholds for optimization
   static const double _minZoomLevel = 2.0;
   static const double _maxZoomLevel = 20.0;
@@ -38,9 +38,9 @@ class MapClusteringService {
     bool forceRefresh = false,
   }) {
     if (dataPoints.isEmpty) return [];
-    
+
     final now = DateTime.now();
-    
+
     // Debounce rapid clustering requests
     if (!forceRefresh &&
         now.difference(_lastClusterTime).inMilliseconds < _debounceMs &&
@@ -86,7 +86,7 @@ class MapClusteringService {
         return cached;
       }
     }
-    
+
     // Clean old cache entries to prevent memory issues
     _cleanOldCache();
 
@@ -122,8 +122,6 @@ class MapClusteringService {
     return clusters;
   }
 
-
-
   /// Check if data points have changed significantly
   static bool _dataPointsChanged(List<HeatMapDataPoint> newPoints) {
     if (_lastDataPoints.length != newPoints.length) return true;
@@ -148,7 +146,7 @@ class MapClusteringService {
     // Determine clustering level based on zoom - optimized for performance
     int clusterLevel;
     double baseRadius;
-    
+
     if (zoomLevel <= 6) {
       // Global/continental level - single or very few clusters
       clusterLevel = 0;
@@ -178,16 +176,16 @@ class MapClusteringService {
       clusterLevel = 6;
       baseRadius = 1200; // 1.2km for privacy
     }
-    
+
     developer.log(
       'MapClusteringService: Zoom $zoomLevel -> Level $clusterLevel, Radius ${baseRadius}m',
       name: 'MapClusteringService',
     );
-    
+
     // Create stable grid-based clusters
     return _createStableGridClusters(dataPoints, clusterLevel, baseRadius);
   }
-  
+
   /// Create stable clusters using a grid-based approach
   static List<MapCluster> _createStableGridClusters(
     List<HeatMapDataPoint> dataPoints,
@@ -209,25 +207,25 @@ class MapClusteringService {
       final cellKey = _getStableGridKey(latLng, cellSizeKm, level);
       gridCells.putIfAbsent(cellKey, () => []).add(point);
     }
-    
+
     final clusters = <MapCluster>[];
-    
+
     for (final entry in gridCells.entries) {
       final cellKey = entry.key;
       final cellPoints = entry.value;
-      
+
       if (cellPoints.isEmpty) continue;
-      
+
       // Get or create stable position for this grid cell
       final stablePosition = _getStablePosition(cellKey, cellPoints);
-      
+
       // Group by status for privacy
       final statusGroups = <String, List<HeatMapDataPoint>>{};
       for (final point in cellPoints) {
         final status = point.label ?? 'unknown';
         statusGroups.putIfAbsent(status, () => []).add(point);
       }
-      
+
       // Create cluster for dominant status group
       final dominantStatus = _getDominantStatus(statusGroups);
       final dominantPoints = statusGroups[dominantStatus] ?? [];
@@ -244,14 +242,14 @@ class MapClusteringService {
         );
       }
     }
-    
+
     developer.log(
       'MapClusteringService: Created ${clusters.length} stable grid clusters',
       name: 'MapClusteringService',
     );
     return clusters;
   }
-  
+
   /// Generate stable grid key for consistent positioning
   static String _getStableGridKey(
     LatLng coordinates,
@@ -286,29 +284,27 @@ class MapClusteringService {
 
     final stablePosition = LatLng(avgLat, avgLng);
     _stableClusterPositions[cellKey] = stablePosition;
-    
+
     return stablePosition;
   }
-  
+
   /// Get dominant status from status groups
   static String _getDominantStatus(
     Map<String, List<HeatMapDataPoint>> statusGroups,
   ) {
     String dominantStatus = 'unknown';
     int maxCount = 0;
-    
+
     for (final entry in statusGroups.entries) {
       if (entry.value.length > maxCount) {
         maxCount = entry.value.length;
         dominantStatus = entry.key;
       }
     }
-    
+
     return dominantStatus;
   }
 
-
-  
   /// Create single cluster for extreme zoom out to prevent black screen
   static List<MapCluster> _createSingleClusterForExtremeZoom(
     List<HeatMapDataPoint> dataPoints,
@@ -420,8 +416,6 @@ class MapClusteringService {
     _clusterCache.clear();
     _cacheTimestamps.clear();
   }
-
-
 
   /// Get cluster marker size based on count
   static double getClusterSize(int count) {

@@ -134,7 +134,7 @@ class ClearEventError extends EventEvent {
 
 class LoadEventCategories extends EventEvent {
   final bool forceRefresh;
-  
+
   const LoadEventCategories({this.forceRefresh = false});
 }
 

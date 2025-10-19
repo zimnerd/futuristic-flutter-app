@@ -16,13 +16,10 @@ class CallBloc extends Bloc<CallEvent, CallState> {
   Timer? _callTimer;
   Timer? _reconnectionTimer;
 
-  CallBloc({
-    required WebSocketService webSocketService,
-    AuthBloc? authBloc,
-  })  : _webSocketService = webSocketService,
-       _authBloc = authBloc,
-        super(const CallState()) {
-    
+  CallBloc({required WebSocketService webSocketService, AuthBloc? authBloc})
+    : _webSocketService = webSocketService,
+      _authBloc = authBloc,
+      super(const CallState()) {
     // Register event handlers
     on<InitiateCall>(_onInitiateCall);
     on<AcceptCall>(_onAcceptCall);
@@ -78,12 +75,12 @@ class CallBloc extends Bloc<CallEvent, CallState> {
   }
 
   /// Handle initiating an outgoing call
-  Future<void> _onInitiateCall(InitiateCall event, Emitter<CallState> emit) async {
+  Future<void> _onInitiateCall(
+    InitiateCall event,
+    Emitter<CallState> emit,
+  ) async {
     try {
-      emit(state.copyWith(
-        status: CallStatus.outgoing,
-        clearError: true,
-      ));
+      emit(state.copyWith(status: CallStatus.outgoing, clearError: true));
 
       // Create new call
       final call = Call(
@@ -102,12 +99,13 @@ class CallBloc extends Bloc<CallEvent, CallState> {
 
       // Start connection timeout
       _startConnectionTimeout(call.id);
-
     } catch (error) {
-      emit(state.copyWith(
-        status: CallStatus.failed,
-        error: 'Failed to initiate call: $error',
-      ));
+      emit(
+        state.copyWith(
+          status: CallStatus.failed,
+          error: 'Failed to initiate call: $error',
+        ),
+      );
     }
   }
 
@@ -120,12 +118,14 @@ class CallBloc extends Bloc<CallEvent, CallState> {
           startedAt: DateTime.now(),
         );
 
-        emit(state.copyWith(
-          status: CallStatus.connecting,
-          currentCall: updatedCall,
-          clearIncomingCall: true,
-          clearError: true,
-        ));
+        emit(
+          state.copyWith(
+            status: CallStatus.connecting,
+            currentCall: updatedCall,
+            clearIncomingCall: true,
+            clearError: true,
+          ),
+        );
 
         // Send acceptance through WebSocket
         _webSocketService.acceptCall(event.callId);
@@ -134,29 +134,34 @@ class CallBloc extends Bloc<CallEvent, CallState> {
         _startCallTimer();
       }
     } catch (error) {
-      emit(state.copyWith(
-        status: CallStatus.failed,
-        error: 'Failed to accept call: $error',
-      ));
+      emit(
+        state.copyWith(
+          status: CallStatus.failed,
+          error: 'Failed to accept call: $error',
+        ),
+      );
     }
   }
 
   /// Handle declining an incoming call
-  Future<void> _onDeclineCall(DeclineCall event, Emitter<CallState> emit) async {
+  Future<void> _onDeclineCall(
+    DeclineCall event,
+    Emitter<CallState> emit,
+  ) async {
     try {
       // Send decline through WebSocket
       _webSocketService.rejectCall(event.callId);
 
-      emit(state.copyWith(
-        status: CallStatus.idle,
-        clearIncomingCall: true,
-        clearCurrentCall: true,
-        clearError: true,
-      ));
+      emit(
+        state.copyWith(
+          status: CallStatus.idle,
+          clearIncomingCall: true,
+          clearCurrentCall: true,
+          clearError: true,
+        ),
+      );
     } catch (error) {
-      emit(state.copyWith(
-        error: 'Failed to decline call: $error',
-      ));
+      emit(state.copyWith(error: 'Failed to decline call: $error'));
     }
   }
 
@@ -172,26 +177,29 @@ class CallBloc extends Bloc<CallEvent, CallState> {
         _webSocketService.endCall(state.currentCall!.id);
       }
 
-      emit(state.copyWith(
-        status: CallStatus.idle,
-        clearCurrentCall: true,
-        clearIncomingCall: true,
-        clearError: true,
-        duration: Duration.zero,
-        connectionState: CallConnectionState.disconnected,
-        reconnectionAttempts: 0,
-      ));
+      emit(
+        state.copyWith(
+          status: CallStatus.idle,
+          clearCurrentCall: true,
+          clearIncomingCall: true,
+          clearError: true,
+          duration: Duration.zero,
+          connectionState: CallConnectionState.disconnected,
+          reconnectionAttempts: 0,
+        ),
+      );
     } catch (error) {
-      emit(state.copyWith(
-        error: 'Failed to end call: $error',
-      ));
+      emit(state.copyWith(error: 'Failed to end call: $error'));
     }
   }
 
   /// Handle toggling video
-  Future<void> _onToggleVideo(ToggleVideo event, Emitter<CallState> emit) async {
+  Future<void> _onToggleVideo(
+    ToggleVideo event,
+    Emitter<CallState> emit,
+  ) async {
     emit(state.copyWith(isVideoEnabled: event.enabled));
-    
+
     // Send video toggle event via WebSocket
     if (state.currentCall != null) {
       _webSocketService.toggleCallVideo(state.currentCall!.id, event.enabled);
@@ -199,9 +207,12 @@ class CallBloc extends Bloc<CallEvent, CallState> {
   }
 
   /// Handle toggling audio
-  Future<void> _onToggleAudio(ToggleAudio event, Emitter<CallState> emit) async {
+  Future<void> _onToggleAudio(
+    ToggleAudio event,
+    Emitter<CallState> emit,
+  ) async {
     emit(state.copyWith(isAudioEnabled: event.enabled));
-    
+
     // Send audio toggle event via WebSocket
     if (state.currentCall != null) {
       _webSocketService.toggleCallAudio(state.currentCall!.id, event.enabled);
@@ -209,17 +220,26 @@ class CallBloc extends Bloc<CallEvent, CallState> {
   }
 
   /// Handle toggling speaker
-  Future<void> _onToggleSpeaker(ToggleSpeaker event, Emitter<CallState> emit) async {
+  Future<void> _onToggleSpeaker(
+    ToggleSpeaker event,
+    Emitter<CallState> emit,
+  ) async {
     emit(state.copyWith(isSpeakerEnabled: event.enabled));
   }
 
   /// Handle switching camera
-  Future<void> _onSwitchCamera(SwitchCamera event, Emitter<CallState> emit) async {
+  Future<void> _onSwitchCamera(
+    SwitchCamera event,
+    Emitter<CallState> emit,
+  ) async {
     emit(state.copyWith(isFrontCamera: !state.isFrontCamera));
-    
+
     // Send camera switch event via WebSocket
     if (state.currentCall != null) {
-      _webSocketService.switchCallCamera(state.currentCall!.id, state.isFrontCamera);
+      _webSocketService.switchCallCamera(
+        state.currentCall!.id,
+        state.isFrontCamera,
+      );
     }
   }
 
@@ -248,14 +268,14 @@ class CallBloc extends Bloc<CallEvent, CallState> {
     emit(state.copyWith(connectionState: event.connectionState));
 
     // Handle reconnection logic
-    if (event.connectionState == CallConnectionState.failed && state.canReconnect) {
+    if (event.connectionState == CallConnectionState.failed &&
+        state.canReconnect) {
       _startReconnectionAttempt(emit);
     } else if (event.connectionState == CallConnectionState.connected) {
-      emit(state.copyWith(
-        status: CallStatus.connected,
-        reconnectionAttempts: 0,
-      ));
-      
+      emit(
+        state.copyWith(status: CallStatus.connected, reconnectionAttempts: 0),
+      );
+
       if (!_isCallTimerRunning()) {
         _startCallTimer();
       }
@@ -277,11 +297,13 @@ class CallBloc extends Bloc<CallEvent, CallState> {
   ) async {
     // Only accept incoming call if not already in a call
     if (!state.isInCall) {
-      emit(state.copyWith(
-        status: CallStatus.incoming,
-        incomingCall: event.call,
-        clearError: true,
-      ));
+      emit(
+        state.copyWith(
+          status: CallStatus.incoming,
+          incomingCall: event.call,
+          clearError: true,
+        ),
+      );
     } else {
       // Decline the incoming call if already in a call
       _webSocketService.rejectCall(event.call.id);
@@ -301,7 +323,11 @@ class CallBloc extends Bloc<CallEvent, CallState> {
     WebRTCConnected event,
     Emitter<CallState> emit,
   ) async {
-    add(const CallConnectionChanged(connectionState: CallConnectionState.connected));
+    add(
+      const CallConnectionChanged(
+        connectionState: CallConnectionState.connected,
+      ),
+    );
   }
 
   /// Handle WebRTC connection lost
@@ -309,7 +335,9 @@ class CallBloc extends Bloc<CallEvent, CallState> {
     WebRTCDisconnected event,
     Emitter<CallState> emit,
   ) async {
-    add(const CallConnectionChanged(connectionState: CallConnectionState.failed));
+    add(
+      const CallConnectionChanged(connectionState: CallConnectionState.failed),
+    );
   }
 
   /// Handle WebRTC signaling data received
@@ -320,7 +348,11 @@ class CallBloc extends Bloc<CallEvent, CallState> {
     // Process WebRTC signaling data
     // This would integrate with the actual WebRTC implementation
     // For now, just emit connection state change
-    add(const CallConnectionChanged(connectionState: CallConnectionState.connecting));
+    add(
+      const CallConnectionChanged(
+        connectionState: CallConnectionState.connecting,
+      ),
+    );
   }
 
   /// Handle sending WebRTC signaling data
@@ -330,7 +362,10 @@ class CallBloc extends Bloc<CallEvent, CallState> {
   ) async {
     // Send WebRTC signaling data via WebSocket
     if (state.currentCall != null) {
-      _webSocketService.sendWebRTCSignaling(state.currentCall!.id, event.signalingData);
+      _webSocketService.sendWebRTCSignaling(
+        state.currentCall!.id,
+        event.signalingData,
+      );
     }
   }
 
@@ -371,14 +406,20 @@ class CallBloc extends Bloc<CallEvent, CallState> {
   void _startReconnectionAttempt(Emitter<CallState> emit) {
     if (!state.canReconnect) return;
 
-    emit(state.copyWith(
-      connectionState: CallConnectionState.reconnecting,
-      reconnectionAttempts: state.reconnectionAttempts + 1,
-    ));
+    emit(
+      state.copyWith(
+        connectionState: CallConnectionState.reconnecting,
+        reconnectionAttempts: state.reconnectionAttempts + 1,
+      ),
+    );
 
     _reconnectionTimer = Timer(const Duration(seconds: 3), () {
       // Attempt to reconnect
-      add(const CallConnectionChanged(connectionState: CallConnectionState.connecting));
+      add(
+        const CallConnectionChanged(
+          connectionState: CallConnectionState.connecting,
+        ),
+      );
     });
   }
 

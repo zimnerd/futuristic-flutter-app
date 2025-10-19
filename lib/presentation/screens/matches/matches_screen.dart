@@ -33,7 +33,7 @@ class _MatchesScreenState extends State<MatchesScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   late MatchBloc _matchBloc;
-  
+
   // Enhanced state variables
   MatchViewMode _currentViewMode = MatchViewMode.list;
   MatchSortBy _currentSortBy = MatchSortBy.recent;
@@ -41,7 +41,7 @@ class _MatchesScreenState extends State<MatchesScreen>
   final ScrollController _scrollController = ScrollController();
   int _currentPage = 1;
   static const int _pageSize = 10;
-  
+
   // Search functionality
   bool _isSearchActive = false;
   final TextEditingController _searchController = TextEditingController();
@@ -70,9 +70,9 @@ class _MatchesScreenState extends State<MatchesScreen>
   }
 
   void _onScroll() {
-    if (mounted && 
+    if (mounted &&
         _scrollController.position.pixels ==
-        _scrollController.position.maxScrollExtent) {
+            _scrollController.position.maxScrollExtent) {
       _loadMoreMatches();
     }
   }
@@ -837,18 +837,14 @@ class _MatchesScreenState extends State<MatchesScreen>
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            icon,
-            size: 64,
-            color: Colors.grey[400],
-          ),
+          Icon(icon, size: 64, color: Colors.grey[400]),
           const SizedBox(height: 16),
           Text(
             title,
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  color: Colors.grey[600],
-                  fontWeight: FontWeight.bold,
-                ),
+              color: Colors.grey[600],
+              fontWeight: FontWeight.bold,
+            ),
           ),
           const SizedBox(height: 8),
           Padding(
@@ -856,9 +852,9 @@ class _MatchesScreenState extends State<MatchesScreen>
             child: Text(
               subtitle,
               textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Colors.grey[500],
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(color: Colors.grey[500]),
             ),
           ),
           const SizedBox(height: 24),
@@ -882,7 +878,7 @@ class _MatchesScreenState extends State<MatchesScreen>
     AppLogger.debug(
       '🎯 Match tapped: ${match.id}, userProfile: ${match.userProfile?.name}, status: ${match.status}',
     );
-    
+
     if (match.userProfile != null && mounted) {
       AppLogger.debug(
         '📱 Showing profile modal for: ${match.userProfile!.name}',
@@ -897,7 +893,7 @@ class _MatchesScreenState extends State<MatchesScreen>
 
   void _acceptMatch(String matchId) {
     _matchBloc.add(AcceptMatch(matchId: matchId));
-    
+
     // Show success message only if widget is still mounted
     if (mounted) {
       PulseToast.success(
@@ -934,9 +930,7 @@ class _MatchesScreenState extends State<MatchesScreen>
                 Navigator.of(context).pop();
                 _matchBloc.add(RejectMatch(matchId: matchId));
               },
-              style: TextButton.styleFrom(
-                foregroundColor: Colors.red,
-              ),
+              style: TextButton.styleFrom(foregroundColor: Colors.red),
               child: const Text('Reject'),
             ),
           ],
@@ -964,9 +958,7 @@ class _MatchesScreenState extends State<MatchesScreen>
                 Navigator.of(context).pop();
                 _matchBloc.add(UnmatchUser(matchId: matchId));
               },
-              style: TextButton.styleFrom(
-                foregroundColor: Colors.red,
-              ),
+              style: TextButton.styleFrom(foregroundColor: Colors.red),
               child: const Text('Unmatch'),
             ),
           ],
@@ -978,7 +970,10 @@ class _MatchesScreenState extends State<MatchesScreen>
   void _showProfileModal(MatchModel match) {
     if (mounted && match.userProfile != null) {
       context.push(
-        AppRoutes.profileDetails.replaceFirst(':profileId', match.userProfile!.id),
+        AppRoutes.profileDetails.replaceFirst(
+          ':profileId',
+          match.userProfile!.id,
+        ),
         extra: {
           'profile': match.userProfile!,
           'context': ProfileContext.matches,
@@ -1020,14 +1015,22 @@ class _MatchesScreenState extends State<MatchesScreen>
                     children: [
                       Text(
                         'Match Details',
-                        style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
+                        style: Theme.of(context).textTheme.headlineSmall
+                            ?.copyWith(fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(height: 16),
-                      _buildMatchDetailRow('Status', match.status.toUpperCase()),
-                      _buildMatchDetailRow('Compatibility', '${(match.compatibilityScore * 100).round()}%'),
-                      _buildMatchDetailRow('Matched At', _formatDate(match.matchedAt)),
+                      _buildMatchDetailRow(
+                        'Status',
+                        match.status.toUpperCase(),
+                      ),
+                      _buildMatchDetailRow(
+                        'Compatibility',
+                        '${(match.compatibilityScore * 100).round()}%',
+                      ),
+                      _buildMatchDetailRow(
+                        'Matched At',
+                        _formatDate(match.matchedAt),
+                      ),
                     ],
                   ),
                 ),
@@ -1052,12 +1055,7 @@ class _MatchesScreenState extends State<MatchesScreen>
               color: Colors.grey,
             ),
           ),
-          Text(
-            value,
-            style: const TextStyle(
-              fontWeight: FontWeight.w600,
-            ),
-          ),
+          Text(value, style: const TextStyle(fontWeight: FontWeight.w600)),
         ],
       ),
     );
@@ -1065,10 +1063,10 @@ class _MatchesScreenState extends State<MatchesScreen>
 
   String _formatDate(DateTime? date) {
     if (date == null) return 'Unknown';
-    
+
     final now = DateTime.now();
     final difference = now.difference(date);
-    
+
     if (difference.inDays > 0) {
       return '${difference.inDays} day${difference.inDays == 1 ? '' : 's'} ago';
     } else if (difference.inHours > 0) {

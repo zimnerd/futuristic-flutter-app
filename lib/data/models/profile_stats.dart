@@ -54,12 +54,12 @@ class ProfileStats extends Equatable {
 
   @override
   List<Object?> get props => [
-        matchesCount,
-        likesReceived,
-        likesSent,
-        profileViews,
-        messagesCount,
-      ];
+    matchesCount,
+    likesReceived,
+    likesSent,
+    profileViews,
+    messagesCount,
+  ];
 
   @override
   String toString() =>

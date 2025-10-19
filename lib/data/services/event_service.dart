@@ -5,7 +5,7 @@ import '../../domain/entities/event_message.dart';
 import '../database/events_database.dart';
 
 /// Service for event API integration with NestJS backend
-/// 
+///
 /// Now uses the centralized ApiClient for all HTTP operations,
 /// ensuring proper authentication, error handling, and logging.
 class EventService {
@@ -74,7 +74,7 @@ class EventService {
     } catch (e) {
       AppLogger.error('Failed to get events: $e');
       if (e is EventServiceException) rethrow;
-      
+
       // Handle DioException specifically
       if (e.toString().contains('500')) {
         throw EventServiceException(
@@ -82,7 +82,7 @@ class EventService {
           statusCode: 500,
         );
       }
-      
+
       throw EventServiceException('Network error: $e');
     }
   }
@@ -136,7 +136,7 @@ class EventService {
     } catch (e) {
       AppLogger.error('Failed to get nearby events: $e');
       if (e is EventServiceException) rethrow;
-      
+
       // Handle DioException specifically
       if (e.toString().contains('500')) {
         throw EventServiceException(
@@ -144,7 +144,7 @@ class EventService {
           statusCode: 500,
         );
       }
-      
+
       throw EventServiceException('Network error: $e');
     }
   }
@@ -312,7 +312,9 @@ class EventService {
   }
 
   /// Get event participants
-  Future<List<Map<String, dynamic>>> getEventParticipants(String eventId) async {
+  Future<List<Map<String, dynamic>>> getEventParticipants(
+    String eventId,
+  ) async {
     try {
       final response = await _apiClient.getEventParticipants(eventId);
 
@@ -472,13 +474,15 @@ class EventService {
   /// Get event categories
   /// Get all event categories from API
   /// Get event categories with intelligent caching
-  /// 
+  ///
   /// 1. Check local cache first (1 hour freshness)
   /// 2. If cache is fresh, return cached data
   /// 3. If cache is stale or missing, fetch from API
   /// 4. Update cache with new data
   /// 5. Fallback to cached data if API fails
-  Future<List<EventCategory>> getEventCategories({bool forceRefresh = false}) async {
+  Future<List<EventCategory>> getEventCategories({
+    bool forceRefresh = false,
+  }) async {
     try {
       // Check cache first (unless forcing refresh)
       if (!forceRefresh) {
@@ -486,7 +490,9 @@ class EventService {
         if (isCacheFresh) {
           final cachedCategories = await _eventsDb.getCachedCategories();
           if (cachedCategories.isNotEmpty) {
-            AppLogger.info('Using cached event categories (${cachedCategories.length} items)');
+            AppLogger.info(
+              'Using cached event categories (${cachedCategories.length} items)',
+            );
             return cachedCategories;
           }
         }
@@ -500,16 +506,22 @@ class EventService {
         final data = response.data;
         if (data['data'] is List) {
           final categories = (data['data'] as List)
-              .map((categoryJson) => EventCategory.fromJson(categoryJson as Map<String, dynamic>))
+              .map(
+                (categoryJson) => EventCategory.fromJson(
+                  categoryJson as Map<String, dynamic>,
+                ),
+              )
               .toList();
 
           // Cache the fresh data
           await _eventsDb.cacheCategories(categories);
           AppLogger.info('Cached ${categories.length} event categories');
-          
+
           return categories;
         } else {
-          throw EventServiceException('Invalid response format for event categories');
+          throw EventServiceException(
+            'Invalid response format for event categories',
+          );
         }
       } else {
         final error = response.data;
@@ -525,7 +537,9 @@ class EventService {
       try {
         final cachedCategories = await _eventsDb.getCachedCategories();
         if (cachedCategories.isNotEmpty) {
-          AppLogger.info('Using stale cached categories as fallback (${cachedCategories.length} items)');
+          AppLogger.info(
+            'Using stale cached categories as fallback (${cachedCategories.length} items)',
+          );
           return cachedCategories;
         }
       } catch (cacheError) {

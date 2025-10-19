@@ -39,11 +39,7 @@ class StartConversationWidget extends StatelessWidget {
               CircleAvatar(
                 radius: 24,
                 backgroundColor: Colors.grey[300],
-                child: Icon(
-                  Icons.person,
-                  size: 24,
-                  color: Colors.grey[600],
-                ),
+                child: Icon(Icons.person, size: 24, color: Colors.grey[600]),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -53,24 +49,24 @@ class StartConversationWidget extends StatelessWidget {
                     Text(
                       'New Match!',
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: Colors.green,
-                          ),
+                        fontWeight: FontWeight.bold,
+                        color: Colors.green,
+                      ),
                     ),
                     Text(
                       'Start your conversation',
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: Colors.grey[600],
-                          ),
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
                     ),
                   ],
                 ),
               ),
             ],
           ),
-          
+
           const SizedBox(height: 16),
-          
+
           // Compatibility score
           if (match.compatibilityScore > 0)
             Container(
@@ -88,19 +84,19 @@ class StartConversationWidget extends StatelessWidget {
                 ),
               ),
             ),
-          
+
           const SizedBox(height: 16),
-          
+
           // Conversation starters
           Text(
             'Break the ice with:',
-            style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
           ),
-          
+
           const SizedBox(height: 12),
-          
+
           // Quick message options
           Wrap(
             spacing: 8,
@@ -112,9 +108,9 @@ class StartConversationWidget extends StatelessWidget {
               );
             }).toList(),
           ),
-          
+
           const SizedBox(height: 16),
-          
+
           // Custom message option
           ElevatedButton.icon(
             onPressed: () => _startCustomConversation(context),
@@ -145,10 +141,7 @@ class StartConversationWidget extends StatelessWidget {
   void _sendMessage(BuildContext context, String message) {
     // Create conversation and send first message
     context.read<MessagingBloc>().add(
-      StartConversation(
-        matchId: match.id,
-        initialMessage: message,
-      ),
+      StartConversation(matchId: match.id, initialMessage: message),
     );
   }
 
@@ -166,10 +159,7 @@ class StartConversationWidget extends StatelessWidget {
 }
 
 class _QuickMessageChip extends StatelessWidget {
-  const _QuickMessageChip({
-    required this.message,
-    required this.onTap,
-  });
+  const _QuickMessageChip({required this.message, required this.onTap});
 
   final String message;
   final VoidCallback onTap;
@@ -198,10 +188,7 @@ class _QuickMessageChip extends StatelessWidget {
 }
 
 class _CustomMessageSheet extends StatefulWidget {
-  const _CustomMessageSheet({
-    required this.match,
-    required this.onSend,
-  });
+  const _CustomMessageSheet({required this.match, required this.onSend});
 
   final MatchModel match;
   final Function(String message) onSend;
@@ -212,7 +199,7 @@ class _CustomMessageSheet extends StatefulWidget {
 
 class _CustomMessageSheetState extends State<_CustomMessageSheet> {
   final TextEditingController _controller = TextEditingController();
-  
+
   @override
   void dispose() {
     _controller.dispose();
@@ -248,18 +235,18 @@ class _CustomMessageSheetState extends State<_CustomMessageSheet> {
                 ),
               ),
             ),
-            
+
             const SizedBox(height: 16),
-            
+
             Text(
               'Write your message',
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
             ),
-            
+
             const SizedBox(height: 16),
-            
+
             Expanded(
               child: TextField(
                 controller: _controller,
@@ -275,9 +262,9 @@ class _CustomMessageSheetState extends State<_CustomMessageSheet> {
                 ),
               ),
             ),
-            
+
             const SizedBox(height: 16),
-            
+
             Row(
               children: [
                 Expanded(

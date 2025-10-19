@@ -17,10 +17,7 @@ class LoadNotifications extends NotificationEvent {
   final int page;
   final int limit;
 
-  const LoadNotifications({
-    this.page = 1,
-    this.limit = 20,
-  });
+  const LoadNotifications({this.page = 1, this.limit = 20});
 
   @override
   List<Object?> get props => [page, limit];
@@ -111,8 +108,8 @@ class NotificationBloc extends Bloc<NotificationEvent, NotificationState> {
   final Logger _logger = Logger();
 
   NotificationBloc({required NotificationRepository notificationRepository})
-      : _notificationRepository = notificationRepository,
-        super(const NotificationInitial()) {
+    : _notificationRepository = notificationRepository,
+      super(const NotificationInitial()) {
     on<LoadNotifications>(_onLoadNotifications);
     on<MarkNotificationAsRead>(_onMarkNotificationAsRead);
     on<MarkAllNotificationsAsRead>(_onMarkAllNotificationsAsRead);
@@ -127,23 +124,25 @@ class NotificationBloc extends Bloc<NotificationEvent, NotificationState> {
   ) async {
     try {
       emit(const NotificationLoading());
-      
+
       final notifications = await _notificationRepository.getNotifications(
         page: event.page,
         limit: event.limit,
       );
-      
+
       final unreadCount = await _notificationRepository.getUnreadCount();
-      
+
       // Check if there are more notifications available
       final hasMoreNotifications = notifications.length == event.limit;
-      
-      emit(NotificationsLoaded(
-        notifications: notifications,
-        hasMoreNotifications: hasMoreNotifications,
-        unreadCount: unreadCount,
-      ));
-      
+
+      emit(
+        NotificationsLoaded(
+          notifications: notifications,
+          hasMoreNotifications: hasMoreNotifications,
+          unreadCount: unreadCount,
+        ),
+      );
+
       _logger.d('Loaded ${notifications.length} notifications');
     } catch (e) {
       _logger.e('Error loading notifications: $e');
@@ -157,14 +156,16 @@ class NotificationBloc extends Bloc<NotificationEvent, NotificationState> {
   ) async {
     try {
       await _notificationRepository.markAsRead(event.notificationId);
-      
+
       // Refresh notifications to show updated state
       add(const RefreshNotifications());
-      
+
       _logger.d('Notification marked as read: ${event.notificationId}');
     } catch (e) {
       _logger.e('Error marking notification as read: $e');
-      emit(NotificationError(message: 'Failed to mark notification as read: $e'));
+      emit(
+        NotificationError(message: 'Failed to mark notification as read: $e'),
+      );
     }
   }
 
@@ -174,15 +175,23 @@ class NotificationBloc extends Bloc<NotificationEvent, NotificationState> {
   ) async {
     try {
       await _notificationRepository.markAllAsRead();
-      
+
       // Refresh notifications to show updated state
       add(const RefreshNotifications());
-      
-      emit(const NotificationActionSuccess(message: 'All notifications marked as read'));
+
+      emit(
+        const NotificationActionSuccess(
+          message: 'All notifications marked as read',
+        ),
+      );
       _logger.d('All notifications marked as read');
     } catch (e) {
       _logger.e('Error marking all notifications as read: $e');
-      emit(NotificationError(message: 'Failed to mark all notifications as read: $e'));
+      emit(
+        NotificationError(
+          message: 'Failed to mark all notifications as read: $e',
+        ),
+      );
     }
   }
 
@@ -192,10 +201,10 @@ class NotificationBloc extends Bloc<NotificationEvent, NotificationState> {
   ) async {
     try {
       await _notificationRepository.deleteNotification(event.notificationId);
-      
+
       // Refresh notifications to show updated state
       add(const RefreshNotifications());
-      
+
       _logger.d('Notification deleted: ${event.notificationId}');
     } catch (e) {
       _logger.e('Error deleting notification: $e');
@@ -209,11 +218,13 @@ class NotificationBloc extends Bloc<NotificationEvent, NotificationState> {
   ) async {
     try {
       await _notificationRepository.clearAllNotifications();
-      
+
       // Refresh notifications to show updated state
       add(const RefreshNotifications());
-      
-      emit(const NotificationActionSuccess(message: 'All notifications cleared'));
+
+      emit(
+        const NotificationActionSuccess(message: 'All notifications cleared'),
+      );
       _logger.d('All notifications cleared');
     } catch (e) {
       _logger.e('Error clearing all notifications: $e');

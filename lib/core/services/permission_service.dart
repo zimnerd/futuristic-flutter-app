@@ -4,7 +4,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:logger/logger.dart';
 
 /// Proactive permission management service for iOS and Android
-/// 
+///
 /// This service handles:
 /// - Checking permission status before requesting
 /// - Showing explanatory dialogs before permission prompts
@@ -23,8 +23,10 @@ class PermissionService {
       context: context,
       permission: Permission.camera,
       title: '📸 Camera Access Required',
-      message: 'Pulse needs access to your camera to make video calls and take photos.',
-      settingsMessage: 'Camera access is required for video calls.\n\nPlease enable it in Settings > Pulse > Camera',
+      message:
+          'Pulse needs access to your camera to make video calls and take photos.',
+      settingsMessage:
+          'Camera access is required for video calls.\n\nPlease enable it in Settings > Pulse > Camera',
     );
   }
 
@@ -34,8 +36,10 @@ class PermissionService {
       context: context,
       permission: Permission.microphone,
       title: '🎤 Microphone Access Required',
-      message: 'Pulse needs access to your microphone to make voice and video calls.',
-      settingsMessage: 'Microphone access is required for calls.\n\nPlease enable it in Settings > Pulse > Microphone',
+      message:
+          'Pulse needs access to your microphone to make voice and video calls.',
+      settingsMessage:
+          'Microphone access is required for calls.\n\nPlease enable it in Settings > Pulse > Microphone',
     );
   }
 
@@ -55,7 +59,8 @@ class PermissionService {
     final shouldRequest = await _showPermissionExplanationDialog(
       context: context,
       title: '📹 Video Call Permissions',
-      message: 'To make video calls, Pulse needs access to:\n\n• 📸 Camera - to show your video\n• 🎤 Microphone - to transmit your voice\n\nYou\'ll be asked to grant these permissions next.',
+      message:
+          'To make video calls, Pulse needs access to:\n\n• 📸 Camera - to show your video\n• 🎤 Microphone - to transmit your voice\n\nYou\'ll be asked to grant these permissions next.',
     );
 
     if (!shouldRequest) {
@@ -70,21 +75,23 @@ class PermissionService {
         await _showSettingsDialog(
           context: context,
           title: '📸 Camera Access Denied',
-          message: 'Camera access was previously denied.\n\nPlease enable it in Settings > Pulse > Camera',
+          message:
+              'Camera access was previously denied.\n\nPlease enable it in Settings > Pulse > Camera',
         );
         return false;
       }
-      
+
       final status = await Permission.camera.request();
       cameraGranted = status.isGranted;
-      
+
       if (!cameraGranted) {
         if (status.isPermanentlyDenied) {
           if (!context.mounted) return false;
           await _showSettingsDialog(
             context: context,
             title: '📸 Camera Access Denied',
-            message: 'Camera access is required for video calls.\n\nPlease enable it in Settings > Pulse > Camera',
+            message:
+                'Camera access is required for video calls.\n\nPlease enable it in Settings > Pulse > Camera',
           );
         }
         return false;
@@ -99,21 +106,23 @@ class PermissionService {
         await _showSettingsDialog(
           context: context,
           title: '🎤 Microphone Access Denied',
-          message: 'Microphone access was previously denied.\n\nPlease enable it in Settings > Pulse > Microphone',
+          message:
+              'Microphone access was previously denied.\n\nPlease enable it in Settings > Pulse > Microphone',
         );
         return false;
       }
-      
+
       final status = await Permission.microphone.request();
       micGranted = status.isGranted;
-      
+
       if (!micGranted) {
         if (status.isPermanentlyDenied) {
           if (!context.mounted) return false;
           await _showSettingsDialog(
             context: context,
             title: '🎤 Microphone Access Denied',
-            message: 'Microphone access is required for video calls.\n\nPlease enable it in Settings > Pulse > Microphone',
+            message:
+                'Microphone access is required for video calls.\n\nPlease enable it in Settings > Pulse > Microphone',
           );
         }
         return false;
@@ -130,7 +139,8 @@ class PermissionService {
       permission: Permission.microphone,
       title: '🎤 Microphone Access Required',
       message: 'To make voice calls, Pulse needs access to your microphone.',
-      settingsMessage: 'Microphone access is required for calls.\n\nPlease enable it in Settings > Pulse > Microphone',
+      settingsMessage:
+          'Microphone access is required for calls.\n\nPlease enable it in Settings > Pulse > Microphone',
     );
   }
 
@@ -140,8 +150,10 @@ class PermissionService {
       context: context,
       permission: Permission.photos,
       title: '📷 Photo Library Access',
-      message: 'Pulse needs access to your photo library to upload photos to your profile.',
-      settingsMessage: 'Photo library access is required.\n\nPlease enable it in Settings > Pulse > Photos',
+      message:
+          'Pulse needs access to your photo library to upload photos to your profile.',
+      settingsMessage:
+          'Photo library access is required.\n\nPlease enable it in Settings > Pulse > Photos',
     );
   }
 
@@ -241,7 +253,7 @@ class PermissionService {
     _logger.i(
       '📍 PermissionService: Starting permission request for $permission',
     );
-    
+
     // Check current status
     final status = await permission.status;
     _logger.i('📍 PermissionService: Current permission status: $status');
@@ -272,7 +284,7 @@ class PermissionService {
     }
 
     _logger.i('📍 PermissionService: Showing explanation dialog');
-    
+
     // Show explanation dialog before requesting
     if (!context.mounted) {
       _logger.w(
@@ -289,13 +301,13 @@ class PermissionService {
     _logger.i(
       '📍 PermissionService: User chose to request permission: $shouldRequest',
     );
-    
+
     if (!shouldRequest) {
       return false;
     }
 
     _logger.i('📍 PermissionService: Requesting system permission');
-    
+
     // Request the permission
     final newStatus = await permission.request();
     _logger.i('📍 PermissionService: New permission status: $newStatus');
@@ -352,16 +364,11 @@ class PermissionService {
           message,
           style: const TextStyle(fontSize: 16, color: Colors.black),
         ),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: const Text(
-              'Not Now',
-              style: TextStyle(color: Colors.grey),
-            ),
+            child: const Text('Not Now', style: TextStyle(color: Colors.grey)),
           ),
           ElevatedButton(
             onPressed: () => Navigator.of(dialogContext).pop(true),
@@ -403,16 +410,11 @@ class PermissionService {
           message,
           style: const TextStyle(fontSize: 16, color: Colors.black),
         ),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(),
-            child: const Text(
-              'Cancel',
-              style: TextStyle(color: Colors.grey),
-            ),
+            child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
           ),
           ElevatedButton(
             onPressed: () async {

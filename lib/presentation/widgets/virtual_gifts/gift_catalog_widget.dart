@@ -29,15 +29,15 @@ class _GiftCatalogWidgetState extends State<GiftCatalogWidget> {
   Widget build(BuildContext context) {
     final filteredGifts = _selectedCategory == null
         ? widget.gifts
-        : widget.gifts.where((gift) => gift.category == _selectedCategory).toList();
+        : widget.gifts
+              .where((gift) => gift.category == _selectedCategory)
+              .toList();
 
     return Column(
       children: [
         _buildHeader(),
         _buildCategoryFilter(),
-        Expanded(
-          child: _buildGiftGrid(filteredGifts),
-        ),
+        Expanded(child: _buildGiftGrid(filteredGifts)),
       ],
     );
   }
@@ -67,9 +67,9 @@ class _GiftCatalogWidgetState extends State<GiftCatalogWidget> {
                 ),
                 Text(
                   'Send meaningful gifts to your matches',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Colors.grey[600],
-                  ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
                 ),
               ],
             ),
@@ -96,10 +96,7 @@ class _GiftCatalogWidgetState extends State<GiftCatalogWidget> {
                 const SizedBox(width: 4),
                 Text(
                   'credits',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.amber[700],
-                  ),
+                  style: TextStyle(fontSize: 12, color: Colors.amber[700]),
                 ),
               ],
             ),
@@ -131,8 +128,10 @@ class _GiftCatalogWidgetState extends State<GiftCatalogWidget> {
         padding: const EdgeInsets.symmetric(horizontal: 16),
         children: [
           _buildCategoryChip('All', null),
-          ...GiftCategory.values.map((category) =>
-              _buildCategoryChip(_getCategoryName(category), category)),
+          ...GiftCategory.values.map(
+            (category) =>
+                _buildCategoryChip(_getCategoryName(category), category),
+          ),
         ],
       ),
     );
@@ -140,7 +139,7 @@ class _GiftCatalogWidgetState extends State<GiftCatalogWidget> {
 
   Widget _buildCategoryChip(String label, GiftCategory? category) {
     final isSelected = _selectedCategory == category;
-    
+
     return Container(
       margin: const EdgeInsets.only(right: 8),
       child: FilterChip(
@@ -176,16 +175,16 @@ class _GiftCatalogWidgetState extends State<GiftCatalogWidget> {
             const SizedBox(height: 16),
             Text(
               'No gifts in this category',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                color: Colors.grey[600],
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(color: Colors.grey[600]),
             ),
             const SizedBox(height: 8),
             Text(
               'Try selecting a different category',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Colors.grey[500],
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(color: Colors.grey[500]),
             ),
           ],
         ),
@@ -210,12 +209,10 @@ class _GiftCatalogWidgetState extends State<GiftCatalogWidget> {
 
   Widget _buildGiftCard(VirtualGift gift) {
     final canAfford = widget.userBalance >= gift.price;
-    
+
     return Card(
       elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: InkWell(
         onTap: canAfford ? () => widget.onGiftSelected(gift) : null,
         borderRadius: BorderRadius.circular(16),
@@ -256,7 +253,7 @@ class _GiftCatalogWidgetState extends State<GiftCatalogWidget> {
                     : _buildGiftIcon(gift),
               ),
             ),
-            
+
             // Gift Info
             Expanded(
               flex: 2,
@@ -276,9 +273,9 @@ class _GiftCatalogWidgetState extends State<GiftCatalogWidget> {
                     const SizedBox(height: 4),
                     Text(
                       gift.description,
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Colors.grey[600],
-                      ),
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -292,13 +289,13 @@ class _GiftCatalogWidgetState extends State<GiftCatalogWidget> {
                             vertical: 4,
                           ),
                           decoration: BoxDecoration(
-                            color: canAfford 
-                                ? Colors.green[50] 
+                            color: canAfford
+                                ? Colors.green[50]
                                 : Colors.red[50],
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
-                              color: canAfford 
-                                  ? Colors.green[300]! 
+                              color: canAfford
+                                  ? Colors.green[300]!
                                   : Colors.red[300]!,
                             ),
                           ),
@@ -308,8 +305,8 @@ class _GiftCatalogWidgetState extends State<GiftCatalogWidget> {
                               Icon(
                                 Icons.stars,
                                 size: 14,
-                                color: canAfford 
-                                    ? Colors.green[700] 
+                                color: canAfford
+                                    ? Colors.green[700]
                                     : Colors.red[700],
                               ),
                               const SizedBox(width: 2),
@@ -318,8 +315,8 @@ class _GiftCatalogWidgetState extends State<GiftCatalogWidget> {
                                 style: TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.bold,
-                                  color: canAfford 
-                                      ? Colors.green[700] 
+                                  color: canAfford
+                                      ? Colors.green[700]
                                       : Colors.red[700],
                                 ),
                               ),
@@ -327,11 +324,7 @@ class _GiftCatalogWidgetState extends State<GiftCatalogWidget> {
                           ),
                         ),
                         if (!canAfford)
-                          Icon(
-                            Icons.lock,
-                            size: 16,
-                            color: Colors.grey[400],
-                          ),
+                          Icon(Icons.lock, size: 16, color: Colors.grey[400]),
                       ],
                     ),
                   ],

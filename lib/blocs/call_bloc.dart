@@ -28,7 +28,12 @@ class InitiateCall extends CallEvent {
   });
 
   @override
-  List<Object?> get props => [receiverId, receiverName, receiverAvatar, callType];
+  List<Object?> get props => [
+    receiverId,
+    receiverName,
+    receiverAvatar,
+    callType,
+  ];
 }
 
 class AnswerCall extends CallEvent {
@@ -114,7 +119,13 @@ class CallInProgress extends CallState {
   });
 
   @override
-  List<Object?> get props => [call, isMuted, isVideoEnabled, isSpeakerOn, remoteUsers];
+  List<Object?> get props => [
+    call,
+    isMuted,
+    isVideoEnabled,
+    isSpeakerOn,
+    remoteUsers,
+  ];
 
   CallInProgress copyWith({
     CallModel? call,
@@ -161,9 +172,9 @@ class CallBloc extends Bloc<CallEvent, CallState> {
   CallBloc({
     required WebRTCService webRTCService,
     required WebSocketService webSocketService,
-  })  : _webRTCService = webRTCService,
-        _webSocketService = webSocketService,
-        super(const CallInitial()) {
+  }) : _webRTCService = webRTCService,
+       _webSocketService = webSocketService,
+       super(const CallInitial()) {
     on<InitiateCall>(_onInitiateCall);
     on<AnswerCall>(_onAnswerCall);
     on<EndCall>(_onEndCall);
@@ -188,25 +199,28 @@ class CallBloc extends Bloc<CallEvent, CallState> {
       // Generate unique channel name for this call
       final channelName = 'call_${DateTime.now().millisecondsSinceEpoch}';
       final token = ''; // Token will be provided by Agora when needed
-      final currentUserId = 'user_${DateTime.now().millisecondsSinceEpoch}'; // Generate unique ID
+      final currentUserId =
+          'user_${DateTime.now().millisecondsSinceEpoch}'; // Generate unique ID
       final currentUserName = 'Current User'; // Default name for now
 
-      emit(CallConnecting(
-        call: CallModel(
-          id: DateTime.now().millisecondsSinceEpoch.toString(),
-          callerId: currentUserId,
-          callerName: currentUserName,
-          receiverId: event.receiverId,
-          receiverName: event.receiverName,
-          receiverAvatar: event.receiverAvatar,
-          type: event.callType,
-          status: CallStatus.initiating,
-          channelName: channelName,
-          token: token,
-          createdAt: DateTime.now(),
-          updatedAt: DateTime.now(),
+      emit(
+        CallConnecting(
+          call: CallModel(
+            id: DateTime.now().millisecondsSinceEpoch.toString(),
+            callerId: currentUserId,
+            callerName: currentUserName,
+            receiverId: event.receiverId,
+            receiverName: event.receiverName,
+            receiverAvatar: event.receiverAvatar,
+            type: event.callType,
+            status: CallStatus.initiating,
+            channelName: channelName,
+            token: token,
+            createdAt: DateTime.now(),
+            updatedAt: DateTime.now(),
+          ),
         ),
-      ));
+      );
 
       await _webRTCService.startCall(
         receiverId: event.receiverId,
@@ -224,15 +238,12 @@ class CallBloc extends Bloc<CallEvent, CallState> {
     }
   }
 
-  Future<void> _onAnswerCall(
-    AnswerCall event,
-    Emitter<CallState> emit,
-  ) async {
+  Future<void> _onAnswerCall(AnswerCall event, Emitter<CallState> emit) async {
     try {
       if (state is! CallRinging) return;
 
       final call = (state as CallRinging).call;
-      
+
       // Use the token provided in the call model
       await _webRTCService.answerCall(
         channelName: call.channelName!,
@@ -246,10 +257,7 @@ class CallBloc extends Bloc<CallEvent, CallState> {
     }
   }
 
-  Future<void> _onEndCall(
-    EndCall event,
-    Emitter<CallState> emit,
-  ) async {
+  Future<void> _onEndCall(EndCall event, Emitter<CallState> emit) async {
     try {
       await _webRTCService.endCall();
       emit(const CallEnded());
@@ -274,10 +282,7 @@ class CallBloc extends Bloc<CallEvent, CallState> {
     }
   }
 
-  Future<void> _onToggleMute(
-    ToggleMute event,
-    Emitter<CallState> emit,
-  ) async {
+  Future<void> _onToggleMute(ToggleMute event, Emitter<CallState> emit) async {
     try {
       await _webRTCService.toggleMute();
       _logger.i('Toggled mute');

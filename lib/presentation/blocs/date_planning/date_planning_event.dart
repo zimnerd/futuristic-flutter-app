@@ -47,7 +47,15 @@ class CreateDatePlan extends DatePlanningEvent {
   });
 
   @override
-  List<Object?> get props => [title, description, scheduledDate, location, budget, activities, inviteeId];
+  List<Object?> get props => [
+    title,
+    description,
+    scheduledDate,
+    location,
+    budget,
+    activities,
+    inviteeId,
+  ];
 }
 
 /// Send date invitation
@@ -87,10 +95,7 @@ class UpdateDatePlan extends DatePlanningEvent {
   final String planId;
   final Map<String, dynamic> updates;
 
-  const UpdateDatePlan({
-    required this.planId,
-    required this.updates,
-  });
+  const UpdateDatePlan({required this.planId, required this.updates});
 
   @override
   List<Object> get props => [planId, updates];
@@ -101,10 +106,7 @@ class CancelDatePlan extends DatePlanningEvent {
   final String planId;
   final String? reason;
 
-  const CancelDatePlan({
-    required this.planId,
-    this.reason,
-  });
+  const CancelDatePlan({required this.planId, this.reason});
 
   @override
   List<Object?> get props => [planId, reason];
@@ -116,11 +118,7 @@ class LoadUserDatePlans extends DatePlanningEvent {
   final int page;
   final int limit;
 
-  const LoadUserDatePlans({
-    this.status,
-    this.page = 1,
-    this.limit = 20,
-  });
+  const LoadUserDatePlans({this.status, this.page = 1, this.limit = 20});
 
   @override
   List<Object?> get props => [status, page, limit];
@@ -132,11 +130,7 @@ class LoadDateInvitations extends DatePlanningEvent {
   final int page;
   final int limit;
 
-  const LoadDateInvitations({
-    this.status,
-    this.page = 1,
-    this.limit = 20,
-  });
+  const LoadDateInvitations({this.status, this.page = 1, this.limit = 20});
 
   @override
   List<Object?> get props => [status, page, limit];
@@ -183,10 +177,7 @@ class AddDateActivity extends DatePlanningEvent {
   final String planId;
   final Map<String, dynamic> activity;
 
-  const AddDateActivity({
-    required this.planId,
-    required this.activity,
-  });
+  const AddDateActivity({required this.planId, required this.activity});
 
   @override
   List<Object> get props => [planId, activity];
@@ -197,10 +188,7 @@ class RemoveDateActivity extends DatePlanningEvent {
   final String planId;
   final String activityId;
 
-  const RemoveDateActivity({
-    required this.planId,
-    required this.activityId,
-  });
+  const RemoveDateActivity({required this.planId, required this.activityId});
 
   @override
   List<Object> get props => [planId, activityId];

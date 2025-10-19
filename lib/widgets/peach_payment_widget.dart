@@ -31,7 +31,7 @@ class _PeachPaymentWidgetState extends State<PeachPaymentWidget> {
   bool _isProcessing = false;
   String? _error;
   String _selectedPaymentMethod = 'card';
-  
+
   // Card form controllers
   final _cardNumberController = TextEditingController();
   final _expiryController = TextEditingController();
@@ -58,7 +58,9 @@ class _PeachPaymentWidgetState extends State<PeachPaymentWidget> {
     try {
       // For now, simulate payment processing by checking status
       // In a real implementation, you would submit the payment data to PeachPayments
-      final result = await PaymentService.instance.checkPeachPaymentStatus(widget.checkoutId);
+      final result = await PaymentService.instance.checkPeachPaymentStatus(
+        widget.checkoutId,
+      );
       widget.onPaymentResult(result);
     } catch (e) {
       setState(() {
@@ -79,7 +81,8 @@ class _PeachPaymentWidgetState extends State<PeachPaymentWidget> {
       return false;
     }
 
-    if (_expiryController.text.length != 5 || !_expiryController.text.contains('/')) {
+    if (_expiryController.text.length != 5 ||
+        !_expiryController.text.contains('/')) {
       setState(() {
         _error = 'Please enter a valid expiry date (MM/YY)';
       });
@@ -130,28 +133,21 @@ class _PeachPaymentWidgetState extends State<PeachPaymentWidget> {
       appBar: AppBar(
         backgroundColor: AppColors.background,
         elevation: 0,
-        title: Text(
-          'Secure Payment',
-          style: AppTextStyles.headlineSmall,
-        ),
+        title: Text('Secure Payment', style: AppTextStyles.headlineSmall),
         leading: IconButton(
           icon: const Icon(Icons.close, color: AppColors.textPrimary),
           onPressed: widget.onCancel ?? () => Navigator.of(context).pop(),
         ),
       ),
       body: SafeArea(
-        child: _isProcessing
-          ? _buildLoadingState()
-          : _buildPaymentForm(),
+        child: _isProcessing ? _buildLoadingState() : _buildPaymentForm(),
       ),
     );
   }
 
   Widget _buildLoadingState() {
     return const Center(
-      child: CircularProgressIndicator(
-        color: AppColors.primary,
-      ),
+      child: CircularProgressIndicator(color: AppColors.primary),
     );
   }
 
@@ -167,14 +163,13 @@ class _PeachPaymentWidgetState extends State<PeachPaymentWidget> {
             decoration: BoxDecoration(
               color: AppColors.surface,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppColors.textSecondary.withValues(alpha: 0.3)),
+              border: Border.all(
+                color: AppColors.textSecondary.withValues(alpha: 0.3),
+              ),
             ),
             child: Column(
               children: [
-                Text(
-                  'Payment Summary',
-                  style: AppTextStyles.titleMedium,
-                ),
+                Text('Payment Summary', style: AppTextStyles.titleMedium),
                 const SizedBox(height: 16),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -197,24 +192,21 @@ class _PeachPaymentWidgetState extends State<PeachPaymentWidget> {
               ],
             ),
           ),
-          
+
           const SizedBox(height: 32),
-          
+
           // Payment method selection
-          Text(
-            'Payment Method',
-            style: AppTextStyles.titleMedium,
-          ),
+          Text('Payment Method', style: AppTextStyles.titleMedium),
           const SizedBox(height: 16),
-          
+
           _buildPaymentMethodSelector(),
-          
+
           const SizedBox(height: 32),
-          
+
           // Payment form based on selected method
           if (_selectedPaymentMethod == 'card') _buildCardForm(),
           if (_selectedPaymentMethod != 'card') _buildExternalPaymentInfo(),
-          
+
           if (_error != null) ...[
             const SizedBox(height: 16),
             Container(
@@ -240,17 +232,17 @@ class _PeachPaymentWidgetState extends State<PeachPaymentWidget> {
               ),
             ),
           ],
-          
+
           const SizedBox(height: 32),
-          
+
           AppButton(
             text: _isProcessing ? 'Processing...' : 'Pay Now',
             onPressed: _isProcessing ? null : _processPayment,
             isLoading: _isProcessing,
           ),
-          
+
           const SizedBox(height: 16),
-          
+
           // Security notice
           Container(
             padding: const EdgeInsets.all(16),
@@ -260,11 +252,7 @@ class _PeachPaymentWidgetState extends State<PeachPaymentWidget> {
             ),
             child: Row(
               children: [
-                Icon(
-                  Icons.security,
-                  color: AppColors.primary,
-                  size: 20,
-                ),
+                Icon(Icons.security, color: AppColors.primary, size: 20),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
@@ -285,9 +273,17 @@ class _PeachPaymentWidgetState extends State<PeachPaymentWidget> {
   Widget _buildPaymentMethodSelector() {
     final methods = [
       {'key': 'card', 'label': 'Credit/Debit Card', 'icon': Icons.credit_card},
-      {'key': 'paypal', 'label': 'PayPal', 'icon': Icons.account_balance_wallet},
+      {
+        'key': 'paypal',
+        'label': 'PayPal',
+        'icon': Icons.account_balance_wallet,
+      },
       {'key': 'applepay', 'label': 'Apple Pay', 'icon': Icons.phone_iphone},
-      {'key': 'googlepay', 'label': 'Google Pay', 'icon': Icons.account_balance_wallet},
+      {
+        'key': 'googlepay',
+        'label': 'Google Pay',
+        'icon': Icons.account_balance_wallet,
+      },
     ];
 
     return Column(
@@ -306,10 +302,14 @@ class _PeachPaymentWidgetState extends State<PeachPaymentWidget> {
             child: Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: isSelected ? AppColors.primary.withValues(alpha: 0.1) : AppColors.surface,
+                color: isSelected
+                    ? AppColors.primary.withValues(alpha: 0.1)
+                    : AppColors.surface,
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                  color: isSelected ? AppColors.primary : AppColors.textSecondary.withValues(alpha: 0.3),
+                  color: isSelected
+                      ? AppColors.primary
+                      : AppColors.textSecondary.withValues(alpha: 0.3),
                   width: isSelected ? 2 : 1,
                 ),
               ),
@@ -317,23 +317,26 @@ class _PeachPaymentWidgetState extends State<PeachPaymentWidget> {
                 children: [
                   Icon(
                     method['icon'] as IconData,
-                    color: isSelected ? AppColors.primary : AppColors.textSecondary,
+                    color: isSelected
+                        ? AppColors.primary
+                        : AppColors.textSecondary,
                   ),
                   const SizedBox(width: 16),
                   Expanded(
                     child: Text(
                       method['label'] as String,
                       style: AppTextStyles.bodyLarge.copyWith(
-                        color: isSelected ? AppColors.primary : AppColors.textPrimary,
-                        fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                        color: isSelected
+                            ? AppColors.primary
+                            : AppColors.textPrimary,
+                        fontWeight: isSelected
+                            ? FontWeight.w600
+                            : FontWeight.normal,
                       ),
                     ),
                   ),
                   if (isSelected)
-                    Icon(
-                      Icons.check_circle,
-                      color: AppColors.primary,
-                    ),
+                    Icon(Icons.check_circle, color: AppColors.primary),
                 ],
               ),
             ),
@@ -347,12 +350,9 @@ class _PeachPaymentWidgetState extends State<PeachPaymentWidget> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text(
-          'Card Details',
-          style: AppTextStyles.titleMedium,
-        ),
+        Text('Card Details', style: AppTextStyles.titleMedium),
         const SizedBox(height: 16),
-        
+
         AppTextField(
           label: 'Card Number',
           controller: _cardNumberController,
@@ -370,16 +370,16 @@ class _PeachPaymentWidgetState extends State<PeachPaymentWidget> {
             }),
           ],
         ),
-        
+
         const SizedBox(height: 16),
-        
+
         AppTextField(
           label: 'Cardholder Name',
           controller: _cardHolderController,
         ),
-        
+
         const SizedBox(height: 16),
-        
+
         Row(
           children: [
             Expanded(
@@ -401,9 +401,9 @@ class _PeachPaymentWidgetState extends State<PeachPaymentWidget> {
                 ],
               ),
             ),
-            
+
             const SizedBox(width: 16),
-            
+
             Expanded(
               child: AppTextField(
                 label: 'CVV',
@@ -425,10 +425,11 @@ class _PeachPaymentWidgetState extends State<PeachPaymentWidget> {
   Widget _buildExternalPaymentInfo() {
     String description = '';
     IconData icon = Icons.payment;
-    
+
     switch (_selectedPaymentMethod) {
       case 'paypal':
-        description = 'You will be redirected to PayPal to complete your payment securely.';
+        description =
+            'You will be redirected to PayPal to complete your payment securely.';
         icon = Icons.account_balance_wallet;
         break;
       case 'applepay':
@@ -440,21 +441,19 @@ class _PeachPaymentWidgetState extends State<PeachPaymentWidget> {
         icon = Icons.account_balance_wallet;
         break;
     }
-    
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.textSecondary.withValues(alpha: 0.3)),
+        border: Border.all(
+          color: AppColors.textSecondary.withValues(alpha: 0.3),
+        ),
       ),
       child: Column(
         children: [
-          Icon(
-            icon,
-            size: 48,
-            color: AppColors.primary,
-          ),
+          Icon(icon, size: 48, color: AppColors.primary),
           const SizedBox(height: 16),
           Text(
             description,

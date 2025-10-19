@@ -9,7 +9,8 @@ import '../models/message.dart';
 /// Service for messaging API integration with NestJS backend
 class MessagingApiService {
   static MessagingApiService? _instance;
-  static MessagingApiService get instance => _instance ??= MessagingApiService._();
+  static MessagingApiService get instance =>
+      _instance ??= MessagingApiService._();
   MessagingApiService._();
 
   io.Socket? _socket;
@@ -23,7 +24,7 @@ class MessagingApiService {
   /// Initialize WebSocket connection for real-time messaging
   Future<void> initializeSocket(String authToken) async {
     _authToken = authToken;
-    
+
     try {
       _socket = io.io(
         ApiConstants.websocketUrl,
@@ -35,7 +36,7 @@ class MessagingApiService {
       );
 
       _socket!.connect();
-      
+
       _socket!.onConnect((_) {
         AppLogger.info('Messaging WebSocket connected');
       });
@@ -47,7 +48,6 @@ class MessagingApiService {
       _socket!.onDisconnect((_) {
         AppLogger.info('Messaging WebSocket disconnected');
       });
-
     } catch (e) {
       AppLogger.error('Failed to initialize messaging socket: $e');
       rethrow;
@@ -60,14 +60,12 @@ class MessagingApiService {
     int limit = 20,
   }) async {
     try {
-      final queryParams = {
-        'page': page.toString(),
-        'limit': limit.toString(),
-      };
-      
+      final queryParams = {'page': page.toString(), 'limit': limit.toString()};
+
       final response = await http.get(
-        Uri.parse('${ApiConstants.baseUrl}/conversations')
-            .replace(queryParameters: queryParams),
+        Uri.parse(
+          '${ApiConstants.baseUrl}/conversations',
+        ).replace(queryParameters: queryParams),
         headers: {
           'Authorization': 'Bearer $_authToken',
           'Content-Type': 'application/json',
@@ -96,11 +94,11 @@ class MessagingApiService {
   }) async {
     try {
       final response = await http.get(
-        Uri.parse('${ApiConstants.baseUrl}/conversations/$conversationId/messages')
-            .replace(queryParameters: {
-          'page': page.toString(),
-          'limit': limit.toString(),
-        }),
+        Uri.parse(
+          '${ApiConstants.baseUrl}/conversations/$conversationId/messages',
+        ).replace(
+          queryParameters: {'page': page.toString(), 'limit': limit.toString()},
+        ),
         headers: {
           'Authorization': 'Bearer $_authToken',
           'Content-Type': 'application/json',
@@ -154,7 +152,9 @@ class MessagingApiService {
   }
 
   /// Listen for typing indicators
-  void listenForTyping(Function(String conversationId, String userId, bool isTyping) onTyping) {
+  void listenForTyping(
+    Function(String conversationId, String userId, bool isTyping) onTyping,
+  ) {
     _socket?.on('user_typing', (data) {
       try {
         onTyping(
@@ -207,13 +207,12 @@ class MessagingApiService {
   }
 
   /// Listen for message status updates (sent, delivered, read)
-  void listenForMessageStatus(Function(String messageId, String status) onStatusUpdate) {
+  void listenForMessageStatus(
+    Function(String messageId, String status) onStatusUpdate,
+  ) {
     _socket?.on('message_status', (data) {
       try {
-        onStatusUpdate(
-          data['messageId'] as String,
-          data['status'] as String,
-        );
+        onStatusUpdate(data['messageId'] as String, data['status'] as String);
       } catch (e) {
         AppLogger.error('Error parsing message status: $e');
       }
@@ -221,13 +220,12 @@ class MessagingApiService {
   }
 
   /// Listen for online/offline status of users
-  void listenForUserStatus(Function(String userId, bool isOnline) onStatusChange) {
+  void listenForUserStatus(
+    Function(String userId, bool isOnline) onStatusChange,
+  ) {
     _socket?.on('user_status', (data) {
       try {
-        onStatusChange(
-          data['userId'] as String,
-          data['isOnline'] as bool,
-        );
+        onStatusChange(data['userId'] as String, data['isOnline'] as bool);
       } catch (e) {
         AppLogger.error('Error parsing user status: $e');
       }

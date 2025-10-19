@@ -77,11 +77,7 @@ class ProfileAnalyticsIndicators extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            config.icon,
-            color: Colors.white,
-            size: compact ? 14 : 16,
-          ),
+          Icon(config.icon, color: Colors.white, size: compact ? 14 : 16),
           SizedBox(width: compact ? 4 : 6),
           Text(
             config.label,
@@ -120,11 +116,7 @@ class ProfileAnalyticsIndicators extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            Icons.star,
-            color: Colors.white,
-            size: compact ? 14 : 16,
-          ),
+          Icon(Icons.star, color: Colors.white, size: compact ? 14 : 16),
           SizedBox(width: compact ? 4 : 6),
           Text(
             'High Quality',
@@ -151,13 +143,19 @@ class ProfileAnalyticsIndicators extends StatelessWidget {
         return _EngagementLevelConfig(
           label: 'Popular',
           icon: Icons.trending_up,
-          colors: [PulseColors.secondary, PulseColors.secondary.withValues(alpha: 0.8)],
+          colors: [
+            PulseColors.secondary,
+            PulseColors.secondary.withValues(alpha: 0.8),
+          ],
         );
       case 'active':
         return _EngagementLevelConfig(
           label: 'Active',
           icon: Icons.bolt,
-          colors: [PulseColors.primary, PulseColors.primary.withValues(alpha: 0.8)],
+          colors: [
+            PulseColors.primary,
+            PulseColors.primary.withValues(alpha: 0.8),
+          ],
         );
       case 'growing':
         return _EngagementLevelConfig(

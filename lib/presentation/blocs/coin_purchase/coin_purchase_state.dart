@@ -42,7 +42,8 @@ class PaymentMethodsLoaded extends CoinPurchaseState {
   }) {
     return PaymentMethodsLoaded(
       paymentMethods: paymentMethods ?? this.paymentMethods,
-      selectedPaymentMethodId: selectedPaymentMethodId ?? this.selectedPaymentMethodId,
+      selectedPaymentMethodId:
+          selectedPaymentMethodId ?? this.selectedPaymentMethodId,
     );
   }
 }

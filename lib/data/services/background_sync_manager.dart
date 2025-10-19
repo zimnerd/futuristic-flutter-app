@@ -9,9 +9,10 @@ import 'message_database_service.dart';
 /// Manages the lifecycle of background synchronization services
 /// Integrates with the app lifecycle to start/stop sync appropriately
 class BackgroundSyncManager extends WidgetsBindingObserver {
-  static final BackgroundSyncManager _instance = BackgroundSyncManager._internal();
+  static final BackgroundSyncManager _instance =
+      BackgroundSyncManager._internal();
   static BackgroundSyncManager get instance => _instance;
-  
+
   BackgroundSyncManager._internal();
 
   final Logger _logger = Logger();
@@ -30,22 +31,26 @@ class BackgroundSyncManager extends WidgetsBindingObserver {
 
     try {
       _logger.d('Initializing BackgroundSyncManager...');
-      
+
       // Create and initialize the sync service
       _syncService = BackgroundSyncService(
         chatRepository: chatRepository,
         databaseService: databaseService,
       );
-      
+
       await _syncService!.initialize();
-      
+
       // Register as app lifecycle observer
       WidgetsBinding.instance.addObserver(this);
-      
+
       _isInitialized = true;
       _logger.i('✅ BackgroundSyncManager initialized successfully');
     } catch (e, stackTrace) {
-      _logger.e('❌ Failed to initialize BackgroundSyncManager', error: e, stackTrace: stackTrace);
+      _logger.e(
+        '❌ Failed to initialize BackgroundSyncManager',
+        error: e,
+        stackTrace: stackTrace,
+      );
       rethrow;
     }
   }
@@ -56,18 +61,22 @@ class BackgroundSyncManager extends WidgetsBindingObserver {
 
     try {
       _logger.d('Disposing BackgroundSyncManager...');
-      
+
       // Remove app lifecycle observer
       WidgetsBinding.instance.removeObserver(this);
-      
+
       // Dispose sync service
       _syncService?.dispose();
       _syncService = null;
-      
+
       _isInitialized = false;
       _logger.i('✅ BackgroundSyncManager disposed successfully');
     } catch (e, stackTrace) {
-      _logger.e('❌ Failed to dispose BackgroundSyncManager', error: e, stackTrace: stackTrace);
+      _logger.e(
+        '❌ Failed to dispose BackgroundSyncManager',
+        error: e,
+        stackTrace: stackTrace,
+      );
     }
   }
 
@@ -85,7 +94,11 @@ class BackgroundSyncManager extends WidgetsBindingObserver {
       await _syncService!.syncNow();
       _logger.d('Background sync triggered on app resume');
     } catch (e, stackTrace) {
-      _logger.e('Failed to trigger sync on resume', error: e, stackTrace: stackTrace);
+      _logger.e(
+        'Failed to trigger sync on resume',
+        error: e,
+        stackTrace: stackTrace,
+      );
     }
   }
 
@@ -101,7 +114,11 @@ class BackgroundSyncManager extends WidgetsBindingObserver {
       // We could implement pause/resume logic if needed
       _logger.d('App going to background - sync will continue via timers');
     } catch (e, stackTrace) {
-      _logger.e('Failed to handle background transition', error: e, stackTrace: stackTrace);
+      _logger.e(
+        'Failed to handle background transition',
+        error: e,
+        stackTrace: stackTrace,
+      );
     }
   }
 
@@ -124,11 +141,7 @@ class BackgroundSyncManager extends WidgetsBindingObserver {
   /// Get sync status information
   Future<Map<String, dynamic>> getSyncStatus() async {
     if (!_isInitialized || _syncService == null) {
-      return {
-        'isInitialized': false,
-        'isRunning': false,
-        'lastSyncTime': null,
-      };
+      return {'isInitialized': false, 'isRunning': false, 'lastSyncTime': null};
     }
 
     return await _syncService!.getSyncStatus();
@@ -138,9 +151,9 @@ class BackgroundSyncManager extends WidgetsBindingObserver {
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
-    
+
     _logger.d('App lifecycle changed to: $state');
-    
+
     switch (state) {
       case AppLifecycleState.resumed:
         // App is active, start sync
@@ -190,7 +203,8 @@ class _BackgroundSyncProvider extends StatefulWidget {
   });
 
   @override
-  State<_BackgroundSyncProvider> createState() => _BackgroundSyncProviderState();
+  State<_BackgroundSyncProvider> createState() =>
+      _BackgroundSyncProviderState();
 }
 
 class _BackgroundSyncProviderState extends State<_BackgroundSyncProvider> {
@@ -209,7 +223,11 @@ class _BackgroundSyncProviderState extends State<_BackgroundSyncProvider> {
         databaseService: widget.databaseService,
       );
     } catch (e, stackTrace) {
-      _logger.e('Failed to initialize background sync', error: e, stackTrace: stackTrace);
+      _logger.e(
+        'Failed to initialize background sync',
+        error: e,
+        stackTrace: stackTrace,
+      );
     }
   }
 

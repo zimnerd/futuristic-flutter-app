@@ -31,19 +31,23 @@ class VirtualGiftBloc extends Bloc<VirtualGiftEvent, VirtualGiftState> {
 
       final gifts = await _giftService.getAvailableGifts();
 
-      emit(state.copyWith(
-        status: VirtualGiftStatus.loaded,
-        catalog: gifts,
-        filteredCatalog: gifts,
-      ));
+      emit(
+        state.copyWith(
+          status: VirtualGiftStatus.loaded,
+          catalog: gifts,
+          filteredCatalog: gifts,
+        ),
+      );
 
       _logger.d('Loaded ${gifts.length} gifts from catalog');
     } catch (e) {
       _logger.e('Error loading gift catalog: $e');
-      emit(state.copyWith(
-        status: VirtualGiftStatus.error,
-        errorMessage: 'Failed to load gift catalog: $e',
-      ));
+      emit(
+        state.copyWith(
+          status: VirtualGiftStatus.error,
+          errorMessage: 'Failed to load gift catalog: $e',
+        ),
+      );
     }
   }
 
@@ -64,25 +68,31 @@ class VirtualGiftBloc extends Bloc<VirtualGiftEvent, VirtualGiftState> {
         // Update sent gifts list
         final updatedSentGifts = [transaction, ...state.sentGifts];
 
-        emit(state.copyWith(
-          status: VirtualGiftStatus.sent,
-          sentGifts: updatedSentGifts,
-          lastSentGift: transaction,
-        ));
+        emit(
+          state.copyWith(
+            status: VirtualGiftStatus.sent,
+            sentGifts: updatedSentGifts,
+            lastSentGift: transaction,
+          ),
+        );
 
         _logger.d('Gift sent successfully: ${transaction.id}');
       } else {
-        emit(state.copyWith(
-          status: VirtualGiftStatus.error,
-          errorMessage: 'Failed to send gift',
-        ));
+        emit(
+          state.copyWith(
+            status: VirtualGiftStatus.error,
+            errorMessage: 'Failed to send gift',
+          ),
+        );
       }
     } catch (e) {
       _logger.e('Error sending gift: $e');
-      emit(state.copyWith(
-        status: VirtualGiftStatus.error,
-        errorMessage: 'Failed to send gift: $e',
-      ));
+      emit(
+        state.copyWith(
+          status: VirtualGiftStatus.error,
+          errorMessage: 'Failed to send gift: $e',
+        ),
+      );
     }
   }
 
@@ -99,22 +109,21 @@ class VirtualGiftBloc extends Bloc<VirtualGiftEvent, VirtualGiftState> {
       );
 
       // If this is page 1, replace the list; otherwise, append
-      final updatedGifts = event.page == 1 
-          ? gifts 
+      final updatedGifts = event.page == 1
+          ? gifts
           : [...state.receivedGifts, ...gifts];
 
-      emit(state.copyWith(
-        receivedGifts: updatedGifts,
-        isLoading: false,
-      ));
+      emit(state.copyWith(receivedGifts: updatedGifts, isLoading: false));
 
       _logger.d('Loaded ${gifts.length} received gifts');
     } catch (e) {
       _logger.e('Error loading received gifts: $e');
-      emit(state.copyWith(
-        isLoading: false,
-        errorMessage: 'Failed to load received gifts: $e',
-      ));
+      emit(
+        state.copyWith(
+          isLoading: false,
+          errorMessage: 'Failed to load received gifts: $e',
+        ),
+      );
     }
   }
 
@@ -131,22 +140,21 @@ class VirtualGiftBloc extends Bloc<VirtualGiftEvent, VirtualGiftState> {
       );
 
       // If this is page 1, replace the list; otherwise, append
-      final updatedGifts = event.page == 1 
-          ? gifts 
+      final updatedGifts = event.page == 1
+          ? gifts
           : [...state.sentGifts, ...gifts];
 
-      emit(state.copyWith(
-        sentGifts: updatedGifts,
-        isLoading: false,
-      ));
+      emit(state.copyWith(sentGifts: updatedGifts, isLoading: false));
 
       _logger.d('Loaded ${gifts.length} sent gifts');
     } catch (e) {
       _logger.e('Error loading sent gifts: $e');
-      emit(state.copyWith(
-        isLoading: false,
-        errorMessage: 'Failed to load sent gifts: $e',
-      ));
+      emit(
+        state.copyWith(
+          isLoading: false,
+          errorMessage: 'Failed to load sent gifts: $e',
+        ),
+      );
     }
   }
 
@@ -161,45 +169,60 @@ class VirtualGiftBloc extends Bloc<VirtualGiftEvent, VirtualGiftState> {
 
       // Apply category filter
       if (event.category != null && event.category!.isNotEmpty) {
-        filtered = filtered.where((gift) => 
-          gift.category.name.toLowerCase() == event.category!.toLowerCase()
-        ).toList();
+        filtered = filtered
+            .where(
+              (gift) =>
+                  gift.category.name.toLowerCase() ==
+                  event.category!.toLowerCase(),
+            )
+            .toList();
       }
 
       // Apply search query filter
       if (event.searchQuery != null && event.searchQuery!.isNotEmpty) {
         final query = event.searchQuery!.toLowerCase();
-        filtered = filtered.where((gift) => 
-          gift.name.toLowerCase().contains(query) ||
-          gift.description.toLowerCase().contains(query)
-        ).toList();
+        filtered = filtered
+            .where(
+              (gift) =>
+                  gift.name.toLowerCase().contains(query) ||
+                  gift.description.toLowerCase().contains(query),
+            )
+            .toList();
       }
 
       // Apply price range filter
       if (event.priceRange != null && event.priceRange!.isNotEmpty) {
         final priceFilter = _parsePriceRange(event.priceRange!);
         if (priceFilter != null) {
-          filtered = filtered.where((gift) => 
-            gift.price >= priceFilter.min && gift.price <= priceFilter.max
-          ).toList();
+          filtered = filtered
+              .where(
+                (gift) =>
+                    gift.price >= priceFilter.min &&
+                    gift.price <= priceFilter.max,
+              )
+              .toList();
         }
       }
 
-      emit(state.copyWith(
-        status: VirtualGiftStatus.filtered,
-        filteredCatalog: filtered,
-        selectedCategory: event.category,
-        searchQuery: event.searchQuery,
-        priceRange: event.priceRange,
-      ));
+      emit(
+        state.copyWith(
+          status: VirtualGiftStatus.filtered,
+          filteredCatalog: filtered,
+          selectedCategory: event.category,
+          searchQuery: event.searchQuery,
+          priceRange: event.priceRange,
+        ),
+      );
 
       _logger.d('Filtered gifts: ${filtered.length} results');
     } catch (e) {
       _logger.e('Error filtering gifts: $e');
-      emit(state.copyWith(
-        status: VirtualGiftStatus.error,
-        errorMessage: 'Failed to filter gifts: $e',
-      ));
+      emit(
+        state.copyWith(
+          status: VirtualGiftStatus.error,
+          errorMessage: 'Failed to filter gifts: $e',
+        ),
+      );
     }
   }
 
@@ -212,18 +235,22 @@ class VirtualGiftBloc extends Bloc<VirtualGiftEvent, VirtualGiftState> {
 
       // Note: Service doesn't have createCustomGift method, so we'll simulate it
       _logger.d('Custom gift creation request: ${event.name}');
-      
+
       // For now, just log the request since the service doesn't support it
-      emit(state.copyWith(
-        status: VirtualGiftStatus.error,
-        errorMessage: 'Custom gift creation not yet implemented',
-      ));
+      emit(
+        state.copyWith(
+          status: VirtualGiftStatus.error,
+          errorMessage: 'Custom gift creation not yet implemented',
+        ),
+      );
     } catch (e) {
       _logger.e('Error creating custom gift: $e');
-      emit(state.copyWith(
-        status: VirtualGiftStatus.error,
-        errorMessage: 'Failed to create custom gift: $e',
-      ));
+      emit(
+        state.copyWith(
+          status: VirtualGiftStatus.error,
+          errorMessage: 'Failed to create custom gift: $e',
+        ),
+      );
     }
   }
 
@@ -240,20 +267,24 @@ class VirtualGiftBloc extends Bloc<VirtualGiftEvent, VirtualGiftState> {
         _giftService.getUserGiftStats(),
       ]);
 
-      emit(state.copyWith(
-        receivedGifts: receivedGifts as List<GiftTransaction>,
-        sentGifts: sentGifts as List<GiftTransaction>,
-        userStats: userStats as UserGiftStats?,
-        isLoading: false,
-      ));
+      emit(
+        state.copyWith(
+          receivedGifts: receivedGifts as List<GiftTransaction>,
+          sentGifts: sentGifts as List<GiftTransaction>,
+          userStats: userStats as UserGiftStats?,
+          isLoading: false,
+        ),
+      );
 
       _logger.d('Loaded gift history and user stats');
     } catch (e) {
       _logger.e('Error loading gift history: $e');
-      emit(state.copyWith(
-        isLoading: false,
-        errorMessage: 'Failed to load gift history: $e',
-      ));
+      emit(
+        state.copyWith(
+          isLoading: false,
+          errorMessage: 'Failed to load gift history: $e',
+        ),
+      );
     }
   }
 
@@ -263,11 +294,13 @@ class VirtualGiftBloc extends Bloc<VirtualGiftEvent, VirtualGiftState> {
   ) async {
     try {
       // For now, just log the reaction since the service doesn't have this method
-      _logger.d('Reacting to gift ${event.giftTransactionId} with ${event.reaction}');
-      
+      _logger.d(
+        'Reacting to gift ${event.giftTransactionId} with ${event.reaction}',
+      );
+
       // In a real implementation, you would call:
       // await _giftService.reactToGift(event.giftTransactionId, event.reaction);
-      
+
       // Update local state optimistically
       final updatedReceivedGifts = state.receivedGifts.map((gift) {
         if (gift.id == event.giftTransactionId) {
@@ -280,9 +313,7 @@ class VirtualGiftBloc extends Bloc<VirtualGiftEvent, VirtualGiftState> {
       emit(state.copyWith(receivedGifts: updatedReceivedGifts));
     } catch (e) {
       _logger.e('Error reacting to gift: $e');
-      emit(state.copyWith(
-        errorMessage: 'Failed to react to gift: $e',
-      ));
+      emit(state.copyWith(errorMessage: 'Failed to react to gift: $e'));
     }
   }
 
@@ -293,14 +324,12 @@ class VirtualGiftBloc extends Bloc<VirtualGiftEvent, VirtualGiftState> {
     try {
       // Since the service doesn't have getGiftCategories, we'll use the enum values
       final categories = GiftCategory.values.map((e) => e.name).toList();
-      
+
       emit(state.copyWith(categories: categories));
       _logger.d('Loaded ${categories.length} gift categories');
     } catch (e) {
       _logger.e('Error loading gift categories: $e');
-      emit(state.copyWith(
-        errorMessage: 'Failed to load gift categories: $e',
-      ));
+      emit(state.copyWith(errorMessage: 'Failed to load gift categories: $e'));
     }
   }
 
@@ -315,9 +344,7 @@ class VirtualGiftBloc extends Bloc<VirtualGiftEvent, VirtualGiftState> {
       add(const LoadGiftHistory());
     } catch (e) {
       _logger.e('Error refreshing gifts: $e');
-      emit(state.copyWith(
-        errorMessage: 'Failed to refresh gifts: $e',
-      ));
+      emit(state.copyWith(errorMessage: 'Failed to refresh gifts: $e'));
     }
   }
 

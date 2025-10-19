@@ -113,10 +113,7 @@ class SettingsScreen extends StatelessWidget {
             title: 'Help & Support',
             subtitle: 'FAQs and contact support',
             onTap: () {
-              PulseToast.info(
-                context,
-                message: 'Help & Support coming soon!',
-              );
+              PulseToast.info(context, message: 'Help & Support coming soon!');
             },
           ),
           _buildSettingsTile(
@@ -138,10 +135,7 @@ class SettingsScreen extends StatelessWidget {
             title: 'Terms & Privacy',
             subtitle: 'Legal information',
             onTap: () {
-              PulseToast.info(
-                context,
-                message: 'Terms & Privacy coming soon!',
-              );
+              PulseToast.info(context, message: 'Terms & Privacy coming soon!');
             },
           ),
           const SizedBox(height: PulseSpacing.xl),
@@ -339,13 +333,14 @@ class SettingsScreen extends StatelessWidget {
                       onPressed: () {
                         Navigator.pop(context);
                         // In real implementation, call AuthBloc to delete account
-                        context.read<AuthBloc>().add(const AuthSignOutRequested());
-                        PulseToast.success(
-                          context,
-                          message: 'Account deleted',
+                        context.read<AuthBloc>().add(
+                          const AuthSignOutRequested(),
                         );
+                        PulseToast.success(context, message: 'Account deleted');
                       },
-                      style: TextButton.styleFrom(foregroundColor: PulseColors.error),
+                      style: TextButton.styleFrom(
+                        foregroundColor: PulseColors.error,
+                      ),
                       child: const Text('DELETE ACCOUNT'),
                     ),
                   ],
@@ -383,7 +378,9 @@ class SettingsScreen extends StatelessWidget {
         debugPrint(
           '🔧 SettingsScreen: Location permissions granted, starting tracking...',
         );
-        await locationTracker.initializeWithDialogs(context); // ignore: use_build_context_synchronously
+        await locationTracker.initializeWithDialogs(
+          context,
+        ); // ignore: use_build_context_synchronously
         if (context.mounted) {
           PulseToast.success(
             context,

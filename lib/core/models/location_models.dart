@@ -5,10 +5,7 @@ class LocationCoordinates extends Equatable {
   final double latitude;
   final double longitude;
 
-  const LocationCoordinates({
-    required this.latitude,
-    required this.longitude,
-  });
+  const LocationCoordinates({required this.latitude, required this.longitude});
 
   @override
   List<Object> get props => [latitude, longitude];
@@ -51,24 +48,15 @@ class LocationUpdateRequest {
   };
 
   @override
-  String toString() => 'LocationUpdateRequest(lat: $latitude, lng: $longitude, accuracy: $accuracy)';
+  String toString() =>
+      'LocationUpdateRequest(lat: $latitude, lng: $longitude, accuracy: $accuracy)';
 }
 
 /// Location accuracy levels
-enum LocationAccuracyLevel {
-  low,
-  medium,
-  high,
-  best,
-}
+enum LocationAccuracyLevel { low, medium, high, best }
 
 /// Location permission status
-enum LocationPermissionStatus {
-  granted,
-  denied,
-  permanentlyDenied,
-  unknown,
-}
+enum LocationPermissionStatus { granted, denied, permanentlyDenied, unknown }
 
 /// Location bounds for area filtering
 class LocationBounds extends Equatable {
@@ -85,7 +73,12 @@ class LocationBounds extends Equatable {
   });
 
   @override
-  List<Object> get props => [northLatitude, southLatitude, eastLongitude, westLongitude];
+  List<Object> get props => [
+    northLatitude,
+    southLatitude,
+    eastLongitude,
+    westLongitude,
+  ];
 
   Map<String, dynamic> toJson() => {
     'northLatitude': northLatitude,
@@ -106,13 +99,14 @@ class LocationBounds extends Equatable {
   /// Check if coordinates are within bounds
   bool contains(LocationCoordinates coordinates) {
     return coordinates.latitude >= southLatitude &&
-           coordinates.latitude <= northLatitude &&
-           coordinates.longitude >= westLongitude &&
-           coordinates.longitude <= eastLongitude;
+        coordinates.latitude <= northLatitude &&
+        coordinates.longitude >= westLongitude &&
+        coordinates.longitude <= eastLongitude;
   }
 
   @override
-  String toString() => 'LocationBounds(N:$northLatitude, S:$southLatitude, E:$eastLongitude, W:$westLongitude)';
+  String toString() =>
+      'LocationBounds(N:$northLatitude, S:$southLatitude, E:$eastLongitude, W:$westLongitude)';
 }
 
 /// User location with metadata
@@ -132,7 +126,13 @@ class UserLocation extends Equatable {
   });
 
   @override
-  List<Object?> get props => [userId, coordinates, lastUpdated, accuracy, isOnline];
+  List<Object?> get props => [
+    userId,
+    coordinates,
+    lastUpdated,
+    accuracy,
+    isOnline,
+  ];
 
   Map<String, dynamic> toJson() => {
     'userId': userId,
@@ -145,13 +145,18 @@ class UserLocation extends Equatable {
   factory UserLocation.fromJson(Map<String, dynamic> json) {
     return UserLocation(
       userId: json['userId'] as String,
-      coordinates: LocationCoordinates.fromJson(json['coordinates'] as Map<String, dynamic>),
+      coordinates: LocationCoordinates.fromJson(
+        json['coordinates'] as Map<String, dynamic>,
+      ),
       lastUpdated: DateTime.parse(json['lastUpdated'] as String),
-      accuracy: json['accuracy'] != null ? (json['accuracy'] as num).toDouble() : null,
+      accuracy: json['accuracy'] != null
+          ? (json['accuracy'] as num).toDouble()
+          : null,
       isOnline: json['isOnline'] as bool? ?? false,
     );
   }
 
   @override
-  String toString() => 'UserLocation(userId: $userId, coordinates: $coordinates, lastUpdated: $lastUpdated)';
+  String toString() =>
+      'UserLocation(userId: $userId, coordinates: $coordinates, lastUpdated: $lastUpdated)';
 }

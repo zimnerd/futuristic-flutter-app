@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../core/services/network_quality_service.dart';
 
 /// Detailed network statistics overlay modal
-/// 
+///
 /// Bottom sheet modal showing comprehensive network quality metrics.
 /// Features:
 /// - Real-time metric updates
@@ -54,10 +54,7 @@ class NetworkStatsOverlay extends StatelessWidget {
           Expanded(
             child: Text(
               label,
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey.shade700,
-              ),
+              style: TextStyle(fontSize: 14, color: Colors.grey.shade700),
             ),
           ),
           Text(
@@ -128,10 +125,7 @@ class NetworkStatsOverlay extends StatelessWidget {
               children: [
                 const Text(
                   'Network Statistics',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 ),
                 IconButton(
                   icon: const Icon(Icons.close),
@@ -208,13 +202,17 @@ class NetworkStatsOverlay extends StatelessWidget {
                             label: 'Transmit Quality',
                             value: '${metrics.txQuality}/5',
                             icon: Icons.arrow_upward,
-                            valueColor: metrics.txQuality >= 4 ? Colors.green : Colors.orange,
+                            valueColor: metrics.txQuality >= 4
+                                ? Colors.green
+                                : Colors.orange,
                           ),
                           _buildMetricRow(
                             label: 'Receive Quality',
                             value: '${metrics.rxQuality}/5',
                             icon: Icons.arrow_downward,
-                            valueColor: metrics.rxQuality >= 4 ? Colors.green : Colors.orange,
+                            valueColor: metrics.rxQuality >= 4
+                                ? Colors.green
+                                : Colors.orange,
                           ),
                         ],
                       ),
@@ -227,19 +225,25 @@ class NetworkStatsOverlay extends StatelessWidget {
                             label: 'Latency (RTT)',
                             value: '${metrics.rtt} ms',
                             icon: Icons.access_time,
-                            valueColor: metrics.rtt < 100 ? Colors.green : Colors.orange,
+                            valueColor: metrics.rtt < 100
+                                ? Colors.green
+                                : Colors.orange,
                           ),
                           _buildMetricRow(
                             label: 'Jitter',
                             value: '${metrics.jitter} ms',
                             icon: Icons.show_chart,
-                            valueColor: metrics.jitter < 30 ? Colors.green : Colors.orange,
+                            valueColor: metrics.jitter < 30
+                                ? Colors.green
+                                : Colors.orange,
                           ),
                           _buildMetricRow(
                             label: 'Packet Loss',
                             value: '${metrics.packetLossRate}%',
                             icon: Icons.warning_amber,
-                            valueColor: metrics.packetLossRate < 5 ? Colors.green : Colors.red,
+                            valueColor: metrics.packetLossRate < 5
+                                ? Colors.green
+                                : Colors.red,
                           ),
                         ],
                       ),
@@ -250,19 +254,22 @@ class NetworkStatsOverlay extends StatelessWidget {
                         children: [
                           _buildMetricRow(
                             label: 'Upload',
-                            value: '${(metrics.uplinkBandwidth / 1000).toStringAsFixed(1)} Mbps',
+                            value:
+                                '${(metrics.uplinkBandwidth / 1000).toStringAsFixed(1)} Mbps',
                             icon: Icons.upload,
                           ),
                           _buildMetricRow(
                             label: 'Download',
-                            value: '${(metrics.downlinkBandwidth / 1000).toStringAsFixed(1)} Mbps',
+                            value:
+                                '${(metrics.downlinkBandwidth / 1000).toStringAsFixed(1)} Mbps',
                             icon: Icons.download,
                           ),
                         ],
                       ),
 
                       // System Resources (if available)
-                      if (metrics.cpuUsage != null || metrics.memoryUsage != null)
+                      if (metrics.cpuUsage != null ||
+                          metrics.memoryUsage != null)
                         _buildSection(
                           title: 'System Resources',
                           children: [
@@ -271,20 +278,25 @@ class NetworkStatsOverlay extends StatelessWidget {
                                 label: 'CPU Usage',
                                 value: '${metrics.cpuUsage}%',
                                 icon: Icons.memory,
-                                valueColor: (metrics.cpuUsage ?? 0) < 70 ? Colors.green : Colors.orange,
+                                valueColor: (metrics.cpuUsage ?? 0) < 70
+                                    ? Colors.green
+                                    : Colors.orange,
                               ),
                             if (metrics.memoryUsage != null)
                               _buildMetricRow(
                                 label: 'Memory Usage',
                                 value: '${metrics.memoryUsage}%',
                                 icon: Icons.storage,
-                                valueColor: (metrics.memoryUsage ?? 0) < 80 ? Colors.green : Colors.orange,
+                                valueColor: (metrics.memoryUsage ?? 0) < 80
+                                    ? Colors.green
+                                    : Colors.orange,
                               ),
                           ],
                         ),
 
                       // Video Stats (if available)
-                      if (metrics.videoDelay != null || metrics.videoBitrate != null)
+                      if (metrics.videoDelay != null ||
+                          metrics.videoBitrate != null)
                         _buildSection(
                           title: 'Video Statistics',
                           children: [
@@ -297,7 +309,8 @@ class NetworkStatsOverlay extends StatelessWidget {
                             if (metrics.videoBitrate != null)
                               _buildMetricRow(
                                 label: 'Video Bitrate',
-                                value: '${(metrics.videoBitrate! / 1000).toStringAsFixed(1)} Mbps',
+                                value:
+                                    '${(metrics.videoBitrate! / 1000).toStringAsFixed(1)} Mbps',
                                 icon: Icons.video_settings,
                               ),
                           ],

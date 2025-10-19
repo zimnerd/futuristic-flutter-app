@@ -11,10 +11,9 @@ part 'matching_state.dart';
 class MatchingBloc extends Bloc<MatchingEvent, MatchingState> {
   final MatchingService _matchingService;
 
-  MatchingBloc({
-    required MatchingService matchingService,
-  })  : _matchingService = matchingService,
-        super(const MatchingState()) {
+  MatchingBloc({required MatchingService matchingService})
+    : _matchingService = matchingService,
+      super(const MatchingState()) {
     on<LoadPotentialMatches>(_onLoadPotentialMatches);
     on<SwipeProfile>(_onSwipeProfile);
     on<UndoLastSwipe>(_onUndoLastSwipe);
@@ -39,34 +38,41 @@ class MatchingBloc extends Bloc<MatchingEvent, MatchingState> {
           'minAge': state.filters.minAge,
           'maxAge': state.filters.maxAge,
           'maxDistance': state.filters.maxDistance,
-          if (state.filters.showMeGender != null) 'showMeGender': state.filters.showMeGender,
+          if (state.filters.showMeGender != null)
+            'showMeGender': state.filters.showMeGender,
           'verifiedOnly': state.filters.verifiedOnly,
           'hasPhotos': state.filters.hasPhotos,
         },
       );
 
       if (profiles.isEmpty && state.profiles.isEmpty) {
-        emit(state.copyWith(
-          status: MatchingStatus.loaded,
-          hasReachedMax: true,
-          error: 'No more profiles to show',
-        ));
+        emit(
+          state.copyWith(
+            status: MatchingStatus.loaded,
+            hasReachedMax: true,
+            error: 'No more profiles to show',
+          ),
+        );
       } else {
-        final allProfiles = event.refresh 
-            ? profiles 
+        final allProfiles = event.refresh
+            ? profiles
             : [...state.profiles, ...profiles];
-        
-        emit(state.copyWith(
-          status: MatchingStatus.loaded,
-          profiles: allProfiles,
-          hasReachedMax: profiles.isEmpty,
-        ));
+
+        emit(
+          state.copyWith(
+            status: MatchingStatus.loaded,
+            profiles: allProfiles,
+            hasReachedMax: profiles.isEmpty,
+          ),
+        );
       }
     } catch (e) {
-      emit(state.copyWith(
-        status: MatchingStatus.error,
-        error: 'Failed to load profiles: ${e.toString()}',
-      ));
+      emit(
+        state.copyWith(
+          status: MatchingStatus.error,
+          error: 'Failed to load profiles: ${e.toString()}',
+        ),
+      );
     }
   }
 
@@ -78,20 +84,24 @@ class MatchingBloc extends Bloc<MatchingEvent, MatchingState> {
 
     final currentProfile = state.profiles.first;
     final updatedProfiles = List<UserProfile>.from(state.profiles)..removeAt(0);
-    
+
     // Add to swipe history for undo functionality
     final swipeHistory = List<MatchingSwipeAction>.from(state.swipeHistory)
-      ..add(MatchingSwipeAction(
-        profile: currentProfile,
-        direction: event.direction,
-        timestamp: DateTime.now(),
-      ));
+      ..add(
+        MatchingSwipeAction(
+          profile: currentProfile,
+          direction: event.direction,
+          timestamp: DateTime.now(),
+        ),
+      );
 
-    emit(state.copyWith(
-      profiles: updatedProfiles,
-      swipeHistory: swipeHistory,
-      lastSwipeWasMatch: false,
-    ));
+    emit(
+      state.copyWith(
+        profiles: updatedProfiles,
+        swipeHistory: swipeHistory,
+        lastSwipeWasMatch: false,
+      ),
+    );
 
     // Send swipe action to backend
     try {
@@ -100,13 +110,17 @@ class MatchingBloc extends Bloc<MatchingEvent, MatchingState> {
         isLike: event.direction == SwipeAction.right,
       );
 
-      emit(state.copyWith(
-        lastSwipeWasMatch: result['isMatch'] ?? false,
-        matchedProfile: (result['isMatch'] ?? false) ? currentProfile : null,
+      emit(
+        state.copyWith(
+          lastSwipeWasMatch: result['isMatch'] ?? false,
+          matchedProfile: (result['isMatch'] ?? false) ? currentProfile : null,
           superLikesRemaining: event.direction == SwipeAction.up
-            ? (state.superLikesRemaining - 1).clamp(0, double.infinity).toInt()
-            : state.superLikesRemaining,
-      ));
+              ? (state.superLikesRemaining - 1)
+                    .clamp(0, double.infinity)
+                    .toInt()
+              : state.superLikesRemaining,
+        ),
+      );
 
       // Load more profiles if running low
       if (updatedProfiles.length <= 3) {
@@ -115,13 +129,16 @@ class MatchingBloc extends Bloc<MatchingEvent, MatchingState> {
     } catch (e) {
       // Revert the swipe on error
       final revertedProfiles = [currentProfile, ...updatedProfiles];
-      final revertedHistory = List<MatchingSwipeAction>.from(swipeHistory)..removeLast();
-      
-      emit(state.copyWith(
-        profiles: revertedProfiles,
-        swipeHistory: revertedHistory,
-        error: 'Failed to process swipe: ${e.toString()}',
-      ));
+      final revertedHistory = List<MatchingSwipeAction>.from(swipeHistory)
+        ..removeLast();
+
+      emit(
+        state.copyWith(
+          profiles: revertedProfiles,
+          swipeHistory: revertedHistory,
+          error: 'Failed to process swipe: ${e.toString()}',
+        ),
+      );
     }
   }
 
@@ -132,31 +149,37 @@ class MatchingBloc extends Bloc<MatchingEvent, MatchingState> {
     if (state.swipeHistory.isEmpty || state.undosRemaining <= 0) return;
 
     final lastSwipe = state.swipeHistory.last;
-    final updatedHistory = List<MatchingSwipeAction>.from(state.swipeHistory)..removeLast();
+    final updatedHistory = List<MatchingSwipeAction>.from(state.swipeHistory)
+      ..removeLast();
     final updatedProfiles = [lastSwipe.profile, ...state.profiles];
 
-    emit(state.copyWith(
-      profiles: updatedProfiles,
-      swipeHistory: updatedHistory,
-      undosRemaining: state.undosRemaining - 1,
-      lastSwipeWasMatch: false,
-      matchedProfile: null,
-    ));
+    emit(
+      state.copyWith(
+        profiles: updatedProfiles,
+        swipeHistory: updatedHistory,
+        undosRemaining: state.undosRemaining - 1,
+        lastSwipeWasMatch: false,
+        matchedProfile: null,
+      ),
+    );
 
     // Call backend to undo the swipe
     try {
       await _matchingService.undoLastSwipe();
     } catch (e) {
       // Revert the undo on error
-      final revertedProfiles = List<UserProfile>.from(updatedProfiles)..removeAt(0);
+      final revertedProfiles = List<UserProfile>.from(updatedProfiles)
+        ..removeAt(0);
       final revertedHistory = [...updatedHistory, lastSwipe];
-      
-      emit(state.copyWith(
-        profiles: revertedProfiles,
-        swipeHistory: revertedHistory,
-        undosRemaining: state.undosRemaining + 1,
-        error: 'Failed to undo swipe: ${e.toString()}',
-      ));
+
+      emit(
+        state.copyWith(
+          profiles: revertedProfiles,
+          swipeHistory: revertedHistory,
+          undosRemaining: state.undosRemaining + 1,
+          error: 'Failed to undo swipe: ${e.toString()}',
+        ),
+      );
     }
   }
 
@@ -193,13 +216,15 @@ class MatchingBloc extends Bloc<MatchingEvent, MatchingState> {
     RefreshMatches event,
     Emitter<MatchingState> emit,
   ) async {
-    emit(state.copyWith(
-      profiles: [],
-      swipeHistory: [],
-      hasReachedMax: false,
-      lastSwipeWasMatch: false,
-      matchedProfile: null,
-    ));
+    emit(
+      state.copyWith(
+        profiles: [],
+        swipeHistory: [],
+        hasReachedMax: false,
+        lastSwipeWasMatch: false,
+        matchedProfile: null,
+      ),
+    );
 
     add(const LoadPotentialMatches(refresh: true));
   }
@@ -213,10 +238,7 @@ class MatchingBloc extends Bloc<MatchingEvent, MatchingState> {
       return;
     }
 
-    add(SwipeProfile(
-      profileId: event.profileId,
-      direction: SwipeAction.up,
-    ));
+    add(SwipeProfile(profileId: event.profileId, direction: SwipeAction.up));
   }
 
   Future<void> _onReportProfile(
@@ -234,20 +256,15 @@ class MatchingBloc extends Bloc<MatchingEvent, MatchingState> {
       final updatedProfiles = state.profiles
           .where((profile) => profile.id != event.profileId)
           .toList();
-      
-      emit(state.copyWith(
-        profiles: updatedProfiles,
-        error: null,
-      ));
+
+      emit(state.copyWith(profiles: updatedProfiles, error: null));
 
       // Load more profiles if needed
       if (updatedProfiles.length <= 3) {
         add(const LoadPotentialMatches());
       }
     } catch (e) {
-      emit(state.copyWith(
-        error: 'Failed to report profile: ${e.toString()}',
-      ));
+      emit(state.copyWith(error: 'Failed to report profile: ${e.toString()}'));
     }
   }
 
@@ -255,11 +272,13 @@ class MatchingBloc extends Bloc<MatchingEvent, MatchingState> {
     UpdateFilters event,
     Emitter<MatchingState> emit,
   ) async {
-    emit(state.copyWith(
-      filters: event.filters,
-      profiles: [],
-      hasReachedMax: false,
-    ));
+    emit(
+      state.copyWith(
+        filters: event.filters,
+        profiles: [],
+        hasReachedMax: false,
+      ),
+    );
 
     add(const LoadPotentialMatches(refresh: true));
   }

@@ -189,10 +189,7 @@ class ErrorHandler {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              message,
-              style: TextStyle(color: Colors.black87),
-            ),
+            Text(message, style: TextStyle(color: Colors.black87)),
             if (statusCode != null && statusCode >= 500) ...[
               SizedBox(height: 16),
               Text(

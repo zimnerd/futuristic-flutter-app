@@ -33,12 +33,12 @@ class _LiveStreamingScreenState extends State<LiveStreamingScreen>
   late TabController _tabController;
   String? _selectedCategory;
   final ScrollController _scrollController = ScrollController();
-  
+
   // Search state
   bool _isSearching = false;
   final TextEditingController _searchController = TextEditingController();
   Timer? _searchDebounce;
-  
+
   // Retry backoff state
   int _retryCount = 0;
   Timer? _retryTimer;
@@ -47,13 +47,13 @@ class _LiveStreamingScreenState extends State<LiveStreamingScreen>
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
-    
+
     // Load saved category filter before loading streams
     _loadSavedCategory();
-    
+
     // Add scroll listener for pagination
     _scrollController.addListener(_onScroll);
-    
+
     // Setup real-time viewer count updates
     _setupViewerCountListener();
   }
@@ -133,7 +133,8 @@ class _LiveStreamingScreenState extends State<LiveStreamingScreen>
   }
 
   void _onScroll() {
-    if (_scrollController.position.pixels == _scrollController.position.maxScrollExtent) {
+    if (_scrollController.position.pixels ==
+        _scrollController.position.maxScrollExtent) {
       // Load more streams when reaching the bottom
       final state = context.read<LiveStreamingBloc>().state;
       if (state is LiveStreamsLoaded && state.hasMoreStreams) {
@@ -265,23 +266,14 @@ class _LiveStreamingScreenState extends State<LiveStreamingScreen>
         bottom: TabBar(
           controller: _tabController,
           tabs: const [
-            Tab(
-              icon: Icon(Icons.live_tv),
-              text: 'Live Streams',
-            ),
-            Tab(
-              icon: Icon(Icons.videocam),
-              text: 'My Streams',
-            ),
+            Tab(icon: Icon(Icons.live_tv), text: 'Live Streams'),
+            Tab(icon: Icon(Icons.videocam), text: 'My Streams'),
           ],
         ),
       ),
       body: TabBarView(
         controller: _tabController,
-        children: [
-          _buildLiveStreamsTab(),
-          _buildMyStreamsTab(),
-        ],
+        children: [_buildLiveStreamsTab(), _buildMyStreamsTab()],
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _startNewStream,
@@ -311,7 +303,7 @@ class _LiveStreamingScreenState extends State<LiveStreamingScreen>
             );
           },
         ),
-        
+
         // Streams list
         Expanded(
           child: BlocListener<LiveStreamingBloc, LiveStreamingState>(
@@ -330,8 +322,34 @@ class _LiveStreamingScreenState extends State<LiveStreamingScreen>
                 return previous.runtimeType != current.runtimeType;
               },
               builder: (context, state) {
-              if (state is LiveStreamingLoading && _selectedCategory == null) {
-                // Show skeleton loading cards
+                if (state is LiveStreamingLoading &&
+                    _selectedCategory == null) {
+                  // Show skeleton loading cards
+                  return ListView.builder(
+                    padding: const EdgeInsets.all(16),
+                    itemCount: 5,
+                    itemBuilder: (context, index) {
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 16),
+                        child: const StreamCardSkeleton(),
+                      );
+                    },
+                  );
+                }
+
+                if (state is LiveStreamingError) {
+                  return PulseErrorWidget(
+                    message: state.message,
+                    onRetry: () {
+                      _retryWithBackoff();
+                    },
+                  );
+                }
+                if (state is LiveStreamsLoaded) {
+                  return _buildStreamsList(state);
+                }
+
+                // Default loading state
                 return ListView.builder(
                   padding: const EdgeInsets.all(16),
                   itemCount: 5,
@@ -342,30 +360,6 @@ class _LiveStreamingScreenState extends State<LiveStreamingScreen>
                     );
                   },
                 );
-              }
-              
-              if (state is LiveStreamingError) {
-                return PulseErrorWidget(
-                  message: state.message,
-                  onRetry: () {
-                      _retryWithBackoff();
-                  },
-                );
-              }              if (state is LiveStreamsLoaded) {
-                return _buildStreamsList(state);
-              }
-
-              // Default loading state
-              return ListView.builder(
-                padding: const EdgeInsets.all(16),
-                itemCount: 5,
-                itemBuilder: (context, index) {
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 16),
-                    child: const StreamCardSkeleton(),
-                  );
-                },
-              );
               },
             ),
           ),
@@ -411,9 +405,7 @@ class _LiveStreamingScreenState extends State<LiveStreamingScreen>
           return _buildUserStreamsList(state.history);
         }
 
-        return const Center(
-          child: Text('No streams found'),
-        );
+        return const Center(child: Text('No streams found'));
       },
     );
   }
@@ -493,18 +485,11 @@ class _LiveStreamingScreenState extends State<LiveStreamingScreen>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.live_tv_outlined,
-              size: 80,
-              color: Colors.grey[400],
-            ),
+            Icon(Icons.live_tv_outlined, size: 80, color: Colors.grey[400]),
             const SizedBox(height: 24),
             const Text(
               'No Live Streams',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
             Text(
@@ -512,10 +497,7 @@ class _LiveStreamingScreenState extends State<LiveStreamingScreen>
                   ? 'No streams in $_selectedCategory category right now'
                   : 'No one is live streaming at the moment',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey[600],
-              ),
+              style: TextStyle(fontSize: 16, color: Colors.grey[600]),
             ),
             const SizedBox(height: 24),
             ElevatedButton.icon(
@@ -544,27 +526,17 @@ class _LiveStreamingScreenState extends State<LiveStreamingScreen>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.videocam_outlined,
-              size: 80,
-              color: Colors.grey[400],
-            ),
+            Icon(Icons.videocam_outlined, size: 80, color: Colors.grey[400]),
             const SizedBox(height: 24),
             const Text(
               'No Streams Yet',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
             Text(
               'Start your first live stream to connect with your matches!',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey[600],
-              ),
+              style: TextStyle(fontSize: 16, color: Colors.grey[600]),
             ),
             const SizedBox(height: 24),
             ElevatedButton.icon(
@@ -591,27 +563,18 @@ class _LiveStreamingScreenState extends State<LiveStreamingScreen>
   }
 
   void _joinStream(Map<String, dynamic> stream) {
-    context.push(
-      AppRoutes.liveStreamViewer,
-      extra: stream,
-    );
+    context.push(AppRoutes.liveStreamViewer, extra: stream);
   }
 
   void _viewStreamDetails(Map<String, dynamic> stream) {
     // Navigate to stream viewer screen to view/join the stream
-    context.push(
-      AppRoutes.liveStreamViewer,
-      extra: stream,
-    );
+    context.push(AppRoutes.liveStreamViewer, extra: stream);
   }
 
   void _editStream(Map<String, dynamic> stream) async {
     // Navigate to edit stream screen
-    final result = await context.push(
-      AppRoutes.startStream,
-      extra: stream,
-    );
-    
+    final result = await context.push(AppRoutes.startStream, extra: stream);
+
     if (result != null && mounted) {
       // Refresh the streams list if stream was updated
       context.read<LiveStreamingBloc>().add(const LoadLiveStreams());
@@ -635,11 +598,10 @@ class _LiveStreamingScreenState extends State<LiveStreamingScreen>
               final liveStreamingBloc = context.read<LiveStreamingBloc>();
 
               navigator.pop();
-              
+
               // Call the service to delete the stream
               try {
-                final liveStreamingService =
-                    LiveStreamingService(
+                final liveStreamingService = LiveStreamingService(
                   ApiClient.instance,
                 );
                 final streamId = stream['id'] ?? '';
@@ -655,9 +617,7 @@ class _LiveStreamingScreenState extends State<LiveStreamingScreen>
                     message: 'Stream ended successfully',
                   );
                   // Refresh the streams list
-                  liveStreamingBloc.add(
-                    const LoadLiveStreams(),
-                  );
+                  liveStreamingBloc.add(const LoadLiveStreams());
                 } else {
                   PulseToast.error(
                     context,
@@ -666,8 +626,7 @@ class _LiveStreamingScreenState extends State<LiveStreamingScreen>
                 }
               } catch (e) {
                 if (!mounted) return;
-                PulseToast.error(context, message: 'Error: ${e.toString()}',
-                );
+                PulseToast.error(context, message: 'Error: ${e.toString()}');
               }
             },
             style: TextButton.styleFrom(foregroundColor: Colors.red),
@@ -680,7 +639,7 @@ class _LiveStreamingScreenState extends State<LiveStreamingScreen>
 
   void _reportStream(Map<String, dynamic> stream) {
     String selectedReason = 'Inappropriate content';
-    
+
     showDialog(
       context: context,
       builder: (context) => StatefulBuilder(
@@ -733,7 +692,7 @@ class _LiveStreamingScreenState extends State<LiveStreamingScreen>
                 final navigator = Navigator.of(context);
 
                 navigator.pop();
-                
+
                 // Call the service to report the stream
                 try {
                   final liveStreamingService = LiveStreamingService(
@@ -760,8 +719,7 @@ class _LiveStreamingScreenState extends State<LiveStreamingScreen>
                   }
                 } catch (e) {
                   if (!mounted) return;
-                  PulseToast.error(context, message: 'Error: ${e.toString()}',
-                  );
+                  PulseToast.error(context, message: 'Error: ${e.toString()}');
                 }
               },
               style: TextButton.styleFrom(foregroundColor: Colors.red),

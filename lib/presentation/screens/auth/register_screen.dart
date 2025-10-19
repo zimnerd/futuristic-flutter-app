@@ -30,7 +30,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _phoneController = TextEditingController();
-  
+
   String _selectedCountryCode = PhoneUtils.defaultCountryCode;
   String _currentPhone = '';
   bool _isLoading = false;
@@ -42,7 +42,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     super.initState();
     // Initialize with location-based country detection
     _initializeCountryCode();
-    
+
     // Pre-fill phone number if provided (from OTP verification)
     if (widget.phoneNumber != null) {
       final phone = widget.phoneNumber!;
@@ -163,18 +163,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
           });
 
           if (state is AuthError) {
-            PulseToast.error(
-              context,
-              message: state.message,
-            );
+            PulseToast.error(context, message: state.message);
           } else if (state is AuthPhoneValidationSuccess && state.isValid) {
             // Phone validation successful, proceed with registration
             _proceedWithRegistration();
           } else if (state is AuthPhoneValidationError) {
-            PulseToast.error(
-              context,
-              message: state.message,
-            );
+            PulseToast.error(context, message: state.message);
           } else if (state is AuthRegistrationSuccess) {
             context.go(AppRoutes.home);
           }
@@ -229,135 +223,135 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                     // Form fields
                     Column(
+                      children: [
+                        // Name input
+                        PulseTextField(
+                          controller: _nameController,
+                          hintText: 'Username',
+                          keyboardType: TextInputType.name,
+                          prefixIcon: const Icon(Icons.person),
+                          validator: ValidationHelpers.validateUsername,
+                        ),
+                        const SizedBox(height: PulseSpacing.lg),
+
+                        // Email input
+                        PulseTextField(
+                          controller: _emailController,
+                          hintText: 'Email Address',
+                          keyboardType: TextInputType.emailAddress,
+                          prefixIcon: const Icon(Icons.email),
+                          validator: ValidationHelpers.validateEmail,
+                        ),
+                        const SizedBox(height: PulseSpacing.lg),
+
+                        // Password input
+                        PulseTextField(
+                          controller: _passwordController,
+                          hintText: 'Password',
+                          obscureText: _obscurePassword,
+                          prefixIcon: const Icon(Icons.lock),
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _obscurePassword
+                                  ? Icons.visibility
+                                  : Icons.visibility_off,
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                _obscurePassword = !_obscurePassword;
+                              });
+                            },
+                          ),
+                          validator: ValidationHelpers.validatePassword,
+                        ),
+                        const SizedBox(height: PulseSpacing.lg),
+
+                        // Phone input with country selector
+                        PhoneInput(
+                          initialCountryCode: _selectedCountryCode,
+                          onChanged: _onPhoneChanged,
+                          onCountryChanged: _onCountryChanged,
+                          validator: ValidationHelpers.validatePhone,
+                          decoration: const InputDecoration(
+                            labelText: 'Phone Number',
+                            hintText: 'Enter your phone number',
+                          ),
+                        ),
+                        const SizedBox(height: PulseSpacing.xl),
+
+                        // Terms checkbox
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            // Name input
-                            PulseTextField(
-                              controller: _nameController,
-                              hintText: 'Username',
-                              keyboardType: TextInputType.name,
-                              prefixIcon: const Icon(Icons.person),
-                              validator: ValidationHelpers.validateUsername,
+                            Checkbox(
+                              value: _acceptedTerms,
+                              onChanged: (value) {
+                                setState(() {
+                                  _acceptedTerms = value ?? false;
+                                });
+                              },
+                              fillColor: WidgetStateProperty.resolveWith((
+                                states,
+                              ) {
+                                if (states.contains(WidgetState.selected)) {
+                                  return PulseColors.primary;
+                                }
+                                return null;
+                              }),
                             ),
-                            const SizedBox(height: PulseSpacing.lg),
-
-                            // Email input
-                            PulseTextField(
-                              controller: _emailController,
-                              hintText: 'Email Address',
-                              keyboardType: TextInputType.emailAddress,
-                              prefixIcon: const Icon(Icons.email),
-                              validator: ValidationHelpers.validateEmail,
-                            ),
-                            const SizedBox(height: PulseSpacing.lg),
-
-                            // Password input
-                            PulseTextField(
-                              controller: _passwordController,
-                              hintText: 'Password',
-                              obscureText: _obscurePassword,
-                              prefixIcon: const Icon(Icons.lock),
-                              suffixIcon: IconButton(
-                                icon: Icon(
-                                  _obscurePassword
-                                      ? Icons.visibility
-                                      : Icons.visibility_off,
-                                ),
-                                onPressed: () {
+                            const SizedBox(width: PulseSpacing.sm),
+                            Expanded(
+                              child: GestureDetector(
+                                onTap: () {
                                   setState(() {
-                                    _obscurePassword = !_obscurePassword;
+                                    _acceptedTerms = !_acceptedTerms;
                                   });
                                 },
-                              ),
-                              validator: ValidationHelpers.validatePassword,
-                            ),
-                            const SizedBox(height: PulseSpacing.lg),
-
-                            // Phone input with country selector
-                            PhoneInput(
-                              initialCountryCode: _selectedCountryCode,
-                              onChanged: _onPhoneChanged,
-                              onCountryChanged: _onCountryChanged,
-                              validator: ValidationHelpers.validatePhone,
-                              decoration: const InputDecoration(
-                                labelText: 'Phone Number',
-                                hintText: 'Enter your phone number',
-                              ),
-                            ),
-                            const SizedBox(height: PulseSpacing.xl),
-
-                            // Terms checkbox
-                            Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Checkbox(
-                                  value: _acceptedTerms,
-                                  onChanged: (value) {
-                                    setState(() {
-                                      _acceptedTerms = value ?? false;
-                                    });
-                                  },
-                                  fillColor: WidgetStateProperty.resolveWith((states) {
-                                    if (states.contains(WidgetState.selected)) {
-                                      return PulseColors.primary;
-                                    }
-                                    return null;
-                                  }),
-                                ),
-                                const SizedBox(width: PulseSpacing.sm),
-                                Expanded(
-                                  child: GestureDetector(
-                                    onTap: () {
-                                      setState(() {
-                                        _acceptedTerms = !_acceptedTerms;
-                                      });
-                                    },
-                                    child: Text.rich(
+                                child: Text.rich(
+                                  TextSpan(
+                                    text: 'I agree to the ',
+                                    style: PulseTextStyles.bodyMedium.copyWith(
+                                      color: PulseColors.onSurfaceVariant,
+                                    ),
+                                    children: [
                                       TextSpan(
-                                        text: 'I agree to the ',
+                                        text: 'Terms of Service',
                                         style: PulseTextStyles.bodyMedium
                                             .copyWith(
-                                              color:
-                                                  PulseColors.onSurfaceVariant,
+                                              color: PulseColors.primary,
+                                              fontWeight: FontWeight.w600,
                                             ),
-                                        children: [
-                                          TextSpan(
-                                            text: 'Terms of Service',
-                                            style: PulseTextStyles.bodyMedium
-                                                .copyWith(
-                                                  color: PulseColors.primary,
-                                                  fontWeight: FontWeight.w600,
-                                                ),
-                                          ),
-                                          const TextSpan(text: ' and '),
-                                          TextSpan(
-                                            text: 'Privacy Policy',
-                                            style: PulseTextStyles.bodyMedium
-                                                .copyWith(
-                                                  color: PulseColors.primary,
-                                                  fontWeight: FontWeight.w600,
-                                                ),
-                                          ),
-                                        ],
                                       ),
-                                    ),
+                                      const TextSpan(text: ' and '),
+                                      TextSpan(
+                                        text: 'Privacy Policy',
+                                        style: PulseTextStyles.bodyMedium
+                                            .copyWith(
+                                              color: PulseColors.primary,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                      ),
+                                    ],
                                   ),
                                 ),
-                              ],
-                            ),
-                            const SizedBox(height: PulseSpacing.xl),
-                            
-                            // Extra space for keyboard
-                            const SizedBox(height: 80),
-
-                            // Register button
-                            PulseButton(
-                              text: 'Create Account',
-                              onPressed: _isLoading ? null : _handleRegister,
-                              fullWidth: true,
-                              isLoading: _isLoading,
+                              ),
                             ),
                           ],
                         ),
+                        const SizedBox(height: PulseSpacing.xl),
+
+                        // Extra space for keyboard
+                        const SizedBox(height: 80),
+
+                        // Register button
+                        PulseButton(
+                          text: 'Create Account',
+                          onPressed: _isLoading ? null : _handleRegister,
+                          fullWidth: true,
+                          isLoading: _isLoading,
+                        ),
+                      ],
+                    ),
 
                     const SizedBox(height: PulseSpacing.xl),
 

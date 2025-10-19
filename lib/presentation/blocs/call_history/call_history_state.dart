@@ -48,17 +48,22 @@ class CallHistoryLoaded extends CallHistoryState {
     return CallHistoryLoaded(
       calls: calls ?? this.calls,
       pagination: pagination ?? this.pagination,
-      appliedFilters:
-          clearFilters ? null : (appliedFilters ?? this.appliedFilters),
+      appliedFilters: clearFilters
+          ? null
+          : (appliedFilters ?? this.appliedFilters),
       isLoadingMore: isLoadingMore ?? this.isLoadingMore,
-      statistics:
-          clearStatistics ? null : (statistics ?? this.statistics),
+      statistics: clearStatistics ? null : (statistics ?? this.statistics),
     );
   }
 
   @override
-  List<Object?> get props =>
-      [calls, pagination, appliedFilters, isLoadingMore, statistics];
+  List<Object?> get props => [
+    calls,
+    pagination,
+    appliedFilters,
+    isLoadingMore,
+    statistics,
+  ];
 }
 
 /// State when call history loading fails
@@ -142,10 +147,7 @@ class CallDetailsError extends CallHistoryState {
   final String message;
   final String callId;
 
-  const CallDetailsError({
-    required this.message,
-    required this.callId,
-  });
+  const CallDetailsError({required this.message, required this.callId});
 
   @override
   List<Object> get props => [message, callId];

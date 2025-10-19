@@ -32,8 +32,9 @@ class _PaymentDemoScreenState extends State<PaymentDemoScreen> {
         currency: 'USD',
         paymentType: 'DB',
       );
-      
-      if (checkoutResult['success'] == true && checkoutResult['checkoutId'] != null) {
+
+      if (checkoutResult['success'] == true &&
+          checkoutResult['checkoutId'] != null) {
         // Show the payment widget
         if (mounted) {
           showPeachPaymentWidget(
@@ -50,7 +51,8 @@ class _PaymentDemoScreenState extends State<PaymentDemoScreen> {
         }
       } else {
         setState(() {
-          _error = checkoutResult['error'] ?? 'Failed to create checkout session';
+          _error =
+              checkoutResult['error'] ?? 'Failed to create checkout session';
         });
       }
     } catch (e) {
@@ -90,11 +92,7 @@ class _PaymentDemoScreenState extends State<PaymentDemoScreen> {
           ),
           title: Row(
             children: [
-              Icon(
-                Icons.check_circle,
-                color: AppColors.success,
-                size: 28,
-              ),
+              Icon(Icons.check_circle, color: AppColors.success, size: 28),
               const SizedBox(width: 12),
               Text(
                 'Payment Successful',
@@ -140,11 +138,7 @@ class _PaymentDemoScreenState extends State<PaymentDemoScreen> {
           ),
           title: Row(
             children: [
-              Icon(
-                Icons.error_outline,
-                color: AppColors.error,
-                size: 28,
-              ),
+              Icon(Icons.error_outline, color: AppColors.error, size: 28),
               const SizedBox(width: 12),
               Text(
                 'Payment Failed',
@@ -185,10 +179,7 @@ class _PaymentDemoScreenState extends State<PaymentDemoScreen> {
       appBar: AppBar(
         backgroundColor: AppColors.background,
         elevation: 0,
-        title: Text(
-          'Payment Demo',
-          style: AppTextStyles.headlineSmall,
-        ),
+        title: Text('Payment Demo', style: AppTextStyles.headlineSmall),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
           onPressed: () => Navigator.of(context).pop(),
@@ -271,7 +262,9 @@ class _PaymentDemoScreenState extends State<PaymentDemoScreen> {
                         Text(
                           'per year',
                           style: AppTextStyles.bodyMedium.copyWith(
-                            color: AppColors.textOnPrimary.withValues(alpha: 0.8),
+                            color: AppColors.textOnPrimary.withValues(
+                              alpha: 0.8,
+                            ),
                           ),
                         ),
                       ],
@@ -279,18 +272,20 @@ class _PaymentDemoScreenState extends State<PaymentDemoScreen> {
                   ],
                 ),
               ),
-              
+
               const SizedBox(height: 32),
-              
+
               // Payment button
               AppButton(
-                text: _isCreatingCheckout ? 'Creating Checkout...' : 'Purchase Premium',
+                text: _isCreatingCheckout
+                    ? 'Creating Checkout...'
+                    : 'Purchase Premium',
                 onPressed: _isCreatingCheckout ? null : _startPayment,
                 isLoading: _isCreatingCheckout,
               ),
-              
+
               const SizedBox(height: 16),
-              
+
               // Error display
               if (_error != null) ...[
                 Container(
@@ -317,22 +312,21 @@ class _PaymentDemoScreenState extends State<PaymentDemoScreen> {
                 ),
                 const SizedBox(height: 16),
               ],
-              
+
               // Last result display (for debugging)
               if (_lastResult != null) ...[
                 const Divider(color: AppColors.textSecondary),
                 const SizedBox(height: 16),
-                Text(
-                  'Last Payment Result:',
-                  style: AppTextStyles.titleMedium,
-                ),
+                Text('Last Payment Result:', style: AppTextStyles.titleMedium),
                 const SizedBox(height: 8),
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
                     color: AppColors.surface,
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: AppColors.textSecondary.withValues(alpha: 0.3)),
+                    border: Border.all(
+                      color: AppColors.textSecondary.withValues(alpha: 0.3),
+                    ),
                   ),
                   child: Text(
                     _lastResult.toString(),
@@ -343,9 +337,9 @@ class _PaymentDemoScreenState extends State<PaymentDemoScreen> {
                   ),
                 ),
               ],
-              
+
               const Spacer(),
-              
+
               // Security notice
               Container(
                 padding: const EdgeInsets.all(16),
@@ -355,11 +349,7 @@ class _PaymentDemoScreenState extends State<PaymentDemoScreen> {
                 ),
                 child: Row(
                   children: [
-                    Icon(
-                      Icons.security,
-                      color: AppColors.primary,
-                      size: 20,
-                    ),
+                    Icon(Icons.security, color: AppColors.primary, size: 20),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(

@@ -24,28 +24,28 @@ class _BoostSuperLikeWidgetState extends State<BoostSuperLikeWidget>
   late AnimationController _superLikeController;
   late Animation<double> _boostPulseAnimation;
   late Animation<double> _superLikeShineAnimation;
-  
+
   bool _isBoostActive = false;
   int _superLikesRemaining = 5;
 
   @override
   void initState() {
     super.initState();
-    
+
     _boostController = AnimationController(
       duration: const Duration(seconds: 2),
       vsync: this,
     );
-    
+
     _superLikeController = AnimationController(
       duration: const Duration(milliseconds: 1500),
       vsync: this,
     );
-    
+
     _boostPulseAnimation = Tween<double>(begin: 1.0, end: 1.2).animate(
       CurvedAnimation(parent: _boostController, curve: Curves.easeInOut),
     );
-    
+
     _superLikeShineAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _superLikeController, curve: Curves.easeOut),
     );
@@ -64,10 +64,7 @@ class _BoostSuperLikeWidgetState extends State<BoostSuperLikeWidget>
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [
-            Color(0xFF667eea),
-            Color(0xFF764ba2),
-          ],
+          colors: [Color(0xFF667eea), Color(0xFF764ba2)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -78,11 +75,7 @@ class _BoostSuperLikeWidgetState extends State<BoostSuperLikeWidget>
           // Header
           Row(
             children: [
-              const Icon(
-                Icons.bolt,
-                color: Colors.white,
-                size: 24,
-              ),
+              const Icon(Icons.bolt, color: Colors.white, size: 24),
               const SizedBox(width: 8),
               const Text(
                 'Power Features',
@@ -113,9 +106,9 @@ class _BoostSuperLikeWidgetState extends State<BoostSuperLikeWidget>
               ),
             ],
           ),
-          
+
           const SizedBox(height: 24),
-          
+
           // Boost and Super Like options
           Row(
             children: [
@@ -162,9 +155,9 @@ class _BoostSuperLikeWidgetState extends State<BoostSuperLikeWidget>
                       size: 30,
                     ),
                   ),
-                  
+
                   const SizedBox(height: 12),
-                  
+
                   // Title
                   const Text(
                     'Boost',
@@ -174,9 +167,9 @@ class _BoostSuperLikeWidgetState extends State<BoostSuperLikeWidget>
                       color: Colors.white,
                     ),
                   ),
-                  
+
                   const SizedBox(height: 4),
-                  
+
                   // Description
                   Text(
                     _isBoostActive ? 'Active!' : '10x visibility',
@@ -186,9 +179,9 @@ class _BoostSuperLikeWidgetState extends State<BoostSuperLikeWidget>
                     ),
                     textAlign: TextAlign.center,
                   ),
-                  
+
                   const SizedBox(height: 12),
-                  
+
                   // Status/Button
                   if (_isBoostActive)
                     Container(
@@ -260,7 +253,9 @@ class _BoostSuperLikeWidgetState extends State<BoostSuperLikeWidget>
                         gradient: LinearGradient(
                           colors: [
                             Colors.transparent,
-                            Colors.blue.withValues(alpha: 0.3 * _superLikeShineAnimation.value),
+                            Colors.blue.withValues(
+                              alpha: 0.3 * _superLikeShineAnimation.value,
+                            ),
                             Colors.transparent,
                           ],
                           begin: Alignment.topLeft,
@@ -269,7 +264,7 @@ class _BoostSuperLikeWidgetState extends State<BoostSuperLikeWidget>
                       ),
                     ),
                   ),
-                
+
                 Column(
                   children: [
                     // Super Like icon
@@ -286,9 +281,9 @@ class _BoostSuperLikeWidgetState extends State<BoostSuperLikeWidget>
                         size: 30,
                       ),
                     ),
-                    
+
                     const SizedBox(height: 12),
-                    
+
                     // Title
                     const Text(
                       'Super Like',
@@ -298,21 +293,18 @@ class _BoostSuperLikeWidgetState extends State<BoostSuperLikeWidget>
                         color: Colors.white,
                       ),
                     ),
-                    
+
                     const SizedBox(height: 4),
-                    
+
                     // Description
                     const Text(
                       'Stand out',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.white70,
-                      ),
+                      style: TextStyle(fontSize: 12, color: Colors.white70),
                       textAlign: TextAlign.center,
                     ),
-                    
+
                     const SizedBox(height: 12),
-                    
+
                     // Remaining count
                     Container(
                       padding: const EdgeInsets.symmetric(
@@ -344,13 +336,13 @@ class _BoostSuperLikeWidgetState extends State<BoostSuperLikeWidget>
 
   void _activateBoost() {
     if (_isBoostActive) return;
-    
+
     setState(() {
       _isBoostActive = true;
     });
-    
+
     _boostController.repeat(reverse: true);
-    
+
     // Show confirmation dialog
     showDialog(
       context: context,
@@ -367,9 +359,9 @@ class _BoostSuperLikeWidgetState extends State<BoostSuperLikeWidget>
         ],
       ),
     );
-    
+
     widget.onBoostActivated?.call();
-    
+
     // Auto-deactivate after 30 minutes (for demo, using 30 seconds)
     Future.delayed(const Duration(seconds: 30), () {
       if (mounted) {
@@ -387,20 +379,20 @@ class _BoostSuperLikeWidgetState extends State<BoostSuperLikeWidget>
       _showNeedMoreSuperLikes();
       return;
     }
-    
+
     setState(() {
       _superLikesRemaining--;
     });
-    
+
     _superLikeController.forward().then((_) {
       _superLikeController.reset();
     });
-    
+
     // Show sent confirmation
     if (mounted) {
       PulseToast.info(context, message: 'Super Like sent!');
     }
-    
+
     widget.onSuperLikeSent?.call();
   }
 
@@ -427,9 +419,9 @@ class _BoostSuperLikeWidgetState extends State<BoostSuperLikeWidget>
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
-              
+
               const SizedBox(height: 20),
-              
+
               // Icon
               Container(
                 width: 80,
@@ -438,38 +430,28 @@ class _BoostSuperLikeWidgetState extends State<BoostSuperLikeWidget>
                   color: Colors.blue.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
-                  Icons.star,
-                  color: Colors.blue,
-                  size: 40,
-                ),
+                child: const Icon(Icons.star, color: Colors.blue, size: 40),
               ),
-              
+
               const SizedBox(height: 20),
-              
+
               // Title
               const Text(
                 'No Super Likes Left',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
-              
+
               const SizedBox(height: 8),
-              
+
               // Description
               Text(
                 'Get more Super Likes with Pulse Premium or wait until tomorrow for your free daily Super Like.',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey[600],
-                ),
+                style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                 textAlign: TextAlign.center,
               ),
-              
+
               const SizedBox(height: 24),
-              
+
               // Buttons
               Row(
                 children: [
@@ -516,18 +498,13 @@ class _BoostSuperLikeWidgetState extends State<BoostSuperLikeWidget>
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                border: Border(
-                  bottom: BorderSide(color: Colors.grey.shade200),
-                ),
+                border: Border(bottom: BorderSide(color: Colors.grey.shade200)),
               ),
               child: Row(
                 children: [
                   const Text(
                     'Upgrade to Premium',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
                   const Spacer(),
                   IconButton(
@@ -537,7 +514,7 @@ class _BoostSuperLikeWidgetState extends State<BoostSuperLikeWidget>
                 ],
               ),
             ),
-            
+
             // Content
             Expanded(
               child: Padding(
@@ -550,21 +527,21 @@ class _BoostSuperLikeWidgetState extends State<BoostSuperLikeWidget>
                       title: 'Unlimited Super Likes',
                       description: 'Stand out with unlimited Super Likes',
                     ),
-                    
+
                     _buildPremiumBenefit(
                       icon: Icons.rocket_launch,
                       title: 'Monthly Boosts',
                       description: 'Get seen by 10x more people',
                     ),
-                    
+
                     _buildPremiumBenefit(
                       icon: Icons.favorite,
                       title: 'See Who Likes You',
                       description: 'Know who\'s interested before you swipe',
                     ),
-                    
+
                     const Spacer(),
-                    
+
                     // CTA
                     PulseButton(
                       text: 'Start 7-Day Free Trial',
@@ -574,15 +551,12 @@ class _BoostSuperLikeWidgetState extends State<BoostSuperLikeWidget>
                       },
                       fullWidth: true,
                     ),
-                    
+
                     const SizedBox(height: 12),
-                    
+
                     Text(
                       'Cancel anytime. No commitment.',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey[600],
-                      ),
+                      style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                       textAlign: TextAlign.center,
                     ),
                   ],
@@ -611,11 +585,7 @@ class _BoostSuperLikeWidgetState extends State<BoostSuperLikeWidget>
               color: PulseColors.primary.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
-            child: Icon(
-              icon,
-              color: PulseColors.primary,
-              size: 20,
-            ),
+            child: Icon(icon, color: PulseColors.primary, size: 20),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -631,10 +601,7 @@ class _BoostSuperLikeWidgetState extends State<BoostSuperLikeWidget>
                 ),
                 Text(
                   description,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey[600],
-                  ),
+                  style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                 ),
               ],
             ),

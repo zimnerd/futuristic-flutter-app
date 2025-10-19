@@ -64,17 +64,15 @@ class _AudioCallScreenState extends State<AudioCallScreen>
       vsync: this,
     )..repeat(reverse: true);
 
-    _pulseAnimation = Tween<double>(
-      begin: 1.0,
-      end: 1.15,
-    ).animate(CurvedAnimation(
-      parent: _pulseController,
-      curve: Curves.easeInOut,
-    ));
+    _pulseAnimation = Tween<double>(begin: 1.0, end: 1.15).animate(
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
+    );
   }
 
   void _setupAudioCallListeners() {
-    _callStateSubscription = _audioService.onCallStateChanged.listen((isConnected) {
+    _callStateSubscription = _audioService.onCallStateChanged.listen((
+      isConnected,
+    ) {
       setState(() {
         _isConnected = isConnected;
         _statusMessage = isConnected ? 'Connected' : 'Call ended';
@@ -92,11 +90,15 @@ class _AudioCallScreenState extends State<AudioCallScreen>
       setState(() => _isMuted = isMuted);
     });
 
-    _speakerSubscription = _audioService.onSpeakerStateChanged.listen((isSpeakerOn) {
+    _speakerSubscription = _audioService.onSpeakerStateChanged.listen((
+      isSpeakerOn,
+    ) {
       setState(() => _isSpeakerOn = isSpeakerOn);
     });
 
-    _remoteUserSubscription = _audioService.onRemoteUserJoined.listen((remoteUid) {
+    _remoteUserSubscription = _audioService.onRemoteUserJoined.listen((
+      remoteUid,
+    ) {
       setState(() {
         _statusMessage = 'Connected';
         _isConnected = true;
@@ -111,7 +113,9 @@ class _AudioCallScreenState extends State<AudioCallScreen>
       _showErrorSnackBar(error);
     });
 
-    _durationSubscription = _audioService.onCallDurationUpdate.listen((duration) {
+    _durationSubscription = _audioService.onCallDurationUpdate.listen((
+      duration,
+    ) {
       setState(() => _callDuration = duration);
     });
   }
@@ -227,9 +231,7 @@ class _AudioCallScreenState extends State<AudioCallScreen>
           child: Column(
             children: [
               _buildTopBar(),
-              Expanded(
-                child: _buildCallContent(),
-              ),
+              Expanded(child: _buildCallContent()),
               _buildControlButtons(),
               const SizedBox(height: 32),
             ],
@@ -281,7 +283,7 @@ class _AudioCallScreenState extends State<AudioCallScreen>
               ),
             ),
           ),
-          
+
           // Call duration
           if (_isConnected)
             Container(
@@ -294,7 +296,10 @@ class _AudioCallScreenState extends State<AudioCallScreen>
                 ),
               ),
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -340,10 +345,7 @@ class _AudioCallScreenState extends State<AudioCallScreen>
                   gradient: LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
-                    colors: [
-                      PulseColors.primary,
-                      PulseColors.secondary,
-                    ],
+                    colors: [PulseColors.primary, PulseColors.secondary],
                   ),
                   boxShadow: [
                     BoxShadow(
@@ -419,9 +421,7 @@ class _AudioCallScreenState extends State<AudioCallScreen>
       color: PulseColors.primary,
       child: Center(
         child: Text(
-          displayName.isNotEmpty
-              ? displayName[0].toUpperCase()
-              : '?',
+          displayName.isNotEmpty ? displayName[0].toUpperCase() : '?',
           style: const TextStyle(
             color: Colors.white,
             fontSize: 64,
@@ -476,8 +476,10 @@ class _AudioCallScreenState extends State<AudioCallScreen>
     Color? color,
     double size = 64,
   }) {
-    final buttonColor = color ?? (isActive ? PulseColors.primary : Colors.white.withValues(alpha: 0.2));
-    
+    final buttonColor =
+        color ??
+        (isActive ? PulseColors.primary : Colors.white.withValues(alpha: 0.2));
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -497,11 +499,7 @@ class _AudioCallScreenState extends State<AudioCallScreen>
                 ),
               ],
             ),
-            child: Icon(
-              icon,
-              color: Colors.white,
-              size: size * 0.4,
-            ),
+            child: Icon(icon, color: Colors.white, size: size * 0.4),
           ),
         ),
         const SizedBox(height: 8),

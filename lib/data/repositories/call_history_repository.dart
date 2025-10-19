@@ -7,12 +7,7 @@ class CallHistoryFilters {
   final DateTime? startDate;
   final DateTime? endDate;
 
-  CallHistoryFilters({
-    this.type,
-    this.status,
-    this.startDate,
-    this.endDate,
-  });
+  CallHistoryFilters({this.type, this.status, this.startDate, this.endDate});
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> json = {};
@@ -29,16 +24,10 @@ class PaginationOptions {
   final int page;
   final int limit;
 
-  PaginationOptions({
-    required this.page,
-    required this.limit,
-  });
+  PaginationOptions({required this.page, required this.limit});
 
   Map<String, dynamic> toJson() {
-    return {
-      'page': page,
-      'limit': limit,
-    };
+    return {'page': page, 'limit': limit};
   }
 }
 
@@ -197,10 +186,7 @@ class CallHistoryResponse {
   final List<CallHistoryItem> calls;
   final PaginationMetadata pagination;
 
-  CallHistoryResponse({
-    required this.calls,
-    required this.pagination,
-  });
+  CallHistoryResponse({required this.calls, required this.pagination});
 
   factory CallHistoryResponse.fromJson(Map<String, dynamic> json) {
     return CallHistoryResponse(
@@ -208,7 +194,8 @@ class CallHistoryResponse {
           .map((c) => CallHistoryItem.fromJson(c as Map<String, dynamic>))
           .toList(),
       pagination: PaginationMetadata.fromJson(
-          json['pagination'] as Map<String, dynamic>),
+        json['pagination'] as Map<String, dynamic>,
+      ),
     );
   }
 }
@@ -259,7 +246,8 @@ class QualityStatistics {
       min: json['min'] as int,
       max: json['max'] as int,
       distribution: QualityDistribution.fromJson(
-          json['distribution'] as Map<String, dynamic>),
+        json['distribution'] as Map<String, dynamic>,
+      ),
       snapshots: json['snapshots'] as List<dynamic>,
     );
   }
@@ -313,7 +301,8 @@ class CallDetails {
           .toList(),
       qualityStats: json['qualityStats'] != null
           ? QualityStatistics.fromJson(
-              json['qualityStats'] as Map<String, dynamic>)
+              json['qualityStats'] as Map<String, dynamic>,
+            )
           : null,
     );
   }
@@ -363,7 +352,7 @@ class CallHistoryRepository {
   final ApiClient _apiClient;
 
   CallHistoryRepository({ApiClient? apiClient})
-      : _apiClient = apiClient ?? ApiClient.instance;
+    : _apiClient = apiClient ?? ApiClient.instance;
 
   /// Get paginated call history with optional filters
   Future<CallHistoryResponse> getCallHistory({
@@ -384,14 +373,17 @@ class CallHistoryRepository {
         });
       }
 
-      final response =
-          await _apiClient.dio.get('/calls/history', queryParameters: queryParams);
+      final response = await _apiClient.dio.get(
+        '/calls/history',
+        queryParameters: queryParams,
+      );
 
       if (response.statusCode == 200 && response.data != null) {
         final data = response.data as Map<String, dynamic>;
         if (data['success'] == true && data['data'] != null) {
           return CallHistoryResponse.fromJson(
-              data['data'] as Map<String, dynamic>);
+            data['data'] as Map<String, dynamic>,
+          );
         }
       }
       throw Exception('Failed to fetch call history');

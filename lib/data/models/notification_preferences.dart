@@ -59,7 +59,8 @@ class NotificationPreferences extends Equatable {
       smsEnabled: json['smsEnabled'] as bool? ?? false,
       categories: json['categories'] != null
           ? NotificationCategories.fromJson(
-              json['categories'] as Map<String, dynamic>)
+              json['categories'] as Map<String, dynamic>,
+            )
           : NotificationCategories.defaults(),
       quietHours: json['quietHours'] != null
           ? QuietHours.fromJson(json['quietHours'] as Map<String, dynamic>)
@@ -109,15 +110,15 @@ class NotificationPreferences extends Equatable {
 
   @override
   List<Object?> get props => [
-        pushEnabled,
-        emailEnabled,
-        smsEnabled,
-        categories,
-        quietHours,
-        soundEnabled,
-        vibrationEnabled,
-        previewEnabled,
-      ];
+    pushEnabled,
+    emailEnabled,
+    smsEnabled,
+    categories,
+    quietHours,
+    soundEnabled,
+    vibrationEnabled,
+    previewEnabled,
+  ];
 }
 
 /// Notification category preferences
@@ -231,17 +232,17 @@ class NotificationCategories extends Equatable {
 
   @override
   List<Object?> get props => [
-        matches,
-        messages,
-        likes,
-        superLikes,
-        profileViews,
-        events,
-        promotions,
-        videoCalls,
-        voiceCalls,
-        aiCompanion,
-      ];
+    matches,
+    messages,
+    likes,
+    superLikes,
+    profileViews,
+    events,
+    promotions,
+    videoCalls,
+    voiceCalls,
+    aiCompanion,
+  ];
 }
 
 /// Quiet hours configuration (do not disturb)
@@ -281,19 +282,11 @@ class QuietHours extends Equatable {
 
   /// Convert to JSON
   Map<String, dynamic> toJson() {
-    return {
-      'enabled': enabled,
-      'startTime': startTime,
-      'endTime': endTime,
-    };
+    return {'enabled': enabled, 'startTime': startTime, 'endTime': endTime};
   }
 
   /// Create a copy with updated fields
-  QuietHours copyWith({
-    bool? enabled,
-    String? startTime,
-    String? endTime,
-  }) {
+  QuietHours copyWith({bool? enabled, String? startTime, String? endTime}) {
     return QuietHours(
       enabled: enabled ?? this.enabled,
       startTime: startTime ?? this.startTime,

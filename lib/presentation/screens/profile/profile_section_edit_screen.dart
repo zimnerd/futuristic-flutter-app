@@ -31,7 +31,8 @@ class ProfileSectionEditScreen extends StatefulWidget {
   });
 
   @override
-  State<ProfileSectionEditScreen> createState() => _ProfileSectionEditScreenState();
+  State<ProfileSectionEditScreen> createState() =>
+      _ProfileSectionEditScreenState();
 }
 
 class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
@@ -50,14 +51,24 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
   void _initializeControllers() {
     switch (widget.sectionType) {
       case 'basic_info':
-        _controllers['name'] = TextEditingController(text: _formData['name'] ?? '');
+        _controllers['name'] = TextEditingController(
+          text: _formData['name'] ?? '',
+        );
         // Age controller removed - now using dateOfBirth directly
-        _controllers['bio'] = TextEditingController(text: _formData['bio'] ?? '');
+        _controllers['bio'] = TextEditingController(
+          text: _formData['bio'] ?? '',
+        );
         break;
       case 'work_education':
-        _controllers['job'] = TextEditingController(text: _formData['job'] ?? '');
-        _controllers['company'] = TextEditingController(text: _formData['company'] ?? '');
-        _controllers['school'] = TextEditingController(text: _formData['school'] ?? '');
+        _controllers['job'] = TextEditingController(
+          text: _formData['job'] ?? '',
+        );
+        _controllers['company'] = TextEditingController(
+          text: _formData['company'] ?? '',
+        );
+        _controllers['school'] = TextEditingController(
+          text: _formData['school'] ?? '',
+        );
         break;
       case 'photos':
         // Photos are handled separately with PhotoPickerWidget
@@ -128,29 +139,29 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
           ],
         ),
         body: SafeArea(
-        child: Form(
-          key: _formKey,
-          child: SingleChildScrollView(
-            padding: EdgeInsets.only(
-              left: PulseSpacing.lg,
-              right: PulseSpacing.lg,
-              top: PulseSpacing.lg,
-              bottom:
-                  MediaQuery.of(context).viewInsets.bottom + PulseSpacing.lg,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildSectionDescription(),
-                const SizedBox(height: PulseSpacing.xl),
-                _buildSectionContent(),
-                const SizedBox(height: PulseSpacing.xxl),
-                _buildActionButtons(),
-              ],
+          child: Form(
+            key: _formKey,
+            child: SingleChildScrollView(
+              padding: EdgeInsets.only(
+                left: PulseSpacing.lg,
+                right: PulseSpacing.lg,
+                top: PulseSpacing.lg,
+                bottom:
+                    MediaQuery.of(context).viewInsets.bottom + PulseSpacing.lg,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildSectionDescription(),
+                  const SizedBox(height: PulseSpacing.xl),
+                  _buildSectionContent(),
+                  const SizedBox(height: PulseSpacing.xxl),
+                  _buildActionButtons(),
+                ],
+              ),
             ),
           ),
         ),
-      ),
       ), // KeyboardDismissibleScaffold
     ); // BlocListener
   }
@@ -161,9 +172,7 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
       decoration: BoxDecoration(
         color: PulseColors.primaryContainer.withValues(alpha: 0.3),
         borderRadius: BorderRadius.circular(PulseRadii.lg),
-        border: Border.all(
-          color: PulseColors.primary.withValues(alpha: 0.2),
-        ),
+        border: Border.all(color: PulseColors.primary.withValues(alpha: 0.2)),
       ),
       child: Row(
         children: [
@@ -173,11 +182,7 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
               color: PulseColors.primary,
               borderRadius: BorderRadius.circular(PulseRadii.md),
             ),
-            child: Icon(
-              _getSectionIcon(),
-              color: Colors.white,
-              size: 24,
-            ),
+            child: Icon(_getSectionIcon(), color: Colors.white, size: 24),
           ),
           const SizedBox(width: PulseSpacing.md),
           Expanded(
@@ -274,7 +279,7 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
 
     // Total photo count
     final int totalPhotos = existingPhotos.length + newPhotos.length;
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -386,98 +391,101 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
                 fit: BoxFit.cover,
                 width: double.infinity,
                 height: double.infinity,
-              loadingBuilder: (context, child, loadingProgress) {
-                if (loadingProgress == null) return child;
-                return Container(
-                  color: PulseColors.surfaceVariant,
-                  child: Center(
-                    child: CircularProgressIndicator(
-                      value: loadingProgress.expectedTotalBytes != null
-                          ? loadingProgress.cumulativeBytesLoaded /
-                                loadingProgress.expectedTotalBytes!
-                          : null,
+                loadingBuilder: (context, child, loadingProgress) {
+                  if (loadingProgress == null) return child;
+                  return Container(
+                    color: PulseColors.surfaceVariant,
+                    child: Center(
+                      child: CircularProgressIndicator(
+                        value: loadingProgress.expectedTotalBytes != null
+                            ? loadingProgress.cumulativeBytesLoaded /
+                                  loadingProgress.expectedTotalBytes!
+                            : null,
+                      ),
                     ),
-                  ),
-                );
-              },
-              errorBuilder: (context, error, stackTrace) {
-                debugPrint('❌ Failed to load image: $photoUrl');
-                debugPrint('Error: $error');
-                return Container(
-                  color: PulseColors.surfaceVariant,
-                  child: const Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.broken_image, size: 32),
-                      SizedBox(height: 4),
-                      Text('Failed', style: TextStyle(fontSize: 10)),
-                    ],
-                  ),
-                );
-              },
+                  );
+                },
+                errorBuilder: (context, error, stackTrace) {
+                  debugPrint('❌ Failed to load image: $photoUrl');
+                  debugPrint('Error: $error');
+                  return Container(
+                    color: PulseColors.surfaceVariant,
+                    child: const Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.broken_image, size: 32),
+                        SizedBox(height: 4),
+                        Text('Failed', style: TextStyle(fontSize: 10)),
+                      ],
+                    ),
+                  );
+                },
+              ),
             ),
-          ),
-          
-          // Main badge
-          if (isMain)
-            Positioned(
-              top: 4,
-              left: 4,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                decoration: BoxDecoration(
-                  color: PulseColors.primary,
-                  borderRadius: BorderRadius.circular(PulseRadii.sm),
-                ),
-                child: Text(
-                  'Main',
-                  style: PulseTextStyles.labelSmall.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
+
+            // Main badge
+            if (isMain)
+              Positioned(
+                top: 4,
+                left: 4,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: 2,
+                  ),
+                  decoration: BoxDecoration(
+                    color: PulseColors.primary,
+                    borderRadius: BorderRadius.circular(PulseRadii.sm),
+                  ),
+                  child: Text(
+                    'Main',
+                    style: PulseTextStyles.labelSmall.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ),
-            ),
-          
-          // Info icon for description
-          if (description != null && description.isNotEmpty)
+
+            // Info icon for description
+            if (description != null && description.isNotEmpty)
+              Positioned(
+                top: 4,
+                right: isMain ? 36 : 4,
+                child: GestureDetector(
+                  onTap: () => _showPhotoDescription(description),
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.6),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.info_outline,
+                      size: 16,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
+
+            // Delete button
             Positioned(
               top: 4,
-              right: isMain ? 36 : 4,
+              right: 4,
               child: GestureDetector(
-                onTap: () => _showPhotoDescription(description),
+                onTap: () =>
+                    _showDeletePhotoDialog(displayIndex, isExisting: true),
                 child: Container(
                   padding: const EdgeInsets.all(4),
                   decoration: BoxDecoration(
-                    color: Colors.black.withValues(alpha: 0.6),
+                    color: PulseColors.error.withValues(alpha: 0.9),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(
-                    Icons.info_outline,
-                    size: 16,
-                    color: Colors.white,
-                  ),
+                  child: const Icon(Icons.close, size: 16, color: Colors.white),
                 ),
               ),
             ),
-          
-          // Delete button
-          Positioned(
-            top: 4,
-            right: 4,
-            child: GestureDetector(
-              onTap: () =>
-                  _showDeletePhotoDialog(displayIndex, isExisting: true),
-              child: Container(
-                padding: const EdgeInsets.all(4),
-                decoration: BoxDecoration(
-                  color: PulseColors.error.withValues(alpha: 0.9),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(Icons.close, size: 16, color: Colors.white),
-              ),
-            ),
-          ),
           ],
         ),
       ),
@@ -803,10 +811,7 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
                   }
                 });
 
-                PulseToast.success(
-                  context,
-                  message: 'Main photo updated',
-                );
+                PulseToast.success(context, message: 'Main photo updated');
               },
         onDelete: () {
           Navigator.pop(dialogContext);
@@ -898,10 +903,7 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
         _formData['photos'] = updatedPhotos;
       });
 
-      PulseToast.success(
-        context,
-        message: 'Photos reordered successfully',
-      );
+      PulseToast.success(context, message: 'Photos reordered successfully');
     }
   }
 
@@ -935,9 +937,24 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
 
   Widget _buildInterestsSection() {
     final availableInterests = [
-      'Music', 'Travel', 'Fitness', 'Photography', 'Cooking', 'Reading',
-      'Movies', 'Art', 'Sports', 'Gaming', 'Dancing', 'Hiking',
-      'Yoga', 'Coffee', 'Wine', 'Fashion', 'Technology', 'Animals',
+      'Music',
+      'Travel',
+      'Fitness',
+      'Photography',
+      'Cooking',
+      'Reading',
+      'Movies',
+      'Art',
+      'Sports',
+      'Gaming',
+      'Dancing',
+      'Hiking',
+      'Yoga',
+      'Coffee',
+      'Wine',
+      'Fashion',
+      'Technology',
+      'Animals',
     ];
 
     final selectedInterests = List<String>.from(_formData['interests'] ?? []);
@@ -983,8 +1000,12 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
                   selectedColor: PulseColors.primary.withValues(alpha: 0.2),
                   checkmarkColor: PulseColors.primary,
                   labelStyle: TextStyle(
-                    color: isSelected ? PulseColors.primary : PulseColors.onSurface,
-                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                    color: isSelected
+                        ? PulseColors.primary
+                        : PulseColors.onSurface,
+                    fontWeight: isSelected
+                        ? FontWeight.w600
+                        : FontWeight.normal,
                   ),
                 );
               }).toList(),
@@ -1030,13 +1051,13 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
           return 'OTHER';
       }
     }
-    
+
     return StatefulBuilder(
       builder: (context, setState) {
         final currentGender = convertGenderToDisplay(
           _formData['gender']?.toString(),
         );
-        
+
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -1404,10 +1425,7 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
             fillColor: PulseColors.surfaceVariant.withValues(alpha: 0.5),
           ),
           items: options.map((option) {
-            return DropdownMenuItem(
-              value: option,
-              child: Text(option),
-            );
+            return DropdownMenuItem(value: option, child: Text(option));
           }).toList(),
         ),
       ],
@@ -1438,10 +1456,7 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
         const SizedBox(width: PulseSpacing.md),
         Expanded(
           flex: 2,
-          child: PulseButton(
-            text: 'Save Changes',
-            onPressed: _saveSection,
-          ),
+          child: PulseButton(text: 'Save Changes', onPressed: _saveSection),
         ),
       ],
     );
@@ -1511,7 +1526,7 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
               const Center(child: CircularProgressIndicator()),
         );
       }
-      
+
       // Update form data from controllers
       for (final entry in _controllers.entries) {
         _formData[entry.key] = entry.value.text.trim();
@@ -1540,7 +1555,7 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
             context.read<ProfileBloc>().add(
               UploadPhoto(photoPath: newPhotos[i].path),
             );
-            
+
             // Also dispatch to PhotoBloc for photo-specific state management
             context.read<PhotoBloc>().add(
               photo_events.UploadPhoto(
@@ -1567,10 +1582,7 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
           if (mounted) Navigator.pop(context);
 
           // Show error
-          PulseToast.error(
-            context,
-            message: 'Failed to upload photos: $e',
-          );
+          PulseToast.error(context, message: 'Failed to upload photos: $e');
           return;
         }
       }

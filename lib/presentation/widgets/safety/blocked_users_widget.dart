@@ -20,24 +20,20 @@ class BlockedUsersWidget extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.block,
-              size: 64,
-              color: Colors.grey[400],
-            ),
+            Icon(Icons.block, size: 64, color: Colors.grey[400]),
             const SizedBox(height: 16),
             Text(
               'No blocked users',
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                color: Colors.grey[600],
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.headlineSmall?.copyWith(color: Colors.grey[600]),
             ),
             const SizedBox(height: 8),
             Text(
               'Users you block will appear here',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Colors.grey[500],
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(color: Colors.grey[500]),
               textAlign: TextAlign.center,
             ),
           ],
@@ -59,9 +55,7 @@ class BlockedUsersWidget extends StatelessWidget {
   Widget _buildBlockedUserCard(BuildContext context, BlockedUser blockedUser) {
     return Card(
       elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Row(
@@ -74,14 +68,10 @@ class BlockedUsersWidget extends StatelessWidget {
                 color: Colors.grey[300],
                 borderRadius: BorderRadius.circular(28),
               ),
-              child: const Icon(
-                Icons.person,
-                color: Colors.grey,
-                size: 32,
-              ),
+              child: const Icon(Icons.person, color: Colors.grey, size: 32),
             ),
             const SizedBox(width: 16),
-            
+
             // User Info
             Expanded(
               child: Column(
@@ -92,9 +82,8 @@ class BlockedUsersWidget extends StatelessWidget {
                       Expanded(
                         child: Text(
                           blockedUser.blockedUserName,
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.w600,
-                          ),
+                          style: Theme.of(context).textTheme.titleMedium
+                              ?.copyWith(fontWeight: FontWeight.w600),
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
@@ -105,10 +94,14 @@ class BlockedUsersWidget extends StatelessWidget {
                             vertical: 4,
                           ),
                           decoration: BoxDecoration(
-                            color: _getReasonColor(blockedUser.reason!).withValues(alpha: 0.1),
+                            color: _getReasonColor(
+                              blockedUser.reason!,
+                            ).withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
-                              color: _getReasonColor(blockedUser.reason!).withValues(alpha: 0.3),
+                              color: _getReasonColor(
+                                blockedUser.reason!,
+                              ).withValues(alpha: 0.3),
                             ),
                           ),
                           child: Text(
@@ -125,14 +118,14 @@ class BlockedUsersWidget extends StatelessWidget {
                   const SizedBox(height: 4),
                   Text(
                     'Blocked ${_formatDate(blockedUser.blockedAt)}',
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Colors.grey[600],
-                    ),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
                   ),
                 ],
               ),
             ),
-            
+
             // Actions
             Column(
               mainAxisSize: MainAxisSize.min,
@@ -180,9 +173,7 @@ class BlockedUsersWidget extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Text('Unblock User'),
         content: Text(
           'Are you sure you want to unblock this user? They will be able to contact you again.',
@@ -197,9 +188,7 @@ class BlockedUsersWidget extends StatelessWidget {
               Navigator.of(context).pop();
               onUnblockUser?.call(blockedUser.blockedUserId);
             },
-            style: TextButton.styleFrom(
-              foregroundColor: Colors.green,
-            ),
+            style: TextButton.styleFrom(foregroundColor: Colors.green),
             child: const Text('Unblock'),
           ),
         ],
@@ -211,9 +200,7 @@ class BlockedUsersWidget extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Text('Block Details'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -242,13 +229,8 @@ class BlockedUsersWidget extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            '$label: ',
-            style: const TextStyle(fontWeight: FontWeight.w600),
-          ),
-          Expanded(
-            child: Text(value),
-          ),
+          Text('$label: ', style: const TextStyle(fontWeight: FontWeight.w600)),
+          Expanded(child: Text(value)),
         ],
       ),
     );

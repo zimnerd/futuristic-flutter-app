@@ -43,7 +43,7 @@ class WebSocketServiceImpl implements WebSocketService {
       StreamController<String>.broadcast();
   final StreamController<Duration> _latencyController =
       StreamController<Duration>.broadcast();
-  
+
   // Message stream controllers - AI COMPANION PATTERN
   final StreamController<Map<String, dynamic>> _messageController =
       StreamController<Map<String, dynamic>>.broadcast();
@@ -227,7 +227,7 @@ class WebSocketServiceImpl implements WebSocketService {
       _currentReconnectAttempt = 0;
       _connectionStatusController.add(true);
       _connectionStateController.add('connected');
-      
+
       _logger.i(
         '🔍 WebSocketServiceImpl: Connection established - isConnected now: $_isConnected',
       );
@@ -281,7 +281,7 @@ class WebSocketServiceImpl implements WebSocketService {
           '🚨🚨🚨 [CRITICAL] messageReceived event captured! Data: $data',
         );
       }
-      
+
       // 🎯 AI COMPANION PATTERN: Forward events to message stream
       if (event == 'messageReceived' ||
           event == 'messageConfirmed' ||
@@ -361,7 +361,9 @@ class WebSocketServiceImpl implements WebSocketService {
       });
       _logger.w('✅ [LISTENER] Successfully registered listener for: $event');
     } else {
-      _logger.e('❌ [LISTENER] Cannot register listener for $event - socket is null!');
+      _logger.e(
+        '❌ [LISTENER] Cannot register listener for $event - socket is null!',
+      );
     }
   }
 
@@ -548,8 +550,6 @@ class WebSocketServiceImpl implements WebSocketService {
   void onCallDeclined(Function(Map<String, dynamic>) callback) {
     on('call_declined', (data) => callback(data as Map<String, dynamic>));
   }
-
-
 
   // Notification Events
   @override

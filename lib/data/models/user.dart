@@ -71,15 +71,20 @@ class User extends Equatable {
       age: json['age'] as int?,
       gender: json['gender'] as String?,
       location: json['location'] as String?,
-      interests: (json['interests'] as List?)?.map((item) {
-        // Handle new nested structure: {id, interest: {id, name}}
-        if (item is String) return item; // Backward compatibility
-        if (item is Map<String, dynamic>) {
-          // Extract interest.name from nested structure
-          return item['interest']?['name'] as String? ?? '';
-        }
-        return item.toString();
-      }).where((name) => name.isNotEmpty).toList() ?? [],
+      interests:
+          (json['interests'] as List?)
+              ?.map((item) {
+                // Handle new nested structure: {id, interest: {id, name}}
+                if (item is String) return item; // Backward compatibility
+                if (item is Map<String, dynamic>) {
+                  // Extract interest.name from nested structure
+                  return item['interest']?['name'] as String? ?? '';
+                }
+                return item.toString();
+              })
+              .where((name) => name.isNotEmpty)
+              .toList() ??
+          [],
       photos:
           (json['photos'] as List?)?.map((photo) {
             // Handle both string URLs (backward compatibility) and Photo objects
@@ -170,7 +175,7 @@ class User extends Equatable {
     if (lastSeen != null) {
       final now = DateTime.now();
       final difference = now.difference(lastSeen!);
-      
+
       if (difference.inMinutes < 1) {
         return 'Just now';
       } else if (difference.inMinutes < 60) {
@@ -241,27 +246,27 @@ class User extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        email,
+    id,
+    email,
     username,
-        firstName,
-        lastName,
-        displayName,
-        profileImageUrl,
-        bio,
-        birthDate,
+    firstName,
+    lastName,
+    displayName,
+    profileImageUrl,
+    bio,
+    birthDate,
     age,
     gender,
-        location,
-        interests,
+    location,
+    interests,
     photos,
-        isOnline,
-        lastSeen,
-        isVerified,
-        isPremium,
-        preferences,
-        metadata,
-        createdAt,
-        updatedAt,
-      ];
+    isOnline,
+    lastSeen,
+    isVerified,
+    isPremium,
+    preferences,
+    metadata,
+    createdAt,
+    updatedAt,
+  ];
 }

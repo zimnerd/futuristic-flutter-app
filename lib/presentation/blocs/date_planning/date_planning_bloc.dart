@@ -11,7 +11,8 @@ class DatePlanningBloc extends Bloc<DatePlanningEvent, DatePlanningState> {
   final Logger _logger = Logger();
   static const String _tag = 'DatePlanningBloc';
 
-  DatePlanningBloc(this._datePlanningService) : super(const DatePlanningInitial()) {
+  DatePlanningBloc(this._datePlanningService)
+    : super(const DatePlanningInitial()) {
     on<LoadDateSuggestions>(_onLoadDateSuggestions);
     on<CreateDatePlan>(_onCreateDatePlan);
     on<SendDateInvitation>(_onSendDateInvitation);
@@ -37,7 +38,7 @@ class DatePlanningBloc extends Bloc<DatePlanningEvent, DatePlanningState> {
       // Using getDateIdeas method from service
       final suggestions = await _datePlanningService.getDateIdeas(
         interests: event.preferences,
-        timeOfDay: event.preferredDate != null 
+        timeOfDay: event.preferredDate != null
             ? _getTimeOfDay(event.preferredDate!)
             : null,
       );
@@ -45,8 +46,14 @@ class DatePlanningBloc extends Bloc<DatePlanningEvent, DatePlanningState> {
       emit(DateSuggestionsLoaded(suggestions));
       _logger.d('$_tag: Loaded ${suggestions.length} date suggestions');
     } catch (e, stackTrace) {
-      _logger.e('$_tag: Failed to load date suggestions', error: e, stackTrace: stackTrace);
-      emit(DatePlanningError('Failed to load date suggestions: ${e.toString()}'));
+      _logger.e(
+        '$_tag: Failed to load date suggestions',
+        error: e,
+        stackTrace: stackTrace,
+      );
+      emit(
+        DatePlanningError('Failed to load date suggestions: ${e.toString()}'),
+      );
     }
   }
 
@@ -79,7 +86,11 @@ class DatePlanningBloc extends Bloc<DatePlanningEvent, DatePlanningState> {
         emit(const DatePlanningError('Failed to create date plan'));
       }
     } catch (e, stackTrace) {
-      _logger.e('$_tag: Failed to create date plan', error: e, stackTrace: stackTrace);
+      _logger.e(
+        '$_tag: Failed to create date plan',
+        error: e,
+        stackTrace: stackTrace,
+      );
       emit(DatePlanningError('Failed to create date plan: ${e.toString()}'));
     }
   }
@@ -93,13 +104,16 @@ class DatePlanningBloc extends Bloc<DatePlanningEvent, DatePlanningState> {
 
       // Note: Service doesn't have separate send invitation method
       // Invitation is typically sent during plan creation
-      emit(DateInvitationSent(
-        planId: event.planId,
-        inviteeId: event.inviteeId,
-      ));
+      emit(
+        DateInvitationSent(planId: event.planId, inviteeId: event.inviteeId),
+      );
       _logger.d('$_tag: Date invitation sent successfully');
     } catch (e, stackTrace) {
-      _logger.e('$_tag: Failed to send date invitation', error: e, stackTrace: stackTrace);
+      _logger.e(
+        '$_tag: Failed to send date invitation',
+        error: e,
+        stackTrace: stackTrace,
+      );
       emit(DatePlanningError('Failed to send invitation: ${e.toString()}'));
     }
   }
@@ -109,30 +123,42 @@ class DatePlanningBloc extends Bloc<DatePlanningEvent, DatePlanningState> {
     Emitter<DatePlanningState> emit,
   ) async {
     try {
-      _logger.d('$_tag: Responding to invitation: ${event.invitationId} with ${event.response}');
+      _logger.d(
+        '$_tag: Responding to invitation: ${event.invitationId} with ${event.response}',
+      );
 
       bool success = false;
       if (event.response == 'accepted') {
-        success = await _datePlanningService.acceptDateInvitation(event.invitationId);
+        success = await _datePlanningService.acceptDateInvitation(
+          event.invitationId,
+        );
       } else if (event.response == 'declined') {
         success = await _datePlanningService.declineDateInvitation(
-          event.invitationId, 
+          event.invitationId,
           reason: event.message,
         );
       }
 
       if (success) {
-        emit(InvitationResponseSent(
-          invitationId: event.invitationId,
-          response: event.response,
-        ));
+        emit(
+          InvitationResponseSent(
+            invitationId: event.invitationId,
+            response: event.response,
+          ),
+        );
         _logger.d('$_tag: Invitation response sent successfully');
       } else {
         emit(DatePlanningError('Failed to respond to invitation'));
       }
     } catch (e, stackTrace) {
-      _logger.e('$_tag: Failed to respond to invitation', error: e, stackTrace: stackTrace);
-      emit(DatePlanningError('Failed to respond to invitation: ${e.toString()}'));
+      _logger.e(
+        '$_tag: Failed to respond to invitation',
+        error: e,
+        stackTrace: stackTrace,
+      );
+      emit(
+        DatePlanningError('Failed to respond to invitation: ${e.toString()}'),
+      );
     }
   }
 
@@ -153,10 +179,9 @@ class DatePlanningBloc extends Bloc<DatePlanningEvent, DatePlanningState> {
         );
 
         if (success) {
-          emit(DatePlanUpdated(
-            planId: event.planId,
-            updatedPlan: event.updates,
-          ));
+          emit(
+            DatePlanUpdated(planId: event.planId, updatedPlan: event.updates),
+          );
         } else {
           emit(const DatePlanningError('Failed to reschedule date'));
         }
@@ -165,7 +190,11 @@ class DatePlanningBloc extends Bloc<DatePlanningEvent, DatePlanningState> {
         emit(const DatePlanningError('Update type not supported'));
       }
     } catch (e, stackTrace) {
-      _logger.e('$_tag: Failed to update date plan', error: e, stackTrace: stackTrace);
+      _logger.e(
+        '$_tag: Failed to update date plan',
+        error: e,
+        stackTrace: stackTrace,
+      );
       emit(DatePlanningError('Failed to update date plan: ${e.toString()}'));
     }
   }
@@ -189,7 +218,11 @@ class DatePlanningBloc extends Bloc<DatePlanningEvent, DatePlanningState> {
         emit(const DatePlanningError('Failed to cancel date plan'));
       }
     } catch (e, stackTrace) {
-      _logger.e('$_tag: Failed to cancel date plan', error: e, stackTrace: stackTrace);
+      _logger.e(
+        '$_tag: Failed to cancel date plan',
+        error: e,
+        stackTrace: stackTrace,
+      );
       emit(DatePlanningError('Failed to cancel date plan: ${e.toString()}'));
     }
   }
@@ -202,7 +235,7 @@ class DatePlanningBloc extends Bloc<DatePlanningEvent, DatePlanningState> {
       if (event.page == 1) {
         emit(const DatePlanningLoading());
       }
-      
+
       _logger.d('$_tag: Loading user date plans (page: ${event.page})');
 
       List<Map<String, dynamic>> datePlans;
@@ -220,22 +253,30 @@ class DatePlanningBloc extends Bloc<DatePlanningEvent, DatePlanningState> {
       if (state is UserDatePlansLoaded && event.page > 1) {
         final currentState = state as UserDatePlansLoaded;
         final allPlans = [...currentState.datePlans, ...datePlans];
-        emit(UserDatePlansLoaded(
-          datePlans: allPlans,
-          hasMorePlans: hasMorePlans,
-          currentPage: event.page,
-        ));
+        emit(
+          UserDatePlansLoaded(
+            datePlans: allPlans,
+            hasMorePlans: hasMorePlans,
+            currentPage: event.page,
+          ),
+        );
       } else {
-        emit(UserDatePlansLoaded(
-          datePlans: datePlans,
-          hasMorePlans: hasMorePlans,
-          currentPage: event.page,
-        ));
+        emit(
+          UserDatePlansLoaded(
+            datePlans: datePlans,
+            hasMorePlans: hasMorePlans,
+            currentPage: event.page,
+          ),
+        );
       }
 
       _logger.d('$_tag: Loaded ${datePlans.length} user date plans');
     } catch (e, stackTrace) {
-      _logger.e('$_tag: Failed to load user date plans', error: e, stackTrace: stackTrace);
+      _logger.e(
+        '$_tag: Failed to load user date plans',
+        error: e,
+        stackTrace: stackTrace,
+      );
       emit(DatePlanningError('Failed to load date plans: ${e.toString()}'));
     }
   }
@@ -248,22 +289,28 @@ class DatePlanningBloc extends Bloc<DatePlanningEvent, DatePlanningState> {
       if (event.page == 1) {
         emit(const DatePlanningLoading());
       }
-      
+
       _logger.d('$_tag: Loading date invitations');
 
       // Note: Service doesn't have separate invitations endpoint
       // Using upcoming dates as placeholder
       final invitations = await _datePlanningService.getUpcomingDates();
 
-      emit(DateInvitationsLoaded(
-        invitations: invitations,
-        hasMoreInvitations: false,
-        currentPage: event.page,
-      ));
+      emit(
+        DateInvitationsLoaded(
+          invitations: invitations,
+          hasMoreInvitations: false,
+          currentPage: event.page,
+        ),
+      );
 
       _logger.d('$_tag: Loaded ${invitations.length} date invitations');
     } catch (e, stackTrace) {
-      _logger.e('$_tag: Failed to load date invitations', error: e, stackTrace: stackTrace);
+      _logger.e(
+        '$_tag: Failed to load date invitations',
+        error: e,
+        stackTrace: stackTrace,
+      );
       emit(DatePlanningError('Failed to load invitations: ${e.toString()}'));
     }
   }
@@ -285,7 +332,11 @@ class DatePlanningBloc extends Bloc<DatePlanningEvent, DatePlanningState> {
       emit(AIDateSuggestionsLoaded(suggestions));
       _logger.d('$_tag: Loaded ${suggestions.length} AI date suggestions');
     } catch (e, stackTrace) {
-      _logger.e('$_tag: Failed to get AI date suggestions', error: e, stackTrace: stackTrace);
+      _logger.e(
+        '$_tag: Failed to get AI date suggestions',
+        error: e,
+        stackTrace: stackTrace,
+      );
       emit(DatePlanningError('Failed to get AI suggestions: ${e.toString()}'));
     }
   }
@@ -305,10 +356,7 @@ class DatePlanningBloc extends Bloc<DatePlanningEvent, DatePlanningState> {
       );
 
       if (success) {
-        emit(DateRated(
-          planId: event.planId,
-          rating: event.rating,
-        ));
+        emit(DateRated(planId: event.planId, rating: event.rating));
         _logger.d('$_tag: Date rated successfully');
       } else {
         emit(const DatePlanningError('Failed to rate date'));
@@ -328,13 +376,14 @@ class DatePlanningBloc extends Bloc<DatePlanningEvent, DatePlanningState> {
 
       // Note: Service doesn't have specific method for adding activities
       // This would need to be implemented or use the update mechanism
-      emit(DateActivityAdded(
-        planId: event.planId,
-        activity: event.activity,
-      ));
+      emit(DateActivityAdded(planId: event.planId, activity: event.activity));
       _logger.d('$_tag: Date activity added successfully');
     } catch (e, stackTrace) {
-      _logger.e('$_tag: Failed to add date activity', error: e, stackTrace: stackTrace);
+      _logger.e(
+        '$_tag: Failed to add date activity',
+        error: e,
+        stackTrace: stackTrace,
+      );
       emit(DatePlanningError('Failed to add activity: ${e.toString()}'));
     }
   }
@@ -348,13 +397,16 @@ class DatePlanningBloc extends Bloc<DatePlanningEvent, DatePlanningState> {
 
       // Note: Service doesn't have specific method for removing activities
       // This would need to be implemented or use the update mechanism
-      emit(DateActivityRemoved(
-        planId: event.planId,
-        activityId: event.activityId,
-      ));
+      emit(
+        DateActivityRemoved(planId: event.planId, activityId: event.activityId),
+      );
       _logger.d('$_tag: Date activity removed successfully');
     } catch (e, stackTrace) {
-      _logger.e('$_tag: Failed to remove date activity', error: e, stackTrace: stackTrace);
+      _logger.e(
+        '$_tag: Failed to remove date activity',
+        error: e,
+        stackTrace: stackTrace,
+      );
       emit(DatePlanningError('Failed to remove activity: ${e.toString()}'));
     }
   }

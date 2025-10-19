@@ -26,10 +26,7 @@ class SendEventMessage extends EventChatEvent {
   final String eventId;
   final String content;
 
-  const SendEventMessage({
-    required this.eventId,
-    required this.content,
-  });
+  const SendEventMessage({required this.eventId, required this.content});
 
   @override
   List<Object?> get props => [eventId, content];
@@ -88,8 +85,8 @@ class EventChatBloc extends Bloc<EventChatEvent, EventChatState> {
   final EventService _eventService;
 
   EventChatBloc({EventService? eventService})
-      : _eventService = eventService ?? EventService.instance,
-        super(EventChatInitial()) {
+    : _eventService = eventService ?? EventService.instance,
+      super(EventChatInitial()) {
     on<LoadEventMessages>(_onLoadEventMessages);
     on<SendEventMessage>(_onSendEventMessage);
     on<RefreshEventMessages>(_onRefreshEventMessages);
@@ -123,7 +120,7 @@ class EventChatBloc extends Bloc<EventChatEvent, EventChatState> {
     try {
       final currentState = state;
       List<EventMessage> currentMessages = [];
-      
+
       if (currentState is EventChatLoaded) {
         currentMessages = currentState.messages;
       }

@@ -73,37 +73,43 @@ class UserModel {
       company: json['company'],
       occupation: json['occupation'],
       education: json['education'],
-      interests: (json['interests'] as List?)?.map((item) {
-        // Handle new nested structure: {id, interest: {id, name}}
-        if (item is String) return item; // Backward compatibility
-        if (item is Map<String, dynamic>) {
-          // Extract interest.name from nested structure
-          return item['interest']?['name'] as String? ?? '';
-        }
-        return item.toString();
-      }).where((name) => name.isNotEmpty).toList().cast<String>() ?? [],
+      interests:
+          (json['interests'] as List?)
+              ?.map((item) {
+                // Handle new nested structure: {id, interest: {id, name}}
+                if (item is String) return item; // Backward compatibility
+                if (item is Map<String, dynamic>) {
+                  // Extract interest.name from nested structure
+                  return item['interest']?['name'] as String? ?? '';
+                }
+                return item.toString();
+              })
+              .where((name) => name.isNotEmpty)
+              .toList()
+              .cast<String>() ??
+          [],
       age: json['age'],
       gender: json['gender'],
-      photos: json['photos'] != null 
+      photos: json['photos'] != null
           ? (json['photos'] is List ? List<dynamic>.from(json['photos']) : [])
           : [],
       location: json['location'],
-      coordinates: json['coordinates'] != null 
+      coordinates: json['coordinates'] != null
           ? Map<String, dynamic>.from(json['coordinates'])
           : null,
       premium: json['premium'] ?? false,
       verified: json['verified'] ?? false,
       role: json['role'] ?? 'USER',
-      permissions: json['permissions'] != null 
+      permissions: json['permissions'] != null
           ? List<String>.from(json['permissions'])
           : [],
       isActive: json['isActive'] ?? true,
       profileCompletionPercentage: json['profileCompletionPercentage'],
-      lastSeen: json['lastSeen'] != null 
+      lastSeen: json['lastSeen'] != null
           ? DateTime.parse(json['lastSeen'])
           : null,
       fcmToken: json['fcmToken'],
-      preferences: json['preferences'] != null 
+      preferences: json['preferences'] != null
           ? Map<String, dynamic>.from(json['preferences'])
           : null,
       createdAt: json['createdAt'] != null

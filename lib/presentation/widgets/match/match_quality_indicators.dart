@@ -70,11 +70,7 @@ class MatchQualityIndicators extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            config.icon,
-            color: Colors.white,
-            size: compact ? 12 : 14,
-          ),
+          Icon(config.icon, color: Colors.white, size: compact ? 12 : 14),
           SizedBox(width: compact ? 3 : 4),
           Text(
             config.label,
@@ -107,11 +103,7 @@ class MatchQualityIndicators extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            Icons.trending_up,
-            color: color,
-            size: compact ? 12 : 14,
-          ),
+          Icon(Icons.trending_up, color: color, size: compact ? 12 : 14),
           SizedBox(width: compact ? 3 : 4),
           Text(
             '$score%',
@@ -143,11 +135,7 @@ class MatchQualityIndicators extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            config.icon,
-            color: Colors.white,
-            size: compact ? 12 : 14,
-          ),
+          Icon(config.icon, color: Colors.white, size: compact ? 12 : 14),
           SizedBox(width: compact ? 3 : 4),
           Text(
             config.label,
@@ -180,11 +168,7 @@ class MatchQualityIndicators extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            config.icon,
-            color: config.color,
-            size: compact ? 12 : 14,
-          ),
+          Icon(config.icon, color: config.color, size: compact ? 12 : 14),
           if (!compact) ...[
             SizedBox(width: 4),
             Text(
@@ -209,9 +193,7 @@ class MatchQualityIndicators extends StatelessWidget {
         vertical: compact ? 4 : 6,
       ),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: PulseColors.premiumGradient,
-        ),
+        gradient: const LinearGradient(colors: PulseColors.premiumGradient),
         borderRadius: BorderRadius.circular(compact ? 12 : 16),
       ),
       child: Row(
@@ -467,9 +449,5 @@ class _SourceConfig {
   final IconData icon;
   final Color color;
 
-  _SourceConfig({
-    required this.label,
-    required this.icon,
-    required this.color,
-  });
+  _SourceConfig({required this.label, required this.icon, required this.color});
 }

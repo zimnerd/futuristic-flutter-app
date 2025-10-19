@@ -17,7 +17,7 @@ class ProfileCompletionWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final completion = _calculateCompletion();
-    
+
     return Container(
       padding: const EdgeInsets.all(PulseSpacing.lg),
       decoration: BoxDecoration(
@@ -25,7 +25,7 @@ class ProfileCompletionWidget extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            completion.isComplete 
+            completion.isComplete
                 ? PulseColors.success.withValues(alpha: 0.1)
                 : PulseColors.warning.withValues(alpha: 0.1),
             completion.isComplete
@@ -35,7 +35,7 @@ class ProfileCompletionWidget extends StatelessWidget {
         ),
         borderRadius: BorderRadius.circular(PulseRadii.lg),
         border: Border.all(
-          color: completion.isComplete 
+          color: completion.isComplete
               ? PulseColors.success.withValues(alpha: 0.3)
               : PulseColors.warning.withValues(alpha: 0.3),
         ),
@@ -65,7 +65,7 @@ class ProfileCompletionWidget extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(PulseSpacing.sm),
           decoration: BoxDecoration(
-            color: completion.isComplete 
+            color: completion.isComplete
                 ? PulseColors.success
                 : PulseColors.warning,
             borderRadius: BorderRadius.circular(PulseRadii.md),
@@ -82,8 +82,8 @@ class ProfileCompletionWidget extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                completion.isComplete 
-                    ? 'Profile Complete!' 
+                completion.isComplete
+                    ? 'Profile Complete!'
                     : 'Complete Your Profile',
                 style: PulseTextStyles.titleLarge.copyWith(
                   color: PulseColors.onSurface,
@@ -104,7 +104,7 @@ class ProfileCompletionWidget extends StatelessWidget {
         Text(
           '${completion.percentage}%',
           style: PulseTextStyles.headlineSmall.copyWith(
-            color: completion.isComplete 
+            color: completion.isComplete
                 ? PulseColors.success
                 : PulseColors.warning,
             fontWeight: FontWeight.bold,
@@ -131,7 +131,7 @@ class ProfileCompletionWidget extends StatelessWidget {
             Text(
               _getStrengthLabel(completion.percentage),
               style: PulseTextStyles.bodyMedium.copyWith(
-                color: completion.isComplete 
+                color: completion.isComplete
                     ? PulseColors.success
                     : PulseColors.warning,
                 fontWeight: FontWeight.bold,
@@ -146,9 +146,7 @@ class ProfileCompletionWidget extends StatelessWidget {
             value: completion.percentage / 100,
             backgroundColor: PulseColors.outline.withValues(alpha: 0.3),
             valueColor: AlwaysStoppedAnimation<Color>(
-              completion.isComplete 
-                  ? PulseColors.success
-                  : PulseColors.warning,
+              completion.isComplete ? PulseColors.success : PulseColors.warning,
             ),
             minHeight: 8,
           ),
@@ -169,7 +167,9 @@ class ProfileCompletionWidget extends StatelessWidget {
           ),
         ),
         const SizedBox(height: PulseSpacing.sm),
-        ...completion.missingSections.map((section) => _buildMissingSection(section)),
+        ...completion.missingSections.map(
+          (section) => _buildMissingSection(section),
+        ),
         // Individual section cards above are already tappable - no need for redundant button
       ],
     );
@@ -182,17 +182,11 @@ class ProfileCompletionWidget extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.7),
         borderRadius: BorderRadius.circular(PulseRadii.md),
-        border: Border.all(
-          color: PulseColors.warning.withValues(alpha: 0.3),
-        ),
+        border: Border.all(color: PulseColors.warning.withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [
-          Icon(
-            section.icon,
-            color: PulseColors.warning,
-            size: 20,
-          ),
+          Icon(section.icon, color: PulseColors.warning, size: 20),
           const SizedBox(width: PulseSpacing.md),
           Expanded(
             child: Column(
@@ -242,17 +236,11 @@ class ProfileCompletionWidget extends StatelessWidget {
       decoration: BoxDecoration(
         color: PulseColors.success.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(PulseRadii.md),
-        border: Border.all(
-          color: PulseColors.success.withValues(alpha: 0.3),
-        ),
+        border: Border.all(color: PulseColors.success.withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [
-          const Icon(
-            Icons.celebration,
-            color: PulseColors.success,
-            size: 24,
-          ),
+          const Icon(Icons.celebration, color: PulseColors.success, size: 24),
           const SizedBox(width: PulseSpacing.md),
           Expanded(
             child: Text(
@@ -297,9 +285,9 @@ class ProfileCompletionWidget extends StatelessWidget {
       points: 30,
     );
     totalPoints += basicInfoSection.points;
-    
-    if (profile!.name.isNotEmpty && 
-        profile!.age > 0 && 
+
+    if (profile!.name.isNotEmpty &&
+        profile!.age > 0 &&
         profile!.bio.isNotEmpty) {
       earnedPoints += basicInfoSection.points;
     } else {
@@ -315,7 +303,7 @@ class ProfileCompletionWidget extends StatelessWidget {
       points: 25,
     );
     totalPoints += photosSection.points;
-    
+
     if (profile!.photos.length >= 2) {
       earnedPoints += photosSection.points;
     } else {
@@ -331,8 +319,8 @@ class ProfileCompletionWidget extends StatelessWidget {
       points: 15,
     );
     totalPoints += workEducationSection.points;
-    
-    if ((profile!.job?.isNotEmpty ?? false) || 
+
+    if ((profile!.job?.isNotEmpty ?? false) ||
         (profile!.company?.isNotEmpty ?? false) ||
         (profile!.school?.isNotEmpty ?? false)) {
       earnedPoints += workEducationSection.points;
@@ -349,7 +337,7 @@ class ProfileCompletionWidget extends StatelessWidget {
       points: 20,
     );
     totalPoints += interestsSection.points;
-    
+
     if (profile!.interests.length >= 3) {
       earnedPoints += interestsSection.points;
     } else {
@@ -365,16 +353,18 @@ class ProfileCompletionWidget extends StatelessWidget {
       points: 10,
     );
     totalPoints += preferencesSection.points;
-    
-    if ((profile!.gender?.isNotEmpty ?? false) && 
+
+    if ((profile!.gender?.isNotEmpty ?? false) &&
         profile!.relationshipGoals.isNotEmpty) {
       earnedPoints += preferencesSection.points;
     } else {
       missingSections.add(preferencesSection);
     }
 
-    final percentage = totalPoints > 0 ? (earnedPoints * 100) ~/ totalPoints : 0;
-    
+    final percentage = totalPoints > 0
+        ? (earnedPoints * 100) ~/ totalPoints
+        : 0;
+
     return ProfileCompletion(
       percentage: percentage,
       isComplete: percentage >= 100,

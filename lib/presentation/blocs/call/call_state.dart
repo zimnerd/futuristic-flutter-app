@@ -36,11 +36,11 @@ class CallState extends Equatable {
 
   /// Check if currently in a call
   bool get isInCall => [
-        CallStatus.outgoing,
-        CallStatus.incoming,
-        CallStatus.connecting,
-        CallStatus.connected,
-      ].contains(status);
+    CallStatus.outgoing,
+    CallStatus.incoming,
+    CallStatus.connecting,
+    CallStatus.connected,
+  ].contains(status);
 
   /// Check if call is active (connected)
   bool get isCallActive => status == CallStatus.connected;
@@ -49,7 +49,8 @@ class CallState extends Equatable {
   bool get isConnecting => status == CallStatus.connecting;
 
   /// Check if there's an incoming call waiting
-  bool get hasIncomingCall => incomingCall != null && status == CallStatus.incoming;
+  bool get hasIncomingCall =>
+      incomingCall != null && status == CallStatus.incoming;
 
   /// Check if reconnection is possible
   bool get canReconnect => reconnectionAttempts < maxReconnectionAttempts;
@@ -102,21 +103,21 @@ class CallState extends Equatable {
 
   @override
   List<Object?> get props => [
-        status,
-        currentCall,
-        isVideoEnabled,
-        isAudioEnabled,
-        isSpeakerEnabled,
-        connectionState,
-        quality,
-        duration,
-        error,
-        incomingCall,
-        isScreenSharing,
-        isFrontCamera,
-        reconnectionAttempts,
-        maxReconnectionAttempts,
-      ];
+    status,
+    currentCall,
+    isVideoEnabled,
+    isAudioEnabled,
+    isSpeakerEnabled,
+    connectionState,
+    quality,
+    duration,
+    error,
+    incomingCall,
+    isScreenSharing,
+    isFrontCamera,
+    reconnectionAttempts,
+    maxReconnectionAttempts,
+  ];
 
   CallState copyWith({
     CallStatus? status,
@@ -147,11 +148,14 @@ class CallState extends Equatable {
       quality: quality ?? this.quality,
       duration: duration ?? this.duration,
       error: clearError ? null : (error ?? this.error),
-      incomingCall: clearIncomingCall ? null : (incomingCall ?? this.incomingCall),
+      incomingCall: clearIncomingCall
+          ? null
+          : (incomingCall ?? this.incomingCall),
       isScreenSharing: isScreenSharing ?? this.isScreenSharing,
       isFrontCamera: isFrontCamera ?? this.isFrontCamera,
       reconnectionAttempts: reconnectionAttempts ?? this.reconnectionAttempts,
-      maxReconnectionAttempts: maxReconnectionAttempts ?? this.maxReconnectionAttempts,
+      maxReconnectionAttempts:
+          maxReconnectionAttempts ?? this.maxReconnectionAttempts,
     );
   }
 }

@@ -7,22 +7,22 @@ import 'package:shared_preferences/shared_preferences.dart';
 /// Performance optimization service for payments
 class PaymentPerformanceService {
   static const String _keyOptimizationSettings = 'optimization_settings';
-  
+
   // Logger instance
   final Logger _logger = Logger();
-  
+
   // Cache for frequently accessed data
   final Map<String, dynamic> _memoryCache = {};
   final Map<String, DateTime> _cacheTimestamps = {};
-  
+
   // Performance monitoring
   final Map<String, Stopwatch> _performanceTimers = {};
   final List<PerformanceMetric> _metrics = [];
-  
+
   // Stream controllers
-  final StreamController<PerformanceMetric> _metricsController = 
+  final StreamController<PerformanceMetric> _metricsController =
       StreamController<PerformanceMetric>.broadcast();
-  final StreamController<OptimizationSettings> _settingsController = 
+  final StreamController<OptimizationSettings> _settingsController =
       StreamController<OptimizationSettings>.broadcast();
 
   // Streams
@@ -38,10 +38,10 @@ class PaymentPerformanceService {
   Duration stopTimer(String operationName) {
     final timer = _performanceTimers.remove(operationName);
     if (timer == null) return Duration.zero;
-    
+
     timer.stop();
     final duration = timer.elapsed;
-    
+
     // Record performance metric
     final metric = PerformanceMetric(
       operationName: operationName,
@@ -49,30 +49,34 @@ class PaymentPerformanceService {
       timestamp: DateTime.now(),
       memoryUsage: _getApproximateMemoryUsage(),
     );
-    
+
     _metrics.add(metric);
     _metricsController.add(metric);
-    
+
     // Keep only last 100 metrics in memory
     if (_metrics.length > 100) {
       _metrics.removeAt(0);
     }
-    
+
     // Log if operation is slow
     if (duration.inMilliseconds > 1000) {
       _logger.w(
         'Slow operation detected: $operationName took ${duration.inMilliseconds}ms',
       );
     }
-    
+
     return duration;
   }
 
   /// Cache data with expiration
-  Future<void> cacheData(String key, dynamic data, {Duration? expiration}) async {
+  Future<void> cacheData(
+    String key,
+    dynamic data, {
+    Duration? expiration,
+  }) async {
     _memoryCache[key] = data;
     _cacheTimestamps[key] = DateTime.now();
-    
+
     // Also persist important cache data
     if (key.startsWith('payment_') || key.startsWith('subscription_')) {
       await _persistCacheData(key, data, expiration);
@@ -96,7 +100,7 @@ class PaymentPerformanceService {
         return _memoryCache[key] as T?;
       }
     }
-    
+
     // Try persistent cache
     return await _getPersistedCacheData<T>(key, maxAge);
   }
@@ -110,7 +114,7 @@ class PaymentPerformanceService {
       _memoryCache.clear();
       _cacheTimestamps.clear();
     }
-    
+
     // Clear persistent cache
     await _clearPersistedCache(keyPrefix);
   }
@@ -118,17 +122,16 @@ class PaymentPerformanceService {
   /// Preload frequently used data
   Future<void> preloadData() async {
     startTimer('preload_data');
-    
+
     try {
       // Preload payment methods
       await _preloadPaymentMethods();
-      
+
       // Preload subscription plans
       await _preloadSubscriptionPlans();
-      
+
       // Preload user preferences
       await _preloadUserPreferences();
-      
     } catch (e) {
       _logger.e('Error preloading data: $e');
     } finally {
@@ -143,21 +146,21 @@ class PaymentPerformanceService {
     Duration delay = const Duration(milliseconds: 100),
   }) async {
     startTimer('batch_requests');
-    
+
     try {
       final results = <T>[];
-      
+
       for (int i = 0; i < requests.length; i += batchSize) {
         final batch = requests.skip(i).take(batchSize).toList();
         final batchResults = await Future.wait(batch);
         results.addAll(batchResults);
-        
+
         // Add delay between batches to avoid overwhelming the server
         if (i + batchSize < requests.length) {
           await Future.delayed(delay);
         }
       }
-      
+
       return results;
     } finally {
       stopTimer('batch_requests');
@@ -167,17 +170,18 @@ class PaymentPerformanceService {
   /// Run heavy computation in isolate
   Future<R> runInIsolate<T, R>(T data, R Function(T) computation) async {
     startTimer('isolate_computation');
-    
+
     try {
       final receivePort = ReceivePort();
-      final isolate = await Isolate.spawn(
-        _isolateEntryPoint<T, R>,
-        [receivePort.sendPort, data, computation],
-      );
-      
+      final isolate = await Isolate.spawn(_isolateEntryPoint<T, R>, [
+        receivePort.sendPort,
+        data,
+        computation,
+      ]);
+
       final result = await receivePort.first as R;
       isolate.kill(priority: Isolate.immediate);
-      
+
       return result;
     } finally {
       stopTimer('isolate_computation');
@@ -187,33 +191,41 @@ class PaymentPerformanceService {
   /// Get performance statistics
   Future<PerformanceStats> getPerformanceStats() async {
     final settings = await getOptimizationSettings();
-    
+
     // Calculate average response times
     final operationStats = <String, OperationStats>{};
-    
+
     for (final metric in _metrics) {
-      final stats = operationStats[metric.operationName] ?? OperationStats(
-        operationName: metric.operationName,
-        totalCalls: 0,
-        totalDuration: Duration.zero,
-        averageDuration: Duration.zero,
-        maxDuration: Duration.zero,
-        minDuration: Duration(days: 1),
-      );
-      
+      final stats =
+          operationStats[metric.operationName] ??
+          OperationStats(
+            operationName: metric.operationName,
+            totalCalls: 0,
+            totalDuration: Duration.zero,
+            averageDuration: Duration.zero,
+            maxDuration: Duration.zero,
+            minDuration: Duration(days: 1),
+          );
+
       operationStats[metric.operationName] = OperationStats(
         operationName: stats.operationName,
         totalCalls: stats.totalCalls + 1,
         totalDuration: stats.totalDuration + metric.duration,
         averageDuration: Duration(
-          milliseconds: (stats.totalDuration.inMilliseconds + metric.duration.inMilliseconds) ~/
+          milliseconds:
+              (stats.totalDuration.inMilliseconds +
+                  metric.duration.inMilliseconds) ~/
               (stats.totalCalls + 1),
         ),
-        maxDuration: metric.duration > stats.maxDuration ? metric.duration : stats.maxDuration,
-        minDuration: metric.duration < stats.minDuration ? metric.duration : stats.minDuration,
+        maxDuration: metric.duration > stats.maxDuration
+            ? metric.duration
+            : stats.maxDuration,
+        minDuration: metric.duration < stats.minDuration
+            ? metric.duration
+            : stats.minDuration,
       );
     }
-    
+
     return PerformanceStats(
       cacheHitRate: _calculateCacheHitRate(),
       averageResponseTime: _calculateAverageResponseTime(),
@@ -229,12 +241,12 @@ class PaymentPerformanceService {
     try {
       final prefs = await SharedPreferences.getInstance();
       final settingsJson = prefs.getString(_keyOptimizationSettings);
-      
+
       if (settingsJson != null) {
         final json = jsonDecode(settingsJson) as Map<String, dynamic>;
         return OptimizationSettings.fromJson(json);
       }
-      
+
       return OptimizationSettings.defaults();
     } catch (e) {
       return OptimizationSettings.defaults();
@@ -245,9 +257,12 @@ class PaymentPerformanceService {
   Future<void> updateOptimizationSettings(OptimizationSettings settings) async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setString(_keyOptimizationSettings, jsonEncode(settings.toJson()));
+      await prefs.setString(
+        _keyOptimizationSettings,
+        jsonEncode(settings.toJson()),
+      );
       _settingsController.add(settings);
-      
+
       // Apply settings immediately
       await _applyOptimizationSettings(settings);
     } catch (e) {
@@ -271,9 +286,12 @@ class PaymentPerformanceService {
   CacheStats getCacheStats() {
     final totalKeys = _memoryCache.length;
     final expiredKeys = _cacheTimestamps.entries
-        .where((entry) => DateTime.now().difference(entry.value) > const Duration(hours: 1))
+        .where(
+          (entry) =>
+              DateTime.now().difference(entry.value) > const Duration(hours: 1),
+        )
         .length;
-    
+
     return CacheStats(
       totalKeys: totalKeys,
       expiredKeys: expiredKeys,
@@ -283,7 +301,11 @@ class PaymentPerformanceService {
   }
 
   /// Private methods
-  Future<void> _persistCacheData(String key, dynamic data, Duration? expiration) async {
+  Future<void> _persistCacheData(
+    String key,
+    dynamic data,
+    Duration? expiration,
+  ) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final cacheItem = {
@@ -301,21 +323,23 @@ class PaymentPerformanceService {
     try {
       final prefs = await SharedPreferences.getInstance();
       final cacheData = prefs.getString('cache_$key');
-      
+
       if (cacheData != null) {
         final cacheItem = jsonDecode(cacheData) as Map<String, dynamic>;
         final timestamp = DateTime.parse(cacheItem['timestamp'] as String);
         final expiration = cacheItem['expiration'] as int?;
-        
+
         // Check if cache is still valid
         final age = DateTime.now().difference(timestamp);
-        final maxAgeToUse = maxAge ?? (expiration != null ? Duration(milliseconds: expiration) : null);
-        
+        final maxAgeToUse =
+            maxAge ??
+            (expiration != null ? Duration(milliseconds: expiration) : null);
+
         if (maxAgeToUse == null || age <= maxAgeToUse) {
           return cacheItem['data'] as T?;
         }
       }
-      
+
       return null;
     } catch (e) {
       _logger.e('Error getting persisted cache data: $e');
@@ -327,9 +351,11 @@ class PaymentPerformanceService {
     try {
       final prefs = await SharedPreferences.getInstance();
       final keys = prefs.getKeys().where((key) => key.startsWith('cache_'));
-      
+
       if (keyPrefix != null) {
-        final keysToRemove = keys.where((key) => key.startsWith('cache_$keyPrefix'));
+        final keysToRemove = keys.where(
+          (key) => key.startsWith('cache_$keyPrefix'),
+        );
         for (final key in keysToRemove) {
           await prefs.remove(key);
         }
@@ -368,8 +394,11 @@ class PaymentPerformanceService {
 
   Duration _calculateAverageResponseTime() {
     if (_metrics.isEmpty) return Duration.zero;
-    
-    final totalMs = _metrics.fold(0, (sum, metric) => sum + metric.duration.inMilliseconds);
+
+    final totalMs = _metrics.fold(
+      0,
+      (sum, metric) => sum + metric.duration.inMilliseconds,
+    );
     return Duration(milliseconds: totalMs ~/ _metrics.length);
   }
 
@@ -384,11 +413,11 @@ class PaymentPerformanceService {
     } else {
       await clearCache();
     }
-    
+
     if (settings.preloadData) {
       await preloadData();
     }
-    
+
     // Apply other settings...
   }
 
@@ -408,7 +437,7 @@ void _isolateEntryPoint<T, R>(List<dynamic> args) {
   final sendPort = args[0] as SendPort;
   final data = args[1] as T;
   final computation = args[2] as R Function(T);
-  
+
   try {
     final result = computation(data);
     sendPort.send(result);

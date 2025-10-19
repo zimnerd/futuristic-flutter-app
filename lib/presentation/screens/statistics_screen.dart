@@ -20,10 +20,7 @@ class StatisticsLoaded extends StatisticsState {
   final UserStatistics statistics;
   final Map<String, dynamic> formattedStats;
 
-  StatisticsLoaded({
-    required this.statistics,
-    required this.formattedStats,
-  });
+  StatisticsLoaded({required this.statistics, required this.formattedStats});
 }
 
 class StatisticsError extends StatisticsState {
@@ -40,23 +37,33 @@ class StatisticsBloc extends Bloc<StatisticsEvent, StatisticsState> {
     on<RefreshStatistics>(_onRefreshStatistics);
   }
 
-  Future<void> _onLoadStatistics(LoadStatistics event, Emitter<StatisticsState> emit) async {
+  Future<void> _onLoadStatistics(
+    LoadStatistics event,
+    Emitter<StatisticsState> emit,
+  ) async {
     emit(StatisticsLoading());
-    
+
     try {
       final statistics = await _statisticsService.getUserStatistics();
-      final formattedStats = _statisticsService.formatStatisticsForDisplay(statistics);
-      
-      emit(StatisticsLoaded(
-        statistics: statistics,
-        formattedStats: formattedStats,
-      ));
+      final formattedStats = _statisticsService.formatStatisticsForDisplay(
+        statistics,
+      );
+
+      emit(
+        StatisticsLoaded(
+          statistics: statistics,
+          formattedStats: formattedStats,
+        ),
+      );
     } catch (e) {
       emit(StatisticsError('Failed to load statistics: ${e.toString()}'));
     }
   }
 
-  Future<void> _onRefreshStatistics(RefreshStatistics event, Emitter<StatisticsState> emit) async {
+  Future<void> _onRefreshStatistics(
+    RefreshStatistics event,
+    Emitter<StatisticsState> emit,
+  ) async {
     add(LoadStatistics());
   }
 }
@@ -69,7 +76,8 @@ class StatisticsScreen extends StatefulWidget {
   State<StatisticsScreen> createState() => _StatisticsScreenState();
 }
 
-class _StatisticsScreenState extends State<StatisticsScreen> with SingleTickerProviderStateMixin {
+class _StatisticsScreenState extends State<StatisticsScreen>
+    with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
 
@@ -94,9 +102,9 @@ class _StatisticsScreenState extends State<StatisticsScreen> with SingleTickerPr
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => StatisticsBloc(
-        context.read<StatisticsService>(),
-      )..add(LoadStatistics()),
+      create: (context) =>
+          StatisticsBloc(context.read<StatisticsService>())
+            ..add(LoadStatistics()),
       child: Scaffold(
         backgroundColor: const Color(0xFF0A0A0A),
         appBar: _buildAppBar(context),
@@ -148,8 +156,9 @@ class _StatisticsScreenState extends State<StatisticsScreen> with SingleTickerPr
         BlocBuilder<StatisticsBloc, StatisticsState>(
           builder: (context, state) {
             return IconButton(
-              onPressed: state is! StatisticsLoading 
-                  ? () => context.read<StatisticsBloc>().add(RefreshStatistics())
+              onPressed: state is! StatisticsLoading
+                  ? () =>
+                        context.read<StatisticsBloc>().add(RefreshStatistics())
                   : null,
               icon: Container(
                 padding: const EdgeInsets.all(8),
@@ -186,10 +195,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> with SingleTickerPr
             SizedBox(height: 24),
             Text(
               'Loading your stats...',
-              style: TextStyle(
-                color: Colors.white70,
-                fontSize: 16,
-              ),
+              style: TextStyle(color: Colors.white70, fontSize: 16),
             ),
           ],
         ),
@@ -232,7 +238,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> with SingleTickerPr
     final stats = state.statistics;
     final matchRate = state.formattedStats['matchRate'] as String;
     final activityLevel = state.formattedStats['engagementLevel'] as String;
-    
+
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -253,10 +259,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> with SingleTickerPr
         children: [
           Row(
             children: [
-              const Text(
-                '✨',
-                style: TextStyle(fontSize: 32),
-              ),
+              const Text('✨', style: TextStyle(fontSize: 32)),
               const SizedBox(width: 16),
               Expanded(
                 child: Column(
@@ -293,13 +296,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> with SingleTickerPr
                   '💕',
                 ),
               ),
-              Expanded(
-                child: _buildSummaryItem(
-                  'Match Rate',
-                  matchRate,
-                  '📊',
-                ),
-              ),
+              Expanded(child: _buildSummaryItem('Match Rate', matchRate, '📊')),
               Expanded(
                 child: _buildSummaryItem(
                   'Profile Views',
@@ -317,10 +314,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> with SingleTickerPr
   Widget _buildSummaryItem(String label, String value, String emoji) {
     return Column(
       children: [
-        Text(
-          emoji,
-          style: const TextStyle(fontSize: 24),
-        ),
+        Text(emoji, style: const TextStyle(fontSize: 24)),
         const SizedBox(height: 8),
         Text(
           value,
@@ -397,10 +391,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> with SingleTickerPr
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text(
-            stat['icon'],
-            style: const TextStyle(fontSize: 32),
-          ),
+          Text(stat['icon'], style: const TextStyle(fontSize: 32)),
           const SizedBox(height: 12),
           Text(
             stat['value'].toString(),
@@ -414,10 +405,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> with SingleTickerPr
           Text(
             stat['label'],
             textAlign: TextAlign.center,
-            style: TextStyle(
-              color: Colors.white70,
-              fontSize: 12,
-            ),
+            style: TextStyle(color: Colors.white70, fontSize: 12),
           ),
         ],
       ),
@@ -466,10 +454,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> with SingleTickerPr
         children: [
           const Row(
             children: [
-              Text(
-                '💡',
-                style: TextStyle(fontSize: 24),
-              ),
+              Text('💡', style: TextStyle(fontSize: 24)),
               SizedBox(width: 12),
               Text(
                 'Insights & Tips',
@@ -482,33 +467,35 @@ class _StatisticsScreenState extends State<StatisticsScreen> with SingleTickerPr
             ],
           ),
           const SizedBox(height: 16),
-          ...insights.map((insight) => Padding(
-            padding: const EdgeInsets.only(bottom: 12),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  width: 6,
-                  height: 6,
-                  margin: const EdgeInsets.only(top: 6, right: 12),
-                  decoration: const BoxDecoration(
-                    color: Color(0xFF6E3BFF),
-                    shape: BoxShape.circle,
-                  ),
-                ),
-                Expanded(
-                  child: Text(
-                    insight,
-                    style: TextStyle(
-                      color: Colors.white70,
-                      fontSize: 14,
-                      height: 1.4,
+          ...insights.map(
+            (insight) => Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: 6,
+                    height: 6,
+                    margin: const EdgeInsets.only(top: 6, right: 12),
+                    decoration: const BoxDecoration(
+                      color: Color(0xFF6E3BFF),
+                      shape: BoxShape.circle,
                     ),
                   ),
-                ),
-              ],
+                  Expanded(
+                    child: Text(
+                      insight,
+                      style: TextStyle(
+                        color: Colors.white70,
+                        fontSize: 14,
+                        height: 1.4,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
-          )),
+          ),
         ],
       ),
     );
@@ -535,10 +522,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> with SingleTickerPr
         children: [
           const Row(
             children: [
-              Text(
-                '📈',
-                style: TextStyle(fontSize: 24),
-              ),
+              Text('📈', style: TextStyle(fontSize: 24)),
               SizedBox(width: 12),
               Text(
                 'Performance Metrics',
@@ -551,32 +535,46 @@ class _StatisticsScreenState extends State<StatisticsScreen> with SingleTickerPr
             ],
           ),
           const SizedBox(height: 20),
-          _buildProgressBar('Match Rate', matchRate, 100, '${matchRate.toStringAsFixed(1)}%'),
+          _buildProgressBar(
+            'Match Rate',
+            matchRate,
+            100,
+            '${matchRate.toStringAsFixed(1)}%',
+          ),
           const SizedBox(height: 16),
-          _buildProgressBar('Like Back Rate', likeBackRate, 100, '${likeBackRate.toStringAsFixed(1)}%'),
+          _buildProgressBar(
+            'Like Back Rate',
+            likeBackRate,
+            100,
+            '${likeBackRate.toStringAsFixed(1)}%',
+          ),
           const SizedBox(height: 16),
-          _buildProgressBar('Engagement Score', engagementScore, 1000, engagementScore.toInt().toString()),
+          _buildProgressBar(
+            'Engagement Score',
+            engagementScore,
+            1000,
+            engagementScore.toInt().toString(),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildProgressBar(String label, double value, double maxValue, String displayValue) {
+  Widget _buildProgressBar(
+    String label,
+    double value,
+    double maxValue,
+    String displayValue,
+  ) {
     final progress = (value / maxValue).clamp(0.0, 1.0);
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              label,
-              style: TextStyle(
-                color: Colors.white70,
-                fontSize: 14,
-              ),
-            ),
+            Text(label, style: TextStyle(color: Colors.white70, fontSize: 14)),
             Text(
               displayValue,
               style: const TextStyle(
@@ -623,11 +621,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> with SingleTickerPr
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(
-              Icons.error_outline,
-              color: Colors.red,
-              size: 64,
-            ),
+            const Icon(Icons.error_outline, color: Colors.red, size: 64),
             const SizedBox(height: 24),
             const Text(
               'Oops! Something went wrong',
@@ -643,10 +637,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> with SingleTickerPr
               child: Text(
                 state.message,
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: Colors.white70,
-                  fontSize: 16,
-                ),
+                style: TextStyle(color: Colors.white70, fontSize: 16),
               ),
             ),
             const SizedBox(height: 32),
@@ -656,7 +647,10 @@ class _StatisticsScreenState extends State<StatisticsScreen> with SingleTickerPr
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF6E3BFF),
-                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 32,
+                  vertical: 16,
+                ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -719,38 +713,46 @@ class _StatisticsScreenState extends State<StatisticsScreen> with SingleTickerPr
     final matchesScore = stats.totalMatches * 5;
     final messagesScore = stats.messagesCount * 3;
     final superLikesScore = stats.likesReceived * 10;
-    
-    return profileScore + likesScore + matchesScore + messagesScore + superLikesScore;
+
+    return profileScore +
+        likesScore +
+        matchesScore +
+        messagesScore +
+        superLikesScore;
   }
 
   List<String> _generateInsights(UserStatistics stats) {
     final insights = <String>[];
     final matchRate = _calculateMatchRate(stats);
-    
+
     if (stats.profileViews < 50) {
       insights.add('Add more photos to increase your profile visibility');
     }
-    
+
     if (matchRate < 10) {
-      insights.add('Try updating your bio or interests to improve your match rate');
+      insights.add(
+        'Try updating your bio or interests to improve your match rate',
+      );
     } else if (matchRate > 25) {
       insights.add('Great match rate! You\'re doing something right');
     }
-    
+
     if (stats.likesReceived > 0) {
       insights.add(
         'People are really interested in you! ${stats.likesReceived} likes received',
       );
     }
-    
+
     if (stats.messagesCount > stats.totalMatches * 2) {
       insights.add('You\'re great at starting conversations! Keep it up');
     }
-    
+
     if (insights.isEmpty) {
-      insights.add('Keep being active to see more insights about your dating journey');
+      insights.add(
+        'Keep being active to see more insights about your dating journey',
+      );
     }
-    
+
     return insights;
   }
 }

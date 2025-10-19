@@ -4,10 +4,7 @@ import '../common/pulse_toast.dart';
 
 /// Notification preferences and settings widget
 class NotificationPreferencesWidget extends StatefulWidget {
-  const NotificationPreferencesWidget({
-    super.key,
-    this.onPreferencesChanged,
-  });
+  const NotificationPreferencesWidget({super.key, this.onPreferencesChanged});
 
   final Function(Map<String, bool>)? onPreferencesChanged;
 
@@ -153,10 +150,7 @@ class _NotificationPreferencesWidgetState
                       ),
                       Text(
                         'Customize how you stay connected',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey,
-                        ),
+                        style: TextStyle(fontSize: 14, color: Colors.grey),
                       ),
                     ],
                   ),
@@ -164,9 +158,9 @@ class _NotificationPreferencesWidgetState
               ],
             ),
           ),
-          
+
           const Divider(height: 1),
-          
+
           // Notification categories
           ListView.separated(
             shrinkWrap: true,
@@ -179,7 +173,7 @@ class _NotificationPreferencesWidgetState
               return _buildNotificationCategory(category);
             },
           ),
-          
+
           // Quick actions
           Container(
             padding: const EdgeInsets.all(20),
@@ -232,27 +226,19 @@ class _NotificationPreferencesWidgetState
           color: category.color.withValues(alpha: 0.1),
           shape: BoxShape.circle,
         ),
-        child: Icon(
-          category.icon,
-          color: category.color,
-          size: 16,
-        ),
+        child: Icon(category.icon, color: category.color, size: 16),
       ),
       title: Text(
         category.title,
-        style: const TextStyle(
-          fontSize: 16,
-          fontWeight: FontWeight.w600,
-        ),
+        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
       ),
       subtitle: Text(
         category.description,
-        style: TextStyle(
-          fontSize: 12,
-          color: Colors.grey[600],
-        ),
+        style: TextStyle(fontSize: 12, color: Colors.grey[600]),
       ),
-      children: category.items.map((item) => _buildNotificationItem(item)).toList(),
+      children: category.items
+          .map((item) => _buildNotificationItem(item))
+          .toList(),
     );
   }
 
@@ -275,10 +261,7 @@ class _NotificationPreferencesWidgetState
                 ),
                 Text(
                   item.description,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey[600],
-                  ),
+                  style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                 ),
               ],
             ),
@@ -310,11 +293,7 @@ class _NotificationPreferencesWidgetState
         ),
         child: Column(
           children: [
-            Icon(
-              icon,
-              color: Colors.grey[600],
-              size: 20,
-            ),
+            Icon(icon, color: Colors.grey[600], size: 20),
             const SizedBox(height: 4),
             Text(
               label,
@@ -334,9 +313,9 @@ class _NotificationPreferencesWidgetState
     setState(() {
       _preferences[key] = value;
     });
-    
+
     widget.onPreferencesChanged?.call(_preferences);
-    
+
     // Show feedback
     if (mounted) {
       PulseToast.info(
@@ -351,7 +330,7 @@ class _NotificationPreferencesWidgetState
       _preferences = _preferences.map((key, value) => MapEntry(key, false));
     });
     widget.onPreferencesChanged?.call(_preferences);
-    
+
     if (mounted) {
       PulseToast.info(context, message: 'All notifications muted');
     }
@@ -362,7 +341,7 @@ class _NotificationPreferencesWidgetState
       _preferences = _preferences.map((key, value) => MapEntry(key, true));
     });
     widget.onPreferencesChanged?.call(_preferences);
-    
+
     if (mounted) {
       PulseToast.success(context, message: 'All notifications enabled');
     }
@@ -382,7 +361,7 @@ class _NotificationPreferencesWidgetState
       };
     });
     widget.onPreferencesChanged?.call(_preferences);
-    
+
     if (mounted) {
       PulseToast.success(context, message: 'Preferences reset to defaults');
     }

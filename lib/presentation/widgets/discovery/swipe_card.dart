@@ -92,14 +92,14 @@ class _SwipeConfig {
 }
 
 /// Enhanced swipeable card widget with optimized performance
-/// 
+///
 /// Performance optimizations:
 /// - RepaintBoundary for isolated repaints
-/// - Optimized transform operations  
+/// - Optimized transform operations
 /// - Reduced unnecessary rebuilds
 /// - Efficient animation listeners
 /// - Pre-calculated shadows and decorations
-/// 
+///
 /// Features:
 /// - Beautiful photo display with modern animations
 /// - User information overlay with glassmorphism
@@ -139,20 +139,19 @@ class SwipeCard extends StatefulWidget {
   State<SwipeCard> createState() => _SwipeCardState();
 }
 
-class _SwipeCardState extends State<SwipeCard>
-    with TickerProviderStateMixin {
+class _SwipeCardState extends State<SwipeCard> with TickerProviderStateMixin {
   late AnimationController _photoController;
   late AnimationController _overlayController;
   late AnimationController _actionController;
   late AnimationController _shimmerController;
   late Animation<double> _scaleAnimation;
-  
+
   final int _currentPhotoIndex = 0;
 
   @override
   void initState() {
     super.initState();
-    
+
     // Enhanced animation controllers for smooth micro-interactions
     _photoController = AnimationController(
       duration: _SwipeCardConstants.photoAnimationDuration,
@@ -175,13 +174,16 @@ class _SwipeCardState extends State<SwipeCard>
     )..repeat();
 
     // Create smooth animations with enhanced curves
-    _scaleAnimation = Tween<double>(
+    _scaleAnimation =
+        Tween<double>(
           begin: _SwipeCardConstants.scaleBegin,
           end: _SwipeCardConstants.scaleEnd,
-    ).animate(CurvedAnimation(
-      parent: _photoController,
-        curve: PulseCurves.easeOutQuart,
-    ));
+        ).animate(
+          CurvedAnimation(
+            parent: _photoController,
+            curve: PulseCurves.easeOutQuart,
+          ),
+        );
 
     // Start enter animations
     _startEnterAnimation();
@@ -228,7 +230,7 @@ class _SwipeCardState extends State<SwipeCard>
     final currentPhoto = widget.user.photos.isNotEmpty
         ? widget.user.photos[_currentPhotoIndex]
         : null;
-    
+
     // Performance optimization: Use RepaintBoundary to isolate repaints
     return RepaintBoundary(
       child: AnimatedBuilder(
@@ -363,10 +365,7 @@ class _UserInfoOverlay extends StatelessWidget {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [
-              Color.fromRGBO(0, 0, 0, 0),
-              Color.fromRGBO(0, 0, 0, 0.8),
-            ],
+            colors: [Color.fromRGBO(0, 0, 0, 0), Color.fromRGBO(0, 0, 0, 0.8)],
           ),
           borderRadius: BorderRadius.only(
             bottomLeft: Radius.circular(_SwipeCardConstants.cardBorderRadius),
@@ -447,10 +446,7 @@ class _UserInfoOverlay extends StatelessWidget {
               const SizedBox(height: 4),
               Text(
                 user.bio,
-                style: const TextStyle(
-                  color: Colors.white70,
-                  fontSize: 14,
-                ),
+                style: const TextStyle(color: Colors.white70, fontSize: 14),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -489,10 +485,7 @@ class _UserInfoOverlay extends StatelessWidget {
                   const SizedBox(width: 4),
                   Text(
                     user.distanceString,
-                    style: const TextStyle(
-                      color: Colors.white70,
-                      fontSize: 12,
-                    ),
+                    style: const TextStyle(color: Colors.white70, fontSize: 12),
                   ),
                 ],
               ),
@@ -624,7 +617,7 @@ class _PhotoIndicators extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (photoCount <= 1) return const SizedBox.shrink();
-    
+
     return Positioned(
       top: 16,
       left: 16,
@@ -792,14 +785,12 @@ class _PerformanceOptimizedCard extends StatelessWidget {
           child: Stack(
             children: [
               // Enhanced photo background with shimmer loading
-              Positioned.fill(
-                child: buildEnhancedPhotoSection(),
-              ),
+              Positioned.fill(child: buildEnhancedPhotoSection()),
 
               // Photo indicators with smooth transitions
               photoIndicators,
 
-              // Swipe overlay with enhanced animations  
+              // Swipe overlay with enhanced animations
               swipeOverlay,
 
               // Enhanced user info overlay with glassmorphism
@@ -810,12 +801,7 @@ class _PerformanceOptimizedCard extends StatelessWidget {
       ),
     );
   }
-
 }
 
 /// Direction of swipe gesture
-enum SwipeDirection {
-  left,
-  right,
-  up,
-}
+enum SwipeDirection { left, right, up }

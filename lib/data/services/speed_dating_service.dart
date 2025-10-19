@@ -517,7 +517,9 @@ class SpeedDatingService {
   Future<void> disconnectWebSocket() async {
     try {
       if (_socket != null && _currentEventId != null) {
-        _logger.i('🔌 Disconnecting Speed Dating WebSocket for event: $_currentEventId');
+        _logger.i(
+          '🔌 Disconnecting Speed Dating WebSocket for event: $_currentEventId',
+        );
 
         // Leave the event room before disconnecting
         _socket!.emit('leave_event', {'eventId': _currentEventId});

@@ -27,8 +27,10 @@ class AiMatchingService {
 
       if (response.statusCode == 200 && response.data != null) {
         final List<dynamic> matchesData = response.data['matches'] ?? [];
-        final matches = matchesData.map((json) => MatchModel.fromJson(json)).toList();
-        
+        final matches = matchesData
+            .map((json) => MatchModel.fromJson(json))
+            .toList();
+
         _logger.d('AI descriptive matching found ${matches.length} matches');
         return matches;
       } else {
@@ -59,7 +61,9 @@ class AiMatchingService {
         _logger.d('AI profile suggestions generated');
         return response.data;
       } else {
-        _logger.e('Failed to generate profile suggestions: ${response.statusMessage}');
+        _logger.e(
+          'Failed to generate profile suggestions: ${response.statusMessage}',
+        );
         return null;
       }
     } catch (e) {
@@ -76,17 +80,16 @@ class AiMatchingService {
     try {
       final response = await _apiClient.post(
         '/ai-matching/photo-selection',
-        data: {
-          'photoUrls': photoUrls,
-          'targetDemographic': targetDemographic,
-        },
+        data: {'photoUrls': photoUrls, 'targetDemographic': targetDemographic},
       );
 
       if (response.statusCode == 200 && response.data != null) {
         _logger.d('AI photo recommendations received');
         return response.data;
       } else {
-        _logger.e('Failed to get photo recommendations: ${response.statusMessage}');
+        _logger.e(
+          'Failed to get photo recommendations: ${response.statusMessage}',
+        );
         return null;
       }
     } catch (e) {
@@ -102,16 +105,16 @@ class AiMatchingService {
     try {
       final response = await _apiClient.post(
         '/ai-matching/qa-profile-builder',
-        data: {
-          'currentAnswers': currentAnswers ?? {},
-        },
+        data: {'currentAnswers': currentAnswers ?? {}},
       );
 
       if (response.statusCode == 200 && response.data != null) {
         _logger.d('AI profile builder questions generated');
         return response.data;
       } else {
-        _logger.e('Failed to get profile builder questions: ${response.statusMessage}');
+        _logger.e(
+          'Failed to get profile builder questions: ${response.statusMessage}',
+        );
         return null;
       }
     } catch (e) {
@@ -192,7 +195,9 @@ class AiMatchingService {
         _logger.d('AI conversation coaching suggestions received');
         return response.data;
       } else {
-        _logger.e('Failed to get conversation coaching: ${response.statusMessage}');
+        _logger.e(
+          'Failed to get conversation coaching: ${response.statusMessage}',
+        );
         return null;
       }
     } catch (e) {
@@ -211,7 +216,13 @@ class AiMatchingService {
         '/ai-matching/predictive-analytics',
         data: {
           'timeframe': timeframe ?? '30d',
-          'metrics': metrics ?? ['match_probability', 'conversation_success', 'meeting_likelihood'],
+          'metrics':
+              metrics ??
+              [
+                'match_probability',
+                'conversation_success',
+                'meeting_likelihood',
+              ],
         },
       );
 
@@ -219,7 +230,9 @@ class AiMatchingService {
         _logger.d('AI predictive analytics received');
         return response.data;
       } else {
-        _logger.e('Failed to get predictive analytics: ${response.statusMessage}');
+        _logger.e(
+          'Failed to get predictive analytics: ${response.statusMessage}',
+        );
         return null;
       }
     } catch (e) {
@@ -236,17 +249,16 @@ class AiMatchingService {
     try {
       final response = await _apiClient.post(
         '/ai-matching/advanced-personalization',
-        data: {
-          'focusArea': focusArea,
-          'preferences': preferences ?? {},
-        },
+        data: {'focusArea': focusArea, 'preferences': preferences ?? {}},
       );
 
       if (response.statusCode == 200 && response.data != null) {
         _logger.d('AI personalization recommendations received');
         return response.data;
       } else {
-        _logger.e('Failed to get personalization recommendations: ${response.statusMessage}');
+        _logger.e(
+          'Failed to get personalization recommendations: ${response.statusMessage}',
+        );
         return null;
       }
     } catch (e) {
@@ -281,10 +293,7 @@ class AiMatchingService {
     try {
       final response = await _apiClient.post(
         '/ai-matching/content-moderation',
-        data: {
-          'content': content,
-          'contentType': contentType ?? 'text',
-        },
+        data: {'content': content, 'contentType': contentType ?? 'text'},
       );
 
       if (response.statusCode == 200 && response.data != null) {
@@ -318,7 +327,9 @@ class AiMatchingService {
         _logger.d('AI visual preference analysis completed');
         return response.data;
       } else {
-        _logger.e('Failed to analyze visual preferences: ${response.statusMessage}');
+        _logger.e(
+          'Failed to analyze visual preferences: ${response.statusMessage}',
+        );
         return null;
       }
     } catch (e) {
@@ -334,11 +345,10 @@ class AiMatchingService {
     double? minCompatibility,
   }) async {
     try {
-      final queryParams = <String, dynamic>{
-        'limit': limit.toString(),
-      };
+      final queryParams = <String, dynamic>{'limit': limit.toString()};
       if (userId != null) queryParams['userId'] = userId;
-      if (minCompatibility != null) queryParams['minCompatibility'] = minCompatibility.toString();
+      if (minCompatibility != null)
+        queryParams['minCompatibility'] = minCompatibility.toString();
 
       final response = await _apiClient.get(
         '/matching/ai/recommendations',
@@ -350,11 +360,13 @@ class AiMatchingService {
         final recommendations = recommendationsData
             .map((r) => MatchModel.fromJson(r))
             .toList();
-        
+
         _logger.d('AI recommendations found ${recommendations.length} matches');
         return recommendations;
       } else {
-        _logger.e('Failed to get AI recommendations: ${response.statusMessage}');
+        _logger.e(
+          'Failed to get AI recommendations: ${response.statusMessage}',
+        );
         return [];
       }
     } catch (e) {
@@ -371,17 +383,16 @@ class AiMatchingService {
     try {
       final response = await _apiClient.post(
         '/matching/ai/score',
-        data: {
-          'userId': userId,
-          'targetUserId': targetUserId,
-        },
+        data: {'userId': userId, 'targetUserId': targetUserId},
       );
 
       if (response.statusCode == 200 && response.data != null) {
         _logger.d('Compatibility score calculated');
         return response.data['data'];
       } else {
-        _logger.e('Failed to calculate compatibility score: ${response.statusMessage}');
+        _logger.e(
+          'Failed to calculate compatibility score: ${response.statusMessage}',
+        );
         return null;
       }
     } catch (e) {

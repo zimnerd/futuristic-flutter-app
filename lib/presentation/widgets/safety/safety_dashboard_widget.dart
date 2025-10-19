@@ -38,9 +38,9 @@ class SafetyDashboardWidget extends StatelessWidget {
         children: [
           Text(
             'Safety Overview',
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 16),
           Row(
@@ -154,9 +154,9 @@ class SafetyDashboardWidget extends StatelessWidget {
         children: [
           Text(
             'Active Settings',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              fontWeight: FontWeight.w600,
-            ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 8),
           Row(
@@ -214,13 +214,13 @@ class SafetyDashboardWidget extends StatelessWidget {
 
   int _getActiveSettingsCount() {
     if (settings == null) return 0;
-    
+
     int count = 0;
     if (settings!.locationSharingEnabled) count++;
     if (settings!.emergencyContactsEnabled) count++;
     if (settings!.checkInRemindersEnabled) count++;
     if (settings!.panicButtonEnabled) count++;
-    
+
     return count;
   }
 }

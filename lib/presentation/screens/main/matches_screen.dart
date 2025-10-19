@@ -38,10 +38,10 @@ class _MatchesScreenState extends State<MatchesScreen>
   late AnimationController _animationController;
   late TextEditingController _searchController;
   late ScrollController _scrollController;
-  
+
   String _searchQuery = '';
   bool _isLoadingMore = false;
-  
+
   @override
   void initState() {
     super.initState();
@@ -114,18 +114,14 @@ class _MatchesScreenState extends State<MatchesScreen>
             },
             listener: (context, state) {
               if (state is MatchError) {
-                PulseToast.error(
-                  context,
-                  message: state.message,
-                );
+                PulseToast.error(context, message: state.message);
               }
             },
             builder: (context, state) {
               return Column(
                 children: [
                   _buildHeader(state),
-                  Expanded(
-                    child: _buildContent(state)),
+                  Expanded(child: _buildContent(state)),
                   if (_isLoadingMore) _buildLoadMoreIndicator(),
                 ],
               );
@@ -283,8 +279,7 @@ class _MatchesScreenState extends State<MatchesScreen>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.error_outline, size: 64, color: PulseColors.primary,
-            ),
+            Icon(Icons.error_outline, size: 64, color: PulseColors.primary),
             const SizedBox(height: 16),
             Text(
               'Failed to load matches',
@@ -302,8 +297,7 @@ class _MatchesScreenState extends State<MatchesScreen>
             ),
             const SizedBox(height: 24),
             ElevatedButton(
-              onPressed: () =>
-                  context.read<MatchBloc>().add(
+              onPressed: () => context.read<MatchBloc>().add(
                 const LoadMatches(excludeWithConversations: true),
               ),
               child: const Text('Try Again'),
@@ -352,73 +346,74 @@ class _MatchesScreenState extends State<MatchesScreen>
           physics: const AlwaysScrollableScrollPhysics(),
           itemCount: matches.length,
           itemBuilder: (context, index) {
-          final match = matches[index];
-          return MatchCard(
+            final match = matches[index];
+            return MatchCard(
               key: ValueKey(match.id),
-            match: match,
-            userProfile: match.userProfile,
-            showStatus: false, // Hide redundant status on matches screen
-            onCall: match.userProfile != null
-                ? () {
-                    final callId =
-                        'call_${match.userProfile!.id}_${DateTime.now().millisecondsSinceEpoch}';
-                    // Convert UserProfile to UserModel for AudioCallScreen
-                    final remoteUser = UserModel(
-                      id: match.userProfile!.id,
-                      email: '', // Not available in UserProfile
-                      username: match.userProfile!.name,
-                      firstName: match.userProfile!.name.split(' ').first,
-                      lastName: match.userProfile!.name.split(' ').length > 1
-                          ? match.userProfile!.name.split(' ').last
-                          : null,
-                      photos: match.userProfile!.photos
-                          .map((p) => p.url)
-                          .toList(),
-                      createdAt: DateTime.now(), // Not available in UserProfile
-                    );
+              match: match,
+              userProfile: match.userProfile,
+              showStatus: false, // Hide redundant status on matches screen
+              onCall: match.userProfile != null
+                  ? () {
+                      final callId =
+                          'call_${match.userProfile!.id}_${DateTime.now().millisecondsSinceEpoch}';
+                      // Convert UserProfile to UserModel for AudioCallScreen
+                      final remoteUser = UserModel(
+                        id: match.userProfile!.id,
+                        email: '', // Not available in UserProfile
+                        username: match.userProfile!.name,
+                        firstName: match.userProfile!.name.split(' ').first,
+                        lastName: match.userProfile!.name.split(' ').length > 1
+                            ? match.userProfile!.name.split(' ').last
+                            : null,
+                        photos: match.userProfile!.photos
+                            .map((p) => p.url)
+                            .toList(),
+                        createdAt:
+                            DateTime.now(), // Not available in UserProfile
+                      );
 
-                    context.push(
-                      '/audio-call/$callId',
-                      extra: {'remoteUser': remoteUser, 'isIncoming': false},
-                    );
-                  }
-                : null,
-            onMessage: () {
-              if (match.userProfile != null) {
-                context.push(
-                  '/chat/${match.id}',
-                  extra: {
-                    'otherUserId': match.userProfile!.id,
-                    'otherUserName': match.userProfile!.name,
-                    'otherUserPhoto': match.userProfile!.photos.isNotEmpty
-                        ? match.userProfile!.photos.first.url
-                        : null,
-                  },
-                );
-              }
-            },
-            onViewProfile: () {
-              if (match.userProfile != null) {
-                context.push(
-                  AppRoutes.profileDetails.replaceFirst(
-                    ':profileId',
-                    match.userProfile!.id,
-                  ),
-                  extra: match.userProfile,
-                );
-              }
-            },
-            onUnmatch: () {
-              _showUnmatchDialog(context, match);
-            },
-            onBlock: () {
-              _showBlockDialog(context, match);
-            },
-            onReport: () {
-              _showReportDialog(context, match);
-            },
-          );
-        },
+                      context.push(
+                        '/audio-call/$callId',
+                        extra: {'remoteUser': remoteUser, 'isIncoming': false},
+                      );
+                    }
+                  : null,
+              onMessage: () {
+                if (match.userProfile != null) {
+                  context.push(
+                    '/chat/${match.id}',
+                    extra: {
+                      'otherUserId': match.userProfile!.id,
+                      'otherUserName': match.userProfile!.name,
+                      'otherUserPhoto': match.userProfile!.photos.isNotEmpty
+                          ? match.userProfile!.photos.first.url
+                          : null,
+                    },
+                  );
+                }
+              },
+              onViewProfile: () {
+                if (match.userProfile != null) {
+                  context.push(
+                    AppRoutes.profileDetails.replaceFirst(
+                      ':profileId',
+                      match.userProfile!.id,
+                    ),
+                    extra: match.userProfile,
+                  );
+                }
+              },
+              onUnmatch: () {
+                _showUnmatchDialog(context, match);
+              },
+              onBlock: () {
+                _showBlockDialog(context, match);
+              },
+              onReport: () {
+                _showReportDialog(context, match);
+              },
+            );
+          },
         ),
       );
     }
@@ -446,10 +441,7 @@ class _MatchesScreenState extends State<MatchesScreen>
                 // Note: Unmatch API endpoint not yet available
                 // Future implementation: await matchRepository.unmatch(match.id);
 
-                PulseToast.success(
-                  context,
-                  message: 'Unmatched successfully',
-                );
+                PulseToast.success(context, message: 'Unmatched successfully');
               } catch (e) {
                 PulseToast.error(
                   context,
@@ -544,7 +536,8 @@ class _MatchesScreenState extends State<MatchesScreen>
 
                 PulseToast.success(
                   context,
-                  message: 'Report submitted. Thank you for helping keep PulseLink safe.',
+                  message:
+                      'Report submitted. Thank you for helping keep PulseLink safe.',
                 );
               } catch (e) {
                 PulseToast.error(
@@ -570,9 +563,6 @@ class _MatchesScreenState extends State<MatchesScreen>
       return true;
     }).toList();
   }
-
-
-
 
   Widget _buildLoadMoreIndicator() {
     return Container(

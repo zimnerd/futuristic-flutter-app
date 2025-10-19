@@ -8,7 +8,8 @@ import '../models/notification.dart';
 /// Service for notifications API integration with NestJS backend
 class NotificationApiService {
   static NotificationApiService? _instance;
-  static NotificationApiService get instance => _instance ??= NotificationApiService._();
+  static NotificationApiService get instance =>
+      _instance ??= NotificationApiService._();
   NotificationApiService._();
 
   io.Socket? _socket;
@@ -22,7 +23,7 @@ class NotificationApiService {
   /// Initialize WebSocket connection for real-time notifications
   Future<void> initializeSocket(String authToken) async {
     _authToken = authToken;
-    
+
     try {
       _socket = io.io(
         ApiConstants.websocketUrl,
@@ -34,7 +35,7 @@ class NotificationApiService {
       );
 
       _socket!.connect();
-      
+
       _socket!.onConnect((_) {
         AppLogger.info('Notifications WebSocket connected');
       });
@@ -46,7 +47,6 @@ class NotificationApiService {
       _socket!.onDisconnect((_) {
         AppLogger.info('Notifications WebSocket disconnected');
       });
-
     } catch (e) {
       AppLogger.error('Failed to initialize notifications socket: $e');
       rethrow;
@@ -64,14 +64,15 @@ class NotificationApiService {
         'page': page.toString(),
         'limit': limit.toString(),
       };
-      
+
       if (unreadOnly != null) {
         queryParams['unreadOnly'] = unreadOnly.toString();
       }
 
       final response = await http.get(
-        Uri.parse('${ApiConstants.baseUrl}${ApiConstants.notifications}')
-            .replace(queryParameters: queryParams),
+        Uri.parse(
+          '${ApiConstants.baseUrl}${ApiConstants.notifications}',
+        ).replace(queryParameters: queryParams),
         headers: {
           'Authorization': 'Bearer $_authToken',
           'Content-Type': 'application/json',
@@ -96,7 +97,9 @@ class NotificationApiService {
   Future<void> markAsRead(String notificationId) async {
     try {
       final response = await http.patch(
-        Uri.parse('${ApiConstants.baseUrl}${ApiConstants.notifications}/$notificationId/read'),
+        Uri.parse(
+          '${ApiConstants.baseUrl}${ApiConstants.notifications}/$notificationId/read',
+        ),
         headers: {
           'Authorization': 'Bearer $_authToken',
           'Content-Type': 'application/json',
@@ -104,7 +107,9 @@ class NotificationApiService {
       );
 
       if (response.statusCode != 200) {
-        throw Exception('Failed to mark notification as read: ${response.statusCode}');
+        throw Exception(
+          'Failed to mark notification as read: ${response.statusCode}',
+        );
       }
     } catch (e) {
       AppLogger.error('Error marking notification as read: $e');
@@ -116,7 +121,9 @@ class NotificationApiService {
   Future<void> markAllAsRead() async {
     try {
       final response = await http.patch(
-        Uri.parse('${ApiConstants.baseUrl}${ApiConstants.notifications}/read-all'),
+        Uri.parse(
+          '${ApiConstants.baseUrl}${ApiConstants.notifications}/read-all',
+        ),
         headers: {
           'Authorization': 'Bearer $_authToken',
           'Content-Type': 'application/json',
@@ -124,7 +131,9 @@ class NotificationApiService {
       );
 
       if (response.statusCode != 200) {
-        throw Exception('Failed to mark all notifications as read: ${response.statusCode}');
+        throw Exception(
+          'Failed to mark all notifications as read: ${response.statusCode}',
+        );
       }
     } catch (e) {
       AppLogger.error('Error marking all notifications as read: $e');
@@ -136,7 +145,9 @@ class NotificationApiService {
   Future<void> deleteNotification(String notificationId) async {
     try {
       final response = await http.delete(
-        Uri.parse('${ApiConstants.baseUrl}${ApiConstants.notifications}/$notificationId'),
+        Uri.parse(
+          '${ApiConstants.baseUrl}${ApiConstants.notifications}/$notificationId',
+        ),
         headers: {
           'Authorization': 'Bearer $_authToken',
           'Content-Type': 'application/json',
@@ -144,7 +155,9 @@ class NotificationApiService {
       );
 
       if (response.statusCode != 200) {
-        throw Exception('Failed to delete notification: ${response.statusCode}');
+        throw Exception(
+          'Failed to delete notification: ${response.statusCode}',
+        );
       }
     } catch (e) {
       AppLogger.error('Error deleting notification: $e');
@@ -156,7 +169,9 @@ class NotificationApiService {
   Future<Map<String, dynamic>> getNotificationPreferences() async {
     try {
       final response = await http.get(
-        Uri.parse('${ApiConstants.baseUrl}${ApiConstants.notifications}/preferences'),
+        Uri.parse(
+          '${ApiConstants.baseUrl}${ApiConstants.notifications}/preferences',
+        ),
         headers: {
           'Authorization': 'Bearer $_authToken',
           'Content-Type': 'application/json',
@@ -167,7 +182,9 @@ class NotificationApiService {
         final data = json.decode(response.body);
         return data['preferences'] as Map<String, dynamic>;
       } else {
-        throw Exception('Failed to load notification preferences: ${response.statusCode}');
+        throw Exception(
+          'Failed to load notification preferences: ${response.statusCode}',
+        );
       }
     } catch (e) {
       AppLogger.error('Error fetching notification preferences: $e');
@@ -176,10 +193,14 @@ class NotificationApiService {
   }
 
   /// Update notification preferences
-  Future<void> updateNotificationPreferences(Map<String, dynamic> preferences) async {
+  Future<void> updateNotificationPreferences(
+    Map<String, dynamic> preferences,
+  ) async {
     try {
       final response = await http.patch(
-        Uri.parse('${ApiConstants.baseUrl}${ApiConstants.notifications}/preferences'),
+        Uri.parse(
+          '${ApiConstants.baseUrl}${ApiConstants.notifications}/preferences',
+        ),
         headers: {
           'Authorization': 'Bearer $_authToken',
           'Content-Type': 'application/json',
@@ -189,7 +210,9 @@ class NotificationApiService {
 
       if (response.statusCode != 200) {
         final errorData = json.decode(response.body);
-        throw Exception(errorData['message'] ?? 'Failed to update notification preferences');
+        throw Exception(
+          errorData['message'] ?? 'Failed to update notification preferences',
+        );
       }
     } catch (e) {
       AppLogger.error('Error updating notification preferences: $e');
@@ -201,7 +224,9 @@ class NotificationApiService {
   Future<int> getUnreadCount() async {
     try {
       final response = await http.get(
-        Uri.parse('${ApiConstants.baseUrl}${ApiConstants.notifications}/unread-count'),
+        Uri.parse(
+          '${ApiConstants.baseUrl}${ApiConstants.notifications}/unread-count',
+        ),
         headers: {
           'Authorization': 'Bearer $_authToken',
           'Content-Type': 'application/json',
@@ -267,7 +292,9 @@ class NotificationApiService {
   }
 
   /// Listen for notification updates (read status, etc.)
-  void listenForNotificationUpdates(Function(String notificationId, Map<String, dynamic> updates) onUpdate) {
+  void listenForNotificationUpdates(
+    Function(String notificationId, Map<String, dynamic> updates) onUpdate,
+  ) {
     _socket?.on('notification_updated', (data) {
       try {
         onUpdate(

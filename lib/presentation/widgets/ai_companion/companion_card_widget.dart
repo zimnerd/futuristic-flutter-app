@@ -21,9 +21,7 @@ class CompanionCardWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       elevation: 4,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(16),
@@ -127,10 +125,7 @@ class CompanionCardWidget extends StatelessWidget {
               // Description
               Text(
                 companion.description,
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey[700],
-                ),
+                style: TextStyle(fontSize: 14, color: Colors.grey[700]),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -168,14 +163,18 @@ class CompanionCardWidget extends StatelessWidget {
                         Icon(
                           Icons.circle,
                           size: 8,
-                          color: companion.isActive ? Colors.green : Colors.grey,
+                          color: companion.isActive
+                              ? Colors.green
+                              : Colors.grey,
                         ),
                         const SizedBox(width: 4),
                         Text(
                           companion.isActive ? 'Active' : 'Inactive',
                           style: TextStyle(
                             fontSize: 12,
-                            color: companion.isActive ? Colors.green : Colors.grey,
+                            color: companion.isActive
+                                ? Colors.green
+                                : Colors.grey,
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -188,10 +187,7 @@ class CompanionCardWidget extends StatelessWidget {
               const SizedBox(height: 8),
               Text(
                 'Last interaction: ${_formatDate(companion.lastInteractionAt)}',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey[500],
-                ),
+                style: TextStyle(fontSize: 12, color: Colors.grey[500]),
               ),
             ],
           ),
@@ -207,26 +203,13 @@ class CompanionCardWidget extends StatelessWidget {
   }) {
     return Column(
       children: [
-        Icon(
-          icon,
-          size: 20,
-          color: PulseColors.primary,
-        ),
+        Icon(icon, size: 20, color: PulseColors.primary),
         const SizedBox(height: 4),
         Text(
           value,
-          style: const TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w600,
-          ),
+          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
         ),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 10,
-            color: Colors.grey[600],
-          ),
-        ),
+        Text(label, style: TextStyle(fontSize: 10, color: Colors.grey[600])),
       ],
     );
   }

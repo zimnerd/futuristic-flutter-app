@@ -13,7 +13,7 @@ import '../utils/logger.dart';
 import 'location_service.dart';
 
 /// Service locator for managing app services
-/// 
+///
 /// This has been simplified to use the new consolidated ApiClient for all API operations,
 /// removing the need for scattered API services.
 class ServiceLocator {
@@ -25,7 +25,7 @@ class ServiceLocator {
 
   // Core API client (replaces all scattered API services)
   ApiClient? _apiClient;
-  
+
   // Feature-specific services (using the unified API client)
   MatchingService? _matchingService;
   MessagingService? _messagingService;
@@ -83,11 +83,11 @@ class ServiceLocator {
       Logger().d(
         '🔑 CoreServiceLocator: setAuthToken called with token: ${authToken.substring(0, 20)}...',
       );
-      
+
       _apiClient?.setAuthToken(authToken);
       _paymentService?.setAuthToken(authToken);
       _pushNotificationService?.updateAuthToken(authToken);
-      
+
       // Initialize Firebase notifications with auth token
       if (_firebaseNotificationService != null) {
         await _firebaseNotificationService!.initialize(authToken: authToken);
@@ -124,7 +124,7 @@ class ServiceLocator {
       _apiClient?.clearAuthToken();
       await _pushNotificationService?.clearNotifications();
       _analyticsService?.clearUserData();
-      
+
       AppLogger.info('All service data cleared');
     } catch (e) {
       AppLogger.error('Failed to clear service data: $e');
@@ -220,7 +220,9 @@ class ServiceLocator {
   /// Ensure services are initialized
   void _ensureInitialized() {
     if (!_initialized) {
-      throw Exception('ServiceLocator not initialized. Call initialize() first.');
+      throw Exception(
+        'ServiceLocator not initialized. Call initialize() first.',
+      );
     }
   }
 

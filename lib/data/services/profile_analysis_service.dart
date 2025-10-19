@@ -8,11 +8,13 @@ import '../../core/services/service_locator.dart';
 /// AI-powered profile analysis and enhancement service
 class ProfileAnalysisService {
   static ProfileAnalysisService? _instance;
-  static ProfileAnalysisService get instance => _instance ??= ProfileAnalysisService._();
+  static ProfileAnalysisService get instance =>
+      _instance ??= ProfileAnalysisService._();
   ProfileAnalysisService._();
 
   final Logger logger = Logger();
-  AiPreferencesService get _preferencesService => ServiceLocator.instance.aiPreferences;
+  AiPreferencesService get _preferencesService =>
+      ServiceLocator.instance.aiPreferences;
 
   /// Analyze a match's profile for conversation starters
   Future<List<ConversationStarter>> analyzeProfileForConversation({
@@ -33,9 +35,12 @@ class ProfileAnalysisService {
       }
 
       // Analyze interests for shared topics
-      starters.addAll(await _analyzeInterestsForStarters(
-        matchProfile.interests, currentUserProfile.interests
-      ));
+      starters.addAll(
+        await _analyzeInterestsForStarters(
+          matchProfile.interests,
+          currentUserProfile.interests,
+        ),
+      );
 
       // Analyze photos for visual conversation starters
       if (matchProfile.photos.isNotEmpty) {
@@ -48,14 +53,19 @@ class ProfileAnalysisService {
 
       // Analyze location for local conversation topics
       if (matchProfile.location != null) {
-        starters.addAll(await _analyzeLocationForStarters(
-          matchProfile.location!, currentUserProfile.location
-        ));
+        starters.addAll(
+          await _analyzeLocationForStarters(
+            matchProfile.location!,
+            currentUserProfile.location,
+          ),
+        );
       }
 
       // Analyze lifestyle choices
       if (matchProfile.lifestyle.isNotEmpty) {
-        starters.addAll(await _analyzeLifestyleForStarters(matchProfile.lifestyle));
+        starters.addAll(
+          await _analyzeLifestyleForStarters(matchProfile.lifestyle),
+        );
       }
 
       return starters
@@ -131,27 +141,37 @@ class ProfileAnalysisService {
 
       // Analyze shared interests
       final sharedInterests = _findSharedInterests(userProfile1, userProfile2);
-      final interestCompatibility = sharedInterests.length / 
-          (userProfile1.interests.length + userProfile2.interests.length - sharedInterests.length);
+      final interestCompatibility =
+          sharedInterests.length /
+          (userProfile1.interests.length +
+              userProfile2.interests.length -
+              sharedInterests.length);
 
       // Analyze lifestyle compatibility
       final lifestyleCompatibility = _analyzeLifestyleCompatibility(
-        userProfile1.lifestyle, userProfile2.lifestyle
+        userProfile1.lifestyle,
+        userProfile2.lifestyle,
       );
 
       // Analyze personality compatibility
       final personalityCompatibility = _analyzePersonalityCompatibility(
-        userProfile1.personality, userProfile2.personality
+        userProfile1.personality,
+        userProfile2.personality,
       );
 
       // Analyze location compatibility
       final locationCompatibility = _analyzeLocationCompatibility(
-        userProfile1.location, userProfile2.location
+        userProfile1.location,
+        userProfile2.location,
       );
 
       // Calculate overall compatibility
-      final overallScore = (interestCompatibility + lifestyleCompatibility + 
-                           personalityCompatibility + locationCompatibility) / 4;
+      final overallScore =
+          (interestCompatibility +
+              lifestyleCompatibility +
+              personalityCompatibility +
+              locationCompatibility) /
+          4;
 
       return ProfileCompatibilityInsight(
         overallCompatibility: overallScore,
@@ -160,25 +180,31 @@ class ProfileAnalysisService {
           CompatibilityFactor(
             name: 'Interests',
             score: interestCompatibility,
-            description: _generateInterestCompatibilityDescription(sharedInterests),
+            description: _generateInterestCompatibilityDescription(
+              sharedInterests,
+            ),
           ),
           CompatibilityFactor(
             name: 'Lifestyle',
             score: lifestyleCompatibility,
             description: _generateLifestyleCompatibilityDescription(
-              userProfile1.lifestyle, userProfile2.lifestyle
+              userProfile1.lifestyle,
+              userProfile2.lifestyle,
             ),
           ),
           CompatibilityFactor(
             name: 'Personality',
             score: personalityCompatibility,
             description: _generatePersonalityCompatibilityDescription(
-              userProfile1.personality, userProfile2.personality
+              userProfile1.personality,
+              userProfile2.personality,
             ),
           ),
         ],
         conversationSuggestions: await _generateCompatibilityBasedSuggestions(
-          userProfile1, userProfile2, sharedInterests
+          userProfile1,
+          userProfile2,
+          sharedInterests,
         ),
       );
     } catch (e) {
@@ -239,18 +265,21 @@ class ProfileAnalysisService {
 
   Future<List<ConversationStarter>> _analyzeBioForStarters(String bio) async {
     final starters = <ConversationStarter>[];
-    
+
     // Simple keyword analysis (in real implementation, use NLP)
     final keywords = _extractKeywords(bio);
-    
+
     for (final keyword in keywords) {
-      starters.add(ConversationStarter(
-        text: "I noticed you mentioned $keyword in your bio. Tell me more about that!",
-        type: StarterType.bio,
-        confidence: 0.8,
-        category: StarterCategory.personal,
-        context: 'Bio keyword: $keyword',
-      ));
+      starters.add(
+        ConversationStarter(
+          text:
+              "I noticed you mentioned $keyword in your bio. Tell me more about that!",
+          type: StarterType.bio,
+          confidence: 0.8,
+          category: StarterCategory.personal,
+          context: 'Bio keyword: $keyword',
+        ),
+      );
     }
 
     return starters;
@@ -267,13 +296,15 @@ class ProfileAnalysisService {
     );
 
     for (final interest in sharedInterests) {
-      starters.add(ConversationStarter(
-        text: "I see we both love $interest! What got you started with it?",
-        type: StarterType.interest,
-        confidence: 0.9,
-        category: StarterCategory.shared,
-        context: 'Shared interest: $interest',
-      ));
+      starters.add(
+        ConversationStarter(
+          text: "I see we both love $interest! What got you started with it?",
+          type: StarterType.interest,
+          confidence: 0.9,
+          category: StarterCategory.shared,
+          context: 'Shared interest: $interest',
+        ),
+      );
     }
 
     // Also suggest unique interests
@@ -282,13 +313,15 @@ class ProfileAnalysisService {
         .take(3);
 
     for (final interest in uniqueInterests) {
-      starters.add(ConversationStarter(
-        text: "I'd love to hear about your interest in $interest!",
-        type: StarterType.interest,
-        confidence: 0.7,
-        category: StarterCategory.discovery,
-        context: 'Unique interest: $interest',
-      ));
+      starters.add(
+        ConversationStarter(
+          text: "I'd love to hear about your interest in $interest!",
+          type: StarterType.interest,
+          confidence: 0.7,
+          category: StarterCategory.discovery,
+          context: 'Unique interest: $interest',
+        ),
+      );
     }
 
     return starters;
@@ -298,18 +331,20 @@ class ProfileAnalysisService {
     List<String> photos,
   ) async {
     final starters = <ConversationStarter>[];
-    
+
     // Analyze photo content (placeholder implementation)
     for (int i = 0; i < photos.length && i < 3; i++) {
       final photoAnalysis = await _analyzePhoto(photos[i]);
       if (photoAnalysis != null) {
-        starters.add(ConversationStarter(
-          text: photoAnalysis.conversationStarter,
-          type: StarterType.photo,
-          confidence: photoAnalysis.confidence,
-          category: StarterCategory.visual,
-          context: 'Photo analysis: ${photoAnalysis.description}',
-        ));
+        starters.add(
+          ConversationStarter(
+            text: photoAnalysis.conversationStarter,
+            type: StarterType.photo,
+            confidence: photoAnalysis.confidence,
+            category: StarterCategory.visual,
+            context: 'Photo analysis: ${photoAnalysis.description}',
+          ),
+        );
       }
     }
 
@@ -323,21 +358,25 @@ class ProfileAnalysisService {
     final starters = <ConversationStarter>[];
 
     if (currentUserLocation != null && currentUserLocation == matchLocation) {
-      starters.add(ConversationStarter(
-        text: "Hey, a local! What's your favorite spot in $matchLocation?",
-        type: StarterType.location,
-        confidence: 0.8,
-        category: StarterCategory.local,
-        context: 'Same location: $matchLocation',
-      ));
+      starters.add(
+        ConversationStarter(
+          text: "Hey, a local! What's your favorite spot in $matchLocation?",
+          type: StarterType.location,
+          confidence: 0.8,
+          category: StarterCategory.local,
+          context: 'Same location: $matchLocation',
+        ),
+      );
     } else {
-      starters.add(ConversationStarter(
-        text: "How do you like living in $matchLocation?",
-        type: StarterType.location,
-        confidence: 0.6,
-        category: StarterCategory.discovery,
-        context: 'Different location: $matchLocation',
-      ));
+      starters.add(
+        ConversationStarter(
+          text: "How do you like living in $matchLocation?",
+          type: StarterType.location,
+          confidence: 0.6,
+          category: StarterCategory.discovery,
+          context: 'Different location: $matchLocation',
+        ),
+      );
     }
 
     return starters;
@@ -349,13 +388,15 @@ class ProfileAnalysisService {
     final starters = <ConversationStarter>[];
 
     for (final choice in lifestyle.take(2)) {
-      starters.add(ConversationStarter(
-        text: "I see you're into $choice. What's that like?",
-        type: StarterType.lifestyle,
-        confidence: 0.7,
-        category: StarterCategory.lifestyle,
-        context: 'Lifestyle choice: $choice',
-      ));
+      starters.add(
+        ConversationStarter(
+          text: "I see you're into $choice. What's that like?",
+          type: StarterType.lifestyle,
+          confidence: 0.7,
+          category: StarterCategory.lifestyle,
+          context: 'Lifestyle choice: $choice',
+        ),
+      );
     }
 
     return starters;
@@ -367,47 +408,59 @@ class ProfileAnalysisService {
     final suggestions = <ProfileSuggestion>[];
 
     if (bio == null || bio.isEmpty) {
-      weaknesses.add(ProfileWeakness(
-        area: 'Bio',
-        description: 'No bio provided',
-        impact: ImpactLevel.high,
-      ));
-      suggestions.add(ProfileSuggestion(
-        area: 'Bio',
-        suggestion: 'Add a bio that showcases your personality and interests',
-        priority: Priority.high,
-        estimatedImpact: 0.8,
-      ));
+      weaknesses.add(
+        ProfileWeakness(
+          area: 'Bio',
+          description: 'No bio provided',
+          impact: ImpactLevel.high,
+        ),
+      );
+      suggestions.add(
+        ProfileSuggestion(
+          area: 'Bio',
+          suggestion: 'Add a bio that showcases your personality and interests',
+          priority: Priority.high,
+          estimatedImpact: 0.8,
+        ),
+      );
     } else {
       if (bio.length < 50) {
-        weaknesses.add(ProfileWeakness(
-          area: 'Bio',
-          description: 'Bio is too short',
-          impact: ImpactLevel.medium,
-        ));
-        suggestions.add(ProfileSuggestion(
-          area: 'Bio',
-          suggestion: 'Expand your bio with more details about your interests and personality',
-          priority: Priority.medium,
-          estimatedImpact: 0.6,
-        ));
+        weaknesses.add(
+          ProfileWeakness(
+            area: 'Bio',
+            description: 'Bio is too short',
+            impact: ImpactLevel.medium,
+          ),
+        );
+        suggestions.add(
+          ProfileSuggestion(
+            area: 'Bio',
+            suggestion:
+                'Expand your bio with more details about your interests and personality',
+            priority: Priority.medium,
+            estimatedImpact: 0.6,
+          ),
+        );
       } else if (bio.length > 500) {
-        weaknesses.add(ProfileWeakness(
-          area: 'Bio',
-          description: 'Bio is too long',
-          impact: ImpactLevel.low,
-        ));
-        suggestions.add(ProfileSuggestion(
-          area: 'Bio',
-          suggestion: 'Consider shortening your bio to highlight key points',
-          priority: Priority.low,
-          estimatedImpact: 0.3,
-        ));
+        weaknesses.add(
+          ProfileWeakness(
+            area: 'Bio',
+            description: 'Bio is too long',
+            impact: ImpactLevel.low,
+          ),
+        );
+        suggestions.add(
+          ProfileSuggestion(
+            area: 'Bio',
+            suggestion: 'Consider shortening your bio to highlight key points',
+            priority: Priority.low,
+            estimatedImpact: 0.3,
+          ),
+        );
       } else {
-        strengths.add(ProfileStrength(
-          area: 'Bio',
-          description: 'Good bio length',
-        ));
+        strengths.add(
+          ProfileStrength(area: 'Bio', description: 'Good bio length'),
+        );
       }
     }
 
@@ -424,34 +477,42 @@ class ProfileAnalysisService {
     final suggestions = <ProfileSuggestion>[];
 
     if (photos.isEmpty) {
-      weaknesses.add(ProfileWeakness(
-        area: 'Photos',
-        description: 'No photos uploaded',
-        impact: ImpactLevel.critical,
-      ));
-      suggestions.add(ProfileSuggestion(
-        area: 'Photos',
-        suggestion: 'Add at least 3-5 high-quality photos that show your face and interests',
-        priority: Priority.critical,
-        estimatedImpact: 0.9,
-      ));
+      weaknesses.add(
+        ProfileWeakness(
+          area: 'Photos',
+          description: 'No photos uploaded',
+          impact: ImpactLevel.critical,
+        ),
+      );
+      suggestions.add(
+        ProfileSuggestion(
+          area: 'Photos',
+          suggestion:
+              'Add at least 3-5 high-quality photos that show your face and interests',
+          priority: Priority.critical,
+          estimatedImpact: 0.9,
+        ),
+      );
     } else if (photos.length < 3) {
-      weaknesses.add(ProfileWeakness(
-        area: 'Photos',
-        description: 'Too few photos',
-        impact: ImpactLevel.high,
-      ));
-      suggestions.add(ProfileSuggestion(
-        area: 'Photos',
-        suggestion: 'Add more photos to give a better sense of who you are',
-        priority: Priority.high,
-        estimatedImpact: 0.7,
-      ));
+      weaknesses.add(
+        ProfileWeakness(
+          area: 'Photos',
+          description: 'Too few photos',
+          impact: ImpactLevel.high,
+        ),
+      );
+      suggestions.add(
+        ProfileSuggestion(
+          area: 'Photos',
+          suggestion: 'Add more photos to give a better sense of who you are',
+          priority: Priority.high,
+          estimatedImpact: 0.7,
+        ),
+      );
     } else {
-      strengths.add(ProfileStrength(
-        area: 'Photos',
-        description: 'Good number of photos',
-      ));
+      strengths.add(
+        ProfileStrength(area: 'Photos', description: 'Good number of photos'),
+      );
     }
 
     return ProfileAnalysisResult(
@@ -467,34 +528,44 @@ class ProfileAnalysisService {
     final suggestions = <ProfileSuggestion>[];
 
     if (interests.isEmpty) {
-      weaknesses.add(ProfileWeakness(
-        area: 'Interests',
-        description: 'No interests listed',
-        impact: ImpactLevel.high,
-      ));
-      suggestions.add(ProfileSuggestion(
-        area: 'Interests',
-        suggestion: 'Add interests to help matches find common ground',
-        priority: Priority.high,
-        estimatedImpact: 0.8,
-      ));
+      weaknesses.add(
+        ProfileWeakness(
+          area: 'Interests',
+          description: 'No interests listed',
+          impact: ImpactLevel.high,
+        ),
+      );
+      suggestions.add(
+        ProfileSuggestion(
+          area: 'Interests',
+          suggestion: 'Add interests to help matches find common ground',
+          priority: Priority.high,
+          estimatedImpact: 0.8,
+        ),
+      );
     } else if (interests.length < 3) {
-      weaknesses.add(ProfileWeakness(
-        area: 'Interests',
-        description: 'Too few interests',
-        impact: ImpactLevel.medium,
-      ));
-      suggestions.add(ProfileSuggestion(
-        area: 'Interests',
-        suggestion: 'Add more interests to increase match compatibility',
-        priority: Priority.medium,
-        estimatedImpact: 0.6,
-      ));
+      weaknesses.add(
+        ProfileWeakness(
+          area: 'Interests',
+          description: 'Too few interests',
+          impact: ImpactLevel.medium,
+        ),
+      );
+      suggestions.add(
+        ProfileSuggestion(
+          area: 'Interests',
+          suggestion: 'Add more interests to increase match compatibility',
+          priority: Priority.medium,
+          estimatedImpact: 0.6,
+        ),
+      );
     } else {
-      strengths.add(ProfileStrength(
-        area: 'Interests',
-        description: 'Good variety of interests',
-      ));
+      strengths.add(
+        ProfileStrength(
+          area: 'Interests',
+          description: 'Good variety of interests',
+        ),
+      );
     }
 
     return ProfileAnalysisResult(
@@ -510,7 +581,9 @@ class ProfileAnalysisService {
 
     // Bio score
     if (profile.bio != null && profile.bio!.isNotEmpty) {
-      score += profile.bio!.length >= 50 && profile.bio!.length <= 500 ? 1.0 : 0.5;
+      score += profile.bio!.length >= 50 && profile.bio!.length <= 500
+          ? 1.0
+          : 0.5;
     }
     factors++;
 
@@ -522,7 +595,9 @@ class ProfileAnalysisService {
 
     // Interests score
     if (profile.interests.isNotEmpty) {
-      score += profile.interests.length >= 3 ? 1.0 : profile.interests.length * 0.33;
+      score += profile.interests.length >= 3
+          ? 1.0
+          : profile.interests.length * 0.33;
     }
     factors++;
 
@@ -538,20 +613,30 @@ class ProfileAnalysisService {
 
   double _estimateImpact(List<ProfileSuggestion> suggestions) {
     if (suggestions.isEmpty) return 0.0;
-    return suggestions.map((s) => s.estimatedImpact).reduce((a, b) => a + b) / suggestions.length;
+    return suggestions.map((s) => s.estimatedImpact).reduce((a, b) => a + b) /
+        suggestions.length;
   }
 
-  List<String> _findSharedInterests(UserProfile profile1, UserProfile profile2) {
+  List<String> _findSharedInterests(
+    UserProfile profile1,
+    UserProfile profile2,
+  ) {
     return profile1.interests
-        .where((interest) => profile2.interests
-            .any((other) => interest.toLowerCase() == other.toLowerCase()))
+        .where(
+          (interest) => profile2.interests.any(
+            (other) => interest.toLowerCase() == other.toLowerCase(),
+          ),
+        )
         .toList();
   }
 
-  double _analyzeLifestyleCompatibility(List<String> lifestyle1, List<String> lifestyle2) {
+  double _analyzeLifestyleCompatibility(
+    List<String> lifestyle1,
+    List<String> lifestyle2,
+  ) {
     if (lifestyle1.isEmpty && lifestyle2.isEmpty) return 0.5;
     if (lifestyle1.isEmpty || lifestyle2.isEmpty) return 0.3;
-    
+
     final shared = lifestyle1.where((l) => lifestyle2.contains(l)).length;
     final total = (lifestyle1.length + lifestyle2.length - shared);
     return total > 0 ? shared / total : 0.0;
@@ -562,7 +647,7 @@ class ProfileAnalysisService {
     ProfilePersonality? personality2,
   ) {
     if (personality1 == null || personality2 == null) return 0.5;
-    
+
     // Simple compatibility based on personality differences
     final differences = [
       (personality1.openness - personality2.openness).abs(),
@@ -571,15 +656,16 @@ class ProfileAnalysisService {
       (personality1.agreeableness - personality2.agreeableness).abs(),
       (personality1.neuroticism - personality2.neuroticism).abs(),
     ];
-    
-    final avgDifference = differences.reduce((a, b) => a + b) / differences.length;
+
+    final avgDifference =
+        differences.reduce((a, b) => a + b) / differences.length;
     return 1.0 - avgDifference; // Lower differences = higher compatibility
   }
 
   double _analyzeLocationCompatibility(String? location1, String? location2) {
     if (location1 == null || location2 == null) return 0.5;
     if (location1 == location2) return 1.0;
-    
+
     // Simple proximity analysis (would use actual geolocation in real app)
     return 0.3; // Different locations
   }
@@ -682,7 +768,7 @@ class ProfileAnalysisService {
     for (final word in words) {
       wordCounts[word] = (wordCounts[word] ?? 0) + 1;
     }
-    
+
     // Sort by frequency and take top keywords
     final sortedWords = wordCounts.entries.toList()
       ..sort((a, b) => b.value.compareTo(a.value));
@@ -822,7 +908,9 @@ class ProfileAnalysisService {
     }
   }
 
-  String _generateInterestCompatibilityDescription(List<String> sharedInterests) {
+  String _generateInterestCompatibilityDescription(
+    List<String> sharedInterests,
+  ) {
     if (sharedInterests.isEmpty) {
       return 'No shared interests found, but that could lead to interesting discoveries!';
     }
@@ -955,10 +1043,7 @@ class ProfileStrength {
   final String area;
   final String description;
 
-  const ProfileStrength({
-    required this.area,
-    required this.description,
-  });
+  const ProfileStrength({required this.area, required this.description});
 }
 
 class ProfileWeakness {
@@ -1029,34 +1114,10 @@ class CompatibilityFactor {
   });
 }
 
-enum StarterType {
-  bio,
-  interest,
-  photo,
-  location,
-  lifestyle,
-  iceBreaker,
-}
+enum StarterType { bio, interest, photo, location, lifestyle, iceBreaker }
 
-enum StarterCategory {
-  personal,
-  shared,
-  discovery,
-  visual,
-  local,
-  lifestyle,
-}
+enum StarterCategory { personal, shared, discovery, visual, local, lifestyle }
 
-enum ImpactLevel {
-  low,
-  medium,
-  high,
-  critical,
-}
+enum ImpactLevel { low, medium, high, critical }
 
-enum Priority {
-  low,
-  medium,
-  high,
-  critical,
-}
+enum Priority { low, medium, high, critical }

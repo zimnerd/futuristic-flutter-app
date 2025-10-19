@@ -69,9 +69,9 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
       options: DefaultFirebaseOptions.currentPlatform,
     );
   }
-  
+
   AppLogger.info('Background message received: ${message.messageId}');
-  
+
   // Handle incoming call notifications with native UI
   if (message.data['type'] == 'incoming_call') {
     AppLogger.info('📞 Background incoming call notification received');
@@ -148,7 +148,8 @@ void main() async {
 /// Initialize Firebase notifications
 Future<void> _initializeFirebaseNotifications() async {
   try {
-    final notificationService = ServiceLocator.instance.firebaseNotificationService;
+    final notificationService =
+        ServiceLocator.instance.firebaseNotificationService;
     await notificationService.initialize();
     AppLogger.info('✅ Firebase notifications initialized');
   } catch (e) {
@@ -236,173 +237,170 @@ class PulseDatingApp extends StatelessWidget {
         RepositoryProvider<WebRTCService>(create: (context) => WebRTCService()),
         RepositoryProvider<StatisticsService>(
           create: (context) => StatisticsService(context.read<ApiClient>()),
+        ),
+        RepositoryProvider<HeatMapService>(
+          create: (context) => HeatMapService(context.read<ApiClient>()),
+        ),
+        RepositoryProvider<LocationService>(
+          create: (context) => LocationService(),
+        ),
+        RepositoryProvider<LiveStreamingService>(
+          create: (context) => LiveStreamingService(context.read<ApiClient>()),
+        ),
+        // Add AuthService for ProfileService dependency
+        RepositoryProvider<AuthService>(
+          create: (context) => AuthService(
+            apiClient: context.read<ApiClient>(),
+            secureStorage: hiveStorage.secureStorage,
           ),
-          RepositoryProvider<HeatMapService>(
-            create: (context) => HeatMapService(context.read<ApiClient>()),
+        ),
+        // Add TempMediaUploadService for PhotoManagerService dependency
+        RepositoryProvider<TempMediaUploadService>(
+          create: (context) => TempMediaUploadService(Dio()),
+        ),
+        // Add ProfileService
+        RepositoryProvider<ProfileService>(
+          create: (context) => ProfileService(
+            apiClient: context.read<ApiClient>(),
+            authService: context.read<AuthService>(),
           ),
-          RepositoryProvider<LocationService>(
-            create: (context) => LocationService(),
+        ),
+        // Add PhotoManagerService
+        RepositoryProvider<PhotoManagerService>(
+          create: (context) => PhotoManagerService(
+            uploadService: context.read<TempMediaUploadService>(),
           ),
-          RepositoryProvider<LiveStreamingService>(
-            create: (context) =>
-                LiveStreamingService(context.read<ApiClient>()),
-          ),
-          // Add AuthService for ProfileService dependency
-          RepositoryProvider<AuthService>(
-            create: (context) => AuthService(
-              apiClient: context.read<ApiClient>(),
-              secureStorage: hiveStorage.secureStorage,
-            ),
-          ),
-          // Add TempMediaUploadService for PhotoManagerService dependency
-          RepositoryProvider<TempMediaUploadService>(
-            create: (context) => TempMediaUploadService(Dio()),
-          ),
-          // Add ProfileService
-          RepositoryProvider<ProfileService>(
-            create: (context) => ProfileService(
-              apiClient: context.read<ApiClient>(),
-              authService: context.read<AuthService>(),
-            ),
-          ),
-          // Add PhotoManagerService
-          RepositoryProvider<PhotoManagerService>(
-            create: (context) => PhotoManagerService(
-              uploadService: context.read<TempMediaUploadService>(),
-            ),
-          ),
+        ),
 
-          // Initialize data sources
-          RepositoryProvider<UserRemoteDataSource>(
-            create: (context) =>
-                UserRemoteDataSourceImpl(context.read<ApiClient>()),
-          ),
-          RepositoryProvider<UserLocalDataSource>(
-            create: (context) =>
-                UserLocalDataSourceImpl(context.read<HiveStorageService>()),
-          ),
-          RepositoryProvider<ChatRemoteDataSource>(
-            create: (context) =>
-                ChatRemoteDataSourceImpl(context.read<ApiClient>()),
-          ),
-          RepositoryProvider<NotificationRemoteDataSource>(
-            create: (context) =>
-                NotificationRemoteDataSourceImpl(context.read<ApiClient>()),
-          ),
+        // Initialize data sources
+        RepositoryProvider<UserRemoteDataSource>(
+          create: (context) =>
+              UserRemoteDataSourceImpl(context.read<ApiClient>()),
+        ),
+        RepositoryProvider<UserLocalDataSource>(
+          create: (context) =>
+              UserLocalDataSourceImpl(context.read<HiveStorageService>()),
+        ),
+        RepositoryProvider<ChatRemoteDataSource>(
+          create: (context) =>
+              ChatRemoteDataSourceImpl(context.read<ApiClient>()),
+        ),
+        RepositoryProvider<NotificationRemoteDataSource>(
+          create: (context) =>
+              NotificationRemoteDataSourceImpl(context.read<ApiClient>()),
+        ),
 
-          // Initialize repositories with complete implementation
-          RepositoryProvider<UserRepository>(
-            create: (context) => UserRepositoryImpl(
-              context.read<UserRemoteDataSource>(),
-              context.read<UserLocalDataSource>(),
-            ),
+        // Initialize repositories with complete implementation
+        RepositoryProvider<UserRepository>(
+          create: (context) => UserRepositoryImpl(
+            context.read<UserRemoteDataSource>(),
+            context.read<UserLocalDataSource>(),
           ),
-          RepositoryProvider<ChatRepository>(
-            create: (context) => ChatRepositoryImpl(
-              remoteDataSource: context.read<ChatRemoteDataSource>(),
-              webSocketService: context.read<WebSocketService>(),
-            ),
-          ),
-          RepositoryProvider<NotificationRepository>(
-            create: (context) => NotificationRepositoryImpl(
-              remoteDataSource: context.read<NotificationRemoteDataSource>(),
-            ),
-          ),
-
-          // Initialize BLoCs
-          BlocProvider<AuthBloc>(
-            create: (context) =>
-                AuthBloc(userRepository: context.read<UserRepository>()),
-          ),
-          BlocProvider<UserBloc>(
-            create: (context) =>
-                UserBloc(userRepository: context.read<UserRepository>()),
-          ),
-          BlocProvider<ChatBloc>(
-            create: (context) => ChatBloc(
-              chatRepository: context.read<ChatRepository>(),
-              userRepository: context.read<UserRepository>(),
+        ),
+        RepositoryProvider<ChatRepository>(
+          create: (context) => ChatRepositoryImpl(
+            remoteDataSource: context.read<ChatRemoteDataSource>(),
             webSocketService: context.read<WebSocketService>(),
+          ),
+        ),
+        RepositoryProvider<NotificationRepository>(
+          create: (context) => NotificationRepositoryImpl(
+            remoteDataSource: context.read<NotificationRemoteDataSource>(),
+          ),
+        ),
+
+        // Initialize BLoCs
+        BlocProvider<AuthBloc>(
+          create: (context) =>
+              AuthBloc(userRepository: context.read<UserRepository>()),
+        ),
+        BlocProvider<UserBloc>(
+          create: (context) =>
+              UserBloc(userRepository: context.read<UserRepository>()),
+        ),
+        BlocProvider<ChatBloc>(
+          create: (context) => ChatBloc(
+            chatRepository: context.read<ChatRepository>(),
+            userRepository: context.read<UserRepository>(),
+            webSocketService: context.read<WebSocketService>(),
+          ),
+        ),
+        BlocProvider<NotificationBloc>(
+          create: (context) => NotificationBloc(
+            notificationRepository: context.read<NotificationRepository>(),
+          ),
+        ),
+        BlocProvider<CallBloc>(
+          create: (context) => CallBloc(
+            webRTCService: context.read<WebRTCService>(),
+            webSocketService: context.read<WebSocketService>(),
+          ),
+        ),
+        BlocProvider<EventBloc>(
+          create: (context) => EventBloc(eventService: EventService.instance),
+        ),
+        BlocProvider<MatchingBloc>(
+          create: (context) => MatchingBloc(
+            matchingService: MatchingService(
+              apiClient: context.read<ApiClient>(),
             ),
           ),
-          BlocProvider<NotificationBloc>(
-            create: (context) => NotificationBloc(
-              notificationRepository: context.read<NotificationRepository>(),
+        ),
+        BlocProvider<MatchBloc>(
+          create: (context) => MatchBloc(
+            matchingService: MatchingService(
+              apiClient: context.read<ApiClient>(),
             ),
           ),
-          BlocProvider<CallBloc>(
-            create: (context) => CallBloc(
-              webRTCService: context.read<WebRTCService>(),
-              webSocketService: context.read<WebSocketService>(),
+        ),
+        BlocProvider<FilterBLoC>(
+          create: (context) =>
+              FilterBLoC(PreferencesService(context.read<ApiClient>())),
+        ),
+        BlocProvider<DiscoveryBloc>(
+          create: (context) => DiscoveryBloc(
+            discoveryService: DiscoveryService(
+              apiClient: context.read<ApiClient>(),
             ),
+            preferencesService: PreferencesService(context.read<ApiClient>()),
           ),
-          BlocProvider<EventBloc>(
-            create: (context) => EventBloc(eventService: EventService.instance),
+        ),
+        BlocProvider<LiveStreamingBloc>(
+          create: (context) =>
+              LiveStreamingBloc(context.read<LiveStreamingService>()),
+        ),
+        // ProfileBloc for profile screen
+        BlocProvider<ProfileBloc>(
+          create: (context) => ProfileBloc(
+            profileService: context.read<ProfileService>(),
+            photoManager: context.read<PhotoManagerService>(),
           ),
-          BlocProvider<MatchingBloc>(
-            create: (context) => MatchingBloc(
-              matchingService: MatchingService(
-                apiClient: context.read<ApiClient>(),
+        ),
+      ],
+      child: Builder(
+        builder: (context) {
+          // Initialize AppRouter with AuthBloc once it's available
+          final authBloc = context.read<AuthBloc>();
+          AppRouter.initialize(authBloc);
+
+          // Get repositories for background sync
+          final chatRepository = context.read<ChatRepository>();
+          final databaseService = MessageDatabaseService();
+
+          return BackgroundSyncManager.provider(
+            chatRepository: chatRepository,
+            databaseService: databaseService,
+            child: AutoLoginWrapper(
+              child: MaterialApp.router(
+                title: AppConstants.appName,
+                theme: PulseTheme.light,
+                darkTheme: PulseTheme.dark,
+                themeMode: ThemeMode.system,
+                debugShowCheckedModeBanner: false,
+                routerConfig: AppRouter.router,
               ),
             ),
-          ),
-          BlocProvider<MatchBloc>(
-            create: (context) => MatchBloc(
-              matchingService: MatchingService(
-                apiClient: context.read<ApiClient>(),
-              ),
-            ),
-          ),
-          BlocProvider<FilterBLoC>(
-            create: (context) => FilterBLoC(
-              PreferencesService(context.read<ApiClient>()),
-            ),
-          ),
-          BlocProvider<DiscoveryBloc>(
-            create: (context) => DiscoveryBloc(
-              discoveryService: DiscoveryService(
-                apiClient: context.read<ApiClient>(),
-              ),
-              preferencesService: PreferencesService(context.read<ApiClient>()),
-            ),
-          ),
-          BlocProvider<LiveStreamingBloc>(
-            create: (context) => LiveStreamingBloc(
-              context.read<LiveStreamingService>(),
-            ),
-          ),
-          // ProfileBloc for profile screen
-          BlocProvider<ProfileBloc>(
-            create: (context) => ProfileBloc(
-              profileService: context.read<ProfileService>(),
-              photoManager: context.read<PhotoManagerService>(),
-            ),
-          ),
-        ],
-        child: Builder(
-          builder: (context) {
-            // Initialize AppRouter with AuthBloc once it's available
-            final authBloc = context.read<AuthBloc>();
-            AppRouter.initialize(authBloc);
-            
-            // Get repositories for background sync
-            final chatRepository = context.read<ChatRepository>();
-            final databaseService = MessageDatabaseService();
-            
-            return BackgroundSyncManager.provider(
-              chatRepository: chatRepository,
-              databaseService: databaseService,
-              child: AutoLoginWrapper(
-                child: MaterialApp.router(
-                  title: AppConstants.appName,
-                  theme: PulseTheme.light,
-                  darkTheme: PulseTheme.dark,
-                  themeMode: ThemeMode.system,
-                  debugShowCheckedModeBanner: false,
-                  routerConfig: AppRouter.router,
-                ),
-              ),
-            );
+          );
         },
       ),
     );

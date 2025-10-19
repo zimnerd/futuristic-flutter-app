@@ -6,7 +6,7 @@ import '../../../../core/models/call_invitation.dart';
 import '../../../../core/services/call_invitation_service.dart';
 
 /// Full-screen incoming call UI with glassmorphism design
-/// 
+///
 /// Features:
 /// - Full-screen overlay that works on locked screen
 /// - Caller photo, name, call type display
@@ -18,10 +18,7 @@ import '../../../../core/services/call_invitation_service.dart';
 class IncomingCallScreen extends StatefulWidget {
   final CallInvitation invitation;
 
-  const IncomingCallScreen({
-    super.key,
-    required this.invitation,
-  });
+  const IncomingCallScreen({super.key, required this.invitation});
 
   @override
   State<IncomingCallScreen> createState() => _IncomingCallScreenState();
@@ -59,9 +56,10 @@ class _IncomingCallScreenState extends State<IncomingCallScreen>
       vsync: this,
     )..repeat();
 
-    _pulseAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _pulseController, curve: Curves.easeOut),
-    );
+    _pulseAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _pulseController, curve: Curves.easeOut));
 
     // Shimmer animation for buttons
     _shimmerController = AnimationController(
@@ -148,35 +146,35 @@ class _IncomingCallScreenState extends State<IncomingCallScreen>
             child: Column(
               children: [
                 const SizedBox(height: 60),
-                
+
                 // Call type badge
                 _buildCallTypeBadge(),
-                
+
                 const SizedBox(height: 40),
-                
+
                 // Caller photo with pulsing rings
                 _buildCallerPhoto(),
-                
+
                 const SizedBox(height: 32),
-                
+
                 // Caller name
                 _buildCallerName(),
-                
+
                 const SizedBox(height: 8),
-                
+
                 // Call status
                 _buildCallStatus(),
-                
+
                 const Spacer(),
-                
+
                 // Timeout countdown
                 _buildTimeoutCountdown(),
-                
+
                 const SizedBox(height: 40),
-                
+
                 // Action buttons
                 _buildActionButtons(),
-                
+
                 const SizedBox(height: 60),
               ],
             ),
@@ -263,10 +261,7 @@ class _IncomingCallScreenState extends State<IncomingCallScreen>
           height: 140,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            border: Border.all(
-              color: Colors.white,
-              width: 4,
-            ),
+            border: Border.all(color: Colors.white, width: 4),
             boxShadow: [
               BoxShadow(
                 color: const Color(0xFF6E3BFF).withValues(alpha: 0.5),
@@ -305,7 +300,9 @@ class _IncomingCallScreenState extends State<IncomingCallScreen>
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               border: Border.all(
-                color: const Color(0xFF6E3BFF).withValues(alpha: 0.5 - value * 0.5),
+                color: const Color(
+                  0xFF6E3BFF,
+                ).withValues(alpha: 0.5 - value * 0.5),
                 width: 2,
               ),
             ),
@@ -448,11 +445,7 @@ class _IncomingCallScreenState extends State<IncomingCallScreen>
                 ),
               ],
             ),
-            child: Icon(
-              icon,
-              color: Colors.white,
-              size: 32,
-            ),
+            child: Icon(icon, color: Colors.white, size: 32),
           ),
 
           const SizedBox(height: 12),

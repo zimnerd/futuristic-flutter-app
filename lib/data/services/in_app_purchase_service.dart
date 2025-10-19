@@ -7,16 +7,19 @@ import '../../core/utils/logger.dart';
 
 /// Service for handling In-App Purchases via App Store and Google Play
 class InAppPurchaseService {
-  static final InAppPurchaseService _instance = InAppPurchaseService._internal();
+  static final InAppPurchaseService _instance =
+      InAppPurchaseService._internal();
   static InAppPurchaseService get instance => _instance;
   InAppPurchaseService._internal();
 
   final InAppPurchase _inAppPurchase = InAppPurchase.instance;
   StreamSubscription<List<PurchaseDetails>>? _purchaseSubscription;
-  
+
   // Purchase stream controller for external listeners
-  final _purchaseStreamController = StreamController<PurchaseDetails>.broadcast();
-  Stream<PurchaseDetails> get purchaseStream => _purchaseStreamController.stream;
+  final _purchaseStreamController =
+      StreamController<PurchaseDetails>.broadcast();
+  Stream<PurchaseDetails> get purchaseStream =>
+      _purchaseStreamController.stream;
 
   // Available products
   final Map<String, ProductDetails> _products = {};
@@ -37,7 +40,7 @@ class InAppPurchaseService {
   Future<bool> initialize() async {
     try {
       _isAvailable = await _inAppPurchase.isAvailable();
-      
+
       if (!_isAvailable) {
         AppLogger.warning('In-app purchases not available on this device');
         return false;
@@ -72,7 +75,8 @@ class InAppPurchaseService {
   Future<void> _loadProducts() async {
     try {
       final Set<String> ids = productIds.values.toSet();
-      final ProductDetailsResponse response = await _inAppPurchase.queryProductDetails(ids);
+      final ProductDetailsResponse response = await _inAppPurchase
+          .queryProductDetails(ids);
 
       if (response.notFoundIDs.isNotEmpty) {
         AppLogger.warning('Products not found: ${response.notFoundIDs}');
@@ -80,7 +84,9 @@ class InAppPurchaseService {
 
       for (final product in response.productDetails) {
         _products[product.id] = product;
-        AppLogger.debug('Loaded product: ${product.id} - ${product.title} (${product.price})');
+        AppLogger.debug(
+          'Loaded product: ${product.id} - ${product.title} (${product.price})',
+        );
       }
 
       if (response.error != null) {
@@ -126,7 +132,7 @@ class InAppPurchaseService {
 
     try {
       _purchasePending = true;
-      
+
       final PurchaseParam purchaseParam = PurchaseParam(
         productDetails: product,
         applicationUserName: null, // Can be set to user ID if needed
@@ -197,7 +203,7 @@ class InAppPurchaseService {
   Future<void> _verifyPurchase(PurchaseDetails purchaseDetails) async {
     try {
       AppLogger.info('Verifying purchase: ${purchaseDetails.productID}');
-      
+
       // Find the coin package ID from product ID
       String? coinPackageId;
       productIds.forEach((key, value) {
@@ -207,15 +213,19 @@ class InAppPurchaseService {
       });
 
       if (coinPackageId == null) {
-        AppLogger.error('Could not find coin package for product: ${purchaseDetails.productID}');
+        AppLogger.error(
+          'Could not find coin package for product: ${purchaseDetails.productID}',
+        );
         return;
       }
 
       // Emit purchase details for backend verification
       _purchaseStreamController.add(purchaseDetails);
-      
+
       _purchasePending = false;
-      AppLogger.info('Purchase verified successfully: ${purchaseDetails.productID}');
+      AppLogger.info(
+        'Purchase verified successfully: ${purchaseDetails.productID}',
+      );
     } catch (e) {
       _purchasePending = false;
       AppLogger.error('Error verifying purchase: $e');
@@ -226,9 +236,7 @@ class InAppPurchaseService {
   void _handlePurchaseError(PurchaseDetails purchaseDetails) {
     _purchasePending = false;
     final error = purchaseDetails.error;
-    AppLogger.error(
-      'Purchase error: ${error?.code} - ${error?.message}',
-    );
+    AppLogger.error('Purchase error: ${error?.code} - ${error?.message}');
     _purchaseStreamController.addError(
       Exception('Purchase failed: ${error?.message ?? "Unknown error"}'),
     );
@@ -238,9 +246,7 @@ class InAppPurchaseService {
   void _handlePurchaseCanceled(PurchaseDetails purchaseDetails) {
     _purchasePending = false;
     AppLogger.info('Purchase canceled: ${purchaseDetails.productID}');
-    _purchaseStreamController.addError(
-      Exception('Purchase was canceled'),
-    );
+    _purchaseStreamController.addError(Exception('Purchase was canceled'));
   }
 
   /// Called when purchase stream is done

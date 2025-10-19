@@ -23,11 +23,11 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
   final _locationController = TextEditingController();
   final _maxAttendeesController = TextEditingController();
   final LocationService _locationService = LocationService();
-  
+
   DateTime? _selectedDateTime;
   String _selectedCategory = 'Social';
   bool _isPublic = true;
-  
+
   final List<String> _categories = [
     'Social',
     'Sports',
@@ -53,337 +53,360 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
     return BlocListener<EventBloc, EventState>(
       listener: (context, state) {
         if (state is EventCreated) {
-          PulseToast.success(context, message: 'Event created successfully!',
-          );
+          PulseToast.success(context, message: 'Event created successfully!');
           // Navigate to the newly created event details
           context.go('/events/${state.event.id}');
         } else if (state is EventError) {
-          PulseToast.error(context, message: 'Error: ${state.message}',
-          );
+          PulseToast.error(context, message: 'Error: ${state.message}');
         }
       },
       child: Scaffold(
-      appBar: AppBar(
-        title: const Text('Create Event'),
-        leading: IconButton(
-          icon: const Icon(Icons.close),
-          onPressed: () => context.pop(),
-        ),
-        actions: [
-          TextButton(
-            onPressed: _canSave() ? _saveEvent : null,
-            child: Text(
-              'Create',
-              style: TextStyle(
-                color: _canSave() ? PulseColors.primary : PulseColors.onSurfaceVariant,
-                fontWeight: FontWeight.w600,
+        appBar: AppBar(
+          title: const Text('Create Event'),
+          leading: IconButton(
+            icon: const Icon(Icons.close),
+            onPressed: () => context.pop(),
+          ),
+          actions: [
+            TextButton(
+              onPressed: _canSave() ? _saveEvent : null,
+              child: Text(
+                'Create',
+                style: TextStyle(
+                  color: _canSave()
+                      ? PulseColors.primary
+                      : PulseColors.onSurfaceVariant,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
-          ),
-        ],
-      ),
-      body: SingleChildScrollView(
+          ],
+        ),
+        body: SingleChildScrollView(
           padding: EdgeInsets.only(
             left: 16,
             right: 16,
             top: 16,
             bottom: MediaQuery.of(context).viewInsets.bottom + 16,
           ),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Event Title
-              _buildSectionTitle('Event Title'),
-              const SizedBox(height: 8),
-              TextFormField(
-                controller: _titleController,
-                decoration: InputDecoration(
-                  hintText: 'What\'s the name of your event?',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  filled: true,
-                  fillColor: PulseColors.surface,
-                ),
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'Please enter an event title';
-                  }
-                  return null;
-                },
-                onChanged: (_) => setState(() {}),
-              ),
-
-              const SizedBox(height: 24),
-
-              // Event Description
-              _buildSectionTitle('Description'),
-              const SizedBox(height: 8),
-              TextFormField(
-                controller: _descriptionController,
-                maxLines: 4,
-                decoration: InputDecoration(
-                  hintText: 'Tell people what your event is about...',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  filled: true,
-                  fillColor: PulseColors.surface,
-                ),
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'Please enter a description';
-                  }
-                  return null;
-                },
-                onChanged: (_) => setState(() {}),
-              ),
-
-              const SizedBox(height: 24),
-
-              // Event Category
-              _buildSectionTitle('Category'),
-              const SizedBox(height: 8),
-              Container(
-                decoration: BoxDecoration(
-                  border: Border.all(
-                    color: PulseColors.onSurface.withValues(alpha: 0.3),
-                  ),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: DropdownButtonFormField<String>(
-                  initialValue: _selectedCategory,
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Event Title
+                _buildSectionTitle('Event Title'),
+                const SizedBox(height: 8),
+                TextFormField(
+                  controller: _titleController,
                   decoration: InputDecoration(
-                    border: InputBorder.none,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    hintText: 'What\'s the name of your event?',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                     filled: true,
                     fillColor: PulseColors.surface,
                   ),
-                  items: _categories.map((category) {
-                    return DropdownMenuItem(
-                      value: category,
-                      child: Row(
-                        children: [
-                          Icon(
-                            _getEventCategoryIcon(category),
-                            size: 20,
-                            color: PulseColors.primary,
-                          ),
-                          const SizedBox(width: 12),
-                          Text(category),
-                        ],
-                      ),
-                    );
-                  }).toList(),
-                  onChanged: (value) {
-                    if (value != null) {
-                      setState(() {
-                        _selectedCategory = value;
-                      });
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return 'Please enter an event title';
                     }
+                    return null;
                   },
+                  onChanged: (_) => setState(() {}),
                 ),
-              ),
 
-              const SizedBox(height: 24),
+                const SizedBox(height: 24),
 
-              // Date and Time
-              _buildSectionTitle('Date & Time'),
-              const SizedBox(height: 8),
-              Container(
-                decoration: BoxDecoration(
-                  border: Border.all(
-                    color: PulseColors.onSurface.withValues(alpha: 0.3),
-                  ),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: ListTile(
-                  leading: Icon(Icons.access_time, color: PulseColors.primary),
-                  title: Text(
-                    _selectedDateTime != null
-                        ? DateFormat('EEEE, MMM d, y • h:mm a').format(_selectedDateTime!)
-                        : 'Select date and time',
-                    style: TextStyle(
-                      color: _selectedDateTime != null 
-                          ? PulseColors.onSurface 
-                          : PulseColors.onSurfaceVariant,
-                    ),
-                  ),
-                  onTap: _selectDateTime,
-                  tileColor: PulseColors.surface,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 24),
-
-              // Location
-              _buildSectionTitle('Location'),
-              const SizedBox(height: 8),
-              TextFormField(
-                controller: _locationController,
-                decoration: InputDecoration(
-                  hintText: 'Where is your event taking place?',
-                  prefixIcon: Icon(Icons.location_on, color: PulseColors.primary),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  filled: true,
-                  fillColor: PulseColors.surface,
-                ),
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'Please enter a location';
-                  }
-                  return null;
-                },
-                onChanged: (_) => setState(() {}),
-              ),
-
-              const SizedBox(height: 24),
-
-              // Privacy Settings
-              _buildSectionTitle('Privacy'),
-              const SizedBox(height: 8),
-              Container(
-                decoration: BoxDecoration(
-                  border: Border.all(
-                    color: PulseColors.onSurface.withValues(alpha: 0.3),
-                  ),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Column(
-                  children: [
-                    ListTile(
-                      leading: Icon(
-                        _isPublic == true ? Icons.radio_button_checked : Icons.radio_button_unchecked,
-                        color: _isPublic == true ? PulseColors.primary : PulseColors.onSurfaceVariant,
-                      ),
-                      title: const Row(
-                        children: [
-                          Icon(Icons.public, color: Colors.green),
-                          SizedBox(width: 8),
-                          Text('Public Event'),
-                        ],
-                      ),
-                      subtitle: const Text('Anyone can see and join this event'),
-                      tileColor: PulseColors.surface,
-                      shape: const RoundedRectangleBorder(
-                        borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(12),
-                          topRight: Radius.circular(12),
-                        ),
-                      ),
-                      onTap: () => setState(() => _isPublic = true),
-                    ),
-                    const Divider(height: 1),
-                    ListTile(
-                      leading: Icon(
-                        _isPublic == false ? Icons.radio_button_checked : Icons.radio_button_unchecked,
-                        color: _isPublic == false ? PulseColors.primary : PulseColors.onSurfaceVariant,
-                      ),
-                      title: const Row(
-                        children: [
-                          Icon(Icons.lock, color: Colors.orange),
-                          SizedBox(width: 8),
-                          Text('Private Event'),
-                        ],
-                      ),
-                      subtitle: const Text('Only invited people can see and join'),
-                      tileColor: PulseColors.surface,
-                      shape: const RoundedRectangleBorder(
-                        borderRadius: BorderRadius.only(
-                          bottomLeft: Radius.circular(12),
-                          bottomRight: Radius.circular(12),
-                        ),
-                      ),
-                      onTap: () => setState(() => _isPublic = false),
-                    ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 24),
-
-              // Max Attendees (Optional)
-              _buildSectionTitle('Maximum Attendees (Optional)'),
-              const SizedBox(height: 8),
-              TextFormField(
-                  controller: _maxAttendeesController,
-                decoration: InputDecoration(
-                  hintText: 'Leave empty for unlimited',
-                  prefixIcon: Icon(Icons.group, color: PulseColors.primary),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  filled: true,
-                  fillColor: PulseColors.surface,
-                ),
-                  keyboardType: TextInputType.number,
-              ),
-
-              const SizedBox(height: 32),
-
-              // Create Button
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _canSave() ? _saveEvent : null,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: PulseColors.primary,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
+                // Event Description
+                _buildSectionTitle('Description'),
+                const SizedBox(height: 8),
+                TextFormField(
+                  controller: _descriptionController,
+                  maxLines: 4,
+                  decoration: InputDecoration(
+                    hintText: 'Tell people what your event is about...',
+                    border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    elevation: 0,
+                    filled: true,
+                    fillColor: PulseColors.surface,
                   ),
-                  child: const Text(
-                    'Create Event',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return 'Please enter a description';
+                    }
+                    return null;
+                  },
+                  onChanged: (_) => setState(() {}),
                 ),
-              ),
 
-              const SizedBox(height: 16),
+                const SizedBox(height: 24),
 
-              // Cancel Button
-              SizedBox(
-                width: double.infinity,
-                child: OutlinedButton(
-                  onPressed: () => context.pop(),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: PulseColors.onSurfaceVariant,
-                    side: BorderSide(
+                // Event Category
+                _buildSectionTitle('Category'),
+                const SizedBox(height: 8),
+                Container(
+                  decoration: BoxDecoration(
+                    border: Border.all(
                       color: PulseColors.onSurface.withValues(alpha: 0.3),
                     ),
-                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: DropdownButtonFormField<String>(
+                    initialValue: _selectedCategory,
+                    decoration: InputDecoration(
+                      border: InputBorder.none,
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
+                      filled: true,
+                      fillColor: PulseColors.surface,
+                    ),
+                    items: _categories.map((category) {
+                      return DropdownMenuItem(
+                        value: category,
+                        child: Row(
+                          children: [
+                            Icon(
+                              _getEventCategoryIcon(category),
+                              size: 20,
+                              color: PulseColors.primary,
+                            ),
+                            const SizedBox(width: 12),
+                            Text(category),
+                          ],
+                        ),
+                      );
+                    }).toList(),
+                    onChanged: (value) {
+                      if (value != null) {
+                        setState(() {
+                          _selectedCategory = value;
+                        });
+                      }
+                    },
+                  ),
+                ),
+
+                const SizedBox(height: 24),
+
+                // Date and Time
+                _buildSectionTitle('Date & Time'),
+                const SizedBox(height: 8),
+                Container(
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      color: PulseColors.onSurface.withValues(alpha: 0.3),
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: ListTile(
+                    leading: Icon(
+                      Icons.access_time,
+                      color: PulseColors.primary,
+                    ),
+                    title: Text(
+                      _selectedDateTime != null
+                          ? DateFormat(
+                              'EEEE, MMM d, y • h:mm a',
+                            ).format(_selectedDateTime!)
+                          : 'Select date and time',
+                      style: TextStyle(
+                        color: _selectedDateTime != null
+                            ? PulseColors.onSurface
+                            : PulseColors.onSurfaceVariant,
+                      ),
+                    ),
+                    onTap: _selectDateTime,
+                    tileColor: PulseColors.surface,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  child: const Text(
-                    'Cancel',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
+                ),
+
+                const SizedBox(height: 24),
+
+                // Location
+                _buildSectionTitle('Location'),
+                const SizedBox(height: 8),
+                TextFormField(
+                  controller: _locationController,
+                  decoration: InputDecoration(
+                    hintText: 'Where is your event taking place?',
+                    prefixIcon: Icon(
+                      Icons.location_on,
+                      color: PulseColors.primary,
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    filled: true,
+                    fillColor: PulseColors.surface,
+                  ),
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return 'Please enter a location';
+                    }
+                    return null;
+                  },
+                  onChanged: (_) => setState(() {}),
+                ),
+
+                const SizedBox(height: 24),
+
+                // Privacy Settings
+                _buildSectionTitle('Privacy'),
+                const SizedBox(height: 8),
+                Container(
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      color: PulseColors.onSurface.withValues(alpha: 0.3),
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Column(
+                    children: [
+                      ListTile(
+                        leading: Icon(
+                          _isPublic == true
+                              ? Icons.radio_button_checked
+                              : Icons.radio_button_unchecked,
+                          color: _isPublic == true
+                              ? PulseColors.primary
+                              : PulseColors.onSurfaceVariant,
+                        ),
+                        title: const Row(
+                          children: [
+                            Icon(Icons.public, color: Colors.green),
+                            SizedBox(width: 8),
+                            Text('Public Event'),
+                          ],
+                        ),
+                        subtitle: const Text(
+                          'Anyone can see and join this event',
+                        ),
+                        tileColor: PulseColors.surface,
+                        shape: const RoundedRectangleBorder(
+                          borderRadius: BorderRadius.only(
+                            topLeft: Radius.circular(12),
+                            topRight: Radius.circular(12),
+                          ),
+                        ),
+                        onTap: () => setState(() => _isPublic = true),
+                      ),
+                      const Divider(height: 1),
+                      ListTile(
+                        leading: Icon(
+                          _isPublic == false
+                              ? Icons.radio_button_checked
+                              : Icons.radio_button_unchecked,
+                          color: _isPublic == false
+                              ? PulseColors.primary
+                              : PulseColors.onSurfaceVariant,
+                        ),
+                        title: const Row(
+                          children: [
+                            Icon(Icons.lock, color: Colors.orange),
+                            SizedBox(width: 8),
+                            Text('Private Event'),
+                          ],
+                        ),
+                        subtitle: const Text(
+                          'Only invited people can see and join',
+                        ),
+                        tileColor: PulseColors.surface,
+                        shape: const RoundedRectangleBorder(
+                          borderRadius: BorderRadius.only(
+                            bottomLeft: Radius.circular(12),
+                            bottomRight: Radius.circular(12),
+                          ),
+                        ),
+                        onTap: () => setState(() => _isPublic = false),
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 24),
+
+                // Max Attendees (Optional)
+                _buildSectionTitle('Maximum Attendees (Optional)'),
+                const SizedBox(height: 8),
+                TextFormField(
+                  controller: _maxAttendeesController,
+                  decoration: InputDecoration(
+                    hintText: 'Leave empty for unlimited',
+                    prefixIcon: Icon(Icons.group, color: PulseColors.primary),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    filled: true,
+                    fillColor: PulseColors.surface,
+                  ),
+                  keyboardType: TextInputType.number,
+                ),
+
+                const SizedBox(height: 32),
+
+                // Create Button
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: _canSave() ? _saveEvent : null,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: PulseColors.primary,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      elevation: 0,
+                    ),
+                    child: const Text(
+                      'Create Event',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                 ),
-              ),
 
-              const SizedBox(height: 32),
-            ],
+                const SizedBox(height: 16),
+
+                // Cancel Button
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton(
+                    onPressed: () => context.pop(),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: PulseColors.onSurfaceVariant,
+                      side: BorderSide(
+                        color: PulseColors.onSurface.withValues(alpha: 0.3),
+                      ),
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: const Text(
+                      'Cancel',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 32),
+              ],
+            ),
           ),
         ),
-      ),
       ),
     );
   }
@@ -400,15 +423,15 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
 
   bool _canSave() {
     return _titleController.text.trim().isNotEmpty &&
-           _descriptionController.text.trim().isNotEmpty &&
-           _locationController.text.trim().isNotEmpty &&
-           _selectedDateTime != null;
+        _descriptionController.text.trim().isNotEmpty &&
+        _locationController.text.trim().isNotEmpty &&
+        _selectedDateTime != null;
   }
 
   Future<void> _selectDateTime() async {
     final now = DateTime.now();
     final initialDate = _selectedDateTime ?? now.add(const Duration(hours: 1));
-    
+
     final date = await showDatePicker(
       context: context,
       initialDate: initialDate,

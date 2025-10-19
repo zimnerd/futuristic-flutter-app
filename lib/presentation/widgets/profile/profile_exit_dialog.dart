@@ -21,7 +21,7 @@ class ProfileExitDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final hasProgress = currentDraft != null && !currentDraft!.isEmpty;
-    
+
     return AlertDialog(
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(PulseRadii.lg),
@@ -32,7 +32,9 @@ class ProfileExitDialog extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(PulseSpacing.sm),
             decoration: BoxDecoration(
-              color: hasProgress ? PulseColors.warning.withValues(alpha: 0.1) : PulseColors.error.withValues(alpha: 0.1),
+              color: hasProgress
+                  ? PulseColors.warning.withValues(alpha: 0.1)
+                  : PulseColors.error.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(PulseRadii.md),
             ),
             child: Icon(
@@ -126,15 +128,13 @@ class ProfileExitDialog extends StatelessWidget {
     if (currentDraft == null) return const SizedBox.shrink();
 
     final progress = (currentDraft!.completionPercentage * 100).round();
-    
+
     return Container(
       padding: const EdgeInsets.all(PulseSpacing.md),
       decoration: BoxDecoration(
         color: PulseColors.primary.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(PulseRadii.md),
-        border: Border.all(
-          color: PulseColors.primary.withValues(alpha: 0.2),
-        ),
+        border: Border.all(color: PulseColors.primary.withValues(alpha: 0.2)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -268,9 +268,7 @@ class ProfileDraftRestoreDialog extends StatelessWidget {
       decoration: BoxDecoration(
         color: PulseColors.primary.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(PulseRadii.md),
-        border: Border.all(
-          color: PulseColors.primary.withValues(alpha: 0.2),
-        ),
+        border: Border.all(color: PulseColors.primary.withValues(alpha: 0.2)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -313,12 +311,14 @@ class ProfileDraftRestoreDialog extends StatelessWidget {
 
   Widget _buildCompletedItems() {
     final List<String> completedItems = [];
-    
+
     if (draft.name?.isNotEmpty == true) completedItems.add('Name');
     if (draft.age != null && draft.age! > 0) completedItems.add('Age');
     if (draft.bio?.isNotEmpty == true) completedItems.add('Bio');
-    if (draft.photos.isNotEmpty) completedItems.add('Photos (${draft.photos.length})');
-    if (draft.interests.isNotEmpty) completedItems.add('Interests (${draft.interests.length})');
+    if (draft.photos.isNotEmpty)
+      completedItems.add('Photos (${draft.photos.length})');
+    if (draft.interests.isNotEmpty)
+      completedItems.add('Interests (${draft.interests.length})');
     if (draft.gender?.isNotEmpty == true) completedItems.add('Gender');
     if (draft.lookingFor?.isNotEmpty == true) completedItems.add('Looking for');
 
@@ -345,17 +345,21 @@ class ProfileDraftRestoreDialog extends StatelessWidget {
         Wrap(
           spacing: PulseSpacing.xs,
           runSpacing: PulseSpacing.xs,
-          children: completedItems.map((item) => Chip(
-            label: Text(
-              item,
-              style: PulseTextStyles.labelSmall.copyWith(
-                color: PulseColors.primary,
-              ),
-            ),
-            backgroundColor: PulseColors.primary.withValues(alpha: 0.1),
-            side: BorderSide.none,
-            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-          )).toList(),
+          children: completedItems
+              .map(
+                (item) => Chip(
+                  label: Text(
+                    item,
+                    style: PulseTextStyles.labelSmall.copyWith(
+                      color: PulseColors.primary,
+                    ),
+                  ),
+                  backgroundColor: PulseColors.primary.withValues(alpha: 0.1),
+                  side: BorderSide.none,
+                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+              )
+              .toList(),
         ),
       ],
     );

@@ -44,7 +44,7 @@ class _AudioCallScreenState extends State<AudioCallScreen>
     apiClient: ApiClient.instance,
   );
   final ConversationService _conversationService = ConversationService();
-  
+
   StreamSubscription<bool>? _callStateSubscription;
   StreamSubscription<bool>? _muteStateSubscription;
   StreamSubscription<bool>? _speakerStateSubscription;
@@ -92,7 +92,9 @@ class _AudioCallScreenState extends State<AudioCallScreen>
       }
     });
 
-    _speakerStateSubscription = _audioService.onSpeakerStateChanged.listen((speaker) {
+    _speakerStateSubscription = _audioService.onSpeakerStateChanged.listen((
+      speaker,
+    ) {
       if (mounted) {
         setState(() {
           _isSpeakerOn = speaker;
@@ -124,7 +126,9 @@ class _AudioCallScreenState extends State<AudioCallScreen>
       }
     });
 
-    _durationSubscription = _audioService.onCallDurationUpdate.listen((duration) {
+    _durationSubscription = _audioService.onCallDurationUpdate.listen((
+      duration,
+    ) {
       if (mounted) {
         setState(() {
           _callDuration = duration;
@@ -139,13 +143,9 @@ class _AudioCallScreenState extends State<AudioCallScreen>
       vsync: this,
     )..repeat(reverse: true);
 
-    _pulseAnimation = Tween<double>(
-      begin: 1.0,
-      end: 1.15,
-    ).animate(CurvedAnimation(
-      parent: _pulseController,
-      curve: Curves.easeInOut,
-    ));
+    _pulseAnimation = Tween<double>(begin: 1.0, end: 1.15).animate(
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
+    );
   }
 
   Future<void> _initializeCall() async {
@@ -199,7 +199,7 @@ class _AudioCallScreenState extends State<AudioCallScreen>
 
     // Leave the call first
     await _audioService.leaveCall();
-    
+
     // Create call message in conversation (WhatsApp-style)
     try {
       // Get or create conversation
@@ -230,7 +230,7 @@ class _AudioCallScreenState extends State<AudioCallScreen>
       // Don't block navigation if call message fails
       AppLogger.error('Failed to create call message: $e');
     }
-    
+
     if (mounted) {
       Navigator.of(context).pop();
     }
@@ -617,11 +617,7 @@ class _AudioCallScreenState extends State<AudioCallScreen>
                   ),
                 ],
               ),
-              child: Icon(
-                icon,
-                color: Colors.white,
-                size: size * 0.45,
-              ),
+              child: Icon(icon, color: Colors.white, size: size * 0.45),
             ),
           ),
         ),

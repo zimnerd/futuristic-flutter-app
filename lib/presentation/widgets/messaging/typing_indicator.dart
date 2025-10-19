@@ -17,7 +17,7 @@ class _TypingIndicatorState extends State<TypingIndicator>
   @override
   void initState() {
     super.initState();
-    
+
     _controller = AnimationController(
       duration: const Duration(milliseconds: 1200),
       vsync: this,
@@ -65,18 +65,15 @@ class _TypingIndicatorState extends State<TypingIndicator>
           ),
         ),
         const SizedBox(width: 8),
-        
+
         // Typing bubble
         Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 12,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
             color: Colors.grey[200],
-            borderRadius: BorderRadius.circular(20).copyWith(
-              bottomLeft: const Radius.circular(4),
-            ),
+            borderRadius: BorderRadius.circular(
+              20,
+            ).copyWith(bottomLeft: const Radius.circular(4)),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,

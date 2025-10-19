@@ -9,7 +9,8 @@ class FileUploadService {
 
   FileUploadService({required ApiClient apiClient}) : _apiClient = apiClient;
 
-  Future<String> uploadImage(String filePath, {
+  Future<String> uploadImage(
+    String filePath, {
     Function(int, int)? onProgress,
   }) async {
     try {
@@ -17,10 +18,7 @@ class FileUploadService {
       final fileName = file.path.split('/').last;
 
       final formData = FormData.fromMap({
-        'image': await MultipartFile.fromFile(
-          filePath,
-          filename: fileName,
-        ),
+        'image': await MultipartFile.fromFile(filePath, filename: fileName),
       });
 
       final response = await _apiClient.post(
@@ -35,7 +33,8 @@ class FileUploadService {
     }
   }
 
-  Future<String> uploadVideo(String filePath, {
+  Future<String> uploadVideo(
+    String filePath, {
     Function(int, int)? onProgress,
   }) async {
     try {
@@ -43,10 +42,7 @@ class FileUploadService {
       final fileName = file.path.split('/').last;
 
       final formData = FormData.fromMap({
-        'video': await MultipartFile.fromFile(
-          filePath,
-          filename: fileName,
-        ),
+        'video': await MultipartFile.fromFile(filePath, filename: fileName),
       });
 
       final response = await _apiClient.post(
@@ -61,7 +57,8 @@ class FileUploadService {
     }
   }
 
-  Future<String> uploadAudio(String filePath, {
+  Future<String> uploadAudio(
+    String filePath, {
     Function(int, int)? onProgress,
   }) async {
     try {
@@ -69,10 +66,7 @@ class FileUploadService {
       final fileName = file.path.split('/').last;
 
       final formData = FormData.fromMap({
-        'audio': await MultipartFile.fromFile(
-          filePath,
-          filename: fileName,
-        ),
+        'audio': await MultipartFile.fromFile(filePath, filename: fileName),
       });
 
       final response = await _apiClient.post(
@@ -87,7 +81,8 @@ class FileUploadService {
     }
   }
 
-  Future<String> uploadFile(String filePath, {
+  Future<String> uploadFile(
+    String filePath, {
     Function(int, int)? onProgress,
   }) async {
     try {
@@ -95,10 +90,7 @@ class FileUploadService {
       final fileName = file.path.split('/').last;
 
       final formData = FormData.fromMap({
-        'file': await MultipartFile.fromFile(
-          filePath,
-          filename: fileName,
-        ),
+        'file': await MultipartFile.fromFile(filePath, filename: fileName),
       });
 
       final response = await _apiClient.post(
@@ -129,7 +121,9 @@ class FileUploadService {
       case DioExceptionType.connectionTimeout:
       case DioExceptionType.sendTimeout:
       case DioExceptionType.receiveTimeout:
-        return Exception('Upload timeout. Please check your internet connection.');
+        return Exception(
+          'Upload timeout. Please check your internet connection.',
+        );
       case DioExceptionType.badResponse:
         final statusCode = e.response?.statusCode;
         if (statusCode == 413) {
@@ -140,7 +134,9 @@ class FileUploadService {
       case DioExceptionType.cancel:
         return Exception('Upload was cancelled');
       case DioExceptionType.unknown:
-        return Exception('Network error. Please check your internet connection.');
+        return Exception(
+          'Network error. Please check your internet connection.',
+        );
       default:
         return Exception('Upload failed. Please try again.');
     }

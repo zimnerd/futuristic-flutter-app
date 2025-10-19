@@ -34,12 +34,12 @@ class EventsLoaded extends EventState {
 
   @override
   List<Object?> get props => [
-        events,
-        filteredEvents,
-        currentCategory,
-        searchQuery,
-        hasReachedMax,
-      ];
+    events,
+    filteredEvents,
+    currentCategory,
+    searchQuery,
+    hasReachedMax,
+  ];
 
   EventsLoaded copyWith({
     List<Event>? events,
@@ -62,10 +62,7 @@ class EventDetailsLoaded extends EventState {
   final Event event;
   final List<EventAttendance> attendees;
 
-  const EventDetailsLoaded({
-    required this.event,
-    required this.attendees,
-  });
+  const EventDetailsLoaded({required this.event, required this.attendees});
 
   @override
   List<Object?> get props => [event, attendees];
@@ -127,10 +124,7 @@ class EventAttendeesLoaded extends EventState {
   final String eventId;
   final List<EventAttendance> attendees;
 
-  const EventAttendeesLoaded({
-    required this.eventId,
-    required this.attendees,
-  });
+  const EventAttendeesLoaded({required this.eventId, required this.attendees});
 
   @override
   List<Object?> get props => [eventId, attendees];
@@ -140,10 +134,7 @@ class EventError extends EventState {
   final String message;
   final String? errorCode;
 
-  const EventError({
-    required this.message,
-    this.errorCode,
-  });
+  const EventError({required this.message, this.errorCode});
 
   @override
   List<Object?> get props => [message, errorCode];

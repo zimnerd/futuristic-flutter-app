@@ -66,16 +66,15 @@ class _IdVerificationScreenState extends State<IdVerificationScreen> {
       body: Column(
         children: [
           _buildProgressIndicator(),
-          Expanded(
-            child: _buildCurrentStepContent(),
-          ),
+          Expanded(child: _buildCurrentStepContent()),
         ],
       ),
     );
   }
 
   Widget _buildProgressIndicator() {
-    int totalSteps = _selectedDocumentType != null &&
+    int totalSteps =
+        _selectedDocumentType != null &&
             _documentTypes[_selectedDocumentType]!['requiresBack'] == false
         ? 3
         : 4;
@@ -131,11 +130,7 @@ class _IdVerificationScreenState extends State<IdVerificationScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(
-            Icons.assignment_ind,
-            size: 80,
-            color: AppColors.primary,
-          ),
+          const Icon(Icons.assignment_ind, size: 80, color: AppColors.primary),
           const SizedBox(height: 24),
           const Text(
             'Choose your document',
@@ -178,11 +173,7 @@ class _IdVerificationScreenState extends State<IdVerificationScreen> {
             ),
             child: Row(
               children: [
-                const Icon(
-                  Icons.lock,
-                  color: AppColors.primary,
-                  size: 24,
-                ),
+                const Icon(Icons.lock, color: AppColors.primary, size: 24),
                 const SizedBox(width: 12),
                 const Expanded(
                   child: Text(
@@ -330,16 +321,10 @@ class _IdVerificationScreenState extends State<IdVerificationScreen> {
               width: double.infinity,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                  color: AppColors.success,
-                  width: 2,
-                ),
+                border: Border.all(color: AppColors.success, width: 2),
               ),
               clipBehavior: Clip.antiAlias,
-              child: Image.file(
-                existingPhoto,
-                fit: BoxFit.cover,
-              ),
+              child: Image.file(existingPhoto, fit: BoxFit.cover),
             ),
           const SizedBox(height: 24),
           SizedBox(
@@ -347,7 +332,9 @@ class _IdVerificationScreenState extends State<IdVerificationScreen> {
             height: 56,
             child: ElevatedButton.icon(
               onPressed: () => _captureDocument(isFront: isFront),
-              icon: Icon(existingPhoto != null ? Icons.refresh : Icons.camera_alt),
+              icon: Icon(
+                existingPhoto != null ? Icons.refresh : Icons.camera_alt,
+              ),
               label: Text(
                 existingPhoto != null ? 'Retake Photo' : 'Take Photo',
                 style: const TextStyle(
@@ -373,10 +360,7 @@ class _IdVerificationScreenState extends State<IdVerificationScreen> {
               icon: const Icon(Icons.photo_library),
               label: const Text(
                 'Choose from Gallery',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
               ),
               style: OutlinedButton.styleFrom(
                 foregroundColor: AppColors.primary,
@@ -403,10 +387,7 @@ class _IdVerificationScreenState extends State<IdVerificationScreen> {
                 ),
                 child: const Text(
                   'Continue',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                 ),
               ),
             ),
@@ -450,11 +431,7 @@ class _IdVerificationScreenState extends State<IdVerificationScreen> {
       padding: const EdgeInsets.only(bottom: 8),
       child: Row(
         children: [
-          Icon(
-            icon,
-            size: 20,
-            color: AppColors.primary,
-          ),
+          Icon(icon, size: 20, color: AppColors.primary),
           const SizedBox(width: 12),
           Text(
             text,
@@ -470,7 +447,8 @@ class _IdVerificationScreenState extends State<IdVerificationScreen> {
 
   // Step 4: Review Photos
   Widget _buildReviewStep() {
-    final requiresBack = _selectedDocumentType != null &&
+    final requiresBack =
+        _selectedDocumentType != null &&
         _documentTypes[_selectedDocumentType]!['requiresBack'];
 
     return SingleChildScrollView(
@@ -488,10 +466,7 @@ class _IdVerificationScreenState extends State<IdVerificationScreen> {
           const SizedBox(height: 12),
           const Text(
             'Make sure all details are clearly visible',
-            style: TextStyle(
-              color: AppColors.textSecondary,
-              fontSize: 16,
-            ),
+            style: TextStyle(color: AppColors.textSecondary, fontSize: 16),
           ),
           const SizedBox(height: 32),
           if (_frontPhoto != null) ...[
@@ -536,10 +511,7 @@ class _IdVerificationScreenState extends State<IdVerificationScreen> {
               ),
               child: const Text(
                 'Looks Good - Continue',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
               ),
             ),
           ),
@@ -570,16 +542,10 @@ class _IdVerificationScreenState extends State<IdVerificationScreen> {
           height: 250,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: AppColors.border,
-              width: 2,
-            ),
+            border: Border.all(color: AppColors.border, width: 2),
           ),
           clipBehavior: Clip.antiAlias,
-          child: Image.file(
-            photo,
-            fit: BoxFit.cover,
-          ),
+          child: Image.file(photo, fit: BoxFit.cover),
         ),
         const SizedBox(height: 12),
         SizedBox(
@@ -609,9 +575,7 @@ class _IdVerificationScreenState extends State<IdVerificationScreen> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           if (_isSubmitting) ...[
-            const CircularProgressIndicator(
-              color: AppColors.primary,
-            ),
+            const CircularProgressIndicator(color: AppColors.primary),
             const SizedBox(height: 32),
             const Text(
               'Uploading your documents...',
@@ -624,17 +588,10 @@ class _IdVerificationScreenState extends State<IdVerificationScreen> {
             const SizedBox(height: 12),
             const Text(
               'This may take a few moments',
-              style: TextStyle(
-                color: AppColors.textSecondary,
-                fontSize: 14,
-              ),
+              style: TextStyle(color: AppColors.textSecondary, fontSize: 14),
             ),
           ] else ...[
-            const Icon(
-              Icons.cloud_upload,
-              size: 100,
-              color: AppColors.primary,
-            ),
+            const Icon(Icons.cloud_upload, size: 100, color: AppColors.primary),
             const SizedBox(height: 32),
             const Text(
               'Ready to submit',
@@ -669,10 +626,7 @@ class _IdVerificationScreenState extends State<IdVerificationScreen> {
                 ),
                 child: const Text(
                   'Submit for Review',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                 ),
               ),
             ),
@@ -725,7 +679,8 @@ class _IdVerificationScreenState extends State<IdVerificationScreen> {
   }
 
   void _proceedToNextStep() {
-    final requiresBack = _selectedDocumentType != null &&
+    final requiresBack =
+        _selectedDocumentType != null &&
         _documentTypes[_selectedDocumentType]!['requiresBack'];
 
     setState(() {
@@ -745,7 +700,8 @@ class _IdVerificationScreenState extends State<IdVerificationScreen> {
       return;
     }
 
-    final requiresBack = _selectedDocumentType != null &&
+    final requiresBack =
+        _selectedDocumentType != null &&
         _documentTypes[_selectedDocumentType]!['requiresBack'];
 
     if (requiresBack && _backPhoto == null) {
@@ -820,9 +776,7 @@ class _IdVerificationScreenState extends State<IdVerificationScreen> {
       barrierDismissible: false,
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.surface,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(24),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
         title: const Text(
           'Documents Submitted!',
           style: TextStyle(
@@ -860,9 +814,6 @@ class _IdVerificationScreenState extends State<IdVerificationScreen> {
   }
 
   void _showError(String message) {
-    PulseToast.error(
-      context,
-      message: message,
-    );
+    PulseToast.error(context, message: message);
   }
 }

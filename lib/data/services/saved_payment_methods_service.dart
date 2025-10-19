@@ -9,7 +9,8 @@ import 'peach_payments_service.dart';
 /// Handles secure storage, tokenization, and validation of payment methods
 class SavedPaymentMethodsService {
   static SavedPaymentMethodsService? _instance;
-  static SavedPaymentMethodsService get instance => _instance ??= SavedPaymentMethodsService._();
+  static SavedPaymentMethodsService get instance =>
+      _instance ??= SavedPaymentMethodsService._();
   SavedPaymentMethodsService._();
 
   // Logger instance
@@ -17,7 +18,7 @@ class SavedPaymentMethodsService {
 
   static const String _storageKey = 'saved_payment_methods';
   static const String _defaultMethodKey = 'default_payment_method_id';
-  
+
   final PaymentService _paymentService = PaymentService.instance;
   final PeachPaymentsService _peachPayments = PeachPaymentsService.instance;
 
@@ -26,14 +27,16 @@ class SavedPaymentMethodsService {
     try {
       final prefs = await SharedPreferences.getInstance();
       final jsonString = prefs.getString(_storageKey);
-      
+
       if (jsonString == null || jsonString.isEmpty) {
         return [];
       }
-      
+
       final List<dynamic> jsonList = json.decode(jsonString);
       return jsonList
-          .map((json) => SavedPaymentMethod.fromJson(json as Map<String, dynamic>))
+          .map(
+            (json) => SavedPaymentMethod.fromJson(json as Map<String, dynamic>),
+          )
           .toList();
     } catch (e) {
       _logger.e('Error loading saved payment methods: $e');
@@ -73,7 +76,9 @@ class SavedPaymentMethodsService {
         expiryMonth: expiryMonth,
         expiryYear: expiryYear,
         cardholderName: cardholderName,
-        nickname: nickname ?? '${_detectCardType(cardNumber)} ending in ${cardNumber.substring(cardNumber.length - 4)}',
+        nickname:
+            nickname ??
+            '${_detectCardType(cardNumber)} ending in ${cardNumber.substring(cardNumber.length - 4)}',
         isDefault: setAsDefault,
         createdAt: DateTime.now(),
         lastUsedAt: DateTime.now(),
@@ -81,14 +86,14 @@ class SavedPaymentMethodsService {
 
       // Save to local storage
       final methods = await getSavedPaymentMethods();
-      
+
       // If setting as default, remove default from other methods
       if (setAsDefault) {
         for (var method in methods) {
           method.isDefault = false;
         }
       }
-      
+
       methods.add(savedMethod);
       await _saveMethodsToStorage(methods);
 
@@ -110,7 +115,7 @@ class SavedPaymentMethodsService {
     try {
       final methods = await getSavedPaymentMethods();
       final methodIndex = methods.indexWhere((m) => m.id == methodId);
-      
+
       if (methodIndex == -1) {
         _logger.i('Payment method not found: $methodId');
         return false;
@@ -126,7 +131,7 @@ class SavedPaymentMethodsService {
       }
 
       await _saveMethodsToStorage(methods);
-      
+
       // Revoke token from PeachPayments
       await _revokePaymentToken(deletedMethod.token);
 
@@ -147,19 +152,19 @@ class SavedPaymentMethodsService {
     try {
       final methods = await getSavedPaymentMethods();
       final methodIndex = methods.indexWhere((m) => m.id == methodId);
-      
+
       if (methodIndex == -1) {
         _logger.i('Payment method not found: $methodId');
         return false;
       }
 
       final method = methods[methodIndex];
-      
+
       // Update fields
       if (nickname != null) {
         method.nickname = nickname;
       }
-      
+
       if (setAsDefault == true) {
         // Remove default from all methods
         for (var m in methods) {
@@ -200,7 +205,7 @@ class SavedPaymentMethodsService {
       }
 
       await _saveMethodsToStorage(methods);
-      
+
       // Store default method ID separately for quick access
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString(_defaultMethodKey, methodId);
@@ -219,7 +224,8 @@ class SavedPaymentMethodsService {
       final methods = await getSavedPaymentMethods();
       return methods.firstWhere(
         (method) => method.isDefault,
-        orElse: () => methods.isNotEmpty ? methods.first : throw StateError('No methods'),
+        orElse: () =>
+            methods.isNotEmpty ? methods.first : throw StateError('No methods'),
       );
     } catch (e) {
       _logger.i('No default payment method found');
@@ -296,7 +302,7 @@ class SavedPaymentMethodsService {
           int.parse('20${method.expiryYear}'),
           int.parse(method.expiryMonth),
         );
-        
+
         if (expiryDate.isBefore(now)) {
           expiredMethods.add(method.id);
         }
@@ -339,7 +345,7 @@ class SavedPaymentMethodsService {
       final prefs = await SharedPreferences.getInstance();
       await prefs.remove(_storageKey);
       await prefs.remove(_defaultMethodKey);
-      
+
       _logger.i('All saved payment methods cleared');
       return true;
     } catch (e) {
@@ -358,7 +364,7 @@ class SavedPaymentMethodsService {
   /// Detect card type from card number
   String _detectCardType(String cardNumber) {
     final number = cardNumber.replaceAll(RegExp(r'\D'), '');
-    
+
     if (number.startsWith('4')) {
       return 'Visa';
     } else if (number.startsWith(RegExp(r'^5[1-5]'))) {
@@ -368,7 +374,7 @@ class SavedPaymentMethodsService {
     } else if (number.startsWith('6')) {
       return 'Discover';
     }
-    
+
     return 'Unknown';
   }
 
@@ -378,10 +384,10 @@ class SavedPaymentMethodsService {
       // Implement token revocation with PeachPayments API
       // In a real implementation, this would call the PeachPayments API to revoke the token
       _logger.i('Revoking payment token: $token');
-      
+
       // Simulate API call delay
       await Future.delayed(const Duration(milliseconds: 500));
-      
+
       _logger.i('Successfully revoked payment token: $token');
     } catch (e) {
       _logger.e('Error revoking payment token: $e');

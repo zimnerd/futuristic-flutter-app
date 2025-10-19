@@ -66,10 +66,7 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
       body: BlocListener<GroupChatBloc, GroupChatState>(
         listener: (context, state) {
           if (state is GroupCreated) {
-            PulseToast.success(
-              context,
-              message: 'Group created successfully!',
-            );
+            PulseToast.success(context, message: 'Group created successfully!');
             Navigator.of(context).pop(state.group);
           } else if (state is GroupChatError) {
             PulseToast.error(context, message: state.message);
@@ -103,10 +100,7 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
           children: [
             const Text(
               'Basic Information',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
             TextFormField(
@@ -161,10 +155,7 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
           children: [
             const Text(
               'Group Type',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
             Wrap(
@@ -185,7 +176,8 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
                       setState(() {
                         _selectedType = type;
                         // Adjust defaults based on type
-                        if (type == GroupType.liveHost || type == GroupType.speedDating) {
+                        if (type == GroupType.liveHost ||
+                            type == GroupType.speedDating) {
                           _requireApproval = true;
                           _enableVideoChat = true;
                         }
@@ -200,7 +192,9 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
               _getGroupTypeDescription(_selectedType),
               style: TextStyle(
                 fontSize: 12,
-                color: Theme.of(context).textTheme.bodySmall?.color?.withValues(alpha: 0.7),
+                color: Theme.of(
+                  context,
+                ).textTheme.bodySmall?.color?.withValues(alpha: 0.7),
                 fontStyle: FontStyle.italic,
               ),
             ),
@@ -219,10 +213,7 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
           children: [
             const Text(
               'Settings',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
             ListTile(
@@ -241,7 +232,10 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
                 },
               ),
               trailing: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
                   color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
@@ -357,10 +351,7 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
               children: [
                 const Text(
                   'Add Participants',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
                 const Spacer(),
                 TextButton.icon(
@@ -375,7 +366,9 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
               'Select people to add to the group',
               style: TextStyle(
                 fontSize: 12,
-                color: Theme.of(context).textTheme.bodySmall?.color?.withValues(alpha: 0.7),
+                color: Theme.of(
+                  context,
+                ).textTheme.bodySmall?.color?.withValues(alpha: 0.7),
               ),
             ),
             if (_selectedParticipantIds.isNotEmpty) ...[
@@ -449,8 +442,7 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
     final selectedData = await showDialog<Map<String, String>>(
       context: context,
       builder: (context) =>
-          ParticipantPickerDialog(initialSelectedIds: _selectedParticipantIds,
-      ),
+          ParticipantPickerDialog(initialSelectedIds: _selectedParticipantIds),
     );
 
     if (selectedData != null && mounted) {
@@ -471,23 +463,20 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
     }
 
     if (_selectedParticipantIds.isEmpty) {
-      PulseToast.info(
-        context,
-        message: 'Please add at least one participant',
-      );
+      PulseToast.info(context, message: 'Please add at least one participant');
       return;
     }
 
     context.read<GroupChatBloc>().add(
-          CreateGroup(
-            title: _titleController.text.trim(),
+      CreateGroup(
+        title: _titleController.text.trim(),
         description: _descriptionController.text.trim().isNotEmpty
             ? _descriptionController.text.trim()
             : null,
-            groupType: _selectedType,
+        groupType: _selectedType,
         participantUserIds: _selectedParticipantIds,
         requireApproval: _requireApproval,
-          ),
-        );
+      ),
+    );
   }
 }

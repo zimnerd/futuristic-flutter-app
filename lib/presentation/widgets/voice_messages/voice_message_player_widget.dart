@@ -20,19 +20,20 @@ class VoiceMessagePlayerWidget extends StatefulWidget {
   });
 
   @override
-  State<VoiceMessagePlayerWidget> createState() => _VoiceMessagePlayerWidgetState();
+  State<VoiceMessagePlayerWidget> createState() =>
+      _VoiceMessagePlayerWidgetState();
 }
 
 class _VoiceMessagePlayerWidgetState extends State<VoiceMessagePlayerWidget>
     with TickerProviderStateMixin {
   final AudioPlayer _audioPlayer = AudioPlayer();
-  
+
   bool _isPlaying = false;
   bool _isLoading = false;
   Duration _currentPosition = Duration.zero;
   Duration _totalDuration = Duration.zero;
   double _playbackSpeed = 1.0;
-  
+
   late AnimationController _waveController;
   StreamSubscription? _positionSubscription;
   StreamSubscription? _playerStateSubscription;
@@ -53,11 +54,12 @@ class _VoiceMessagePlayerWidgetState extends State<VoiceMessagePlayerWidget>
 
   Future<void> _initializePlayer() async {
     setState(() => _isLoading = true);
-    
+
     try {
       await _audioPlayer.setFilePath(widget.message.audioUrl);
-      _totalDuration = _audioPlayer.duration ?? Duration(seconds: widget.message.duration);
-      
+      _totalDuration =
+          _audioPlayer.duration ?? Duration(seconds: widget.message.duration);
+
       _positionSubscription = _audioPlayer.positionStream.listen((position) {
         setState(() => _currentPosition = position);
       });
@@ -74,7 +76,6 @@ class _VoiceMessagePlayerWidgetState extends State<VoiceMessagePlayerWidget>
           _waveController.stop();
         }
       });
-      
     } catch (e) {
       _showError('Failed to load audio: $e');
     } finally {
@@ -211,18 +212,23 @@ class _VoiceMessagePlayerWidgetState extends State<VoiceMessagePlayerWidget>
           animation: _waveController,
           builder: (context, child) {
             return Row(
-              children: widget.message.waveformData.asMap().entries.map((entry) {
+              children: widget.message.waveformData.asMap().entries.map((
+                entry,
+              ) {
                 final index = entry.key;
                 final amplitude = entry.value;
-                final progress = _currentPosition.inMilliseconds / _totalDuration.inMilliseconds;
-                final isPlayed = (index / widget.message.waveformData.length) <= progress;
-                
+                final progress =
+                    _currentPosition.inMilliseconds /
+                    _totalDuration.inMilliseconds;
+                final isPlayed =
+                    (index / widget.message.waveformData.length) <= progress;
+
                 return Expanded(
                   child: Container(
                     margin: const EdgeInsets.symmetric(horizontal: 1),
                     height: amplitude * 60,
                     decoration: BoxDecoration(
-                      color: isPlayed 
+                      color: isPlayed
                           ? context.primaryColor
                           : context.outlineColor,
                       borderRadius: BorderRadius.circular(2),
@@ -253,7 +259,8 @@ class _VoiceMessagePlayerWidgetState extends State<VoiceMessagePlayerWidget>
             ),
             child: Slider(
               value: _totalDuration.inMilliseconds > 0
-                  ? _currentPosition.inMilliseconds / _totalDuration.inMilliseconds
+                  ? _currentPosition.inMilliseconds /
+                        _totalDuration.inMilliseconds
                   : 0.0,
               onChanged: (value) {
                 final position = Duration(
@@ -292,18 +299,19 @@ class _VoiceMessagePlayerWidgetState extends State<VoiceMessagePlayerWidget>
         children: [
           // Speed control
           _buildSpeedButton(),
-          
+
           // Rewind 10s
           IconButton(
             onPressed: () {
-              final newPosition = _currentPosition - const Duration(seconds: 10);
+              final newPosition =
+                  _currentPosition - const Duration(seconds: 10);
               _seek(newPosition < Duration.zero ? Duration.zero : newPosition);
             },
             icon: const Icon(Icons.replay_10),
             iconSize: 32,
             color: Colors.grey[700],
           ),
-          
+
           // Play/Pause
           Container(
             decoration: BoxDecoration(
@@ -335,18 +343,21 @@ class _VoiceMessagePlayerWidgetState extends State<VoiceMessagePlayerWidget>
               color: context.onPrimaryColor,
             ),
           ),
-          
+
           // Forward 10s
           IconButton(
             onPressed: () {
-              final newPosition = _currentPosition + const Duration(seconds: 10);
-              _seek(newPosition > _totalDuration ? _totalDuration : newPosition);
+              final newPosition =
+                  _currentPosition + const Duration(seconds: 10);
+              _seek(
+                newPosition > _totalDuration ? _totalDuration : newPosition,
+              );
             },
             icon: const Icon(Icons.forward_10),
             iconSize: 32,
             color: context.onSurfaceVariantColor,
           ),
-          
+
           // Stop
           IconButton(
             onPressed: _stop,
@@ -378,9 +389,9 @@ class _VoiceMessagePlayerWidgetState extends State<VoiceMessagePlayerWidget>
         ),
         child: Text(
           '${_playbackSpeed}x',
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            fontWeight: FontWeight.w600,
-          ),
+          style: Theme.of(
+            context,
+          ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
         ),
       ),
     );

@@ -21,7 +21,8 @@ import '../widgets/common/pulse_toast.dart';
 /// - Purchase button with loading states
 /// - Success/error handling
 class CoinPurchaseSheet extends StatefulWidget {
-  final String? reason; // Optional reason for showing sheet (e.g., "boost", "super_like")
+  final String?
+  reason; // Optional reason for showing sheet (e.g., "boost", "super_like")
 
   const CoinPurchaseSheet({super.key, this.reason});
 
@@ -92,10 +93,7 @@ class _CoinPurchaseSheetState extends State<CoinPurchaseSheet>
           HapticFeedback.mediumImpact();
 
           // Show error message
-          PulseToast.error(
-            context,
-            message: state.message,
-          );
+          PulseToast.error(context, message: state.message);
         }
       },
       child: Container(
@@ -216,7 +214,10 @@ class _CoinPurchaseSheetState extends State<CoinPurchaseSheet>
             if (widget.reason != null)
               Container(
                 margin: const EdgeInsets.symmetric(horizontal: 24),
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
                 decoration: BoxDecoration(
                   gradient: AppColors.primaryGradient,
                   borderRadius: BorderRadius.circular(12),
@@ -403,9 +404,10 @@ class _CoinPurchaseSheetState extends State<CoinPurchaseSheet>
                                       height: 20,
                                       child: CircularProgressIndicator(
                                         strokeWidth: 2,
-                                        valueColor: AlwaysStoppedAnimation<Color>(
-                                          Colors.white,
-                                        ),
+                                        valueColor:
+                                            AlwaysStoppedAnimation<Color>(
+                                              Colors.white,
+                                            ),
                                       ),
                                     ),
                                     const SizedBox(width: 12),

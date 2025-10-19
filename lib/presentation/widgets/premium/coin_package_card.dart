@@ -47,10 +47,7 @@ class CoinPackageCard extends StatelessWidget {
                 ? AppColors.primary.withValues(alpha: 0.05)
                 : AppColors.surfaceVariant,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: borderColor,
-              width: borderWidth,
-            ),
+            border: Border.all(color: borderColor, width: borderWidth),
             boxShadow: isSelected
                 ? [
                     BoxShadow(
@@ -79,10 +76,7 @@ class CoinPackageCard extends StatelessWidget {
                       gradient: LinearGradient(
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
-                        colors: [
-                          Colors.amber.shade400,
-                          Colors.amber.shade600,
-                        ],
+                        colors: [Colors.amber.shade400, Colors.amber.shade600],
                       ),
                       shape: BoxShape.circle,
                       boxShadow: [
@@ -111,7 +105,10 @@ class CoinPackageCard extends StatelessWidget {
                         decoration: BoxDecoration(
                           color: AppColors.primary,
                           shape: BoxShape.circle,
-                          border: Border.all(color: AppColors.surface, width: 2),
+                          border: Border.all(
+                            color: AppColors.surface,
+                            width: 2,
+                          ),
                         ),
                         child: const Icon(
                           Icons.check,

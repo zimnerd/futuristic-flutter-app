@@ -82,15 +82,18 @@ class CallDetailsBottomSheet extends StatelessWidget {
                       children: [
                         Text(
                           'Call Details',
-                          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                fontWeight: FontWeight.bold,
-                              ),
+                          style: Theme.of(context).textTheme.titleLarge
+                              ?.copyWith(fontWeight: FontWeight.bold),
                         ),
                         Text(
                           _getCallStatusText(isIncoming, isMissed, duration),
                           style: TextStyle(
                             fontSize: 14,
-                            color: _getStatusColor(isIncoming, isMissed, duration),
+                            color: _getStatusColor(
+                              isIncoming,
+                              isMissed,
+                              duration,
+                            ),
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -112,48 +115,49 @@ class CallDetailsBottomSheet extends StatelessWidget {
               const SizedBox(height: 16),
 
               // Call information
-              _buildInfoSection(
-                context,
-                [
+              _buildInfoSection(context, [
+                _InfoRow(
+                  icon: Icons.person_outline,
+                  label: 'With',
+                  value: userName,
+                ),
+                _InfoRow(
+                  icon: Icons.access_time_outlined,
+                  label: 'Duration',
+                  value: _formatDuration(duration),
+                ),
+                _InfoRow(
+                  icon: Icons.calendar_today_outlined,
+                  label: 'Date',
+                  value: DateFormat(
+                    'EEEE, MMMM d, yyyy',
+                  ).format(callMessage.createdAt),
+                ),
+                _InfoRow(
+                  icon: Icons.schedule_outlined,
+                  label: 'Time',
+                  value: DateFormat('h:mm a').format(callMessage.createdAt),
+                ),
+                _InfoRow(
+                  icon: isVideo
+                      ? Icons.videocam_outlined
+                      : Icons.phone_outlined,
+                  label: 'Type',
+                  value: isVideo ? 'Video Call' : 'Audio Call',
+                ),
+                _InfoRow(
+                  icon: Icons.info_outline,
+                  label: 'Direction',
+                  value: isIncoming ? 'Incoming' : 'Outgoing',
+                ),
+                if (isMissed)
                   _InfoRow(
-                    icon: Icons.person_outline,
-                    label: 'With',
-                    value: userName,
+                    icon: Icons.warning_amber_outlined,
+                    label: 'Status',
+                    value: 'Missed',
+                    valueColor: Colors.red[700],
                   ),
-                  _InfoRow(
-                    icon: Icons.access_time_outlined,
-                    label: 'Duration',
-                    value: _formatDuration(duration),
-                  ),
-                  _InfoRow(
-                    icon: Icons.calendar_today_outlined,
-                    label: 'Date',
-                    value: DateFormat('EEEE, MMMM d, yyyy').format(callMessage.createdAt),
-                  ),
-                  _InfoRow(
-                    icon: Icons.schedule_outlined,
-                    label: 'Time',
-                    value: DateFormat('h:mm a').format(callMessage.createdAt),
-                  ),
-                  _InfoRow(
-                    icon: isVideo ? Icons.videocam_outlined : Icons.phone_outlined,
-                    label: 'Type',
-                    value: isVideo ? 'Video Call' : 'Audio Call',
-                  ),
-                  _InfoRow(
-                    icon: Icons.info_outline,
-                    label: 'Direction',
-                    value: isIncoming ? 'Incoming' : 'Outgoing',
-                  ),
-                  if (isMissed)
-                    _InfoRow(
-                      icon: Icons.warning_amber_outlined,
-                      label: 'Status',
-                      value: 'Missed',
-                      valueColor: Colors.red[700],
-                    ),
-                ],
-              ),
+              ]),
 
               // Call back button
               if (onCallBack != null) ...[
@@ -205,21 +209,14 @@ class CallDetailsBottomSheet extends StatelessWidget {
               color: Colors.grey[100],
               borderRadius: BorderRadius.circular(8),
             ),
-            child: Icon(
-              row.icon,
-              size: 20,
-              color: Colors.grey[700],
-            ),
+            child: Icon(row.icon, size: 20, color: Colors.grey[700]),
           ),
           const SizedBox(width: 16),
           Expanded(
             flex: 2,
             child: Text(
               row.label,
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey[600],
-              ),
+              style: TextStyle(fontSize: 14, color: Colors.grey[600]),
             ),
           ),
           Expanded(
@@ -279,7 +276,7 @@ class CallDetailsBottomSheet extends StatelessWidget {
 
     final hours = minutes ~/ 60;
     final remainingMinutes = minutes % 60;
-    
+
     return remainingMinutes > 0
         ? '$hours ${hours == 1 ? 'hour' : 'hours'} $remainingMinutes ${remainingMinutes == 1 ? 'minute' : 'minutes'}'
         : '$hours ${hours == 1 ? 'hour' : 'hours'}';

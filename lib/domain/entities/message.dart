@@ -81,24 +81,20 @@ class MediaAttachment extends Equatable {
 
   @override
   List<Object?> get props => [
-        url,
-        thumbnailUrl,
-        caption,
-        width,
-        height,
-        fileSize,
-        duration,
-        mimeType,
-        uploadStatus,
-      ];
+    url,
+    thumbnailUrl,
+    caption,
+    width,
+    height,
+    fileSize,
+    duration,
+    mimeType,
+    uploadStatus,
+  ];
 }
 
 /// Media upload status enumeration
-enum MediaUploadStatus {
-  uploading,
-  uploaded,
-  failed,
-}
+enum MediaUploadStatus { uploading, uploaded, failed }
 
 /// Message entity for chat functionality
 class Message extends Equatable {
@@ -236,7 +232,9 @@ class Message extends Equatable {
       mediaType: json['mediaType'] as String?,
       mediaDuration: json['mediaDuration'] as int?,
       mediaAttachment: json['mediaAttachment'] != null
-          ? MediaAttachment.fromJson(json['mediaAttachment'] as Map<String, dynamic>)
+          ? MediaAttachment.fromJson(
+              json['mediaAttachment'] as Map<String, dynamic>,
+            )
           : null,
       reactions:
           (json['reactions'] as List<dynamic>?)
@@ -281,24 +279,24 @@ class Message extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        conversationId,
-        senderId,
-        content,
-        type,
-        timestamp,
-        replyToMessageId,
-        isDelivered,
-        isRead,
-        isOptimistic,
-        mediaUrl,
-        mediaType,
-        mediaDuration,
-        mediaAttachment,
-        reactions,
-        status,
-        createdAt,
-      ];
+    id,
+    conversationId,
+    senderId,
+    content,
+    type,
+    timestamp,
+    replyToMessageId,
+    isDelivered,
+    isRead,
+    isOptimistic,
+    mediaUrl,
+    mediaType,
+    mediaDuration,
+    mediaAttachment,
+    reactions,
+    status,
+    createdAt,
+  ];
 }
 
 /// Message type enumeration
@@ -317,8 +315,7 @@ enum MessageType {
 }
 
 /// Message status enumeration
-enum MessageStatus { sending, sent, delivered, read, failed,
-}
+enum MessageStatus { sending, sent, delivered, read, failed }
 
 /// Message reaction entity
 class MessageReaction extends Equatable {

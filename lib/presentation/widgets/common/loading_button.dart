@@ -80,10 +80,7 @@ class _LoadingButtonState extends State<LoadingButton>
       vsync: this,
     );
     _shakeAnimation = Tween<double>(begin: 0, end: 10).animate(
-      CurvedAnimation(
-        parent: _shakeController,
-        curve: Curves.elasticIn,
-      ),
+      CurvedAnimation(parent: _shakeController, curve: Curves.elasticIn),
     );
   }
 
@@ -148,12 +145,16 @@ class _LoadingButtonState extends State<LoadingButton>
       },
       child: widget.isElevated
           ? ElevatedButton(
-              onPressed: _state == LoadingButtonState.loading ? null : _handlePress,
+              onPressed: _state == LoadingButtonState.loading
+                  ? null
+                  : _handlePress,
               style: _getButtonStyle(context),
               child: _buildButtonChild(),
             )
           : OutlinedButton(
-              onPressed: _state == LoadingButtonState.loading ? null : _handlePress,
+              onPressed: _state == LoadingButtonState.loading
+                  ? null
+                  : _handlePress,
               style: _getButtonStyle(context),
               child: _buildButtonChild(),
             ),
@@ -166,18 +167,14 @@ class _LoadingButtonState extends State<LoadingButton>
     switch (_state) {
       case LoadingButtonState.success:
         return baseStyle?.copyWith(
-          backgroundColor: WidgetStateProperty.all(PulseColors.success),
-        ) ??
-            ElevatedButton.styleFrom(
-              backgroundColor: PulseColors.success,
-            );
+              backgroundColor: WidgetStateProperty.all(PulseColors.success),
+            ) ??
+            ElevatedButton.styleFrom(backgroundColor: PulseColors.success);
       case LoadingButtonState.error:
         return baseStyle?.copyWith(
-          backgroundColor: WidgetStateProperty.all(PulseColors.reject),
-        ) ??
-            ElevatedButton.styleFrom(
-              backgroundColor: PulseColors.reject,
-            );
+              backgroundColor: WidgetStateProperty.all(PulseColors.reject),
+            ) ??
+            ElevatedButton.styleFrom(backgroundColor: PulseColors.reject);
       default:
         return baseStyle;
     }
@@ -227,9 +224,4 @@ class _LoadingButtonState extends State<LoadingButton>
   }
 }
 
-enum LoadingButtonState {
-  idle,
-  loading,
-  success,
-  error,
-}
+enum LoadingButtonState { idle, loading, success, error }

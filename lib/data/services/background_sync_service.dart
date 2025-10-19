@@ -18,30 +18,30 @@ class BackgroundSyncService {
   StreamSubscription<List<ConnectivityResult>>? _connectivitySubscription;
   bool _isOnline = true;
   bool _isSyncInProgress = false;
-  
+
   // Sync configuration
   static const Duration _periodicSyncInterval = Duration(minutes: 5);
 
   BackgroundSyncService({
     required ChatRepository chatRepository,
     required MessageDatabaseService databaseService,
-  })  : _chatRepository = chatRepository,
-        _databaseService = databaseService;
+  }) : _chatRepository = chatRepository,
+       _databaseService = databaseService;
 
   /// Initialize background sync service
   Future<void> initialize() async {
     try {
       _logger.d('Initializing BackgroundSyncService');
-      
+
       // Check initial connectivity
       await _checkConnectivity();
-      
+
       // Set up connectivity monitoring
       _setupConnectivityMonitoring();
-      
+
       // Start periodic sync
       _startPeriodicSync();
-      
+
       _logger.i('BackgroundSyncService initialized successfully');
     } catch (e) {
       _logger.e('Error initializing BackgroundSyncService: $e');
@@ -51,10 +51,10 @@ class BackgroundSyncService {
   /// Dispose resources
   void dispose() {
     _logger.d('Disposing BackgroundSyncService');
-    
+
     _periodicSyncTimer?.cancel();
     _connectivitySubscription?.cancel();
-    
+
     _logger.d('BackgroundSyncService disposed');
   }
 
@@ -64,9 +64,9 @@ class BackgroundSyncService {
       final connectivityResults = await _connectivity.checkConnectivity();
       final wasOnline = _isOnline;
       _isOnline = _isConnected(connectivityResults);
-      
+
       _logger.d('Connectivity check: $_isOnline (was: $wasOnline)');
-      
+
       // If we just came back online, trigger a sync
       if (_isOnline && !wasOnline) {
         _logger.i('Connectivity restored, triggering sync');
@@ -83,9 +83,9 @@ class BackgroundSyncService {
       (List<ConnectivityResult> results) {
         final wasOnline = _isOnline;
         _isOnline = _isConnected(results);
-        
+
         _logger.d('Connectivity changed: $_isOnline (was: $wasOnline)');
-        
+
         // If we just came back online, trigger a sync
         if (_isOnline && !wasOnline) {
           _logger.i('Connectivity restored, triggering sync');
@@ -100,23 +100,24 @@ class BackgroundSyncService {
 
   /// Check if any connectivity result indicates we're connected
   bool _isConnected(List<ConnectivityResult> results) {
-    return results.any((result) => 
-        result != ConnectivityResult.none);
+    return results.any((result) => result != ConnectivityResult.none);
   }
 
   /// Start periodic sync timer
   void _startPeriodicSync() {
     _periodicSyncTimer?.cancel();
-    
+
     _periodicSyncTimer = Timer.periodic(_periodicSyncInterval, (timer) {
       if (_isOnline && !_isSyncInProgress) {
         _logger.d('Periodic sync triggered');
         unawaited(_syncAllConversations());
       } else {
-        _logger.d('Skipping periodic sync - online: $_isOnline, inProgress: $_isSyncInProgress');
+        _logger.d(
+          'Skipping periodic sync - online: $_isOnline, inProgress: $_isSyncInProgress',
+        );
       }
     });
-    
+
     _logger.d('Periodic sync started with interval: $_periodicSyncInterval');
   }
 
@@ -134,7 +135,9 @@ class BackgroundSyncService {
     }
 
     if (_isSyncInProgress) {
-      _logger.w('Sync already in progress, skipping conversation $conversationId');
+      _logger.w(
+        'Sync already in progress, skipping conversation $conversationId',
+      );
       return;
     }
 
@@ -143,7 +146,7 @@ class BackgroundSyncService {
       _logger.d('Syncing conversation: $conversationId');
 
       await _syncConversationMessages(conversationId);
-      
+
       _logger.d('Successfully synced conversation: $conversationId');
     } catch (e) {
       _logger.e('Error syncing conversation $conversationId: $e');
@@ -174,7 +177,9 @@ class BackgroundSyncService {
       // PRIORITY 2: Get all conversations that have local data
       final localConversations = await _databaseService.getAllConversations();
 
-      _logger.d('Found ${localConversations.length} local conversations to sync');
+      _logger.d(
+        'Found ${localConversations.length} local conversations to sync',
+      );
 
       // PRIORITY 3: Sync each conversation
       for (final conversation in localConversations) {
@@ -189,8 +194,10 @@ class BackgroundSyncService {
         }
       }
 
-      _logger.i('Background sync completed for ${localConversations.length} conversations');
-      
+      _logger.i(
+        'Background sync completed for ${localConversations.length} conversations',
+      );
+
       // PRIORITY 4: Prefetch discovery profiles (low priority, no images)
       // This happens in background so profiles are ready when user opens discovery
       await _prefetchDiscoveryProfiles();
@@ -280,11 +287,15 @@ class BackgroundSyncService {
   Future<void> _syncConversationMessages(String conversationId) async {
     try {
       // Get the latest local message timestamp for this conversation
-      final latestLocalMessage = await _databaseService.getLatestMessage(conversationId);
-      
+      final latestLocalMessage = await _databaseService.getLatestMessage(
+        conversationId,
+      );
+
       // Get pagination metadata to determine sync strategy
-      final paginationMetadata = await _databaseService.getPaginationMetadata(conversationId);
-      
+      final paginationMetadata = await _databaseService.getPaginationMetadata(
+        conversationId,
+      );
+
       String? afterMessageId;
       if (latestLocalMessage != null) {
         afterMessageId = latestLocalMessage.id;
@@ -299,11 +310,13 @@ class BackgroundSyncService {
       );
 
       if (newMessages.isNotEmpty) {
-        _logger.d('Synced ${newMessages.length} new messages for conversation $conversationId');
-        
+        _logger.d(
+          'Synced ${newMessages.length} new messages for conversation $conversationId',
+        );
+
         // Note: The repository implementation already saves messages to database
         // so we don't need to manually save them here
-        
+
         // Update sync timestamp
         if (paginationMetadata != null) {
           final updatedMetadata = paginationMetadata.copyWith(
@@ -324,13 +337,13 @@ class BackgroundSyncService {
   Future<void> performDatabaseMaintenance() async {
     try {
       _logger.d('Starting database maintenance');
-      
+
       // Clean up old optimistic messages that never got confirmed
       await _cleanupOldOptimisticMessages();
-      
+
       // Optimize database (vacuum, analyze, etc.)
       await _databaseService.optimizeDatabase();
-      
+
       _logger.i('Database maintenance completed');
     } catch (e) {
       _logger.e('Error during database maintenance: $e');
@@ -341,18 +354,23 @@ class BackgroundSyncService {
   Future<void> _cleanupOldOptimisticMessages() async {
     try {
       final threshold = DateTime.now().subtract(const Duration(hours: 1));
-      
+
       // Find old optimistic messages (messages with tempId that are old)
-      final oldOptimisticMessages = await _databaseService.getOldOptimisticMessages(threshold);
-      
+      final oldOptimisticMessages = await _databaseService
+          .getOldOptimisticMessages(threshold);
+
       if (oldOptimisticMessages.isNotEmpty) {
-        _logger.w('Found ${oldOptimisticMessages.length} old optimistic messages to clean up');
-        
+        _logger.w(
+          'Found ${oldOptimisticMessages.length} old optimistic messages to clean up',
+        );
+
         for (final message in oldOptimisticMessages) {
           await _databaseService.deleteMessage(message.id);
         }
-        
-        _logger.d('Cleaned up ${oldOptimisticMessages.length} old optimistic messages');
+
+        _logger.d(
+          'Cleaned up ${oldOptimisticMessages.length} old optimistic messages',
+        );
       }
     } catch (e) {
       _logger.e('Error cleaning up old optimistic messages: $e');

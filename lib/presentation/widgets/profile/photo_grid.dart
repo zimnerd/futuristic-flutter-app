@@ -51,20 +51,19 @@ class _PhotoGridState extends State<PhotoGrid> {
   @override
   void initState() {
     super.initState();
-    
+
     _logger.i('🏁 PhotoGrid initialized');
     _logger.d('   - Initial photos count: ${widget.photos.length}');
     _logger.d('   - Photo IDs: ${widget.photos.map((p) => p.id).join(", ")}');
     _logger.d('   - Photo URLs: ${widget.photos.map((p) => p.url).join(", ")}');
-    
+
     _photos = List.from(widget.photos);
   }
-
 
   @override
   void didUpdateWidget(PhotoGrid oldWidget) {
     super.didUpdateWidget(oldWidget);
-    
+
     if (oldWidget.photos != widget.photos) {
       _logger.i('🔄 Photo list updated via widget rebuild');
       _logger.d('   - Old count: ${oldWidget.photos.length}');
@@ -75,19 +74,18 @@ class _PhotoGridState extends State<PhotoGrid> {
       _logger.d(
         '   - New photo URLs: ${widget.photos.map((p) => p.url).join(", ")}',
       );
-      
+
       _photos = List.from(widget.photos);
-      
+
       _logger.i('   - Internal photos list synchronized');
     }
   }
-
 
   Future<void> _addPhoto() async {
     _logger.i('📷 Add photo initiated');
     _logger.d('   - Current photos count: ${_photos.length}');
     _logger.d('   - Max photos: ${widget.maxPhotos}');
-    
+
     if (_photos.length >= widget.maxPhotos) {
       _logger.w('   - Max photos reached, showing dialog');
       _showMaxPhotosReachedDialog();
@@ -107,7 +105,7 @@ class _PhotoGridState extends State<PhotoGrid> {
 
       if (images.isNotEmpty) {
         _logger.i('   - Selected ${images.length} image(s)');
-        
+
         // Limit to remaining slots
         final imagesToUpload = images.take(remainingSlots).toList();
 
@@ -137,13 +135,13 @@ class _PhotoGridState extends State<PhotoGrid> {
               setState(() {
                 _uploadingPhotos[tempId] = true;
               });
-              
+
               final imageFile = File(image.path);
               _logger.d('     File size: ${await imageFile.length()} bytes');
-              
+
               await widget.onPhotoUpload!(imageFile);
               _logger.i('     ✅ Upload successful: $tempId');
-              
+
               setState(() {
                 _uploadingPhotos.remove(tempId);
                 _uploadedPhotos[tempId] = true;
@@ -197,7 +195,7 @@ class _PhotoGridState extends State<PhotoGrid> {
 
   void _deletePhoto(int index) {
     final photoToDelete = _photos[index];
-    
+
     _logger.i('🗑️ Deleting photo at index $index:');
     _logger.i('   - Photo ID: ${photoToDelete.id}');
     _logger.i('   - Photo URL: ${photoToDelete.url}');
@@ -271,23 +269,17 @@ class _PhotoGridState extends State<PhotoGrid> {
             const Spacer(),
             Text(
               '${_photos.length}/${widget.maxPhotos}',
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey[600],
-              ),
+              style: TextStyle(fontSize: 14, color: Colors.grey[600]),
             ),
           ],
         ),
         const SizedBox(height: 8),
         Text(
           'Add ${widget.maxPhotos - _photos.length} more photos to increase your chances',
-          style: TextStyle(
-            fontSize: 13,
-            color: Colors.grey[600],
-          ),
+          style: TextStyle(fontSize: 13, color: Colors.grey[600]),
         ),
         const SizedBox(height: 16),
-        
+
         if (widget.isEditing)
           ReorderableGridView(
             physics: const NeverScrollableScrollPhysics(),
@@ -368,10 +360,12 @@ class _PhotoGridState extends State<PhotoGrid> {
                 color: Colors.grey[200],
                 child: Builder(
                   builder: (context) {
-                    _logger.d('📸 Rendering photo at index $index: ${photo.url}');
+                    _logger.d(
+                      '📸 Rendering photo at index $index: ${photo.url}',
+                    );
                     _logger.d('   - Photo ID: ${photo.id}');
                     _logger.d('   - Cache key: ${photo.id}');
-                    
+
                     return RobustNetworkImage(
                       imageUrl: photo.url,
                       blurhash: photo.blurhash,
@@ -388,7 +382,10 @@ class _PhotoGridState extends State<PhotoGrid> {
                 top: 8,
                 left: 8,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: PulseColors.primary,
                     borderRadius: BorderRadius.circular(12),
@@ -637,43 +634,43 @@ class _PhotoGridState extends State<PhotoGrid> {
                         children: [
                           // Retry button
                           ElevatedButton.icon(
-                          onPressed: () {
-                            if (widget.onRetryUpload != null) {
-                              widget.onRetryUpload!(progress.tempId);
-                            }
-                          },
-                          icon: const Icon(Icons.refresh, size: 16),
-                          label: const Text('Retry'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: PulseColors.primary,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 6,
+                            onPressed: () {
+                              if (widget.onRetryUpload != null) {
+                                widget.onRetryUpload!(progress.tempId);
+                              }
+                            },
+                            icon: const Icon(Icons.refresh, size: 16),
+                            label: const Text('Retry'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: PulseColors.primary,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 6,
+                              ),
+                              minimumSize: Size.zero,
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                             ),
-                            minimumSize: Size.zero,
-                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                           ),
-                        ),
-                        const SizedBox(width: 8),
-                        // Remove button
-                        IconButton(
-                          onPressed: () {
-                            // Clear this failed upload from state
-                            if (widget.onRetryUpload != null) {
-                              // Signal to clear progress (parent handles via ClearUploadProgress event)
-                              context.read<ProfileBloc>().add(
-                                ClearUploadProgress(tempId: progress.tempId),
-                              );
-                            }
-                          },
-                          icon: const Icon(Icons.close, size: 20),
-                          color: Colors.white,
-                          padding: EdgeInsets.zero,
-                          constraints: const BoxConstraints(),
-                          visualDensity: VisualDensity.compact,
-                        ),
-                      ],
+                          const SizedBox(width: 8),
+                          // Remove button
+                          IconButton(
+                            onPressed: () {
+                              // Clear this failed upload from state
+                              if (widget.onRetryUpload != null) {
+                                // Signal to clear progress (parent handles via ClearUploadProgress event)
+                                context.read<ProfileBloc>().add(
+                                  ClearUploadProgress(tempId: progress.tempId),
+                                );
+                              }
+                            },
+                            icon: const Icon(Icons.close, size: 20),
+                            color: Colors.white,
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(),
+                            visualDensity: VisualDensity.compact,
+                          ),
+                        ],
                       ),
                     ),
                   ],
@@ -771,11 +768,7 @@ class _PhotoGridState extends State<PhotoGrid> {
             ),
           ],
         ),
-        child: Icon(
-          icon,
-          color: Colors.white,
-          size: 16,
-        ),
+        child: Icon(icon, color: Colors.white, size: 16),
       ),
     );
   }
@@ -821,7 +814,9 @@ class _PhotoGridState extends State<PhotoGrid> {
           initialIndex: initialIndex,
           onDescriptionChanged: (index, description) {
             setState(() {
-              _photos[index] = _photos[index].copyWith(description: description);
+              _photos[index] = _photos[index].copyWith(
+                description: description,
+              );
             });
             widget.onPhotosChanged(_photos);
           },
@@ -916,7 +911,8 @@ class _PhotoViewerScreenState extends State<_PhotoViewerScreen> {
             itemCount: widget.photos.length,
             itemBuilder: (context, index) {
               return GestureDetector(
-                onTap: () => setState(() => _showDescription = !_showDescription),
+                onTap: () =>
+                    setState(() => _showDescription = !_showDescription),
                 child: InteractiveViewer(
                   minScale: 1.0,
                   maxScale: 4.0,
@@ -943,7 +939,10 @@ class _PhotoViewerScreenState extends State<_PhotoViewerScreen> {
               right: 0,
               child: SafeArea(
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       begin: Alignment.topCenter,
@@ -957,12 +956,19 @@ class _PhotoViewerScreenState extends State<_PhotoViewerScreen> {
                   child: Row(
                     children: [
                       IconButton(
-                        icon: const Icon(Icons.close, color: Colors.white, size: 28),
+                        icon: const Icon(
+                          Icons.close,
+                          color: Colors.white,
+                          size: 28,
+                        ),
                         onPressed: () => Navigator.pop(context),
                       ),
                       const Spacer(),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
                         decoration: BoxDecoration(
                           color: Colors.black.withValues(alpha: 0.6),
                           borderRadius: BorderRadius.circular(20),
@@ -1024,7 +1030,8 @@ class _PhotoViewerScreenState extends State<_PhotoViewerScreen> {
                           const Spacer(),
                           IconButton(
                             icon: const Icon(Icons.close, color: Colors.white),
-                            onPressed: () => setState(() => _showDescription = false),
+                            onPressed: () =>
+                                setState(() => _showDescription = false),
                           ),
                         ],
                       ),
@@ -1035,7 +1042,9 @@ class _PhotoViewerScreenState extends State<_PhotoViewerScreen> {
                         maxLines: 3,
                         decoration: InputDecoration(
                           hintText: 'Add a caption...',
-                          hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.5)),
+                          hintStyle: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.5),
+                          ),
                           filled: true,
                           fillColor: Colors.white.withValues(alpha: 0.1),
                           border: OutlineInputBorder(
@@ -1143,8 +1152,14 @@ class _PhotoDetailsSheetState extends State<_PhotoDetailsSheet> {
               const SizedBox(height: 20),
 
               // Metadata
-              _buildInfoRow('Position', '${widget.index + 1} of ${widget.totalPhotos}'),
-              _buildInfoRow('Status', widget.photo.isVerified ? 'Verified ✓' : 'Pending'),
+              _buildInfoRow(
+                'Position',
+                '${widget.index + 1} of ${widget.totalPhotos}',
+              ),
+              _buildInfoRow(
+                'Status',
+                widget.photo.isVerified ? 'Verified ✓' : 'Pending',
+              ),
               if (widget.photo.uploadedAt != null)
                 _buildInfoRow(
                   'Uploaded',
@@ -1155,10 +1170,7 @@ class _PhotoDetailsSheetState extends State<_PhotoDetailsSheet> {
               // Description editor
               const Text(
                 'Description',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 8),
               TextField(
@@ -1222,10 +1234,7 @@ class _PhotoDetailsSheetState extends State<_PhotoDetailsSheet> {
             ),
           ),
           Expanded(
-            child: Text(
-              value,
-              style: const TextStyle(color: Colors.black87),
-            ),
+            child: Text(value, style: const TextStyle(color: Colors.black87)),
           ),
         ],
       ),
@@ -1284,7 +1293,7 @@ class _ReorderableGridViewState extends State<ReorderableGridView> {
       itemCount: widget.itemCount,
       itemBuilder: (context, index) {
         final child = widget.children[index];
-        
+
         return LongPressDraggable<int>(
           data: index,
           feedback: Transform.scale(
@@ -1294,18 +1303,11 @@ class _ReorderableGridViewState extends State<ReorderableGridView> {
               child: Material(
                 elevation: 8,
                 borderRadius: BorderRadius.circular(12),
-                child: SizedBox(
-                  width: 120,
-                  height: 160,
-                  child: child,
-                ),
+                child: SizedBox(width: 120, height: 160, child: child),
               ),
             ),
           ),
-          childWhenDragging: Opacity(
-            opacity: 0.3,
-            child: child,
-          ),
+          childWhenDragging: Opacity(opacity: 0.3, child: child),
           onDragStarted: () {
             setState(() => _draggingIndex = index);
           },
@@ -1334,8 +1336,9 @@ class _ReorderableGridViewState extends State<ReorderableGridView> {
               });
             },
             builder: (context, candidateData, rejectedData) {
-              final isHovered = _hoveredIndex == index && _draggingIndex != index;
-              
+              final isHovered =
+                  _hoveredIndex == index && _draggingIndex != index;
+
               return AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
                 decoration: BoxDecoration(

@@ -34,14 +34,14 @@ class CoinPackage extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        coins,
-        bonusCoins,
-        price,
-        priceDisplay,
-        isMostPopular,
-        isBestValue,
-      ];
+    id,
+    coins,
+    bonusCoins,
+    price,
+    priceDisplay,
+    isMostPopular,
+    isBestValue,
+  ];
 }
 
 /// Standard coin packages

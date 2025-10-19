@@ -10,10 +10,10 @@ class PhotoUploadService {
   factory PhotoUploadService() => _instance;
   PhotoUploadService._internal();
 
-  final Map<String, StreamController<PhotoUploadProgress>>
-      _uploadControllers = {};
-  final Map<String, StreamController<BatchUploadProgress>>
-      _batchControllers = {};
+  final Map<String, StreamController<PhotoUploadProgress>> _uploadControllers =
+      {};
+  final Map<String, StreamController<BatchUploadProgress>> _batchControllers =
+      {};
   final Map<String, PhotoUploadProgress> _uploadProgress = {};
 
   /// Watch progress for a single upload
@@ -69,12 +69,14 @@ class PhotoUploadService {
   }) async {
     try {
       // Initialize progress
-      updateProgress(PhotoUploadProgress(
-        uploadId: uploadId,
-        photoPath: photoPath,
-        progress: 0.0,
-        status: UploadStatus.pending,
-      ));
+      updateProgress(
+        PhotoUploadProgress(
+          uploadId: uploadId,
+          photoPath: photoPath,
+          progress: 0.0,
+          status: UploadStatus.pending,
+        ),
+      );
 
       final file = File(photoPath);
       final fileBytes = await file.readAsBytes();
@@ -91,24 +93,28 @@ class PhotoUploadService {
       request.files.add(multipartFile);
 
       // Update to uploading status
-      updateProgress(PhotoUploadProgress(
-        uploadId: uploadId,
-        photoPath: photoPath,
-        progress: 0.1,
-        status: UploadStatus.uploading,
-      ));
+      updateProgress(
+        PhotoUploadProgress(
+          uploadId: uploadId,
+          photoPath: photoPath,
+          progress: 0.1,
+          status: UploadStatus.uploading,
+        ),
+      );
 
       // Send request with progress simulation
       // Note: http package doesn't support native progress, but we can estimate
       final streamedResponse = await request.send();
 
       // Simulate progress updates while waiting for response
-      updateProgress(PhotoUploadProgress(
-        uploadId: uploadId,
-        photoPath: photoPath,
-        progress: 0.5,
-        status: UploadStatus.uploading,
-      ));
+      updateProgress(
+        PhotoUploadProgress(
+          uploadId: uploadId,
+          photoPath: photoPath,
+          progress: 0.5,
+          status: UploadStatus.uploading,
+        ),
+      );
 
       final response = await http.Response.fromStream(streamedResponse);
 
@@ -116,26 +122,30 @@ class PhotoUploadService {
         // Extract URL from response (adjust based on your API)
         final responseData = response.body;
 
-        updateProgress(PhotoUploadProgress(
-          uploadId: uploadId,
-          photoPath: photoPath,
-          progress: 1.0,
-          status: UploadStatus.completed,
-          url: responseData, // Adjust based on actual response format
-        ));
+        updateProgress(
+          PhotoUploadProgress(
+            uploadId: uploadId,
+            photoPath: photoPath,
+            progress: 1.0,
+            status: UploadStatus.completed,
+            url: responseData, // Adjust based on actual response format
+          ),
+        );
 
         return responseData;
       } else {
         throw Exception('Upload failed: ${response.statusCode}');
       }
     } catch (e) {
-      updateProgress(PhotoUploadProgress(
-        uploadId: uploadId,
-        photoPath: photoPath,
-        progress: 0.0,
-        status: UploadStatus.failed,
-        error: e.toString(),
-      ));
+      updateProgress(
+        PhotoUploadProgress(
+          uploadId: uploadId,
+          photoPath: photoPath,
+          progress: 0.0,
+          status: UploadStatus.failed,
+          error: e.toString(),
+        ),
+      );
       rethrow;
     }
   }

@@ -107,7 +107,9 @@ class NotificationRepositoryImpl implements NotificationRepository {
   }
 
   @override
-  Future<void> updateNotificationPreferences(Map<String, bool> preferences) async {
+  Future<void> updateNotificationPreferences(
+    Map<String, bool> preferences,
+  ) async {
     try {
       _logger.d('Updating notification preferences');
       await _remoteDataSource.updateNotificationPreferences(preferences);

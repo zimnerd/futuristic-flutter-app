@@ -97,7 +97,7 @@ class PhotoUploadService {
       }
 
       final fileName = '${DateTime.now().millisecondsSinceEpoch}$fileExtension';
-      
+
       final formData = FormData.fromMap({
         'image': await MultipartFile.fromFile(
           imageFile.path,
@@ -135,7 +135,7 @@ class PhotoUploadService {
     String? userId,
   }) async {
     final List<String> uploadedUrls = [];
-    
+
     for (int i = 0; i < imageFiles.length; i++) {
       try {
         final url = await uploadImage(
@@ -196,7 +196,9 @@ class PhotoUploadService {
   }
 
   /// Show photo source selection dialog
-  static Future<ImageSource?> showImageSourceDialog(BuildContext context) async {
+  static Future<ImageSource?> showImageSourceDialog(
+    BuildContext context,
+  ) async {
     return showModalBottomSheet<ImageSource>(
       context: context,
       backgroundColor: Colors.transparent,
@@ -204,9 +206,7 @@ class PhotoUploadService {
         return Container(
           decoration: const BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.vertical(
-              top: Radius.circular(20),
-            ),
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
           ),
           child: SafeArea(
             child: Column(
@@ -236,13 +236,15 @@ class PhotoUploadService {
                         leading: const Icon(Icons.camera_alt),
                         title: const Text('Camera'),
                         subtitle: const Text('Take a new photo'),
-                        onTap: () => Navigator.of(context).pop(ImageSource.camera),
+                        onTap: () =>
+                            Navigator.of(context).pop(ImageSource.camera),
                       ),
                       ListTile(
                         leading: const Icon(Icons.photo_library),
                         title: const Text('Gallery'),
                         subtitle: const Text('Choose from existing photos'),
-                        onTap: () => Navigator.of(context).pop(ImageSource.gallery),
+                        onTap: () =>
+                            Navigator.of(context).pop(ImageSource.gallery),
                       ),
                       const SizedBox(height: 10),
                       TextButton(

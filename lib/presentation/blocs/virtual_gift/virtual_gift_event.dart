@@ -1,12 +1,7 @@
 import 'package:equatable/equatable.dart';
 
 // Simple reaction enum for gift reactions
-enum GiftReaction { 
-  love, 
-  like, 
-  thanks, 
-  wow 
-}
+enum GiftReaction { love, like, thanks, wow }
 
 abstract class VirtualGiftEvent extends Equatable {
   const VirtualGiftEvent();
@@ -20,11 +15,7 @@ class LoadGiftCatalog extends VirtualGiftEvent {
   final double? minPrice;
   final double? maxPrice;
 
-  const LoadGiftCatalog({
-    this.category,
-    this.minPrice,
-    this.maxPrice,
-  });
+  const LoadGiftCatalog({this.category, this.minPrice, this.maxPrice});
 
   @override
   List<Object?> get props => [category, minPrice, maxPrice];
@@ -49,10 +40,7 @@ class LoadReceivedGifts extends VirtualGiftEvent {
   final int page;
   final int limit;
 
-  const LoadReceivedGifts({
-    this.page = 1,
-    this.limit = 20,
-  });
+  const LoadReceivedGifts({this.page = 1, this.limit = 20});
 
   @override
   List<Object?> get props => [page, limit];
@@ -62,10 +50,7 @@ class LoadSentGifts extends VirtualGiftEvent {
   final int page;
   final int limit;
 
-  const LoadSentGifts({
-    this.page = 1,
-    this.limit = 20,
-  });
+  const LoadSentGifts({this.page = 1, this.limit = 20});
 
   @override
   List<Object?> get props => [page, limit];
@@ -76,11 +61,7 @@ class FilterGifts extends VirtualGiftEvent {
   final String? priceRange;
   final String? searchQuery;
 
-  const FilterGifts({
-    this.category,
-    this.priceRange,
-    this.searchQuery,
-  });
+  const FilterGifts({this.category, this.priceRange, this.searchQuery});
 
   @override
   List<Object?> get props => [category, priceRange, searchQuery];
@@ -113,10 +94,7 @@ class ReactToGift extends VirtualGiftEvent {
   final String giftTransactionId;
   final GiftReaction reaction;
 
-  const ReactToGift({
-    required this.giftTransactionId,
-    required this.reaction,
-  });
+  const ReactToGift({required this.giftTransactionId, required this.reaction});
 
   @override
   List<Object?> get props => [giftTransactionId, reaction];

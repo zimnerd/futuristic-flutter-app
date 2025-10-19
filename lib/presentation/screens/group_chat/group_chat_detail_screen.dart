@@ -27,10 +27,7 @@ import '../../widgets/common/pulse_toast.dart';
 class GroupChatDetailScreen extends StatefulWidget {
   final GroupConversation group;
 
-  const GroupChatDetailScreen({
-    super.key,
-    required this.group,
-  });
+  const GroupChatDetailScreen({super.key, required this.group});
 
   @override
   State<GroupChatDetailScreen> createState() => _GroupChatDetailScreenState();
@@ -42,13 +39,13 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   final FocusNode _messageFocusNode = FocusNode();
-  
+
   // Services
   final chat_bloc.ChatBloc _chatBloc = GetIt.I<chat_bloc.ChatBloc>();
   late final GroupChatWebSocketService _groupChatWS;
   late final GroupChatService _groupChatService;
   final ImagePicker _imagePicker = ImagePicker();
-  
+
   // State
   bool _isRecordingVoice = false;
 
@@ -58,7 +55,7 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
   List<MessageModel> _messages = [];
   final List<String> _typingUsers = [];
   MessageModel? _replyToMessage;
-  
+
   // Animation
   late AnimationController _typingAnimationController;
   late Animation<double> _typingAnimation;
@@ -69,16 +66,16 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
   @override
   void initState() {
     super.initState();
-    
+
     _groupChatWS = GetIt.I<GroupChatWebSocketService>();
     _groupChatService = GetIt.I<GroupChatService>();
-    
+
     // Initialize animations
     _typingAnimationController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 800),
     )..repeat(reverse: true);
-    
+
     _typingAnimation = Tween<double>(begin: 0.4, end: 1.0).animate(
       CurvedAnimation(
         parent: _typingAnimationController,
@@ -88,14 +85,14 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
 
     // Join group WebSocket room
     _groupChatWS.joinGroup(widget.group.id);
-    
+
     // Load messages (using chat bloc)
     // For group chat, we'll need to adapt the chat service to handle group conversations
     // For now, we'll use a placeholder list
-    
+
     // Setup listeners
     _setupMessageListener();
-    
+
     // Scroll to bottom on new messages
     _scrollController.addListener(_onScroll);
   }
@@ -121,7 +118,7 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
 
   void _scrollToBottom({bool animate = true}) {
     if (!_scrollController.hasClients) return;
-    
+
     if (animate) {
       _scrollController.animateTo(
         0,
@@ -137,7 +134,7 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
   void dispose() {
     // Leave group room
     _groupChatWS.leaveGroup(widget.group.id);
-    
+
     _messageController.dispose();
     _scrollController.dispose();
     _messageFocusNode.dispose();
@@ -159,7 +156,7 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
             child: Stack(
               children: [
                 _buildMessagesList(),
-                
+
                 // Typing indicator overlay
                 if (_typingUsers.isNotEmpty)
                   Positioned(
@@ -168,7 +165,7 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
                     right: 0,
                     child: _buildTypingIndicator(),
                   ),
-                  
+
                 // Voice recorder overlay
                 if (_isRecordingVoice)
                   Positioned.fill(
@@ -221,7 +218,7 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
           _buildMessageInput(),
         ],
       ),
-      
+
       // Floating action buttons
       floatingActionButton: _buildFloatingActions(),
     );
@@ -238,46 +235,46 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
       title: Row(
         children: [
           // Group avatar with initials from group name
-            Hero(
-              tag: 'group_avatar_${widget.group.id}',
+          Hero(
+            tag: 'group_avatar_${widget.group.id}',
             child: InitialsAvatar(
               name: widget.group.title,
               imageUrl: null, // Groups use initials, not images
               radius: 20,
-              ),
             ),
-            const SizedBox(width: 12),
-            
-            // Group info
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    widget.group.title,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(width: 12),
+
+          // Group info
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  widget.group.title,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
                   ),
-                  const SizedBox(height: 2),
-                  Text(
-                    _typingUsers.isNotEmpty
-                        ? '${_typingUsers.first} is typing...'
-                        : '${widget.group.participantCount} members',
-                    style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.9),
-                      fontSize: 12,
-                    ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  _typingUsers.isNotEmpty
+                      ? '${_typingUsers.first} is typing...'
+                      : '${widget.group.participantCount} members',
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.9),
+                    fontSize: 12,
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
+      ),
       actions: [
         // Voice call button
         if (widget.group.settings?.enableVoiceChat == true)
@@ -286,7 +283,7 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
             onPressed: _startVoiceCall,
             tooltip: 'Start voice call',
           ),
-        
+
         // Video call button
         if (widget.group.settings?.enableVideoChat == true)
           IconButton(
@@ -390,25 +387,22 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
       itemBuilder: (context, index) {
         final message = _messages[index];
         final isMe = message.senderId == _currentUserId;
-        final showAvatar = !isMe &&
-            (index == 0 ||
-                _messages[index - 1].senderId != message.senderId);
-        
+        final showAvatar =
+            !isMe &&
+            (index == 0 || _messages[index - 1].senderId != message.senderId);
+
         return _buildMessageBubble(message, isMe, showAvatar);
       },
     );
   }
 
-  Widget _buildMessageBubble(
-    MessageModel message,
-    bool isMe,
-    bool showAvatar,
-  ) {
+  Widget _buildMessageBubble(MessageModel message, bool isMe, bool showAvatar) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Row(
-        mainAxisAlignment:
-            isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
+        mainAxisAlignment: isMe
+            ? MainAxisAlignment.end
+            : MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           // Sender avatar (for group messages)
@@ -434,9 +428,7 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
                   vertical: 10,
                 ),
                 decoration: BoxDecoration(
-                  color: isMe
-                      ? PulseColors.primary
-                      : Colors.white,
+                  color: isMe ? PulseColors.primary : Colors.white,
                   borderRadius: BorderRadius.only(
                     topLeft: const Radius.circular(16),
                     topRight: const Radius.circular(16),
@@ -467,15 +459,16 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
                           ),
                         ),
                       ),
-                    
+
                     // Reply preview if replying to another message
                     if (message.replyTo != null)
                       Container(
                         margin: const EdgeInsets.only(bottom: 8),
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: (isMe ? Colors.white : Colors.grey)
-                              .withValues(alpha: 0.2),
+                          color: (isMe ? Colors.white : Colors.grey).withValues(
+                            alpha: 0.2,
+                          ),
                           borderRadius: BorderRadius.circular(8),
                           border: Border(
                             left: BorderSide(
@@ -526,8 +519,8 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
                             message.status == MessageStatus.read
                                 ? Icons.done_all
                                 : message.status == MessageStatus.delivered
-                                    ? Icons.done_all
-                                    : Icons.done,
+                                ? Icons.done_all
+                                : Icons.done,
                             size: 14,
                             color: message.status == MessageStatus.read
                                 ? Colors.blue[300]
@@ -551,11 +544,7 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.chat_bubble_outline,
-            size: 80,
-            color: Colors.grey[400],
-          ),
+          Icon(Icons.chat_bubble_outline, size: 80, color: Colors.grey[400]),
           const SizedBox(height: 16),
           const Text(
             'No messages yet',
@@ -568,10 +557,7 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
           const SizedBox(height: 8),
           Text(
             'Be the first to say something!',
-            style: TextStyle(
-              color: Colors.grey[600],
-              fontSize: 14,
-            ),
+            style: TextStyle(color: Colors.grey[600], fontSize: 14),
           ),
         ],
       ),
@@ -635,10 +621,7 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
         color: Colors.grey[200],
         border: Border(
           top: BorderSide(color: Colors.grey[300]!),
-          left: BorderSide(
-            color: PulseColors.primary,
-            width: 3,
-          ),
+          left: BorderSide(color: PulseColors.primary, width: 3),
         ),
       ),
       child: Row(
@@ -658,10 +641,7 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
                 const SizedBox(height: 4),
                 Text(
                   _replyToMessage!.content ?? '',
-                  style: TextStyle(
-                    color: Colors.grey[700],
-                    fontSize: 13,
-                  ),
+                  style: TextStyle(color: Colors.grey[700], fontSize: 13),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -741,10 +721,7 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
                 height: 44,
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
-                    colors: [
-                      PulseColors.primary,
-                      PulseColors.secondary,
-                    ],
+                    colors: [PulseColors.primary, PulseColors.secondary],
                   ),
                   shape: BoxShape.circle,
                 ),
@@ -778,7 +755,7 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
           child: Icon(Icons.person_add, color: PulseColors.primary),
         ),
         const SizedBox(height: 8),
-        
+
         // View participants button
         FloatingActionButton(
           heroTag: 'view_participants',
@@ -834,7 +811,7 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
     // Send text message via chat bloc
     // Note: This needs to be adapted for group chat
     // For now, using placeholder logic
-    
+
     _messageController.clear();
     setState(() {
       _isTyping = false;
@@ -887,7 +864,10 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
             if (isMe || _isAdmin())
               ListTile(
                 leading: const Icon(Icons.delete, color: Colors.red),
-                title: const Text('Delete', style: TextStyle(color: Colors.red)),
+                title: const Text(
+                  'Delete',
+                  style: TextStyle(color: Colors.red),
+                ),
                 onTap: () {
                   Navigator.pop(context);
                   _deleteMessage(message);
@@ -896,7 +876,10 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
             if (!isMe && _isAdmin())
               ListTile(
                 leading: const Icon(Icons.flag, color: Colors.orange),
-                title: const Text('Report', style: TextStyle(color: Colors.orange)),
+                title: const Text(
+                  'Report',
+                  style: TextStyle(color: Colors.orange),
+                ),
                 onTap: () {
                   Navigator.pop(context);
                   _reportMessage(message);
@@ -1014,16 +997,13 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
                     const Spacer(),
                     Text(
                       '${widget.group.participantCount} members',
-                      style: TextStyle(
-                        color: Colors.grey[600],
-                        fontSize: 14,
-                      ),
+                      style: TextStyle(color: Colors.grey[600], fontSize: 14),
                     ),
                   ],
                 ),
               ),
               const Divider(height: 1),
-              
+
               // Participants list
               Expanded(
                 child: ListView.builder(
@@ -1044,7 +1024,8 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
 
   Widget _buildParticipantTile(GroupParticipant participant) {
     final isOwner = participant.role == ParticipantRole.owner;
-    final isAdmin = participant.role == ParticipantRole.admin ||
+    final isAdmin =
+        participant.role == ParticipantRole.admin ||
         participant.role == ParticipantRole.moderator;
 
     return ListTile(
@@ -1132,7 +1113,8 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
       ),
       trailing: _isAdmin()
           ? PopupMenuButton<String>(
-              onSelected: (value) => _handleParticipantAction(value, participant),
+              onSelected: (value) =>
+                  _handleParticipantAction(value, participant),
               itemBuilder: (context) => [
                 if (participant.role != ParticipantRole.owner) ...[
                   const PopupMenuItem(
@@ -1190,16 +1172,14 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
             child: const Text('Cancel'),
           ),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-            ),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
             onPressed: () {
               context.read<GroupChatBloc>().add(
-                    RemoveParticipantFromGroup(
-                      conversationId: widget.group.id,
-                      userId: participant.userId,
-                    ),
-                  );
+                RemoveParticipantFromGroup(
+                  conversationId: widget.group.id,
+                  userId: participant.userId,
+                ),
+              );
               Navigator.pop(context);
             },
             child: const Text('Remove', style: TextStyle(color: Colors.white)),
@@ -1257,10 +1237,7 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
                     } catch (e) {
                       setState(() => isSearching = false);
                       if (context.mounted) {
-                        PulseToast.error(
-                          context,
-                          message: 'Search failed: $e',
-                        );
+                        PulseToast.error(context, message: 'Search failed: $e');
                       }
                     }
                   }
@@ -1407,10 +1384,7 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
                     } catch (e) {
                       setState(() => isSearching = false);
                       if (context.mounted) {
-                        PulseToast.error(
-                          context,
-                          message: 'Search failed: $e',
-                        );
+                        PulseToast.error(context, message: 'Search failed: $e');
                       }
                     }
                   }
@@ -1430,7 +1404,8 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
                     shrinkWrap: true,
                     itemCount: searchResults.length,
                     itemBuilder: (context, index) {
-                      final message = searchResults[index] as Map<String, dynamic>;
+                      final message =
+                          searchResults[index] as Map<String, dynamic>;
                       return ListTile(
                         title: Text(
                           message['senderUsername'] ?? 'Unknown',
@@ -1519,18 +1494,16 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
               ),
               Expanded(
                 child: media.isEmpty
-                    ? const Center(
-                        child: Text('No media in this conversation'),
-                      )
+                    ? const Center(child: Text('No media in this conversation'))
                     : GridView.builder(
                         controller: scrollController,
                         padding: const EdgeInsets.all(8),
                         gridDelegate:
                             const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 3,
-                          crossAxisSpacing: 4,
-                          mainAxisSpacing: 4,
-                        ),
+                              crossAxisCount: 3,
+                              crossAxisSpacing: 4,
+                              mainAxisSpacing: 4,
+                            ),
                         itemCount: media.length,
                         itemBuilder: (context, index) {
                           final item = media[index];
@@ -1572,9 +1545,9 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
                                   ),
                                   errorWidget: (context, url, error) =>
                                       Container(
-                                    color: Colors.grey[300],
-                                    child: const Icon(Icons.broken_image),
-                                  ),
+                                        color: Colors.grey[300],
+                                        child: const Icon(Icons.broken_image),
+                                      ),
                                 ),
                                 if (type == 'video')
                                   const Center(
@@ -1596,10 +1569,7 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
       );
     } catch (e) {
       if (mounted) {
-        PulseToast.error(
-          context,
-          message: 'Failed to load media: $e',
-        );
+        PulseToast.error(context, message: 'Failed to load media: $e');
       }
     }
   }
@@ -1652,17 +1622,11 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
                 );
                 if (context.mounted) {
                   Navigator.pop(context);
-                  PulseToast.success(
-                    context,
-                    message: 'Settings updated',
-                  );
+                  PulseToast.success(context, message: 'Settings updated');
                 }
               } catch (e) {
                 if (context.mounted) {
-                  PulseToast.error(
-                    context,
-                    message: 'Failed to update: $e',
-                  );
+                  PulseToast.error(context, message: 'Failed to update: $e');
                 }
               }
             },
@@ -1754,7 +1718,8 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
                           Navigator.pop(context);
                           PulseToast.success(
                             context,
-                            message: 'Report submitted. We\'ll review it shortly.',
+                            message:
+                                'Report submitted. We\'ll review it shortly.',
                           );
                         }
                       } catch (e) {
@@ -1791,9 +1756,7 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
             child: const Text('Cancel'),
           ),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-            ),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
             onPressed: () async {
               try {
                 await _groupChatService.leaveGroup(
@@ -1802,10 +1765,7 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
                 if (context.mounted) {
                   Navigator.pop(context); // Close dialog
                   Navigator.pop(context); // Close screen
-                  PulseToast.info(
-                    context,
-                    message: 'You left the group',
-                  );
+                  PulseToast.info(context, message: 'You left the group');
                 }
               } catch (e) {
                 if (context.mounted) {
@@ -1875,7 +1835,7 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
 
       // Navigate to video call screen (users can disable video for voice-only)
       if (!mounted) return;
-      
+
       // Provide GroupChatBloc to the VideoCallScreen route
       final groupChatBloc = context.read<GroupChatBloc>();
       Navigator.of(context).push(
@@ -1893,10 +1853,7 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
     } catch (e) {
       if (mounted) {
         Navigator.of(context).pop(); // Close loading dialog
-        PulseToast.error(
-          context,
-          message: 'Failed to start voice call: $e',
-        );
+        PulseToast.error(context, message: 'Failed to start voice call: $e');
       }
     }
   }
@@ -1952,7 +1909,7 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
 
       // Navigate to video call screen with token
       if (!mounted) return;
-      
+
       // Provide GroupChatBloc to the VideoCallScreen route
       final groupChatBloc = context.read<GroupChatBloc>();
       Navigator.of(context).push(
@@ -1970,10 +1927,7 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
     } catch (e) {
       if (mounted) {
         Navigator.of(context).pop(); // Close loading dialog
-        PulseToast.error(
-          context,
-          message: 'Failed to start video call: $e',
-        );
+        PulseToast.error(context, message: 'Failed to start video call: $e');
       }
     }
   }
@@ -1992,10 +1946,7 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
     final status = await permission.request();
     if (!status.isGranted) {
       if (mounted) {
-        PulseToast.warning(
-          context,
-          message: 'Permission denied',
-        );
+        PulseToast.warning(context, message: 'Permission denied');
       }
       return;
     }
@@ -2033,10 +1984,7 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
         }
       } catch (e) {
         if (mounted) {
-          PulseToast.error(
-            context,
-            message: 'Failed to upload image: $e',
-          );
+          PulseToast.error(context, message: 'Failed to upload image: $e');
         }
       }
     }
@@ -2075,10 +2023,7 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
         }
       } catch (e) {
         if (mounted) {
-          PulseToast.error(
-            context,
-            message: 'Failed to upload video: $e',
-          );
+          PulseToast.error(context, message: 'Failed to upload video: $e');
         }
       }
     }
@@ -2132,10 +2077,7 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
       }
     } catch (e) {
       if (mounted) {
-        PulseToast.error(
-          context,
-          message: 'Failed to upload document: $e',
-        );
+        PulseToast.error(context, message: 'Failed to upload document: $e');
       }
     }
   }
@@ -2163,10 +2105,7 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
                 );
                 if (context.mounted) {
                   Navigator.pop(context);
-                  PulseToast.success(
-                    context,
-                    message: 'Message deleted',
-                  );
+                  PulseToast.success(context, message: 'Message deleted');
                   // Refresh messages
                   setState(() {
                     _messages.removeWhere((m) => m.id == message.id);
@@ -2175,17 +2114,11 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
               } catch (e) {
                 if (context.mounted) {
                   Navigator.pop(context);
-                  PulseToast.error(
-                    context,
-                    message: 'Failed to delete: $e',
-                  );
+                  PulseToast.error(context, message: 'Failed to delete: $e');
                 }
               }
             },
-            child: const Text(
-              'Delete',
-              style: TextStyle(color: Colors.white),
-            ),
+            child: const Text('Delete', style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -2273,7 +2206,8 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
                           Navigator.pop(context);
                           PulseToast.success(
                             context,
-                            message: 'Report submitted. We\'ll review it shortly.',
+                            message:
+                                'Report submitted. We\'ll review it shortly.',
                           );
                         }
                       } catch (e) {
@@ -2304,7 +2238,7 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
       (p) => p.userId == _currentUserId,
       orElse: () => widget.group.participants.first,
     );
-    
+
     return currentParticipant.role == ParticipantRole.owner ||
         currentParticipant.role == ParticipantRole.admin ||
         currentParticipant.role == ParticipantRole.moderator;

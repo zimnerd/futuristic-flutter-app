@@ -42,11 +42,19 @@ class ConversationAnalysis {
       timestamp: DateTime.parse(json['timestamp']),
       metrics: ConversationMetrics.fromJson(json['metrics']),
       emotionalAnalysis: EmotionalAnalysis.fromJson(json['emotionalAnalysis']),
-      compatibilityScore: CompatibilityScore.fromJson(json['compatibilityScore']),
+      compatibilityScore: CompatibilityScore.fromJson(
+        json['compatibilityScore'],
+      ),
       safetyAnalysis: SafetyAnalysis.fromJson(json['safetyAnalysis']),
-      health: ConversationHealth.values.firstWhere((h) => h.toString().split('.').last == json['health']),
-      insights: (json['insights'] as List).map((i) => ConversationInsight.fromJson(i)).toList(),
-      suggestions: (json['suggestions'] as List).map((s) => ConversationSuggestion.fromJson(s)).toList(),
+      health: ConversationHealth.values.firstWhere(
+        (h) => h.toString().split('.').last == json['health'],
+      ),
+      insights: (json['insights'] as List)
+          .map((i) => ConversationInsight.fromJson(i))
+          .toList(),
+      suggestions: (json['suggestions'] as List)
+          .map((s) => ConversationSuggestion.fromJson(s))
+          .toList(),
     );
   }
 }
@@ -154,21 +162,14 @@ class CompatibilityScore {
       strengthAreas: List<String>.from(json['strengthAreas']),
       potentialChallenges: List<String>.from(json['potentialChallenges']),
       level: CompatibilityLevel.values.firstWhere(
-        (l) => l.toString().split('.').last == json['level']
+        (l) => l.toString().split('.').last == json['level'],
       ),
     );
   }
 }
 
 /// Compatibility level categories
-enum CompatibilityLevel {
-  excellent,
-  high,
-  good,
-  moderate,
-  low,
-  incompatible,
-}
+enum CompatibilityLevel { excellent, high, good, moderate, low, incompatible }
 
 /// Emotional analysis of conversation
 class EmotionalAnalysis {
@@ -203,7 +204,7 @@ class EmotionalAnalysis {
       dominantEmotions: List<String>.from(json['dominantEmotions']),
       emotionalCompatibility: json['emotionalCompatibility'],
       communicationStyle: CommunicationStyle.values.firstWhere(
-        (s) => s.toString().split('.').last == json['communicationStyle']
+        (s) => s.toString().split('.').last == json['communicationStyle'],
       ),
     );
   }
@@ -288,21 +289,22 @@ class SafetyAnalysis {
 
   factory SafetyAnalysis.fromJson(Map<String, dynamic> json) {
     return SafetyAnalysis(
-      riskLevel: RiskLevel.values.firstWhere((r) => r.toString().split('.').last == json['riskLevel']),
-      redFlags: (json['redFlags'] as List).map((f) => RedFlag.fromJson(f)).toList(),
-      concerns: (json['concerns'] as List).map((c) => SafetyConcern.fromJson(c)).toList(),
+      riskLevel: RiskLevel.values.firstWhere(
+        (r) => r.toString().split('.').last == json['riskLevel'],
+      ),
+      redFlags: (json['redFlags'] as List)
+          .map((f) => RedFlag.fromJson(f))
+          .toList(),
+      concerns: (json['concerns'] as List)
+          .map((c) => SafetyConcern.fromJson(c))
+          .toList(),
       recommendations: List<String>.from(json['recommendations']),
     );
   }
 }
 
 /// Risk levels for safety analysis
-enum RiskLevel {
-  low,
-  medium,
-  high,
-  critical,
-}
+enum RiskLevel { low, medium, high, critical }
 
 /// Red flag types and descriptions
 class RedFlag {
@@ -329,7 +331,9 @@ class RedFlag {
 
   factory RedFlag.fromJson(Map<String, dynamic> json) {
     return RedFlag(
-      type: RedFlagType.values.firstWhere((t) => t.toString().split('.').last == json['type']),
+      type: RedFlagType.values.firstWhere(
+        (t) => t.toString().split('.').last == json['type'],
+      ),
       description: json['description'],
       severity: json['severity'],
       messageId: json['messageId'],
@@ -371,7 +375,9 @@ class SafetyConcern {
 
   factory SafetyConcern.fromJson(Map<String, dynamic> json) {
     return SafetyConcern(
-      type: ConcernType.values.firstWhere((t) => t.toString().split('.').last == json['type']),
+      type: ConcernType.values.firstWhere(
+        (t) => t.toString().split('.').last == json['type'],
+      ),
       description: json['description'],
       messageId: json['messageId'],
     );
@@ -415,7 +421,9 @@ class ConversationInsight {
 
   factory ConversationInsight.fromJson(Map<String, dynamic> json) {
     return ConversationInsight(
-      type: InsightType.values.firstWhere((t) => t.toString().split('.').last == json['type']),
+      type: InsightType.values.firstWhere(
+        (t) => t.toString().split('.').last == json['type'],
+      ),
       title: json['title'],
       description: json['description'],
       actionable: json['actionable'],
@@ -459,7 +467,9 @@ class ConversationSuggestion {
 
   factory ConversationSuggestion.fromJson(Map<String, dynamic> json) {
     return ConversationSuggestion(
-      type: SuggestionType.values.firstWhere((t) => t.toString().split('.').last == json['type']),
+      type: SuggestionType.values.firstWhere(
+        (t) => t.toString().split('.').last == json['type'],
+      ),
       text: json['text'],
       confidence: json['confidence'],
       context: json['context'],

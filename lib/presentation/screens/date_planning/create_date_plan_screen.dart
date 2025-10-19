@@ -11,11 +11,7 @@ class CreateDatePlanScreen extends StatefulWidget {
   final Map<String, dynamic>? planToEdit;
   final Map<String, dynamic>? suggestion;
 
-  const CreateDatePlanScreen({
-    super.key,
-    this.planToEdit,
-    this.suggestion,
-  });
+  const CreateDatePlanScreen({super.key, this.planToEdit, this.suggestion});
 
   @override
   State<CreateDatePlanScreen> createState() => _CreateDatePlanScreenState();
@@ -26,7 +22,7 @@ class _CreateDatePlanScreenState extends State<CreateDatePlanScreen> {
   final _descriptionController = TextEditingController();
   final _locationController = TextEditingController();
   final _budgetController = TextEditingController();
-  
+
   DateTime _selectedDate = DateTime.now().add(const Duration(days: 1));
   TimeOfDay _selectedTime = const TimeOfDay(hour: 18, minute: 0);
   final List<String> _activities = [];
@@ -69,15 +65,15 @@ class _CreateDatePlanScreenState extends State<CreateDatePlanScreen> {
   Widget build(BuildContext context) {
     final isEditing = widget.planToEdit != null;
     final isFromSuggestion = widget.suggestion != null;
-    
+
     return KeyboardDismissibleScaffold(
       appBar: AppBar(
         title: Text(
-          isEditing 
-              ? 'Edit Date Plan' 
-              : isFromSuggestion 
-                  ? 'Create from Suggestion'
-                  : 'Create Date Plan',
+          isEditing
+              ? 'Edit Date Plan'
+              : isFromSuggestion
+              ? 'Create from Suggestion'
+              : 'Create Date Plan',
         ),
         actions: [
           TextButton(
@@ -104,9 +100,9 @@ class _CreateDatePlanScreenState extends State<CreateDatePlanScreen> {
               ),
               maxLength: 100,
             ),
-            
+
             const SizedBox(height: 16),
-            
+
             // Description input
             TextField(
               controller: _descriptionController,
@@ -118,9 +114,9 @@ class _CreateDatePlanScreenState extends State<CreateDatePlanScreen> {
               maxLines: 3,
               maxLength: 500,
             ),
-            
+
             const SizedBox(height: 16),
-            
+
             // Location input
             TextField(
               controller: _locationController,
@@ -131,9 +127,9 @@ class _CreateDatePlanScreenState extends State<CreateDatePlanScreen> {
                 prefixIcon: Icon(Icons.location_on),
               ),
             ),
-            
+
             const SizedBox(height: 16),
-            
+
             // Date and time selection
             Row(
               children: [
@@ -162,17 +158,15 @@ class _CreateDatePlanScreenState extends State<CreateDatePlanScreen> {
                         border: OutlineInputBorder(),
                         prefixIcon: Icon(Icons.access_time),
                       ),
-                      child: Text(
-                        _selectedTime.format(context),
-                      ),
+                      child: Text(_selectedTime.format(context)),
                     ),
                   ),
                 ),
               ],
             ),
-            
+
             const SizedBox(height: 16),
-            
+
             // Budget input
             TextField(
               controller: _budgetController,
@@ -184,19 +178,16 @@ class _CreateDatePlanScreenState extends State<CreateDatePlanScreen> {
               ),
               keyboardType: TextInputType.number,
             ),
-            
+
             const SizedBox(height: 24),
-            
+
             // Activities section
             const Text(
               'Activities',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
-            
+
             // Add activity input
             Row(
               children: [
@@ -217,9 +208,9 @@ class _CreateDatePlanScreenState extends State<CreateDatePlanScreen> {
                 ),
               ],
             ),
-            
+
             const SizedBox(height: 16),
-            
+
             // Activities list
             if (_activities.isNotEmpty) ...[
               ListView.builder(
@@ -259,9 +250,9 @@ class _CreateDatePlanScreenState extends State<CreateDatePlanScreen> {
                 ),
               ),
             ],
-            
+
             const SizedBox(height: 32),
-            
+
             // Create/Update button
             SizedBox(
               width: double.infinity,
@@ -294,7 +285,7 @@ class _CreateDatePlanScreenState extends State<CreateDatePlanScreen> {
       firstDate: DateTime.now(),
       lastDate: DateTime.now().add(const Duration(days: 365)),
     );
-    
+
     if (date != null) {
       setState(() {
         _selectedDate = date;
@@ -307,7 +298,7 @@ class _CreateDatePlanScreenState extends State<CreateDatePlanScreen> {
       context: context,
       initialTime: _selectedTime,
     );
-    
+
     if (time != null) {
       setState(() {
         _selectedTime = time;
@@ -336,7 +327,7 @@ class _CreateDatePlanScreenState extends State<CreateDatePlanScreen> {
     final location = _locationController.text.trim();
     final description = _descriptionController.text.trim();
     final budget = _budgetController.text.trim();
-    
+
     if (title.isEmpty) {
       PulseToast.error(
         context,
@@ -344,7 +335,7 @@ class _CreateDatePlanScreenState extends State<CreateDatePlanScreen> {
       );
       return;
     }
-    
+
     if (location.isEmpty) {
       PulseToast.error(
         context,
@@ -375,44 +366,42 @@ class _CreateDatePlanScreenState extends State<CreateDatePlanScreen> {
       if (widget.planToEdit != null) {
         // Update existing plan
         final planId = widget.planToEdit!['id'] as String;
-        context.read<DatePlanningBloc>().add(UpdateDatePlan(
-          planId: planId,
-          updates: {
-            'title': title,
-            'description': description,
-            'location': location,
-            'budget': budget,
-            'scheduledDate': scheduledDateTime.toIso8601String(),
-            'activities': _activities,
-          },
-        ));
+        context.read<DatePlanningBloc>().add(
+          UpdateDatePlan(
+            planId: planId,
+            updates: {
+              'title': title,
+              'description': description,
+              'location': location,
+              'budget': budget,
+              'scheduledDate': scheduledDateTime.toIso8601String(),
+              'activities': _activities,
+            },
+          ),
+        );
       } else {
         // Create new plan
-        context.read<DatePlanningBloc>().add(CreateDatePlan(
-          title: title,
-          description: description,
-          scheduledDate: scheduledDateTime,
-          location: location,
-          budget: budget.isNotEmpty ? budget : null,
-          activities: _activities,
-        ));
+        context.read<DatePlanningBloc>().add(
+          CreateDatePlan(
+            title: title,
+            description: description,
+            scheduledDate: scheduledDateTime,
+            location: location,
+            budget: budget.isNotEmpty ? budget : null,
+            activities: _activities,
+          ),
+        );
       }
 
-      final message = widget.planToEdit != null 
+      final message = widget.planToEdit != null
           ? 'Date plan updated successfully!'
           : 'Date plan created successfully!';
-      
-      PulseToast.success(
-        context,
-        message: message,
-      );
-      
+
+      PulseToast.success(context, message: message);
+
       Navigator.pop(context);
     } catch (e) {
-      PulseToast.error(
-        context,
-        message: 'Failed to save plan: $e',
-      );
+      PulseToast.error(context, message: 'Failed to save plan: $e');
     }
   }
 }

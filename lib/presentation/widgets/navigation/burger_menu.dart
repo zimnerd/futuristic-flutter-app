@@ -31,21 +31,17 @@ class _BurgerMenuState extends State<BurgerMenu>
       vsync: this,
     );
 
-    _slideAnimation = Tween<Offset>(
-      begin: const Offset(1.0, 0.0),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeOutCubic,
-    ));
+    _slideAnimation =
+        Tween<Offset>(begin: const Offset(1.0, 0.0), end: Offset.zero).animate(
+          CurvedAnimation(
+            parent: _animationController,
+            curve: Curves.easeOutCubic,
+          ),
+        );
 
-    _fadeAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeOut,
-    ));
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
+    );
 
     // Start animation
     _animationController.forward();
@@ -85,12 +81,10 @@ class _BurgerMenuState extends State<BurgerMenu>
             opacity: _fadeAnimation,
             child: GestureDetector(
               onTap: _closeMenu,
-              child: Container(
-                color: Colors.black.withValues(alpha: 0.5),
-              ),
+              child: Container(color: Colors.black.withValues(alpha: 0.5)),
             ),
           ),
-          
+
           // Menu content
           Positioned(
             top: 0,
@@ -113,10 +107,7 @@ class _BurgerMenuState extends State<BurgerMenu>
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [
-            PulseColors.backgroundLight,
-            PulseColors.surfaceLight,
-          ],
+          colors: [PulseColors.backgroundLight, PulseColors.surfaceLight],
         ),
         boxShadow: [
           BoxShadow(
@@ -131,15 +122,13 @@ class _BurgerMenuState extends State<BurgerMenu>
           children: [
             // Header with close button
             _buildMenuHeader(),
-            
+
             // User profile section
             _buildUserSection(),
-            
+
             // Menu items
-            Expanded(
-              child: _buildMenuItems(),
-            ),
-            
+            Expanded(child: _buildMenuItems()),
+
             // Footer
             _buildMenuFooter(),
           ],
@@ -169,11 +158,7 @@ class _BurgerMenuState extends State<BurgerMenu>
                 color: PulseColors.grey100,
                 borderRadius: BorderRadius.circular(20),
               ),
-              child: Icon(
-                Icons.close,
-                color: PulseColors.grey600,
-                size: 20,
-              ),
+              child: Icon(Icons.close, color: PulseColors.grey600, size: 20),
             ),
           ),
         ],
@@ -192,16 +177,14 @@ class _BurgerMenuState extends State<BurgerMenu>
             displayName = state.user.username;
           }
         }
-        
+
         return Container(
           margin: const EdgeInsets.symmetric(horizontal: 20),
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
             color: PulseColors.white,
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(
-              color: PulseColors.grey200,
-            ),
+            border: Border.all(color: PulseColors.grey200),
             boxShadow: PulseShadows.card,
           ),
           child: Row(
@@ -213,10 +196,7 @@ class _BurgerMenuState extends State<BurgerMenu>
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(20),
                   gradient: LinearGradient(
-                    colors: [
-                      PulseColors.primary,
-                      PulseColors.accent,
-                    ],
+                    colors: [PulseColors.primary, PulseColors.accent],
                   ),
                 ),
                 child: Center(
@@ -230,7 +210,7 @@ class _BurgerMenuState extends State<BurgerMenu>
                 ),
               ),
               const SizedBox(width: 16),
-              
+
               // User info
               Expanded(
                 child: Column(
@@ -253,7 +233,7 @@ class _BurgerMenuState extends State<BurgerMenu>
                   ],
                 ),
               ),
-              
+
               // Arrow
               Icon(
                 Icons.arrow_forward_ios,
@@ -387,7 +367,7 @@ class _BurgerMenuState extends State<BurgerMenu>
                   ),
                 ),
                 const SizedBox(width: 16),
-                
+
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -417,7 +397,7 @@ class _BurgerMenuState extends State<BurgerMenu>
                     ],
                   ),
                 ),
-                
+
                 Icon(
                   Icons.arrow_forward_ios,
                   color: item.isDestructive

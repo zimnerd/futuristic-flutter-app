@@ -61,7 +61,13 @@ class UpdateCompanion extends AiCompanionEvent {
   });
 
   @override
-  List<Object?> get props => [companionId, name, personality, appearance, settings];
+  List<Object?> get props => [
+    companionId,
+    name,
+    personality,
+    appearance,
+    settings,
+  ];
 }
 
 class DeleteCompanion extends AiCompanionEvent {

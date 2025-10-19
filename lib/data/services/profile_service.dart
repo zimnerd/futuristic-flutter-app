@@ -24,15 +24,15 @@ class ProfileService {
     required AuthService authService,
     Logger? logger,
   }) : _apiClient = apiClient,
-        _logger = logger ?? Logger();
+       _logger = logger ?? Logger();
 
   /// Get user profile by ID
   Future<UserProfile> getProfile(String userId) async {
     try {
       _logger.i('🔍 Fetching profile for user: $userId');
-      
+
       final response = await _apiClient.get('/users/$userId');
-      
+
       if (response.statusCode == 200) {
         _logger.i('🔍 [API Response] Raw response data: ${response.data}');
         _logger.i(
@@ -63,7 +63,7 @@ class ProfileService {
       if (response.statusCode == 200) {
         final responseData = response.data as Map<String, dynamic>;
         final userData = responseData['data'] as Map<String, dynamic>;
-        
+
         _logger.i('✅ Current profile loaded successfully');
         _logger.i(
           '🔍 [API Response] readReceipts in userData: ${userData['readReceipts']}',
@@ -77,7 +77,7 @@ class ProfileService {
         _logger.i('   - readReceipts: ${userData['readReceipts']}');
         _logger.i('   - whoCanMessageMe: ${userData['whoCanMessageMe']}');
         _logger.i('   - whoCanSeeMyProfile: ${userData['whoCanSeeMyProfile']}');
-        
+
         // Convert API user data to domain UserProfile entity
         final profile = _convertUserDataToEntity(userData);
         _logger.i(
@@ -105,7 +105,7 @@ class ProfileService {
       throw UserException('Failed to fetch current profile');
     }
   }
-  
+
   /// Convert API user data to domain UserProfile entity
   domain.UserProfile _convertUserDataToEntity(Map<String, dynamic> userData) {
     // Extract photos from API response
@@ -144,7 +144,7 @@ class ProfileService {
     // Calculate age from user data if available
     int age = 18; // Default minimum age
     DateTime? dateOfBirth;
-    
+
     if (userData['dateOfBirth'] != null) {
       dateOfBirth = DateTime.parse(userData['dateOfBirth'] as String);
       age = DateTime.now().difference(dateOfBirth).inDays ~/ 365;
@@ -306,7 +306,7 @@ class ProfileService {
   }) async {
     try {
       _logger.i('🆕 Creating profile for user: $userId');
-      
+
       final data = {
         'userId': userId,
         'bio': bio,
@@ -314,9 +314,9 @@ class ProfileService {
         'preferences': preferences?.toJson(),
         'location': location?.toJson(),
       };
-      
+
       final response = await _apiClient.post('/users/me/profile', data: data);
-      
+
       if (response.statusCode == 201) {
         final profile = UserProfile.fromJson(response.data['profile']);
         _logger.i('✅ Profile created successfully');
@@ -334,7 +334,7 @@ class ProfileService {
   }
 
   /// Update profile using a UserProfile object (wrapper for BLoC compatibility)
-  /// 
+  ///
   /// NOTE: This method now tracks changed fields and only sends what actually changed.
   /// The backend will only update fields that are provided (not null/undefined).
   Future<domain.UserProfile> updateProfile(
@@ -431,7 +431,7 @@ class ProfileService {
           _logger.i('✅ Job changed, adding to changedExtendedFields');
           changedExtendedFields['occupation'] = profile.job;
         }
-        
+
         _logger.d(
           '🔍 Checking school field: "${profile.school}" vs "${originalProfile.school}"',
         );
@@ -440,7 +440,7 @@ class ProfileService {
           _logger.i('✅ School changed, adding to changedExtendedFields');
           changedExtendedFields['education'] = profile.school;
         }
-        
+
         _logger.d(
           '🔍 Checking company field: "${profile.company}" vs "${originalProfile.company}"',
         );
@@ -647,7 +647,7 @@ class ProfileService {
           extendedData['occupation'] = profile.job;
         }
       }
-      
+
       if (profile.school != null && profile.school!.isNotEmpty) {
         extendedData['education'] = profile.school;
       }
@@ -696,7 +696,7 @@ class ProfileService {
       if (profile.promptAnswers.isNotEmpty) {
         extendedData['promptAnswers'] = profile.promptAnswers;
       }
-      
+
       if (extendedData.isNotEmpty) {
         final response = await _apiClient.put(
           '/users/me/profile',
@@ -710,7 +710,7 @@ class ProfileService {
       // Fetch the updated profile from backend to get calculated age and other updates
       _logger.i('📥 Fetching updated profile from backend');
       final updatedProfile = await getCurrentProfile();
-      
+
       _logger.i('✅ Profile update completed successfully');
       return updatedProfile;
     } catch (e) {
@@ -839,16 +839,16 @@ class ProfileService {
   }) async {
     try {
       _logger.i('🔄 Updating profile for user: $userId');
-      
+
       final data = <String, dynamic>{};
       if (bio != null) data['bio'] = bio;
       if (interests != null) data['interests'] = interests;
       if (dealBreakers != null) data['dealBreakers'] = dealBreakers;
       if (preferences != null) data['preferences'] = preferences.toJson();
       if (location != null) data['location'] = location.toJson();
-      
+
       final response = await _apiClient.put('/users/me/profile', data: data);
-      
+
       if (response.statusCode == 200) {
         final profile = UserProfile.fromJson(response.data['data']);
         _logger.i('✅ Profile updated successfully');
@@ -869,9 +869,7 @@ class ProfileService {
   Future<String> uploadPhoto(String photoPath) async {
     // No need to get userId - backend extracts it from auth token
     final file = File(photoPath);
-    final photo = await uploadPhotoWithDetails(
-      imageFile: file,
-    );
+    final photo = await uploadPhotoWithDetails(imageFile: file);
     return photo.url;
   }
 
@@ -883,10 +881,10 @@ class ProfileService {
   }) async {
     try {
       _logger.i('📸 Uploading photo (auth from token)');
-      
+
       // Compress image before uploading
       final compressedImage = await _compressImage(imageFile);
-      
+
       // Create multipart form data matching backend UploadMediaDto
       // Required: 'file' (the actual file), 'type', 'category'
       // Note: isPrimary and order are NOT part of media upload - handle separately
@@ -896,19 +894,17 @@ class ProfileService {
           filename: 'photo_${_uuid.v4()}.jpg',
         ),
         'type': 'image', // MediaType enum: image, video, audio, document
-        'category': 'profile_photo', // MediaCategory enum: profile_photo, verification_photo, chat_message, ar_asset, event_photo, story
+        'category':
+            'profile_photo', // MediaCategory enum: profile_photo, verification_photo, chat_message, ar_asset, event_photo, story
       });
-      
-      final response = await _apiClient.post(
-        '/media/upload',
-        data: formData,
-      );
-      
+
+      final response = await _apiClient.post('/media/upload', data: formData);
+
       if (response.statusCode == 201) {
         // Backend returns MediaResponseDto in data.data or just data
         final mediaData = response.data['data'] ?? response.data;
         _logger.i('✅ Photo uploaded successfully: ${mediaData['url']}');
-        
+
         // Convert MediaResponseDto to ProfilePhoto (from profile_model.dart)
         // Backend MediaResponseDto: { id, userId, url, mimeType, fileSize, blurhash, createdAt, ... }
         // ProfilePhoto model: { id, url, isPrimary, isVerified, order, blurhash, createdAt }
@@ -921,7 +917,7 @@ class ProfileService {
           blurhash: mediaData['blurhash'] as String?, // 🎯 Parse blurhash
           createdAt: DateTime.parse(mediaData['createdAt'] as String),
         );
-        
+
         return photo;
       } else {
         throw NetworkException('Failed to upload photo');
@@ -936,16 +932,12 @@ class ProfileService {
   }
 
   /// Delete profile photo using media ID
-  Future<void> deletePhotoWithDetails({
-    required String photoId,
-  }) async {
+  Future<void> deletePhotoWithDetails({required String photoId}) async {
     try {
       _logger.i('🗑️ Deleting photo with Media ID: $photoId');
-      
-      final response = await _apiClient.delete(
-        '/media/files/$photoId',
-      );
-      
+
+      final response = await _apiClient.delete('/media/files/$photoId');
+
       if (response.statusCode == 200) {
         _logger.i('✅ Photo deleted successfully from backend');
       } else {
@@ -961,21 +953,19 @@ class ProfileService {
   }
 
   /// Reorder profile photos
-  Future<void> reorderPhotos({
-    required List<PhotoOrder> photoOrders,
-  }) async {
+  Future<void> reorderPhotos({required List<PhotoOrder> photoOrders}) async {
     try {
       _logger.i('🔀 Reordering photos (auth from token)');
-      
+
       final data = {
         'photoOrders': photoOrders.map((order) => order.toJson()).toList(),
       };
-      
+
       final response = await _apiClient.patch(
         '/users/me/photos/reorder',
         data: data,
       );
-      
+
       if (response.statusCode == 200) {
         _logger.i('✅ Photos reordered successfully');
       } else {
@@ -1003,7 +993,7 @@ class ProfileService {
   }) async {
     try {
       _logger.i('⚙️ Updating preferences for user: $userId');
-      
+
       final data = <String, dynamic>{};
       if (ageRange != null) data['ageRange'] = ageRange.toJson();
       if (maxDistance != null) data['maxDistance'] = maxDistance;
@@ -1012,14 +1002,13 @@ class ProfileService {
       if (dealBreakers != null) data['dealBreakers'] = dealBreakers;
       if (interests != null) data['interests'] = interests;
       if (lifestyle != null) data['lifestyle'] = lifestyle.toJson();
-      
-      final response = await _apiClient.put(
-        '/preferences/$userId',
-        data: data,
-      );
-      
+
+      final response = await _apiClient.put('/preferences/$userId', data: data);
+
       if (response.statusCode == 200) {
-        final preferences = UserPreferences.fromJson(response.data['preferences']);
+        final preferences = UserPreferences.fromJson(
+          response.data['preferences'],
+        );
         _logger.i('✅ Preferences updated successfully');
         return preferences;
       } else {
@@ -1040,17 +1029,17 @@ class ProfileService {
     required String verificationType, // 'photo' or 'identity'
   }) async {
     try {
-      _logger.i('🔒 Requesting $verificationType verification for user: $userId');
-      
-      final data = {
-        'type': verificationType,
-      };
-      
+      _logger.i(
+        '🔒 Requesting $verificationType verification for user: $userId',
+      );
+
+      final data = {'type': verificationType};
+
       final response = await _apiClient.post(
         '/users/me/verification',
         data: data,
       );
-      
+
       if (response.statusCode == 200) {
         _logger.i('✅ Verification request submitted successfully');
       } else {
@@ -1069,12 +1058,14 @@ class ProfileService {
   Future<List<String>> getAvailableInterests() async {
     try {
       _logger.i('📋 Fetching available interests');
-      
+
       final response = await _apiClient.get('/interests');
-      
+
       if (response.statusCode == 200) {
         final interests = List<String>.from(response.data['interests']);
-        _logger.i('✅ Interests fetched successfully: ${interests.length} items');
+        _logger.i(
+          '✅ Interests fetched successfully: ${interests.length} items',
+        );
         return interests;
       } else {
         throw NetworkException('Failed to fetch interests');
@@ -1101,7 +1092,8 @@ class ProfileService {
     if (profile.photos.isNotEmpty) {
       score += 20; // At least one photo
       if (profile.photos.length >= 3) score += 10; // Multiple photos
-      if (profile.photos.any((photo) => photo.isVerified)) score += 10; // Verified photo
+      if (profile.photos.any((photo) => photo.isVerified))
+        score += 10; // Verified photo
     }
 
     // Preferences (20 points)
@@ -1127,12 +1119,14 @@ class ProfileService {
         '/users/me/photos',
         data: {
           'photos': photos
-              .map((p) => {
-                    'mediaId': p.mediaId,
-                    'description': p.description,
-                    'order': p.order,
-                    'isMain': p.isMain,
-                  })
+              .map(
+                (p) => {
+                  'mediaId': p.mediaId,
+                  'description': p.description,
+                  'order': p.order,
+                  'isMain': p.isMain,
+                },
+              )
               .toList(),
         },
       );
@@ -1144,14 +1138,16 @@ class ProfileService {
         _logger.i('✅ Photos synced successfully');
 
         return photosData
-            .map((p) => domain.ProfilePhoto(
-                  id: p['id'] as String,
-                  url: p['url'] as String,
-                  order: p['order'] as int? ?? 0,
+            .map(
+              (p) => domain.ProfilePhoto(
+                id: p['id'] as String,
+                url: p['url'] as String,
+                order: p['order'] as int? ?? 0,
                 blurhash: p['blurhash'] as String?, // 🎯 Parse blurhash
-                  isVerified: p['isVerified'] as bool? ?? false,
-                  description: p['description'] as String?,
-                ))
+                isVerified: p['isVerified'] as bool? ?? false,
+                description: p['description'] as String?,
+              ),
+            )
             .toList();
       } else {
         _logger.w('⚠️ Failed to sync photos: ${response.statusCode}');
@@ -1243,16 +1239,10 @@ class PhotoOrder {
   final String photoId;
   final int order;
 
-  PhotoOrder({
-    required this.photoId,
-    required this.order,
-  });
+  PhotoOrder({required this.photoId, required this.order});
 
   Map<String, dynamic> toJson() {
-    return {
-      'photoId': photoId,
-      'order': order,
-    };
+    return {'photoId': photoId, 'order': order};
   }
 }
 

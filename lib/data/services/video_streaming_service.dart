@@ -7,18 +7,13 @@ import '../../core/network/api_client.dart';
 import 'live_streaming_service.dart';
 
 /// Streaming state enum
-enum StreamState {
-  idle,
-  connecting,
-  connected,
-  disconnected,
-  error,
-}
+enum StreamState { idle, connecting, connected, disconnected, error }
 
 /// Video streaming service for live broadcasts using Agora SDK
 /// Handles broadcaster (host) and audience (viewer) roles
 class VideoStreamingService {
-  static final VideoStreamingService _instance = VideoStreamingService._internal();
+  static final VideoStreamingService _instance =
+      VideoStreamingService._internal();
   static VideoStreamingService get instance => _instance;
 
   VideoStreamingService._internal();
@@ -31,18 +26,24 @@ class VideoStreamingService {
   final _remoteUsersController = StreamController<List<int>>.broadcast();
   final _localVideoEnabledController = StreamController<bool>.broadcast();
   final _localAudioEnabledController = StreamController<bool>.broadcast();
-  final _remoteVideoStateController = StreamController<Map<int, bool>>.broadcast();
-  final _connectionQualityController = StreamController<QualityType>.broadcast();
+  final _remoteVideoStateController =
+      StreamController<Map<int, bool>>.broadcast();
+  final _connectionQualityController =
+      StreamController<QualityType>.broadcast();
   final _streamErrorController = StreamController<String>.broadcast();
   final _viewerCountController = StreamController<int>.broadcast();
 
   // Stream getters
   Stream<StreamState> get onStreamStateChanged => _streamStateController.stream;
   Stream<List<int>> get onRemoteUsersChanged => _remoteUsersController.stream;
-  Stream<bool> get onLocalVideoEnabledChanged => _localVideoEnabledController.stream;
-  Stream<bool> get onLocalAudioEnabledChanged => _localAudioEnabledController.stream;
-  Stream<Map<int, bool>> get onRemoteVideoStateChanged => _remoteVideoStateController.stream;
-  Stream<QualityType> get onConnectionQualityChanged => _connectionQualityController.stream;
+  Stream<bool> get onLocalVideoEnabledChanged =>
+      _localVideoEnabledController.stream;
+  Stream<bool> get onLocalAudioEnabledChanged =>
+      _localAudioEnabledController.stream;
+  Stream<Map<int, bool>> get onRemoteVideoStateChanged =>
+      _remoteVideoStateController.stream;
+  Stream<QualityType> get onConnectionQualityChanged =>
+      _connectionQualityController.stream;
   Stream<String> get onStreamError => _streamErrorController.stream;
   Stream<int> get onViewerCountChanged => _viewerCountController.stream;
 
@@ -75,17 +76,19 @@ class VideoStreamingService {
 
     try {
       _logger.d('Initializing Agora RTC Engine with App ID: $appId');
-      
+
       // Request permissions first
       await _requestPermissions();
 
       // Create engine
       _engine = createAgoraRtcEngine();
-      
-      await _engine!.initialize(RtcEngineContext(
-        appId: appId,
-        channelProfile: ChannelProfileType.channelProfileLiveBroadcasting,
-      ));
+
+      await _engine!.initialize(
+        RtcEngineContext(
+          appId: appId,
+          channelProfile: ChannelProfileType.channelProfileLiveBroadcasting,
+        ),
+      );
 
       // Register event handlers
       _registerEventHandlers();
@@ -100,10 +103,7 @@ class VideoStreamingService {
 
   /// Request camera and microphone permissions
   Future<void> _requestPermissions() async {
-    await [
-      Permission.camera,
-      Permission.microphone,
-    ].request();
+    await [Permission.camera, Permission.microphone].request();
   }
 
   /// Register event handlers for Agora events
@@ -121,35 +121,49 @@ class VideoStreamingService {
           if (!_remoteUsers.contains(remoteUid)) {
             _remoteUsers.add(remoteUid);
             _remoteUsersController.add(List.from(_remoteUsers));
-            
+
             // Update viewer count if we're the broadcaster
             if (_isBroadcaster) {
               _viewerCountController.add(_remoteUsers.length);
             }
           }
         },
-        onUserOffline: (RtcConnection connection, int remoteUid, UserOfflineReasonType reason) {
-          _logger.d('Remote user offline: $remoteUid, reason: $reason');
-          _remoteUsers.remove(remoteUid);
-          _remoteVideoStates.remove(remoteUid);
-          _remoteUsersController.add(List.from(_remoteUsers));
-          _remoteVideoStateController.add(Map.from(_remoteVideoStates));
-          
-          // Update viewer count if we're the broadcaster
-          if (_isBroadcaster) {
-            _viewerCountController.add(_remoteUsers.length);
-          }
-        },
-        onRemoteVideoStateChanged: (RtcConnection connection, int remoteUid, 
-            RemoteVideoState state, RemoteVideoStateReason reason, int elapsed) {
-          _logger.d('Remote video state changed: uid=$remoteUid, state=$state');
-          
-          final isVideoEnabled = state == RemoteVideoState.remoteVideoStateDecoding ||
-                                 state == RemoteVideoState.remoteVideoStateStarting;
-          
-          _remoteVideoStates[remoteUid] = isVideoEnabled;
-          _remoteVideoStateController.add(Map.from(_remoteVideoStates));
-        },
+        onUserOffline:
+            (
+              RtcConnection connection,
+              int remoteUid,
+              UserOfflineReasonType reason,
+            ) {
+              _logger.d('Remote user offline: $remoteUid, reason: $reason');
+              _remoteUsers.remove(remoteUid);
+              _remoteVideoStates.remove(remoteUid);
+              _remoteUsersController.add(List.from(_remoteUsers));
+              _remoteVideoStateController.add(Map.from(_remoteVideoStates));
+
+              // Update viewer count if we're the broadcaster
+              if (_isBroadcaster) {
+                _viewerCountController.add(_remoteUsers.length);
+              }
+            },
+        onRemoteVideoStateChanged:
+            (
+              RtcConnection connection,
+              int remoteUid,
+              RemoteVideoState state,
+              RemoteVideoStateReason reason,
+              int elapsed,
+            ) {
+              _logger.d(
+                'Remote video state changed: uid=$remoteUid, state=$state',
+              );
+
+              final isVideoEnabled =
+                  state == RemoteVideoState.remoteVideoStateDecoding ||
+                  state == RemoteVideoState.remoteVideoStateStarting;
+
+              _remoteVideoStates[remoteUid] = isVideoEnabled;
+              _remoteVideoStateController.add(Map.from(_remoteVideoStates));
+            },
         onLeaveChannel: (RtcConnection connection, RtcStats stats) {
           _logger.d('Left channel: ${connection.channelId}');
           _cleanup();
@@ -159,23 +173,35 @@ class VideoStreamingService {
           _streamErrorController.add('Error: $msg');
           _updateState(StreamState.error);
         },
-        onConnectionStateChanged: (RtcConnection connection, 
-            ConnectionStateType state, ConnectionChangedReasonType reason) {
-          _logger.d('Connection state changed: $state, reason: $reason');
-          
-          if (state == ConnectionStateType.connectionStateConnected) {
-            _updateState(StreamState.connected);
-          } else if (state == ConnectionStateType.connectionStateDisconnected ||
-                     state == ConnectionStateType.connectionStateFailed) {
-            _updateState(StreamState.disconnected);
-          }
-        },
-        onNetworkQuality: (RtcConnection connection, int remoteUid, 
-            QualityType txQuality, QualityType rxQuality) {
-          // Report the worse of the two qualities
-          final quality = txQuality.index > rxQuality.index ? txQuality : rxQuality;
-          _connectionQualityController.add(quality);
-        },
+        onConnectionStateChanged:
+            (
+              RtcConnection connection,
+              ConnectionStateType state,
+              ConnectionChangedReasonType reason,
+            ) {
+              _logger.d('Connection state changed: $state, reason: $reason');
+
+              if (state == ConnectionStateType.connectionStateConnected) {
+                _updateState(StreamState.connected);
+              } else if (state ==
+                      ConnectionStateType.connectionStateDisconnected ||
+                  state == ConnectionStateType.connectionStateFailed) {
+                _updateState(StreamState.disconnected);
+              }
+            },
+        onNetworkQuality:
+            (
+              RtcConnection connection,
+              int remoteUid,
+              QualityType txQuality,
+              QualityType rxQuality,
+            ) {
+              // Report the worse of the two qualities
+              final quality = txQuality.index > rxQuality.index
+                  ? txQuality
+                  : rxQuality;
+              _connectionQualityController.add(quality);
+            },
         // ✅ NEW - Token expiry handling (production-critical)
         onTokenPrivilegeWillExpire: (RtcConnection connection, String token) {
           _logger.w('⚠️ Token expiring in 30 seconds, refreshing...');
@@ -240,12 +266,14 @@ class VideoStreamingService {
         throw Exception('Engine not initialized. Call initialize() first.');
       }
 
-      _logger.d('Starting broadcast - Stream: $streamId, Channel: $channelName, UID: $uid');
-      
+      _logger.d(
+        'Starting broadcast - Stream: $streamId, Channel: $channelName, UID: $uid',
+      );
+
       _currentStreamId = streamId;
       _currentChannelName = channelName;
       _isBroadcaster = true;
-      
+
       _updateState(StreamState.connecting);
 
       // Set client role as broadcaster
@@ -254,7 +282,7 @@ class VideoStreamingService {
       // Enable video
       await _engine!.enableVideo();
       await _engine!.enableLocalVideo(true);
-      
+
       // Enable audio
       await _engine!.enableAudio();
       await _engine!.enableLocalAudio(true);
@@ -306,12 +334,14 @@ class VideoStreamingService {
         throw Exception('Engine not initialized. Call initialize() first.');
       }
 
-      _logger.d('Joining as audience - Stream: $streamId, Channel: $channelName, UID: $uid');
-      
+      _logger.d(
+        'Joining as audience - Stream: $streamId, Channel: $channelName, UID: $uid',
+      );
+
       _currentStreamId = streamId;
       _currentChannelName = channelName;
       _isBroadcaster = false;
-      
+
       _updateState(StreamState.connecting);
 
       // Set client role as audience
@@ -430,9 +460,9 @@ class VideoStreamingService {
 
     try {
       _logger.d('Leaving stream: $_currentStreamId');
-      
+
       await _engine!.leaveChannel();
-      
+
       if (_isBroadcaster) {
         await _engine!.stopPreview();
       }
@@ -454,7 +484,7 @@ class VideoStreamingService {
     _isLocalAudioEnabled = true;
     _remoteUsers.clear();
     _remoteVideoStates.clear();
-    
+
     _remoteUsersController.add([]);
     _remoteVideoStateController.add({});
     _viewerCountController.add(0);

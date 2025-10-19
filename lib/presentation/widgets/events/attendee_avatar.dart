@@ -20,8 +20,8 @@ class AttendeeAvatar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final user = attendance.user;
-    final profileImageUrl = user?['profileImages']?.isNotEmpty == true 
-        ? user!['profileImages'][0]['url'] 
+    final profileImageUrl = user?['profileImages']?.isNotEmpty == true
+        ? user!['profileImages'][0]['url']
         : null;
 
     return GestureDetector(
@@ -31,16 +31,13 @@ class AttendeeAvatar extends StatelessWidget {
         height: size,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          border: Border.all(
-            color: _getStatusColor(),
-            width: 2,
-          ),
+          border: Border.all(color: _getStatusColor(), width: 2),
         ),
         child: ClipOval(
           child: profileImageUrl != null
               ? ProfileNetworkImage(
-                  imageUrl: profileImageUrl.startsWith('http') 
-                      ? profileImageUrl 
+                  imageUrl: profileImageUrl.startsWith('http')
+                      ? profileImageUrl
                       : '${AppConstants.baseUrl}/$profileImageUrl',
                   size: size,
                   userGender: attendance.user?['gender'] as String?,
@@ -54,7 +51,7 @@ class AttendeeAvatar extends StatelessWidget {
   Widget _buildPlaceholder() {
     final user = attendance.user;
     final initials = _getInitials(user?['firstName'], user?['lastName']);
-    
+
     return Container(
       color: PulseColors.primary.withValues(alpha: 0.1),
       child: Center(
@@ -71,7 +68,9 @@ class AttendeeAvatar extends StatelessWidget {
   }
 
   String _getInitials(String? firstName, String? lastName) {
-    final first = firstName?.isNotEmpty == true ? firstName![0].toUpperCase() : '';
+    final first = firstName?.isNotEmpty == true
+        ? firstName![0].toUpperCase()
+        : '';
     final last = lastName?.isNotEmpty == true ? lastName![0].toUpperCase() : '';
     return first + last;
   }
@@ -115,13 +114,10 @@ class AttendeeList extends StatelessWidget {
               ...visibleAttendees.asMap().entries.map((entry) {
                 final index = entry.key;
                 final attendance = entry.value;
-                
+
                 return Positioned(
                   left: index * 24.0, // Overlap avatars
-                  child: AttendeeAvatar(
-                    attendance: attendance,
-                    size: 32,
-                  ),
+                  child: AttendeeAvatar(attendance: attendance, size: 32),
                 );
               }),
               // Show remaining count if there are more
@@ -134,10 +130,7 @@ class AttendeeList extends StatelessWidget {
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: PulseColors.primary,
-                      border: Border.all(
-                        color: Colors.white,
-                        width: 2,
-                      ),
+                      border: Border.all(color: Colors.white, width: 2),
                     ),
                     child: Center(
                       child: Text(
@@ -154,9 +147,9 @@ class AttendeeList extends StatelessWidget {
             ],
           ),
         ),
-        
+
         const SizedBox(width: 12),
-        
+
         // Attendee count and see all button
         Expanded(
           child: Column(
@@ -192,11 +185,7 @@ class AttendeeGrid extends StatelessWidget {
   final List<EventAttendance> attendees;
   final Function(EventAttendance)? onAttendeeTap;
 
-  const AttendeeGrid({
-    super.key,
-    required this.attendees,
-    this.onAttendeeTap,
-  });
+  const AttendeeGrid({super.key, required this.attendees, this.onAttendeeTap});
 
   @override
   Widget build(BuildContext context) {
@@ -213,21 +202,18 @@ class AttendeeGrid extends StatelessWidget {
       itemBuilder: (context, index) {
         final attendance = attendees[index];
         final user = attendance.user;
-        
+
         return GestureDetector(
           onTap: () => onAttendeeTap?.call(attendance),
           child: Column(
             children: [
-              AttendeeAvatar(
-                attendance: attendance,
-                size: 48,
-              ),
+              AttendeeAvatar(attendance: attendance, size: 48),
               const SizedBox(height: 8),
               Text(
                 user?['firstName'] ?? 'Unknown',
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  fontWeight: FontWeight.w500,
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w500),
                 textAlign: TextAlign.center,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -235,8 +221,8 @@ class AttendeeGrid extends StatelessWidget {
               Text(
                 attendance.status == 'attending' ? 'Going' : 'Interested',
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: attendance.status == 'attending' 
-                      ? PulseColors.success 
+                  color: attendance.status == 'attending'
+                      ? PulseColors.success
                       : PulseColors.secondary,
                   fontSize: 10,
                 ),

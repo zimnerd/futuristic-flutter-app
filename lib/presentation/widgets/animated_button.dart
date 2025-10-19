@@ -53,32 +53,27 @@ class _AnimatedPulseButtonState extends State<AnimatedPulseButton>
   @override
   void initState() {
     super.initState();
-    
+
     _scaleController = AnimationController(
       duration: PulseAnimations.buttonPress,
       vsync: this,
     );
-    
+
     _loadingController = AnimationController(
       duration: const Duration(milliseconds: 1000),
       vsync: this,
     );
 
-    _scaleAnimation = Tween<double>(
-      begin: 1.0,
-      end: 0.95,
-    ).animate(CurvedAnimation(
-      parent: _scaleController,
-      curve: PulseCurves.easeOutQuart,
-    ));
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.95).animate(
+      CurvedAnimation(
+        parent: _scaleController,
+        curve: PulseCurves.easeOutQuart,
+      ),
+    );
 
-    _loadingAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _loadingController,
-      curve: Curves.linear,
-    ));
+    _loadingAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _loadingController, curve: Curves.linear),
+    );
 
     if (widget.isLoading) {
       _loadingController.repeat();
@@ -125,7 +120,7 @@ class _AnimatedPulseButtonState extends State<AnimatedPulseButton>
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isEnabled = widget.isEnabled && !widget.isLoading;
-    
+
     return GestureDetector(
       onTapDown: _onTapDown,
       onTapUp: _onTapUp,
@@ -138,10 +133,9 @@ class _AnimatedPulseButtonState extends State<AnimatedPulseButton>
           curve: PulseCurves.easeOutQuart,
           width: widget.width,
           height: widget.height ?? 48,
-          padding: widget.padding ?? const EdgeInsets.symmetric(
-            horizontal: 24,
-            vertical: 12,
-          ),
+          padding:
+              widget.padding ??
+              const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
           decoration: BoxDecoration(
             gradient: widget.gradientColors != null
                 ? LinearGradient(
@@ -154,14 +148,16 @@ class _AnimatedPulseButtonState extends State<AnimatedPulseButton>
                 ? (widget.backgroundColor ?? PulseColors.primary)
                 : null,
             borderRadius: widget.borderRadius ?? BorderRadius.circular(12),
-            boxShadow: isEnabled ? [
-              BoxShadow(
-                color: (widget.backgroundColor ?? PulseColors.primary)
+            boxShadow: isEnabled
+                ? [
+                    BoxShadow(
+                      color: (widget.backgroundColor ?? PulseColors.primary)
                           .withValues(alpha: 0.3),
-                blurRadius: widget.elevation ?? 8,
-                offset: const Offset(0, 4),
-              ),
-            ] : null,
+                      blurRadius: widget.elevation ?? 8,
+                      offset: const Offset(0, 4),
+                    ),
+                  ]
+                : null,
           ),
           child: AnimatedOpacity(
             duration: PulseAnimations.quick,
@@ -191,10 +187,11 @@ class _AnimatedPulseButtonState extends State<AnimatedPulseButton>
                 else
                   AnimatedDefaultTextStyle(
                     duration: PulseAnimations.quick,
-                    style: (widget.textStyle ?? theme.textTheme.labelLarge!).copyWith(
-                      color: widget.foregroundColor ?? Colors.white,
-                      fontWeight: FontWeight.w600,
-                    ),
+                    style: (widget.textStyle ?? theme.textTheme.labelLarge!)
+                        .copyWith(
+                          color: widget.foregroundColor ?? Colors.white,
+                          fontWeight: FontWeight.w600,
+                        ),
                     child: Text(widget.text),
                   ),
               ],
@@ -240,27 +237,19 @@ class _AnimatedFABState extends State<AnimatedFAB>
   @override
   void initState() {
     super.initState();
-    
+
     _controller = AnimationController(
       duration: const Duration(milliseconds: 300),
       vsync: this,
     );
 
-    _scaleAnimation = Tween<double>(
-      begin: 1.0,
-      end: 0.9,
-    ).animate(CurvedAnimation(
-      parent: _controller,
-      curve: PulseCurves.easeOutQuart,
-    ));
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.9).animate(
+      CurvedAnimation(parent: _controller, curve: PulseCurves.easeOutQuart),
+    );
 
-    _rotationAnimation = Tween<double>(
-      begin: 0.0,
-      end: 0.1,
-    ).animate(CurvedAnimation(
-      parent: _controller,
-      curve: PulseCurves.easeOutQuart,
-    ));
+    _rotationAnimation = Tween<double>(begin: 0.0, end: 0.1).animate(
+      CurvedAnimation(parent: _controller, curve: PulseCurves.easeOutQuart),
+    );
   }
 
   @override
@@ -332,19 +321,15 @@ class _AnimatedIconButtonState extends State<AnimatedIconButton>
   @override
   void initState() {
     super.initState();
-    
+
     _controller = AnimationController(
       duration: PulseAnimations.buttonPress,
       vsync: this,
     );
 
-    _scaleAnimation = Tween<double>(
-      begin: 1.0,
-      end: 0.85,
-    ).animate(CurvedAnimation(
-      parent: _controller,
-      curve: PulseCurves.easeOutQuart,
-    ));
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.85).animate(
+      CurvedAnimation(parent: _controller, curve: PulseCurves.easeOutQuart),
+    );
   }
 
   @override

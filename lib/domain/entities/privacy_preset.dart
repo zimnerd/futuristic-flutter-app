@@ -1,12 +1,7 @@
 import 'package:flutter/material.dart';
 
 /// Privacy preset levels for quick privacy configuration
-enum PrivacyPresetLevel {
-  public,
-  balanced,
-  private,
-  stealth,
-}
+enum PrivacyPresetLevel { public, balanced, private, stealth }
 
 /// Privacy preset configuration
 class PrivacyPreset {
@@ -27,12 +22,7 @@ class PrivacyPreset {
   });
 
   /// Get all available privacy presets
-  static List<PrivacyPreset> get all => [
-        public,
-        balanced,
-        private,
-        stealth,
-      ];
+  static List<PrivacyPreset> get all => [public, balanced, private, stealth];
 
   /// Public preset - Maximum visibility
   static const PrivacyPreset public = PrivacyPreset(
@@ -203,25 +193,25 @@ class PrivacyPreset {
 
   /// Get feature labels for UI display
   static Map<String, String> get featureLabels => {
-        'showAge': 'Show Age',
-        'showDistance': 'Show Distance',
-        'showLastActive': 'Show Last Active',
-        'showOnlineStatus': 'Show Online Status',
-        'readReceipts': 'Read Receipts',
-        'whoCanSeeMyProfile': 'Profile Visibility',
-        'whoCanMessageMe': 'Who Can Message',
-        'incognitoMode': 'Incognito Mode',
-      };
+    'showAge': 'Show Age',
+    'showDistance': 'Show Distance',
+    'showLastActive': 'Show Last Active',
+    'showOnlineStatus': 'Show Online Status',
+    'readReceipts': 'Read Receipts',
+    'whoCanSeeMyProfile': 'Profile Visibility',
+    'whoCanMessageMe': 'Who Can Message',
+    'incognitoMode': 'Incognito Mode',
+  };
 
   /// Get feature descriptions
   static Map<String, String> get featureDescriptions => {
-        'showAge': 'Display your age on your profile',
-        'showDistance': 'Show how far away you are',
-        'showLastActive': 'Display when you were last online',
-        'showOnlineStatus': 'Show when you\'re currently active',
-        'readReceipts': 'Let others know when you\'ve read their messages',
-        'whoCanSeeMyProfile': 'Control who can view your full profile',
-        'whoCanMessageMe': 'Control who can send you messages',
-        'incognitoMode': 'Browse profiles without appearing in discovery',
-      };
+    'showAge': 'Display your age on your profile',
+    'showDistance': 'Show how far away you are',
+    'showLastActive': 'Display when you were last online',
+    'showOnlineStatus': 'Show when you\'re currently active',
+    'readReceipts': 'Let others know when you\'ve read their messages',
+    'whoCanSeeMyProfile': 'Control who can view your full profile',
+    'whoCanMessageMe': 'Control who can send you messages',
+    'incognitoMode': 'Browse profiles without appearing in discovery',
+  };
 }

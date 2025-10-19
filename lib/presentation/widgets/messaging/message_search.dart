@@ -6,15 +6,13 @@ class MessageSearchDelegate extends SearchDelegate<String> {
   final List<Map<String, dynamic>> conversations;
   final Function(String) onSearch;
 
-  MessageSearchDelegate({
-    required this.conversations,
-    required this.onSearch,
-  }) : super(
-          searchFieldLabel: 'Search conversations...',
-          searchFieldStyle: PulseTextStyles.bodyMedium.copyWith(
-            color: PulseColors.onSurface,
-          ),
-        );
+  MessageSearchDelegate({required this.conversations, required this.onSearch})
+    : super(
+        searchFieldLabel: 'Search conversations...',
+        searchFieldStyle: PulseTextStyles.bodyMedium.copyWith(
+          color: PulseColors.onSurface,
+        ),
+      );
 
   @override
   ThemeData appBarTheme(BuildContext context) {
@@ -58,7 +56,7 @@ class MessageSearchDelegate extends SearchDelegate<String> {
   @override
   Widget buildResults(BuildContext context) {
     final results = _filterConversations(query);
-    
+
     if (results.isEmpty) {
       return _buildEmptyState(
         icon: Icons.search_off,
@@ -83,7 +81,7 @@ class MessageSearchDelegate extends SearchDelegate<String> {
     }
 
     final suggestions = _filterConversations(query);
-    
+
     return ListView.builder(
       itemCount: suggestions.length,
       itemBuilder: (context, index) {
@@ -99,13 +97,18 @@ class MessageSearchDelegate extends SearchDelegate<String> {
     final lowercaseQuery = searchQuery.toLowerCase();
     return conversations.where((conversation) {
       final name = (conversation['name'] as String? ?? '').toLowerCase();
-      final lastMessage = (conversation['lastMessage'] as String? ?? '').toLowerCase();
-      
-      return name.contains(lowercaseQuery) || lastMessage.contains(lowercaseQuery);
+      final lastMessage = (conversation['lastMessage'] as String? ?? '')
+          .toLowerCase();
+
+      return name.contains(lowercaseQuery) ||
+          lastMessage.contains(lowercaseQuery);
     }).toList();
   }
 
-  Widget _buildConversationTile(BuildContext context, Map<String, dynamic> conversation) {
+  Widget _buildConversationTile(
+    BuildContext context,
+    Map<String, dynamic> conversation,
+  ) {
     return ListTile(
       leading: CircleAvatar(
         backgroundImage: conversation['avatar'] != null
@@ -144,7 +147,8 @@ class MessageSearchDelegate extends SearchDelegate<String> {
               color: PulseColors.outline,
             ),
           ),
-          if (conversation['unreadCount'] != null && conversation['unreadCount'] > 0)
+          if (conversation['unreadCount'] != null &&
+              conversation['unreadCount'] > 0)
             Container(
               margin: const EdgeInsets.only(top: 4),
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
@@ -168,12 +172,12 @@ class MessageSearchDelegate extends SearchDelegate<String> {
     );
   }
 
-  Widget _buildSuggestionTile(BuildContext context, Map<String, dynamic> conversation) {
+  Widget _buildSuggestionTile(
+    BuildContext context,
+    Map<String, dynamic> conversation,
+  ) {
     return ListTile(
-      leading: const Icon(
-        Icons.search,
-        color: PulseColors.outline,
-      ),
+      leading: const Icon(Icons.search, color: PulseColors.outline),
       title: RichText(
         text: TextSpan(
           style: PulseTextStyles.bodyMedium.copyWith(
@@ -188,7 +192,10 @@ class MessageSearchDelegate extends SearchDelegate<String> {
                 style: PulseTextStyles.bodySmall.copyWith(
                   color: PulseColors.onSurfaceVariant,
                 ),
-                children: _highlightSearchTerm(conversation['lastMessage'], query),
+                children: _highlightSearchTerm(
+                  conversation['lastMessage'],
+                  query,
+                ),
               ),
             )
           : null,
@@ -215,26 +222,22 @@ class MessageSearchDelegate extends SearchDelegate<String> {
             ),
           ),
         ),
-        ...recentSearches.map((search) => ListTile(
-          leading: const Icon(
-            Icons.history,
-            color: PulseColors.outline,
-          ),
-          title: Text(search),
-          trailing: IconButton(
-            icon: const Icon(
-              Icons.close,
-              color: PulseColors.outline,
+        ...recentSearches.map(
+          (search) => ListTile(
+            leading: const Icon(Icons.history, color: PulseColors.outline),
+            title: Text(search),
+            trailing: IconButton(
+              icon: const Icon(Icons.close, color: PulseColors.outline),
+              onPressed: () {
+                // Remove from recent searches
+              },
             ),
-            onPressed: () {
-              // Remove from recent searches
+            onTap: () {
+              query = search;
+              showResults(context);
             },
           ),
-          onTap: () {
-            query = search;
-            showResults(context);
-          },
-        )),
+        ),
       ],
     );
   }
@@ -248,11 +251,7 @@ class MessageSearchDelegate extends SearchDelegate<String> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            icon,
-            size: 64,
-            color: PulseColors.outline,
-          ),
+          Icon(icon, size: 64, color: PulseColors.outline),
           const SizedBox(height: PulseSpacing.lg),
           Text(
             title,
@@ -281,34 +280,36 @@ class MessageSearchDelegate extends SearchDelegate<String> {
     final List<TextSpan> spans = [];
     final lowercaseText = text.toLowerCase();
     final lowercaseSearchTerm = searchTerm.toLowerCase();
-    
+
     int start = 0;
     int index = lowercaseText.indexOf(lowercaseSearchTerm);
-    
+
     while (index != -1) {
       // Add text before the match
       if (index > start) {
         spans.add(TextSpan(text: text.substring(start, index)));
       }
-      
+
       // Add highlighted match
-      spans.add(TextSpan(
-        text: text.substring(index, index + searchTerm.length),
-        style: const TextStyle(
-          backgroundColor: PulseColors.primaryContainer,
-          fontWeight: FontWeight.bold,
+      spans.add(
+        TextSpan(
+          text: text.substring(index, index + searchTerm.length),
+          style: const TextStyle(
+            backgroundColor: PulseColors.primaryContainer,
+            fontWeight: FontWeight.bold,
+          ),
         ),
-      ));
-      
+      );
+
       start = index + searchTerm.length;
       index = lowercaseText.indexOf(lowercaseSearchTerm, start);
     }
-    
+
     // Add remaining text
     if (start < text.length) {
       spans.add(TextSpan(text: text.substring(start)));
     }
-    
+
     return spans;
   }
 }
@@ -358,7 +359,9 @@ class _MessageSearchBarState extends State<MessageSearchBar> {
         color: PulseColors.surfaceVariant,
         borderRadius: BorderRadius.circular(PulseRadii.lg),
         border: Border.all(
-          color: _focusNode.hasFocus ? PulseColors.primary : PulseColors.outline,
+          color: _focusNode.hasFocus
+              ? PulseColors.primary
+              : PulseColors.outline,
           width: _focusNode.hasFocus ? 2 : 1,
         ),
       ),
@@ -376,16 +379,10 @@ class _MessageSearchBarState extends State<MessageSearchBar> {
             horizontal: PulseSpacing.lg,
             vertical: PulseSpacing.md,
           ),
-          prefixIcon: const Icon(
-            Icons.search,
-            color: PulseColors.outline,
-          ),
+          prefixIcon: const Icon(Icons.search, color: PulseColors.outline),
           suffixIcon: _controller.text.isNotEmpty
               ? IconButton(
-                  icon: const Icon(
-                    Icons.clear,
-                    color: PulseColors.outline,
-                  ),
+                  icon: const Icon(Icons.clear, color: PulseColors.outline),
                   onPressed: () {
                     _controller.clear();
                     widget.onChanged('');

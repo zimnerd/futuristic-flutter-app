@@ -22,7 +22,7 @@ class _LeaderboardWidgetState extends State<LeaderboardWidget>
     with TickerProviderStateMixin {
   late AnimationController _animationController;
   late List<Animation<double>> _entryAnimations;
-  
+
   final List<LeaderboardEntry> _entries = [
     LeaderboardEntry(
       id: '1',
@@ -77,12 +77,12 @@ class _LeaderboardWidgetState extends State<LeaderboardWidget>
   @override
   void initState() {
     super.initState();
-    
+
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 1200),
       vsync: this,
     );
-    
+
     _entryAnimations = List.generate(
       _entries.length,
       (index) => Tween<double>(begin: 0.0, end: 1.0).animate(
@@ -96,7 +96,7 @@ class _LeaderboardWidgetState extends State<LeaderboardWidget>
         ),
       ),
     );
-    
+
     _animationController.forward();
   }
 
@@ -187,10 +187,7 @@ class _LeaderboardWidgetState extends State<LeaderboardWidget>
             ),
           ),
           Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 12,
-              vertical: 6,
-            ),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
               color: Colors.white.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(15),
@@ -211,23 +208,21 @@ class _LeaderboardWidgetState extends State<LeaderboardWidget>
 
   Widget _buildTopThree() {
     final topThree = _entries.take(3).toList();
-    
+
     return Container(
       padding: const EdgeInsets.all(20),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
           // 2nd place
-          if (topThree.length > 1)
-            _buildPodiumPosition(topThree[1], 1),
-          
+          if (topThree.length > 1) _buildPodiumPosition(topThree[1], 1),
+
           // 1st place
           if (topThree.isNotEmpty)
             _buildPodiumPosition(topThree[0], 0, isWinner: true),
-          
+
           // 3rd place
-          if (topThree.length > 2)
-            _buildPodiumPosition(topThree[2], 2),
+          if (topThree.length > 2) _buildPodiumPosition(topThree[2], 2),
         ],
       ),
     );
@@ -275,7 +270,7 @@ class _LeaderboardWidgetState extends State<LeaderboardWidget>
                       ),
                     ),
                   ),
-                  
+
                   // Crown for winner
                   if (isWinner)
                     Positioned(
@@ -291,7 +286,7 @@ class _LeaderboardWidgetState extends State<LeaderboardWidget>
                         ),
                       ),
                     ),
-                  
+
                   // Rank badge
                   Positioned(
                     bottom: -5,
@@ -318,9 +313,9 @@ class _LeaderboardWidgetState extends State<LeaderboardWidget>
                   ),
                 ],
               ),
-              
+
               const SizedBox(height: 8),
-              
+
               // Name
               SizedBox(
                 width: isWinner ? 100 : 80,
@@ -335,7 +330,7 @@ class _LeaderboardWidgetState extends State<LeaderboardWidget>
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
-              
+
               // Score
               Text(
                 '${entry.score}',
@@ -354,9 +349,9 @@ class _LeaderboardWidgetState extends State<LeaderboardWidget>
 
   Widget _buildLeaderboardList() {
     final remainingEntries = _entries.skip(3).toList();
-    
+
     if (remainingEntries.isEmpty) return const SizedBox.shrink();
-    
+
     return Column(
       children: [
         const Divider(),
@@ -367,7 +362,7 @@ class _LeaderboardWidgetState extends State<LeaderboardWidget>
           itemBuilder: (context, index) {
             final entry = remainingEntries[index];
             final animationIndex = index + 3;
-            
+
             return AnimatedBuilder(
               animation: _entryAnimations[animationIndex],
               builder: (context, child) {
@@ -399,11 +394,9 @@ class _LeaderboardWidgetState extends State<LeaderboardWidget>
             radius: 25,
             backgroundImage: NetworkImage(entry.avatar),
             onBackgroundImageError: (error, stackTrace) {},
-            child: entry.avatar.isEmpty
-                ? const Icon(Icons.person)
-                : null,
+            child: entry.avatar.isEmpty ? const Icon(Icons.person) : null,
           ),
-          
+
           // Rank indicator
           Positioned(
             bottom: -2,
@@ -463,19 +456,11 @@ class _LeaderboardWidgetState extends State<LeaderboardWidget>
       ),
       subtitle: Row(
         children: [
-          Icon(
-            Icons.local_fire_department,
-            color: Colors.orange,
-            size: 14,
-          ),
+          Icon(Icons.local_fire_department, color: Colors.orange, size: 14),
           const SizedBox(width: 4),
           Text('${entry.streak} streak'),
           const SizedBox(width: 12),
-          Icon(
-            Icons.stars,
-            color: Colors.amber,
-            size: 14,
-          ),
+          Icon(Icons.stars, color: Colors.amber, size: 14),
           const SizedBox(width: 4),
           Text('Level ${entry.level}'),
         ],
@@ -486,17 +471,11 @@ class _LeaderboardWidgetState extends State<LeaderboardWidget>
         children: [
           Text(
             '${entry.score}',
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-            ),
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
           Text(
             'points',
-            style: TextStyle(
-              fontSize: 10,
-              color: Colors.grey[600],
-            ),
+            style: TextStyle(fontSize: 10, color: Colors.grey[600]),
           ),
         ],
       ),
@@ -508,7 +487,7 @@ class _LeaderboardWidgetState extends State<LeaderboardWidget>
       (entry) => entry.isCurrentUser,
       orElse: () => _entries.last,
     );
-    
+
     return Container(
       margin: const EdgeInsets.all(16),
       padding: const EdgeInsets.all(16),
@@ -520,9 +499,7 @@ class _LeaderboardWidgetState extends State<LeaderboardWidget>
           ],
         ),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: PulseColors.primary.withValues(alpha: 0.3),
-        ),
+        border: Border.all(color: PulseColors.primary.withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [
@@ -530,9 +507,7 @@ class _LeaderboardWidgetState extends State<LeaderboardWidget>
             radius: 20,
             backgroundImage: NetworkImage(currentUser.avatar),
             onBackgroundImageError: (error, stackTrace) {},
-            child: currentUser.avatar.isEmpty
-                ? const Icon(Icons.person)
-                : null,
+            child: currentUser.avatar.isEmpty ? const Icon(Icons.person) : null,
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -562,10 +537,7 @@ class _LeaderboardWidgetState extends State<LeaderboardWidget>
                 const SizedBox(height: 4),
                 Text(
                   'Keep going to reach the top 3!',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey[600],
-                  ),
+                  style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                 ),
               ],
             ),
@@ -627,12 +599,7 @@ enum LeaderboardType {
   streak,
 }
 
-enum BadgeType {
-  gold,
-  silver,
-  bronze,
-  none,
-}
+enum BadgeType { gold, silver, bronze, none }
 
 class LeaderboardEntry {
   final String id;

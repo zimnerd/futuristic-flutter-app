@@ -117,12 +117,12 @@ class ParsedSearchQuery {
   /// Get the simplified query for backend search (without special syntax)
   String get simplifiedQuery {
     if (!hasSpecialSyntax) return originalQuery;
-    
+
     // Combine phrases and remaining query
     final parts = <String>[];
     if (remainingQuery.isNotEmpty) parts.add(remainingQuery);
     parts.addAll(phrases);
-    
+
     return parts.join(' ').trim();
   }
 

@@ -9,7 +9,7 @@ import 'package:pulse_dating_app/core/network/api_client.dart';
 /// ALL AI analysis is performed by backend - no frontend AI generation
 class AiProfileAnalysisService {
   static AiProfileAnalysisService? _instance;
-  static AiProfileAnalysisService get instance => 
+  static AiProfileAnalysisService get instance =>
       _instance ??= AiProfileAnalysisService._();
   AiProfileAnalysisService._();
 

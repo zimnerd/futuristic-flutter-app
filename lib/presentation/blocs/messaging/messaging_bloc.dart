@@ -12,10 +12,9 @@ part 'messaging_state.dart';
 class MessagingBloc extends Bloc<MessagingEvent, MessagingState> {
   final MessagingService _messagingService;
 
-  MessagingBloc({
-    required MessagingService messagingService,
-  })  : _messagingService = messagingService,
-        super(const MessagingState()) {
+  MessagingBloc({required MessagingService messagingService})
+    : _messagingService = messagingService,
+      super(const MessagingState()) {
     on<LoadConversations>(_onLoadConversations);
     on<LoadMessages>(_onLoadMessages);
     on<SendMessage>(_onSendMessage);
@@ -37,18 +36,22 @@ class MessagingBloc extends Bloc<MessagingEvent, MessagingState> {
         offset: event.refresh ? 0 : state.conversations.length,
       );
 
-      emit(state.copyWith(
-        conversationsStatus: MessagingStatus.loaded,
-        conversations: event.refresh 
-            ? conversations 
-            : [...state.conversations, ...conversations],
-        hasReachedMaxConversations: conversations.length < 50,
-      ));
+      emit(
+        state.copyWith(
+          conversationsStatus: MessagingStatus.loaded,
+          conversations: event.refresh
+              ? conversations
+              : [...state.conversations, ...conversations],
+          hasReachedMaxConversations: conversations.length < 50,
+        ),
+      );
     } catch (e) {
-      emit(state.copyWith(
-        conversationsStatus: MessagingStatus.error,
-        error: 'Failed to load conversations: ${e.toString()}',
-      ));
+      emit(
+        state.copyWith(
+          conversationsStatus: MessagingStatus.error,
+          error: 'Failed to load conversations: ${e.toString()}',
+        ),
+      );
     }
   }
 
@@ -72,19 +75,23 @@ class MessagingBloc extends Bloc<MessagingEvent, MessagingState> {
         'MessagingBloc - Received ${messages.length} messages from service',
       );
 
-      emit(state.copyWith(
-        messagesStatus: MessagingStatus.loaded,
-        currentConversationId: event.conversationId,
-        currentMessages: event.refresh 
-            ? messages 
-            : [...state.currentMessages, ...messages],
-        hasReachedMaxMessages: messages.length < 50,
-      ));
+      emit(
+        state.copyWith(
+          messagesStatus: MessagingStatus.loaded,
+          currentConversationId: event.conversationId,
+          currentMessages: event.refresh
+              ? messages
+              : [...state.currentMessages, ...messages],
+          hasReachedMaxMessages: messages.length < 50,
+        ),
+      );
     } catch (e) {
-      emit(state.copyWith(
-        messagesStatus: MessagingStatus.error,
-        error: 'Failed to load messages: ${e.toString()}',
-      ));
+      emit(
+        state.copyWith(
+          messagesStatus: MessagingStatus.error,
+          error: 'Failed to load messages: ${e.toString()}',
+        ),
+      );
     }
   }
 
@@ -123,13 +130,18 @@ class MessagingBloc extends Bloc<MessagingEvent, MessagingState> {
       emit(state.copyWith(currentMessages: finalMessages));
     } catch (e) {
       // Remove failed message and show error
-      final messages = state.currentMessages.where((msg) => 
-          msg.id != DateTime.now().millisecondsSinceEpoch.toString()).toList();
-      
-      emit(state.copyWith(
-        currentMessages: messages,
-        error: 'Failed to send message: ${e.toString()}',
-      ));
+      final messages = state.currentMessages
+          .where(
+            (msg) => msg.id != DateTime.now().millisecondsSinceEpoch.toString(),
+          )
+          .toList();
+
+      emit(
+        state.copyWith(
+          currentMessages: messages,
+          error: 'Failed to send message: ${e.toString()}',
+        ),
+      );
     }
   }
 
@@ -139,7 +151,7 @@ class MessagingBloc extends Bloc<MessagingEvent, MessagingState> {
   ) async {
     try {
       await _messagingService.markConversationAsRead(event.conversationId);
-      
+
       // Update local conversation
       final updatedConversations = state.conversations.map((conv) {
         if (conv.id == event.conversationId) {
@@ -164,9 +176,11 @@ class MessagingBloc extends Bloc<MessagingEvent, MessagingState> {
 
       emit(state.copyWith(conversations: updatedConversations));
     } catch (e) {
-      emit(state.copyWith(
-        error: 'Failed to mark conversation as read: ${e.toString()}',
-      ));
+      emit(
+        state.copyWith(
+          error: 'Failed to mark conversation as read: ${e.toString()}',
+        ),
+      );
     }
   }
 
@@ -176,16 +190,16 @@ class MessagingBloc extends Bloc<MessagingEvent, MessagingState> {
   ) async {
     try {
       await _messagingService.deleteConversation(event.conversationId);
-      
+
       final updatedConversations = state.conversations
           .where((conv) => conv.id != event.conversationId)
           .toList();
 
       emit(state.copyWith(conversations: updatedConversations));
     } catch (e) {
-      emit(state.copyWith(
-        error: 'Failed to delete conversation: ${e.toString()}',
-      ));
+      emit(
+        state.copyWith(error: 'Failed to delete conversation: ${e.toString()}'),
+      );
     }
   }
 
@@ -195,7 +209,7 @@ class MessagingBloc extends Bloc<MessagingEvent, MessagingState> {
   ) async {
     try {
       await _messagingService.blockUser(event.userId);
-      
+
       // Remove conversations with blocked user
       final updatedConversations = state.conversations
           .where((conv) => conv.otherUserId != event.userId)
@@ -203,9 +217,7 @@ class MessagingBloc extends Bloc<MessagingEvent, MessagingState> {
 
       emit(state.copyWith(conversations: updatedConversations));
     } catch (e) {
-      emit(state.copyWith(
-        error: 'Failed to block user: ${e.toString()}',
-      ));
+      emit(state.copyWith(error: 'Failed to block user: ${e.toString()}'));
     }
   }
 
@@ -223,14 +235,16 @@ class MessagingBloc extends Bloc<MessagingEvent, MessagingState> {
       // Add the new conversation to the beginning of the list
       final updatedConversations = [conversation, ...state.conversations];
 
-      emit(state.copyWith(
-        conversations: updatedConversations,
-        conversationsStatus: MessagingStatus.loaded,
-      ));
+      emit(
+        state.copyWith(
+          conversations: updatedConversations,
+          conversationsStatus: MessagingStatus.loaded,
+        ),
+      );
     } catch (e) {
-      emit(state.copyWith(
-        error: 'Failed to start conversation: ${e.toString()}',
-      ));
+      emit(
+        state.copyWith(error: 'Failed to start conversation: ${e.toString()}'),
+      );
     }
   }
 }

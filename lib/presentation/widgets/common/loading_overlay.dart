@@ -5,11 +5,7 @@ class LoadingOverlay extends StatelessWidget {
   final String? message;
   final Color? backgroundColor;
 
-  const LoadingOverlay({
-    super.key,
-    this.message,
-    this.backgroundColor,
-  });
+  const LoadingOverlay({super.key, this.message, this.backgroundColor});
 
   @override
   Widget build(BuildContext context) {
@@ -26,9 +22,9 @@ class LoadingOverlay extends StatelessWidget {
               const SizedBox(height: 16),
               Text(
                 message!,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  color: Colors.white,
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(color: Colors.white),
               ),
             ],
           ],

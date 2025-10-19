@@ -60,7 +60,7 @@ class MatchingService {
         endpoint = ApiConstants.matchingPass; // Use /matching/pass
         data = {'targetUserId': profileId};
       }
-      
+
       final response = await _apiClient.post(endpoint, data: data);
       return response.data as Map<String, dynamic>;
     } on DioException catch (e) {
@@ -76,10 +76,7 @@ class MatchingService {
     try {
       final response = await _apiClient.get(
         ApiConstants.matchingMatches,
-        queryParameters: {
-          'limit': limit,
-          'offset': offset,
-        },
+        queryParameters: {'limit': limit, 'offset': offset},
       );
 
       final data = response.data as Map<String, dynamic>;
@@ -157,13 +154,17 @@ class MatchingService {
       name: json['name'] as String,
       age: json['age'] as int,
       bio: json['bio'] as String? ?? '',
-      photos: (json['photos'] as List<dynamic>?)
-              ?.map((photo) => _profilePhotoFromJson(photo as Map<String, dynamic>))
+      photos:
+          (json['photos'] as List<dynamic>?)
+              ?.map(
+                (photo) => _profilePhotoFromJson(photo as Map<String, dynamic>),
+              )
               .toList() ??
           [],
       location: _userLocationFromJson(json['location'] as Map<String, dynamic>),
       isVerified: json['isVerified'] as bool? ?? false,
-      interests: (json['interests'] as List<dynamic>?)
+      interests:
+          (json['interests'] as List<dynamic>?)
               ?.map((interest) => interest as String)
               .toList() ??
           [],
@@ -193,31 +194,29 @@ class MatchingService {
       'bio': user['bio'] ?? '',
       'photos':
           (user['photos'] as List<dynamic>?)
-              ?.map(
-                (photo) {
-                  // Handle both string URLs (legacy) and photo objects (new format)
-                  if (photo is String) {
-                    return {
-                      'id': photo.hashCode.toString(),
-                      'url': photo,
-                      'order': 0,
-                      'isMain': false,
-                      'isVerified': false,
-                    };
-                  } else if (photo is Map<String, dynamic>) {
-                    return {
-                      'id': photo['id'] ?? photo.hashCode.toString(),
-                      'url': photo['url'] ?? '',
-                      'order': photo['order'] ?? 0,
-                      'description': photo['description'],
-                      'isMain': photo['isMain'] ?? false,
-                      'isVerified': photo['isVerified'] ?? false,
-                      'uploadedAt': photo['createdAt'] ?? photo['uploadedAt'],
-                    };
-                  }
-                  return null;
-                },
-              )
+              ?.map((photo) {
+                // Handle both string URLs (legacy) and photo objects (new format)
+                if (photo is String) {
+                  return {
+                    'id': photo.hashCode.toString(),
+                    'url': photo,
+                    'order': 0,
+                    'isMain': false,
+                    'isVerified': false,
+                  };
+                } else if (photo is Map<String, dynamic>) {
+                  return {
+                    'id': photo['id'] ?? photo.hashCode.toString(),
+                    'url': photo['url'] ?? '',
+                    'order': photo['order'] ?? 0,
+                    'description': photo['description'],
+                    'isMain': photo['isMain'] ?? false,
+                    'isVerified': photo['isVerified'] ?? false,
+                    'uploadedAt': photo['createdAt'] ?? photo['uploadedAt'],
+                  };
+                }
+                return null;
+              })
               .where((photo) => photo != null)
               .cast<Map<String, dynamic>>()
               .toList() ??
@@ -290,31 +289,29 @@ class MatchingService {
       'bio': user['bio'] ?? '',
       'photos':
           (user['photos'] as List<dynamic>?)
-              ?.map(
-                (photo) {
-                  // Handle both string URLs (legacy) and photo objects (new format)
-                  if (photo is String) {
-                    return {
-                      'id': photo.hashCode.toString(),
-                      'url': photo,
-                      'order': 0,
-                      'isMain': false,
-                      'isVerified': false,
-                    };
-                  } else if (photo is Map<String, dynamic>) {
-                    return {
-                      'id': photo['id'] ?? photo.hashCode.toString(),
-                      'url': photo['url'] ?? '',
-                      'order': photo['order'] ?? 0,
-                      'description': photo['description'],
-                      'isMain': photo['isMain'] ?? false,
-                      'isVerified': photo['isVerified'] ?? false,
-                      'uploadedAt': photo['createdAt'] ?? photo['uploadedAt'],
-                    };
-                  }
-                  return null;
-                },
-              )
+              ?.map((photo) {
+                // Handle both string URLs (legacy) and photo objects (new format)
+                if (photo is String) {
+                  return {
+                    'id': photo.hashCode.toString(),
+                    'url': photo,
+                    'order': 0,
+                    'isMain': false,
+                    'isVerified': false,
+                  };
+                } else if (photo is Map<String, dynamic>) {
+                  return {
+                    'id': photo['id'] ?? photo.hashCode.toString(),
+                    'url': photo['url'] ?? '',
+                    'order': photo['order'] ?? 0,
+                    'description': photo['description'],
+                    'isMain': photo['isMain'] ?? false,
+                    'isVerified': photo['isVerified'] ?? false,
+                    'uploadedAt': photo['createdAt'] ?? photo['uploadedAt'],
+                  };
+                }
+                return null;
+              })
               .where((photo) => photo != null)
               .cast<Map<String, dynamic>>()
               .toList() ??
@@ -363,9 +360,13 @@ class MatchingService {
       case DioExceptionType.connectionTimeout:
       case DioExceptionType.receiveTimeout:
       case DioExceptionType.sendTimeout:
-        return Exception('Request timeout. Please check your internet connection.');
+        return Exception(
+          'Request timeout. Please check your internet connection.',
+        );
       case DioExceptionType.connectionError:
-        return Exception('No internet connection. Please check your network settings.');
+        return Exception(
+          'No internet connection. Please check your network settings.',
+        );
       case DioExceptionType.badResponse:
         final statusCode = e.response?.statusCode;
         final message = e.response?.data?['message'] ?? 'An error occurred';
@@ -402,9 +403,11 @@ class MatchingService {
     try {
       // Get current user ID once at the beginning
       final currentUserId = await _apiClient.getCurrentUserId() ?? '';
-      
-      AppLogger.debug('🔍 MatchingService: Getting matches with excludeWithConversations=$excludeWithConversations');
-      
+
+      AppLogger.debug(
+        '🔍 MatchingService: Getting matches with excludeWithConversations=$excludeWithConversations',
+      );
+
       final response = await _apiClient.getMatches(
         limit: limit ?? 20,
         offset: offset,
@@ -419,12 +422,13 @@ class MatchingService {
         return [];
       }
 
-      AppLogger.debug('🔍 MatchingService: Received ${matches.length} matches from API');
+      AppLogger.debug(
+        '🔍 MatchingService: Received ${matches.length} matches from API',
+      );
 
       List<MatchModel> matchModels = matches
           .map(
-            (match) =>
-                _matchModelFromApiResponse(
+            (match) => _matchModelFromApiResponse(
               match as Map<String, dynamic>,
               currentUserId,
             ),
@@ -440,9 +444,10 @@ class MatchingService {
             case 'accepted':
             case 'mutual':
             case 'matched':
-              include = match.status == 'matched' || 
-                       match.status == 'mutual' || 
-                       match.status == 'ACTIVE';
+              include =
+                  match.status == 'matched' ||
+                  match.status == 'mutual' ||
+                  match.status == 'ACTIVE';
               break;
             case 'pending':
               include = match.status == 'pending';
@@ -456,7 +461,7 @@ class MatchingService {
             default:
               include = true; // Return all if unknown status
           }
-          
+
           return include;
         }).toList();
       }
@@ -603,7 +608,7 @@ class MatchingService {
     }
   }
 
-  /// Convert API match response to MatchModel 
+  /// Convert API match response to MatchModel
   /// The API returns match entries with nested user objects, not MatchModel structure
   MatchModel _matchModelFromApiResponse(
     Map<String, dynamic> apiMatch,
@@ -621,7 +626,7 @@ class MatchingService {
         userProfile = userProfile.copyWith(distanceKm: distance);
       }
     }
-    
+
     final userId = userProfile?.id ?? '';
 
     // Parse timestamps from API response, with fallbacks

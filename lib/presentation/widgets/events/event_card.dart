@@ -31,118 +31,118 @@ class EventCard extends StatelessWidget {
     if (event.date.isBefore(DateTime.now())) {
       return const SizedBox.shrink();
     }
-    
+
     return RepaintBoundary(
       child: Card(
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         elevation: 4,
-      shadowColor: PulseColors.primary.withValues(alpha: 0.1),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: event.isAttending
-            ? BorderSide(color: PulseColors.success, width: 2)
-            : BorderSide.none,
-      ),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Event Image
-            _buildEventImage(),
-            
-            // Event Content
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Category and Date
-                  Row(
-                    children: [
-                      _buildCategoryChip(),
-                      const Spacer(),
-                      _buildDateInfo(),
-                    ],
-                  ),
-                  
-                  const SizedBox(height: 12),
-                  
-                  // Title
-                  Text(
-                    event.title,
-                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: PulseColors.onSurface,
+        shadowColor: PulseColors.primary.withValues(alpha: 0.1),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: event.isAttending
+              ? BorderSide(color: PulseColors.success, width: 2)
+              : BorderSide.none,
+        ),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Event Image
+              _buildEventImage(),
+
+              // Event Content
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Category and Date
+                    Row(
+                      children: [
+                        _buildCategoryChip(),
+                        const Spacer(),
+                        _buildDateInfo(),
+                      ],
                     ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  
-                  const SizedBox(height: 8),
-                  
-                  // Description
-                  Text(
-                    event.description,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: PulseColors.onSurfaceVariant,
+
+                    const SizedBox(height: 12),
+
+                    // Title
+                    Text(
+                      event.title,
+                      style: Theme.of(context).textTheme.headlineSmall
+                          ?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: PulseColors.onSurface,
+                          ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  
-                  const SizedBox(height: 12),
-                  
-                  // Location
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.location_on_outlined,
-                        size: 16,
+
+                    const SizedBox(height: 8),
+
+                    // Description
+                    Text(
+                      event.description,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: PulseColors.onSurfaceVariant,
                       ),
-                      const SizedBox(width: 4),
-                      Expanded(
-                        child: Text(
-                          event.location,
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: PulseColors.onSurfaceVariant,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ],
-                  ),
-                  
-                  const SizedBox(height: 12),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
 
-                  // Event Analytics Indicators
-                  EventAnalyticsIndicators(
-                    event: event,
-                    showAttendance: true,
-                    showEngagement: true,
-                    showPopularity: false,
-                    compact: true,
-                  ),
-                  
-                  const SizedBox(height: 16),
-                  
-                  // Bottom Row - Attendees and Action Button
-                  Row(
-                    children: [
-                      _buildAttendeeInfo(),
-                      const Spacer(),
-                      if (showAttendButton) _buildActionButton(),
-                    ],
-                  ),
-                ],
+                    const SizedBox(height: 12),
+
+                    // Location
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.location_on_outlined,
+                          size: 16,
+                          color: PulseColors.onSurfaceVariant,
+                        ),
+                        const SizedBox(width: 4),
+                        Expanded(
+                          child: Text(
+                            event.location,
+                            style: Theme.of(context).textTheme.bodySmall
+                                ?.copyWith(color: PulseColors.onSurfaceVariant),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 12),
+
+                    // Event Analytics Indicators
+                    EventAnalyticsIndicators(
+                      event: event,
+                      showAttendance: true,
+                      showEngagement: true,
+                      showPopularity: false,
+                      compact: true,
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    // Bottom Row - Attendees and Action Button
+                    Row(
+                      children: [
+                        _buildAttendeeInfo(),
+                        const Spacer(),
+                        if (showAttendButton) _buildActionButton(),
+                      ],
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
-      ),
       ),
     );
   }
@@ -243,7 +243,7 @@ class EventCard extends StatelessWidget {
   Widget _buildDateInfo() {
     final dateFormat = DateFormat('MMM dd');
     final timeFormat = DateFormat('HH:mm');
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
@@ -257,10 +257,7 @@ class EventCard extends StatelessWidget {
         ),
         Text(
           timeFormat.format(event.date),
-          style: TextStyle(
-            color: PulseColors.onSurfaceVariant,
-            fontSize: 12,
-          ),
+          style: TextStyle(color: PulseColors.onSurfaceVariant, fontSize: 12),
         ),
       ],
     );
@@ -277,10 +274,7 @@ class EventCard extends StatelessWidget {
         const SizedBox(width: 4),
         Text(
           '${event.attendeeCount} attending',
-          style: TextStyle(
-            color: PulseColors.onSurfaceVariant,
-            fontSize: 12,
-          ),
+          style: TextStyle(color: PulseColors.onSurfaceVariant, fontSize: 12),
         ),
       ],
     );
@@ -301,11 +295,7 @@ class EventCard extends StatelessWidget {
     if (event.isAttending) {
       return TextButton.icon(
         onPressed: onLeave,
-        icon: Icon(
-          Icons.check_circle,
-          size: 16,
-          color: PulseColors.success,
-        ),
+        icon: Icon(Icons.check_circle, size: 16, color: PulseColors.success),
         label: Text(
           'Going',
           style: TextStyle(
@@ -330,9 +320,7 @@ class EventCard extends StatelessWidget {
       style: ElevatedButton.styleFrom(
         backgroundColor: PulseColors.primary,
         foregroundColor: Colors.white,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         elevation: 0,
       ),

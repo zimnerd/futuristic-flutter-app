@@ -18,21 +18,14 @@ class AddPaymentMethodScreen extends StatelessWidget {
           icon: Icon(Icons.arrow_back, color: AppColors.textPrimary),
           onPressed: () => Navigator.of(context).pop(),
         ),
-        title: Text(
-          'Add Payment Method',
-          style: AppTextStyles.heading3,
-        ),
+        title: Text('Add Payment Method', style: AppTextStyles.heading3),
       ),
       body: Padding(
         padding: const EdgeInsets.all(24.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.add_card,
-              size: 64,
-              color: AppColors.primary,
-            ),
+            Icon(Icons.add_card, size: 64, color: AppColors.primary),
             const SizedBox(height: 16),
             Text(
               'Add Payment Method',

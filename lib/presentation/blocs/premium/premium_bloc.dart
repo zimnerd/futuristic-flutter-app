@@ -13,12 +13,10 @@ class PremiumBloc extends Bloc<PremiumEvent, PremiumState> {
   final Logger _logger = Logger();
   static const String _tag = 'PremiumBloc';
 
-  PremiumBloc({
-    required PremiumService premiumService,
-    AuthBloc? authBloc,
-  })  : _premiumService = premiumService,
-       _authBloc = authBloc,
-        super(PremiumInitial()) {
+  PremiumBloc({required PremiumService premiumService, AuthBloc? authBloc})
+    : _premiumService = premiumService,
+      _authBloc = authBloc,
+      super(PremiumInitial()) {
     on<LoadPremiumData>(_onLoadPremiumData);
     on<LoadAvailablePlans>(_onLoadAvailablePlans);
     on<LoadCurrentSubscription>(_onLoadCurrentSubscription);
@@ -63,20 +61,28 @@ class PremiumBloc extends Bloc<PremiumEvent, PremiumState> {
       final coinBalance = results[2] as CoinBalance?;
       final features = results[3] as List<PremiumFeature>;
 
-      emit(PremiumLoaded(
-        subscription: subscription,
-        plans: plans,
-        coinBalance: coinBalance ?? CoinBalance(
+      emit(
+        PremiumLoaded(
+          subscription: subscription,
+          plans: plans,
+          coinBalance:
+              coinBalance ??
+              CoinBalance(
                 userId: _currentUserId ?? 'fallback-user-id',
-          totalCoins: 0,
-          lastUpdated: DateTime.now(),
+                totalCoins: 0,
+                lastUpdated: DateTime.now(),
+              ),
+          features: features.map((f) => f.name).toList(),
         ),
-        features: features.map((f) => f.name).toList(),
-      ));
+      );
 
       _logger.d('$_tag: Premium data loaded successfully');
     } catch (e, stackTrace) {
-      _logger.e('$_tag: Failed to load premium data', error: e, stackTrace: stackTrace);
+      _logger.e(
+        '$_tag: Failed to load premium data',
+        error: e,
+        stackTrace: stackTrace,
+      );
       emit(PremiumError('Failed to load premium data: ${e.toString()}'));
     }
   }
@@ -95,19 +101,25 @@ class PremiumBloc extends Bloc<PremiumEvent, PremiumState> {
         final currentState = state as PremiumLoaded;
         emit(currentState.copyWith(plans: plans));
       } else {
-        emit(PremiumLoaded(
-          plans: plans,
-          coinBalance: CoinBalance(
+        emit(
+          PremiumLoaded(
+            plans: plans,
+            coinBalance: CoinBalance(
               userId: _currentUserId ?? 'fallback-user-id',
-            totalCoins: 0,
-            lastUpdated: DateTime.now(),
+              totalCoins: 0,
+              lastUpdated: DateTime.now(),
+            ),
           ),
-        ));
+        );
       }
 
       _logger.d('$_tag: Loaded ${plans.length} available plans');
     } catch (e, stackTrace) {
-      _logger.e('$_tag: Failed to load plans', error: e, stackTrace: stackTrace);
+      _logger.e(
+        '$_tag: Failed to load plans',
+        error: e,
+        stackTrace: stackTrace,
+      );
       emit(PremiumError('Failed to load plans: ${e.toString()}'));
     }
   }
@@ -125,19 +137,25 @@ class PremiumBloc extends Bloc<PremiumEvent, PremiumState> {
         final currentState = state as PremiumLoaded;
         emit(currentState.copyWith(subscription: subscription));
       } else {
-        emit(PremiumLoaded(
-          subscription: subscription,
-          coinBalance: CoinBalance(
+        emit(
+          PremiumLoaded(
+            subscription: subscription,
+            coinBalance: CoinBalance(
               userId: _currentUserId ?? 'fallback-user-id',
-            totalCoins: 0,
-            lastUpdated: DateTime.now(),
+              totalCoins: 0,
+              lastUpdated: DateTime.now(),
+            ),
           ),
-        ));
+        );
       }
 
       _logger.d('$_tag: Current subscription loaded');
     } catch (e, stackTrace) {
-      _logger.e('$_tag: Failed to load subscription', error: e, stackTrace: stackTrace);
+      _logger.e(
+        '$_tag: Failed to load subscription',
+        error: e,
+        stackTrace: stackTrace,
+      );
       emit(PremiumError('Failed to load subscription: ${e.toString()}'));
     }
   }
@@ -159,7 +177,7 @@ class PremiumBloc extends Bloc<PremiumEvent, PremiumState> {
       if (subscription != null) {
         emit(PremiumSubscriptionSuccess(subscription));
         _logger.d('$_tag: Subscription successful');
-        
+
         // Refresh data
         add(RefreshPremiumData());
       } else {
@@ -186,14 +204,18 @@ class PremiumBloc extends Bloc<PremiumEvent, PremiumState> {
       if (success) {
         emit(PremiumSubscriptionCancelled());
         _logger.d('$_tag: Subscription cancelled successfully');
-        
+
         // Refresh data
         add(RefreshPremiumData());
       } else {
         emit(PremiumError('Failed to cancel subscription'));
       }
     } catch (e, stackTrace) {
-      _logger.e('$_tag: Failed to cancel subscription', error: e, stackTrace: stackTrace);
+      _logger.e(
+        '$_tag: Failed to cancel subscription',
+        error: e,
+        stackTrace: stackTrace,
+      );
       emit(PremiumError('Failed to cancel subscription: ${e.toString()}'));
     }
   }
@@ -211,14 +233,18 @@ class PremiumBloc extends Bloc<PremiumEvent, PremiumState> {
       if (subscription != null) {
         emit(PremiumSubscriptionSuccess(subscription));
         _logger.d('$_tag: Subscription reactivated successfully');
-        
+
         // Refresh data
         add(RefreshPremiumData());
       } else {
         emit(PremiumError('Failed to reactivate subscription'));
       }
     } catch (e, stackTrace) {
-      _logger.e('$_tag: Failed to reactivate subscription', error: e, stackTrace: stackTrace);
+      _logger.e(
+        '$_tag: Failed to reactivate subscription',
+        error: e,
+        stackTrace: stackTrace,
+      );
       emit(PremiumError('Failed to reactivate subscription: ${e.toString()}'));
     }
   }
@@ -237,16 +263,22 @@ class PremiumBloc extends Bloc<PremiumEvent, PremiumState> {
       );
 
       if (result != null) {
-        emit(PremiumPaymentSuccess(result.transactionId, result.amount.toDouble()));
+        emit(
+          PremiumPaymentSuccess(result.transactionId, result.amount.toDouble()),
+        );
         _logger.d('$_tag: Coins purchased successfully');
-        
+
         // Refresh data
         add(RefreshPremiumData());
       } else {
         emit(PremiumError('Failed to purchase coins'));
       }
     } catch (e, stackTrace) {
-      _logger.e('$_tag: Coin purchase failed', error: e, stackTrace: stackTrace);
+      _logger.e(
+        '$_tag: Coin purchase failed',
+        error: e,
+        stackTrace: stackTrace,
+      );
       emit(PremiumError('Failed to purchase coins: ${e.toString()}'));
     }
   }
@@ -265,14 +297,16 @@ class PremiumBloc extends Bloc<PremiumEvent, PremiumState> {
           final currentState = state as PremiumLoaded;
           emit(currentState.copyWith(coinBalance: balance));
         } else {
-          emit(PremiumLoaded(
-            coinBalance: balance,
-          ));
+          emit(PremiumLoaded(coinBalance: balance));
         }
         _logger.d('$_tag: Coin balance loaded: ${balance.totalCoins}');
       }
     } catch (e, stackTrace) {
-      _logger.e('$_tag: Failed to load coin balance', error: e, stackTrace: stackTrace);
+      _logger.e(
+        '$_tag: Failed to load coin balance',
+        error: e,
+        stackTrace: stackTrace,
+      );
       emit(PremiumError('Failed to load coin balance: ${e.toString()}'));
     }
   }
@@ -292,7 +326,11 @@ class PremiumBloc extends Bloc<PremiumEvent, PremiumState> {
       _logger.d('$_tag: Loaded ${transactions.length} coin transactions');
       // Note: You might want to add transaction state to PremiumState if needed
     } catch (e, stackTrace) {
-      _logger.e('$_tag: Failed to load coin transactions', error: e, stackTrace: stackTrace);
+      _logger.e(
+        '$_tag: Failed to load coin transactions',
+        error: e,
+        stackTrace: stackTrace,
+      );
       emit(PremiumError('Failed to load coin transactions: ${e.toString()}'));
     }
   }
@@ -313,14 +351,24 @@ class PremiumBloc extends Bloc<PremiumEvent, PremiumState> {
       if (success) {
         emit(PremiumFeatureAccessResult(event.featureType.name, true));
         _logger.d('$_tag: Premium feature used successfully');
-        
+
         // Refresh data to update coin balance
         add(RefreshPremiumData());
       } else {
-        emit(PremiumFeatureAccessResult(event.featureType.name, false, 'Feature usage failed'));
+        emit(
+          PremiumFeatureAccessResult(
+            event.featureType.name,
+            false,
+            'Feature usage failed',
+          ),
+        );
       }
     } catch (e, stackTrace) {
-      _logger.e('$_tag: Failed to use premium feature', error: e, stackTrace: stackTrace);
+      _logger.e(
+        '$_tag: Failed to use premium feature',
+        error: e,
+        stackTrace: stackTrace,
+      );
       emit(PremiumError('Failed to use premium feature: ${e.toString()}'));
     }
   }
@@ -336,21 +384,29 @@ class PremiumBloc extends Bloc<PremiumEvent, PremiumState> {
 
       if (state is PremiumLoaded) {
         final currentState = state as PremiumLoaded;
-        emit(currentState.copyWith(features: features.map((f) => f.name).toList()));
+        emit(
+          currentState.copyWith(features: features.map((f) => f.name).toList()),
+        );
       } else {
-        emit(PremiumLoaded(
-          features: features.map((f) => f.name).toList(),
-          coinBalance: CoinBalance(
+        emit(
+          PremiumLoaded(
+            features: features.map((f) => f.name).toList(),
+            coinBalance: CoinBalance(
               userId: _currentUserId ?? 'fallback-user-id',
-            totalCoins: 0,
-            lastUpdated: DateTime.now(),
+              totalCoins: 0,
+              lastUpdated: DateTime.now(),
+            ),
           ),
-        ));
+        );
       }
 
       _logger.d('$_tag: Loaded ${features.length} available features');
     } catch (e, stackTrace) {
-      _logger.e('$_tag: Failed to load features', error: e, stackTrace: stackTrace);
+      _logger.e(
+        '$_tag: Failed to load features',
+        error: e,
+        stackTrace: stackTrace,
+      );
       emit(PremiumError('Failed to load features: ${e.toString()}'));
     }
   }
@@ -361,7 +417,9 @@ class PremiumBloc extends Bloc<PremiumEvent, PremiumState> {
   ) async {
     try {
       emit(PremiumFeatureChecking(event.featureType.name));
-      _logger.d('$_tag: Checking access for feature: ${event.featureType.name}');
+      _logger.d(
+        '$_tag: Checking access for feature: ${event.featureType.name}',
+      );
 
       // Note: You'd need to implement a hasFeatureAccess method in the service
       // For now, we'll check if user has an active subscription
@@ -373,10 +431,16 @@ class PremiumBloc extends Bloc<PremiumEvent, PremiumState> {
         reason = 'Premium subscription required for ${event.featureType.name}';
       }
 
-      emit(PremiumFeatureAccessResult(event.featureType.name, hasAccess, reason));
+      emit(
+        PremiumFeatureAccessResult(event.featureType.name, hasAccess, reason),
+      );
       _logger.d('$_tag: Feature access check complete: $hasAccess');
     } catch (e, stackTrace) {
-      _logger.e('$_tag: Feature access check failed', error: e, stackTrace: stackTrace);
+      _logger.e(
+        '$_tag: Feature access check failed',
+        error: e,
+        stackTrace: stackTrace,
+      );
       emit(PremiumError('Failed to check feature access: ${e.toString()}'));
     }
   }

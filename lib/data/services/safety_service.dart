@@ -127,8 +127,10 @@ class SafetyService {
 
       if (response.statusCode == 200 && response.data != null) {
         final List<dynamic> data = response.data['blockedUsers'] ?? [];
-        final blockedUsers = data.map((json) => BlockedUser.fromJson(json)).toList();
-        
+        final blockedUsers = data
+            .map((json) => BlockedUser.fromJson(json))
+            .toList();
+
         _logger.d('Retrieved ${blockedUsers.length} blocked users');
         return blockedUsers;
       } else {
@@ -172,7 +174,9 @@ class SafetyService {
         _logger.d('Safety settings updated successfully');
         return true;
       } else {
-        _logger.e('Failed to update safety settings: ${response.statusMessage}');
+        _logger.e(
+          'Failed to update safety settings: ${response.statusMessage}',
+        );
         return false;
       }
     } catch (e) {
@@ -197,7 +201,7 @@ class SafetyService {
           'reportCount': response.data['reportCount'] ?? 0,
           'trustLevel': response.data['trustLevel'] ?? 'basic',
         };
-        
+
         _logger.d('Retrieved safety score and verification status');
         return safetyData;
       } else {
@@ -224,7 +228,9 @@ class SafetyService {
         _logger.d('Photo verification submitted successfully');
         return true;
       } else {
-        _logger.e('Failed to submit photo verification: ${response.statusMessage}');
+        _logger.e(
+          'Failed to submit photo verification: ${response.statusMessage}',
+        );
         return false;
       }
     } catch (e) {
@@ -284,7 +290,7 @@ class SafetyService {
       if (response.statusCode == 200 && response.data != null) {
         final List<dynamic> data = response.data['tips'] ?? [];
         final tips = data.map((json) => SafetyTip.fromJson(json)).toList();
-        
+
         _logger.d('Retrieved ${tips.length} safety tips');
         return tips;
       } else {
@@ -321,7 +327,9 @@ class SafetyService {
         _logger.d('Date safety concern reported: ${report.id}');
         return report;
       } else {
-        _logger.e('Failed to report date safety concern: ${response.statusMessage}');
+        _logger.e(
+          'Failed to report date safety concern: ${response.statusMessage}',
+        );
         return null;
       }
     } catch (e) {
@@ -349,7 +357,9 @@ class SafetyService {
         _logger.d('Emergency contact notification triggered');
         return true;
       } else {
-        _logger.e('Failed to trigger emergency contact: ${response.statusMessage}');
+        _logger.e(
+          'Failed to trigger emergency contact: ${response.statusMessage}',
+        );
         return false;
       }
     } catch (e) {
@@ -368,13 +378,16 @@ class SafetyService {
       if (response.statusCode == 200 && response.data != null) {
         final safetyCheck = {
           'isSafe': response.data['isSafe'] ?? true,
-          'warningLevel': response.data['warningLevel'] ?? 'none', // none, low, medium, high
-          'verificationStatus': response.data['verificationStatus'] ?? 'unverified',
+          'warningLevel':
+              response.data['warningLevel'] ??
+              'none', // none, low, medium, high
+          'verificationStatus':
+              response.data['verificationStatus'] ?? 'unverified',
           'riskFactors': response.data['riskFactors'] ?? [],
           'safetyScore': response.data['safetyScore'] ?? 0.0,
           'recommendations': response.data['recommendations'] ?? [],
         };
-        
+
         _logger.d('User safety check completed for: $userId');
         return safetyCheck;
       } else {
@@ -394,8 +407,10 @@ class SafetyService {
 
       if (response.statusCode == 200 && response.data != null) {
         final List<dynamic> data = response.data['reports'] ?? [];
-        final reports = data.map((json) => SafetyReport.fromJson(json)).toList();
-        
+        final reports = data
+            .map((json) => SafetyReport.fromJson(json))
+            .toList();
+
         _logger.d('Retrieved ${reports.length} safety reports');
         return reports;
       } else {

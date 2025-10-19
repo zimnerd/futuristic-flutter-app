@@ -11,7 +11,8 @@ class LiveStreamingBloc extends Bloc<LiveStreamingEvent, LiveStreamingState> {
   final Logger _logger = Logger();
   static const String _tag = 'LiveStreamingBloc';
 
-  LiveStreamingBloc(this._liveStreamingService) : super(const LiveStreamingInitial()) {
+  LiveStreamingBloc(this._liveStreamingService)
+    : super(const LiveStreamingInitial()) {
     on<LoadLiveStreams>(_onLoadLiveStreams);
     on<SearchStreams>(_onSearchStreams);
     on<UpdateStreamViewers>(_onUpdateStreamViewers);
@@ -41,8 +42,10 @@ class LiveStreamingBloc extends Bloc<LiveStreamingEvent, LiveStreamingState> {
       if (event.page == 1) {
         emit(const LiveStreamingLoading());
       }
-      
-      _logger.d('$_tag: Loading live streams (page: ${event.page}, limit: ${event.limit})');
+
+      _logger.d(
+        '$_tag: Loading live streams (page: ${event.page}, limit: ${event.limit})',
+      );
 
       final streams = await _liveStreamingService.getActiveStreams(
         category: event.category,
@@ -55,22 +58,30 @@ class LiveStreamingBloc extends Bloc<LiveStreamingEvent, LiveStreamingState> {
       if (state is LiveStreamsLoaded && event.page > 1) {
         final currentState = state as LiveStreamsLoaded;
         final allStreams = [...currentState.streams, ...streams];
-        emit(LiveStreamsLoaded(
-          streams: allStreams,
-          hasMoreStreams: hasMoreStreams,
-          currentPage: event.page,
-        ));
+        emit(
+          LiveStreamsLoaded(
+            streams: allStreams,
+            hasMoreStreams: hasMoreStreams,
+            currentPage: event.page,
+          ),
+        );
       } else {
-        emit(LiveStreamsLoaded(
-          streams: streams,
-          hasMoreStreams: hasMoreStreams,
-          currentPage: event.page,
-        ));
+        emit(
+          LiveStreamsLoaded(
+            streams: streams,
+            hasMoreStreams: hasMoreStreams,
+            currentPage: event.page,
+          ),
+        );
       }
 
       _logger.d('$_tag: Loaded ${streams.length} live streams');
     } catch (e, stackTrace) {
-      _logger.e('$_tag: Failed to load live streams', error: e, stackTrace: stackTrace);
+      _logger.e(
+        '$_tag: Failed to load live streams',
+        error: e,
+        stackTrace: stackTrace,
+      );
       emit(LiveStreamingError('Failed to load live streams: ${e.toString()}'));
     }
   }
@@ -194,7 +205,11 @@ class LiveStreamingBloc extends Bloc<LiveStreamingEvent, LiveStreamingState> {
         emit(const LiveStreamingError('Failed to start live stream'));
       }
     } catch (e, stackTrace) {
-      _logger.e('$_tag: Failed to start live stream', error: e, stackTrace: stackTrace);
+      _logger.e(
+        '$_tag: Failed to start live stream',
+        error: e,
+        stackTrace: stackTrace,
+      );
       emit(LiveStreamingError('Failed to start live stream: ${e.toString()}'));
     }
   }
@@ -210,19 +225,26 @@ class LiveStreamingBloc extends Bloc<LiveStreamingEvent, LiveStreamingState> {
       final result = await _liveStreamingService.joinStream(event.streamId);
 
       if (result != null) {
-        emit(LiveStreamJoined(
-          streamInfo: result['streamInfo'] ?? {},
-          viewers: (result['viewers'] as List<dynamic>?)
-                  ?.map((e) => Map<String, dynamic>.from(e))
-                  .toList() ??
-              [],
-        ));
+        emit(
+          LiveStreamJoined(
+            streamInfo: result['streamInfo'] ?? {},
+            viewers:
+                (result['viewers'] as List<dynamic>?)
+                    ?.map((e) => Map<String, dynamic>.from(e))
+                    .toList() ??
+                [],
+          ),
+        );
         _logger.d('$_tag: Joined live stream successfully');
       } else {
         emit(const LiveStreamingError('Failed to join live stream'));
       }
     } catch (e, stackTrace) {
-      _logger.e('$_tag: Failed to join live stream', error: e, stackTrace: stackTrace);
+      _logger.e(
+        '$_tag: Failed to join live stream',
+        error: e,
+        stackTrace: stackTrace,
+      );
       emit(LiveStreamingError('Failed to join live stream: ${e.toString()}'));
     }
   }
@@ -243,7 +265,11 @@ class LiveStreamingBloc extends Bloc<LiveStreamingEvent, LiveStreamingState> {
         emit(const LiveStreamingError('Failed to leave live stream'));
       }
     } catch (e, stackTrace) {
-      _logger.e('$_tag: Failed to leave live stream', error: e, stackTrace: stackTrace);
+      _logger.e(
+        '$_tag: Failed to leave live stream',
+        error: e,
+        stackTrace: stackTrace,
+      );
       emit(LiveStreamingError('Failed to leave live stream: ${e.toString()}'));
     }
   }
@@ -258,13 +284,19 @@ class LiveStreamingBloc extends Bloc<LiveStreamingEvent, LiveStreamingState> {
 
       final success = await _liveStreamingService.endLiveStream(event.streamId);
 
-      emit(LiveStreamEnded(
-        streamId: event.streamId,
-        analytics: success ? {} : null, // Service returns bool, not analytics
-      ));
+      emit(
+        LiveStreamEnded(
+          streamId: event.streamId,
+          analytics: success ? {} : null, // Service returns bool, not analytics
+        ),
+      );
       _logger.d('$_tag: Live stream ended successfully');
     } catch (e, stackTrace) {
-      _logger.e('$_tag: Failed to end live stream', error: e, stackTrace: stackTrace);
+      _logger.e(
+        '$_tag: Failed to end live stream',
+        error: e,
+        stackTrace: stackTrace,
+      );
       emit(LiveStreamingError('Failed to end live stream: ${e.toString()}'));
     }
   }
@@ -282,16 +314,19 @@ class LiveStreamingBloc extends Bloc<LiveStreamingEvent, LiveStreamingState> {
       );
 
       if (success) {
-        emit(StreamMessageSent(
-          streamId: event.streamId,
-          message: event.message,
-        ));
+        emit(
+          StreamMessageSent(streamId: event.streamId, message: event.message),
+        );
         _logger.d('$_tag: Stream message sent successfully');
       } else {
         emit(const LiveStreamingError('Failed to send message'));
       }
     } catch (e, stackTrace) {
-      _logger.e('$_tag: Failed to send stream message', error: e, stackTrace: stackTrace);
+      _logger.e(
+        '$_tag: Failed to send stream message',
+        error: e,
+        stackTrace: stackTrace,
+      );
       emit(LiveStreamingError('Failed to send message: ${e.toString()}'));
     }
   }
@@ -309,17 +344,23 @@ class LiveStreamingBloc extends Bloc<LiveStreamingEvent, LiveStreamingState> {
       );
 
       if (success) {
-        emit(StreamGiftSent(
-          streamId: event.streamId,
-          giftId: event.giftId,
-          quantity: event.quantity,
-        ));
+        emit(
+          StreamGiftSent(
+            streamId: event.streamId,
+            giftId: event.giftId,
+            quantity: event.quantity,
+          ),
+        );
         _logger.d('$_tag: Stream gift sent successfully');
       } else {
         emit(const LiveStreamingError('Failed to send gift'));
       }
     } catch (e, stackTrace) {
-      _logger.e('$_tag: Failed to send stream gift', error: e, stackTrace: stackTrace);
+      _logger.e(
+        '$_tag: Failed to send stream gift',
+        error: e,
+        stackTrace: stackTrace,
+      );
       emit(LiveStreamingError('Failed to send gift: ${e.toString()}'));
     }
   }
@@ -329,15 +370,27 @@ class LiveStreamingBloc extends Bloc<LiveStreamingEvent, LiveStreamingState> {
     Emitter<LiveStreamingState> emit,
   ) async {
     try {
-      _logger.d('$_tag: ${event.isFollowing ? 'Following' : 'Unfollowing'} streamer: ${event.streamerId}');
+      _logger.d(
+        '$_tag: ${event.isFollowing ? 'Following' : 'Unfollowing'} streamer: ${event.streamerId}',
+      );
 
       // Note: Service doesn't have follow/unfollow methods
       // This would typically be handled by a separate follow/user service
-      emit(LiveStreamingError('Follow/unfollow not implemented in streaming service'));
+      emit(
+        LiveStreamingError(
+          'Follow/unfollow not implemented in streaming service',
+        ),
+      );
       return;
     } catch (e, stackTrace) {
-      _logger.e('$_tag: Failed to update follow status', error: e, stackTrace: stackTrace);
-      emit(LiveStreamingError('Failed to update follow status: ${e.toString()}'));
+      _logger.e(
+        '$_tag: Failed to update follow status',
+        error: e,
+        stackTrace: stackTrace,
+      );
+      emit(
+        LiveStreamingError('Failed to update follow status: ${e.toString()}'),
+      );
     }
   }
 
@@ -349,19 +402,24 @@ class LiveStreamingBloc extends Bloc<LiveStreamingEvent, LiveStreamingState> {
       emit(const LiveStreamingLoading());
       _logger.d('$_tag: Getting analytics for stream: ${event.streamId}');
 
-      final analytics = await _liveStreamingService.getStreamAnalytics(event.streamId);
+      final analytics = await _liveStreamingService.getStreamAnalytics(
+        event.streamId,
+      );
 
       if (analytics != null) {
-        emit(StreamAnalyticsLoaded(
-          streamId: event.streamId,
-          analytics: analytics,
-        ));
+        emit(
+          StreamAnalyticsLoaded(streamId: event.streamId, analytics: analytics),
+        );
         _logger.d('$_tag: Stream analytics loaded successfully');
       } else {
         emit(const LiveStreamingError('Failed to load stream analytics'));
       }
     } catch (e, stackTrace) {
-      _logger.e('$_tag: Failed to load stream analytics', error: e, stackTrace: stackTrace);
+      _logger.e(
+        '$_tag: Failed to load stream analytics',
+        error: e,
+        stackTrace: stackTrace,
+      );
       emit(LiveStreamingError('Failed to load analytics: ${e.toString()}'));
     }
   }
@@ -375,10 +433,16 @@ class LiveStreamingBloc extends Bloc<LiveStreamingEvent, LiveStreamingState> {
 
       // Note: Service doesn't have updateStreamSettings method
       // This would need to be implemented in the backend first
-      emit(LiveStreamingError('Stream settings update not implemented in service'));
+      emit(
+        LiveStreamingError('Stream settings update not implemented in service'),
+      );
       return;
     } catch (e, stackTrace) {
-      _logger.e('$_tag: Failed to update stream settings', error: e, stackTrace: stackTrace);
+      _logger.e(
+        '$_tag: Failed to update stream settings',
+        error: e,
+        stackTrace: stackTrace,
+      );
       emit(LiveStreamingError('Failed to update settings: ${e.toString()}'));
     }
   }
@@ -398,8 +462,16 @@ class LiveStreamingBloc extends Bloc<LiveStreamingEvent, LiveStreamingState> {
       emit(FollowedStreamersLoaded(streamers));
       _logger.d('$_tag: Loaded ${streamers.length} followed streamers');
     } catch (e, stackTrace) {
-      _logger.e('$_tag: Failed to load followed streamers', error: e, stackTrace: stackTrace);
-      emit(LiveStreamingError('Failed to load followed streamers: ${e.toString()}'));
+      _logger.e(
+        '$_tag: Failed to load followed streamers',
+        error: e,
+        stackTrace: stackTrace,
+      );
+      emit(
+        LiveStreamingError(
+          'Failed to load followed streamers: ${e.toString()}',
+        ),
+      );
     }
   }
 
@@ -411,7 +483,7 @@ class LiveStreamingBloc extends Bloc<LiveStreamingEvent, LiveStreamingState> {
       if (event.page == 1) {
         emit(const LiveStreamingLoading());
       }
-      
+
       _logger.d('$_tag: Loading streaming history (page: ${event.page})');
 
       final history = await _liveStreamingService.getStreamingHistory(
@@ -424,23 +496,33 @@ class LiveStreamingBloc extends Bloc<LiveStreamingEvent, LiveStreamingState> {
       if (state is StreamingHistoryLoaded && event.page > 1) {
         final currentState = state as StreamingHistoryLoaded;
         final allHistory = [...currentState.history, ...history];
-        emit(StreamingHistoryLoaded(
-          history: allHistory,
-          hasMoreHistory: hasMoreHistory,
-          currentPage: event.page,
-        ));
+        emit(
+          StreamingHistoryLoaded(
+            history: allHistory,
+            hasMoreHistory: hasMoreHistory,
+            currentPage: event.page,
+          ),
+        );
       } else {
-        emit(StreamingHistoryLoaded(
-          history: history,
-          hasMoreHistory: hasMoreHistory,
-          currentPage: event.page,
-        ));
+        emit(
+          StreamingHistoryLoaded(
+            history: history,
+            hasMoreHistory: hasMoreHistory,
+            currentPage: event.page,
+          ),
+        );
       }
 
       _logger.d('$_tag: Loaded ${history.length} streaming history items');
     } catch (e, stackTrace) {
-      _logger.e('$_tag: Failed to load streaming history', error: e, stackTrace: stackTrace);
-      emit(LiveStreamingError('Failed to load streaming history: ${e.toString()}'));
+      _logger.e(
+        '$_tag: Failed to load streaming history',
+        error: e,
+        stackTrace: stackTrace,
+      );
+      emit(
+        LiveStreamingError('Failed to load streaming history: ${e.toString()}'),
+      );
     }
   }
 

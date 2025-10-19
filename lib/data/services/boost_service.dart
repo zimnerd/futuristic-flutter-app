@@ -3,7 +3,7 @@ import '../../core/network/api_client.dart';
 import '../../core/constants/api_constants.dart';
 
 /// Service for handling profile boost features
-/// 
+///
 /// Manages API calls for:
 /// - Activating a profile boost
 /// - Checking boost status
@@ -13,16 +13,16 @@ class BoostService {
   final Logger _logger = Logger();
 
   BoostService({ApiClient? apiClient})
-      : _apiClient = apiClient ?? ApiClient.instance;
+    : _apiClient = apiClient ?? ApiClient.instance;
 
   /// Activate a profile boost (premium feature)
-  /// 
+  ///
   /// Returns boost details including:
   /// - boostId: Unique identifier for the boost
   /// - startTime: When the boost was activated
   /// - expiresAt: When the boost will expire
   /// - durationMinutes: Total boost duration
-  /// 
+  ///
   /// Throws exception if:
   /// - No active premium subscription
   /// - Already have an active boost
@@ -30,7 +30,7 @@ class BoostService {
   Future<Map<String, dynamic>> activateBoost() async {
     try {
       _logger.d('BoostService: Activating profile boost...');
-      
+
       final response = await _apiClient.post(
         ApiConstants.premiumBoost,
         data: {},
@@ -40,7 +40,7 @@ class BoostService {
 
       // Backend returns the boost details directly
       final Map<String, dynamic> result = response.data as Map<String, dynamic>;
-      
+
       return {
         'success': result['success'] ?? true,
         'boostId': result['boostId'] as String,
@@ -55,7 +55,7 @@ class BoostService {
   }
 
   /// Get current boost status
-  /// 
+  ///
   /// Returns null if no active boost, otherwise returns:
   /// - boostId: Unique identifier for the boost
   /// - startTime: When the boost was activated
@@ -65,10 +65,8 @@ class BoostService {
   Future<Map<String, dynamic>?> getBoostStatus() async {
     try {
       _logger.d('BoostService: Checking boost status...');
-      
-      final response = await _apiClient.get(
-        ApiConstants.premiumBoostStatus,
-      );
+
+      final response = await _apiClient.get(ApiConstants.premiumBoostStatus);
 
       _logger.d('BoostService: Boost status response: ${response.data}');
 

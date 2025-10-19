@@ -54,10 +54,7 @@ class _GroupListScreenState extends State<GroupListScreen>
         foregroundColor: Colors.white,
         title: const Text(
           'My Groups',
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 20,
-          ),
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
         ),
         bottom: TabBar(
           controller: _tabController,
@@ -255,11 +252,7 @@ class _GroupListScreenState extends State<GroupListScreen>
                 color: const Color(0xFF6E3BFF).withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
-              child: Icon(
-                icon,
-                size: 64,
-                color: const Color(0xFF6E3BFF),
-              ),
+              child: Icon(icon, size: 64, color: const Color(0xFF6E3BFF)),
             ),
             const SizedBox(height: 24),
             Text(
@@ -306,7 +299,7 @@ class _GroupListScreenState extends State<GroupListScreen>
 
     // Read the bloc before showing the dialog to avoid provider scope issues
     final bloc = context.read<GroupChatBloc>();
-    
+
     // Helper function to safely dispose controllers once
     void disposeControllers() {
       if (!controllersDisposed) {
@@ -401,7 +394,9 @@ class _GroupListScreenState extends State<GroupListScreen>
                   subtitle,
                   style: TextStyle(
                     fontSize: 12,
-                    color: const Color(0xFF202124).withAlpha(153), // 0.6 * 255 ≈ 153
+                    color: const Color(
+                      0xFF202124,
+                    ).withAlpha(153), // 0.6 * 255 ≈ 153
                   ),
                 ),
               ],
@@ -437,7 +432,9 @@ class _GroupListScreenState extends State<GroupListScreen>
                 borderRadius: BorderRadius.circular(28),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF6E3BFF).withAlpha(77), // 0.3 * 255 ≈ 77
+                    color: const Color(
+                      0xFF6E3BFF,
+                    ).withAlpha(77), // 0.3 * 255 ≈ 77
                     blurRadius: 30,
                     offset: const Offset(0, 10),
                   ),
@@ -464,7 +461,9 @@ class _GroupListScreenState extends State<GroupListScreen>
                           Container(
                             padding: const EdgeInsets.all(12),
                             decoration: BoxDecoration(
-                              color: Colors.white.withAlpha(51), // 0.2 * 255 ≈ 51
+                              color: Colors.white.withAlpha(
+                                51,
+                              ), // 0.2 * 255 ≈ 51
                               borderRadius: BorderRadius.circular(16),
                             ),
                             child: const Icon(
@@ -542,7 +541,9 @@ class _GroupListScreenState extends State<GroupListScreen>
                               color: Colors.white,
                               borderRadius: BorderRadius.circular(16),
                               border: Border.all(
-                                color: const Color(0xFF6E3BFF).withAlpha(77), // 0.3 * 255 ≈ 77
+                                color: const Color(
+                                  0xFF6E3BFF,
+                                ).withAlpha(77), // 0.3 * 255 ≈ 77
                               ),
                             ),
                             child: DropdownButtonFormField<String>(
@@ -637,10 +638,14 @@ class _GroupListScreenState extends State<GroupListScreen>
                           Container(
                             padding: const EdgeInsets.all(16),
                             decoration: BoxDecoration(
-                              color: const Color(0xFF6E3BFF).withAlpha(13), // 0.05 * 255 ≈ 13
+                              color: const Color(
+                                0xFF6E3BFF,
+                              ).withAlpha(13), // 0.05 * 255 ≈ 13
                               borderRadius: BorderRadius.circular(16),
                               border: Border.all(
-                                color: const Color(0xFF6E3BFF).withAlpha(26), // 0.1 * 255 ≈ 26
+                                color: const Color(
+                                  0xFF6E3BFF,
+                                ).withAlpha(26), // 0.1 * 255 ≈ 26
                               ),
                             ),
                             child: Column(
@@ -800,7 +805,9 @@ class _GroupListScreenState extends State<GroupListScreen>
                                       );
 
                                   if (mounted) {
-                                    Navigator.of(context).pop(); // ignore: use_build_context_synchronously
+                                    Navigator.of(
+                                      context,
+                                    ).pop(); // ignore: use_build_context_synchronously
                                   }
                                   if (mounted) {
                                     Navigator.pop(dialogContext); // Close form
@@ -885,10 +892,7 @@ class _GroupListScreenState extends State<GroupListScreen>
             children: [
               CircularProgressIndicator(),
               SizedBox(height: 16),
-              Text(
-                'Joining session...',
-                style: TextStyle(color: Colors.white),
-              ),
+              Text('Joining session...', style: TextStyle(color: Colors.white)),
             ],
           ),
         ),
@@ -936,12 +940,9 @@ class _GroupCard extends StatelessWidget {
   final GroupConversation group;
   final VoidCallback onTap;
 
-  const _GroupCard({
-    required this.group,
-    required this.onTap,
-  });
+  const _GroupCard({required this.group, required this.onTap});
 
-    @override
+  @override
   Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -1019,7 +1020,9 @@ class _GroupCard extends StatelessWidget {
                               vertical: 4,
                             ),
                             decoration: BoxDecoration(
-                              color: _getGroupColor(group.groupType).withValues(alpha: 0.15),
+                              color: _getGroupColor(
+                                group.groupType,
+                              ).withValues(alpha: 0.15),
                               borderRadius: BorderRadius.circular(6),
                             ),
                             child: Row(
@@ -1080,7 +1083,9 @@ class _GroupCard extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: _getGroupColor(group.groupType).withValues(alpha: 0.1),
+                    color: _getGroupColor(
+                      group.groupType,
+                    ).withValues(alpha: 0.1),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
@@ -1119,10 +1124,7 @@ class _LiveSessionCard extends StatelessWidget {
   final LiveSession session;
   final VoidCallback onTap;
 
-  const _LiveSessionCard({
-    required this.session,
-    required this.onTap,
-  });
+  const _LiveSessionCard({required this.session, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -1172,7 +1174,10 @@ class _LiveSessionCard extends StatelessWidget {
                 if (session.isFull) ...[
                   const SizedBox(width: 8),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 2,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.red,
                       borderRadius: BorderRadius.circular(8),

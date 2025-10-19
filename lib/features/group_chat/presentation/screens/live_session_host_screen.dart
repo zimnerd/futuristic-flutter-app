@@ -8,10 +8,7 @@ import '../../data/models.dart';
 class LiveSessionHostScreen extends StatefulWidget {
   final LiveSession session;
 
-  const LiveSessionHostScreen({
-    super.key,
-    required this.session,
-  });
+  const LiveSessionHostScreen({super.key, required this.session});
 
   @override
   State<LiveSessionHostScreen> createState() => _LiveSessionHostScreenState();
@@ -28,17 +25,15 @@ class _LiveSessionHostScreenState extends State<LiveSessionHostScreen> {
   }
 
   void _loadJoinRequests() {
-    context
-        .read<GroupChatBloc>()
-        .add(LoadPendingJoinRequests(widget.session.id));
+    context.read<GroupChatBloc>().add(
+      LoadPendingJoinRequests(widget.session.id),
+    );
   }
 
   @override
   void dispose() {
     // Leave the live session room
-    context
-        .read<GroupChatBloc>()
-        .add(LeaveLiveSessionRoom(widget.session.id));
+    context.read<GroupChatBloc>().add(LeaveLiveSessionRoom(widget.session.id));
     super.dispose();
   }
 
@@ -61,17 +56,12 @@ class _LiveSessionHostScreenState extends State<LiveSessionHostScreen> {
       body: BlocConsumer<GroupChatBloc, GroupChatState>(
         listener: (context, state) {
           if (state is GroupChatError) {
-            PulseToast.error(
-              context,
-              message: state.message,
-            );
+            PulseToast.error(context, message: state.message);
           }
         },
         builder: (context, state) {
           if (state is GroupChatLoading) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
+            return const Center(child: CircularProgressIndicator());
           }
 
           if (state is GroupChatLoaded) {
@@ -142,10 +132,7 @@ class _LiveSessionHostScreenState extends State<LiveSessionHostScreen> {
           const SizedBox(height: 8),
           Text(
             widget.session.description ?? 'No description',
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.grey[600],
-            ),
+            style: TextStyle(fontSize: 14, color: Colors.grey[600]),
           ),
         ],
       ),
@@ -157,11 +144,7 @@ class _LiveSessionHostScreenState extends State<LiveSessionHostScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.pending_actions,
-            size: 80,
-            color: Colors.grey[400],
-          ),
+          Icon(Icons.pending_actions, size: 80, color: Colors.grey[400]),
           const SizedBox(height: 16),
           Text(
             'No pending join requests',
@@ -174,10 +157,7 @@ class _LiveSessionHostScreenState extends State<LiveSessionHostScreen> {
           const SizedBox(height: 8),
           Text(
             'Waiting for people to request joining...',
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.grey[500],
-            ),
+            style: TextStyle(fontSize: 14, color: Colors.grey[500]),
           ),
         ],
       ),
@@ -205,18 +185,12 @@ class _LiveSessionHostScreenState extends State<LiveSessionHostScreen> {
 
   void _approveRequest(JoinRequest request) {
     context.read<GroupChatBloc>().add(ApproveJoinRequest(request.id));
-    PulseToast.success(
-      context,
-      message: 'Approved ${request.requesterName}',
-    );
+    PulseToast.success(context, message: 'Approved ${request.requesterName}');
   }
 
   void _rejectRequest(JoinRequest request) {
     context.read<GroupChatBloc>().add(RejectJoinRequest(request.id));
-    PulseToast.info(
-      context,
-      message: 'Rejected ${request.requesterName}',
-    );
+    PulseToast.info(context, message: 'Rejected ${request.requesterName}');
   }
 
   void _showSessionSettings() {
@@ -279,14 +253,9 @@ class _LiveSessionHostScreenState extends State<LiveSessionHostScreen> {
             onPressed: () {
               Navigator.of(dialogContext).pop();
               Navigator.of(context).pop(); // Go back to previous screen
-              PulseToast.success(
-                context,
-                message: 'Live session ended',
-              );
+              PulseToast.success(context, message: 'Live session ended');
             },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-            ),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
             child: const Text('End Session'),
           ),
         ],
@@ -311,9 +280,7 @@ class _JoinRequestCard extends StatelessWidget {
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -358,10 +325,7 @@ class _JoinRequestCard extends StatelessWidget {
                         ),
                       Text(
                         _formatTime(request.requestedAt),
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey[500],
-                        ),
+                        style: TextStyle(fontSize: 12, color: Colors.grey[500]),
                       ),
                     ],
                   ),

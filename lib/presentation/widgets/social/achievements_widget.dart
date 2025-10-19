@@ -20,7 +20,7 @@ class _AchievementsWidgetState extends State<AchievementsWidget>
     with TickerProviderStateMixin {
   late AnimationController _shimmerController;
   late Animation<double> _shimmerAnimation;
-  
+
   final List<Achievement> _achievements = [
     Achievement(
       id: 'first_match',
@@ -101,16 +101,16 @@ class _AchievementsWidgetState extends State<AchievementsWidget>
   @override
   void initState() {
     super.initState();
-    
+
     _shimmerController = AnimationController(
       duration: const Duration(seconds: 2),
       vsync: this,
     );
-    
+
     _shimmerAnimation = Tween<double>(begin: -1.0, end: 1.0).animate(
       CurvedAnimation(parent: _shimmerController, curve: Curves.easeInOut),
     );
-    
+
     _shimmerController.repeat();
   }
 
@@ -150,9 +150,9 @@ class _AchievementsWidgetState extends State<AchievementsWidget>
     final totalPoints = _achievements
         .where((a) => a.isUnlocked)
         .fold<int>(0, (sum, a) => sum + a.points);
-    
+
     final unlockedCount = _achievements.where((a) => a.isUnlocked).length;
-    
+
     return Container(
       padding: const EdgeInsets.all(20),
       child: Row(
@@ -182,17 +182,11 @@ class _AchievementsWidgetState extends State<AchievementsWidget>
               children: [
                 const Text(
                   'Achievements',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 ),
                 Text(
                   '$unlockedCount/${_achievements.length} unlocked • $totalPoints points',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey[600],
-                  ),
+                  style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                 ),
               ],
             ),
@@ -218,10 +212,7 @@ class _AchievementsWidgetState extends State<AchievementsWidget>
           Center(
             child: Text(
               '${(progress * 100).round()}%',
-              style: const TextStyle(
-                fontSize: 10,
-                fontWeight: FontWeight.bold,
-              ),
+              style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
             ),
           ),
         ],
@@ -238,7 +229,7 @@ class _AchievementsWidgetState extends State<AchievementsWidget>
           final count = _achievements
               .where((a) => a.category == category)
               .length;
-          
+
           return Container(
             margin: const EdgeInsets.only(right: 12),
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -265,7 +256,10 @@ class _AchievementsWidgetState extends State<AchievementsWidget>
                 ),
                 const SizedBox(width: 4),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: 2,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.grey[300],
                     borderRadius: BorderRadius.circular(8),
@@ -307,9 +301,7 @@ class _AchievementsWidgetState extends State<AchievementsWidget>
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: achievement.isUnlocked 
-              ? Colors.white
-              : Colors.grey.shade50,
+          color: achievement.isUnlocked ? Colors.white : Colors.grey.shade50,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: achievement.isUnlocked
@@ -354,10 +346,7 @@ class _AchievementsWidgetState extends State<AchievementsWidget>
                   const SizedBox(height: 4),
                   Text(
                     achievement.description,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey[600],
-                    ),
+                    style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                   ),
                   if (widget.showProgress && achievement.maxProgress != null)
                     _buildProgressBar(achievement),
@@ -385,19 +374,14 @@ class _AchievementsWidgetState extends State<AchievementsWidget>
       ),
       child: Icon(
         achievement.icon,
-        color: achievement.isUnlocked
-            ? achievement.color
-            : Colors.grey[400],
+        color: achievement.isUnlocked ? achievement.color : Colors.grey[400],
         size: 24,
       ),
     );
 
     if (!achievement.isUnlocked) {
       return ColorFiltered(
-        colorFilter: const ColorFilter.mode(
-          Colors.grey,
-          BlendMode.saturation,
-        ),
+        colorFilter: const ColorFilter.mode(Colors.grey, BlendMode.saturation),
         child: iconWidget,
       );
     }
@@ -476,10 +460,7 @@ class _AchievementsWidgetState extends State<AchievementsWidget>
             children: [
               Text(
                 'Progress',
-                style: TextStyle(
-                  fontSize: 10,
-                  color: Colors.grey[600],
-                ),
+                style: TextStyle(fontSize: 10, color: Colors.grey[600]),
               ),
               Text(
                 '${achievement.progress}/${achievement.maxProgress}',
@@ -508,8 +489,8 @@ class _AchievementsWidgetState extends State<AchievementsWidget>
     final timeText = daysAgo == 0
         ? 'Today'
         : daysAgo == 1
-            ? 'Yesterday'
-            : '$daysAgo days ago';
+        ? 'Yesterday'
+        : '$daysAgo days ago';
 
     return Padding(
       padding: const EdgeInsets.only(top: 4),
@@ -548,7 +529,7 @@ class _AchievementsWidgetState extends State<AchievementsWidget>
     final totalPoints = _achievements
         .where((a) => a.isUnlocked)
         .fold<int>(0, (sum, a) => sum + a.points);
-    
+
     final availablePoints = _achievements
         .where((a) => !a.isUnlocked)
         .fold<int>(0, (sum, a) => sum + a.points);
@@ -572,11 +553,7 @@ class _AchievementsWidgetState extends State<AchievementsWidget>
               color: Colors.amber,
             ),
           ),
-          Container(
-            width: 1,
-            height: 40,
-            color: Colors.grey.shade300,
-          ),
+          Container(width: 1, height: 40, color: Colors.grey.shade300),
           Expanded(
             child: _buildSummaryItem(
               icon: Icons.trending_up,
@@ -598,26 +575,13 @@ class _AchievementsWidgetState extends State<AchievementsWidget>
   }) {
     return Column(
       children: [
-        Icon(
-          icon,
-          color: color,
-          size: 20,
-        ),
+        Icon(icon, color: color, size: 20),
         const SizedBox(height: 4),
         Text(
           value,
-          style: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 12,
-            color: Colors.grey[600],
-          ),
-        ),
+        Text(label, style: TextStyle(fontSize: 12, color: Colors.grey[600])),
       ],
     );
   }
@@ -679,20 +643,9 @@ class _AchievementsWidgetState extends State<AchievementsWidget>
   }
 }
 
-enum AchievementCategory {
-  dating,
-  social,
-  profile,
-  engagement,
-  premium,
-}
+enum AchievementCategory { dating, social, profile, engagement, premium }
 
-enum AchievementRarity {
-  common,
-  rare,
-  epic,
-  legendary,
-}
+enum AchievementRarity { common, rare, epic, legendary }
 
 class Achievement {
   final String id;

@@ -42,18 +42,18 @@ class _MediaViewerState extends State<MediaViewer>
     super.initState();
     _currentIndex = widget.initialIndex;
     _pageController = PageController(initialPage: widget.initialIndex);
-    
+
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 300),
       vsync: this,
     );
-    
+
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
     );
-    
+
     _animationController.forward();
-    
+
     // Auto-hide overlay after 3 seconds
     _autoHideOverlay();
   }
@@ -99,9 +99,9 @@ class _MediaViewerState extends State<MediaViewer>
               itemCount: widget.mediaUrls.length,
               itemBuilder: (context, index) {
                 final mediaUrl = widget.mediaUrls[index];
-                
+
                 return Hero(
-                  tag: widget.heroTag != null 
+                  tag: widget.heroTag != null
                       ? '${widget.heroTag}_$index'
                       : 'media_$index',
                   child: widget.messageType == MessageType.video
@@ -123,7 +123,7 @@ class _MediaViewerState extends State<MediaViewer>
               },
             ),
           ),
-          
+
           // Top overlay (back button, actions)
           AnimatedPositioned(
             duration: const Duration(milliseconds: 300),
@@ -167,7 +167,7 @@ class _MediaViewerState extends State<MediaViewer>
                             ),
                           ),
                         ),
-                        
+
                         // Actions
                         Row(
                           children: [
@@ -187,7 +187,7 @@ class _MediaViewerState extends State<MediaViewer>
                                 ),
                               ),
                             ),
-                            
+
                             // More options
                             Material(
                               color: Colors.transparent,
@@ -213,7 +213,7 @@ class _MediaViewerState extends State<MediaViewer>
               ),
             ),
           ),
-          
+
           // Bottom overlay (counter, thumbnails)
           if (widget.mediaUrls.length > 1)
             AnimatedPositioned(
@@ -251,7 +251,7 @@ class _MediaViewerState extends State<MediaViewer>
                             ),
                           ),
                         ),
-                        
+
                         // Thumbnail strip
                         Expanded(
                           child: ListView.builder(
@@ -274,8 +274,11 @@ class _MediaViewerState extends State<MediaViewer>
                                   height: 60,
                                   decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(8),
-                                    border: isSelected 
-                                        ? Border.all(color: PulseColors.primary, width: 2)
+                                    border: isSelected
+                                        ? Border.all(
+                                            color: PulseColors.primary,
+                                            width: 2,
+                                          )
                                         : null,
                                   ),
                                   child: ClipRRect(
@@ -388,9 +391,9 @@ class _MediaViewerState extends State<MediaViewer>
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
-              
+
               const SizedBox(height: 20),
-              
+
               // Options
               ListTile(
                 leading: const Icon(Icons.download_rounded),
@@ -400,7 +403,7 @@ class _MediaViewerState extends State<MediaViewer>
                   await _saveMediaToGallery(context);
                 },
               ),
-              
+
               ListTile(
                 leading: const Icon(Icons.copy_rounded),
                 title: const Text('Copy Link'),
@@ -415,7 +418,7 @@ class _MediaViewerState extends State<MediaViewer>
                   );
                 },
               ),
-              
+
               const SizedBox(height: 20),
             ],
           ),
@@ -430,10 +433,7 @@ class _VideoPlayerWidget extends StatefulWidget {
   final String videoUrl;
   final VoidCallback? onTap;
 
-  const _VideoPlayerWidget({
-    required this.videoUrl,
-    this.onTap,
-  });
+  const _VideoPlayerWidget({required this.videoUrl, this.onTap});
 
   @override
   State<_VideoPlayerWidget> createState() => _VideoPlayerWidgetState();
@@ -453,9 +453,11 @@ class _VideoPlayerWidgetState extends State<_VideoPlayerWidget> {
 
   void _initializeVideo() async {
     try {
-      _controller = VideoPlayerController.networkUrl(Uri.parse(widget.videoUrl));
+      _controller = VideoPlayerController.networkUrl(
+        Uri.parse(widget.videoUrl),
+      );
       await _controller.initialize();
-      
+
       if (mounted) {
         setState(() {
           _isInitialized = true;
@@ -533,7 +535,7 @@ class _VideoPlayerWidgetState extends State<_VideoPlayerWidget> {
             fit: StackFit.expand,
             children: [
               VideoPlayer(_controller),
-              
+
               // Play/Pause overlay
               if (_showControls || !_controller.value.isPlaying)
                 Container(
@@ -548,8 +550,8 @@ class _VideoPlayerWidgetState extends State<_VideoPlayerWidget> {
                           shape: BoxShape.circle,
                         ),
                         child: Icon(
-                          _controller.value.isPlaying 
-                              ? Icons.pause_rounded 
+                          _controller.value.isPlaying
+                              ? Icons.pause_rounded
                               : Icons.play_arrow_rounded,
                           size: 48,
                           color: Colors.white,
@@ -558,7 +560,7 @@ class _VideoPlayerWidgetState extends State<_VideoPlayerWidget> {
                     ),
                   ),
                 ),
-              
+
               // Video progress bar (bottom)
               if (_showControls)
                 Positioned(

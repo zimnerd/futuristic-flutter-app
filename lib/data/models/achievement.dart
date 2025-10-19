@@ -115,10 +115,10 @@ class Achievement extends Equatable {
   /// Get time since unlocked (if unlocked)
   String? get timeSinceUnlocked {
     if (!isUnlocked || unlockedAt == null) return null;
-    
+
     final now = DateTime.now();
     final difference = now.difference(unlockedAt!);
-    
+
     if (difference.inMinutes < 1) {
       return 'Just now';
     } else if (difference.inHours < 1) {
@@ -138,14 +138,14 @@ class Achievement extends Equatable {
   /// Get progress percentage (if metadata contains progress info)
   double? get progressPercentage {
     if (metadata == null) return null;
-    
+
     final current = metadata!['currentProgress'] as int?;
     final required = metadata!['requiredProgress'] as int?;
-    
+
     if (current != null && required != null && required > 0) {
       return (current / required).clamp(0.0, 1.0);
     }
-    
+
     return null;
   }
 
@@ -186,19 +186,19 @@ class Achievement extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        name,
-        description,
-        iconUrl,
-        category,
-        points,
-        requirements,
-        isUnlocked,
-        unlockedAt,
-        isHidden,
-        rarity,
-        metadata,
-        createdAt,
-        updatedAt,
-      ];
+    id,
+    name,
+    description,
+    iconUrl,
+    category,
+    points,
+    requirements,
+    isUnlocked,
+    unlockedAt,
+    isHidden,
+    rarity,
+    metadata,
+    createdAt,
+    updatedAt,
+  ];
 }

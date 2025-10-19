@@ -4,11 +4,7 @@ import '../common/pulse_button.dart';
 
 /// Advanced filters for enhanced discovery
 class AdvancedFilters extends StatefulWidget {
-  const AdvancedFilters({
-    super.key,
-    this.onApplyFilters,
-    this.onResetFilters,
-  });
+  const AdvancedFilters({super.key, this.onApplyFilters, this.onResetFilters});
 
   final Function(Map<String, dynamic>)? onApplyFilters;
   final VoidCallback? onResetFilters;
@@ -20,7 +16,7 @@ class AdvancedFilters extends StatefulWidget {
 class _AdvancedFiltersState extends State<AdvancedFilters>
     with TickerProviderStateMixin {
   late TabController _tabController;
-  
+
   // Filter values
   RangeValues _ageRange = const RangeValues(18, 65);
   double _distance = 50.0;
@@ -34,29 +30,74 @@ class _AdvancedFiltersState extends State<AdvancedFilters>
   bool _activeRecentlyOnly = false;
 
   final List<String> _availableInterests = [
-    'Music', 'Travel', 'Sports', 'Movies', 'Books', 'Cooking',
-    'Art', 'Photography', 'Gaming', 'Fitness', 'Dancing', 'Hiking',
-    'Technology', 'Fashion', 'Wine', 'Coffee', 'Yoga', 'Meditation',
+    'Music',
+    'Travel',
+    'Sports',
+    'Movies',
+    'Books',
+    'Cooking',
+    'Art',
+    'Photography',
+    'Gaming',
+    'Fitness',
+    'Dancing',
+    'Hiking',
+    'Technology',
+    'Fashion',
+    'Wine',
+    'Coffee',
+    'Yoga',
+    'Meditation',
   ];
 
   final List<String> _educationLevels = [
-    'High School', 'Some College', "Bachelor's Degree", "Master's Degree",
-    'PhD', 'Trade School', 'Other'
+    'High School',
+    'Some College',
+    "Bachelor's Degree",
+    "Master's Degree",
+    'PhD',
+    'Trade School',
+    'Other',
   ];
 
   final List<String> _occupationTypes = [
-    'Technology', 'Healthcare', 'Finance', 'Education', 'Creative',
-    'Business', 'Legal', 'Science', 'Engineering', 'Sales', 'Other'
+    'Technology',
+    'Healthcare',
+    'Finance',
+    'Education',
+    'Creative',
+    'Business',
+    'Legal',
+    'Science',
+    'Engineering',
+    'Sales',
+    'Other',
   ];
 
   final List<String> _zodiacSigns = [
-    'Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo',
-    'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'
+    'Aries',
+    'Taurus',
+    'Gemini',
+    'Cancer',
+    'Leo',
+    'Virgo',
+    'Libra',
+    'Scorpio',
+    'Sagittarius',
+    'Capricorn',
+    'Aquarius',
+    'Pisces',
   ];
 
   final List<String> _lifestyleOptions = [
-    'Non-smoker', 'Occasional drinker', 'Non-drinker', 'Vegetarian',
-    'Vegan', 'Fitness enthusiast', 'Pet lover', 'Traveler'
+    'Non-smoker',
+    'Occasional drinker',
+    'Non-drinker',
+    'Vegetarian',
+    'Vegan',
+    'Fitness enthusiast',
+    'Pet lover',
+    'Traveler',
   ];
 
   @override
@@ -85,18 +126,13 @@ class _AdvancedFiltersState extends State<AdvancedFilters>
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              border: Border(
-                bottom: BorderSide(color: Colors.grey.shade200),
-              ),
+              border: Border(bottom: BorderSide(color: Colors.grey.shade200)),
             ),
             child: Row(
               children: [
                 const Text(
                   'Advanced Filters',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 ),
                 const Spacer(),
                 TextButton(
@@ -113,7 +149,7 @@ class _AdvancedFiltersState extends State<AdvancedFilters>
               ],
             ),
           ),
-          
+
           // Tabs
           TabBar(
             controller: _tabController,
@@ -128,7 +164,7 @@ class _AdvancedFiltersState extends State<AdvancedFilters>
               Tab(text: 'Lifestyle'),
             ],
           ),
-          
+
           // Tab content
           Expanded(
             child: TabBarView(
@@ -141,14 +177,12 @@ class _AdvancedFiltersState extends State<AdvancedFilters>
               ],
             ),
           ),
-          
+
           // Apply button
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              border: Border(
-                top: BorderSide(color: Colors.grey.shade200),
-              ),
+              border: Border(top: BorderSide(color: Colors.grey.shade200)),
             ),
             child: PulseButton(
               text: 'Apply Filters',
@@ -170,21 +204,21 @@ class _AdvancedFiltersState extends State<AdvancedFilters>
           // Age range
           _buildSectionHeader('Age Range'),
           _buildAgeRangeSlider(),
-          
+
           const SizedBox(height: 24),
-          
+
           // Distance
           _buildSectionHeader('Distance'),
           _buildDistanceSlider(),
-          
+
           const SizedBox(height: 24),
-          
+
           // Height range
           _buildSectionHeader('Height Range (Optional)'),
           _buildHeightRangeSlider(),
-          
+
           const SizedBox(height: 24),
-          
+
           // Quick filters
           _buildSectionHeader('Quick Filters'),
           _buildQuickFilters(),
@@ -203,10 +237,7 @@ class _AdvancedFiltersState extends State<AdvancedFilters>
           const SizedBox(height: 8),
           Text(
             'Choose interests you\'d like to match with',
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.grey[600],
-            ),
+            style: TextStyle(fontSize: 14, color: Colors.grey[600]),
           ),
           const SizedBox(height: 16),
           _buildInterestsGrid(),
@@ -224,15 +255,15 @@ class _AdvancedFiltersState extends State<AdvancedFilters>
           // Education
           _buildSectionHeader('Education'),
           _buildEducationDropdown(),
-          
+
           const SizedBox(height: 24),
-          
+
           // Occupation
           _buildSectionHeader('Occupation Type'),
           _buildOccupationDropdown(),
-          
+
           const SizedBox(height: 24),
-          
+
           // Zodiac sign
           _buildSectionHeader('Zodiac Sign (Optional)'),
           _buildZodiacDropdown(),
@@ -251,10 +282,7 @@ class _AdvancedFiltersState extends State<AdvancedFilters>
           const SizedBox(height: 8),
           Text(
             'Select lifestyle choices that matter to you',
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.grey[600],
-            ),
+            style: TextStyle(fontSize: 14, color: Colors.grey[600]),
           ),
           const SizedBox(height: 16),
           _buildLifestyleGrid(),
@@ -451,19 +479,14 @@ class _AdvancedFiltersState extends State<AdvancedFilters>
       initialValue: _selectedEducation,
       hint: const Text('Select education level'),
       decoration: InputDecoration(
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 16,
           vertical: 12,
         ),
       ),
       items: _educationLevels.map((education) {
-        return DropdownMenuItem(
-          value: education,
-          child: Text(education),
-        );
+        return DropdownMenuItem(value: education, child: Text(education));
       }).toList(),
       onChanged: (value) {
         setState(() {
@@ -478,19 +501,14 @@ class _AdvancedFiltersState extends State<AdvancedFilters>
       initialValue: _selectedOccupation,
       hint: const Text('Select occupation type'),
       decoration: InputDecoration(
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 16,
           vertical: 12,
         ),
       ),
       items: _occupationTypes.map((occupation) {
-        return DropdownMenuItem(
-          value: occupation,
-          child: Text(occupation),
-        );
+        return DropdownMenuItem(value: occupation, child: Text(occupation));
       }).toList(),
       onChanged: (value) {
         setState(() {
@@ -505,19 +523,14 @@ class _AdvancedFiltersState extends State<AdvancedFilters>
       initialValue: _selectedZodiacSign,
       hint: const Text('Select zodiac sign'),
       decoration: InputDecoration(
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 16,
           vertical: 12,
         ),
       ),
       items: _zodiacSigns.map((sign) {
-        return DropdownMenuItem(
-          value: sign,
-          child: Text(sign),
-        );
+        return DropdownMenuItem(value: sign, child: Text(sign));
       }).toList(),
       onChanged: (value) {
         setState(() {
@@ -575,7 +588,7 @@ class _AdvancedFiltersState extends State<AdvancedFilters>
       'interests': _selectedInterests,
       'education': _selectedEducation,
       'occupation': _selectedOccupation,
-      'heightRange': _heightRange != null 
+      'heightRange': _heightRange != null
           ? {'min': _heightRange!.start, 'max': _heightRange!.end}
           : null,
       'zodiacSign': _selectedZodiacSign,
@@ -583,7 +596,7 @@ class _AdvancedFiltersState extends State<AdvancedFilters>
       'verifiedOnly': _verifiedOnly,
       'activeRecentlyOnly': _activeRecentlyOnly,
     };
-    
+
     widget.onApplyFilters?.call(filters);
     Navigator.pop(context);
   }

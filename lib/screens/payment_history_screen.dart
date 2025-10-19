@@ -34,10 +34,7 @@ class _PaymentHistoryScreenState extends State<PaymentHistoryScreen> {
           icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
           onPressed: () => Navigator.of(context).pop(),
         ),
-        title: Text(
-          'Payment History',
-          style: AppTextStyles.headlineSmall,
-        ),
+        title: Text('Payment History', style: AppTextStyles.headlineSmall),
       ),
       body: BlocConsumer<PaymentBloc, PaymentState>(
         listener: (context, state) {
@@ -51,7 +48,7 @@ class _PaymentHistoryScreenState extends State<PaymentHistoryScreen> {
               child: CircularProgressIndicator(color: AppColors.primary),
             );
           }
-          
+
           if (state is PaymentHistoryLoaded) {
             if (state.transactions.isEmpty) {
               return _buildEmptyState();
@@ -63,7 +60,7 @@ class _PaymentHistoryScreenState extends State<PaymentHistoryScreen> {
                 .toList();
             return _buildTransactionsList(transactions);
           }
-          
+
           return _buildEmptyState();
         },
       ),
@@ -135,7 +132,8 @@ class _PaymentHistoryScreenState extends State<PaymentHistoryScreen> {
             children: [
               Expanded(
                 child: Text(
-                  transaction.productDescription ?? _getTypeDescription(transaction.type),
+                  transaction.productDescription ??
+                      _getTypeDescription(transaction.type),
                   style: AppTextStyles.titleSmall.copyWith(
                     color: AppColors.textPrimary,
                   ),
@@ -172,7 +170,8 @@ class _PaymentHistoryScreenState extends State<PaymentHistoryScreen> {
               ),
             ),
           ],
-          if (transaction.status == PaymentStatus.failed && transaction.failureReason != null) ...[
+          if (transaction.status == PaymentStatus.failed &&
+              transaction.failureReason != null) ...[
             const SizedBox(height: 8),
             Container(
               padding: const EdgeInsets.all(8),
@@ -200,7 +199,7 @@ class _PaymentHistoryScreenState extends State<PaymentHistoryScreen> {
               ),
             ),
           ],
-          if (transaction.status == PaymentStatus.completed && 
+          if (transaction.status == PaymentStatus.completed &&
               transaction.type != PaymentType.premium) ...[
             const SizedBox(height: 12),
             AppButton(
@@ -219,7 +218,7 @@ class _PaymentHistoryScreenState extends State<PaymentHistoryScreen> {
     Color backgroundColor;
     Color textColor;
     IconData icon;
-    
+
     switch (status) {
       case PaymentStatus.completed:
         backgroundColor = AppColors.success.withValues(alpha: 0.1);
@@ -252,7 +251,7 @@ class _PaymentHistoryScreenState extends State<PaymentHistoryScreen> {
         icon = Icons.undo;
         break;
     }
-    
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
@@ -316,7 +315,7 @@ class _PaymentHistoryScreenState extends State<PaymentHistoryScreen> {
 
   void _showRefundDialog(PaymentTransaction transaction) {
     final reasonController = TextEditingController();
-    
+
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -366,7 +365,10 @@ class _PaymentHistoryScreenState extends State<PaymentHistoryScreen> {
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
-                    borderSide: const BorderSide(color: AppColors.primary, width: 2),
+                    borderSide: const BorderSide(
+                      color: AppColors.primary,
+                      width: 2,
+                    ),
                   ),
                 ),
                 style: AppTextStyles.bodyMedium.copyWith(

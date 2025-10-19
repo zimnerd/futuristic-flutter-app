@@ -20,10 +20,7 @@ class LoadPotentialMatches extends MatchingEvent {
 
 /// Event to swipe on a profile
 class SwipeProfile extends MatchingEvent {
-  const SwipeProfile({
-    required this.profileId,
-    required this.direction,
-  });
+  const SwipeProfile({required this.profileId, required this.direction});
 
   final String profileId;
   final SwipeAction direction;

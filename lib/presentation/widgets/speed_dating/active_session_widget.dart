@@ -20,24 +20,20 @@ class ActiveSessionWidget extends StatelessWidget {
     final String currentRound = session['currentRound']?.toString() ?? '1';
     final String totalRounds = session['totalRounds']?.toString() ?? '5';
     final String timeRemaining = session['timeRemaining'] ?? '3:00';
-    final String currentPartner = session['currentPartner'] ?? 'Finding partner...';
+    final String currentPartner =
+        session['currentPartner'] ?? 'Finding partner...';
     final bool isActive = session['isActive'] ?? false;
     final String sessionStatus = session['status'] ?? 'waiting';
 
     return Card(
       elevation: 6,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       child: Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
           gradient: LinearGradient(
-            colors: [
-              PulseColors.primary,
-              PulseColors.secondary,
-            ],
+            colors: [PulseColors.primary, PulseColors.secondary],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
@@ -96,7 +92,7 @@ class ActiveSessionWidget extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 20),
-            
+
             // Session info
             Container(
               padding: const EdgeInsets.all(16),
@@ -145,7 +141,7 @@ class ActiveSessionWidget extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 16),
-                  
+
                   // Current partner
                   Row(
                     children: [
@@ -186,7 +182,7 @@ class ActiveSessionWidget extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 20),
-            
+
             // Action buttons
             Row(
               children: [
@@ -232,9 +228,7 @@ class ActiveSessionWidget extends StatelessWidget {
                         const SizedBox(width: 8),
                         Text(
                           isActive ? 'Enter Room' : 'Waiting...',
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                          ),
+                          style: const TextStyle(fontWeight: FontWeight.bold),
                         ),
                       ],
                     ),

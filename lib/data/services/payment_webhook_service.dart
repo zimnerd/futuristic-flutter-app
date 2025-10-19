@@ -9,13 +9,14 @@ import '../../core/constants/api_constants.dart';
 /// Service for handling PeachPayments webhook notifications
 class PaymentWebhookService {
   static PaymentWebhookService? _instance;
-  static PaymentWebhookService get instance => _instance ??= PaymentWebhookService._();
+  static PaymentWebhookService get instance =>
+      _instance ??= PaymentWebhookService._();
   PaymentWebhookService._();
-  
+
   // Logger instance
   final Logger _logger = Logger();
   final ApiService _apiService = ApiServiceImpl();
-  
+
   /// Process incoming webhook notification from PeachPayments
   Future<Map<String, dynamic>> processWebhook({
     required Map<String, dynamic> payload,
@@ -38,7 +39,7 @@ class PaymentWebhookService {
       final resultCode = payload['result']?['code'] as String?;
       final amount = payload['amount'] as String?;
       final currency = payload['currency'] as String?;
-      
+
       if (paymentId == null || resultCode == null) {
         return {
           'success': false,
@@ -49,7 +50,7 @@ class PaymentWebhookService {
 
       // Determine payment status from result code
       final status = _mapResultCodeToStatus(resultCode);
-      
+
       // Process based on payment status
       final result = await _processPaymentUpdate(
         paymentId: paymentId,
@@ -78,18 +79,22 @@ class PaymentWebhookService {
   }
 
   /// Validate webhook signature to ensure authenticity
-  bool _validateSignature(Map<String, dynamic> payload, String signature, String secret) {
+  bool _validateSignature(
+    Map<String, dynamic> payload,
+    String signature,
+    String secret,
+  ) {
     try {
       // Create payload string for signature verification
       final payloadString = json.encode(payload);
-      
+
       // Generate expected signature using HMAC-SHA256
       final key = utf8.encode(secret);
       final bytes = utf8.encode(payloadString);
       final hmacSha256 = Hmac(sha256, key);
       final digest = hmacSha256.convert(bytes);
       final expectedSignature = 'sha256=${digest.toString()}';
-      
+
       // Compare signatures securely
       return _secureCompare(signature, expectedSignature);
     } catch (e) {
@@ -101,37 +106,39 @@ class PaymentWebhookService {
   /// Secure string comparison to prevent timing attacks
   bool _secureCompare(String a, String b) {
     if (a.length != b.length) return false;
-    
+
     int result = 0;
     for (int i = 0; i < a.length; i++) {
       result |= a.codeUnitAt(i) ^ b.codeUnitAt(i);
     }
-    
+
     return result == 0;
   }
 
   /// Map PeachPayments result codes to our internal status enum
   PaymentStatus _mapResultCodeToStatus(String resultCode) {
     // Success codes
-    if (resultCode.startsWith('000.000.') || resultCode.startsWith('000.100.1')) {
+    if (resultCode.startsWith('000.000.') ||
+        resultCode.startsWith('000.100.1')) {
       return PaymentStatus.succeeded;
     }
-    
+
     // Pending codes
-    if (resultCode.startsWith('000.200.') || resultCode.startsWith('800.400.5')) {
+    if (resultCode.startsWith('000.200.') ||
+        resultCode.startsWith('800.400.5')) {
       return PaymentStatus.pending;
     }
-    
+
     // Rejection codes
     if (resultCode.startsWith('100.') || resultCode.startsWith('800.100.')) {
       return PaymentStatus.failed;
     }
-    
+
     // Refund codes
     if (resultCode.startsWith('000.000.') && resultCode.contains('refund')) {
       return PaymentStatus.refunded;
     }
-    
+
     // Default to failed for unknown codes
     return PaymentStatus.failed;
   }
@@ -160,7 +167,12 @@ class PaymentWebhookService {
       // Handle different payment statuses
       switch (status) {
         case PaymentStatus.succeeded:
-          await _handleSuccessfulPayment(paymentId, amount, currency, fullPayload);
+          await _handleSuccessfulPayment(
+            paymentId,
+            amount,
+            currency,
+            fullPayload,
+          );
           break;
         case PaymentStatus.failed:
           await _handleFailedPayment(paymentId, resultCode, fullPayload);
@@ -199,12 +211,13 @@ class PaymentWebhookService {
       await _apiService.patch(
         '${ApiConstants.payment}/$paymentId',
         data: {
-        'status': status.name,
-        'resultCode': resultCode,
-        'amount': amount,
-        'currency': currency,
-        'metadata': metadata,
-      });
+          'status': status.name,
+          'resultCode': resultCode,
+          'amount': amount,
+          'currency': currency,
+          'metadata': metadata,
+        },
+      );
       _logger.i('Updated local payment record: $paymentId -> $status');
     } catch (e) {
       _logger.e('Failed to update local payment record: $e');
@@ -221,13 +234,13 @@ class PaymentWebhookService {
     try {
       // Unlock premium features
       await _unlockPremiumFeatures(paymentId);
-      
+
       // Send confirmation email (via backend)
       await _sendPaymentConfirmation(paymentId, amount, currency);
-      
+
       // Update subscription status if applicable
       await _updateSubscriptionStatus(paymentId, active: true);
-      
+
       _logger.i('Successfully processed payment completion: $paymentId');
     } catch (e) {
       _logger.e('Error handling successful payment $paymentId: $e');
@@ -242,12 +255,13 @@ class PaymentWebhookService {
   ) async {
     try {
       // Log failure reason
-      final failureReason = payload['result']?['description'] ?? 'Unknown error';
+      final failureReason =
+          payload['result']?['description'] ?? 'Unknown error';
       _logger.i('Payment failed: $paymentId - $failureReason ($resultCode)');
-      
+
       // Notify user of failure and suggest retry
       await _scheduleRetryNotification(paymentId, failureReason);
-      
+
       // Update subscription status if applicable
       await _updateSubscriptionStatus(paymentId, active: false);
     } catch (e) {
@@ -262,10 +276,10 @@ class PaymentWebhookService {
   ) async {
     try {
       _logger.i('Payment pending: $paymentId');
-      
+
       // Schedule status check for later
       await _scheduleStatusCheck(paymentId);
-      
+
       // Notify user that payment is being processed
       await _notifyPaymentPending(paymentId);
     } catch (e) {
@@ -281,13 +295,13 @@ class PaymentWebhookService {
   ) async {
     try {
       _logger.i('Payment refunded: $paymentId - $amount');
-      
+
       // Revoke premium features if applicable
       await _revokePremiumFeatures(paymentId);
-      
+
       // Update subscription status
       await _updateSubscriptionStatus(paymentId, active: false);
-      
+
       // Send refund confirmation
       await _sendRefundConfirmation(paymentId, amount);
     } catch (e) {
@@ -316,12 +330,16 @@ class PaymentWebhookService {
   }
 
   /// Send payment confirmation
-  Future<void> _sendPaymentConfirmation(String paymentId, String? amount, String? currency) async {
+  Future<void> _sendPaymentConfirmation(
+    String paymentId,
+    String? amount,
+    String? currency,
+  ) async {
     try {
-      await _apiService.post('/api/payments/$paymentId/send-confirmation', data: {
-        'amount': amount,
-        'currency': currency,
-      });
+      await _apiService.post(
+        '/api/payments/$paymentId/send-confirmation',
+        data: {'amount': amount, 'currency': currency},
+      );
       _logger.i('Sent payment confirmation: $paymentId');
     } catch (e) {
       _logger.e('Failed to send payment confirmation: $e');
@@ -331,9 +349,10 @@ class PaymentWebhookService {
   /// Send refund confirmation
   Future<void> _sendRefundConfirmation(String paymentId, String? amount) async {
     try {
-      await _apiService.post('/api/payments/$paymentId/send-refund-confirmation', data: {
-        'amount': amount,
-      });
+      await _apiService.post(
+        '/api/payments/$paymentId/send-refund-confirmation',
+        data: {'amount': amount},
+      );
       _logger.i('Sent refund confirmation: $paymentId');
     } catch (e) {
       _logger.e('Failed to send refund confirmation: $e');
@@ -341,23 +360,33 @@ class PaymentWebhookService {
   }
 
   /// Update subscription status
-  Future<void> _updateSubscriptionStatus(String paymentId, {required bool active}) async {
+  Future<void> _updateSubscriptionStatus(
+    String paymentId, {
+    required bool active,
+  }) async {
     try {
-      await _apiService.patch('/api/subscriptions/payment/$paymentId', data: {
-        'active': active,
-      });
-      _logger.i('Updated subscription status: $paymentId -> ${active ? 'active' : 'inactive'}');
+      await _apiService.patch(
+        '/api/subscriptions/payment/$paymentId',
+        data: {'active': active},
+      );
+      _logger.i(
+        'Updated subscription status: $paymentId -> ${active ? 'active' : 'inactive'}',
+      );
     } catch (e) {
       _logger.e('Failed to update subscription status: $e');
     }
   }
 
   /// Schedule retry notification for failed payments
-  Future<void> _scheduleRetryNotification(String paymentId, String reason) async {
+  Future<void> _scheduleRetryNotification(
+    String paymentId,
+    String reason,
+  ) async {
     try {
-      await _apiService.post('/api/payments/$paymentId/schedule-retry', data: {
-        'reason': reason,
-      });
+      await _apiService.post(
+        '/api/payments/$paymentId/schedule-retry',
+        data: {'reason': reason},
+      );
       _logger.i('Scheduled retry notification for: $paymentId');
     } catch (e) {
       _logger.e('Failed to schedule retry notification: $e');
@@ -377,9 +406,10 @@ class PaymentWebhookService {
   /// Notify user about payment pending
   Future<void> _notifyPaymentPending(String paymentId) async {
     try {
-      await _apiService.post('/api/notifications/payment-pending', data: {
-        'paymentId': paymentId,
-      });
+      await _apiService.post(
+        '/api/notifications/payment-pending',
+        data: {'paymentId': paymentId},
+      );
       _logger.i('Notified user of pending payment: $paymentId');
     } catch (e) {
       _logger.e('Failed to notify user about pending payment: $e');
@@ -387,14 +417,22 @@ class PaymentWebhookService {
   }
 
   /// Send in-app notification to user about payment status
-  Future<void> _notifyUser(String paymentId, PaymentStatus status, String? amount, String? currency) async {
+  Future<void> _notifyUser(
+    String paymentId,
+    PaymentStatus status,
+    String? amount,
+    String? currency,
+  ) async {
     try {
-      await _apiService.post('/api/notifications/payment-status', data: {
-        'paymentId': paymentId,
-        'status': status.name,
-        'amount': amount,
-        'currency': currency,
-      });
+      await _apiService.post(
+        '/api/notifications/payment-status',
+        data: {
+          'paymentId': paymentId,
+          'status': status.name,
+          'amount': amount,
+          'currency': currency,
+        },
+      );
       final statusText = status.name.toUpperCase();
       _logger.i('Notified user: Payment $paymentId is $statusText');
     } catch (e) {
@@ -410,14 +448,14 @@ class PaymentWebhookService {
   /// Validate webhook payload structure
   bool isValidWebhookPayload(Map<String, dynamic> payload) {
     final requiredFields = ['id', 'result', 'paymentType'];
-    
+
     for (final field in requiredFields) {
       if (!payload.containsKey(field)) {
         _logger.i('Missing required webhook field: $field');
         return false;
       }
     }
-    
+
     return true;
   }
 }

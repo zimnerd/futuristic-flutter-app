@@ -13,10 +13,7 @@ class InitiateCall extends CallEvent {
   final String recipientId;
   final CallType type;
 
-  const InitiateCall({
-    required this.recipientId,
-    required this.type,
-  });
+  const InitiateCall({required this.recipientId, required this.type});
 
   @override
   List<Object> get props => [recipientId, type];

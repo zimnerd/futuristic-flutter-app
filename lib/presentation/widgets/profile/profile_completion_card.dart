@@ -7,11 +7,7 @@ class ProfileCompletionCard extends StatelessWidget {
   final UserProfile? profile;
   final VoidCallback? onTapIncomplete;
 
-  const ProfileCompletionCard({
-    super.key,
-    this.profile,
-    this.onTapIncomplete,
-  });
+  const ProfileCompletionCard({super.key, this.profile, this.onTapIncomplete});
 
   @override
   Widget build(BuildContext context) {
@@ -47,9 +43,9 @@ class ProfileCompletionCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Icon(
-                  completionData.isComplete 
-                    ? Icons.verified_user
-                    : Icons.trending_up,
+                  completionData.isComplete
+                      ? Icons.verified_user
+                      : Icons.trending_up,
                   color: PulseColors.primary,
                   size: 24,
                 ),
@@ -60,9 +56,9 @@ class ProfileCompletionCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      completionData.isComplete 
-                        ? 'Profile Complete!' 
-                        : 'Complete Your Profile',
+                      completionData.isComplete
+                          ? 'Profile Complete!'
+                          : 'Complete Your Profile',
                       style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w600,
@@ -71,10 +67,7 @@ class ProfileCompletionCard extends StatelessWidget {
                     ),
                     Text(
                       '${completionData.percentage}% complete',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey[600],
-                      ),
+                      style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                     ),
                   ],
                 ),
@@ -91,7 +84,7 @@ class ProfileCompletionCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 16),
-          
+
           // Progress bar
           Container(
             height: 8,
@@ -112,7 +105,7 @@ class ProfileCompletionCard extends StatelessWidget {
               ),
             ),
           ),
-          
+
           if (!completionData.isComplete) ...[
             const SizedBox(height: 16),
             Text(
@@ -136,10 +129,7 @@ class ProfileCompletionCard extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: Colors.grey[100],
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: Colors.grey[300]!,
-                      width: 1,
-                    ),
+                    border: Border.all(color: Colors.grey[300]!, width: 1),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -152,10 +142,7 @@ class ProfileCompletionCard extends StatelessWidget {
                       const SizedBox(width: 4),
                       Text(
                         field,
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey[700],
-                        ),
+                        style: TextStyle(fontSize: 12, color: Colors.grey[700]),
                       ),
                     ],
                   ),
@@ -177,10 +164,7 @@ class ProfileCompletionCard extends StatelessWidget {
                 ),
                 child: const Text(
                   'Complete Profile',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
                 ),
               ),
             ),
@@ -232,7 +216,7 @@ class ProfileCompletionCard extends StatelessWidget {
     }
 
     final missingFields = <String>[];
-    
+
     // Check required fields
     if (profile.name.isEmpty) missingFields.add('Name');
     if (profile.bio.isEmpty) missingFields.add('Bio');
@@ -244,21 +228,23 @@ class ProfileCompletionCard extends StatelessWidget {
     if (profile.relationshipGoals.isEmpty) {
       missingFields.add('Relationship Goals');
     }
-    
+
     // Check photo requirements (minimum 2 photos recommended)
     if (profile.photos.length < 2) {
       missingFields.add('More Photos (${2 - profile.photos.length} needed)');
     }
-    
+
     // Check interests (minimum 3 recommended)
     if (profile.interests.length < 3) {
-      missingFields.add('More Interests (${3 - profile.interests.length} needed)');
+      missingFields.add(
+        'More Interests (${3 - profile.interests.length} needed)',
+      );
     }
 
     final totalFields = _getAllRequiredFields().length;
     final completedFields = totalFields - missingFields.length;
     final percentage = ((completedFields / totalFields) * 100).round();
-    
+
     return ProfileCompletionData(
       percentage: percentage.clamp(0, 100),
       isComplete: missingFields.isEmpty,
@@ -269,7 +255,7 @@ class ProfileCompletionCard extends StatelessWidget {
   List<String> _getAllRequiredFields() {
     return [
       'Name',
-      'Bio', 
+      'Bio',
       'Photos',
       'More Photos',
       'Interests',

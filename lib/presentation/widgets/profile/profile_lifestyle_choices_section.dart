@@ -284,7 +284,7 @@ class ProfileLifestyleChoicesSection extends StatelessWidget {
     final borderColor = isDark
         ? Colors.white.withValues(alpha: 0.1)
         : Colors.grey.withValues(alpha: 0.3);
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -327,9 +327,7 @@ class ProfileLifestyleChoicesSection extends StatelessWidget {
                       : containerColor,
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
-                    color: isSelected
-                        ? PulseColors.warning
-                        : borderColor,
+                    color: isSelected ? PulseColors.warning : borderColor,
                     width: isSelected ? 1.5 : 1,
                   ),
                 ),
@@ -338,8 +336,7 @@ class ProfileLifestyleChoicesSection extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 13,
                     fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                    color: isSelected
-                        ? PulseColors.warning : subtitleColor,
+                    color: isSelected ? PulseColors.warning : subtitleColor,
                   ),
                 ),
               ),
@@ -363,16 +360,13 @@ class ProfileLifestyleChoicesSection extends StatelessWidget {
     final borderColor = isDark
         ? Colors.white.withValues(alpha: 0.1)
         : Colors.grey.withValues(alpha: 0.3);
-    
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: containerColor,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: borderColor,
-          width: 1,
-        ),
+        border: Border.all(color: borderColor, width: 1),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -408,10 +402,7 @@ class ProfileLifestyleChoicesSection extends StatelessWidget {
                     const SizedBox(height: 4),
                     Text(
                       subtitle,
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: subtitleColor,
-                      ),
+                      style: TextStyle(fontSize: 14, color: subtitleColor),
                     ),
                   ],
                 ),
@@ -493,10 +484,7 @@ class ProfileLifestyleChoicesSection extends StatelessWidget {
                 Expanded(
                   child: Text(
                     'Being honest helps find compatible matches',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: PulseColors.warning,
-                    ),
+                    style: TextStyle(fontSize: 12, color: PulseColors.warning),
                   ),
                 ),
               ],

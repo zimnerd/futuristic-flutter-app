@@ -48,8 +48,12 @@ class UserStatistics {
       matchRate: (json['matchRate'] as num?)?.toDouble() ?? 0.0,
       responseRate: (json['responseRate'] as num?)?.toDouble() ?? 0.0,
       dailyActivity: Map<String, int>.from(json['dailyActivity'] as Map? ?? {}),
-      ageDistribution: Map<String, int>.from(json['ageDistribution'] as Map? ?? {}),
-      locationDistribution: Map<String, int>.from(json['locationDistribution'] as Map? ?? {}),
+      ageDistribution: Map<String, int>.from(
+        json['ageDistribution'] as Map? ?? {},
+      ),
+      locationDistribution: Map<String, int>.from(
+        json['locationDistribution'] as Map? ?? {},
+      ),
     );
   }
 
@@ -72,7 +76,7 @@ class UserStatistics {
   }
 
   @override
-  String toString() => 
+  String toString() =>
       'UserStatistics(likes: $totalLikes, matches: $totalMatches, views: $profileViews)';
 }
 
@@ -123,10 +127,7 @@ class LocationCenter {
   final double latitude;
   final double longitude;
 
-  const LocationCenter({
-    required this.latitude,
-    required this.longitude,
-  });
+  const LocationCenter({required this.latitude, required this.longitude});
 
   factory LocationCenter.fromJson(Map<String, dynamic> json) {
     return LocationCenter(
@@ -170,9 +171,7 @@ class StatisticsService {
   /// Get comprehensive user statistics
   Future<UserStatistics> getUserStatistics() async {
     try {
-      final response = await _apiClient.get(
-        ApiConstants.statisticsUser,
-      );
+      final response = await _apiClient.get(ApiConstants.statisticsUser);
 
       if (response.data != null) {
         final responseData = response.data as Map<String, dynamic>;
@@ -231,13 +230,16 @@ class StatisticsService {
   }
 
   /// Get activity trend for the last 7 days
-  List<MapEntry<String, int>> getWeeklyActivityTrend(Map<String, int> dailyActivity) {
+  List<MapEntry<String, int>> getWeeklyActivityTrend(
+    Map<String, int> dailyActivity,
+  ) {
     final now = DateTime.now();
     final weeklyData = <String, int>{};
 
     for (int i = 6; i >= 0; i--) {
       final date = now.subtract(Duration(days: i));
-      final dateKey = '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+      final dateKey =
+          '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
       weeklyData[dateKey] = dailyActivity[dateKey] ?? 0;
     }
 
@@ -296,14 +298,22 @@ class StatisticsService {
 
   String _getDayName(int weekday) {
     switch (weekday) {
-      case 1: return 'Monday';
-      case 2: return 'Tuesday';
-      case 3: return 'Wednesday';
-      case 4: return 'Thursday';
-      case 5: return 'Friday';
-      case 6: return 'Saturday';
-      case 7: return 'Sunday';
-      default: return 'Unknown';
+      case 1:
+        return 'Monday';
+      case 2:
+        return 'Tuesday';
+      case 3:
+        return 'Wednesday';
+      case 4:
+        return 'Thursday';
+      case 5:
+        return 'Friday';
+      case 6:
+        return 'Saturday';
+      case 7:
+        return 'Sunday';
+      default:
+        return 'Unknown';
     }
   }
 

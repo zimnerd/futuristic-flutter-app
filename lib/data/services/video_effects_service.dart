@@ -6,21 +6,23 @@ import '../../core/constants/api_constants.dart';
 /// Service for managing video effects, filters, and virtual backgrounds
 class VideoEffectsService {
   static VideoEffectsService? _instance;
-  static VideoEffectsService get instance => _instance ??= VideoEffectsService._();
-  
+  static VideoEffectsService get instance =>
+      _instance ??= VideoEffectsService._();
+
   VideoEffectsService._();
 
   final ApiServiceImpl _apiService = ApiServiceImpl();
-  
+
   // Stream controllers for effects events
-  final StreamController<Map<String, dynamic>> _effectsController = 
+  final StreamController<Map<String, dynamic>> _effectsController =
       StreamController.broadcast();
-  final StreamController<List<VirtualBackground>> _backgroundsController = 
+  final StreamController<List<VirtualBackground>> _backgroundsController =
       StreamController.broadcast();
 
   // Public streams
   Stream<Map<String, dynamic>> get onEffectChanged => _effectsController.stream;
-  Stream<List<VirtualBackground>> get onBackgroundsUpdated => _backgroundsController.stream;
+  Stream<List<VirtualBackground>> get onBackgroundsUpdated =>
+      _backgroundsController.stream;
 
   /// Get available virtual backgrounds from server
   Future<List<VirtualBackground>> getVirtualBackgrounds() async {
@@ -34,11 +36,11 @@ class VideoEffectsService {
         final backgrounds = backgroundsData
             .map((bg) => VirtualBackground.fromJson(bg))
             .toList();
-        
+
         _backgroundsController.add(backgrounds);
         return backgrounds;
       }
-      
+
       throw Exception('Failed to load virtual backgrounds');
     } catch (e) {
       debugPrint('Error getting virtual backgrounds: $e');
@@ -73,7 +75,7 @@ class VideoEffectsService {
         });
         return true;
       }
-      
+
       return false;
     } catch (e) {
       debugPrint('Error applying virtual background: $e');
@@ -95,7 +97,7 @@ class VideoEffectsService {
         });
         return true;
       }
-      
+
       return false;
     } catch (e) {
       debugPrint('Error removing virtual background: $e');
@@ -112,10 +114,7 @@ class VideoEffectsService {
     try {
       final response = await _apiService.post(
         '${ApiConstants.webrtc}/calls/$callId/filters',
-        data: {
-          'filterType': filterType,
-          'settings': settings ?? {},
-        },
+        data: {'filterType': filterType, 'settings': settings ?? {}},
       );
 
       if (response.data['success'] == true) {
@@ -127,7 +126,7 @@ class VideoEffectsService {
         });
         return true;
       }
-      
+
       return false;
     } catch (e) {
       debugPrint('Error applying camera filter: $e');
@@ -153,7 +152,7 @@ class VideoEffectsService {
         });
         return true;
       }
-      
+
       return false;
     } catch (e) {
       debugPrint('Error removing camera filter: $e');
@@ -170,11 +169,7 @@ class VideoEffectsService {
         description: 'Smooth skin and enhance features',
         icon: '✨',
         isPremium: false,
-        settings: {
-          'skinSmooth': 0.6,
-          'eyeEnhance': 0.3,
-          'faceShape': 0.2,
-        },
+        settings: {'skinSmooth': 0.6, 'eyeEnhance': 0.3, 'faceShape': 0.2},
       ),
       CameraFilter(
         id: 'vintage',
@@ -182,11 +177,7 @@ class VideoEffectsService {
         description: 'Classic film look',
         icon: '📸',
         isPremium: true,
-        settings: {
-          'sepia': 0.7,
-          'grain': 0.3,
-          'vignette': 0.4,
-        },
+        settings: {'sepia': 0.7, 'grain': 0.3, 'vignette': 0.4},
       ),
       CameraFilter(
         id: 'vibrant',
@@ -194,11 +185,7 @@ class VideoEffectsService {
         description: 'Enhanced colors and saturation',
         icon: '🌈',
         isPremium: false,
-        settings: {
-          'saturation': 0.8,
-          'contrast': 0.3,
-          'brightness': 0.1,
-        },
+        settings: {'saturation': 0.8, 'contrast': 0.3, 'brightness': 0.1},
       ),
       CameraFilter(
         id: 'cool',
@@ -206,11 +193,7 @@ class VideoEffectsService {
         description: 'Blue and cool color tones',
         icon: '❄️',
         isPremium: true,
-        settings: {
-          'temperature': -0.3,
-          'tint': 0.2,
-          'contrast': 0.2,
-        },
+        settings: {'temperature': -0.3, 'tint': 0.2, 'contrast': 0.2},
       ),
     ];
   }

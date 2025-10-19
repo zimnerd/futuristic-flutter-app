@@ -56,14 +56,14 @@ class _ReportUserDialogState extends State<ReportUserDialog> {
     });
 
     context.read<BlockReportBloc>().add(
-          ReportUser(
-            reportedUserId: widget.userId,
-            reason: _selectedReason!,
-            description: _descriptionController.text.trim().isEmpty
-                ? null
-                : _descriptionController.text.trim(),
-          ),
-        );
+      ReportUser(
+        reportedUserId: widget.userId,
+        reason: _selectedReason!,
+        description: _descriptionController.text.trim().isEmpty
+            ? null
+            : _descriptionController.text.trim(),
+      ),
+    );
 
     // Close dialog after a short delay
     await Future.delayed(const Duration(milliseconds: 500));
@@ -75,16 +75,10 @@ class _ReportUserDialogState extends State<ReportUserDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       title: Row(
         children: [
-          Icon(
-            Icons.flag,
-            color: PulseColors.error,
-            size: 28,
-          ),
+          Icon(Icons.flag, color: PulseColors.error, size: 28),
           const SizedBox(width: 12),
           Text(
             'Report User',
@@ -158,10 +152,7 @@ class _ReportUserDialogState extends State<ReportUserDialog> {
                     ),
                   ),
                   items: _reportReasons.map((reason) {
-                    return DropdownMenuItem(
-                      value: reason,
-                      child: Text(reason),
-                    );
+                    return DropdownMenuItem(value: reason, child: Text(reason));
                   }).toList(),
                   onChanged: _isReporting
                       ? null
@@ -205,7 +196,9 @@ class _ReportUserDialogState extends State<ReportUserDialog> {
       ),
       actions: [
         TextButton(
-          onPressed: _isReporting ? null : () => Navigator.of(context).pop(false),
+          onPressed: _isReporting
+              ? null
+              : () => Navigator.of(context).pop(false),
           child: Text(
             'Cancel',
             style: PulseTextStyles.labelLarge.copyWith(

@@ -5,18 +5,19 @@ import '../core/utils/logger.dart';
 import 'media_prefetch_service.dart';
 
 /// Service for monitoring system memory pressure and responding to low memory warnings
-/// 
+///
 /// This service:
 /// - Listens to system memory warnings from the OS
 /// - Pauses media prefetching during low memory conditions
 /// - Clears image cache when memory is critically low
 /// - Automatically resumes prefetching when memory pressure subsides
-/// 
+///
 /// Platform support:
 /// - iOS: Responds to applicationDidReceiveMemoryWarning
 /// - Android: Responds to onLowMemory and onTrimMemory callbacks
 class MemoryPressureMonitor {
-  static final MemoryPressureMonitor _instance = MemoryPressureMonitor._internal();
+  static final MemoryPressureMonitor _instance =
+      MemoryPressureMonitor._internal();
   factory MemoryPressureMonitor() => _instance;
   MemoryPressureMonitor._internal();
 
@@ -67,22 +68,26 @@ class MemoryPressureMonitor {
   }
 
   /// Start synthetic memory monitoring (placeholder for real implementation)
-  /// 
+  ///
   /// In a production app, you would:
   /// 1. Use platform channels to get real memory stats from iOS/Android
   /// 2. Use packages like `system_info` or `device_info_plus`
   /// 3. Integrate with Firebase Performance Monitoring
-  /// 
+  ///
   /// For now, this provides a framework that responds to app lifecycle events
   void _startSyntheticMemoryMonitoring() {
     // This is a placeholder - in real implementation, you'd query actual memory usage
     // For now, we rely on system lifecycle events and manual triggers
-    AppLogger.debug('MemoryPressureMonitor: Using lifecycle-based memory monitoring');
+    AppLogger.debug(
+      'MemoryPressureMonitor: Using lifecycle-based memory monitoring',
+    );
   }
 
   /// Handle memory warning from system
   void _onMemoryWarning(MemoryPressureLevel level) {
-    AppLogger.warning('MemoryPressureMonitor: Memory warning received - level: ${level.name}');
+    AppLogger.warning(
+      'MemoryPressureMonitor: Memory warning received - level: ${level.name}',
+    );
 
     switch (level) {
       case MemoryPressureLevel.low:
@@ -92,14 +97,18 @@ class MemoryPressureMonitor {
       case MemoryPressureLevel.moderate:
         // Moderate pressure - pause prefetching
         _prefetchService.setMemoryPressure(true);
-        AppLogger.info('MemoryPressureMonitor: Paused prefetching due to moderate memory pressure');
+        AppLogger.info(
+          'MemoryPressureMonitor: Paused prefetching due to moderate memory pressure',
+        );
         break;
 
       case MemoryPressureLevel.critical:
         // Critical pressure - pause prefetching AND clear cache
         _prefetchService.setMemoryPressure(true);
         _prefetchService.clearCache();
-        AppLogger.warning('MemoryPressureMonitor: Cleared cache due to critical memory pressure');
+        AppLogger.warning(
+          'MemoryPressureMonitor: Cleared cache due to critical memory pressure',
+        );
         break;
     }
 
@@ -115,7 +124,9 @@ class MemoryPressureMonitor {
       // In production, you'd check actual memory usage here
       // For now, we assume memory pressure has subsided
       _prefetchService.setMemoryPressure(false);
-      AppLogger.info('MemoryPressureMonitor: Resumed prefetching after memory pressure recovery');
+      AppLogger.info(
+        'MemoryPressureMonitor: Resumed prefetching after memory pressure recovery',
+      );
     });
   }
 
@@ -132,7 +143,7 @@ class MemoryPressureMonitor {
 
 /// Memory pressure levels
 enum MemoryPressureLevel {
-  low,      // Minor memory pressure, no action needed
+  low, // Minor memory pressure, no action needed
   moderate, // Moderate pressure, pause non-critical operations
   critical, // Critical pressure, free up memory immediately
 }
@@ -142,8 +153,5 @@ class MemoryPressureEvent {
   final MemoryPressureLevel level;
   final DateTime timestamp;
 
-  const MemoryPressureEvent({
-    required this.level,
-    required this.timestamp,
-  });
+  const MemoryPressureEvent({required this.level, required this.timestamp});
 }

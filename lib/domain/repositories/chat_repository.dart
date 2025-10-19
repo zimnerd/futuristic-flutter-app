@@ -52,7 +52,10 @@ abstract class ChatRepository {
   Future<String> uploadMedia(String filePath, MessageType type);
 
   // Search
-  Future<List<MessageModel>> searchMessages(String query, {String? conversationId});
+  Future<List<MessageModel>> searchMessages(
+    String query, {
+    String? conversationId,
+  });
 
   // Online status
   Future<void> updateOnlineStatus(bool isOnline);
@@ -62,10 +65,10 @@ abstract class ChatRepository {
   Stream<MessageModel> getMessageUpdates();
   Stream<ConversationModel> getConversationUpdates();
   Stream<Map<String, bool>> getTypingUpdates();
-  
+
   // Message delivery status updates
   Stream<MessageDeliveryUpdate> getDeliveryUpdates();
-  
+
   // Message read status updates
   Stream<MessageReadUpdate> getMessageReadUpdates();
 

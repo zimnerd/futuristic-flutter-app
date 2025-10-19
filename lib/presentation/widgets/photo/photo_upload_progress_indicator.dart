@@ -60,8 +60,8 @@ class PhotoUploadProgressIndicator extends StatelessWidget {
                       Text(
                         '${(progress.progress * 100).toStringAsFixed(0)}%',
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ],
                   ),
@@ -71,9 +71,9 @@ class PhotoUploadProgressIndicator extends StatelessWidget {
                     const SizedBox(height: 4),
                     Text(
                       progress.error!,
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: Colors.red,
-                          ),
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodySmall?.copyWith(color: Colors.red),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -141,10 +141,7 @@ class PhotoUploadProgressIndicator extends StatelessWidget {
 class BatchUploadProgressIndicator extends StatelessWidget {
   final String batchId;
 
-  const BatchUploadProgressIndicator({
-    super.key,
-    required this.batchId,
-  });
+  const BatchUploadProgressIndicator({super.key, required this.batchId});
 
   @override
   Widget build(BuildContext context) {
@@ -173,8 +170,8 @@ class BatchUploadProgressIndicator extends StatelessWidget {
                     Text(
                       'Uploading Photos',
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     Text(
                       '${batchProgress.uploadedPhotos}/${batchProgress.totalPhotos}',
@@ -219,13 +216,15 @@ class BatchUploadProgressIndicator extends StatelessWidget {
                   const SizedBox(height: 12),
                   const Divider(),
                   const SizedBox(height: 8),
-                  ...batchProgress.photos.map((photo) => Padding(
-                        padding: const EdgeInsets.only(bottom: 8.0),
-                        child: PhotoUploadProgressIndicator(
-                          uploadId: photo.uploadId,
-                          showDetails: false,
-                        ),
-                      )),
+                  ...batchProgress.photos.map(
+                    (photo) => Padding(
+                      padding: const EdgeInsets.only(bottom: 8.0),
+                      child: PhotoUploadProgressIndicator(
+                        uploadId: photo.uploadId,
+                        showDetails: false,
+                      ),
+                    ),
+                  ),
                 ],
               ],
             ),
@@ -246,14 +245,11 @@ class BatchUploadProgressIndicator extends StatelessWidget {
         Text(
           value,
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: color,
-              ),
+            fontWeight: FontWeight.bold,
+            color: color,
+          ),
         ),
-        Text(
-          label,
-          style: Theme.of(context).textTheme.bodySmall,
-        ),
+        Text(label, style: Theme.of(context).textTheme.bodySmall),
       ],
     );
   }

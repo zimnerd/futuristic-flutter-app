@@ -19,9 +19,9 @@ class AuthService {
     LocalAuthentication? localAuth,
     Logger? logger,
   }) : _apiClient = apiClient,
-        _secureStorage = secureStorage,
-        _localAuth = localAuth ?? LocalAuthentication(),
-        _logger = logger ?? Logger();
+       _secureStorage = secureStorage,
+       _localAuth = localAuth ?? LocalAuthentication(),
+       _logger = logger ?? Logger();
 
   final ApiClient _apiClient;
   final Box<String> _secureStorage;
@@ -91,7 +91,9 @@ class AuthService {
       if (e.response?.statusCode == 401) {
         throw InvalidCredentialsException();
       } else if (e.response?.statusCode == 429) {
-        throw NetworkException('Too many login attempts. Please try again later.');
+        throw NetworkException(
+          'Too many login attempts. Please try again later.',
+        );
       }
       throw NetworkException('Network error during sign in');
     } catch (e) {
@@ -110,10 +112,7 @@ class AuthService {
 
       final response = await _apiClient.post(
         '/auth/verify-2fa',
-        data: {
-          'sessionId': sessionId,
-          'code': code,
-        },
+        data: {'sessionId': sessionId, 'code': code},
       );
 
       if (response.statusCode == 200) {
@@ -228,7 +227,7 @@ class AuthService {
       if (userData == null) return null;
 
       final user = UserModel.fromJson(jsonDecode(userData));
-      
+
       // Validate token is still valid
       final isValid = await _validateToken();
       if (!isValid) {
@@ -268,7 +267,7 @@ class AuthService {
 
       if (response.statusCode == 200) {
         final data = response.data;
-        
+
         // Store new tokens
         await _secureStorage.put(_accessTokenKey, data['accessToken']);
         if (data['refreshToken'] != null) {
@@ -322,10 +321,7 @@ class AuthService {
 
       final response = await _apiClient.post(
         '/auth/reset-password',
-        data: {
-          'token': token,
-          'newPassword': newPassword,
-        },
+        data: {'token': token, 'newPassword': newPassword},
       );
 
       if (response.statusCode == 200) {
@@ -467,8 +463,9 @@ class AuthService {
       // Get device information
       final platform = Platform.operatingSystem;
       final version = Platform.operatingSystemVersion;
-      final isPhysicalDevice = !kIsWeb && (Platform.isAndroid || Platform.isIOS);
-      
+      final isPhysicalDevice =
+          !kIsWeb && (Platform.isAndroid || Platform.isIOS);
+
       // Create a unique fingerprint based on device characteristics
       final fingerprint = {
         'platform': platform,
@@ -484,7 +481,7 @@ class AuthService {
 
       // Take first 32 characters for a manageable fingerprint
       final deviceFingerprint = base64String.substring(0, 32);
-      
+
       _logger.d('🔍 Generated device fingerprint: $deviceFingerprint');
       return deviceFingerprint;
     } catch (e) {
@@ -516,10 +513,7 @@ class AuthResult {
 
   /// Success result
   factory AuthResult.success({required UserModel user}) {
-    return AuthResult._(
-      isSuccess: true,
-      user: user,
-    );
+    return AuthResult._(isSuccess: true, user: user);
   }
 
   /// Two-factor authentication required
@@ -537,10 +531,7 @@ class AuthResult {
 
   /// Failure result
   factory AuthResult.failure({required String error}) {
-    return AuthResult._(
-      isSuccess: false,
-      error: error,
-    );
+    return AuthResult._(isSuccess: false, error: error);
   }
 }
 

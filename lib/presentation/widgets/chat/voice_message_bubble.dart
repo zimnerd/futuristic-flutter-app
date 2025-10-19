@@ -27,13 +27,13 @@ class VoiceMessageBubble extends StatefulWidget {
 class _VoiceMessageBubbleState extends State<VoiceMessageBubble>
     with TickerProviderStateMixin {
   final AudioPlayer _audioPlayer = AudioPlayer();
-  
+
   bool _isPlaying = false;
   bool _isLoading = false;
   Duration _currentPosition = Duration.zero;
   Duration _totalDuration = Duration.zero;
   double _playbackSpeed = 1.0;
-  
+
   late AnimationController _waveController;
   late AnimationController _speedChangeController;
   late Animation<double> _speedChangeAnimation;
@@ -52,7 +52,7 @@ class _VoiceMessageBubbleState extends State<VoiceMessageBubble>
       duration: const Duration(milliseconds: 1000),
       vsync: this,
     );
-    
+
     _speedChangeController = AnimationController(
       duration: const Duration(milliseconds: 300),
       vsync: this,
@@ -65,11 +65,12 @@ class _VoiceMessageBubbleState extends State<VoiceMessageBubble>
 
   Future<void> _initializePlayer() async {
     setState(() => _isLoading = true);
-    
+
     try {
       await _audioPlayer.setFilePath(widget.audioUrl);
-      _totalDuration = _audioPlayer.duration ?? Duration(seconds: widget.duration);
-      
+      _totalDuration =
+          _audioPlayer.duration ?? Duration(seconds: widget.duration);
+
       _positionSubscription = _audioPlayer.positionStream.listen((position) {
         setState(() => _currentPosition = position);
       });
@@ -86,7 +87,6 @@ class _VoiceMessageBubbleState extends State<VoiceMessageBubble>
           _waveController.stop();
         }
       });
-      
     } catch (e) {
       // Handle error silently for better UX
     } finally {
@@ -160,7 +160,7 @@ class _VoiceMessageBubbleState extends State<VoiceMessageBubble>
     final progress = _totalDuration.inMilliseconds > 0
         ? _currentPosition.inMilliseconds / _totalDuration.inMilliseconds
         : 0.0;
-    
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       child: Row(
@@ -171,7 +171,7 @@ class _VoiceMessageBubbleState extends State<VoiceMessageBubble>
             width: 36,
             height: 36,
             decoration: BoxDecoration(
-              color: widget.isCurrentUser 
+              color: widget.isCurrentUser
                   ? Colors.white.withValues(alpha: 0.2)
                   : PulseColors.primary,
               shape: BoxShape.circle,
@@ -197,9 +197,9 @@ class _VoiceMessageBubbleState extends State<VoiceMessageBubble>
                     padding: EdgeInsets.zero,
                   ),
           ),
-          
+
           const SizedBox(width: 8),
-          
+
           // Waveform and progress
           Expanded(
             child: Column(
@@ -269,9 +269,9 @@ class _VoiceMessageBubbleState extends State<VoiceMessageBubble>
                     ),
                   ),
                 ),
-                
+
                 const SizedBox(height: 4),
-                
+
                 // Duration and playback speed
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -293,7 +293,7 @@ class _VoiceMessageBubbleState extends State<VoiceMessageBubble>
               ],
             ),
           ),
-          
+
           const SizedBox(width: 8),
 
           // Playback speed button

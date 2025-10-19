@@ -344,7 +344,9 @@ class _ScheduleStreamScreenState extends State<ScheduleStreamScreen> {
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: Theme.of(context).primaryColor),
+                        borderSide: BorderSide(
+                          color: Theme.of(context).primaryColor,
+                        ),
                       ),
                     ),
                     validator: (value) {
@@ -384,7 +386,9 @@ class _ScheduleStreamScreenState extends State<ScheduleStreamScreen> {
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: Theme.of(context).primaryColor),
+                        borderSide: BorderSide(
+                          color: Theme.of(context).primaryColor,
+                        ),
                       ),
                     ),
                     validator: (value) {
@@ -428,8 +432,9 @@ class _ScheduleStreamScreenState extends State<ScheduleStreamScreen> {
                                 Text(
                                   _selectedDateTime == null
                                       ? 'Select date and time'
-                                      : DateFormat('MMM dd, yyyy • hh:mm a')
-                                          .format(_selectedDateTime!),
+                                      : DateFormat(
+                                          'MMM dd, yyyy • hh:mm a',
+                                        ).format(_selectedDateTime!),
                                   style: const TextStyle(
                                     color: Colors.white,
                                     fontSize: 16,
@@ -438,10 +443,7 @@ class _ScheduleStreamScreenState extends State<ScheduleStreamScreen> {
                               ],
                             ),
                           ),
-                          const Icon(
-                            Icons.chevron_right,
-                            color: Colors.grey,
-                          ),
+                          const Icon(Icons.chevron_right, color: Colors.grey),
                         ],
                       ),
                     ),
@@ -461,10 +463,7 @@ class _ScheduleStreamScreenState extends State<ScheduleStreamScreen> {
                       children: [
                         const Text(
                           'Stream Type',
-                          style: TextStyle(
-                            color: Colors.grey,
-                            fontSize: 12,
-                          ),
+                          style: TextStyle(color: Colors.grey, fontSize: 12),
                         ),
                         const SizedBox(height: 8),
                         Row(
@@ -706,7 +705,9 @@ class _ScheduleStreamScreenState extends State<ScheduleStreamScreen> {
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: Theme.of(context).primaryColor),
+                        borderSide: BorderSide(
+                          color: Theme.of(context).primaryColor,
+                        ),
                       ),
                     ),
                   ),
@@ -722,23 +723,19 @@ class _ScheduleStreamScreenState extends State<ScheduleStreamScreen> {
                     ),
                     child: Row(
                       children: [
-                        const Icon(
-                          Icons.warning_amber,
-                          color: Colors.orange,
-                        ),
+                        const Icon(Icons.warning_amber, color: Colors.orange),
                         const SizedBox(width: 12),
                         const Expanded(
                           child: Text(
                             'Adults Only (18+)',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 16,
-                            ),
+                            style: TextStyle(color: Colors.white, fontSize: 16),
                           ),
                         ),
                         Switch(
                           value: _isAdultsOnly,
-                          activeTrackColor: Colors.orange.withValues(alpha: 0.5),
+                          activeTrackColor: Colors.orange.withValues(
+                            alpha: 0.5,
+                          ),
                           thumbColor: WidgetStateProperty.resolveWith((states) {
                             if (states.contains(WidgetState.selected)) {
                               return Colors.orange;
@@ -809,9 +806,7 @@ class _ScheduleStreamScreenState extends State<ScheduleStreamScreen> {
             if (_isLoading)
               Container(
                 color: Colors.black.withValues(alpha: 0.5),
-                child: const Center(
-                  child: CircularProgressIndicator(),
-                ),
+                child: const Center(child: CircularProgressIndicator()),
               ),
           ],
         ),
@@ -847,7 +842,9 @@ class _ScheduleStreamScreenState extends State<ScheduleStreamScreen> {
             Text(
               label,
               style: TextStyle(
-                color: isSelected ? Theme.of(context).primaryColor : Colors.grey,
+                color: isSelected
+                    ? Theme.of(context).primaryColor
+                    : Colors.grey,
                 fontSize: 12,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
               ),

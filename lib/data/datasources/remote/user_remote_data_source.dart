@@ -62,7 +62,11 @@ abstract class UserRemoteDataSource {
   Future<void> deleteProfilePhoto(String userId, String photoUrl);
   Future<void> reorderPhotos(List<String> photoIds);
   Future<void> syncPhotos(List<Map<String, dynamic>> photos);
-  Future<void> updateUserLocation(String userId, double latitude, double longitude);
+  Future<void> updateUserLocation(
+    String userId,
+    double latitude,
+    double longitude,
+  );
 
   // User Discovery
   Future<List<UserModel>> getNearbyUsers({
@@ -123,8 +127,7 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
     try {
       _logger.i('Signing in user with email: $email');
 
-      final response = await _apiClient.login(email: email, password: password,
-      );
+      final response = await _apiClient.login(email: email, password: password);
 
       if (response.statusCode == 200) {
         final responseData = response.data['data'];
@@ -139,7 +142,7 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
           _logger.i(
             '✅ Auth token set in API client: ${accessToken.substring(0, 20)}...',
           );
-          
+
           // Also set the token in the service locator for all services
           try {
             await ServiceLocator.instance.setAuthToken(accessToken);
@@ -148,7 +151,7 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
             _logger.w('❌ Failed to set auth token in service locator: $e');
           }
         }
-        
+
         // Store refresh token securely for automatic token refresh
         if (refreshToken != null && accessToken != null) {
           try {
@@ -221,7 +224,7 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
         // Store auth token for future requests
         if (accessToken != null) {
           _apiClient.setAuthToken(accessToken);
-          
+
           // Also set the token in the service locator for all services
           try {
             await ServiceLocator.instance.setAuthToken(accessToken);
@@ -264,12 +267,14 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
       try {
         await _apiClient.logout();
       } catch (e) {
-        _logger.w('Logout API call failed (this is expected if token is invalid): $e');
+        _logger.w(
+          'Logout API call failed (this is expected if token is invalid): $e',
+        );
         // Continue with local cleanup even if server logout fails
       }
-      
+
       _apiClient.clearAuthToken();
-      
+
       // Clear securely stored tokens using TokenService directly
       try {
         final tokenService = TokenService();
@@ -352,7 +357,7 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
 
         if (accessToken != null) {
           _apiClient.setAuthToken(accessToken);
-          
+
           // Also set the token in the service locator for all services
           try {
             await ServiceLocator.instance.setAuthToken(accessToken);
@@ -477,7 +482,7 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
             }
           });
         }
-        
+
         return {
           'sessionId': data['sessionId'],
           'deliveryMethods': deliveryMethods,
@@ -529,7 +534,7 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
           final tokens = responseData['tokens'];
           if (tokens != null && tokens['accessToken'] != null) {
             _apiClient.setAuthToken(tokens['accessToken']);
-            
+
             // Also set the token in the service locator for all services
             try {
               await ServiceLocator.instance.setAuthToken(tokens['accessToken']);
@@ -610,10 +615,7 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
 
       final response = await _apiClient.rawPost(
         '/auth/validate-phone',
-        data: {
-          'phone': phone,
-          'countryCode': countryCode,
-        },
+        data: {'phone': phone, 'countryCode': countryCode},
       );
 
       if (response.statusCode == 200) {
@@ -637,7 +639,9 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
         'isValid': false,
         'formattedPhone': phone,
         'message': e is ApiException ? e.message : 'Phone validation failed',
-        'errorCode': e is ApiException ? e.code ?? 'API_ERROR' : 'NETWORK_ERROR',
+        'errorCode': e is ApiException
+            ? e.code ?? 'API_ERROR'
+            : 'NETWORK_ERROR',
       };
     }
   }
@@ -772,16 +776,17 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
   }
 
   @override
-  Future<void> updateUserLocation(String userId, double latitude, double longitude) async {
+  Future<void> updateUserLocation(
+    String userId,
+    double latitude,
+    double longitude,
+  ) async {
     try {
       _logger.i('Updating user location for user: $userId');
 
       await _apiClient.put(
         '/users/$userId/location',
-        data: {
-          'latitude': latitude,
-          'longitude': longitude,
-        },
+        data: {'latitude': latitude, 'longitude': longitude},
       );
 
       _logger.i('User location updated successfully');

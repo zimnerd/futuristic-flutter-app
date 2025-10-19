@@ -5,7 +5,8 @@ class AiProfileAnalysisRequest extends Equatable {
   final String userId;
   final String profileId;
   final AiUserProfileData profile;
-  final String analysisType; // 'improvement', 'conversation_starters', 'compatibility'
+  final String
+  analysisType; // 'improvement', 'conversation_starters', 'compatibility'
   final AiUserProfileData? targetProfile; // For compatibility analysis
   final List<String>? images; // For image analysis
   final Map<String, dynamic>? context;
@@ -34,14 +35,14 @@ class AiProfileAnalysisRequest extends Equatable {
 
   @override
   List<Object?> get props => [
-        userId,
-        profileId,
-        profile,
-        analysisType,
-        targetProfile,
-        images,
-        context,
-      ];
+    userId,
+    profileId,
+    profile,
+    analysisType,
+    targetProfile,
+    images,
+    context,
+  ];
 }
 
 /// User profile data for AI analysis
@@ -95,9 +96,11 @@ class AiUserProfileData extends Equatable {
       age: json['age'],
       bio: json['bio'],
       interests: List<String>.from(json['interests'] ?? []),
-      photos: (json['photos'] as List?)
-          ?.map((p) => AiPhotoData.fromJson(p))
-          .toList() ?? [],
+      photos:
+          (json['photos'] as List?)
+              ?.map((p) => AiPhotoData.fromJson(p))
+              .toList() ??
+          [],
       preferences: json['preferences'],
       personality: json['personality'],
       occupation: json['occupation'],
@@ -108,18 +111,18 @@ class AiUserProfileData extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        name,
-        age,
-        bio,
-        interests,
-        photos,
-        preferences,
-        personality,
-        occupation,
-        education,
-        location,
-      ];
+    id,
+    name,
+    age,
+    bio,
+    interests,
+    photos,
+    preferences,
+    personality,
+    occupation,
+    education,
+    location,
+  ];
 }
 
 /// Photo data for AI analysis
@@ -210,16 +213,16 @@ class AiProfileAnalysisResponse extends Equatable {
 
   @override
   List<Object?> get props => [
-        requestId,
-        analysisType,
-        score,
-        improvements,
-        conversationStarters,
-        imageInsights,
-        compatibilityAssessment,
-        confidence,
-        generatedAt,
-      ];
+    requestId,
+    analysisType,
+    score,
+    improvements,
+    conversationStarters,
+    imageInsights,
+    compatibilityAssessment,
+    confidence,
+    generatedAt,
+  ];
 }
 
 /// AI-generated profile score
@@ -256,14 +259,14 @@ class AiProfileScore extends Equatable {
 
   @override
   List<Object?> get props => [
-        overall,
-        attractiveness,
-        completeness,
-        authenticity,
-        approachability,
-        categoryScores,
-        summary,
-      ];
+    overall,
+    attractiveness,
+    completeness,
+    authenticity,
+    approachability,
+    categoryScores,
+    summary,
+  ];
 }
 
 /// AI-generated profile improvement suggestion
@@ -300,24 +303,24 @@ class AiProfileImprovement extends Equatable {
       suggestion: json['suggestion'],
       reasoning: json['reasoning'],
       impact: json['impact'].toDouble(),
-      examples: json['examples'] != null 
-          ? List<String>.from(json['examples']) 
+      examples: json['examples'] != null
+          ? List<String>.from(json['examples'])
           : null,
     );
   }
 
   @override
   List<Object?> get props => [
-        id,
-        category,
-        priority,
-        title,
-        description,
-        suggestion,
-        reasoning,
-        impact,
-        examples,
-      ];
+    id,
+    category,
+    priority,
+    title,
+    description,
+    suggestion,
+    reasoning,
+    impact,
+    examples,
+  ];
 }
 
 /// AI-generated conversation starter
@@ -354,14 +357,14 @@ class AiConversationStarter extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        message,
-        category,
-        reasoning,
-        confidence,
-        basedOn,
-        followUp,
-      ];
+    id,
+    message,
+    category,
+    reasoning,
+    confidence,
+    basedOn,
+    followUp,
+  ];
 }
 
 /// AI analysis of profile images
@@ -400,14 +403,14 @@ class AiImageInsight extends Equatable {
 
   @override
   List<Object?> get props => [
-        imageId,
-        analysis,
-        detectedElements,
-        suggestions,
-        quality,
-        attributes,
-        conversationStarters,
-      ];
+    imageId,
+    analysis,
+    detectedElements,
+    suggestions,
+    quality,
+    attributes,
+    conversationStarters,
+  ];
 }
 
 /// AI compatibility assessment between two profiles
@@ -448,14 +451,14 @@ class AiCompatibilityAssessment extends Equatable {
 
   @override
   List<Object?> get props => [
-        overallScore,
-        categoryScores,
-        strengths,
-        concerns,
-        conversationTopics,
-        summary,
-        recommendation,
-      ];
+    overallScore,
+    categoryScores,
+    strengths,
+    concerns,
+    conversationTopics,
+    summary,
+    recommendation,
+  ];
 }
 
 /// Compatibility strength identified by AI
@@ -516,11 +519,11 @@ class AiCompatibilityConcern extends Equatable {
 
   @override
   List<Object?> get props => [
-        category,
-        description,
-        severity,
-        impact,
-        evidence,
-        mitigation,
-      ];
+    category,
+    description,
+    severity,
+    impact,
+    evidence,
+    mitigation,
+  ];
 }

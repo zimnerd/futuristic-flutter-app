@@ -136,7 +136,7 @@ class ImagePickerService {
       );
 
       final List<File> files = images.map((image) => File(image.path)).toList();
-      
+
       AppLogger.debug('${files.length} images picked from gallery');
       return files;
     } catch (e) {
@@ -181,10 +181,7 @@ class ImagePickerService {
             const SizedBox(height: 24),
             const Text(
               'Select Image Source',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-              ),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 24),
             Row(
@@ -237,10 +234,7 @@ class ImagePickerService {
                 onPressed: () => Navigator.pop(context),
                 child: const Text(
                   'Cancel',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.grey,
-                  ),
+                  style: TextStyle(fontSize: 16, color: Colors.grey),
                 ),
               ),
             ),
@@ -272,15 +266,8 @@ class ImagePickerService {
             Container(
               width: 48,
               height: 48,
-              decoration: BoxDecoration(
-                color: color,
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                icon,
-                color: Colors.white,
-                size: 24,
-              ),
+              decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+              child: Icon(icon, color: Colors.white, size: 24),
             ),
             const SizedBox(height: 8),
             Text(

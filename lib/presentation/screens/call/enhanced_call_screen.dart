@@ -28,7 +28,6 @@ class EnhancedCallScreen extends StatefulWidget {
 
 class _EnhancedCallScreenState extends State<EnhancedCallScreen>
     with TickerProviderStateMixin {
-  
   bool _showVideoEffects = false;
   bool _showGroupControls = false;
   bool _isMuted = false;
@@ -46,34 +45,34 @@ class _EnhancedCallScreenState extends State<EnhancedCallScreen>
   @override
   void initState() {
     super.initState();
-    
+
     // Initialize animation controllers
     _effectsPanelController = AnimationController(
       duration: const Duration(milliseconds: 300),
       vsync: this,
     );
-    
+
     _groupControlsController = AnimationController(
       duration: const Duration(milliseconds: 300),
       vsync: this,
     );
 
     // Setup slide animations
-    _effectsPanelAnimation = Tween<Offset>(
-      begin: const Offset(0, 1),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _effectsPanelController,
-      curve: Curves.easeInOut,
-    ));
+    _effectsPanelAnimation =
+        Tween<Offset>(begin: const Offset(0, 1), end: Offset.zero).animate(
+          CurvedAnimation(
+            parent: _effectsPanelController,
+            curve: Curves.easeInOut,
+          ),
+        );
 
-    _groupControlsAnimation = Tween<Offset>(
-      begin: const Offset(0, -1),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _groupControlsController,
-      curve: Curves.easeInOut,
-    ));
+    _groupControlsAnimation =
+        Tween<Offset>(begin: const Offset(0, -1), end: Offset.zero).animate(
+          CurvedAnimation(
+            parent: _groupControlsController,
+            curve: Curves.easeInOut,
+          ),
+        );
   }
 
   @override
@@ -87,7 +86,7 @@ class _EnhancedCallScreenState extends State<EnhancedCallScreen>
     setState(() {
       _showVideoEffects = !_showVideoEffects;
     });
-    
+
     if (_showVideoEffects) {
       _effectsPanelController.forward();
       // Close group controls if open
@@ -102,11 +101,11 @@ class _EnhancedCallScreenState extends State<EnhancedCallScreen>
 
   void _toggleGroupControls() {
     if (!widget.isGroupCall) return;
-    
+
     setState(() {
       _showGroupControls = !_showGroupControls;
     });
-    
+
     if (_showGroupControls) {
       _groupControlsController.forward();
       // Close video effects if open
@@ -136,16 +135,16 @@ class _EnhancedCallScreenState extends State<EnhancedCallScreen>
           children: [
             // Main Call Video Area
             _buildMainVideoArea(),
-            
+
             // Participants Grid (for group calls)
             if (widget.isGroupCall) _buildParticipantsGrid(),
-            
+
             // Top Controls Bar
             _buildTopControlsBar(),
-            
+
             // Bottom Controls Bar
             _buildBottomControlsBar(),
-            
+
             // Group Call Management Overlay
             if (widget.isGroupCall && _showGroupControls)
               SlideTransition(
@@ -164,7 +163,7 @@ class _EnhancedCallScreenState extends State<EnhancedCallScreen>
                   ),
                 ),
               ),
-            
+
             // Video Effects Panel Overlay
             if (_showVideoEffects)
               SlideTransition(
@@ -211,20 +210,13 @@ class _EnhancedCallScreenState extends State<EnhancedCallScreen>
               decoration: BoxDecoration(
                 color: PulseColors.primary.withValues(alpha: 0.3),
                 shape: BoxShape.circle,
-                border: Border.all(
-                  color: PulseColors.primary,
-                  width: 3,
-                ),
+                border: Border.all(color: PulseColors.primary, width: 3),
               ),
-              child: const Icon(
-                Icons.videocam,
-                color: Colors.white,
-                size: 80,
-              ),
+              child: const Icon(Icons.videocam, color: Colors.white, size: 80),
             ),
-            
+
             const SizedBox(height: 20),
-            
+
             // Call Status
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -233,7 +225,7 @@ class _EnhancedCallScreenState extends State<EnhancedCallScreen>
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Text(
-                widget.isGroupCall 
+                widget.isGroupCall
                     ? 'Group Call - ${widget.participants.length} participants'
                     : 'Video Call',
                 style: const TextStyle(
@@ -242,7 +234,7 @@ class _EnhancedCallScreenState extends State<EnhancedCallScreen>
                 ),
               ),
             ),
-            
+
             // Active Effects Indicators
             if (_currentBackground != null || _currentFilter != null) ...[
               const SizedBox(height: 12),
@@ -282,7 +274,7 @@ class _EnhancedCallScreenState extends State<EnhancedCallScreen>
 
   Widget _buildParticipantsGrid() {
     if (widget.participants.length <= 2) return const SizedBox.shrink();
-    
+
     return Positioned(
       top: 100,
       right: 16,
@@ -307,20 +299,19 @@ class _EnhancedCallScreenState extends State<EnhancedCallScreen>
                 children: [
                   // Participant video placeholder
                   const Center(
-                    child: Icon(
-                      Icons.person,
-                      color: Colors.white,
-                      size: 30,
-                    ),
+                    child: Icon(Icons.person, color: Colors.white, size: 30),
                   ),
-                  
+
                   // Participant name
                   Positioned(
                     bottom: 4,
                     left: 4,
                     right: 4,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 4,
+                        vertical: 2,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.black.withValues(alpha: 0.7),
                         borderRadius: BorderRadius.circular(4),
@@ -363,7 +354,7 @@ class _EnhancedCallScreenState extends State<EnhancedCallScreen>
             onPressed: () => Navigator.of(context).pop(),
             icon: const Icon(Icons.arrow_back, color: Colors.white),
           ),
-          
+
           // Call Duration
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -379,7 +370,7 @@ class _EnhancedCallScreenState extends State<EnhancedCallScreen>
               ),
             ),
           ),
-          
+
           // Recording Indicator
           if (_isRecording)
             Container(
@@ -391,7 +382,11 @@ class _EnhancedCallScreenState extends State<EnhancedCallScreen>
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: const [
-                  Icon(Icons.fiber_manual_record, color: Colors.white, size: 12),
+                  Icon(
+                    Icons.fiber_manual_record,
+                    color: Colors.white,
+                    size: 12,
+                  ),
                   SizedBox(width: 4),
                   Text(
                     'REC',
@@ -425,22 +420,24 @@ class _EnhancedCallScreenState extends State<EnhancedCallScreen>
             isActive: !_isMuted,
             onTap: () => setState(() => _isMuted = !_isMuted),
           ),
-          
+
           // Video Toggle
           _buildCallControlButton(
             icon: _isVideoEnabled ? Icons.videocam : Icons.videocam_off,
             isActive: _isVideoEnabled,
             onTap: () => setState(() => _isVideoEnabled = !_isVideoEnabled),
           ),
-          
+
           // Video Effects Button
           _buildCallControlButton(
             icon: Icons.auto_fix_high,
             isActive: _showVideoEffects,
             onTap: _toggleVideoEffects,
-            badge: _currentBackground != null || _currentFilter != null ? '●' : null,
+            badge: _currentBackground != null || _currentFilter != null
+                ? '●'
+                : null,
           ),
-          
+
           // Group Controls (only for group calls)
           if (widget.isGroupCall)
             _buildCallControlButton(
@@ -448,7 +445,7 @@ class _EnhancedCallScreenState extends State<EnhancedCallScreen>
               isActive: _showGroupControls,
               onTap: _toggleGroupControls,
             ),
-          
+
           // End Call Button
           _buildCallControlButton(
             icon: Icons.call_end,
@@ -475,7 +472,11 @@ class _EnhancedCallScreenState extends State<EnhancedCallScreen>
           width: 56,
           height: 56,
           decoration: BoxDecoration(
-            color: backgroundColor ?? (isActive ? PulseColors.primary : Colors.white.withValues(alpha: 0.2)),
+            color:
+                backgroundColor ??
+                (isActive
+                    ? PulseColors.primary
+                    : Colors.white.withValues(alpha: 0.2)),
             shape: BoxShape.circle,
             border: Border.all(
               color: Colors.white.withValues(alpha: 0.3),
@@ -486,12 +487,14 @@ class _EnhancedCallScreenState extends State<EnhancedCallScreen>
             onPressed: onTap,
             icon: Icon(
               icon,
-              color: backgroundColor != null || isActive ? Colors.white : Colors.white70,
+              color: backgroundColor != null || isActive
+                  ? Colors.white
+                  : Colors.white70,
               size: 24,
             ),
           ),
         ),
-        
+
         // Badge for active effects
         if (badge != null)
           Positioned(

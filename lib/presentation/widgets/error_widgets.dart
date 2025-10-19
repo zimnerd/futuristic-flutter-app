@@ -72,13 +72,9 @@ class ErrorDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    
+
     return AlertDialog(
-      icon: Icon(
-        Icons.error_outline,
-        color: theme.colorScheme.error,
-        size: 48,
-      ),
+      icon: Icon(Icons.error_outline, color: theme.colorScheme.error, size: 48),
       title: Text(title),
       content: Column(
         mainAxisSize: MainAxisSize.min,
@@ -135,7 +131,7 @@ class ErrorBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    
+
     return Container(
       margin: const EdgeInsets.all(16),
       padding: const EdgeInsets.all(16),
@@ -151,10 +147,7 @@ class ErrorBanner extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(
-                Icons.error_outline,
-                color: theme.colorScheme.error,
-              ),
+              Icon(Icons.error_outline, color: theme.colorScheme.error),
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
@@ -167,10 +160,7 @@ class ErrorBanner extends StatelessWidget {
               if (onDismiss != null)
                 IconButton(
                   onPressed: onDismiss,
-                  icon: Icon(
-                    Icons.close,
-                    color: theme.colorScheme.error,
-                  ),
+                  icon: Icon(Icons.close, color: theme.colorScheme.error),
                 ),
             ],
           ),
@@ -215,12 +205,12 @@ class ValidationHelpers {
     if (value == null || value.isEmpty) {
       return 'Email is required';
     }
-    
+
     final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
     if (!emailRegex.hasMatch(value)) {
       return 'Please enter a valid email address';
     }
-    
+
     return null;
   }
 
@@ -229,21 +219,21 @@ class ValidationHelpers {
     if (value == null || value.isEmpty) {
       return 'Password is required';
     }
-    
+
     if (value.length < 8) {
       return 'Password must be at least 8 characters long';
     }
-    
+
     if (value.length > 128) {
       return 'Password must be less than 128 characters';
     }
-    
+
     // Backend regex: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/
     final hasLowercase = RegExp(r'[a-z]').hasMatch(value);
     final hasUppercase = RegExp(r'[A-Z]').hasMatch(value);
     final hasDigit = RegExp(r'\d').hasMatch(value);
     final hasSpecialChar = RegExp(r'[@$!%*?&]').hasMatch(value);
-    
+
     if (!hasLowercase) {
       return 'Password must contain at least one lowercase letter';
     }
@@ -256,7 +246,7 @@ class ValidationHelpers {
     if (!hasSpecialChar) {
       return 'Password must contain at least one special character (@\$!%*?&)';
     }
-    
+
     return null;
   }
 
@@ -265,21 +255,21 @@ class ValidationHelpers {
     if (value == null || value.isEmpty) {
       return 'Username is required';
     }
-    
+
     if (value.length < 3) {
       return 'Username must be at least 3 characters long';
     }
-    
+
     if (value.length > 30) {
       return 'Username must be less than 30 characters';
     }
-    
+
     // Backend regex: /^[a-zA-Z0-9_]+$/
     final usernameRegex = RegExp(r'^[a-zA-Z0-9_]+$');
     if (!usernameRegex.hasMatch(value)) {
       return 'Username can only contain letters, numbers, and underscores';
     }
-    
+
     return null;
   }
 
@@ -288,12 +278,12 @@ class ValidationHelpers {
     if (value == null || value.isEmpty) {
       return 'Phone number is required';
     }
-    
+
     // Use PhoneUtils for validation
     if (!PhoneUtils.isValidPhoneNumber(value)) {
       return 'Please enter a valid phone number';
     }
-    
+
     return null;
   }
 
@@ -316,7 +306,12 @@ class ValidationHelpers {
   /// Validate gender selection
   static String? validateOptionalGender(String? value) {
     if (value != null && value.isNotEmpty) {
-      const validGenders = ['male', 'female', 'non-binary', 'prefer-not-to-say'];
+      const validGenders = [
+        'male',
+        'female',
+        'non-binary',
+        'prefer-not-to-say',
+      ];
       if (!validGenders.contains(value.toLowerCase())) {
         return 'Please select a valid gender option';
       }

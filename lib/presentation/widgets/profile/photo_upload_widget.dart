@@ -36,8 +36,9 @@ class _PhotoUploadWidgetState extends State<PhotoUploadWidget> {
   static const List<String> _allowedExtensions = ['jpg', 'jpeg', 'png', 'heic'];
 
   int get _remainingSlots => widget.maxPhotos - widget.currentPhotoCount;
-  int get _availableSlots =>
-      _remainingSlots - _selectedPhotos.length > 0 ? _remainingSlots - _selectedPhotos.length : 0;
+  int get _availableSlots => _remainingSlots - _selectedPhotos.length > 0
+      ? _remainingSlots - _selectedPhotos.length
+      : 0;
 
   @override
   Widget build(BuildContext context) {
@@ -53,18 +54,12 @@ class _PhotoUploadWidgetState extends State<PhotoUploadWidget> {
             children: [
               const Text(
                 'Upload Photos',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
               Text(
                 'Select up to ${widget.maxPhotos} photos. You have $_remainingSlots slots available.',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey[600],
-                ),
+                style: TextStyle(fontSize: 14, color: Colors.grey[600]),
               ),
             ],
           ),
@@ -165,15 +160,14 @@ class _PhotoUploadWidgetState extends State<PhotoUploadWidget> {
             children: [
               const Text(
                 'Photo Guidelines:',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                ),
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 8),
               _buildGuideline('Clear face photos work best'),
               _buildGuideline('Maximum file size: $_maxFileSizeMB MB'),
-              _buildGuideline('Formats: ${_allowedExtensions.join(', ').toUpperCase()}'),
+              _buildGuideline(
+                'Formats: ${_allowedExtensions.join(', ').toUpperCase()}',
+              ),
               _buildGuideline('First photo becomes your main photo'),
             ],
           ),
@@ -219,11 +213,7 @@ class _PhotoUploadWidgetState extends State<PhotoUploadWidget> {
                   color: Colors.black.withValues(alpha: 0.6),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
-                  Icons.close,
-                  size: 16,
-                  color: Colors.white,
-                ),
+                child: const Icon(Icons.close, size: 16, color: Colors.white),
               ),
             ),
           ),
@@ -234,10 +224,7 @@ class _PhotoUploadWidgetState extends State<PhotoUploadWidget> {
               bottom: 4,
               left: 4,
               child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 6,
-                  vertical: 2,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
                   color: PulseColors.primary,
                   borderRadius: BorderRadius.circular(4),
@@ -262,19 +249,12 @@ class _PhotoUploadWidgetState extends State<PhotoUploadWidget> {
       padding: const EdgeInsets.only(bottom: 4),
       child: Row(
         children: [
-          Icon(
-            Icons.check_circle,
-            size: 16,
-            color: Colors.green[600],
-          ),
+          Icon(Icons.check_circle, size: 16, color: Colors.green[600]),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
               text,
-              style: TextStyle(
-                fontSize: 13,
-                color: Colors.grey[700],
-              ),
+              style: TextStyle(fontSize: 13, color: Colors.grey[700]),
             ),
           ),
         ],
@@ -357,10 +337,7 @@ class _PhotoUploadWidgetState extends State<PhotoUploadWidget> {
     try {
       // Check if file exists
       if (!await photo.exists()) {
-        return PhotoValidation(
-          isValid: false,
-          error: 'Photo file not found',
-        );
+        return PhotoValidation(isValid: false, error: 'Photo file not found');
       }
 
       // Check file size
@@ -377,17 +354,15 @@ class _PhotoUploadWidgetState extends State<PhotoUploadWidget> {
       if (!_allowedExtensions.contains(extension)) {
         return PhotoValidation(
           isValid: false,
-          error: 'Invalid format. Use: ${_allowedExtensions.join(', ').toUpperCase()}',
+          error:
+              'Invalid format. Use: ${_allowedExtensions.join(', ').toUpperCase()}',
         );
       }
 
       return PhotoValidation(isValid: true);
     } catch (e) {
       AppLogger.error('Photo validation error: $e');
-      return PhotoValidation(
-        isValid: false,
-        error: 'Failed to validate photo',
-      );
+      return PhotoValidation(isValid: false, error: 'Failed to validate photo');
     }
   }
 
@@ -421,10 +396,7 @@ class _PhotoUploadWidgetState extends State<PhotoUploadWidget> {
 
 /// Photo validation result
 class PhotoValidation {
-  const PhotoValidation({
-    required this.isValid,
-    this.error,
-  });
+  const PhotoValidation({required this.isValid, this.error});
 
   final bool isValid;
   final String? error;

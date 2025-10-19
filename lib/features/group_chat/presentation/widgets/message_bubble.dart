@@ -39,12 +39,13 @@ class MessageBubble extends StatelessWidget {
             maxWidth: MediaQuery.of(context).size.width * 0.7,
           ),
           child: Column(
-            crossAxisAlignment:
-                isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+            crossAxisAlignment: isMe
+                ? CrossAxisAlignment.end
+                : CrossAxisAlignment.start,
             children: [
               // Reply-to preview
               if (message.replyTo != null) _buildReplyPreview(context),
-              
+
               // Message bubble
               Container(
                 padding: const EdgeInsets.all(12),
@@ -73,8 +74,7 @@ class MessageBubble extends StatelessWidget {
                             if (message.senderProfilePhoto != null)
                               const SizedBox(width: 4),
                             Text(
-                              message.senderFirstName ??
-                                  message.senderUsername,
+                              message.senderFirstName ?? message.senderUsername,
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
                                 color: isMe ? Colors.white : Colors.black87,
@@ -84,10 +84,10 @@ class MessageBubble extends StatelessWidget {
                           ],
                         ),
                       ),
-                    
+
                     // Message content based on type
                     _buildMessageContent(context),
-                    
+
                     // Timestamp and status
                     const SizedBox(height: 4),
                     Row(
@@ -109,7 +109,7 @@ class MessageBubble extends StatelessWidget {
                   ],
                 ),
               ),
-              
+
               // Reactions
               if (message.reactions.isNotEmpty) _buildReactions(context),
             ],
@@ -127,10 +127,7 @@ class MessageBubble extends StatelessWidget {
         color: Colors.grey[200],
         borderRadius: BorderRadius.circular(8),
         border: Border(
-          left: BorderSide(
-            color: Theme.of(context).primaryColor,
-            width: 3,
-          ),
+          left: BorderSide(color: Theme.of(context).primaryColor, width: 3),
         ),
       ),
       child: Column(
@@ -166,9 +163,7 @@ class MessageBubble extends StatelessWidget {
       default:
         return Text(
           message.content,
-          style: TextStyle(
-            color: isMe ? Colors.white : Colors.black87,
-          ),
+          style: TextStyle(color: isMe ? Colors.white : Colors.black87),
         );
     }
   }
@@ -211,9 +206,7 @@ class MessageBubble extends StatelessWidget {
         const SizedBox(width: 8),
         Text(
           _formatDuration(duration),
-          style: TextStyle(
-            color: isMe ? Colors.white : Colors.black87,
-          ),
+          style: TextStyle(color: isMe ? Colors.white : Colors.black87),
         ),
         const SizedBox(width: 8),
         Expanded(
@@ -304,8 +297,9 @@ class MessageBubble extends StatelessWidget {
                     '${reactions.length}',
                     style: TextStyle(
                       fontSize: 12,
-                      fontWeight:
-                          hasMyReaction ? FontWeight.bold : FontWeight.normal,
+                      fontWeight: hasMyReaction
+                          ? FontWeight.bold
+                          : FontWeight.normal,
                       color: hasMyReaction
                           ? Theme.of(context).primaryColor
                           : Colors.black54,
@@ -355,8 +349,10 @@ class MessageBubble extends StatelessWidget {
             if (isMe && onDelete != null)
               ListTile(
                 leading: const Icon(Icons.delete, color: Colors.red),
-                title:
-                    const Text('Delete', style: TextStyle(color: Colors.red)),
+                title: const Text(
+                  'Delete',
+                  style: TextStyle(color: Colors.red),
+                ),
                 onTap: () {
                   Navigator.pop(context);
                   onDelete?.call();

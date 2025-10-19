@@ -12,7 +12,8 @@ class VoiceMessageBloc extends Bloc<VoiceMessageEvent, VoiceMessageState> {
   Timer? _recordingTimer;
   Timer? _playbackTimer;
 
-  VoiceMessageBloc(this._voiceMessageService) : super(const VoiceMessageState()) {
+  VoiceMessageBloc(this._voiceMessageService)
+    : super(const VoiceMessageState()) {
     on<RecordVoiceMessage>(_onRecordVoiceMessage);
     on<StopRecording>(_onStopRecording);
     on<SendVoiceMessage>(_onSendVoiceMessage);
@@ -33,47 +34,59 @@ class VoiceMessageBloc extends Bloc<VoiceMessageEvent, VoiceMessageState> {
       emit(state.copyWith(status: VoiceMessageStatus.loading));
 
       // Check and request microphone permission
-      final hasPermission = await _voiceMessageService.checkMicrophonePermission();
+      final hasPermission = await _voiceMessageService
+          .checkMicrophonePermission();
       if (!hasPermission) {
-        emit(state.copyWith(
-          status: VoiceMessageStatus.error,
-          errorMessage: 'Microphone permission is required to record voice messages',
-          hasPermission: false,
-        ));
+        emit(
+          state.copyWith(
+            status: VoiceMessageStatus.error,
+            errorMessage:
+                'Microphone permission is required to record voice messages',
+            hasPermission: false,
+          ),
+        );
         return;
       }
 
       // Start recording
       final recordingSession = await _voiceMessageService.startRecording();
       if (recordingSession != null) {
-        emit(state.copyWith(
-          status: VoiceMessageStatus.recording,
-          isRecording: true,
-          recordingPath: recordingSession.filePath,
-          recordingDuration: 0.0,
-          hasPermission: true,
-        ));
+        emit(
+          state.copyWith(
+            status: VoiceMessageStatus.recording,
+            isRecording: true,
+            recordingPath: recordingSession.filePath,
+            recordingDuration: 0.0,
+            hasPermission: true,
+          ),
+        );
 
         // Start timer to update recording duration
-        _recordingTimer = Timer.periodic(const Duration(milliseconds: 100), (timer) {
+        _recordingTimer = Timer.periodic(const Duration(milliseconds: 100), (
+          timer,
+        ) {
           if (state.isRecording) {
-            emit(state.copyWith(
-              recordingDuration: state.recordingDuration + 0.1,
-            ));
+            emit(
+              state.copyWith(recordingDuration: state.recordingDuration + 0.1),
+            );
           }
         });
       } else {
-        emit(state.copyWith(
-          status: VoiceMessageStatus.error,
-          errorMessage: 'Failed to start recording',
-        ));
+        emit(
+          state.copyWith(
+            status: VoiceMessageStatus.error,
+            errorMessage: 'Failed to start recording',
+          ),
+        );
       }
     } catch (e) {
       _logger.e('Error starting voice recording: $e');
-      emit(state.copyWith(
-        status: VoiceMessageStatus.error,
-        errorMessage: 'Failed to start recording: $e',
-      ));
+      emit(
+        state.copyWith(
+          status: VoiceMessageStatus.error,
+          errorMessage: 'Failed to start recording: $e',
+        ),
+      );
     }
   }
 
@@ -85,29 +98,35 @@ class VoiceMessageBloc extends Bloc<VoiceMessageEvent, VoiceMessageState> {
       if (!state.isRecording) return;
 
       _recordingTimer?.cancel();
-      
+
       final recordingSession = await _voiceMessageService.stopRecording();
       if (recordingSession != null) {
-        emit(state.copyWith(
-          status: VoiceMessageStatus.recorded,
-          isRecording: false,
-          recordingPath: recordingSession.filePath,
-          recordingDuration: recordingSession.duration.toDouble(),
-        ));
+        emit(
+          state.copyWith(
+            status: VoiceMessageStatus.recorded,
+            isRecording: false,
+            recordingPath: recordingSession.filePath,
+            recordingDuration: recordingSession.duration.toDouble(),
+          ),
+        );
       } else {
-        emit(state.copyWith(
-          status: VoiceMessageStatus.error,
-          errorMessage: 'Failed to stop recording',
-          isRecording: false,
-        ));
+        emit(
+          state.copyWith(
+            status: VoiceMessageStatus.error,
+            errorMessage: 'Failed to stop recording',
+            isRecording: false,
+          ),
+        );
       }
     } catch (e) {
       _logger.e('Error stopping voice recording: $e');
-      emit(state.copyWith(
-        status: VoiceMessageStatus.error,
-        errorMessage: 'Failed to stop recording: $e',
-        isRecording: false,
-      ));
+      emit(
+        state.copyWith(
+          status: VoiceMessageStatus.error,
+          errorMessage: 'Failed to stop recording: $e',
+          isRecording: false,
+        ),
+      );
     }
   }
 
@@ -125,26 +144,32 @@ class VoiceMessageBloc extends Bloc<VoiceMessageEvent, VoiceMessageState> {
       );
 
       if (voiceMessage != null) {
-        emit(state.copyWith(
-          status: VoiceMessageStatus.sent,
-          recordingPath: null,
-          recordingDuration: 0.0,
-        ));
-        
+        emit(
+          state.copyWith(
+            status: VoiceMessageStatus.sent,
+            recordingPath: null,
+            recordingDuration: 0.0,
+          ),
+        );
+
         // Reload messages to show the new voice message
         add(LoadVoiceMessages(chatId: event.chatId));
       } else {
-        emit(state.copyWith(
-          status: VoiceMessageStatus.error,
-          errorMessage: 'Failed to send voice message',
-        ));
+        emit(
+          state.copyWith(
+            status: VoiceMessageStatus.error,
+            errorMessage: 'Failed to send voice message',
+          ),
+        );
       }
     } catch (e) {
       _logger.e('Error sending voice message: $e');
-      emit(state.copyWith(
-        status: VoiceMessageStatus.error,
-        errorMessage: 'Failed to send voice message: $e',
-      ));
+      emit(
+        state.copyWith(
+          status: VoiceMessageStatus.error,
+          errorMessage: 'Failed to send voice message: $e',
+        ),
+      );
     }
   }
 
@@ -159,11 +184,13 @@ class VoiceMessageBloc extends Bloc<VoiceMessageEvent, VoiceMessageState> {
         _playbackTimer?.cancel();
       }
 
-      emit(state.copyWith(
-        playbackState: PlaybackState.loading,
-        currentlyPlayingId: event.messageId,
-        playbackPosition: 0.0,
-      ));
+      emit(
+        state.copyWith(
+          playbackState: PlaybackState.loading,
+          currentlyPlayingId: event.messageId,
+          playbackPosition: 0.0,
+        ),
+      );
 
       // Find the voice message from the current messages
       VoiceMessage? voiceMessage;
@@ -186,33 +213,37 @@ class VoiceMessageBloc extends Bloc<VoiceMessageEvent, VoiceMessageState> {
 
       final success = await _voiceMessageService.playVoiceMessage(voiceMessage);
       if (success) {
-        emit(state.copyWith(
-          playbackState: PlaybackState.playing,
-        ));
+        emit(state.copyWith(playbackState: PlaybackState.playing));
 
         // Start timer to update playback position
-        _playbackTimer = Timer.periodic(const Duration(milliseconds: 100), (timer) {
+        _playbackTimer = Timer.periodic(const Duration(milliseconds: 100), (
+          timer,
+        ) {
           if (state.playbackState == PlaybackState.playing) {
             // Note: In a real implementation, you'd get the actual position from the audio player
-            emit(state.copyWith(
-              playbackPosition: state.playbackPosition + 0.1,
-            ));
+            emit(
+              state.copyWith(playbackPosition: state.playbackPosition + 0.1),
+            );
           }
         });
       } else {
-        emit(state.copyWith(
-          playbackState: PlaybackState.idle,
-          currentlyPlayingId: null,
-          errorMessage: 'Failed to play voice message',
-        ));
+        emit(
+          state.copyWith(
+            playbackState: PlaybackState.idle,
+            currentlyPlayingId: null,
+            errorMessage: 'Failed to play voice message',
+          ),
+        );
       }
     } catch (e) {
       _logger.e('Error playing voice message: $e');
-      emit(state.copyWith(
-        playbackState: PlaybackState.idle,
-        currentlyPlayingId: null,
-        errorMessage: 'Failed to play voice message: $e',
-      ));
+      emit(
+        state.copyWith(
+          playbackState: PlaybackState.idle,
+          currentlyPlayingId: null,
+          errorMessage: 'Failed to play voice message: $e',
+        ),
+      );
     }
   }
 
@@ -223,15 +254,11 @@ class VoiceMessageBloc extends Bloc<VoiceMessageEvent, VoiceMessageState> {
     try {
       await _voiceMessageService.pausePlayback();
       _playbackTimer?.cancel();
-      
-      emit(state.copyWith(
-        playbackState: PlaybackState.paused,
-      ));
+
+      emit(state.copyWith(playbackState: PlaybackState.paused));
     } catch (e) {
       _logger.e('Error pausing voice message: $e');
-      emit(state.copyWith(
-        errorMessage: 'Failed to pause voice message: $e',
-      ));
+      emit(state.copyWith(errorMessage: 'Failed to pause voice message: $e'));
     }
   }
 
@@ -242,17 +269,17 @@ class VoiceMessageBloc extends Bloc<VoiceMessageEvent, VoiceMessageState> {
     try {
       await _voiceMessageService.stopPlayback();
       _playbackTimer?.cancel();
-      
-      emit(state.copyWith(
-        playbackState: PlaybackState.idle,
-        currentlyPlayingId: null,
-        playbackPosition: 0.0,
-      ));
+
+      emit(
+        state.copyWith(
+          playbackState: PlaybackState.idle,
+          currentlyPlayingId: null,
+          playbackPosition: 0.0,
+        ),
+      );
     } catch (e) {
       _logger.e('Error stopping voice message playback: $e');
-      emit(state.copyWith(
-        errorMessage: 'Failed to stop playback: $e',
-      ));
+      emit(state.copyWith(errorMessage: 'Failed to stop playback: $e'));
     }
   }
 
@@ -263,18 +290,21 @@ class VoiceMessageBloc extends Bloc<VoiceMessageEvent, VoiceMessageState> {
     try {
       emit(state.copyWith(status: VoiceMessageStatus.loading));
 
-      final messages = await _voiceMessageService.getVoiceMessages(event.chatId);
-      
-      emit(state.copyWith(
-        status: VoiceMessageStatus.loaded,
-        messages: messages,
-      ));
+      final messages = await _voiceMessageService.getVoiceMessages(
+        event.chatId,
+      );
+
+      emit(
+        state.copyWith(status: VoiceMessageStatus.loaded, messages: messages),
+      );
     } catch (e) {
       _logger.e('Error loading voice messages: $e');
-      emit(state.copyWith(
-        status: VoiceMessageStatus.error,
-        errorMessage: 'Failed to load voice messages: $e',
-      ));
+      emit(
+        state.copyWith(
+          status: VoiceMessageStatus.error,
+          errorMessage: 'Failed to load voice messages: $e',
+        ),
+      );
     }
   }
 
@@ -287,17 +317,13 @@ class VoiceMessageBloc extends Bloc<VoiceMessageEvent, VoiceMessageState> {
       final updatedMessages = state.messages
           .where((message) => message.id != event.messageId)
           .toList();
-      
-      emit(state.copyWith(
-        messages: updatedMessages,
-      ));
-      
+
+      emit(state.copyWith(messages: updatedMessages));
+
       _logger.d('Voice message removed from local state: ${event.messageId}');
     } catch (e) {
       _logger.e('Error deleting voice message: $e');
-      emit(state.copyWith(
-        errorMessage: 'Failed to delete voice message: $e',
-      ));
+      emit(state.copyWith(errorMessage: 'Failed to delete voice message: $e'));
     }
   }
 
@@ -308,20 +334,24 @@ class VoiceMessageBloc extends Bloc<VoiceMessageEvent, VoiceMessageState> {
     try {
       _recordingTimer?.cancel();
       await _voiceMessageService.cancelRecording();
-      
-      emit(state.copyWith(
-        status: VoiceMessageStatus.initial,
-        isRecording: false,
-        recordingPath: null,
-        recordingDuration: 0.0,
-      ));
+
+      emit(
+        state.copyWith(
+          status: VoiceMessageStatus.initial,
+          isRecording: false,
+          recordingPath: null,
+          recordingDuration: 0.0,
+        ),
+      );
     } catch (e) {
       _logger.e('Error cancelling recording: $e');
-      emit(state.copyWith(
-        status: VoiceMessageStatus.error,
-        errorMessage: 'Failed to cancel recording: $e',
-        isRecording: false,
-      ));
+      emit(
+        state.copyWith(
+          status: VoiceMessageStatus.error,
+          errorMessage: 'Failed to cancel recording: $e',
+          isRecording: false,
+        ),
+      );
     }
   }
 
@@ -332,17 +362,13 @@ class VoiceMessageBloc extends Bloc<VoiceMessageEvent, VoiceMessageState> {
     try {
       if (state.currentlyPlayingId != null) {
         // For now, just update the position in state since service doesn't have seekTo
-        emit(state.copyWith(
-          playbackPosition: event.position,
-        ));
-        
+        emit(state.copyWith(playbackPosition: event.position));
+
         _logger.d('Seeked to position: ${event.position}');
       }
     } catch (e) {
       _logger.e('Error seeking to position: $e');
-      emit(state.copyWith(
-        errorMessage: 'Failed to seek to position: $e',
-      ));
+      emit(state.copyWith(errorMessage: 'Failed to seek to position: $e'));
     }
   }
 

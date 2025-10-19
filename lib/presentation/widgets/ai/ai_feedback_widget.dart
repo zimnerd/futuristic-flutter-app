@@ -30,7 +30,7 @@ class _AiFeedbackWidgetState extends State<AiFeedbackWidget>
     with TickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
-  
+
   int _overallRating = 0;
   int _helpfulnessRating = 0;
   int _accuracyRating = 0;
@@ -45,13 +45,9 @@ class _AiFeedbackWidgetState extends State<AiFeedbackWidget>
       duration: const Duration(milliseconds: 300),
       vsync: this,
     );
-    _fadeAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeInOut,
-    ));
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
+    );
     _animationController.forward();
   }
 
@@ -92,9 +88,7 @@ class _AiFeedbackWidgetState extends State<AiFeedbackWidget>
             Colors.white.withValues(alpha: 0.05),
           ],
         ),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.2),
-        ),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.2),
@@ -154,20 +148,14 @@ class _AiFeedbackWidgetState extends State<AiFeedbackWidget>
               if (widget.description != null)
                 Text(
                   widget.description!,
-                  style: const TextStyle(
-                    color: Colors.white70,
-                    fontSize: 12,
-                  ),
+                  style: const TextStyle(color: Colors.white70, fontSize: 12),
                 ),
             ],
           ),
         ),
         IconButton(
           onPressed: () => Navigator.of(context).pop(),
-          icon: const Icon(
-            Icons.close_rounded,
-            color: Colors.white70,
-          ),
+          icon: const Icon(Icons.close_rounded, color: Colors.white70),
         ),
       ],
     );
@@ -338,9 +326,7 @@ class _AiFeedbackWidgetState extends State<AiFeedbackWidget>
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(8),
             color: Colors.white.withValues(alpha: 0.1),
-            border: Border.all(
-              color: Colors.white.withValues(alpha: 0.3),
-            ),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
           ),
           child: TextField(
             controller: _commentController,
@@ -359,10 +345,11 @@ class _AiFeedbackWidgetState extends State<AiFeedbackWidget>
   }
 
   Widget _buildDetailedActions() {
-    final bool canSubmit = _overallRating > 0 || 
-                          _helpfulnessRating > 0 || 
-                          _accuracyRating > 0 ||
-                          _commentController.text.isNotEmpty;
+    final bool canSubmit =
+        _overallRating > 0 ||
+        _helpfulnessRating > 0 ||
+        _accuracyRating > 0 ||
+        _commentController.text.isNotEmpty;
 
     return Row(
       children: [
@@ -392,10 +379,7 @@ class _AiFeedbackWidgetState extends State<AiFeedbackWidget>
         const SizedBox(width: 12),
         TextButton(
           onPressed: () => setState(() => _showDetailedFeedback = false),
-          child: const Text(
-            'Back',
-            style: TextStyle(color: Colors.white60),
-          ),
+          child: const Text('Back', style: TextStyle(color: Colors.white60)),
         ),
       ],
     );
@@ -442,7 +426,9 @@ class _AiFeedbackWidgetState extends State<AiFeedbackWidget>
         satisfaction: _helpfulnessRating > 0
             ? _helpfulnessRating
             : (_overallRating > 0 ? _overallRating : 3),
-        comment: _commentController.text.isEmpty ? null : _commentController.text,
+        comment: _commentController.text.isEmpty
+            ? null
+            : _commentController.text,
         context: {
           'helpfulness': _helpfulnessRating,
           'accuracy': _accuracyRating,
@@ -501,9 +487,7 @@ class AiQuickFeedbackButton extends StatelessWidget {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
           color: Colors.white.withValues(alpha: 0.1),
-          border: Border.all(
-            color: Colors.white.withValues(alpha: 0.3),
-          ),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -516,10 +500,7 @@ class AiQuickFeedbackButton extends StatelessWidget {
             const SizedBox(width: 4),
             Text(
               isPositive ? 'Helpful' : 'Not helpful',
-              style: const TextStyle(
-                color: Colors.white70,
-                fontSize: 12,
-              ),
+              style: const TextStyle(color: Colors.white70, fontSize: 12),
             ),
           ],
         ),
@@ -537,7 +518,7 @@ class AiQuickFeedbackButton extends StatelessWidget {
       );
 
       onPressed?.call();
-      
+
       if (context.mounted) {
         PulseToast.success(context, message: 'Feedback submitted!');
       }

@@ -24,7 +24,7 @@ class _VideoEffectsPanelState extends State<VideoEffectsPanel>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final VideoEffectsService _effectsService = VideoEffectsService.instance;
-  
+
   List<VirtualBackground> _backgrounds = [];
   List<CameraFilter> _filters = [];
   String? _selectedBackgroundId;
@@ -46,14 +46,14 @@ class _VideoEffectsPanelState extends State<VideoEffectsPanel>
 
   Future<void> _loadEffectsData() async {
     setState(() => _isLoading = true);
-    
+
     try {
       // Load virtual backgrounds from server
       final backgrounds = await _effectsService.getVirtualBackgrounds();
-      
+
       // Get available filters
       final filters = _effectsService.getAvailableFilters();
-      
+
       setState(() {
         _backgrounds = backgrounds;
         _filters = filters;
@@ -67,7 +67,7 @@ class _VideoEffectsPanelState extends State<VideoEffectsPanel>
 
   Future<void> _applyVirtualBackground(VirtualBackground background) async {
     setState(() => _isLoading = true);
-    
+
     try {
       final success = await _effectsService.applyVirtualBackground(
         callId: widget.callId,
@@ -75,7 +75,7 @@ class _VideoEffectsPanelState extends State<VideoEffectsPanel>
         backgroundUrl: background.url,
         blurIntensity: background.type == 'blur' ? 0.8 : 0.0,
       );
-      
+
       if (success) {
         setState(() => _selectedBackgroundId = background.id);
       } else {
@@ -90,10 +90,12 @@ class _VideoEffectsPanelState extends State<VideoEffectsPanel>
 
   Future<void> _removeVirtualBackground() async {
     setState(() => _isLoading = true);
-    
+
     try {
-      final success = await _effectsService.removeVirtualBackground(widget.callId);
-      
+      final success = await _effectsService.removeVirtualBackground(
+        widget.callId,
+      );
+
       if (success) {
         setState(() => _selectedBackgroundId = null);
       } else {
@@ -108,14 +110,14 @@ class _VideoEffectsPanelState extends State<VideoEffectsPanel>
 
   Future<void> _applyCameraFilter(CameraFilter filter) async {
     setState(() => _isLoading = true);
-    
+
     try {
       final success = await _effectsService.applyCameraFilter(
         callId: widget.callId,
         filterType: filter.id,
         settings: filter.settings,
       );
-      
+
       if (success) {
         setState(() => _selectedFilterId = filter.id);
       } else {
@@ -130,15 +132,15 @@ class _VideoEffectsPanelState extends State<VideoEffectsPanel>
 
   Future<void> _removeCameraFilter() async {
     if (_selectedFilterId == null) return;
-    
+
     setState(() => _isLoading = true);
-    
+
     try {
       final success = await _effectsService.removeCameraFilter(
         callId: widget.callId,
         filterType: _selectedFilterId!,
       );
-      
+
       if (success) {
         setState(() => _selectedFilterId = null);
       } else {
@@ -180,14 +182,16 @@ class _VideoEffectsPanelState extends State<VideoEffectsPanel>
             ),
             child: Row(
               children: [
-                Icon(Icons.video_call, color: Theme.of(context).brightness == Brightness.dark ? PulseColors.primary : PulseColors.primary),
+                Icon(
+                  Icons.video_call,
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? PulseColors.primary
+                      : PulseColors.primary,
+                ),
                 const SizedBox(width: 12),
                 const Text(
                   'Video Effects',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
                 const Spacer(),
                 IconButton(
@@ -211,16 +215,12 @@ class _VideoEffectsPanelState extends State<VideoEffectsPanel>
               controller: _tabController,
               indicatorColor: PulseColors.primary,
               labelColor: PulseColors.primary,
-              unselectedLabelColor: Theme.of(context).textTheme.bodyMedium?.color,
+              unselectedLabelColor: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.color,
               tabs: const [
-                Tab(
-                  icon: Icon(Icons.wallpaper),
-                  text: 'Backgrounds',
-                ),
-                Tab(
-                  icon: Icon(Icons.filter),
-                  text: 'Filters',
-                ),
+                Tab(icon: Icon(Icons.wallpaper), text: 'Backgrounds'),
+                Tab(icon: Icon(Icons.filter), text: 'Filters'),
               ],
             ),
           ),
@@ -231,10 +231,7 @@ class _VideoEffectsPanelState extends State<VideoEffectsPanel>
                 ? const Center(child: CircularProgressIndicator())
                 : TabBarView(
                     controller: _tabController,
-                    children: [
-                      _buildBackgroundsTab(),
-                      _buildFiltersTab(),
-                    ],
+                    children: [_buildBackgroundsTab(), _buildFiltersTab()],
                   ),
           ),
         ],
@@ -268,10 +265,7 @@ class _VideoEffectsPanelState extends State<VideoEffectsPanel>
           const SizedBox(height: 16),
           const Text(
             'Virtual Backgrounds',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-            ),
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 12),
 
@@ -314,10 +308,7 @@ class _VideoEffectsPanelState extends State<VideoEffectsPanel>
           const SizedBox(height: 16),
           const Text(
             'Camera Filters',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-            ),
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 12),
 
@@ -357,7 +348,9 @@ class _VideoEffectsPanelState extends State<VideoEffectsPanel>
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           border: Border.all(
-            color: isSelected ? PulseColors.primary : Theme.of(context).dividerColor,
+            color: isSelected
+                ? PulseColors.primary
+                : Theme.of(context).dividerColor,
             width: isSelected ? 2 : 1,
           ),
           borderRadius: BorderRadius.circular(12),
@@ -398,14 +391,16 @@ class _VideoEffectsPanelState extends State<VideoEffectsPanel>
 
   Widget _buildBackgroundItem(VirtualBackground background) {
     final isSelected = _selectedBackgroundId == background.id;
-    
+
     return InkWell(
       onTap: () => _applyVirtualBackground(background),
       borderRadius: BorderRadius.circular(8),
       child: Container(
         decoration: BoxDecoration(
           border: Border.all(
-            color: isSelected ? PulseColors.primary : Theme.of(context).dividerColor,
+            color: isSelected
+                ? PulseColors.primary
+                : Theme.of(context).dividerColor,
             width: isSelected ? 2 : 1,
           ),
           borderRadius: BorderRadius.circular(8),
@@ -452,7 +447,10 @@ class _VideoEffectsPanelState extends State<VideoEffectsPanel>
                 top: 4,
                 right: 4,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: 2,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.amber,
                     borderRadius: BorderRadius.circular(10),
@@ -515,7 +513,9 @@ class _VideoEffectsPanelState extends State<VideoEffectsPanel>
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             border: Border.all(
-              color: isSelected ? PulseColors.primary : Theme.of(context).dividerColor,
+              color: isSelected
+                  ? PulseColors.primary
+                  : Theme.of(context).dividerColor,
               width: isSelected ? 2 : 1,
             ),
             borderRadius: BorderRadius.circular(12),
@@ -531,15 +531,12 @@ class _VideoEffectsPanelState extends State<VideoEffectsPanel>
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Center(
-                  child: Text(
-                    icon,
-                    style: const TextStyle(fontSize: 24),
-                  ),
+                  child: Text(icon, style: const TextStyle(fontSize: 24)),
                 ),
               ),
-              
+
               const SizedBox(width: 16),
-              
+
               // Filter Info
               Expanded(
                 child: Column(
@@ -557,7 +554,10 @@ class _VideoEffectsPanelState extends State<VideoEffectsPanel>
                         if (isPremium) ...[
                           const SizedBox(width: 8),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 2,
+                            ),
                             decoration: BoxDecoration(
                               color: Colors.amber,
                               borderRadius: BorderRadius.circular(8),
@@ -585,7 +585,7 @@ class _VideoEffectsPanelState extends State<VideoEffectsPanel>
                   ],
                 ),
               ),
-              
+
               // Selection Indicator
               if (isSelected)
                 const Icon(

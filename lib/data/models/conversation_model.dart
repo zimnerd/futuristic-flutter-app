@@ -33,13 +33,13 @@ class ConversationModel extends Conversation {
       lastMessageTime: DateTime.parse(json['lastMessageTime'] as String),
       unreadCount: json['unreadCount'] as int? ?? 0,
       isOnline: json['isOnline'] as bool? ?? false,
-      lastSeen: json['lastSeen'] != null 
+      lastSeen: json['lastSeen'] != null
           ? DateTime.parse(json['lastSeen'] as String)
           : null,
       isBlocked: json['isBlocked'] as bool? ?? false,
       isMuted: json['isMuted'] as bool? ?? false,
       isPinned: json['isPinned'] as bool? ?? false,
-      matchedAt: json['matchedAt'] != null 
+      matchedAt: json['matchedAt'] != null
           ? DateTime.parse(json['matchedAt'] as String)
           : null,
     );
@@ -47,13 +47,16 @@ class ConversationModel extends Conversation {
 
   /// Convert from backend API response
   /// [currentUserId] is needed to identify which participant is the "other" user
-  factory ConversationModel.fromBackendJson(Map<String, dynamic> json, {String? currentUserId}) {
+  factory ConversationModel.fromBackendJson(
+    Map<String, dynamic> json, {
+    String? currentUserId,
+  }) {
     // Map backend fields to our model fields
     final participants = json['participants'] as List<dynamic>? ?? [];
-    
+
     // Find the "other" participant (not the current user)
     Map<String, dynamic>? otherParticipant;
-    
+
     if (participants.isNotEmpty) {
       try {
         // Convert participants to proper Map objects and validate
@@ -62,10 +65,12 @@ class ConversationModel extends Conversation {
           if (participant is Map<String, dynamic>) {
             validParticipants.add(participant);
           } else {
-            debugPrint('Invalid participant type in fromBackendJson: ${participant.runtimeType}, value: $participant');
+            debugPrint(
+              'Invalid participant type in fromBackendJson: ${participant.runtimeType}, value: $participant',
+            );
           }
         }
-        
+
         if (validParticipants.isNotEmpty) {
           if (currentUserId != null) {
             // Find participant that is NOT the current user
@@ -90,9 +95,9 @@ class ConversationModel extends Conversation {
     // Handle lastMessage - use backend response structure
     String lastMessageContent = 'No messages yet';
     DateTime lastMessageTime;
-    
+
     final lastMessageData = json['lastMessage'];
-    
+
     if (lastMessageData != null) {
       // Backend provides lastMessage with this structure:
       // { id, content, type, senderUsername, createdAt }
@@ -115,10 +120,12 @@ class ConversationModel extends Conversation {
       } else {
         lastMessageContent = 'No content';
       }
-      
+
       if (lastMessageData['createdAt'] != null) {
         try {
-          lastMessageTime = DateTime.parse(lastMessageData['createdAt'] as String);
+          lastMessageTime = DateTime.parse(
+            lastMessageData['createdAt'] as String,
+          );
         } catch (e) {
           AppLogger.debug('Error parsing lastMessage createdAt: $e');
           // Fallback to conversation creation time or a reasonable past time
@@ -160,7 +167,7 @@ class ConversationModel extends Conversation {
       final firstName = otherParticipant['firstName'] as String? ?? '';
       final lastName = otherParticipant['lastName'] as String? ?? '';
       final username = otherParticipant['username'] as String? ?? '';
-      
+
       final fullName = '$firstName $lastName'.trim();
       if (fullName.isNotEmpty) {
         otherUserDisplayName = fullName;

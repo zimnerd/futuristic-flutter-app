@@ -35,25 +35,26 @@ class _ModernLandingScreenState extends State<ModernLandingScreen>
       duration: const Duration(milliseconds: 1000),
       vsync: this,
     );
-    
+
     _slideController = AnimationController(
       duration: const Duration(milliseconds: 800),
       vsync: this,
     );
-    
+
     _scaleController = AnimationController(
       duration: const Duration(milliseconds: 600),
       vsync: this,
     );
 
-    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _fadeController, curve: Curves.easeOut),
-    );
+    _fadeAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _fadeController, curve: Curves.easeOut));
 
-    _slideAnimation = Tween<Offset>(
-      begin: const Offset(0, 0.3),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(parent: _slideController, curve: Curves.easeOutCubic));
+    _slideAnimation =
+        Tween<Offset>(begin: const Offset(0, 0.3), end: Offset.zero).animate(
+          CurvedAnimation(parent: _slideController, curve: Curves.easeOutCubic),
+        );
 
     _scaleAnimation = Tween<double>(begin: 0.8, end: 1.0).animate(
       CurvedAnimation(parent: _scaleController, curve: Curves.elasticOut),
@@ -64,11 +65,11 @@ class _ModernLandingScreenState extends State<ModernLandingScreen>
     Future.delayed(const Duration(milliseconds: 300), () {
       _fadeController.forward();
     });
-    
+
     Future.delayed(const Duration(milliseconds: 500), () {
       _slideController.forward();
     });
-    
+
     Future.delayed(const Duration(milliseconds: 700), () {
       _scaleController.forward();
     });
@@ -77,7 +78,7 @@ class _ModernLandingScreenState extends State<ModernLandingScreen>
   void _checkFirstLaunch() async {
     final prefs = await SharedPreferences.getInstance();
     final hasSeenOnboarding = prefs.getBool('has_seen_onboarding') ?? false;
-    
+
     if (!hasSeenOnboarding) {
       // Show onboarding after a delay
       Future.delayed(const Duration(seconds: 3), () {
@@ -94,13 +95,13 @@ class _ModernLandingScreenState extends State<ModernLandingScreen>
         pageBuilder: (context, animation, _) => const ModernOnboardingFlow(),
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
           return SlideTransition(
-            position: Tween<Offset>(
-              begin: const Offset(1.0, 0.0),
-              end: Offset.zero,
-            ).animate(CurvedAnimation(
-              parent: animation,
-              curve: Curves.easeInOut,
-            )),
+            position:
+                Tween<Offset>(
+                  begin: const Offset(1.0, 0.0),
+                  end: Offset.zero,
+                ).animate(
+                  CurvedAnimation(parent: animation, curve: Curves.easeInOut),
+                ),
             child: child,
           );
         },
@@ -139,7 +140,7 @@ class _ModernLandingScreenState extends State<ModernLandingScreen>
             children: [
               // Background particles/shapes
               _buildBackgroundElements(),
-              
+
               // Main content with skip button
               SingleChildScrollView(
                 padding: const EdgeInsets.all(PulseSpacing.xl),
@@ -260,7 +261,7 @@ class _ModernLandingScreenState extends State<ModernLandingScreen>
             },
           ),
         ),
-        
+
         // More decorative elements - positioned to avoid content overlap
         Positioned(
           top: 250,
@@ -334,15 +335,11 @@ class _ModernLandingScreenState extends State<ModernLandingScreen>
               ),
             ],
           ),
-          child: const Icon(
-            Icons.favorite,
-            size: 70,
-            color: Colors.white,
-          ),
+          child: const Icon(Icons.favorite, size: 70, color: Colors.white),
         ),
-        
+
         const SizedBox(height: PulseSpacing.xl),
-        
+
         // App name with modern typography
         ShaderMask(
           shaderCallback: (Rect bounds) {
@@ -360,9 +357,9 @@ class _ModernLandingScreenState extends State<ModernLandingScreen>
             ),
           ),
         ),
-        
+
         const SizedBox(height: PulseSpacing.sm),
-        
+
         // Enhanced tagline
         Text(
           'Where Hearts Connect In Perfect Harmony',
@@ -397,9 +394,9 @@ class _ModernLandingScreenState extends State<ModernLandingScreen>
             );
           },
         ),
-        
+
         const SizedBox(height: PulseSpacing.md),
-        
+
         AnimatedBuilder(
           animation: _slideController,
           builder: (context, child) {
@@ -416,9 +413,9 @@ class _ModernLandingScreenState extends State<ModernLandingScreen>
             );
           },
         ),
-        
+
         const SizedBox(height: PulseSpacing.md),
-        
+
         AnimatedBuilder(
           animation: _slideController,
           builder: (context, child) {
@@ -450,9 +447,7 @@ class _ModernLandingScreenState extends State<ModernLandingScreen>
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(PulseRadii.lg),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.15),
-        ),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
       ),
       child: Row(
         children: [
@@ -463,11 +458,7 @@ class _ModernLandingScreenState extends State<ModernLandingScreen>
               color: Colors.white.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(PulseRadii.md),
             ),
-            child: Icon(
-              icon,
-              color: Colors.white,
-              size: 22,
-            ),
+            child: Icon(icon, color: Colors.white, size: 22),
           ),
           const SizedBox(width: PulseSpacing.lg),
           Expanded(
@@ -622,7 +613,7 @@ class _ModernOnboardingFlowState extends State<ModernOnboardingFlow> {
   void _completeOnboarding() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('has_seen_onboarding', true);
-    
+
     if (mounted) {
       Navigator.of(context).pop();
       context.go(AppRoutes.register);
@@ -642,25 +633,28 @@ class _ModernOnboardingFlowState extends State<ModernOnboardingFlow> {
               children: [
                 _buildOnboardingPage(
                   title: 'Discover Your\nPerfect Match',
-                  subtitle: 'Our AI-powered algorithm learns your preferences to find your ideal partner',
+                  subtitle:
+                      'Our AI-powered algorithm learns your preferences to find your ideal partner',
                   asset: 'assets/onboarding/match.json', // Lottie animation
                   color: PulseColors.primary,
                 ),
                 _buildOnboardingPage(
                   title: 'Connect Through\nVideo & AR',
-                  subtitle: 'Experience immersive dates with video calls and augmented reality features',
+                  subtitle:
+                      'Experience immersive dates with video calls and augmented reality features',
                   asset: 'assets/onboarding/video.json',
                   color: PulseColors.secondary,
                 ),
                 _buildOnboardingPage(
                   title: 'Safe & Secure\nDating',
-                  subtitle: 'Your privacy matters. Date with confidence using our verified profiles and safety features',
+                  subtitle:
+                      'Your privacy matters. Date with confidence using our verified profiles and safety features',
                   asset: 'assets/onboarding/safety.json',
                   color: PulseColors.success,
                 ),
               ],
             ),
-            
+
             // Page indicators
             Positioned(
               bottom: 120,
@@ -684,7 +678,7 @@ class _ModernOnboardingFlowState extends State<ModernOnboardingFlow> {
                 }),
               ),
             ),
-            
+
             // Navigation buttons
             Positioned(
               bottom: 40,
@@ -706,7 +700,7 @@ class _ModernOnboardingFlowState extends State<ModernOnboardingFlow> {
                     )
                   else
                     const SizedBox.shrink(),
-                  
+
                   ElevatedButton(
                     onPressed: _nextPage,
                     style: ElevatedButton.styleFrom(
@@ -724,7 +718,7 @@ class _ModernOnboardingFlowState extends State<ModernOnboardingFlow> {
                 ],
               ),
             ),
-            
+
             // Skip button
             Positioned(
               top: 20,
@@ -762,15 +756,11 @@ class _ModernOnboardingFlowState extends State<ModernOnboardingFlow> {
               color: color.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(PulseRadii.xl),
             ),
-            child: Icon(
-              Icons.favorite,
-              size: 120,
-              color: color,
-            ),
+            child: Icon(Icons.favorite, size: 120, color: color),
           ),
-          
+
           const SizedBox(height: PulseSpacing.xxl),
-          
+
           Text(
             title,
             style: PulseTextStyles.displaySmall.copyWith(
@@ -779,9 +769,9 @@ class _ModernOnboardingFlowState extends State<ModernOnboardingFlow> {
             ),
             textAlign: TextAlign.center,
           ),
-          
+
           const SizedBox(height: PulseSpacing.lg),
-          
+
           Text(
             subtitle,
             style: PulseTextStyles.bodyLarge.copyWith(

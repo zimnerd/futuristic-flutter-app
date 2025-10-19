@@ -75,8 +75,8 @@ class UserProfile extends Equatable {
           : [],
       photos: json['photos'] != null
           ? (json['photos'] as List)
-              .map((photo) => ProfilePhoto.fromJson(photo))
-              .toList()
+                .map((photo) => ProfilePhoto.fromJson(photo))
+                .toList()
           : [],
       preferences: UserPreferences.fromJson(json['preferences'] ?? {}),
       verification: ProfileVerification.fromJson(json['verification'] ?? {}),
@@ -200,18 +200,18 @@ class UserProfile extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        userId,
-        bio,
-        interests,
-        dealBreakers,
-        photos,
-        preferences,
-        verification,
-        location,
-        completionPercentage,
-        createdAt,
-        updatedAt,
+    id,
+    userId,
+    bio,
+    interests,
+    dealBreakers,
+    photos,
+    preferences,
+    verification,
+    location,
+    completionPercentage,
+    createdAt,
+    updatedAt,
     profileViews,
     likesReceived,
     likesSent,
@@ -225,7 +225,7 @@ class UserProfile extends Equatable {
     verificationMethod,
     verificationStatus,
     verifiedAt,
-      ];
+  ];
 }
 
 /// Profile photo model with metadata
@@ -402,18 +402,18 @@ class UserPreferences extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        userId,
-        ageRange,
-        maxDistance,
-        genderPreference,
-        lookingFor,
-        dealBreakers,
-        interests,
-        lifestyle,
-        createdAt,
-        updatedAt,
-      ];
+    id,
+    userId,
+    ageRange,
+    maxDistance,
+    genderPreference,
+    lookingFor,
+    dealBreakers,
+    interests,
+    lifestyle,
+    createdAt,
+    updatedAt,
+  ];
 }
 
 /// Age range preference
@@ -421,33 +421,18 @@ class AgeRange extends Equatable {
   final int min;
   final int max;
 
-  const AgeRange({
-    required this.min,
-    required this.max,
-  });
+  const AgeRange({required this.min, required this.max});
 
   factory AgeRange.fromJson(Map<String, dynamic> json) {
-    return AgeRange(
-      min: json['min'] ?? 18,
-      max: json['max'] ?? 50,
-    );
+    return AgeRange(min: json['min'] ?? 18, max: json['max'] ?? 50);
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      'min': min,
-      'max': max,
-    };
+    return {'min': min, 'max': max};
   }
 
-  AgeRange copyWith({
-    int? min,
-    int? max,
-  }) {
-    return AgeRange(
-      min: min ?? this.min,
-      max: max ?? this.max,
-    );
+  AgeRange copyWith({int? min, int? max}) {
+    return AgeRange(min: min ?? this.min, max: max ?? this.max);
   }
 
   @override
@@ -538,16 +523,16 @@ class LifestylePreferences extends Equatable {
 
   @override
   List<Object?> get props => [
-        drinkingHabits,
-        smokingHabits,
-        exerciseFrequency,
-        dietType,
-        religiosity,
-        politicalViews,
-        hobbies,
-        musicGenres,
-        travelPreferences,
-      ];
+    drinkingHabits,
+    smokingHabits,
+    exerciseFrequency,
+    dietType,
+    religiosity,
+    politicalViews,
+    hobbies,
+    musicGenres,
+    travelPreferences,
+  ];
 }
 
 /// Profile verification status
@@ -630,15 +615,15 @@ class ProfileVerification extends Equatable {
 
   @override
   List<Object?> get props => [
-        isPhotoVerified,
-        isIdentityVerified,
-        isPhoneVerified,
-        isEmailVerified,
-        photoVerifiedAt,
-        identityVerifiedAt,
-        phoneVerifiedAt,
-        emailVerifiedAt,
-      ];
+    isPhotoVerified,
+    isIdentityVerified,
+    isPhoneVerified,
+    isEmailVerified,
+    photoVerifiedAt,
+    identityVerifiedAt,
+    phoneVerifiedAt,
+    emailVerifiedAt,
+  ];
 }
 
 /// User location model with privacy controls
@@ -719,14 +704,14 @@ class UserLocation extends Equatable {
 
   @override
   List<Object?> get props => [
-        latitude,
-        longitude,
-        city,
-        state,
-        country,
-        postalCode,
-        hideExactLocation,
-        showCityOnly,
-        updatedAt,
-      ];
+    latitude,
+    longitude,
+    city,
+    state,
+    country,
+    postalCode,
+    hideExactLocation,
+    showCityOnly,
+    updatedAt,
+  ];
 }

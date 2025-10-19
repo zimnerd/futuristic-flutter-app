@@ -103,7 +103,7 @@ class _MessageSearchResultsScreenState
 
   Future<void> _saveRecentSearch(String query) async {
     if (query.trim().isEmpty) return;
-    
+
     setState(() {
       _recentSearches.remove(query);
       _recentSearches.insert(0, query);
@@ -352,7 +352,7 @@ class _MessageSearchResultsScreenState
           // Active syntax filters indicator
           if (_parsedQuery != null && _parsedQuery!.hasSpecialSyntax)
             _buildActiveFiltersChip(),
-          
+
           // Filters panel
           if (_showFilters) _buildFiltersPanel(),
 
@@ -694,10 +694,7 @@ class _MessageSearchResultsScreenState
                       ],
                     ),
                   ),
-                  const Icon(
-                    Icons.chevron_right,
-                    color: Colors.grey,
-                  ),
+                  const Icon(Icons.chevron_right, color: Colors.grey),
                 ],
               ),
 
@@ -774,7 +771,8 @@ class _MessageSearchResultsScreenState
       return EmptyStateWidget(
         icon: Icons.search,
         title: 'Search Messages',
-        message: 'Search across all your conversations to find specific messages',
+        message:
+            'Search across all your conversations to find specific messages',
       );
     }
 
@@ -783,10 +781,7 @@ class _MessageSearchResultsScreenState
       children: [
         const Text(
           'Recent Searches',
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-          ),
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 12),
         ..._recentSearches.map(

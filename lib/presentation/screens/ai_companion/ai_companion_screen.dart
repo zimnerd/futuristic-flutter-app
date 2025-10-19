@@ -102,27 +102,17 @@ class _AiCompanionScreenState extends State<AiCompanionScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.psychology_outlined,
-              size: 80,
-              color: Colors.grey[400],
-            ),
+            Icon(Icons.psychology_outlined, size: 80, color: Colors.grey[400]),
             const SizedBox(height: 24),
             const Text(
               'No AI Companions Yet',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
             Text(
               'Create your first AI companion to get personalized dating advice and practice conversations',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey[600],
-              ),
+              style: TextStyle(fontSize: 16, color: Colors.grey[600]),
             ),
             const SizedBox(height: 32),
             ElevatedButton.icon(
@@ -160,8 +150,7 @@ class _AiCompanionScreenState extends State<AiCompanionScreen> {
                   'Companion "${state.companion.name}" created successfully!',
             );
           } else if (state is AiCompanionError) {
-            PulseToast.error(context, message: 'Error: ${state.message}',
-            );
+            PulseToast.error(context, message: 'Error: ${state.message}');
           }
         },
         child: DraggableScrollableSheet(
@@ -253,9 +242,7 @@ class _AiCompanionScreenState extends State<AiCompanionScreen> {
         builder: (context, scrollController) => Container(
           decoration: const BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.vertical(
-              top: Radius.circular(20),
-            ),
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
           ),
           child: CompanionCreationWidget(
             scrollController: scrollController,
@@ -271,16 +258,16 @@ class _AiCompanionScreenState extends State<AiCompanionScreen> {
                   List<String>? interests,
                   Map<String, dynamic>? voiceSettings,
                 }) {
-              context.read<AiCompanionBloc>().add(
-                UpdateCompanion(
-                  companionId: companion.id,
-                  name: name,
-                  personality: personality,
-                  appearance: appearance,
-                ),
-              );
-              Navigator.pop(context);
-            },
+                  context.read<AiCompanionBloc>().add(
+                    UpdateCompanion(
+                      companionId: companion.id,
+                      name: name,
+                      personality: personality,
+                      appearance: appearance,
+                    ),
+                  );
+                  Navigator.pop(context);
+                },
           ),
         ),
       ),
@@ -307,9 +294,7 @@ class _AiCompanionScreenState extends State<AiCompanionScreen> {
               );
               Navigator.pop(context);
             },
-            style: TextButton.styleFrom(
-              foregroundColor: Colors.red,
-            ),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
             child: const Text('Delete'),
           ),
         ],
@@ -318,11 +303,8 @@ class _AiCompanionScreenState extends State<AiCompanionScreen> {
   }
 
   void _navigateToChat(AICompanion companion) async {
-    await context.push(
-      AppRoutes.aiCompanionChat,
-      extra: companion,
-    );
-    
+    await context.push(AppRoutes.aiCompanionChat, extra: companion);
+
     // Refresh companions list when returning from chat
     if (mounted) {
       context.read<AiCompanionBloc>().add(LoadUserCompanions());

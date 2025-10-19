@@ -1,5 +1,5 @@
 /// Boost feature events for BLoC pattern
-/// 
+///
 /// Handles events related to profile boost functionality:
 /// - Activating a boost
 /// - Checking boost status

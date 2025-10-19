@@ -13,10 +13,7 @@ import '../chat/chat_screen.dart';
 class SpeedDatingMatchesScreen extends StatefulWidget {
   final String eventId;
 
-  const SpeedDatingMatchesScreen({
-    super.key,
-    required this.eventId,
-  });
+  const SpeedDatingMatchesScreen({super.key, required this.eventId});
 
   @override
   State<SpeedDatingMatchesScreen> createState() =>
@@ -92,10 +89,7 @@ class _SpeedDatingMatchesScreenState extends State<SpeedDatingMatchesScreen> {
         participantId: partnerId,
         type: 'private',
         title: partnerName,
-        metadata: {
-          'source': 'speed_dating',
-          'eventId': widget.eventId,
-        },
+        metadata: {'source': 'speed_dating', 'eventId': widget.eventId},
       );
 
       // Navigate to chat screen
@@ -113,8 +107,7 @@ class _SpeedDatingMatchesScreenState extends State<SpeedDatingMatchesScreen> {
       );
     } catch (e) {
       if (!mounted) return;
-      PulseToast.error(context, message: 'Failed to start chat: $e',
-      );
+      PulseToast.error(context, message: 'Failed to start chat: $e');
     }
   }
 
@@ -162,11 +155,7 @@ class _SpeedDatingMatchesScreenState extends State<SpeedDatingMatchesScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(
-              Icons.error_outline,
-              color: Colors.red,
-              size: 60,
-            ),
+            const Icon(Icons.error_outline, color: Colors.red, size: 60),
             const SizedBox(height: 16),
             Text(
               'Error Loading Matches',
@@ -196,8 +185,10 @@ class _SpeedDatingMatchesScreenState extends State<SpeedDatingMatchesScreen> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
                 foregroundColor: Colors.white,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
               ),
             ),
           ],
@@ -292,7 +283,7 @@ class _SpeedDatingMatchesScreenState extends State<SpeedDatingMatchesScreen> {
     final profilePhoto = partner['profilePhoto'] as String?;
     final bio = partner['bio'] as String?;
     final location = partner['location'] as String?;
-    
+
     // Rating info
     final myRating = match['myRating'] as int? ?? 0;
     final theirRating = match['theirRating'] as int? ?? 0;
@@ -304,10 +295,7 @@ class _SpeedDatingMatchesScreenState extends State<SpeedDatingMatchesScreen> {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            AppColors.surface,
-            AppColors.surface.withValues(alpha: 0.8),
-          ],
+          colors: [AppColors.surface, AppColors.surface.withValues(alpha: 0.8)],
         ),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
@@ -351,16 +339,16 @@ class _SpeedDatingMatchesScreenState extends State<SpeedDatingMatchesScreen> {
                                       fit: BoxFit.cover,
                                       placeholder: (context, url) =>
                                           const Center(
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 2,
-                                        ),
-                                      ),
+                                            child: CircularProgressIndicator(
+                                              strokeWidth: 2,
+                                            ),
+                                          ),
                                       errorWidget: (context, url, error) =>
                                           const Icon(
-                                        Icons.person,
-                                        size: 40,
-                                        color: Colors.white54,
-                                      ),
+                                            Icons.person,
+                                            size: 40,
+                                            color: Colors.white54,
+                                          ),
                                     )
                                   : const Icon(
                                       Icons.person,
@@ -383,15 +371,13 @@ class _SpeedDatingMatchesScreenState extends State<SpeedDatingMatchesScreen> {
                               gradient: LinearGradient(
                                 colors: [
                                   _getMatchColor(matchPercentage),
-                                  _getMatchColor(matchPercentage)
-                                      .withValues(alpha: 0.8),
+                                  _getMatchColor(
+                                    matchPercentage,
+                                  ).withValues(alpha: 0.8),
                                 ],
                               ),
                               borderRadius: BorderRadius.circular(12),
-                              border: Border.all(
-                                color: Colors.white,
-                                width: 2,
-                              ),
+                              border: Border.all(color: Colors.white, width: 2),
                             ),
                             child: Text(
                               '$matchPercentage%',
@@ -450,7 +436,9 @@ class _SpeedDatingMatchesScreenState extends State<SpeedDatingMatchesScreen> {
                                   child: Text(
                                     location,
                                     style: TextStyle(
-                                      color: Colors.white.withValues(alpha: 0.6),
+                                      color: Colors.white.withValues(
+                                        alpha: 0.6,
+                                      ),
                                       fontSize: 14,
                                     ),
                                     overflow: TextOverflow.ellipsis,
@@ -571,7 +559,7 @@ class _SpeedDatingMatchesScreenState extends State<SpeedDatingMatchesScreen> {
     final bio = partner['bio'] as String?;
     final location = partner['location'] as String?;
     final interests = partner['interests'] as List<dynamic>?;
-    
+
     final myRating = match['myRating'] as int? ?? 0;
     final theirRating = match['theirRating'] as int? ?? 0;
     final myNotes = match['myNotes'] as String?;
@@ -589,10 +577,7 @@ class _SpeedDatingMatchesScreenState extends State<SpeedDatingMatchesScreen> {
             gradient: LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
-              colors: [
-                AppColors.surface,
-                AppColors.background,
-              ],
+              colors: [AppColors.surface, AppColors.background],
             ),
             borderRadius: const BorderRadius.only(
               topLeft: Radius.circular(24),

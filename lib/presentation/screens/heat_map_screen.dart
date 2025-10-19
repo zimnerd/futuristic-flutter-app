@@ -18,7 +18,7 @@ void showHeatMapModal(BuildContext context) {
   // Get the services from the parent context
   final heatMapService = context.read<HeatMapService>();
   final locationService = context.read<LocationService>();
-  
+
   showDialog(
     context: context,
     barrierDismissible: true,
@@ -108,7 +108,8 @@ class HeatMapBloc extends Bloc<HeatMapEvent, HeatMapState> {
   final HeatMapService _heatMapService;
   final LocationService _locationService;
 
-  HeatMapBloc(this._heatMapService, this._locationService) : super(HeatMapInitial()) {
+  HeatMapBloc(this._heatMapService, this._locationService)
+    : super(HeatMapInitial()) {
     on<LoadHeatMapData>(_onLoadHeatMapData);
     on<UpdateRadius>(_onUpdateRadius);
     on<RefreshLocation>(_onRefreshLocation);
@@ -120,14 +121,17 @@ class HeatMapBloc extends Bloc<HeatMapEvent, HeatMapState> {
     Emitter<HeatMapState> emit,
   ) async {
     emit(HeatMapLoading());
-    
+
     try {
       final position = await _locationService.getCurrentLocation();
-      
-      final userCoords = position != null 
-        ? LocationCoordinates(latitude: position.latitude, longitude: position.longitude) 
-        : null;
-      
+
+      final userCoords = position != null
+          ? LocationCoordinates(
+              latitude: position.latitude,
+              longitude: position.longitude,
+            )
+          : null;
+
       if (userCoords == null) {
         emit(
           HeatMapError(
@@ -136,14 +140,14 @@ class HeatMapBloc extends Bloc<HeatMapEvent, HeatMapState> {
         );
         return;
       }
-      
+
       // First, update user location in backend
       try {
         await _heatMapService.updateUserLocation(userCoords);
       } catch (e) {
         // Continue anyway - try to fetch data without updating location
       }
-      
+
       // FIX: Fetch BOTH heatmap data AND backend clusters during initial load
       final [
         heatmapDataPoints,
@@ -162,53 +166,74 @@ class HeatMapBloc extends Bloc<HeatMapEvent, HeatMapState> {
           maxClusters: 50,
         ),
       ]);
-      
+
       final points = heatmapDataPoints as List<HeatMapDataPoint>;
       final coverage = coverageData as LocationCoverageData;
       final clusters = optimizedClusters as OptimizedHeatmapResponse;
-      
+
       // Create HeatMapData from points
       final heatmapData = HeatMapData(
         dataPoints: points,
         bounds: LocationBounds(
-          northLatitude: points.isNotEmpty 
-            ? points.map((p) => p.coordinates.latitude).reduce((a, b) => a > b ? a : b) + 0.01
-            : userCoords.latitude + 0.01,
-          southLatitude: points.isNotEmpty 
-            ? points.map((p) => p.coordinates.latitude).reduce((a, b) => a < b ? a : b) - 0.01
-            : userCoords.latitude - 0.01,
-          eastLongitude: points.isNotEmpty 
-            ? points.map((p) => p.coordinates.longitude).reduce((a, b) => a > b ? a : b) + 0.01
-            : userCoords.longitude + 0.01,
-          westLongitude: points.isNotEmpty 
-            ? points.map((p) => p.coordinates.longitude).reduce((a, b) => a < b ? a : b) - 0.01
-            : userCoords.longitude - 0.01,
+          northLatitude: points.isNotEmpty
+              ? points
+                        .map((p) => p.coordinates.latitude)
+                        .reduce((a, b) => a > b ? a : b) +
+                    0.01
+              : userCoords.latitude + 0.01,
+          southLatitude: points.isNotEmpty
+              ? points
+                        .map((p) => p.coordinates.latitude)
+                        .reduce((a, b) => a < b ? a : b) -
+                    0.01
+              : userCoords.latitude - 0.01,
+          eastLongitude: points.isNotEmpty
+              ? points
+                        .map((p) => p.coordinates.longitude)
+                        .reduce((a, b) => a > b ? a : b) +
+                    0.01
+              : userCoords.longitude + 0.01,
+          westLongitude: points.isNotEmpty
+              ? points
+                        .map((p) => p.coordinates.longitude)
+                        .reduce((a, b) => a < b ? a : b) -
+                    0.01
+              : userCoords.longitude - 0.01,
         ),
         totalUsers: points.length,
-        averageDensity: points.isNotEmpty 
-          ? points.map((p) => p.density).reduce((a, b) => a + b) / points.length
-          : 0.0,
+        averageDensity: points.isNotEmpty
+            ? points.map((p) => p.density).reduce((a, b) => a + b) /
+                  points.length
+            : 0.0,
         generatedAt: DateTime.now(),
       );
-      
-      emit(HeatMapLoaded(
-        heatmapData: heatmapData,
-        coverageData: coverage,
-        userLocation: userCoords,
-        currentRadius: event.radiusKm,
+
+      emit(
+        HeatMapLoaded(
+          heatmapData: heatmapData,
+          coverageData: coverage,
+          userLocation: userCoords,
+          currentRadius: event.radiusKm,
           backendClusters:
               clusters.clusters, // FIX: Include clusters in initial state
-      ));
+        ),
+      );
     } catch (e) {
       emit(HeatMapError('Failed to load heat map data: ${e.toString()}'));
     }
   }
 
-  Future<void> _onUpdateRadius(UpdateRadius event, Emitter<HeatMapState> emit) async {
+  Future<void> _onUpdateRadius(
+    UpdateRadius event,
+    Emitter<HeatMapState> emit,
+  ) async {
     add(LoadHeatMapData(event.radiusKm));
   }
 
-  Future<void> _onRefreshLocation(RefreshLocation event, Emitter<HeatMapState> emit) async {
+  Future<void> _onRefreshLocation(
+    RefreshLocation event,
+    Emitter<HeatMapState> emit,
+  ) async {
     final currentState = state;
     if (currentState is HeatMapLoaded) {
       add(LoadHeatMapData(currentState.currentRadius));
@@ -251,7 +276,6 @@ class HeatMapBloc extends Bloc<HeatMapEvent, HeatMapState> {
   }
 }
 
-
 // Heat Map Screen Widget
 class HeatMapScreen extends StatefulWidget {
   const HeatMapScreen({super.key});
@@ -270,11 +294,11 @@ class _HeatMapScreenState extends State<HeatMapScreen>
   bool _showClusters =
       true; // ENABLED BY DEFAULT - show user clusters immediately
   bool _isStatisticsPopupVisible = false;
-  
+
   // Debouncing for camera movements to optimize performance
   Timer? _debounceTimer;
   Timer? _clusterCalculationTimer;
-  
+
   final bool _isUpdatingClusters = false;
   bool _isCalculatingClusters = false;
 
@@ -287,7 +311,7 @@ class _HeatMapScreenState extends State<HeatMapScreen>
   Set<Circle>? _memoizedCircles;
   Set<Marker>? _memoizedMarkers;
   String? _lastCacheKey;
-  
+
   // Performance tracking
   // Clustering performance tracking (removed unused counter)
 
@@ -441,11 +465,11 @@ class _HeatMapScreenState extends State<HeatMapScreen>
     // Access services from the parent context before creating BlocProvider
     final heatMapService = context.read<HeatMapService>();
     final locationService = context.read<LocationService>();
-    
+
     return BlocProvider(
-      create: (context) => HeatMapBloc(
-        heatMapService, locationService,
-      )..add(LoadHeatMapData(_currentRadius)),
+      create: (context) =>
+          HeatMapBloc(heatMapService, locationService)
+            ..add(LoadHeatMapData(_currentRadius)),
       child: Container(
         width: double.infinity,
         height: double.infinity,
@@ -517,7 +541,6 @@ class _HeatMapScreenState extends State<HeatMapScreen>
     );
   }
 
-
   Widget _buildLoadingState() {
     return Container(
       decoration: const BoxDecoration(
@@ -537,10 +560,7 @@ class _HeatMapScreenState extends State<HeatMapScreen>
             SizedBox(height: 24),
             Text(
               'Loading map data...',
-              style: TextStyle(
-                color: Colors.white70,
-                fontSize: 16,
-              ),
+              style: TextStyle(color: Colors.white70, fontSize: 16),
             ),
           ],
         ),
@@ -614,7 +634,6 @@ class _HeatMapScreenState extends State<HeatMapScreen>
           (userLat > 0 && dataLat < 0) || (userLat < 0 && dataLat > 0);
 
       if (hasGeographicMismatch) {
-
         // Calculate center of data points
         final avgLat =
             state.heatmapData.dataPoints
@@ -649,7 +668,7 @@ class _HeatMapScreenState extends State<HeatMapScreen>
 
     // Calculate optimal zoom level based on data distribution
     final initialZoomLevel = hasGeographicMismatch ? 8.0 : 12.0;
-    
+
     final markers = _buildMarkers(state);
     final circles = _buildCircles(state);
 
@@ -657,7 +676,7 @@ class _HeatMapScreenState extends State<HeatMapScreen>
       key: _googleMapKey, // Use dynamic key instead of const ValueKey
       onMapCreated: (GoogleMapController controller) async {
         _mapController = controller;
-        
+
         // Check if map tiles are loading by testing a basic operation
         try {
           final bounds = await controller.getVisibleRegion();
@@ -695,11 +714,10 @@ class _HeatMapScreenState extends State<HeatMapScreen>
 
         // Debounce backend cluster fetch: wait 300ms after camera stops
         _clusterCalculationTimer?.cancel();
-        
+
         _clusterCalculationTimer = Timer(
           const Duration(milliseconds: 300),
           () async {
-            
             if (mounted && !_isUpdatingClusters && _showClusters) {
               final groupedZoom = _getGroupedZoomLevel(_currentZoom);
               AppLogger.debug(
@@ -715,10 +733,10 @@ class _HeatMapScreenState extends State<HeatMapScreen>
                   // Use user's distance preference from UI state
                   final radiusKm = _currentRadius.toDouble();
 
-                // Invalidate marker cache - new clusters will be fetched
-                setState(() {
-                  _memoizedMarkers = null;
-                });
+                  // Invalidate marker cache - new clusters will be fetched
+                  setState(() {
+                    _memoizedMarkers = null;
+                  });
 
                   // Dispatch event to fetch backend clusters
                   if (!mounted) return;
@@ -812,7 +830,7 @@ class _HeatMapScreenState extends State<HeatMapScreen>
       // Determine size tier based on user count
       final sizeTier = _getClusterSizeTier(cluster.userCount);
       final markerSize = _getMarkerSize(sizeTier);
-      
+
       // Generate custom marker icon with user count label
       final markerIcon = await _generateClusterMarkerIcon(
         userCount: cluster.userCount,
@@ -1183,7 +1201,6 @@ class _HeatMapScreenState extends State<HeatMapScreen>
     );
   }
 
-
   /// Build markers synchronously - uses memoized cluster markers
   Set<Marker> _buildMarkers(HeatMapLoaded state) {
     // Return empty set if clustering is disabled
@@ -1264,7 +1281,7 @@ class _HeatMapScreenState extends State<HeatMapScreen>
     } else {
       AppLogger.debug('🎨 Clustering disabled, skipping cluster circles');
     }
-    
+
     // Add heatmap overlay circles when heatmap is enabled
     if (_showHeatmap) {
       final heatmapCircles = _buildHeatmapCircles(state);
@@ -1276,7 +1293,7 @@ class _HeatMapScreenState extends State<HeatMapScreen>
       _memoizedCircles = circles;
       _lastCacheKey = cacheKey;
     }
-    
+
     return circles;
   }
 
@@ -1376,10 +1393,7 @@ class _HeatMapScreenState extends State<HeatMapScreen>
             const SizedBox(height: 4),
             Text(
               'Zoom Level: ${_currentZoom.toStringAsFixed(1)}x',
-              style: const TextStyle(
-                color: Colors.white70,
-                fontSize: 14,
-              ),
+              style: const TextStyle(color: Colors.white70, fontSize: 14),
             ),
             const SizedBox(height: 8),
             _buildLegend(),
@@ -1407,24 +1421,12 @@ class _HeatMapScreenState extends State<HeatMapScreen>
         Container(
           width: 12,
           height: 12,
-          decoration: BoxDecoration(
-            color: color,
-            shape: BoxShape.circle,
-          ),
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
         ),
         const SizedBox(width: 4),
-        Text(
-          emoji,
-          style: const TextStyle(fontSize: 12),
-        ),
+        Text(emoji, style: const TextStyle(fontSize: 12)),
         const SizedBox(width: 2),
-        Text(
-          label,
-          style: TextStyle(
-            color: Colors.white70,
-            fontSize: 10,
-          ),
-        ),
+        Text(label, style: TextStyle(color: Colors.white70, fontSize: 10)),
       ],
     );
   }
@@ -1522,8 +1524,7 @@ class _HeatMapScreenState extends State<HeatMapScreen>
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, color: Colors.white, size: 20,
-        ),
+        Icon(icon, color: Colors.white, size: 20),
         const SizedBox(height: 4),
         Text(
           value.toString(),
@@ -1536,10 +1537,7 @@ class _HeatMapScreenState extends State<HeatMapScreen>
         const SizedBox(height: 2),
         Text(
           label,
-          style: const TextStyle(
-            color: Colors.white70,
-            fontSize: 10,
-          ),
+          style: const TextStyle(color: Colors.white70, fontSize: 10),
         ),
       ],
     );
@@ -1588,10 +1586,7 @@ class _HeatMapScreenState extends State<HeatMapScreen>
                     ? 'The heat map needs location access to show people nearby and coverage areas. Please enable location permissions to continue.'
                     : state.message,
                 textAlign: TextAlign.center,
-                style: const TextStyle(
-                  color: Colors.white70,
-                  fontSize: 16,
-                ),
+                style: const TextStyle(color: Colors.white70, fontSize: 16),
               ),
             ),
             const SizedBox(height: 32),
@@ -1604,7 +1599,8 @@ class _HeatMapScreenState extends State<HeatMapScreen>
                       .requestLocationWhenInUsePermission(context);
                   if (granted && mounted) {
                     // Retry loading data after permission granted
-                    bloc.add( // ignore: use_build_context_synchronously
+                    bloc.add(
+                      // ignore: use_build_context_synchronously
                       LoadHeatMapData(_currentRadius),
                     );
                   }
@@ -1696,8 +1692,6 @@ class _HeatMapScreenState extends State<HeatMapScreen>
     );
   }
 
-
-
   void _showRadiusSelector(BuildContext context) {
     final heatMapBloc = context.read<HeatMapBloc>();
     showModalBottomSheet(
@@ -1786,12 +1780,6 @@ class _HeatMapScreenState extends State<HeatMapScreen>
       ),
     );
   }
-
-
-
-
-
-
 
   Widget _buildMapControls(BuildContext context) {
     return Positioned(

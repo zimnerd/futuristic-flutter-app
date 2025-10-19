@@ -96,10 +96,7 @@ class _CancellationReasonDialogState extends State<CancellationReasonDialog> {
             // Feedback text field
             const Text(
               'Additional feedback (optional):',
-              style: TextStyle(
-                fontWeight: FontWeight.w600,
-                fontSize: 14,
-              ),
+              style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
             ),
             const SizedBox(height: 8),
             TextField(
@@ -132,10 +129,7 @@ class _CancellationReasonDialogState extends State<CancellationReasonDialog> {
                   Expanded(
                     child: Text(
                       'Your premium features will remain active until the end of your current billing period.',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.orange[900],
-                      ),
+                      style: TextStyle(fontSize: 12, color: Colors.orange[900]),
                     ),
                   ),
                 ],
@@ -173,7 +167,9 @@ class _CancellationReasonDialogState extends State<CancellationReasonDialog> {
         child: Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: isSelected ? AppColors.primary.withValues(alpha: 0.1) : Colors.grey[50],
+            color: isSelected
+                ? AppColors.primary.withValues(alpha: 0.1)
+                : Colors.grey[50],
             border: Border.all(
               color: isSelected ? AppColors.primary : Colors.grey[300]!,
               width: isSelected ? 2 : 1,
@@ -193,7 +189,9 @@ class _CancellationReasonDialogState extends State<CancellationReasonDialog> {
                   reason.label,
                   style: TextStyle(
                     fontSize: 14,
-                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                    fontWeight: isSelected
+                        ? FontWeight.w600
+                        : FontWeight.normal,
                     color: isSelected ? AppColors.primary : Colors.black87,
                   ),
                 ),
@@ -216,11 +214,7 @@ class _CancellationReasonDialogState extends State<CancellationReasonDialog> {
       return AlertDialog(
         title: Column(
           children: [
-            Icon(
-              Icons.celebration,
-              size: 48,
-              color: Colors.green[700],
-            ),
+            Icon(Icons.celebration, size: 48, color: Colors.green[700]),
             const SizedBox(height: 12),
             const Text(
               'Offer Applied!',
@@ -265,11 +259,7 @@ class _CancellationReasonDialogState extends State<CancellationReasonDialog> {
     return AlertDialog(
       title: Column(
         children: [
-          Icon(
-            Icons.card_giftcard,
-            size: 48,
-            color: AppColors.primary,
-          ),
+          Icon(Icons.card_giftcard, size: 48, color: AppColors.primary),
           const SizedBox(height: 12),
           const Text(
             'Wait! Special Offer',
@@ -304,10 +294,7 @@ class _CancellationReasonDialogState extends State<CancellationReasonDialog> {
                 SizedBox(height: 8),
                 Text(
                   'Your Next Month',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                  ),
+                  style: TextStyle(color: Colors.white, fontSize: 16),
                 ),
               ],
             ),

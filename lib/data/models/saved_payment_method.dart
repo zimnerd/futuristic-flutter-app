@@ -106,7 +106,9 @@ class SavedPaymentMethod {
 
   /// Get display name (nickname or generated name)
   String get displayName {
-    return nickname.isNotEmpty ? nickname : '$cardType ending in $lastFourDigits';
+    return nickname.isNotEmpty
+        ? nickname
+        : '$cardType ending in $lastFourDigits';
   }
 
   /// Get card brand icon name

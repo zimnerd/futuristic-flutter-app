@@ -152,11 +152,7 @@ class SubscriptionStatusCard extends StatelessWidget {
         color = AppColors.textSecondary;
     }
 
-    return Icon(
-      icon,
-      size: 32,
-      color: color,
-    );
+    return Icon(icon, size: 32, color: color);
   }
 
   Widget _buildSubscriptionDetails() {
@@ -170,8 +166,8 @@ class SubscriptionStatusCard extends StatelessWidget {
         if (subscription.endDate != null) ...[
           const SizedBox(height: 12),
           _buildDetailRow(
-            subscription.status == SubscriptionStatus.pendingCancellation 
-                ? 'Ends On' 
+            subscription.status == SubscriptionStatus.pendingCancellation
+                ? 'Ends On'
                 : 'Next Billing',
             _formatDate(subscription.endDate!),
             Icons.event,
@@ -198,11 +194,7 @@ class SubscriptionStatusCard extends StatelessWidget {
   Widget _buildDetailRow(String label, String value, IconData icon) {
     return Row(
       children: [
-        Icon(
-          icon,
-          size: 16,
-          color: AppColors.textSecondary,
-        ),
+        Icon(icon, size: 16, color: AppColors.textSecondary),
         const SizedBox(width: 8),
         Text(
           label,
@@ -224,7 +216,8 @@ class SubscriptionStatusCard extends StatelessWidget {
 
   Widget _buildActionButtons() {
     final canCancel = subscription.status == SubscriptionStatus.active;
-    final canResume = subscription.status == SubscriptionStatus.pendingCancellation;
+    final canResume =
+        subscription.status == SubscriptionStatus.pendingCancellation;
 
     if (!canCancel && !canResume) {
       return const SizedBox.shrink();
@@ -234,10 +227,7 @@ class SubscriptionStatusCard extends StatelessWidget {
       children: [
         if (canResume) ...[
           Expanded(
-            child: AppButton(
-              text: 'Resume Subscription',
-              onPressed: onResume,
-            ),
+            child: AppButton(text: 'Resume Subscription', onPressed: onResume),
           ),
         ] else if (canCancel) ...[
           Expanded(
@@ -269,7 +259,8 @@ class SubscriptionStatusCard extends StatelessWidget {
 
   String _getPlanName() {
     // Try to get plan name from metadata first, fallback to plan ID
-    return subscription.metadata?['plan_name'] as String? ?? subscription.planId;
+    return subscription.metadata?['plan_name'] as String? ??
+        subscription.planId;
   }
 
   String _getBillingCycleText() {

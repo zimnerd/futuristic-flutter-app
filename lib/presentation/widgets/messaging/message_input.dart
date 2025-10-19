@@ -29,25 +29,21 @@ class _MessageInputState extends State<MessageInput>
     with TickerProviderStateMixin {
   late AnimationController _sendButtonController;
   late Animation<double> _sendButtonAnimation;
-  
+
   bool _hasText = false;
 
   @override
   void initState() {
     super.initState();
-    
+
     _sendButtonController = AnimationController(
       duration: const Duration(milliseconds: 200),
       vsync: this,
     );
-    
-    _sendButtonAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _sendButtonController,
-      curve: Curves.easeOut,
-    ));
+
+    _sendButtonAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _sendButtonController, curve: Curves.easeOut),
+    );
 
     widget.controller.addListener(_onTextChanged);
   }
@@ -93,23 +89,19 @@ class _MessageInputState extends State<MessageInput>
               backgroundColor: Colors.grey[100]!,
               iconColor: Colors.grey[600]!,
             ),
-          
-          if (widget.onAttachment != null)
-            const SizedBox(width: 8),
+
+          if (widget.onAttachment != null) const SizedBox(width: 8),
 
           // Text input field
           Expanded(
             child: Container(
-              constraints: const BoxConstraints(
-                minHeight: 40,
-                maxHeight: 120,
-              ),
+              constraints: const BoxConstraints(minHeight: 40, maxHeight: 120),
               decoration: BoxDecoration(
                 color: Colors.grey[100],
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(
-                  color: widget.focusNode.hasFocus 
-                      ? PulseColors.primary 
+                  color: widget.focusNode.hasFocus
+                      ? PulseColors.primary
                       : Colors.transparent,
                   width: 1,
                 ),
@@ -177,11 +169,7 @@ class _MessageInputState extends State<MessageInput>
           color: backgroundColor,
           shape: BoxShape.circle,
         ),
-        child: Icon(
-          icon,
-          color: iconColor,
-          size: 20,
-        ),
+        child: Icon(icon, color: iconColor, size: 20),
       ),
     );
   }

@@ -12,8 +12,8 @@ class PhotoUploadService {
   PhotoUploadService({
     required Dio httpClient,
     required Box<String> secureStorage,
-  })  : _httpClient = httpClient,
-        _secureStorage = secureStorage;
+  }) : _httpClient = httpClient,
+       _secureStorage = secureStorage;
 
   /// Pick image from gallery
   Future<XFile?> pickFromGallery() async {
@@ -53,11 +53,11 @@ class PhotoUploadService {
         maxHeight: 1920,
         imageQuality: 85,
       );
-      
+
       if (images.length > maxImages) {
         return images.take(maxImages).toList();
       }
-      
+
       return images;
     } catch (e) {
       throw PhotoUploadException('Failed to pick multiple images: $e');
@@ -109,20 +109,17 @@ class PhotoUploadService {
     List<XFile> imageFiles,
   ) async {
     final results = <PhotoUploadResult>[];
-    
+
     for (final imageFile in imageFiles) {
       try {
         final result = await uploadPhoto(imageFile);
         results.add(result);
       } catch (e) {
         // Continue with other uploads even if one fails
-        results.add(PhotoUploadResult(
-          success: false,
-          error: e.toString(),
-        ));
+        results.add(PhotoUploadResult(success: false, error: e.toString()));
       }
     }
-    
+
     return results;
   }
 
@@ -166,7 +163,7 @@ class PhotoUploadService {
       // Check file size (max 10MB)
       const maxSize = 10 * 1024 * 1024; // 10MB in bytes
       final size = await getImageSize(imageFile);
-      
+
       if (size > maxSize) {
         return ValidationResult(
           isValid: false,
@@ -177,7 +174,7 @@ class PhotoUploadService {
       // Check file extension
       final extension = path.extension(imageFile.path).toLowerCase();
       const allowedExtensions = ['.jpg', '.jpeg', '.png', '.webp'];
-      
+
       if (!allowedExtensions.contains(extension)) {
         return ValidationResult(
           isValid: false,
@@ -200,11 +197,15 @@ class PhotoUploadService {
       if (responseData is Map<String, dynamic>) {
         return PhotoUploadResult(
           success: true,
-          photoId: responseData['id']?.toString() ?? 'photo_${DateTime.now().millisecondsSinceEpoch}',
-          photoUrl: responseData['url']?.toString() ?? responseData['photoUrl']?.toString(),
+          photoId:
+              responseData['id']?.toString() ??
+              'photo_${DateTime.now().millisecondsSinceEpoch}',
+          photoUrl:
+              responseData['url']?.toString() ??
+              responseData['photoUrl']?.toString(),
         );
       }
-      
+
       // Fallback for other response formats
       return PhotoUploadResult(
         success: true,
@@ -237,10 +238,7 @@ class ValidationResult {
   final bool isValid;
   final String? error;
 
-  ValidationResult({
-    required this.isValid,
-    this.error,
-  });
+  ValidationResult({required this.isValid, this.error});
 }
 
 /// Exception thrown during photo upload operations

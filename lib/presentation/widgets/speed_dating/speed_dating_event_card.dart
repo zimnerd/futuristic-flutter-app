@@ -28,9 +28,7 @@ class SpeedDatingEventCard extends StatelessWidget {
 
     return Card(
       elevation: 4,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
@@ -65,7 +63,9 @@ class SpeedDatingEventCard extends StatelessWidget {
                     vertical: 4,
                   ),
                   decoration: BoxDecoration(
-                    color: _getStatusColor(event['status']).withValues(alpha: 0.2),
+                    color: _getStatusColor(
+                      event['status'],
+                    ).withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
@@ -80,7 +80,7 @@ class SpeedDatingEventCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 16),
-            
+
             // Event details
             Row(
               children: [
@@ -101,7 +101,7 @@ class SpeedDatingEventCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 12),
-            
+
             Row(
               children: [
                 Expanded(
@@ -121,22 +121,15 @@ class SpeedDatingEventCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 16),
-            
+
             // Participants progress
             Row(
               children: [
-                Icon(
-                  Icons.group,
-                  size: 16,
-                  color: Colors.grey[600],
-                ),
+                Icon(Icons.group, size: 16, color: Colors.grey[600]),
                 const SizedBox(width: 8),
                 Text(
                   'Participants: $participantCount/$maxParticipants',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey[600],
-                  ),
+                  style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                 ),
                 const Spacer(),
                 Text(
@@ -150,7 +143,7 @@ class SpeedDatingEventCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 8),
-            
+
             // Progress bar
             LinearProgressIndicator(
               value: participantCount / maxParticipants,
@@ -160,7 +153,7 @@ class SpeedDatingEventCard extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
-            
+
             // Action buttons
             Row(
               children: [
@@ -181,19 +174,19 @@ class SpeedDatingEventCard extends StatelessWidget {
                   child: ElevatedButton(
                     onPressed: (isFull && !isJoined) ? null : onJoin,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: isJoined 
-                        ? Colors.green 
-                        : PulseColors.primary,
+                      backgroundColor: isJoined
+                          ? Colors.green
+                          : PulseColors.primary,
                       foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
                     ),
                     child: Text(
-                      isJoined 
-                        ? 'Joined' 
-                        : isFull 
-                          ? 'Full' 
+                      isJoined
+                          ? 'Joined'
+                          : isFull
+                          ? 'Full'
                           : 'Join Event',
                     ),
                   ),
@@ -213,11 +206,7 @@ class SpeedDatingEventCard extends StatelessWidget {
   }) {
     return Row(
       children: [
-        Icon(
-          icon,
-          size: 16,
-          color: PulseColors.primary,
-        ),
+        Icon(icon, size: 16, color: PulseColors.primary),
         const SizedBox(width: 6),
         Expanded(
           child: Column(
@@ -225,10 +214,7 @@ class SpeedDatingEventCard extends StatelessWidget {
             children: [
               Text(
                 label,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey[600],
-                ),
+                style: TextStyle(fontSize: 12, color: Colors.grey[600]),
               ),
               Text(
                 value,

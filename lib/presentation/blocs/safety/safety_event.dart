@@ -2,6 +2,7 @@ part of 'safety_bloc.dart';
 
 // Simple enums for safety events
 enum SafetyLevel { low, medium, high, critical }
+
 enum IncidentType { harassment, threat, emergency, other }
 
 abstract class SafetyEvent extends Equatable {
@@ -25,17 +26,19 @@ class ReportUser extends SafetyEvent {
   });
 
   @override
-  List<Object?> get props => [reportedUserId, reportType, description, evidence];
+  List<Object?> get props => [
+    reportedUserId,
+    reportType,
+    description,
+    evidence,
+  ];
 }
 
 class BlockUser extends SafetyEvent {
   final String userId;
   final String? reason;
 
-  const BlockUser({
-    required this.userId,
-    this.reason,
-  });
+  const BlockUser({required this.userId, this.reason});
 
   @override
   List<Object?> get props => [userId, reason];
@@ -58,10 +61,7 @@ class LoadSafetyTips extends SafetyEvent {
   final SafetyLevel? level;
   final String? category;
 
-  const LoadSafetyTips({
-    this.level,
-    this.category,
-  });
+  const LoadSafetyTips({this.level, this.category});
 
   @override
   List<Object?> get props => [level, category];
@@ -71,10 +71,7 @@ class LoadUserReports extends SafetyEvent {
   final int page;
   final int limit;
 
-  const LoadUserReports({
-    this.page = 1,
-    this.limit = 20,
-  });
+  const LoadUserReports({this.page = 1, this.limit = 20});
 
   @override
   List<Object?> get props => [page, limit];
@@ -95,11 +92,11 @@ class UpdateSafetySettings extends SafetyEvent {
 
   @override
   List<Object?> get props => [
-        locationSharing,
-        emergencyContacts,
-        incidentReporting,
-        emergencyContactIds,
-      ];
+    locationSharing,
+    emergencyContacts,
+    incidentReporting,
+    emergencyContactIds,
+  ];
 }
 
 class ShareLocationWithEmergencyContacts extends SafetyEvent {

@@ -28,7 +28,7 @@ class _SwipeableProfileCardState extends State<SwipeableProfileCard>
   late AnimationController _positionController;
   late AnimationController _scaleController;
   late AnimationController _rotationController;
-  
+
   late Animation<Offset> _positionAnimation;
   late Animation<double> _scaleAnimation;
   late Animation<double> _rotationAnimation;
@@ -45,45 +45,35 @@ class _SwipeableProfileCardState extends State<SwipeableProfileCard>
   @override
   void initState() {
     super.initState();
-    
+
     _positionController = AnimationController(
       duration: const Duration(milliseconds: 300),
       vsync: this,
     );
-    
+
     _scaleController = AnimationController(
       duration: const Duration(milliseconds: 200),
       vsync: this,
     );
-    
+
     _rotationController = AnimationController(
       duration: const Duration(milliseconds: 300),
       vsync: this,
     );
 
-    _positionAnimation = Tween<Offset>(
-      begin: Offset.zero,
-      end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _positionController,
-      curve: Curves.easeOut,
-    ));
+    _positionAnimation = Tween<Offset>(begin: Offset.zero, end: Offset.zero)
+        .animate(
+          CurvedAnimation(parent: _positionController, curve: Curves.easeOut),
+        );
 
     _scaleAnimation = Tween<double>(
       begin: 1.0,
       end: 0.95,
-    ).animate(CurvedAnimation(
-      parent: _scaleController,
-      curve: Curves.easeOut,
-    ));
+    ).animate(CurvedAnimation(parent: _scaleController, curve: Curves.easeOut));
 
-    _rotationAnimation = Tween<double>(
-      begin: 0.0,
-      end: 0.0,
-    ).animate(CurvedAnimation(
-      parent: _rotationController,
-      curve: Curves.easeOut,
-    ));
+    _rotationAnimation = Tween<double>(begin: 0.0, end: 0.0).animate(
+      CurvedAnimation(parent: _rotationController, curve: Curves.easeOut),
+    );
   }
 
   @override
@@ -167,21 +157,18 @@ class _SwipeableProfileCardState extends State<SwipeableProfileCard>
         break;
     }
 
-    _positionAnimation = Tween<Offset>(
-      begin: _panUpdate,
-      end: endPosition,
-    ).animate(CurvedAnimation(
-      parent: _positionController,
-      curve: Curves.easeOut,
-    ));
+    _positionAnimation = Tween<Offset>(begin: _panUpdate, end: endPosition)
+        .animate(
+          CurvedAnimation(parent: _positionController, curve: Curves.easeOut),
+        );
 
-    _rotationAnimation = Tween<double>(
-      begin: _panUpdate.dx * _rotationFactor / 1000,
-      end: endRotation,
-    ).animate(CurvedAnimation(
-      parent: _rotationController,
-      curve: Curves.easeOut,
-    ));
+    _rotationAnimation =
+        Tween<double>(
+          begin: _panUpdate.dx * _rotationFactor / 1000,
+          end: endRotation,
+        ).animate(
+          CurvedAnimation(parent: _rotationController, curve: Curves.easeOut),
+        );
 
     _positionController.forward().then((_) {
       widget.onSwipe(direction);
@@ -193,21 +180,24 @@ class _SwipeableProfileCardState extends State<SwipeableProfileCard>
   }
 
   void _resetCard() {
-    _positionAnimation = Tween<Offset>(
-      begin: _panUpdate,
-      end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _positionController,
-      curve: Curves.elasticOut,
-    ));
+    _positionAnimation = Tween<Offset>(begin: _panUpdate, end: Offset.zero)
+        .animate(
+          CurvedAnimation(
+            parent: _positionController,
+            curve: Curves.elasticOut,
+          ),
+        );
 
-    _rotationAnimation = Tween<double>(
-      begin: _panUpdate.dx * _rotationFactor / 1000,
-      end: 0.0,
-    ).animate(CurvedAnimation(
-      parent: _rotationController,
-      curve: Curves.elasticOut,
-    ));
+    _rotationAnimation =
+        Tween<double>(
+          begin: _panUpdate.dx * _rotationFactor / 1000,
+          end: 0.0,
+        ).animate(
+          CurvedAnimation(
+            parent: _rotationController,
+            curve: Curves.elasticOut,
+          ),
+        );
 
     setState(() {
       _panUpdate = Offset.zero;
@@ -286,7 +276,7 @@ class _SwipeableProfileCardState extends State<SwipeableProfileCard>
                         child: _buildCardContent(),
                       ),
                     ),
-                    
+
                     // Swipe indicator overlay
                     if (_isDragging && _getSwipeIndicatorText().isNotEmpty)
                       _buildSwipeIndicator(),
@@ -312,7 +302,7 @@ class _SwipeableProfileCardState extends State<SwipeableProfileCard>
             height: double.infinity,
           ),
         ),
-        
+
         // Gradient overlay
         Positioned.fill(
           child: Container(
@@ -330,7 +320,7 @@ class _SwipeableProfileCardState extends State<SwipeableProfileCard>
             ),
           ),
         ),
-        
+
         // Profile info
         Positioned(
           bottom: 20,
@@ -360,25 +350,19 @@ class _SwipeableProfileCardState extends State<SwipeableProfileCard>
               if (widget.profile.bio.isNotEmpty)
                 Text(
                   widget.profile.bio,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                  ),
+                  style: const TextStyle(color: Colors.white, fontSize: 16),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
               const SizedBox(height: 8),
               Text(
                 widget.profile.distance,
-                style: const TextStyle(
-                  color: Colors.white70,
-                  fontSize: 14,
-                ),
+                style: const TextStyle(color: Colors.white70, fontSize: 14),
               ),
             ],
           ),
         ),
-        
+
         // Photo dots indicator
         if (widget.profile.photoCount > 1)
           Positioned(
@@ -416,16 +400,13 @@ class _SwipeableProfileCardState extends State<SwipeableProfileCard>
   Widget _buildSwipeIndicator() {
     final color = _getSwipeIndicatorColor();
     final text = _getSwipeIndicatorText();
-    
+
     return Positioned.fill(
       child: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
           color: color.withValues(alpha: 0.1),
-          border: Border.all(
-            color: color,
-            width: 3,
-          ),
+          border: Border.all(color: color, width: 3),
         ),
         child: Center(
           child: Text(
@@ -471,7 +452,7 @@ class ProfileCardData {
 
 /// Swipe direction enum
 enum SwipeDirection {
-  left,  // Pass
+  left, // Pass
   right, // Like
-  up,    // Super like
+  up, // Super like
 }

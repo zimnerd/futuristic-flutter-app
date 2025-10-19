@@ -5,7 +5,7 @@ import '../../../core/network/api_client.dart';
 import '../../../core/constants/api_constants.dart';
 
 /// Service for handling user discovery and swipe operations
-/// 
+///
 /// Manages API calls for:
 /// - Fetching discoverable users with filters
 /// - Recording swipe actions (like, pass, super like)
@@ -13,7 +13,7 @@ import '../../../core/constants/api_constants.dart';
 /// - Handling undo functionality
 class DiscoveryService {
   final ApiClient _apiClient;
-  
+
   DiscoveryService({required ApiClient apiClient}) : _apiClient = apiClient;
 
   /// Get discoverable users based on filters and preferences
@@ -30,23 +30,28 @@ class DiscoveryService {
         'limit': limit,
         // 'reset': reset, // Removed - backend doesn't support this parameter
       };
-      
+
       // Add filter parameters if provided
       if (filters != null) {
         if (filters.minAge != null) queryParams['minAge'] = filters.minAge;
         if (filters.maxAge != null) queryParams['maxAge'] = filters.maxAge;
-        if (filters.maxDistance != null) queryParams['maxDistance'] = filters.maxDistance;
-        if (filters.interests.isNotEmpty) queryParams['interests'] = filters.interests.join(',');
-        if (filters.verifiedOnly) queryParams['verifiedOnly'] = filters.verifiedOnly;
-        if (filters.premiumOnly) queryParams['premiumOnly'] = filters.premiumOnly;
-        if (filters.recentlyActive) queryParams['recentlyActive'] = filters.recentlyActive;
+        if (filters.maxDistance != null)
+          queryParams['maxDistance'] = filters.maxDistance;
+        if (filters.interests.isNotEmpty)
+          queryParams['interests'] = filters.interests.join(',');
+        if (filters.verifiedOnly)
+          queryParams['verifiedOnly'] = filters.verifiedOnly;
+        if (filters.premiumOnly)
+          queryParams['premiumOnly'] = filters.premiumOnly;
+        if (filters.recentlyActive)
+          queryParams['recentlyActive'] = filters.recentlyActive;
       }
-      
+
       final response = await _apiClient.get(
         ApiConstants.matchingSuggestions, // Updated to use new API constant
         queryParameters: queryParams,
       );
-      
+
       final Map<String, dynamic> data = response.data as Map<String, dynamic>;
       final List<dynamic> suggestionsJson = data['data'] ?? [];
       return suggestionsJson
@@ -55,7 +60,6 @@ class DiscoveryService {
                 _userProfileFromSuggestion(suggestion as Map<String, dynamic>),
           )
           .toList();
-          
     } catch (error) {
       // Throw error instead of falling back to mock data
       throw Exception('Failed to fetch discoverable users: $error');
@@ -71,7 +75,7 @@ class DiscoveryService {
       // Use correct API endpoints based on action
       final String endpoint;
       final Map<String, dynamic> data;
-      
+
       if (action == SwipeAction.right || action == SwipeAction.up) {
         endpoint = ApiConstants.matchingLike; // Use /matching/like
         data = {
@@ -82,17 +86,14 @@ class DiscoveryService {
         endpoint = ApiConstants.matchingPass; // Use /matching/pass
         data = {'targetUserId': targetUserId};
       }
-      
-      final response = await _apiClient.post(
-        endpoint,
-        data: data,
-      );
-      
+
+      final response = await _apiClient.post(endpoint, data: data);
+
       final Map<String, dynamic> responseData =
           response.data as Map<String, dynamic>;
       final bool isMatch = responseData['match'] ?? false;
       final String? conversationId = responseData['conversationId'];
-      
+
       return SwipeResult(
         isMatch: isMatch,
         targetUserId: targetUserId,
@@ -113,7 +114,7 @@ class DiscoveryService {
         ApiConstants.matchingUndo,
         data: {},
       );
-      
+
       final Map<String, dynamic> responseData =
           response.data as Map<String, dynamic>;
       final bool canUndo = responseData['canUndo'] ?? false;
@@ -124,7 +125,7 @@ class DiscoveryService {
     }
   }
 
-    /// Activate boost feature to increase profile visibility
+  /// Activate boost feature to increase profile visibility
   Future<BoostResult> activateBoost() async {
     try {
       // Use dedicated boost endpoint
@@ -132,14 +133,14 @@ class DiscoveryService {
         ApiConstants.premiumBoost,
         data: {},
       );
-      
+
       final Map<String, dynamic> responseData =
           response.data as Map<String, dynamic>;
       final bool success = responseData['success'] ?? true;
       final int durationMinutes = responseData['durationMinutes'] ?? 30;
       final String startTimeStr =
           responseData['startTime'] ?? DateTime.now().toIso8601String();
-      
+
       return BoostResult(
         success: success,
         duration: Duration(minutes: durationMinutes),
@@ -155,10 +156,8 @@ class DiscoveryService {
   Future<bool> hasAvailableBoosts() async {
     try {
       // Implement actual API call to backend
-      final response = await _apiClient.get(
-        '/discovery/boosts/available',
-      );
-      
+      final response = await _apiClient.get('/discovery/boosts/available');
+
       final Map<String, dynamic> responseData =
           response.data as Map<String, dynamic>;
       final bool hasBoosts = responseData['hasBoosts'] ?? false;
@@ -195,10 +194,7 @@ class DiscoveryService {
     bool? superLikesOnly,
   }) async {
     try {
-      final queryParams = <String, dynamic>{
-        'page': page,
-        'limit': limit,
-      };
+      final queryParams = <String, dynamic>{'page': page, 'limit': limit};
 
       // Add filter parameters if provided
       if (superLikesOnly != null) {
@@ -266,8 +262,7 @@ class DiscoveryService {
       age: age,
       bio: user['bio'] as String? ?? '',
       photos:
-          (user['photos'] as List<dynamic>?)
-              ?.asMap().entries.map((entry) {
+          (user['photos'] as List<dynamic>?)?.asMap().entries.map((entry) {
             final index = entry.key;
             final photo = entry.value;
 
@@ -303,9 +298,7 @@ class DiscoveryService {
               order: index,
               isVerified: false,
             );
-          },
-              )
-              .toList() ??
+          }).toList() ??
           [],
       location: user['coordinates'] != null
           ? UserLocation(

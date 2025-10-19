@@ -76,8 +76,7 @@ class _IntentSelectionScreenState extends State<IntentSelectionScreen> {
 
   Future<void> _continue() async {
     if (_selectedIntent == null) {
-      PulseToast.error(context, message: 'Please select your primary intent',
-      );
+      PulseToast.error(context, message: 'Please select your primary intent');
       return;
     }
 
@@ -97,8 +96,7 @@ class _IntentSelectionScreenState extends State<IntentSelectionScreen> {
       }
     } catch (e) {
       if (mounted) {
-        PulseToast.error(context, message: 'Failed to save preferences: $e',
-        );
+        PulseToast.error(context, message: 'Failed to save preferences: $e');
       }
     }
   }
@@ -155,30 +153,27 @@ class _IntentSelectionScreenState extends State<IntentSelectionScreen> {
                         horizontal: PulseSpacing.lg,
                       ),
                       sliver: SliverList(
-                        delegate: SliverChildBuilderDelegate(
-                          (context, index) {
-                            final option = _intentOptions[index];
-                            final isSelected = _selectedIntent == option.id;
+                        delegate: SliverChildBuilderDelegate((context, index) {
+                          final option = _intentOptions[index];
+                          final isSelected = _selectedIntent == option.id;
 
-                            return Padding(
-                              padding: const EdgeInsets.only(
-                                bottom: PulseSpacing.md,
-                              ),
-                              child: IntentCard(
-                                option: option,
-                                isSelected: isSelected,
-                                onTap: () {
-                                  setState(() {
-                                    _selectedIntent = option.id;
-                                    // Remove from secondary if selected as primary
-                                    _secondaryIntents.remove(option.id);
-                                  });
-                                },
-                              ),
-                            );
-                          },
-                          childCount: _intentOptions.length,
-                        ),
+                          return Padding(
+                            padding: const EdgeInsets.only(
+                              bottom: PulseSpacing.md,
+                            ),
+                            child: IntentCard(
+                              option: option,
+                              isSelected: isSelected,
+                              onTap: () {
+                                setState(() {
+                                  _selectedIntent = option.id;
+                                  // Remove from secondary if selected as primary
+                                  _secondaryIntents.remove(option.id);
+                                });
+                              },
+                            ),
+                          );
+                        }, childCount: _intentOptions.length),
                       ),
                     ),
 
@@ -212,35 +207,35 @@ class _IntentSelectionScreenState extends State<IntentSelectionScreen> {
                                 children: _intentOptions
                                     .where((opt) => opt.id != _selectedIntent)
                                     .map((option) {
-                                  final isSelected =
-                                      _secondaryIntents.contains(option.id);
-                                  return ChoiceChip(
-                                    label: Text(option.title),
-                                    selected: isSelected,
-                                    onSelected: (selected) {
-                                      _toggleSecondaryIntent(option.id);
-                                    },
-                                    avatar: Icon(
-                                      option.icon,
-                                      size: 18,
-                                      color: isSelected
-                                          ? Colors.white
-                                          : option.color,
-                                    ),
-                                    selectedColor: option.color,
-                                    backgroundColor: option.color.withValues(
-                                      alpha: 0.1,
-                                    ),
-                                    labelStyle: TextStyle(
-                                      color: isSelected
-                                          ? Colors.white
-                                          : PulseColors.onSurface,
-                                      fontWeight: isSelected
-                                          ? FontWeight.w600
-                                          : FontWeight.normal,
-                                    ),
-                                  );
-                                }).toList(),
+                                      final isSelected = _secondaryIntents
+                                          .contains(option.id);
+                                      return ChoiceChip(
+                                        label: Text(option.title),
+                                        selected: isSelected,
+                                        onSelected: (selected) {
+                                          _toggleSecondaryIntent(option.id);
+                                        },
+                                        avatar: Icon(
+                                          option.icon,
+                                          size: 18,
+                                          color: isSelected
+                                              ? Colors.white
+                                              : option.color,
+                                        ),
+                                        selectedColor: option.color,
+                                        backgroundColor: option.color
+                                            .withValues(alpha: 0.1),
+                                        labelStyle: TextStyle(
+                                          color: isSelected
+                                              ? Colors.white
+                                              : PulseColors.onSurface,
+                                          fontWeight: isSelected
+                                              ? FontWeight.w600
+                                              : FontWeight.normal,
+                                        ),
+                                      );
+                                    })
+                                    .toList(),
                               ),
                             ],
                           ),
@@ -248,9 +243,7 @@ class _IntentSelectionScreenState extends State<IntentSelectionScreen> {
                       ),
 
                     // Bottom Spacing
-                    const SliverToBoxAdapter(
-                      child: SizedBox(height: 100),
-                    ),
+                    const SliverToBoxAdapter(child: SizedBox(height: 100)),
                   ],
                 ),
               ),
@@ -273,9 +266,7 @@ class _IntentSelectionScreenState extends State<IntentSelectionScreen> {
                   children: [
                     if (_selectedIntent != null)
                       Padding(
-                        padding: const EdgeInsets.only(
-                          bottom: PulseSpacing.md,
-                        ),
+                        padding: const EdgeInsets.only(bottom: PulseSpacing.md),
                         child: Text(
                           _secondaryIntents.isEmpty
                               ? 'Primary: ${_intentOptions.firstWhere((o) => o.id == _selectedIntent).title}'
@@ -404,11 +395,7 @@ class IntentCard extends StatelessWidget {
 
             // Selected Indicator
             if (isSelected)
-              Icon(
-                Icons.check_circle,
-                color: option.color,
-                size: 28,
-              ),
+              Icon(Icons.check_circle, color: option.color, size: 28),
           ],
         ),
       ),

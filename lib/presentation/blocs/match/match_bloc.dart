@@ -9,10 +9,9 @@ import 'match_state.dart';
 class MatchBloc extends Bloc<MatchEvent, MatchState> {
   final MatchingService _matchingService;
 
-  MatchBloc({
-    required MatchingService matchingService,
-  })  : _matchingService = matchingService,
-        super(const MatchInitial()) {
+  MatchBloc({required MatchingService matchingService})
+    : _matchingService = matchingService,
+      super(const MatchInitial()) {
     on<LoadMatches>(_onLoadMatches);
     on<LoadMatchSuggestions>(_onLoadMatchSuggestions);
     on<CreateMatch>(_onCreateMatch);
@@ -31,7 +30,7 @@ class MatchBloc extends Bloc<MatchEvent, MatchState> {
     Emitter<MatchState> emit,
   ) async {
     emit(MatchLoading());
-    
+
     try {
       final matches = await _matchingService.getMatches(
         status: event.status,
@@ -39,15 +38,15 @@ class MatchBloc extends Bloc<MatchEvent, MatchState> {
         offset: event.offset,
         excludeWithConversations: event.excludeWithConversations,
       );
-      
-      emit(MatchesLoaded(
-        matches: matches,
-        hasMore: matches.length >= (event.limit ?? 20),
-      ));
+
+      emit(
+        MatchesLoaded(
+          matches: matches,
+          hasMore: matches.length >= (event.limit ?? 20),
+        ),
+      );
     } catch (error) {
-      emit(MatchError(
-        message: 'Failed to load matches: ${error.toString()}',
-      ));
+      emit(MatchError(message: 'Failed to load matches: ${error.toString()}'));
     }
   }
 
@@ -57,22 +56,26 @@ class MatchBloc extends Bloc<MatchEvent, MatchState> {
     Emitter<MatchState> emit,
   ) async {
     emit(MatchLoading());
-    
+
     try {
       final suggestions = await _matchingService.getMatchSuggestions(
         limit: event.limit,
         useAI: event.useAI,
         filters: event.filters,
       );
-      
-      emit(MatchSuggestionsLoaded(
-        suggestions: suggestions,
-        hasMore: suggestions.length >= event.limit,
-      ));
+
+      emit(
+        MatchSuggestionsLoaded(
+          suggestions: suggestions,
+          hasMore: suggestions.length >= event.limit,
+        ),
+      );
     } catch (error) {
-      emit(MatchError(
-        message: 'Failed to load match suggestions: ${error.toString()}',
-      ));
+      emit(
+        MatchError(
+          message: 'Failed to load match suggestions: ${error.toString()}',
+        ),
+      );
     }
   }
 
@@ -83,20 +86,22 @@ class MatchBloc extends Bloc<MatchEvent, MatchState> {
   ) async {
     final currentState = state;
     emit(MatchActionInProgress());
-    
+
     try {
       final match = await _matchingService.createMatch(
         targetUserId: event.targetUserId,
         isSuper: event.isSuper,
       );
-      
+
       // If it's a mutual match, show match success
       if (match.isMatched) {
-        emit(MatchCreated(
-          match: match,
-          isNewMatch: true,
-          message: 'Congratulations! You have a new match!',
-        ));
+        emit(
+          MatchCreated(
+            match: match,
+            isNewMatch: true,
+            message: 'Congratulations! You have a new match!',
+          ),
+        );
       } else {
         // Just a like, restore previous state
         if (currentState is MatchSuggestionsLoaded) {
@@ -104,19 +109,19 @@ class MatchBloc extends Bloc<MatchEvent, MatchState> {
           final updatedSuggestions = currentState.suggestions
               .where((user) => user.id != event.targetUserId)
               .toList();
-          
-          emit(MatchSuggestionsLoaded(
-            suggestions: updatedSuggestions,
-            hasMore: currentState.hasMore,
-          ));
+
+          emit(
+            MatchSuggestionsLoaded(
+              suggestions: updatedSuggestions,
+              hasMore: currentState.hasMore,
+            ),
+          );
         } else {
           emit(MatchActionSuccess(message: 'Like sent successfully'));
         }
       }
     } catch (error) {
-      emit(MatchError(
-        message: 'Failed to create match: ${error.toString()}',
-      ));
+      emit(MatchError(message: 'Failed to create match: ${error.toString()}'));
     }
   }
 
@@ -126,18 +131,18 @@ class MatchBloc extends Bloc<MatchEvent, MatchState> {
     Emitter<MatchState> emit,
   ) async {
     emit(MatchActionInProgress());
-    
+
     try {
       final updatedMatch = await _matchingService.acceptMatch(event.matchId);
-      
-      emit(MatchAccepted(
-        match: updatedMatch,
-        message: 'Match accepted! You can now start chatting.',
-      ));
+
+      emit(
+        MatchAccepted(
+          match: updatedMatch,
+          message: 'Match accepted! You can now start chatting.',
+        ),
+      );
     } catch (error) {
-      emit(MatchError(
-        message: 'Failed to accept match: ${error.toString()}',
-      ));
+      emit(MatchError(message: 'Failed to accept match: ${error.toString()}'));
     }
   }
 
@@ -147,18 +152,13 @@ class MatchBloc extends Bloc<MatchEvent, MatchState> {
     Emitter<MatchState> emit,
   ) async {
     emit(MatchActionInProgress());
-    
+
     try {
       await _matchingService.rejectMatch(event.matchId);
-      
-      emit(MatchRejected(
-        matchId: event.matchId,
-        message: 'Match rejected',
-      ));
+
+      emit(MatchRejected(matchId: event.matchId, message: 'Match rejected'));
     } catch (error) {
-      emit(MatchError(
-        message: 'Failed to reject match: ${error.toString()}',
-      ));
+      emit(MatchError(message: 'Failed to reject match: ${error.toString()}'));
     }
   }
 
@@ -168,18 +168,18 @@ class MatchBloc extends Bloc<MatchEvent, MatchState> {
     Emitter<MatchState> emit,
   ) async {
     emit(MatchActionInProgress());
-    
+
     try {
       await _matchingService.unmatchUser(event.matchId);
-      
-      emit(MatchUnmatched(
-        matchId: event.matchId,
-        message: 'User unmatched successfully',
-      ));
+
+      emit(
+        MatchUnmatched(
+          matchId: event.matchId,
+          message: 'User unmatched successfully',
+        ),
+      );
     } catch (error) {
-      emit(MatchError(
-        message: 'Failed to unmatch user: ${error.toString()}',
-      ));
+      emit(MatchError(message: 'Failed to unmatch user: ${error.toString()}'));
     }
   }
 
@@ -189,17 +189,19 @@ class MatchBloc extends Bloc<MatchEvent, MatchState> {
     Emitter<MatchState> emit,
   ) async {
     emit(MatchLoading());
-    
+
     try {
-      final matchDetails = await _matchingService.getMatchDetails(event.matchId);
-      
-      emit(MatchDetailsLoaded(
-        match: matchDetails,
-      ));
+      final matchDetails = await _matchingService.getMatchDetails(
+        event.matchId,
+      );
+
+      emit(MatchDetailsLoaded(match: matchDetails));
     } catch (error) {
-      emit(MatchError(
-        message: 'Failed to load match details: ${error.toString()}',
-      ));
+      emit(
+        MatchError(
+          message: 'Failed to load match details: ${error.toString()}',
+        ),
+      );
     }
   }
 
@@ -209,29 +211,30 @@ class MatchBloc extends Bloc<MatchEvent, MatchState> {
     Emitter<MatchState> emit,
   ) async {
     emit(MatchActionInProgress());
-    
+
     try {
       final updatedMatch = await _matchingService.updateMatchStatus(
         matchId: event.matchId,
         status: event.status,
       );
-      
-      emit(MatchStatusUpdated(
-        match: updatedMatch,
-        message: 'Match status updated to ${event.status}',
-      ));
+
+      emit(
+        MatchStatusUpdated(
+          match: updatedMatch,
+          message: 'Match status updated to ${event.status}',
+        ),
+      );
     } catch (error) {
-      emit(MatchError(
-        message: 'Failed to update match status: ${error.toString()}',
-      ));
+      emit(
+        MatchError(
+          message: 'Failed to update match status: ${error.toString()}',
+        ),
+      );
     }
   }
 
   /// Reset match state to initial
-  void _onResetMatchState(
-    ResetMatchState event,
-    Emitter<MatchState> emit,
-  ) {
+  void _onResetMatchState(ResetMatchState event, Emitter<MatchState> emit) {
     emit(const MatchInitial());
   }
 

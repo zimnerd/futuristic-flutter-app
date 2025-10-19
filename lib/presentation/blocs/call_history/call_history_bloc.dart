@@ -11,10 +11,9 @@ class CallHistoryBloc extends Bloc<CallHistoryEvent, CallHistoryState> {
   int _currentPage = 1;
   CallHistoryFilters? _currentFilters;
 
-  CallHistoryBloc({
-    CallHistoryRepository? repository,
-  })  : _repository = repository ?? CallHistoryRepository(),
-        super(const CallHistoryInitial()) {
+  CallHistoryBloc({CallHistoryRepository? repository})
+    : _repository = repository ?? CallHistoryRepository(),
+      super(const CallHistoryInitial()) {
     // Register event handlers
     on<LoadCallHistory>(_onLoadCallHistory);
     on<RefreshCallHistory>(_onRefreshCallHistory);
@@ -42,11 +41,13 @@ class CallHistoryBloc extends Bloc<CallHistoryEvent, CallHistoryState> {
         filters: _currentFilters,
       );
 
-      emit(CallHistoryLoaded(
-        calls: response.calls,
-        pagination: response.pagination,
-        appliedFilters: _currentFilters,
-      ));
+      emit(
+        CallHistoryLoaded(
+          calls: response.calls,
+          pagination: response.pagination,
+          appliedFilters: _currentFilters,
+        ),
+      );
     } catch (e) {
       emit(CallHistoryError('Failed to load call history: ${e.toString()}'));
     }
@@ -64,10 +65,12 @@ class CallHistoryBloc extends Bloc<CallHistoryEvent, CallHistoryState> {
           ? currentState.calls
           : <CallHistoryItem>[];
 
-      emit(CallHistoryRefreshing(
-        existingCalls: existingCalls,
-        appliedFilters: event.filters ?? _currentFilters,
-      ));
+      emit(
+        CallHistoryRefreshing(
+          existingCalls: existingCalls,
+          appliedFilters: event.filters ?? _currentFilters,
+        ),
+      );
 
       _currentPage = 1;
       _currentFilters = event.filters ?? _currentFilters;
@@ -77,27 +80,31 @@ class CallHistoryBloc extends Bloc<CallHistoryEvent, CallHistoryState> {
         filters: _currentFilters,
       );
 
-      emit(CallHistoryLoaded(
-        calls: response.calls,
-        pagination: response.pagination,
-        appliedFilters: _currentFilters,
-      ));
+      emit(
+        CallHistoryLoaded(
+          calls: response.calls,
+          pagination: response.pagination,
+          appliedFilters: _currentFilters,
+        ),
+      );
     } catch (e) {
       // Revert to previous state on error
       final currentState = state;
       if (currentState is CallHistoryRefreshing) {
-        emit(CallHistoryLoaded(
-          calls: currentState.existingCalls,
-          pagination: PaginationMetadata(
-            page: _currentPage,
-            limit: 20,
-            total: currentState.existingCalls.length,
-            totalPages: 1,
-            hasNext: false,
-            hasPrev: false,
+        emit(
+          CallHistoryLoaded(
+            calls: currentState.existingCalls,
+            pagination: PaginationMetadata(
+              page: _currentPage,
+              limit: 20,
+              total: currentState.existingCalls.length,
+              totalPages: 1,
+              hasNext: false,
+              hasPrev: false,
+            ),
+            appliedFilters: currentState.appliedFilters,
           ),
-          appliedFilters: currentState.appliedFilters,
-        ));
+        );
       }
       emit(CallHistoryError('Failed to refresh call history: ${e.toString()}'));
     }
@@ -130,18 +137,21 @@ class CallHistoryBloc extends Bloc<CallHistoryEvent, CallHistoryState> {
       // Append new calls to existing list
       final updatedCalls = [...currentState.calls, ...response.calls];
 
-      emit(CallHistoryLoaded(
-        calls: updatedCalls,
-        pagination: response.pagination,
-        appliedFilters: _currentFilters,
-        isLoadingMore: false,
-      ));
+      emit(
+        CallHistoryLoaded(
+          calls: updatedCalls,
+          pagination: response.pagination,
+          appliedFilters: _currentFilters,
+          isLoadingMore: false,
+        ),
+      );
     } catch (e) {
       // Revert page number and hide loading indicator
       _currentPage--;
       emit(currentState.copyWith(isLoadingMore: false));
-      emit(CallHistoryError(
-          'Failed to load more call history: ${e.toString()}'));
+      emit(
+        CallHistoryError('Failed to load more call history: ${e.toString()}'),
+      );
     }
   }
 
@@ -154,51 +164,61 @@ class CallHistoryBloc extends Bloc<CallHistoryEvent, CallHistoryState> {
     if (currentState is! CallHistoryLoaded) return;
 
     try {
-      emit(CallHistoryDeleting(
-        callId: event.callId,
-        calls: currentState.calls,
-        pagination: currentState.pagination,
-      ));
+      emit(
+        CallHistoryDeleting(
+          callId: event.callId,
+          calls: currentState.calls,
+          pagination: currentState.pagination,
+        ),
+      );
 
       await _repository.deleteCallRecord(event.callId);
 
       // Remove deleted call from list
-      final updatedCalls =
-          currentState.calls.where((call) => call.id != event.callId).toList();
+      final updatedCalls = currentState.calls
+          .where((call) => call.id != event.callId)
+          .toList();
 
       // Update pagination metadata
       final updatedPagination = PaginationMetadata(
         page: currentState.pagination.page,
         limit: currentState.pagination.limit,
         total: currentState.pagination.total - 1,
-        totalPages: ((currentState.pagination.total - 1) /
-                currentState.pagination.limit)
-            .ceil(),
+        totalPages:
+            ((currentState.pagination.total - 1) /
+                    currentState.pagination.limit)
+                .ceil(),
         hasNext: currentState.pagination.hasNext,
         hasPrev: currentState.pagination.hasPrev,
       );
 
-      emit(CallHistoryDeleted(
-        callId: event.callId,
-        updatedCalls: updatedCalls,
-        updatedPagination: updatedPagination,
-      ));
+      emit(
+        CallHistoryDeleted(
+          callId: event.callId,
+          updatedCalls: updatedCalls,
+          updatedPagination: updatedPagination,
+        ),
+      );
 
       // Return to loaded state with updated data
-      emit(CallHistoryLoaded(
-        calls: updatedCalls,
-        pagination: updatedPagination,
-        appliedFilters: currentState.appliedFilters,
-        statistics: currentState.statistics,
-      ));
+      emit(
+        CallHistoryLoaded(
+          calls: updatedCalls,
+          pagination: updatedPagination,
+          appliedFilters: currentState.appliedFilters,
+          statistics: currentState.statistics,
+        ),
+      );
     } catch (e) {
       // Revert to previous state
-      emit(CallHistoryLoaded(
-        calls: currentState.calls,
-        pagination: currentState.pagination,
-        appliedFilters: currentState.appliedFilters,
-        statistics: currentState.statistics,
-      ));
+      emit(
+        CallHistoryLoaded(
+          calls: currentState.calls,
+          pagination: currentState.pagination,
+          appliedFilters: currentState.appliedFilters,
+          statistics: currentState.statistics,
+        ),
+      );
       emit(CallHistoryError('Failed to delete call record: ${e.toString()}'));
     }
   }
@@ -219,11 +239,13 @@ class CallHistoryBloc extends Bloc<CallHistoryEvent, CallHistoryState> {
         filters: _currentFilters,
       );
 
-      emit(CallHistoryLoaded(
-        calls: response.calls,
-        pagination: response.pagination,
-        appliedFilters: _currentFilters,
-      ));
+      emit(
+        CallHistoryLoaded(
+          calls: response.calls,
+          pagination: response.pagination,
+          appliedFilters: _currentFilters,
+        ),
+      );
     } catch (e) {
       emit(CallHistoryError('Failed to apply filters: ${e.toString()}'));
     }
@@ -250,8 +272,9 @@ class CallHistoryBloc extends Bloc<CallHistoryEvent, CallHistoryState> {
         emit(CallStatisticsLoaded(statistics));
       }
     } catch (e) {
-      emit(CallStatisticsError(
-          'Failed to load call statistics: ${e.toString()}'));
+      emit(
+        CallStatisticsError('Failed to load call statistics: ${e.toString()}'),
+      );
     }
   }
 
@@ -267,10 +290,12 @@ class CallHistoryBloc extends Bloc<CallHistoryEvent, CallHistoryState> {
 
       emit(CallDetailsLoaded(details));
     } catch (e) {
-      emit(CallDetailsError(
-        message: 'Failed to load call details: ${e.toString()}',
-        callId: event.callId,
-      ));
+      emit(
+        CallDetailsError(
+          message: 'Failed to load call details: ${e.toString()}',
+          callId: event.callId,
+        ),
+      );
     }
   }
 

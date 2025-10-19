@@ -72,10 +72,7 @@ class NotificationError extends NotificationState {
   final String message;
   final String? errorCode;
 
-  const NotificationError({
-    required this.message,
-    this.errorCode,
-  });
+  const NotificationError({required this.message, this.errorCode});
 
   @override
   List<Object?> get props => [message, errorCode];

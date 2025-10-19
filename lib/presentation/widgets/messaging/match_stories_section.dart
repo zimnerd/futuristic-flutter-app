@@ -88,7 +88,7 @@ class MatchStoriesSection extends StatelessWidget {
                       ),
                     );
                   }
-                  
+
                   final match = matches[index];
                   return _MatchStoryAvatar(
                     match: match,
@@ -108,10 +108,7 @@ class _MatchStoryAvatar extends StatelessWidget {
   final MatchStoryData match;
   final VoidCallback onTap;
 
-  const _MatchStoryAvatar({
-    required this.match,
-    required this.onTap,
-  });
+  const _MatchStoryAvatar({required this.match, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -217,7 +214,6 @@ class _MatchStoryAvatar extends StatelessWidget {
     final now = DateTime.now();
     final difference = now.difference(matchTime);
 
-
     // Handle edge cases
     if (difference.isNegative) {
       // Future time - might be a timezone issue or bad data
@@ -277,8 +273,8 @@ class MatchStoryData {
       id: match.id,
       userId: userProfile.id,
       name: userProfile.name,
-      avatarUrl: userProfile.photos.isNotEmpty 
-          ? userProfile.photos.first.url 
+      avatarUrl: userProfile.photos.isNotEmpty
+          ? userProfile.photos.first.url
           : '',
       avatarBlurhash: userProfile.photos.isNotEmpty
           ? userProfile.photos.first.blurhash

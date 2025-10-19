@@ -36,10 +36,7 @@ class NotificationRemoteDataSourceImpl implements NotificationRemoteDataSource {
 
       final response = await _apiService.get(
         '/notifications',
-        queryParameters: {
-          'page': page,
-          'limit': limit,
-        },
+        queryParameters: {'page': page, 'limit': limit},
       );
 
       if (response.statusCode == 200) {
@@ -97,7 +94,9 @@ class NotificationRemoteDataSourceImpl implements NotificationRemoteDataSource {
     } catch (e) {
       _logger.e('Mark notification as read error: $e');
       if (e is ApiException) rethrow;
-      throw ApiException('Failed to mark notification as read: ${e.toString()}');
+      throw ApiException(
+        'Failed to mark notification as read: ${e.toString()}',
+      );
     }
   }
 
@@ -116,7 +115,9 @@ class NotificationRemoteDataSourceImpl implements NotificationRemoteDataSource {
     } catch (e) {
       _logger.e('Mark all notifications as read error: $e');
       if (e is ApiException) rethrow;
-      throw ApiException('Failed to mark all notifications as read: ${e.toString()}');
+      throw ApiException(
+        'Failed to mark all notifications as read: ${e.toString()}',
+      );
     }
   }
 
@@ -125,7 +126,9 @@ class NotificationRemoteDataSourceImpl implements NotificationRemoteDataSource {
     try {
       _logger.i('Deleting notification: $notificationId');
 
-      final response = await _apiService.delete('/notifications/$notificationId');
+      final response = await _apiService.delete(
+        '/notifications/$notificationId',
+      );
 
       if (response.statusCode != 200 && response.statusCode != 204) {
         throw ApiException(
@@ -176,12 +179,16 @@ class NotificationRemoteDataSourceImpl implements NotificationRemoteDataSource {
     } catch (e) {
       _logger.e('Get notification preferences error: $e');
       if (e is ApiException) rethrow;
-      throw ApiException('Failed to get notification preferences: ${e.toString()}');
+      throw ApiException(
+        'Failed to get notification preferences: ${e.toString()}',
+      );
     }
   }
 
   @override
-  Future<void> updateNotificationPreferences(Map<String, bool> preferences) async {
+  Future<void> updateNotificationPreferences(
+    Map<String, bool> preferences,
+  ) async {
     try {
       _logger.i('Updating notification preferences');
 
@@ -198,7 +205,9 @@ class NotificationRemoteDataSourceImpl implements NotificationRemoteDataSource {
     } catch (e) {
       _logger.e('Update notification preferences error: $e');
       if (e is ApiException) rethrow;
-      throw ApiException('Failed to update notification preferences: ${e.toString()}');
+      throw ApiException(
+        'Failed to update notification preferences: ${e.toString()}',
+      );
     }
   }
 }

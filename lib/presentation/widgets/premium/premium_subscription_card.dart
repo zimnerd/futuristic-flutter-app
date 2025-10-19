@@ -20,7 +20,8 @@ class PremiumSubscriptionCard extends StatefulWidget {
   final bool showDiscount;
 
   @override
-  State<PremiumSubscriptionCard> createState() => _PremiumSubscriptionCardState();
+  State<PremiumSubscriptionCard> createState() =>
+      _PremiumSubscriptionCardState();
 }
 
 class _PremiumSubscriptionCardState extends State<PremiumSubscriptionCard>
@@ -33,25 +34,25 @@ class _PremiumSubscriptionCardState extends State<PremiumSubscriptionCard>
   @override
   void initState() {
     super.initState();
-    
+
     _shimmerController = AnimationController(
       duration: const Duration(milliseconds: 2000),
       vsync: this,
     );
-    
+
     _selectionController = AnimationController(
       duration: const Duration(milliseconds: 300),
       vsync: this,
     );
-    
+
     _shimmerAnimation = Tween<double>(begin: -1.0, end: 1.0).animate(
       CurvedAnimation(parent: _shimmerController, curve: Curves.easeInOut),
     );
-    
+
     _scaleAnimation = Tween<double>(begin: 1.0, end: 1.02).animate(
       CurvedAnimation(parent: _selectionController, curve: Curves.easeOut),
     );
-    
+
     if (widget.plan.isPopular) {
       _shimmerController.repeat();
     }
@@ -60,7 +61,7 @@ class _PremiumSubscriptionCardState extends State<PremiumSubscriptionCard>
   @override
   void didUpdateWidget(PremiumSubscriptionCard oldWidget) {
     super.didUpdateWidget(oldWidget);
-    
+
     if (widget.isSelected != oldWidget.isSelected) {
       if (widget.isSelected) {
         _selectionController.forward();
@@ -99,16 +100,16 @@ class _PremiumSubscriptionCardState extends State<PremiumSubscriptionCard>
                     : null,
                 color: widget.isSelected ? null : Colors.white,
                 border: Border.all(
-                  color: widget.isSelected 
-                      ? Colors.transparent 
+                  color: widget.isSelected
+                      ? Colors.transparent
                       : widget.plan.isPopular
-                          ? PulseColors.primary
-                          : Colors.grey.shade300,
+                      ? PulseColors.primary
+                      : Colors.grey.shade300,
                   width: widget.plan.isPopular ? 2 : 1,
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: widget.isSelected 
+                    color: widget.isSelected
                         ? PulseColors.primary.withValues(alpha: 0.3)
                         : Colors.black.withValues(alpha: 0.1),
                     blurRadius: widget.isSelected ? 20 : 10,
@@ -122,7 +123,7 @@ class _PremiumSubscriptionCardState extends State<PremiumSubscriptionCard>
                   // Shimmer effect for popular plans
                   if (widget.plan.isPopular && !widget.isSelected)
                     _buildShimmerEffect(),
-                  
+
                   // Main content
                   Padding(
                     padding: const EdgeInsets.all(20),
@@ -141,8 +142,8 @@ class _PremiumSubscriptionCardState extends State<PremiumSubscriptionCard>
                                     style: TextStyle(
                                       fontSize: 20,
                                       fontWeight: FontWeight.bold,
-                                      color: widget.isSelected 
-                                          ? Colors.white 
+                                      color: widget.isSelected
+                                          ? Colors.white
                                           : Colors.black87,
                                     ),
                                   ),
@@ -151,8 +152,8 @@ class _PremiumSubscriptionCardState extends State<PremiumSubscriptionCard>
                                       widget.plan.description,
                                       style: TextStyle(
                                         fontSize: 14,
-                                        color: widget.isSelected 
-                                            ? Colors.white70 
+                                        color: widget.isSelected
+                                            ? Colors.white70
                                             : Colors.grey[600],
                                       ),
                                     ),
@@ -166,8 +167,8 @@ class _PremiumSubscriptionCardState extends State<PremiumSubscriptionCard>
                                   vertical: 6,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: widget.isSelected 
-                                      ? Colors.white 
+                                  color: widget.isSelected
+                                      ? Colors.white
                                       : PulseColors.primary,
                                   borderRadius: BorderRadius.circular(20),
                                 ),
@@ -176,17 +177,17 @@ class _PremiumSubscriptionCardState extends State<PremiumSubscriptionCard>
                                   style: TextStyle(
                                     fontSize: 10,
                                     fontWeight: FontWeight.bold,
-                                    color: widget.isSelected 
-                                        ? PulseColors.primary 
+                                    color: widget.isSelected
+                                        ? PulseColors.primary
                                         : Colors.white,
                                   ),
                                 ),
                               ),
                           ],
                         ),
-                        
+
                         const SizedBox(height: 16),
-                        
+
                         // Pricing
                         Row(
                           crossAxisAlignment: CrossAxisAlignment.end,
@@ -196,8 +197,8 @@ class _PremiumSubscriptionCardState extends State<PremiumSubscriptionCard>
                               style: TextStyle(
                                 fontSize: 32,
                                 fontWeight: FontWeight.bold,
-                                color: widget.isSelected 
-                                    ? Colors.white 
+                                color: widget.isSelected
+                                    ? Colors.white
                                     : Colors.black87,
                               ),
                             ),
@@ -205,12 +206,13 @@ class _PremiumSubscriptionCardState extends State<PremiumSubscriptionCard>
                               '/${widget.plan.interval}',
                               style: TextStyle(
                                 fontSize: 16,
-                                color: widget.isSelected 
-                                    ? Colors.white70 
+                                color: widget.isSelected
+                                    ? Colors.white70
                                     : Colors.grey[600],
                               ),
                             ),
-                            if (widget.showDiscount && (widget.plan.discountPercent ?? 0) > 0) ...[
+                            if (widget.showDiscount &&
+                                (widget.plan.discountPercent ?? 0) > 0) ...[
                               const SizedBox(width: 8),
                               Container(
                                 padding: const EdgeInsets.symmetric(
@@ -233,27 +235,27 @@ class _PremiumSubscriptionCardState extends State<PremiumSubscriptionCard>
                             ],
                           ],
                         ),
-                        
+
                         if (widget.plan.promoText?.isNotEmpty == true)
                           Text(
                             widget.plan.promoText!,
                             style: TextStyle(
                               fontSize: 14,
-                              color: widget.isSelected 
-                                  ? Colors.white60 
+                              color: widget.isSelected
+                                  ? Colors.white60
                                   : Colors.grey[500],
                             ),
                           ),
-                        
+
                         const SizedBox(height: 20),
-                        
+
                         // Features list
-                        ...widget.plan.features.map((feature) =>
-                          _buildFeatureItem(feature),
+                        ...widget.plan.features.map(
+                          (feature) => _buildFeatureItem(feature),
                         ),
-                        
+
                         const SizedBox(height: 20),
-                        
+
                         // CTA Button
                         if (widget.isSelected)
                           PulseButton(
@@ -266,7 +268,7 @@ class _PremiumSubscriptionCardState extends State<PremiumSubscriptionCard>
                       ],
                     ),
                   ),
-                  
+
                   // Selection indicator
                   if (widget.isSelected)
                     Positioned(
@@ -333,9 +335,7 @@ class _PremiumSubscriptionCardState extends State<PremiumSubscriptionCard>
           Icon(
             Icons.check_circle,
             size: 20,
-            color: widget.isSelected 
-                ? Colors.white 
-                : PulseColors.primary,
+            color: widget.isSelected ? Colors.white : PulseColors.primary,
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -343,9 +343,7 @@ class _PremiumSubscriptionCardState extends State<PremiumSubscriptionCard>
               feature,
               style: TextStyle(
                 fontSize: 14,
-                color: widget.isSelected 
-                    ? Colors.white 
-                    : Colors.black87,
+                color: widget.isSelected ? Colors.white : Colors.black87,
               ),
             ),
           ),
@@ -376,10 +374,7 @@ class _PremiumSubscriptionCardState extends State<PremiumSubscriptionCard>
                 children: [
                   const Text(
                     'Select Payment Method',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
                   IconButton(
                     onPressed: () => Navigator.of(context).pop(),
@@ -388,7 +383,7 @@ class _PremiumSubscriptionCardState extends State<PremiumSubscriptionCard>
                 ],
               ),
               const SizedBox(height: 20),
-              
+
               // Payment methods list
               Expanded(
                 child: ListView(
@@ -433,10 +428,7 @@ class _PremiumSubscriptionCardState extends State<PremiumSubscriptionCard>
     return Card(
       child: ListTile(
         leading: Icon(icon, size: 32, color: Colors.blue),
-        title: Text(
-          title,
-          style: const TextStyle(fontWeight: FontWeight.w600),
-        ),
+        title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
         subtitle: Text(subtitle),
         trailing: const Icon(Icons.arrow_forward_ios),
         onTap: onTap,
@@ -446,7 +438,7 @@ class _PremiumSubscriptionCardState extends State<PremiumSubscriptionCard>
 
   void _selectPaymentMethod(String paymentType) {
     Navigator.of(context).pop();
-    
+
     // Show payment method selected feedback
     if (mounted) {
       PulseToast.info(
@@ -454,7 +446,7 @@ class _PremiumSubscriptionCardState extends State<PremiumSubscriptionCard>
         message: 'Selected payment method: $paymentType',
       );
     }
-    
+
     // In a real implementation, this would proceed with the subscription process
     // using the selected payment method
     _proceedWithSubscription(paymentType);
@@ -467,7 +459,9 @@ class _PremiumSubscriptionCardState extends State<PremiumSubscriptionCard>
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Subscription'),
-        content: Text('Proceeding with ${widget.plan.name} subscription using $paymentMethodType'),
+        content: Text(
+          'Proceeding with ${widget.plan.name} subscription using $paymentMethodType',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),

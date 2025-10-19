@@ -6,7 +6,10 @@ abstract class MatchRepository {
   // Swiping & Matching
   Future<void> swipeUser(String swiperId, String swipedUserId, bool isLike);
   Future<MatchModel?> createMatch(
-      String user1Id, String user2Id, double compatibilityScore);
+    String user1Id,
+    String user2Id,
+    double compatibilityScore,
+  );
   Future<List<MatchModel>> getUserMatches(String userId);
   Future<MatchModel?> getMatchById(String matchId);
 
@@ -26,14 +29,21 @@ abstract class MatchRepository {
 
   // Match Preferences & Filters
   Future<void> updateMatchPreferences(
-      String userId, Map<String, dynamic> preferences);
+    String userId,
+    Map<String, dynamic> preferences,
+  );
   Future<Map<String, dynamic>?> getMatchPreferences(String userId);
 
   // Swipe History & Analytics
-  Future<List<Map<String, dynamic>>> getSwipeHistory(String userId,
-      {int limit = 100});
+  Future<List<Map<String, dynamic>>> getSwipeHistory(
+    String userId, {
+    int limit = 100,
+  });
   Future<void> recordSwipeAction(
-      String swiperId, String swipedUserId, bool isLike);
+    String swiperId,
+    String swipedUserId,
+    bool isLike,
+  );
   Future<Map<String, dynamic>> getSwipeStatistics(String userId);
 
   // Super Likes & Premium Features

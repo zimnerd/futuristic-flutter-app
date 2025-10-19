@@ -46,13 +46,11 @@ class StreamCategoryFilter extends StatelessWidget {
                   vertical: 8,
                 ),
                 decoration: BoxDecoration(
-                  color: isSelected 
-                    ? PulseColors.primary 
-                    : Colors.grey[200],
+                  color: isSelected ? PulseColors.primary : Colors.grey[200],
                   borderRadius: BorderRadius.circular(20),
-                  border: isSelected 
-                    ? null 
-                    : Border.all(color: Colors.grey[300]!),
+                  border: isSelected
+                      ? null
+                      : Border.all(color: Colors.grey[300]!),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
@@ -60,9 +58,7 @@ class StreamCategoryFilter extends StatelessWidget {
                     Icon(
                       category['icon'],
                       size: 16,
-                      color: isSelected 
-                        ? Colors.white 
-                        : Colors.grey[600],
+                      color: isSelected ? Colors.white : Colors.grey[600],
                     ),
                     const SizedBox(width: 6),
                     Text(
@@ -70,9 +66,7 @@ class StreamCategoryFilter extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
-                        color: isSelected 
-                          ? Colors.white 
-                          : Colors.grey[700],
+                        color: isSelected ? Colors.white : Colors.grey[700],
                       ),
                     ),
                   ],

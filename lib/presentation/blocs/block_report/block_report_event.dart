@@ -8,10 +8,7 @@ class BlockUser extends BlockReportEvent {
   final String blockedUserId;
   final String? reason;
 
-  BlockUser({
-    required this.blockedUserId,
-    this.reason,
-  });
+  BlockUser({required this.blockedUserId, this.reason});
 }
 
 /// Event to unblock a user

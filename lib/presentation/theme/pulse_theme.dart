@@ -6,7 +6,7 @@ import 'pulse_colors.dart';
 /// Typography styles using Poppins font
 class PulseTextStyles {
   static const String fontFamily = 'Poppins';
-  
+
   static const TextStyle displayLarge = TextStyle(
     fontFamily: fontFamily,
     fontSize: 57,
@@ -395,7 +395,7 @@ class PulseTheme {
 
       outline: PulseColors.outline,
       outlineVariant: PulseColors.outlineVariant,
-      
+
       // Enhanced background hierarchy
       surfaceContainer: PulseColors.surfaceVariantDark,
       surfaceContainerLow: PulseColors.surfaceDark,

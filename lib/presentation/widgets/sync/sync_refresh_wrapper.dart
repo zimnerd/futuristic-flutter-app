@@ -36,7 +36,7 @@ class _SyncRefreshWrapperState extends State<SyncRefreshWrapper> {
         children: [
           // Optional sync status indicator
           if (widget.showSyncStatus) _buildSyncStatusIndicator(),
-          
+
           // Main content
           Expanded(child: widget.child),
         ],
@@ -47,31 +47,34 @@ class _SyncRefreshWrapperState extends State<SyncRefreshWrapper> {
   /// Handle pull-to-refresh action
   Future<void> _handleRefresh() async {
     setState(() => _isManualSyncing = true);
-    
+
     // Capture bloc reference before async operations
     final chatBloc = context.read<ChatBloc>();
-    
+
     try {
       _logger.d('SyncRefreshWrapper: Starting manual refresh');
-      
+
       if (widget.conversationId != null) {
         // Sync specific conversation
         final syncManager = BackgroundSyncManager.instance;
-        await syncManager.forceSync(); // Note: We could add conversation-specific sync later
-        
+        await syncManager
+            .forceSync(); // Note: We could add conversation-specific sync later
+
         // Trigger bloc refresh for this conversation
-        chatBloc.add(
-          RefreshMessages(conversationId: widget.conversationId!),
-        );
+        chatBloc.add(RefreshMessages(conversationId: widget.conversationId!));
       } else {
         // Sync all conversations
         chatBloc.add(const SyncConversations());
       }
-      
+
       _logger.i('SyncRefreshWrapper: Manual refresh completed');
     } catch (e, stackTrace) {
-      _logger.e('SyncRefreshWrapper: Manual refresh failed', error: e, stackTrace: stackTrace);
-      
+      _logger.e(
+        'SyncRefreshWrapper: Manual refresh failed',
+        error: e,
+        stackTrace: stackTrace,
+      );
+
       // Show error toast
       if (mounted) {
         PulseToast.error(context, message: 'Failed to sync. Please try again.');
@@ -136,7 +139,7 @@ class _SyncRefreshWrapperState extends State<SyncRefreshWrapper> {
   IconData _getSyncStatusIcon(Map<String, dynamic> status) {
     final isRunning = status['isRunning'] ?? false;
     final isInitialized = status['isInitialized'] ?? false;
-    
+
     if (!isInitialized) return Icons.sync_disabled;
     if (_isManualSyncing) return Icons.sync;
     if (isRunning) return Icons.sync;
@@ -146,7 +149,7 @@ class _SyncRefreshWrapperState extends State<SyncRefreshWrapper> {
   Color _getSyncStatusColor(Map<String, dynamic> status) {
     final isRunning = status['isRunning'] ?? false;
     final isInitialized = status['isInitialized'] ?? false;
-    
+
     if (!isInitialized) return Colors.red;
     if (_isManualSyncing) return Colors.blue;
     if (isRunning) return Colors.green;
@@ -157,11 +160,11 @@ class _SyncRefreshWrapperState extends State<SyncRefreshWrapper> {
     final isRunning = status['isRunning'] ?? false;
     final isInitialized = status['isInitialized'] ?? false;
     final lastSyncTime = status['lastSyncTime'];
-    
+
     if (!isInitialized) return 'Sync not available';
     if (_isManualSyncing) return 'Syncing...';
     if (isRunning) return 'Background sync active';
-    
+
     if (lastSyncTime != null) {
       final lastSync = DateTime.tryParse(lastSyncTime.toString());
       if (lastSync != null) {
@@ -172,7 +175,7 @@ class _SyncRefreshWrapperState extends State<SyncRefreshWrapper> {
         return 'Synced ${diff.inDays}d ago';
       }
     }
-    
+
     return 'Sync status unknown';
   }
 }

@@ -10,10 +10,8 @@ class BlockReportBloc extends Bloc<BlockReportEvent, BlockReportState> {
   final UserRepository userRepository;
   final String currentUserId;
 
-  BlockReportBloc({
-    required this.userRepository,
-    required this.currentUserId,
-  }) : super(BlockReportInitial()) {
+  BlockReportBloc({required this.userRepository, required this.currentUserId})
+    : super(BlockReportInitial()) {
     on<BlockUser>(_onBlockUser);
     on<UnblockUser>(_onUnblockUser);
     on<LoadBlockedUsers>(_onLoadBlockedUsers);
@@ -32,7 +30,9 @@ class BlockReportBloc extends Bloc<BlockReportEvent, BlockReportState> {
       emit(UserBlocked(blockedUserId: event.blockedUserId));
     } catch (e) {
       AppLogger.error('Failed to block user: $e');
-      emit(BlockReportError(message: 'Failed to block user. Please try again.'));
+      emit(
+        BlockReportError(message: 'Failed to block user. Please try again.'),
+      );
     }
   }
 
@@ -46,12 +46,14 @@ class BlockReportBloc extends Bloc<BlockReportEvent, BlockReportState> {
       await userRepository.unblockUser(currentUserId, event.blockedUserId);
       AppLogger.info('User unblocked successfully: ${event.blockedUserId}');
       emit(UserUnblocked(unblockedUserId: event.blockedUserId));
-      
+
       // Reload blocked users list
       add(LoadBlockedUsers());
     } catch (e) {
       AppLogger.error('Failed to unblock user: $e');
-      emit(BlockReportError(message: 'Failed to unblock user. Please try again.'));
+      emit(
+        BlockReportError(message: 'Failed to unblock user. Please try again.'),
+      );
     }
   }
 
@@ -62,7 +64,9 @@ class BlockReportBloc extends Bloc<BlockReportEvent, BlockReportState> {
     emit(BlockReportLoading());
 
     try {
-      final blockedUserIds = await userRepository.getBlockedUsers(currentUserId);
+      final blockedUserIds = await userRepository.getBlockedUsers(
+        currentUserId,
+      );
       AppLogger.info('Loaded ${blockedUserIds.length} blocked users');
       emit(BlockedUsersLoaded(blockedUserIds: blockedUserIds));
     } catch (e) {
@@ -87,7 +91,9 @@ class BlockReportBloc extends Bloc<BlockReportEvent, BlockReportState> {
       emit(UserReported(reportedUserId: event.reportedUserId));
     } catch (e) {
       AppLogger.error('Failed to report user: $e');
-      emit(BlockReportError(message: 'Failed to report user. Please try again.'));
+      emit(
+        BlockReportError(message: 'Failed to report user. Please try again.'),
+      );
     }
   }
 }

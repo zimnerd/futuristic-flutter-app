@@ -36,7 +36,7 @@ class _VideoCallScreenState extends State<VideoCallScreen>
   final MessagingService _messagingService = MessagingService(
     apiClient: ApiClient.instance,
   );
-  
+
   bool _isVideoEnabled = true;
   bool _isAudioEnabled = true;
   bool _isSpeakerEnabled = false;
@@ -54,7 +54,7 @@ class _VideoCallScreenState extends State<VideoCallScreen>
       DeviceOrientation.landscapeLeft,
       DeviceOrientation.landscapeRight,
     ]);
-    
+
     if (widget.isIncoming) {
       _showIncomingCallDialog();
     } else {
@@ -64,9 +64,7 @@ class _VideoCallScreenState extends State<VideoCallScreen>
 
   @override
   void dispose() {
-    SystemChrome.setPreferredOrientations([
-      DeviceOrientation.portraitUp,
-    ]);
+    SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     super.dispose();
   }
 
@@ -94,10 +92,7 @@ class _VideoCallScreenState extends State<VideoCallScreen>
             const SizedBox(height: 16),
             Text(
               widget.remoteUser.name,
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-              ),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 8),
             const Text('Video call'),
@@ -106,10 +101,7 @@ class _VideoCallScreenState extends State<VideoCallScreen>
         actions: [
           TextButton(
             onPressed: _rejectCall,
-            child: const Text(
-              'Decline',
-              style: TextStyle(color: Colors.red),
-            ),
+            child: const Text('Decline', style: TextStyle(color: Colors.red)),
           ),
           ElevatedButton(
             onPressed: _answerCall,
@@ -144,11 +136,11 @@ class _VideoCallScreenState extends State<VideoCallScreen>
       final tokenResponse = await ApiClient.instance.post(
         '/webrtc/calls/${widget.callId}/token',
       );
-      
+
       if (tokenResponse.data == null) {
         throw Exception('Failed to get call token');
       }
-      
+
       final String token = tokenResponse.data['token'] as String;
       final String channelName = tokenResponse.data['channelName'] as String;
 
@@ -156,12 +148,14 @@ class _VideoCallScreenState extends State<VideoCallScreen>
       await _webRTCService.startCall(
         receiverId: widget.remoteUser.id,
         receiverName: widget.remoteUser.name,
-        receiverAvatar: widget.remoteUser.photos.isNotEmpty ? widget.remoteUser.photos.first.url : null,
+        receiverAvatar: widget.remoteUser.photos.isNotEmpty
+            ? widget.remoteUser.photos.first.url
+            : null,
         callType: model.CallType.video,
         channelName: channelName,
         token: token,
       );
-      
+
       setState(() {
         _isCallConnected = true;
         _callStartTime = DateTime.now(); // Start tracking call duration
@@ -183,7 +177,7 @@ class _VideoCallScreenState extends State<VideoCallScreen>
     if (mounted) {
       Navigator.of(context).pop(); // Close dialog
     }
-    
+
     try {
       // Request permissions first
       final hasPermissions = await ensureVideoCallPermissions();
@@ -203,20 +197,17 @@ class _VideoCallScreenState extends State<VideoCallScreen>
       final tokenResponse = await ApiClient.instance.post(
         '/webrtc/calls/${widget.callId}/token',
       );
-      
+
       if (tokenResponse.data == null) {
         throw Exception('Failed to get call token');
       }
-      
+
       final String token = tokenResponse.data['token'] as String;
       final String channelName = tokenResponse.data['channelName'] as String;
 
       // Answer WebRTC call with real token from backend
-      await _webRTCService.answerCall(
-        channelName: channelName,
-        token: token,
-      );
-      
+      await _webRTCService.answerCall(channelName: channelName, token: token);
+
       if (mounted) {
         setState(() {
           _isCallConnected = true;
@@ -299,13 +290,13 @@ class _VideoCallScreenState extends State<VideoCallScreen>
 
       // End the WebRTC call first
       await _webRTCService.endCall();
-      
+
       // Stop call duration timer
       _callDurationTimer?.cancel();
 
       // Try to create call message (don't block navigation if it fails)
       _createCallMessageAsync(duration);
-      
+
       if (mounted) {
         setState(() {
           _isCallConnected = false;
@@ -368,13 +359,13 @@ class _VideoCallScreenState extends State<VideoCallScreen>
           children: [
             // Remote video (full screen)
             _buildRemoteVideo(),
-            
+
             // Local video (picture-in-picture)
             if (_isVideoEnabled) _buildLocalVideo(),
-            
+
             // Call info overlay
             if (_showControls) _buildCallInfo(),
-            
+
             // Call controls
             if (_showControls) _buildCallControls(),
           ],
@@ -421,10 +412,7 @@ class _VideoCallScreenState extends State<VideoCallScreen>
                   const SizedBox(height: 8),
                   const Text(
                     'Calling...',
-                    style: TextStyle(
-                      color: Colors.white70,
-                      fontSize: 16,
-                    ),
+                    style: TextStyle(color: Colors.white70, fontSize: 16),
                   ),
                 ],
               ),
@@ -432,7 +420,9 @@ class _VideoCallScreenState extends State<VideoCallScreen>
           : StreamBuilder<List<int>>(
               stream: _webRTCService.remoteUsersStream,
               builder: (context, snapshot) {
-                if (!snapshot.hasData || snapshot.data!.isEmpty || _webRTCService.engine == null) {
+                if (!snapshot.hasData ||
+                    snapshot.data!.isEmpty ||
+                    _webRTCService.engine == null) {
                   // Waiting for remote user to join
                   return Container(
                     decoration: BoxDecoration(
@@ -453,7 +443,10 @@ class _VideoCallScreenState extends State<VideoCallScreen>
                           const SizedBox(height: 16),
                           Text(
                             'Waiting for ${widget.remoteUser.name.split(' ').first} to join...',
-                            style: const TextStyle(color: Colors.white, fontSize: 16),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                            ),
                           ),
                         ],
                       ),
@@ -462,7 +455,7 @@ class _VideoCallScreenState extends State<VideoCallScreen>
                 }
 
                 final remoteUid = snapshot.data!.first;
-                
+
                 // ✅ RENDER ACTUAL REMOTE VIDEO
                 return AgoraVideoView(
                   controller: VideoViewController.remote(
@@ -522,10 +515,7 @@ class _VideoCallScreenState extends State<VideoCallScreen>
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [
-              Colors.black.withValues(alpha: 0.7),
-              Colors.transparent,
-            ],
+            colors: [Colors.black.withValues(alpha: 0.7), Colors.transparent],
           ),
         ),
         child: Row(
@@ -560,10 +550,7 @@ class _VideoCallScreenState extends State<VideoCallScreen>
                   const SizedBox(height: 4),
                   Text(
                     _formatDuration(_callDuration),
-                    style: const TextStyle(
-                      color: Colors.white70,
-                      fontSize: 14,
-                    ),
+                    style: const TextStyle(color: Colors.white70, fontSize: 14),
                   ),
                 ],
               ],
@@ -603,10 +590,7 @@ class _VideoCallScreenState extends State<VideoCallScreen>
           gradient: LinearGradient(
             begin: Alignment.bottomCenter,
             end: Alignment.topCenter,
-            colors: [
-              Colors.black.withValues(alpha: 0.7),
-              Colors.transparent,
-            ],
+            colors: [Colors.black.withValues(alpha: 0.7), Colors.transparent],
           ),
         ),
         child: CallControls(

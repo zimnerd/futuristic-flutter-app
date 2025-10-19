@@ -3,7 +3,7 @@ import '../../../domain/entities/user_profile.dart';
 import '../../../domain/entities/discovery_types.dart';
 
 /// States for the Discovery system - represents all possible states of the discovery interface
-/// 
+///
 /// Manages the card stack, loading states, matches, and error handling
 /// for the core swiping experience
 abstract class DiscoveryState extends Equatable {
@@ -87,16 +87,16 @@ class DiscoveryLoaded extends DiscoveryState {
 
   @override
   List<Object?> get props => [
-        userStack,
-        currentFilters,
-        lastSwipedUser,
-        lastSwipeAction,
-        canUndo,
-        hasMoreUsers,
-        isBoostActive,
-        boostTimeRemaining,
-        rewindJustCompleted,
-      ];
+    userStack,
+    currentFilters,
+    lastSwipedUser,
+    lastSwipeAction,
+    canUndo,
+    hasMoreUsers,
+    isBoostActive,
+    boostTimeRemaining,
+    rewindJustCompleted,
+  ];
 }
 
 /// A match has been detected - show celebration UI
@@ -131,10 +131,7 @@ class DiscoveryEmpty extends DiscoveryState {
 
 /// Error occurred during discovery operations
 class DiscoveryError extends DiscoveryState {
-  const DiscoveryError({
-    required this.message,
-    this.previousState,
-  });
+  const DiscoveryError({required this.message, this.previousState});
 
   final String message;
   final DiscoveryState? previousState;

@@ -47,9 +47,7 @@ class _GiftHistoryWidgetState extends State<GiftHistoryWidget> {
       children: [
         _buildHeader(),
         _buildFilterTabs(),
-        Expanded(
-          child: _buildTransactionList(filteredTransactions),
-        ),
+        Expanded(child: _buildTransactionList(filteredTransactions)),
       ],
     );
   }
@@ -79,9 +77,9 @@ class _GiftHistoryWidgetState extends State<GiftHistoryWidget> {
                 ),
                 Text(
                   'Your sent and received gifts',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Colors.grey[600],
-                  ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
                 ),
               ],
             ),
@@ -164,15 +162,13 @@ class _GiftHistoryWidgetState extends State<GiftHistoryWidget> {
     // Determine if current user sent or received this gift
     final isSent = transaction.senderId == widget.currentUserId;
     final gift = transaction.gift;
-    
+
     if (gift == null) return const SizedBox.shrink();
-    
+
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Row(
@@ -198,7 +194,7 @@ class _GiftHistoryWidgetState extends State<GiftHistoryWidget> {
                   : _buildGiftIcon(gift),
             ),
             const SizedBox(width: 16),
-            
+
             // Transaction Details
             Expanded(
               child: Column(
@@ -209,9 +205,8 @@ class _GiftHistoryWidgetState extends State<GiftHistoryWidget> {
                       Expanded(
                         child: Text(
                           gift.name,
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.w600,
-                          ),
+                          style: Theme.of(context).textTheme.titleMedium
+                              ?.copyWith(fontWeight: FontWeight.w600),
                         ),
                       ),
                       Container(
@@ -220,13 +215,11 @@ class _GiftHistoryWidgetState extends State<GiftHistoryWidget> {
                           vertical: 4,
                         ),
                         decoration: BoxDecoration(
-                          color: isSent 
-                              ? Colors.blue[50] 
-                              : Colors.green[50],
+                          color: isSent ? Colors.blue[50] : Colors.green[50],
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                            color: isSent 
-                                ? Colors.blue[300]! 
+                            color: isSent
+                                ? Colors.blue[300]!
                                 : Colors.green[300]!,
                           ),
                         ),
@@ -236,8 +229,8 @@ class _GiftHistoryWidgetState extends State<GiftHistoryWidget> {
                             Icon(
                               isSent ? Icons.send : Icons.call_received,
                               size: 12,
-                              color: isSent 
-                                  ? Colors.blue[700] 
+                              color: isSent
+                                  ? Colors.blue[700]
                                   : Colors.green[700],
                             ),
                             const SizedBox(width: 4),
@@ -246,8 +239,8 @@ class _GiftHistoryWidgetState extends State<GiftHistoryWidget> {
                               style: TextStyle(
                                 fontSize: 10,
                                 fontWeight: FontWeight.w600,
-                                color: isSent 
-                                    ? Colors.blue[700] 
+                                color: isSent
+                                    ? Colors.blue[700]
                                     : Colors.green[700],
                               ),
                             ),
@@ -258,12 +251,12 @@ class _GiftHistoryWidgetState extends State<GiftHistoryWidget> {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    isSent 
-                        ? 'To ${transaction.receiverName ?? 'Unknown'}' 
+                    isSent
+                        ? 'To ${transaction.receiverName ?? 'Unknown'}'
                         : 'From ${transaction.senderName ?? 'Unknown'}',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Colors.grey[600],
-                    ),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
                   ),
                   if (transaction.message != null) ...[
                     const SizedBox(height: 8),
@@ -297,11 +290,7 @@ class _GiftHistoryWidgetState extends State<GiftHistoryWidget> {
                       ),
                       Row(
                         children: [
-                          Icon(
-                            Icons.stars,
-                            size: 14,
-                            color: Colors.amber[700],
-                          ),
+                          Icon(Icons.stars, size: 14, color: Colors.amber[700]),
                           const SizedBox(width: 2),
                           Text(
                             '${gift.price}',
@@ -339,24 +328,20 @@ class _GiftHistoryWidgetState extends State<GiftHistoryWidget> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.card_giftcard_outlined,
-            size: 64,
-            color: Colors.grey[400],
-          ),
+          Icon(Icons.card_giftcard_outlined, size: 64, color: Colors.grey[400]),
           const SizedBox(height: 16),
           Text(
             'No gift history',
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-              color: Colors.grey[600],
-            ),
+            style: Theme.of(
+              context,
+            ).textTheme.titleLarge?.copyWith(color: Colors.grey[600]),
           ),
           const SizedBox(height: 8),
           Text(
             'Start sending gifts to see them here',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: Colors.grey[500],
-            ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(color: Colors.grey[500]),
           ),
         ],
       ),
@@ -364,9 +349,7 @@ class _GiftHistoryWidgetState extends State<GiftHistoryWidget> {
   }
 
   Widget _buildLoadingState() {
-    return const Center(
-      child: CircularProgressIndicator(),
-    );
+    return const Center(child: CircularProgressIndicator());
   }
 
   Widget _buildErrorState() {
@@ -374,24 +357,20 @@ class _GiftHistoryWidgetState extends State<GiftHistoryWidget> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.error_outline,
-            size: 64,
-            color: Colors.red[400],
-          ),
+          Icon(Icons.error_outline, size: 64, color: Colors.red[400]),
           const SizedBox(height: 16),
           Text(
             'Error loading gift history',
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-              color: Colors.red[600],
-            ),
+            style: Theme.of(
+              context,
+            ).textTheme.titleLarge?.copyWith(color: Colors.red[600]),
           ),
           const SizedBox(height: 8),
           Text(
             widget.error ?? 'Unknown error occurred',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: Colors.grey[500],
-            ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(color: Colors.grey[500]),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 16),

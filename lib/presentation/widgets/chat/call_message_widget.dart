@@ -41,12 +41,11 @@ class CallMessageWidget extends StatelessWidget {
       ),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: isMe ? PulseColors.primary.withValues(alpha: 0.1) : Colors.grey[100],
+        color: isMe
+            ? PulseColors.primary.withValues(alpha: 0.1)
+            : Colors.grey[100],
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: statusColor.withValues(alpha: 0.3),
-          width: 1,
-        ),
+        border: Border.all(color: statusColor.withValues(alpha: 0.3), width: 1),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -56,11 +55,7 @@ class CallMessageWidget extends StatelessWidget {
           Row(
             children: [
               // Call icon with status color
-              Icon(
-                iconData,
-                color: statusColor,
-                size: 20,
-              ),
+              Icon(iconData, color: statusColor, size: 20),
               const SizedBox(width: 8),
 
               // Call type and status text
@@ -118,10 +113,7 @@ class CallMessageWidget extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             _formatTimestamp(message.createdAt),
-            style: TextStyle(
-              fontSize: 11,
-              color: Colors.grey[600],
-            ),
+            style: TextStyle(fontSize: 11, color: Colors.grey[600]),
           ),
 
           // Action buttons
@@ -170,7 +162,9 @@ class CallMessageWidget extends StatelessWidget {
     if (isMissed) {
       return isIncoming ? CallStatus.missedIncoming : CallStatus.missedOutgoing;
     } else if (duration > 0) {
-      return isIncoming ? CallStatus.completedIncoming : CallStatus.completedOutgoing;
+      return isIncoming
+          ? CallStatus.completedIncoming
+          : CallStatus.completedOutgoing;
     } else {
       return CallStatus.failed;
     }
@@ -289,10 +283,7 @@ class _ActionButton extends StatelessWidget {
         onTap: onTap,
         borderRadius: BorderRadius.circular(8),
         child: Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 12,
-            vertical: 8,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           decoration: BoxDecoration(
             border: Border.all(color: color.withValues(alpha: 0.3)),
             borderRadius: BorderRadius.circular(8),

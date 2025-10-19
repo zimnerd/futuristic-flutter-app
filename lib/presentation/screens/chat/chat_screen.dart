@@ -74,7 +74,7 @@ class _ChatScreenState extends State<ChatScreen>
   bool _isCurrentlyTyping = false;
   bool _hasMarkedAsRead =
       false; // Track if we've already marked this conversation as read
-  
+
   // Search functionality state
   bool _isSearchActive = false;
   final TextEditingController _searchController = TextEditingController();
@@ -82,26 +82,26 @@ class _ChatScreenState extends State<ChatScreen>
   List<MessageModel> _searchResults = [];
   String _currentSearchQuery = '';
   int _currentSearchIndex = 0;
-  
+
   // Message highlighting state (for jump-to-message from search)
   String? _highlightMessageId;
   AnimationController? _highlightAnimationController;
   Animation<Color?>? _highlightColorAnimation;
-  
+
   // Reply functionality state
   MessageModel? _replyToMessage;
-  
+
   // Smart replies state
   List<String> _smartReplySuggestions = [];
   bool _isLoadingSmartReplies = false;
   DateTime? _smartReplyCacheTimestamp;
   static const Duration _smartReplyCacheDuration = Duration(minutes: 5);
-  
+
   // Performance optimizers
   late final MessagePaginationOptimizer _paginationOptimizer;
   late final MediaLoadingOptimizer _mediaOptimizer;
   late final MemoryManager _memoryManager;
-  
+
   String? get _currentUserId {
     final authState = context.read<AuthBloc>().state;
     if (authState is AuthAuthenticated) {
@@ -109,17 +109,17 @@ class _ChatScreenState extends State<ChatScreen>
     }
     return null;
   }
-  
+
   @override
   void initState() {
     super.initState();
-    
+
     // Initialize performance optimizers
     _paginationOptimizer = MessagePaginationOptimizer();
     _mediaOptimizer = MediaLoadingOptimizer();
     _memoryManager = MemoryManager();
     _memoryManager.startMemoryManagement();
-    
+
     // Extract highlightMessageId from route extra (passed from search results)
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final routeState = GoRouterState.of(context);
@@ -152,13 +152,13 @@ class _ChatScreenState extends State<ChatScreen>
         });
       }
     });
-    
+
     // Debug information
     AppLogger.debug('ChatScreen initialized with:');
     AppLogger.debug('  conversationId: ${widget.conversationId}');
     AppLogger.debug('  otherUserId: ${widget.otherUserId}');
     AppLogger.debug('  otherUserName: ${widget.otherUserName}');
-    
+
     // Check if this is a new conversation that needs to be created
     if (widget.conversationId == 'new') {
       _createNewConversation();
@@ -174,7 +174,7 @@ class _ChatScreenState extends State<ChatScreen>
       // ✅ We'll mark as read later only if there are actually unread messages
       // This will be handled when we receive MessagesLoaded state
     }
-    
+
     // Auto-scroll to bottom when keyboard appears
     _scrollController.addListener(_scrollListener);
   }
@@ -184,7 +184,7 @@ class _ChatScreenState extends State<ChatScreen>
     AppLogger.debug(
       'Creating new conversation with otherUserId: ${widget.otherUserId}',
     );
-    
+
     if (widget.otherUserId.isEmpty || widget.otherUserId == 'current_user_id') {
       // Handle error - no valid other user ID provided
       AppLogger.warning('Error: Invalid otherUserId: ${widget.otherUserId}');
@@ -195,7 +195,7 @@ class _ChatScreenState extends State<ChatScreen>
       Navigator.of(context).pop(); // Go back
       return;
     }
-    
+
     // Dispatch the create conversation event
     context.read<ChatBloc>().add(
       CreateConversation(participantId: widget.otherUserId),
@@ -218,21 +218,20 @@ class _ChatScreenState extends State<ChatScreen>
     _paginationOptimizer.dispose();
     _mediaOptimizer.dispose();
     _memoryManager.stopMemoryManagement();
-    
+
     super.dispose();
   }
 
   void _scrollListener() {
     // Load more messages when scrolled to top with performance optimization
-    if (_scrollController.position.pixels == 
+    if (_scrollController.position.pixels ==
         _scrollController.position.maxScrollExtent) {
-      
       // Check if we should load more messages (performance optimization)
       if (!_paginationOptimizer.isLoadingMore(widget.conversationId)) {
         context.read<ChatBloc>().add(
           LoadMessages(conversationId: widget.conversationId),
         );
-        
+
         // Set loading state to prevent duplicate requests
         _paginationOptimizer.setLoadingMore(widget.conversationId, true);
       }
@@ -248,7 +247,7 @@ class _ChatScreenState extends State<ChatScreen>
       );
     }
   }
-  
+
   /// Scroll to a specific message and highlight it (used for jump-to-message from search)
   void _scrollToMessage(String messageId) {
     final chatState = context.read<ChatBloc>().state;
@@ -303,7 +302,7 @@ class _ChatScreenState extends State<ChatScreen>
       'Scrolling to message $messageId at index $messageIndex (position: $scrollPosition)',
     );
   }
-  
+
   /// Preload media for visible messages to improve performance
   void _preloadVisibleMedia(List<MessageModel> messages) {
     // Preload media from the most recent messages (likely to be visible)
@@ -368,12 +367,12 @@ class _ChatScreenState extends State<ChatScreen>
     );
 
     _messageController.clear();
-    
+
     // Clear reply state after sending
     if (_replyToMessage != null) {
       _cancelReply();
     }
-    
+
     _scrollToBottom();
   }
 
@@ -488,20 +487,20 @@ class _ChatScreenState extends State<ChatScreen>
         backgroundColor: Colors.white,
         appBar: _buildAppBar(),
         body: Column(
-        children: [
-          Expanded(
-            child: BlocConsumer<ChatBloc, ChatState>(
-              listener: (context, state) {
+          children: [
+            Expanded(
+              child: BlocConsumer<ChatBloc, ChatState>(
+                listener: (context, state) {
                   AppLogger.debug(
                     'ChatScreen BlocConsumer listener - State: ${state.runtimeType}',
                   );
-                
-                if (state is MessagesLoaded) {
+
+                  if (state is MessagesLoaded) {
                     AppLogger.debug(
                       'ChatScreen - MessagesLoaded with ${state.messages.length} messages',
                     );
-                  _scrollToBottom();
-                  
+                    _scrollToBottom();
+
                     // Cache messages for performance optimization
                     _paginationOptimizer.addMessages(
                       widget.conversationId,
@@ -516,7 +515,7 @@ class _ChatScreenState extends State<ChatScreen>
                       widget.conversationId,
                       false,
                     );
-                  
+
                     // Debounced smart reply refresh when new message received
                     // Cancel previous timer if exists
                     _smartReplyDebounceTimer?.cancel();
@@ -526,7 +525,7 @@ class _ChatScreenState extends State<ChatScreen>
                         _loadSmartReplySuggestions();
                       },
                     );
-                  
+
                     // ✅ Only mark as read if we haven't done so yet and there are unread messages
                     if (!_hasMarkedAsRead && _currentUserId != null) {
                       // Check if there are any unread messages from the other user
@@ -554,23 +553,23 @@ class _ChatScreenState extends State<ChatScreen>
                         );
                       }
                     }
-                } else if (state is ConversationCreated) {
+                  } else if (state is ConversationCreated) {
                     AppLogger.debug(
                       'ChatScreen - ConversationCreated: ${state.conversation.id}',
                     );
-                  // Navigate to the actual conversation ID
-                  final realConversationId = state.conversation.id;
+                    // Navigate to the actual conversation ID
+                    final realConversationId = state.conversation.id;
 
-                  // Replace current route with real conversation ID
-                  context.go(
-                    '/chat/$realConversationId',
-                    extra: {
-                      'otherUserId': widget.otherUserId,
-                      'otherUserName': widget.otherUserName,
-                      'otherUserPhoto': widget.otherUserPhoto,
-                      'otherUserProfile': widget.otherUserProfile,
-                    },
-                  );
+                    // Replace current route with real conversation ID
+                    context.go(
+                      '/chat/$realConversationId',
+                      extra: {
+                        'otherUserId': widget.otherUserId,
+                        'otherUserName': widget.otherUserName,
+                        'otherUserPhoto': widget.otherUserPhoto,
+                        'otherUserProfile': widget.otherUserProfile,
+                      },
+                    );
                   } else if (state is MessageSent) {
                     AppLogger.debug(
                       'ChatScreen - MessageSent: ${state.message.id}',
@@ -600,11 +599,10 @@ class _ChatScreenState extends State<ChatScreen>
                     );
                   } else if (state is ChatError) {
                     AppLogger.error('ChatScreen - ChatError: ${state.message}');
-                    PulseToast.error(context, message: state.message,
-                    );
-                }
-              },
-              builder: (context, state) {
+                    PulseToast.error(context, message: state.message);
+                  }
+                },
+                builder: (context, state) {
                   AppLogger.debug(
                     'UI Builder called with state: ${state.runtimeType}',
                   );
@@ -613,11 +611,11 @@ class _ChatScreenState extends State<ChatScreen>
                       'UI Builder - MessagesLoaded with ${state.messages.length} messages',
                     );
                   }
-                return _buildMessagesList(state);
-              },
+                  return _buildMessagesList(state);
+                },
+              ),
             ),
-          ),
-          _buildTypingIndicator(),
+            _buildTypingIndicator(),
             QuickReplyChipBar(
               suggestions: _smartReplySuggestions,
               isLoading: _isLoadingSmartReplies,
@@ -685,49 +683,49 @@ class _ChatScreenState extends State<ChatScreen>
                 AppLogger.debug('Manual smart reply refresh triggered');
               },
             ),
-          AiMessageInput(
-            controller: _messageController,
-            chatId: widget.conversationId,
+            AiMessageInput(
+              controller: _messageController,
+              chatId: widget.conversationId,
               currentUserId: _currentUserId,
               matchUserId: widget.otherUserId,
-            onSend: _sendMessage,
-            onCamera: _handleCameraAction,
-            onGallery: _handleGalleryAction,
+              onSend: _sendMessage,
+              onCamera: _handleCameraAction,
+              onGallery: _handleGalleryAction,
               onVideoCamera: _handleVideoCameraAction,
               onVideoGallery: _handleVideoGalleryAction,
-            onVoice: _handleVoiceAction,
+              onVoice: _handleVoiceAction,
               replyToMessage: _replyToMessage,
               onCancelReply: _cancelReply,
-            onTyping: () {
-              // Debounce typing status to avoid spam
-              // Only send typing_start if we're not already typing
-              if (!_isCurrentlyTyping) {
-                _isCurrentlyTyping = true;
-                context.read<ChatBloc>().add(
-                  UpdateTypingStatus(
-                    conversationId: widget.conversationId,
-                    isTyping: true,
-                  ),
-                );
-              }
-
-              // Reset the stop typing timer
-              _typingTimer?.cancel();
-              _typingTimer = Timer(const Duration(seconds: 2), () {
-                if (_isCurrentlyTyping) {
-                  _isCurrentlyTyping = false;
+              onTyping: () {
+                // Debounce typing status to avoid spam
+                // Only send typing_start if we're not already typing
+                if (!_isCurrentlyTyping) {
+                  _isCurrentlyTyping = true;
                   context.read<ChatBloc>().add(
                     UpdateTypingStatus(
                       conversationId: widget.conversationId,
-                      isTyping: false,
+                      isTyping: true,
                     ),
                   );
                 }
-              });
-            },
-          ),
-        ],
-      ),
+
+                // Reset the stop typing timer
+                _typingTimer?.cancel();
+                _typingTimer = Timer(const Duration(seconds: 2), () {
+                  if (_isCurrentlyTyping) {
+                    _isCurrentlyTyping = false;
+                    context.read<ChatBloc>().add(
+                      UpdateTypingStatus(
+                        conversationId: widget.conversationId,
+                        isTyping: false,
+                      ),
+                    );
+                  }
+                });
+              },
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -848,7 +846,10 @@ class _ChatScreenState extends State<ChatScreen>
       child: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [PulseColors.primary, PulseColors.primary.withValues(alpha: 0.8)],
+            colors: [
+              PulseColors.primary,
+              PulseColors.primary.withValues(alpha: 0.8),
+            ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
@@ -917,7 +918,9 @@ class _ChatScreenState extends State<ChatScreen>
                                       ),
                                 )
                               : Container(
-                                  color: PulseColors.primary.withValues(alpha: 0.3),
+                                  color: PulseColors.primary.withValues(
+                                    alpha: 0.3,
+                                  ),
                                   child: Text(
                                     widget.otherUserName[0].toUpperCase(),
                                     style: const TextStyle(
@@ -946,9 +949,9 @@ class _ChatScreenState extends State<ChatScreen>
                     ],
                   ),
                 ),
-                
+
                 const SizedBox(width: 12),
-                
+
                 // User info
                 Expanded(
                   child: GestureDetector(
@@ -1116,7 +1119,7 @@ class _ChatScreenState extends State<ChatScreen>
     AppLogger.debug(
       '_buildMessagesList called with state: ${state.runtimeType}',
     );
-    
+
     if (state is ChatLoading) {
       AppLogger.debug('_buildMessagesList - Showing loading indicator');
       return const Center(
@@ -1132,11 +1135,7 @@ class _ChatScreenState extends State<ChatScreen>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(
-              Icons.error_outline,
-              color: Colors.grey,
-              size: 64,
-            ),
+            const Icon(Icons.error_outline, color: Colors.grey, size: 64),
             const SizedBox(height: 16),
             Text(
               state.message,
@@ -1165,7 +1164,7 @@ class _ChatScreenState extends State<ChatScreen>
       AppLogger.debug(
         '_buildMessagesList - MessagesLoaded with ${state.messages.length} messages',
       );
-      
+
       if (state.messages.isEmpty) {
         AppLogger.debug('_buildMessagesList - Showing empty state');
         return const Center(
@@ -1504,8 +1503,7 @@ class _ChatScreenState extends State<ChatScreen>
                 ),
                 const SizedBox(width: 8),
                 // Use the new animated typing indicator widget
-                AnimatedTypingIndicator(typingUsers: typingUserNames,
-                ),
+                AnimatedTypingIndicator(typingUsers: typingUserNames),
               ],
             ),
           );
@@ -1563,8 +1561,7 @@ class _ChatScreenState extends State<ChatScreen>
       showDialog(
         context: context,
         barrierDismissible: false,
-        builder: (context) => const Center(child: CircularProgressIndicator(),
-        ),
+        builder: (context) => const Center(child: CircularProgressIndicator()),
       );
 
       // Create call on backend first
@@ -1582,8 +1579,7 @@ class _ChatScreenState extends State<ChatScreen>
 
       if (callId == null) {
         if (context.mounted) {
-          PulseToast.error(context, message: 'Failed to initiate call',
-          );
+          PulseToast.error(context, message: 'Failed to initiate call');
         }
         return;
       }
@@ -1619,8 +1615,7 @@ class _ChatScreenState extends State<ChatScreen>
       }
 
       if (context.mounted) {
-        PulseToast.error(context, message: 'Error initiating call: $e',
-        );
+        PulseToast.error(context, message: 'Error initiating call: $e');
       }
     }
   }
@@ -1760,8 +1755,7 @@ class _ChatScreenState extends State<ChatScreen>
                 title: const Text('Mute Notifications'),
                 onTap: () {
                   Navigator.pop(context);
-                  PulseToast.success(context, message: 'Notifications muted',
-                  );
+                  PulseToast.success(context, message: 'Notifications muted');
                 },
               ),
               ListTile(
@@ -1877,8 +1871,7 @@ class _ChatScreenState extends State<ChatScreen>
               onPressed: () {
                 Navigator.pop(context);
                 Navigator.pop(context); // Close chat screen
-                PulseToast.success(context, message: 'Conversation deleted',
-                );
+                PulseToast.success(context, message: 'Conversation deleted');
               },
               child: const Text('Delete', style: TextStyle(color: Colors.red)),
             ),
@@ -1895,14 +1888,14 @@ class _ChatScreenState extends State<ChatScreen>
       // Check current permission status first
       var cameraPermission = await Permission.camera.status;
       AppLogger.debug('Current camera permission status: $cameraPermission');
-      
+
       // If denied or not determined, request permission
       if (!cameraPermission.isGranted) {
         AppLogger.debug('Requesting camera permission...');
         cameraPermission = await Permission.camera.request();
         AppLogger.debug('Permission request result: $cameraPermission');
       }
-      
+
       // Handle different permission states
       if (cameraPermission.isDenied) {
         AppLogger.warning('Camera permission denied');
@@ -1930,7 +1923,7 @@ class _ChatScreenState extends State<ChatScreen>
         }
         return;
       }
-      
+
       if (!cameraPermission.isGranted) {
         AppLogger.warning('Camera permission not granted: $cameraPermission');
         return;
@@ -1998,24 +1991,28 @@ class _ChatScreenState extends State<ChatScreen>
       // Check current permission status first
       var cameraPermission = await Permission.camera.status;
       var microphonePermission = await Permission.microphone.status;
-      
+
       AppLogger.debug('Current camera permission status: $cameraPermission');
-      AppLogger.debug('Current microphone permission status: $microphonePermission');
-      
+      AppLogger.debug(
+        'Current microphone permission status: $microphonePermission',
+      );
+
       // Request camera permission if not granted
       if (!cameraPermission.isGranted) {
         AppLogger.debug('Requesting camera permission...');
         cameraPermission = await Permission.camera.request();
         AppLogger.debug('Camera permission request result: $cameraPermission');
       }
-      
+
       // Request microphone permission if not granted
       if (!microphonePermission.isGranted) {
         AppLogger.debug('Requesting microphone permission...');
         microphonePermission = await Permission.microphone.request();
-        AppLogger.debug('Microphone permission request result: $microphonePermission');
+        AppLogger.debug(
+          'Microphone permission request result: $microphonePermission',
+        );
       }
-      
+
       // Handle camera permission states
       if (cameraPermission.isDenied || microphonePermission.isDenied) {
         AppLogger.warning('Camera or microphone permission denied');
@@ -2029,7 +2026,8 @@ class _ChatScreenState extends State<ChatScreen>
         return;
       }
 
-      if (cameraPermission.isPermanentlyDenied || microphonePermission.isPermanentlyDenied) {
+      if (cameraPermission.isPermanentlyDenied ||
+          microphonePermission.isPermanentlyDenied) {
         AppLogger.warning('Camera or microphone permission permanently denied');
         if (mounted) {
           PulseToast.error(
@@ -2044,7 +2042,7 @@ class _ChatScreenState extends State<ChatScreen>
         }
         return;
       }
-      
+
       if (!cameraPermission.isGranted || !microphonePermission.isGranted) {
         AppLogger.warning('Required permissions not granted');
         return;
@@ -2213,8 +2211,7 @@ class _ChatScreenState extends State<ChatScreen>
     } catch (e) {
       AppLogger.error('Failed to send voice message: $e');
       if (mounted) {
-        PulseToast.error(context, message: 'Failed to send voice message',
-        );
+        PulseToast.error(context, message: 'Failed to send voice message');
       }
     }
   }
@@ -2290,7 +2287,9 @@ class _ChatScreenState extends State<ChatScreen>
           );
         }
       } else {
-        throw Exception('Upload failed: ${uploadResult.error ?? "Unknown error"}');
+        throw Exception(
+          'Upload failed: ${uploadResult.error ?? "Unknown error"}',
+        );
       }
     } catch (e) {
       AppLogger.error('Error sending image message: $e');
@@ -2391,8 +2390,9 @@ class _ChatScreenState extends State<ChatScreen>
 
   void _showMessageOptions(BuildContext context, MessageModel message) {
     final currentUserId = _currentUserId;
-    final isMyMessage = currentUserId != null && message.senderId == currentUserId;
-    
+    final isMyMessage =
+        currentUserId != null && message.senderId == currentUserId;
+
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -2414,36 +2414,41 @@ class _ChatScreenState extends State<ChatScreen>
               ),
             ),
             const SizedBox(height: 20),
-            
+
             // Quick reactions
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  '❤️', '😂', '😢', '😡', '👍', '👎'
-                ].map((emoji) => GestureDetector(
-                  onTap: () {
-                    Navigator.pop(context);
-                    _addReaction(message.id, emoji);
-                  },
-                  child: Container(
-                    width: 44,
-                    height: 44,
-                    decoration: BoxDecoration(
-                      color: Colors.grey[100],
-                      shape: BoxShape.circle,
-                    ),
-                    child: Center(
-                      child: Text(emoji, style: const TextStyle(fontSize: 20)),
-                    ),
-                  ),
-                )).toList(),
+                children: ['❤️', '😂', '😢', '😡', '👍', '👎']
+                    .map(
+                      (emoji) => GestureDetector(
+                        onTap: () {
+                          Navigator.pop(context);
+                          _addReaction(message.id, emoji);
+                        },
+                        child: Container(
+                          width: 44,
+                          height: 44,
+                          decoration: BoxDecoration(
+                            color: Colors.grey[100],
+                            shape: BoxShape.circle,
+                          ),
+                          child: Center(
+                            child: Text(
+                              emoji,
+                              style: const TextStyle(fontSize: 20),
+                            ),
+                          ),
+                        ),
+                      ),
+                    )
+                    .toList(),
               ),
             ),
-            
+
             const SizedBox(height: 20),
-            
+
             // Action options
             _buildOptionTile(
               icon: Icons.reply,
@@ -2529,7 +2534,7 @@ class _ChatScreenState extends State<ChatScreen>
                 },
               ),
             ],
-            
+
             SizedBox(height: MediaQuery.of(context).padding.bottom + 20),
           ],
         ),
@@ -2558,12 +2563,14 @@ class _ChatScreenState extends State<ChatScreen>
 
   void _addReaction(String messageId, String emoji) {
     // Emit AddReaction event to ChatBloc
-    context.read<ChatBloc>().add(AddReaction(
-      messageId: messageId,
-      conversationId: widget.conversationId,
-      emoji: emoji,
-    ));
-    
+    context.read<ChatBloc>().add(
+      AddReaction(
+        messageId: messageId,
+        conversationId: widget.conversationId,
+        emoji: emoji,
+      ),
+    );
+
     AppLogger.debug('Added reaction $emoji to message $messageId');
   }
 
@@ -2628,8 +2635,7 @@ class _ChatScreenState extends State<ChatScreen>
 
   void _editMessage(MessageModel message) {
     if (message.type != MessageType.text) {
-      PulseToast.info(context, message: 'Can only edit text messages',
-      );
+      PulseToast.info(context, message: 'Can only edit text messages');
       return;
     }
 
@@ -2698,8 +2704,7 @@ class _ChatScreenState extends State<ChatScreen>
   }
 
   void _reportMessage(MessageModel message) {
-    PulseToast.info(context, message: 'Report feature will be implemented',
-    );
+    PulseToast.info(context, message: 'Report feature will be implemented');
   }
 
   void _toggleBookmark(MessageModel message) {
@@ -2882,7 +2887,7 @@ class _ChatScreenState extends State<ChatScreen>
       );
     }
   }
-  
+
   void _onLongPress(MessageModel message) {
     _showMessageOptions(context, message);
   }

@@ -41,7 +41,9 @@ class NotificationModel extends Equatable {
       imageUrl: json['imageUrl'],
       actionUrl: json['actionUrl'],
       isRead: json['isRead'] ?? false,
-      priority: NotificationPriority.values.byName(json['priority'] ?? 'normal'),
+      priority: NotificationPriority.values.byName(
+        json['priority'] ?? 'normal',
+      ),
       createdAt: DateTime.parse(json['createdAt']),
       readAt: json['readAt'] != null ? DateTime.parse(json['readAt']) : null,
     );
@@ -96,19 +98,19 @@ class NotificationModel extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        userId,
-        type,
-        title,
-        message,
-        data,
-        imageUrl,
-        actionUrl,
-        isRead,
-        priority,
-        createdAt,
-        readAt,
-      ];
+    id,
+    userId,
+    type,
+    title,
+    message,
+    data,
+    imageUrl,
+    actionUrl,
+    isRead,
+    priority,
+    createdAt,
+    readAt,
+  ];
 }
 
 /// Types of notifications
@@ -131,12 +133,7 @@ enum NotificationType {
 }
 
 /// Notification priority levels
-enum NotificationPriority {
-  low,
-  normal,
-  high,
-  urgent,
-}
+enum NotificationPriority { low, normal, high, urgent }
 
 /// Model for notification settings
 class NotificationSettings extends Equatable {
@@ -252,20 +249,20 @@ class NotificationSettings extends Equatable {
 
   @override
   List<Object?> get props => [
-        newMessages,
-        newMatches,
-        profileViews,
-        likes,
-        calls,
-        system,
-        promotions,
-        reminders,
-        pushEnabled,
-        emailEnabled,
-        soundEnabled,
-        vibrationEnabled,
-        quietHoursEnabled,
-        quietHoursStart,
-        quietHoursEnd,
-      ];
+    newMessages,
+    newMatches,
+    profileViews,
+    likes,
+    calls,
+    system,
+    promotions,
+    reminders,
+    pushEnabled,
+    emailEnabled,
+    soundEnabled,
+    vibrationEnabled,
+    quietHoursEnabled,
+    quietHoursStart,
+    quietHoursEnd,
+  ];
 }

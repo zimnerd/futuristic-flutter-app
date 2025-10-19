@@ -168,9 +168,10 @@ class Message extends Equatable {
   bool get isReply => replyToId != null;
 
   /// Check if message is a media message
-  bool get isMedia => type == MessageType.image || 
-                     type == MessageType.video || 
-                     type == MessageType.audio;
+  bool get isMedia =>
+      type == MessageType.image ||
+      type == MessageType.video ||
+      type == MessageType.audio;
 
   /// Get display content (handles deleted/edited messages)
   String get displayContent {
@@ -182,7 +183,7 @@ class Message extends Equatable {
   String get timeAgo {
     final now = DateTime.now();
     final difference = now.difference(createdAt);
-    
+
     if (difference.inMinutes < 1) {
       return 'now';
     } else if (difference.inMinutes < 60) {
@@ -241,25 +242,25 @@ class Message extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        conversationId,
-        senderId,
-        sender,
-        content,
-        type,
-        status,
-        metadata,
-        replyToId,
-        replyTo,
-        attachments,
-        isEdited,
-        editedAt,
-        isDeleted,
-        deletedAt,
-        createdAt,
-        updatedAt,
-        tempId,
-      ];
+    id,
+    conversationId,
+    senderId,
+    sender,
+    content,
+    type,
+    status,
+    metadata,
+    replyToId,
+    replyTo,
+    attachments,
+    isEdited,
+    editedAt,
+    isDeleted,
+    deletedAt,
+    createdAt,
+    updatedAt,
+    tempId,
+  ];
 }
 
 /// Message delivery update model for real-time status updates

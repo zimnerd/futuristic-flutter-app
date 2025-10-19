@@ -15,7 +15,7 @@ class _AiOnboardingDialogState extends State<AiOnboardingDialog>
   late PageController _pageController;
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
-  
+
   int _currentPage = 0;
   bool _dataConsent = false;
   bool _personalizedExperience = false;
@@ -24,7 +24,8 @@ class _AiOnboardingDialogState extends State<AiOnboardingDialog>
   final List<OnboardingPage> _pages = [
     OnboardingPage(
       title: 'Meet Your AI Assistant',
-      description: 'Enhance your dating experience with intelligent conversation helpers, smart matching, and personalized suggestions.',
+      description:
+          'Enhance your dating experience with intelligent conversation helpers, smart matching, and personalized suggestions.',
       icon: Icons.psychology,
       gradient: LinearGradient(
         colors: [Colors.purple.shade400, Colors.cyan.shade400],
@@ -32,7 +33,8 @@ class _AiOnboardingDialogState extends State<AiOnboardingDialog>
     ),
     OnboardingPage(
       title: 'Smart Conversations',
-      description: 'Get AI-powered reply suggestions and conversation starters that match your personality and style.',
+      description:
+          'Get AI-powered reply suggestions and conversation starters that match your personality and style.',
       icon: Icons.chat_bubble_outline,
       gradient: LinearGradient(
         colors: [Colors.blue.shade400, Colors.cyan.shade400],
@@ -40,7 +42,8 @@ class _AiOnboardingDialogState extends State<AiOnboardingDialog>
     ),
     OnboardingPage(
       title: 'Intelligent Matching',
-      description: 'Our AI analyzes compatibility factors to suggest better matches and improve your dating success.',
+      description:
+          'Our AI analyzes compatibility factors to suggest better matches and improve your dating success.',
       icon: Icons.favorite_outline,
       gradient: LinearGradient(
         colors: [Colors.red.shade400, Colors.pink.shade400],
@@ -48,7 +51,8 @@ class _AiOnboardingDialogState extends State<AiOnboardingDialog>
     ),
     OnboardingPage(
       title: 'Privacy First',
-      description: 'Choose what data to share and how AI learns from your interactions. You\'re always in control.',
+      description:
+          'Choose what data to share and how AI learns from your interactions. You\'re always in control.',
       icon: Icons.security,
       gradient: LinearGradient(
         colors: [Colors.green.shade400, Colors.teal.shade400],
@@ -68,7 +72,7 @@ class _AiOnboardingDialogState extends State<AiOnboardingDialog>
       begin: 0.0,
       end: 1.0,
     ).animate(_animationController);
-    
+
     _animationController.forward();
   }
 
@@ -106,17 +110,15 @@ class _AiOnboardingDialogState extends State<AiOnboardingDialog>
                   children: [
                     Text(
                       'AI Setup',
-                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: Theme.of(context).textTheme.headlineSmall
+                          ?.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
                     ),
                     IconButton(
                       onPressed: () => Navigator.of(context).pop(),
-                      icon: const Icon(
-                        Icons.close,
-                        color: Colors.white70,
-                      ),
+                      icon: const Icon(Icons.close, color: Colors.white70),
                     ),
                   ],
                 ),
@@ -199,7 +201,9 @@ class _AiOnboardingDialogState extends State<AiOnboardingDialog>
                             ),
                           ),
                           child: Text(
-                            _currentPage == _pages.length ? 'Get Started' : 'Next',
+                            _currentPage == _pages.length
+                                ? 'Get Started'
+                                : 'Next',
                           ),
                         ),
                       ],
@@ -226,11 +230,7 @@ class _AiOnboardingDialogState extends State<AiOnboardingDialog>
               gradient: page.gradient,
               shape: BoxShape.circle,
             ),
-            child: Icon(
-              page.icon,
-              size: 64,
-              color: Colors.white,
-            ),
+            child: Icon(page.icon, size: 64, color: Colors.white),
           ),
           const SizedBox(height: 32),
           Text(
@@ -245,10 +245,9 @@ class _AiOnboardingDialogState extends State<AiOnboardingDialog>
           Text(
             page.description,
             textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-              color: Colors.white70,
-              height: 1.5,
-            ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyLarge?.copyWith(color: Colors.white70, height: 1.5),
           ),
         ],
       ),
@@ -261,11 +260,7 @@ class _AiOnboardingDialogState extends State<AiOnboardingDialog>
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(
-            Icons.privacy_tip_outlined,
-            size: 64,
-            color: Colors.cyan,
-          ),
+          const Icon(Icons.privacy_tip_outlined, size: 64, color: Colors.cyan),
           const SizedBox(height: 32),
           Text(
             'Your Privacy Choices',
@@ -276,7 +271,7 @@ class _AiOnboardingDialogState extends State<AiOnboardingDialog>
             ),
           ),
           const SizedBox(height: 24),
-          
+
           // Consent options
           _buildConsentOption(
             'Data Collection',
@@ -284,14 +279,14 @@ class _AiOnboardingDialogState extends State<AiOnboardingDialog>
             _dataConsent,
             (value) => setState(() => _dataConsent = value),
           ),
-          
+
           _buildConsentOption(
             'Personalized Experience',
             'Enable AI to learn your preferences and adapt recommendations over time.',
             _personalizedExperience,
             (value) => setState(() => _personalizedExperience = value),
           ),
-          
+
           _buildConsentOption(
             'AI Learning',
             'Help improve AI for all users by sharing anonymous usage patterns.',
@@ -359,7 +354,7 @@ class _AiOnboardingDialogState extends State<AiOnboardingDialog>
   void _completeOnboarding() {
     // Update preferences based on user choices
     context.read<AiPreferencesBloc>().add(CompleteAiOnboarding());
-    
+
     if (_dataConsent || _personalizedExperience || _aiLearning) {
       context.read<AiPreferencesBloc>().add(const SetAiEnabled(true));
     }

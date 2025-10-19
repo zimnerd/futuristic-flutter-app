@@ -27,7 +27,13 @@ class SpeedDatingLoaded extends SpeedDatingState {
   });
 
   @override
-  List<Object?> get props => [events, userSessions, currentSession, matches, currentEvent];
+  List<Object?> get props => [
+    events,
+    userSessions,
+    currentSession,
+    matches,
+    currentEvent,
+  ];
 
   SpeedDatingLoaded copyWith({
     List<Map<String, dynamic>>? events,
@@ -166,7 +172,11 @@ class SpeedDatingRatingSubmitted extends SpeedDatingState {
   final String matchUserId;
   final int rating;
 
-  const SpeedDatingRatingSubmitted(this.sessionId, this.matchUserId, this.rating);
+  const SpeedDatingRatingSubmitted(
+    this.sessionId,
+    this.matchUserId,
+    this.rating,
+  );
 
   @override
   List<Object> get props => [sessionId, matchUserId, rating];

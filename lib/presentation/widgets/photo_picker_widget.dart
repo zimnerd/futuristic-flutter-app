@@ -50,7 +50,8 @@ class _PhotoPickerWidgetState extends State<PhotoPickerWidget> {
 
       if (image != null) {
         final File file = File(image.path);
-        final List<File> updatedPhotos = List.from(widget.selectedPhotos)..add(file);
+        final List<File> updatedPhotos = List.from(widget.selectedPhotos)
+          ..add(file);
         widget.onPhotosChanged(updatedPhotos);
       }
     } catch (e) {
@@ -59,7 +60,8 @@ class _PhotoPickerWidgetState extends State<PhotoPickerWidget> {
   }
 
   void _removePhoto(int index) {
-    final List<File> updatedPhotos = List.from(widget.selectedPhotos)..removeAt(index);
+    final List<File> updatedPhotos = List.from(widget.selectedPhotos)
+      ..removeAt(index);
     widget.onPhotosChanged(updatedPhotos);
   }
 
@@ -92,9 +94,9 @@ class _PhotoPickerWidgetState extends State<PhotoPickerWidget> {
         // Instructions
         Text(
           'Tap + to add photos. Long press to reorder.',
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-            color: Colors.grey[600],
-          ),
+          style: Theme.of(
+            context,
+          ).textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
           textAlign: TextAlign.center,
         ),
       ],
@@ -125,7 +127,10 @@ class _PhotoPickerWidgetState extends State<PhotoPickerWidget> {
                 top: 8,
                 left: 8,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: 2,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.blue,
                     borderRadius: BorderRadius.circular(4),
@@ -151,11 +156,7 @@ class _PhotoPickerWidgetState extends State<PhotoPickerWidget> {
                     color: Colors.red,
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(
-                    Icons.close,
-                    color: Colors.white,
-                    size: 16,
-                  ),
+                  child: const Icon(Icons.close, color: Colors.white, size: 16),
                 ),
               ),
             ),
@@ -171,7 +172,10 @@ class _PhotoPickerWidgetState extends State<PhotoPickerWidget> {
       child: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.grey[300]!, style: BorderStyle.solid),
+          border: Border.all(
+            color: Colors.grey[300]!,
+            style: BorderStyle.solid,
+          ),
           color: Colors.grey[50],
         ),
         child: const Column(
@@ -185,10 +189,7 @@ class _PhotoPickerWidgetState extends State<PhotoPickerWidget> {
             SizedBox(height: 4),
             Text(
               'Add Photo',
-              style: TextStyle(
-                color: Colors.grey,
-                fontSize: 12,
-              ),
+              style: TextStyle(color: Colors.grey, fontSize: 12),
             ),
           ],
         ),
@@ -203,22 +204,19 @@ class _PhotoPickerWidgetState extends State<PhotoPickerWidget> {
         border: Border.all(color: Colors.grey[200]!, style: BorderStyle.solid),
         color: Colors.grey[50],
       ),
-      child: const Icon(
-        Icons.image_outlined,
-        color: Colors.grey,
-        size: 24,
-      ),
+      child: const Icon(Icons.image_outlined, color: Colors.grey, size: 24),
     );
   }
 
   void _showImageSourceDialog() {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    
+
     showModalBottomSheet(
       context: context,
-      backgroundColor: theme.bottomSheetTheme.backgroundColor ?? 
-        (isDark ? const Color(0xFF1E1E1E) : Colors.white),
+      backgroundColor:
+          theme.bottomSheetTheme.backgroundColor ??
+          (isDark ? const Color(0xFF1E1E1E) : Colors.white),
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -226,36 +224,53 @@ class _PhotoPickerWidgetState extends State<PhotoPickerWidget> {
         child: Wrap(
           children: [
             ListTile(
-              leading: Icon(Icons.camera_alt, 
-                color: theme.iconTheme.color ?? (isDark ? Colors.white : Colors.black87)),
-              title: Text('Camera',
+              leading: Icon(
+                Icons.camera_alt,
+                color:
+                    theme.iconTheme.color ??
+                    (isDark ? Colors.white : Colors.black87),
+              ),
+              title: Text(
+                'Camera',
                 style: theme.textTheme.bodyLarge?.copyWith(
-                  color: theme.textTheme.bodyLarge?.color ?? (isDark ? Colors.white : Colors.black87),
-                )),
+                  color:
+                      theme.textTheme.bodyLarge?.color ??
+                      (isDark ? Colors.white : Colors.black87),
+                ),
+              ),
               onTap: () {
                 Navigator.pop(context);
                 _pickImage(ImageSource.camera);
               },
             ),
             ListTile(
-              leading: Icon(Icons.photo_library,
-                color: theme.iconTheme.color ?? (isDark ? Colors.white : Colors.black87)),
-              title: Text('Photo Library',
+              leading: Icon(
+                Icons.photo_library,
+                color:
+                    theme.iconTheme.color ??
+                    (isDark ? Colors.white : Colors.black87),
+              ),
+              title: Text(
+                'Photo Library',
                 style: theme.textTheme.bodyLarge?.copyWith(
-                  color: theme.textTheme.bodyLarge?.color ?? (isDark ? Colors.white : Colors.black87),
-                )),
+                  color:
+                      theme.textTheme.bodyLarge?.color ??
+                      (isDark ? Colors.white : Colors.black87),
+                ),
+              ),
               onTap: () {
                 Navigator.pop(context);
                 _pickImage(ImageSource.gallery);
               },
             ),
             ListTile(
-              leading: Icon(Icons.cancel,
-                color: theme.colorScheme.error),
-              title: Text('Cancel',
+              leading: Icon(Icons.cancel, color: theme.colorScheme.error),
+              title: Text(
+                'Cancel',
                 style: theme.textTheme.bodyLarge?.copyWith(
                   color: theme.colorScheme.error,
-                )),
+                ),
+              ),
               onTap: () => Navigator.pop(context),
             ),
           ],
@@ -267,11 +282,12 @@ class _PhotoPickerWidgetState extends State<PhotoPickerWidget> {
   void _showPhotoOptions(int index) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    
+
     showModalBottomSheet(
       context: context,
-      backgroundColor: theme.bottomSheetTheme.backgroundColor ?? 
-        (isDark ? const Color(0xFF1E1E1E) : Colors.white),
+      backgroundColor:
+          theme.bottomSheetTheme.backgroundColor ??
+          (isDark ? const Color(0xFF1E1E1E) : Colors.white),
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -280,36 +296,48 @@ class _PhotoPickerWidgetState extends State<PhotoPickerWidget> {
           children: [
             if (index > 0)
               ListTile(
-                leading: Icon(Icons.star,
-                  color: theme.colorScheme.primary),
-                title: Text('Make Primary',
+                leading: Icon(Icons.star, color: theme.colorScheme.primary),
+                title: Text(
+                  'Make Primary',
                   style: theme.textTheme.bodyLarge?.copyWith(
-                    color: theme.textTheme.bodyLarge?.color ?? (isDark ? Colors.white : Colors.black87),
-                  )),
+                    color:
+                        theme.textTheme.bodyLarge?.color ??
+                        (isDark ? Colors.white : Colors.black87),
+                  ),
+                ),
                 onTap: () {
                   Navigator.pop(context);
                   _makePrimary(index);
                 },
               ),
             ListTile(
-              leading: Icon(Icons.delete,
-                color: theme.colorScheme.error),
-              title: Text('Remove Photo',
+              leading: Icon(Icons.delete, color: theme.colorScheme.error),
+              title: Text(
+                'Remove Photo',
                 style: theme.textTheme.bodyLarge?.copyWith(
                   color: theme.colorScheme.error,
-                )),
+                ),
+              ),
               onTap: () {
                 Navigator.pop(context);
                 _removePhoto(index);
               },
             ),
             ListTile(
-              leading: Icon(Icons.cancel,
-                color: theme.iconTheme.color ?? (isDark ? Colors.white70 : Colors.black54)),
-              title: Text('Cancel',
+              leading: Icon(
+                Icons.cancel,
+                color:
+                    theme.iconTheme.color ??
+                    (isDark ? Colors.white70 : Colors.black54),
+              ),
+              title: Text(
+                'Cancel',
                 style: theme.textTheme.bodyLarge?.copyWith(
-                  color: theme.textTheme.bodyLarge?.color ?? (isDark ? Colors.white70 : Colors.black54),
-                )),
+                  color:
+                      theme.textTheme.bodyLarge?.color ??
+                      (isDark ? Colors.white70 : Colors.black54),
+                ),
+              ),
               onTap: () => Navigator.pop(context),
             ),
           ],
@@ -332,7 +360,9 @@ class _PhotoPickerWidgetState extends State<PhotoPickerWidget> {
       context: context,
       builder: (context) => AlertDialog(
         title: Text('$permissionType Permission Required'),
-        content: Text('Please grant $permissionType permission to add photos to your profile.'),
+        content: Text(
+          'Please grant $permissionType permission to add photos to your profile.',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),

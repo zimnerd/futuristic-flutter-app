@@ -15,7 +15,7 @@ class AiPreferencesService {
 
     final prefs = await SharedPreferences.getInstance();
     final preferencesJson = prefs.getString(_preferencesKey);
-    
+
     if (preferencesJson != null) {
       final Map<String, dynamic> json = jsonDecode(preferencesJson);
       _cachedPreferences = AiPreferences.fromJson(json);
@@ -31,7 +31,7 @@ class AiPreferencesService {
   Future<void> updateAiPreferences(AiPreferences preferences) async {
     final prefs = await SharedPreferences.getInstance();
     final preferencesJson = jsonEncode(preferences.toJson());
-    
+
     await prefs.setString(_preferencesKey, preferencesJson);
     _cachedPreferences = preferences;
   }
@@ -39,14 +39,20 @@ class AiPreferencesService {
   /// Enable/disable main AI functionality
   Future<void> setAiEnabled(bool enabled) async {
     final currentPreferences = await getAiPreferences();
-    final updatedPreferences = currentPreferences.copyWith(isAiEnabled: enabled);
+    final updatedPreferences = currentPreferences.copyWith(
+      isAiEnabled: enabled,
+    );
     await updateAiPreferences(updatedPreferences);
   }
 
   /// Update conversation settings
-  Future<void> updateConversationSettings(AiConversationSettings settings) async {
+  Future<void> updateConversationSettings(
+    AiConversationSettings settings,
+  ) async {
     final currentPreferences = await getAiPreferences();
-    final updatedPreferences = currentPreferences.copyWith(conversations: settings);
+    final updatedPreferences = currentPreferences.copyWith(
+      conversations: settings,
+    );
     await updateAiPreferences(updatedPreferences);
   }
 
@@ -74,7 +80,9 @@ class AiPreferencesService {
   /// Update icebreaker settings
   Future<void> updateIcebreakerSettings(AiIcebreakerSettings settings) async {
     final currentPreferences = await getAiPreferences();
-    final updatedPreferences = currentPreferences.copyWith(icebreakers: settings);
+    final updatedPreferences = currentPreferences.copyWith(
+      icebreakers: settings,
+    );
     await updateAiPreferences(updatedPreferences);
   }
 
@@ -88,7 +96,7 @@ class AiPreferencesService {
   /// Check if a specific feature is enabled
   Future<bool> isFeatureEnabled(String feature) async {
     final preferences = await getAiPreferences();
-    
+
     if (!preferences.isAiEnabled) {
       return false;
     }
@@ -148,7 +156,8 @@ class AiPreferencesService {
       'threshold': preferences.matching.matchingThreshold,
       'personalityInsights': preferences.matching.personalityInsightsEnabled,
       'behaviorAnalysis': preferences.matching.behaviorAnalysisEnabled,
-      'compatibilityAnalysis': preferences.matching.compatibilityAnalysisEnabled,
+      'compatibilityAnalysis':
+          preferences.matching.compatibilityAnalysisEnabled,
     };
   }
 
@@ -177,7 +186,7 @@ class AiPreferencesService {
   /// Get privacy-safe preferences for analytics
   Future<Map<String, dynamic>> getAnonymousPreferences() async {
     final preferences = await getAiPreferences();
-    
+
     if (!preferences.general.shareAnonymousUsage) {
       return {};
     }
@@ -186,9 +195,11 @@ class AiPreferencesService {
       'ai_enabled': preferences.isAiEnabled,
       'conversations_enabled': preferences.conversations.smartRepliesEnabled,
       'companion_enabled': preferences.companion.companionChatEnabled,
-      'profile_optimization_enabled': preferences.profile.profileOptimizationEnabled,
+      'profile_optimization_enabled':
+          preferences.profile.profileOptimizationEnabled,
       'matching_enabled': preferences.matching.smartMatchingEnabled,
-      'icebreakers_enabled': preferences.icebreakers.icebreakerSuggestionsEnabled,
+      'icebreakers_enabled':
+          preferences.icebreakers.icebreakerSuggestionsEnabled,
       'privacy_level': preferences.general.privacyLevel,
     };
   }

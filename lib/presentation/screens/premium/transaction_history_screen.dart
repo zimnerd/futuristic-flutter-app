@@ -13,7 +13,7 @@ import '../../../data/services/token_service.dart';
 import '../../widgets/common/pulse_toast.dart';
 
 /// Transaction History Screen
-/// 
+///
 /// Displays user's transaction history with:
 /// - Current coin balance
 /// - Grouped transaction list (Today, Yesterday, This Week, etc.)
@@ -23,7 +23,8 @@ class TransactionHistoryScreen extends StatefulWidget {
   const TransactionHistoryScreen({super.key});
 
   @override
-  State<TransactionHistoryScreen> createState() => _TransactionHistoryScreenState();
+  State<TransactionHistoryScreen> createState() =>
+      _TransactionHistoryScreenState();
 }
 
 class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
@@ -125,11 +126,15 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
     }
 
     if (startDate != null) {
-      filtered = filtered.where((t) => t.processedAt.isAfter(startDate!)).toList();
+      filtered = filtered
+          .where((t) => t.processedAt.isAfter(startDate!))
+          .toList();
     }
 
     if (endDate != null) {
-      filtered = filtered.where((t) => t.processedAt.isBefore(endDate!)).toList();
+      filtered = filtered
+          .where((t) => t.processedAt.isBefore(endDate!))
+          .toList();
     }
 
     setState(() {
@@ -145,7 +150,10 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
     final weekAgo = today.subtract(const Duration(days: 7));
 
     // Use filtered transactions instead of all transactions
-    final transactionsToGroup = _filteredTransactions.isEmpty && _selectedType == null && _selectedDateRange == DateRange.all
+    final transactionsToGroup =
+        _filteredTransactions.isEmpty &&
+            _selectedType == null &&
+            _selectedDateRange == DateRange.all
         ? _transactions
         : _filteredTransactions;
 
@@ -192,18 +200,13 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
             ),
         ],
       ),
-      body: RefreshIndicator(
-        onRefresh: _loadTransactions,
-        child: _buildBody(),
-      ),
+      body: RefreshIndicator(onRefresh: _loadTransactions, child: _buildBody()),
     );
   }
 
   Widget _buildBody() {
     if (_isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(),
-      );
+      return const Center(child: CircularProgressIndicator());
     }
 
     if (_error != null) {
@@ -219,9 +222,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
         _buildBalanceCard(),
         if (_transactions.isNotEmpty) _buildSummaryCard(),
         _buildFilterChips(),
-        Expanded(
-          child: _buildTransactionsList(),
-        ),
+        Expanded(child: _buildTransactionsList()),
       ],
     );
   }
@@ -309,12 +310,14 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
   }
 
   Widget _buildSummaryCard() {
-    final transactions = _filteredTransactions.isEmpty ? _transactions : _filteredTransactions;
-    
+    final transactions = _filteredTransactions.isEmpty
+        ? _transactions
+        : _filteredTransactions;
+
     // Calculate totals
     double totalSpent = 0;
     double totalPurchased = 0;
-    
+
     for (var transaction in transactions) {
       if (transaction.type == PaymentTransactionType.payment) {
         totalPurchased += transaction.amount;
@@ -322,7 +325,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
         totalSpent += transaction.amount;
       }
     }
-    
+
     final netBalance = totalPurchased - totalSpent;
 
     return Container(
@@ -349,11 +352,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
               Colors.red,
             ),
           ),
-          Container(
-            width: 1,
-            height: 40,
-            color: Colors.grey[300],
-          ),
+          Container(width: 1, height: 40, color: Colors.grey[300]),
           Expanded(
             child: _buildSummaryItem(
               'Purchased',
@@ -362,11 +361,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
               Colors.green,
             ),
           ),
-          Container(
-            width: 1,
-            height: 40,
-            color: Colors.grey[300],
-          ),
+          Container(width: 1, height: 40, color: Colors.grey[300]),
           Expanded(
             child: _buildSummaryItem(
               'Net',
@@ -380,7 +375,12 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
     );
   }
 
-  Widget _buildSummaryItem(String label, double amount, IconData icon, Color color) {
+  Widget _buildSummaryItem(
+    String label,
+    double amount,
+    IconData icon,
+    Color color,
+  ) {
     return Column(
       children: [
         Row(
@@ -411,19 +411,22 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
     );
   }
 
-  int _calculateRunningBalance(PaymentTransaction transaction, List<PaymentTransaction> allTransactions) {
+  int _calculateRunningBalance(
+    PaymentTransaction transaction,
+    List<PaymentTransaction> allTransactions,
+  ) {
     // Find the index of this transaction
     final index = allTransactions.indexOf(transaction);
     if (index == -1) return _currentBalance;
 
     // Calculate running balance up to this transaction
     int balance = _currentBalance;
-    
+
     // Process transactions in reverse order (oldest to newest)
     // Since allTransactions is already sorted newest first, we need to reverse
     final reversedTransactions = allTransactions.reversed.toList();
     final reversedIndex = reversedTransactions.length - 1 - index;
-    
+
     for (int i = reversedTransactions.length - 1; i > reversedIndex; i--) {
       final t = reversedTransactions[i];
       if (t.type == PaymentTransactionType.payment) {
@@ -432,10 +435,9 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
         balance += t.amount.toInt();
       }
     }
-    
+
     return balance;
   }
-
 
   Widget _buildFilterChips() {
     return Container(
@@ -461,7 +463,10 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                 const SizedBox(width: 8),
                 _buildTypeChip('Purchases', PaymentTransactionType.payment),
                 const SizedBox(width: 8),
-                _buildTypeChip('Subscriptions', PaymentTransactionType.subscription),
+                _buildTypeChip(
+                  'Subscriptions',
+                  PaymentTransactionType.subscription,
+                ),
                 const SizedBox(width: 8),
                 _buildTypeChip('Refunds', PaymentTransactionType.refund),
                 const SizedBox(width: 8),
@@ -486,7 +491,10 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
               children: [
                 _buildStatusChip('All', null),
                 const SizedBox(width: 8),
-                _buildStatusChip('Completed', PaymentTransactionStatus.completed),
+                _buildStatusChip(
+                  'Completed',
+                  PaymentTransactionStatus.completed,
+                ),
                 const SizedBox(width: 8),
                 _buildStatusChip('Pending', PaymentTransactionStatus.pending),
                 const SizedBox(width: 8),
@@ -627,7 +635,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
   }
 
   // Export Functionality
-  
+
   void _showExportOptions() {
     showModalBottomSheet(
       context: context,
@@ -642,18 +650,12 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
           children: [
             const Text(
               'Export Transactions',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             Text(
               'Choose format to export ${_filteredTransactions.isEmpty ? _transactions.length : _filteredTransactions.length} transaction(s)',
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey[600],
-              ),
+              style: TextStyle(fontSize: 14, color: Colors.grey[600]),
             ),
             const SizedBox(height: 20),
             ListTile(
@@ -710,7 +712,9 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
       }
 
       final pdf = pw.Document();
-      final transactions = _filteredTransactions.isEmpty ? _transactions : _filteredTransactions;
+      final transactions = _filteredTransactions.isEmpty
+          ? _transactions
+          : _filteredTransactions;
 
       // Calculate totals
       double totalSpent = 0;
@@ -770,31 +774,51 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                   children: [
                     pw.Column(
                       children: [
-                        pw.Text('Total Transactions', style: const pw.TextStyle(fontSize: 10)),
+                        pw.Text(
+                          'Total Transactions',
+                          style: const pw.TextStyle(fontSize: 10),
+                        ),
                         pw.SizedBox(height: 4),
                         pw.Text(
                           '${transactions.length}',
-                          style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold),
+                          style: pw.TextStyle(
+                            fontSize: 16,
+                            fontWeight: pw.FontWeight.bold,
+                          ),
                         ),
                       ],
                     ),
                     pw.Column(
                       children: [
-                        pw.Text('Total Spent', style: const pw.TextStyle(fontSize: 10)),
+                        pw.Text(
+                          'Total Spent',
+                          style: const pw.TextStyle(fontSize: 10),
+                        ),
                         pw.SizedBox(height: 4),
                         pw.Text(
                           '${totalSpent.toStringAsFixed(0)} coins',
-                          style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold, color: PdfColors.red),
+                          style: pw.TextStyle(
+                            fontSize: 16,
+                            fontWeight: pw.FontWeight.bold,
+                            color: PdfColors.red,
+                          ),
                         ),
                       ],
                     ),
                     pw.Column(
                       children: [
-                        pw.Text('Total Purchased', style: const pw.TextStyle(fontSize: 10)),
+                        pw.Text(
+                          'Total Purchased',
+                          style: const pw.TextStyle(fontSize: 10),
+                        ),
                         pw.SizedBox(height: 4),
                         pw.Text(
                           '${totalPurchased.toStringAsFixed(0)} coins',
-                          style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold, color: PdfColors.green),
+                          style: pw.TextStyle(
+                            fontSize: 16,
+                            fontWeight: pw.FontWeight.bold,
+                            color: PdfColors.green,
+                          ),
                         ),
                       ],
                     ),
@@ -839,7 +863,9 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
 
       // Save and share
       final output = await getTemporaryDirectory();
-      final file = File('${output.path}/pulse_transactions_${DateTime.now().millisecondsSinceEpoch}.pdf');
+      final file = File(
+        '${output.path}/pulse_transactions_${DateTime.now().millisecondsSinceEpoch}.pdf',
+      );
       await file.writeAsBytes(await pdf.save());
 
       if (mounted) {
@@ -872,32 +898,39 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
         );
       }
 
-      final transactions = _filteredTransactions.isEmpty ? _transactions : _filteredTransactions;
-      
+      final transactions = _filteredTransactions.isEmpty
+          ? _transactions
+          : _filteredTransactions;
+
       // Build CSV content
       final StringBuffer csvContent = StringBuffer();
-      
+
       // Header
       csvContent.writeln('Date,Time,Description,Type,Status,Amount,Currency');
-      
+
       // Data rows
       for (var transaction in transactions) {
         final date = DateFormat('yyyy-MM-dd').format(transaction.processedAt);
         final time = DateFormat('HH:mm:ss').format(transaction.processedAt);
-        final description = '"${transaction.description.replaceAll('"', '""')}"'; // Escape quotes
+        final description =
+            '"${transaction.description.replaceAll('"', '""')}"'; // Escape quotes
         final type = _getTypeLabel(transaction.type);
         final status = _getStatusLabel(transaction.status);
-        final amount = transaction.type == PaymentTransactionType.payment 
-            ? '+${transaction.amount.toStringAsFixed(2)}' 
+        final amount = transaction.type == PaymentTransactionType.payment
+            ? '+${transaction.amount.toStringAsFixed(2)}'
             : '-${transaction.amount.toStringAsFixed(2)}';
         final currency = transaction.currency;
-        
-        csvContent.writeln('$date,$time,$description,$type,$status,$amount,$currency');
+
+        csvContent.writeln(
+          '$date,$time,$description,$type,$status,$amount,$currency',
+        );
       }
 
       // Save and share
       final output = await getTemporaryDirectory();
-      final file = File('${output.path}/pulse_transactions_${DateTime.now().millisecondsSinceEpoch}.csv');
+      final file = File(
+        '${output.path}/pulse_transactions_${DateTime.now().millisecondsSinceEpoch}.csv',
+      );
       await file.writeAsString(csvContent.toString());
 
       if (mounted) {
@@ -951,7 +984,6 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
     }
   }
 
-
   Widget _buildTransactionsList() {
     final groupedTransactions = _groupTransactionsByDate();
     final sortedKeys = groupedTransactions.keys.toList();
@@ -988,7 +1020,9 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                 ),
               ),
             ),
-            ...transactions.map((transaction) => _buildTransactionItem(transaction)),
+            ...transactions.map(
+              (transaction) => _buildTransactionItem(transaction),
+            ),
           ],
         );
       },
@@ -996,12 +1030,18 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
   }
 
   Widget _buildTransactionItem(PaymentTransaction transaction) {
-    final isCredit = transaction.type == PaymentTransactionType.payment ||
+    final isCredit =
+        transaction.type == PaymentTransactionType.payment ||
         transaction.type == PaymentTransactionType.refund;
 
     // Get all transactions for running balance calculation
-    final allTransactions = _filteredTransactions.isEmpty ? _transactions : _filteredTransactions;
-    final runningBalance = _calculateRunningBalance(transaction, allTransactions);
+    final allTransactions = _filteredTransactions.isEmpty
+        ? _transactions
+        : _filteredTransactions;
+    final runningBalance = _calculateRunningBalance(
+      transaction,
+      allTransactions,
+    );
 
     return InkWell(
       onTap: () => _showTransactionDetailSheet(transaction),
@@ -1041,11 +1081,10 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      DateFormat('MMM dd, yyyy • hh:mm a').format(transaction.processedAt),
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: Colors.grey[600],
-                      ),
+                      DateFormat(
+                        'MMM dd, yyyy • hh:mm a',
+                      ).format(transaction.processedAt),
+                      style: TextStyle(fontSize: 13, color: Colors.grey[600]),
                     ),
                     const SizedBox(height: 4),
                     _buildStatusBadge(transaction.status),
@@ -1072,7 +1111,10 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
 
                   // Running balance
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.grey[100],
                       borderRadius: BorderRadius.circular(8),
@@ -1100,11 +1142,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                 ],
               ),
               const SizedBox(width: 8),
-              Icon(
-                Icons.chevron_right,
-                color: Colors.grey[400],
-                size: 20,
-              ),
+              Icon(Icons.chevron_right, color: Colors.grey[400], size: 20),
             ],
           ),
         ),
@@ -1145,11 +1183,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
         color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(10),
       ),
-      child: Icon(
-        icon,
-        color: color,
-        size: 24,
-      ),
+      child: Icon(icon, color: color, size: 24),
     );
   }
 
@@ -1206,11 +1240,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.receipt_long_outlined,
-            size: 80,
-            color: Colors.grey[300],
-          ),
+          Icon(Icons.receipt_long_outlined, size: 80, color: Colors.grey[300]),
           const SizedBox(height: 16),
           Text(
             'No Transactions Yet',
@@ -1223,10 +1253,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
           const SizedBox(height: 8),
           Text(
             'Your transaction history will appear here',
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.grey[500],
-            ),
+            style: TextStyle(fontSize: 14, color: Colors.grey[500]),
           ),
         ],
       ),
@@ -1238,11 +1265,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.error_outline,
-            size: 80,
-            color: Colors.red[300],
-          ),
+          Icon(Icons.error_outline, size: 80, color: Colors.red[300]),
           const SizedBox(height: 16),
           Text(
             'Error Loading Transactions',
@@ -1255,10 +1278,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
           const SizedBox(height: 8),
           Text(
             _error ?? 'Unknown error occurred',
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.grey[500],
-            ),
+            style: TextStyle(fontSize: 14, color: Colors.grey[500]),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 24),
@@ -1279,11 +1299,15 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
 
   /// Show transaction detail bottom sheet
   void _showTransactionDetailSheet(PaymentTransaction transaction) {
-    final isCredit = transaction.type == PaymentTransactionType.payment ||
+    final isCredit =
+        transaction.type == PaymentTransactionType.payment ||
         transaction.type == PaymentTransactionType.refund;
-    final canRefund = transaction.status == PaymentTransactionStatus.completed &&
+    final canRefund =
+        transaction.status == PaymentTransactionStatus.completed &&
         transaction.type == PaymentTransactionType.payment &&
-        transaction.processedAt.isAfter(DateTime.now().subtract(const Duration(days: 30)));
+        transaction.processedAt.isAfter(
+          DateTime.now().subtract(const Duration(days: 30)),
+        );
 
     showModalBottomSheet(
       context: context,
@@ -1392,10 +1416,16 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                 _buildDetailRow('Status', _getStatusLabel(transaction.status)),
 
                 if (transaction.paymentMethodId != null)
-                  _buildDetailRow('Payment Method', transaction.paymentMethodId!),
+                  _buildDetailRow(
+                    'Payment Method',
+                    transaction.paymentMethodId!,
+                  ),
 
                 if (transaction.subscriptionId != null)
-                  _buildDetailRow('Subscription ID', transaction.subscriptionId!),
+                  _buildDetailRow(
+                    'Subscription ID',
+                    transaction.subscriptionId!,
+                  ),
 
                 if (transaction.refundId != null)
                   _buildDetailRow('Refund ID', transaction.refundId!),
@@ -1519,7 +1549,9 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
         );
       }
 
-      final response = await _paymentHistoryService.downloadReceipt(transaction.id);
+      final response = await _paymentHistoryService.downloadReceipt(
+        transaction.id,
+      );
 
       if (response.success && response.data != null) {
         // In a real app, you would download the PDF from the URL
@@ -1540,10 +1572,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
       }
     } catch (e) {
       if (mounted) {
-        PulseToast.error(
-          context,
-          message: 'Error downloading receipt: $e',
-        );
+        PulseToast.error(context, message: 'Error downloading receipt: $e');
       }
     }
   }
@@ -1561,7 +1590,8 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
       }
 
       // Generate a simple text receipt
-      final receipt = '''
+      final receipt =
+          '''
 Transaction Receipt - Pulse Dating
 
 Transaction ID: ${transaction.id}
@@ -1582,10 +1612,7 @@ Thank you for using Pulse Dating!
       );
     } catch (e) {
       if (mounted) {
-        PulseToast.error(
-          context,
-          message: 'Error sharing receipt: $e',
-        );
+        PulseToast.error(context, message: 'Error sharing receipt: $e');
       }
     }
   }
@@ -1636,7 +1663,8 @@ Thank you for using Pulse Dating!
       if (mounted) {
         PulseToast.success(
           context,
-          message: 'Refund request submitted successfully. You will be notified once processed.',
+          message:
+              'Refund request submitted successfully. You will be notified once processed.',
           duration: const Duration(seconds: 4),
         );
       }
@@ -1648,12 +1676,7 @@ Thank you for using Pulse Dating!
 }
 
 /// Date range filter options
-enum DateRange {
-  all,
-  last7Days,
-  last30Days,
-  custom,
-}
+enum DateRange { all, last7Days, last30Days, custom }
 
 extension DateRangeExtension on DateRange {
   String get label {

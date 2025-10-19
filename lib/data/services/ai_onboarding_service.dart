@@ -21,18 +21,14 @@ class AiOnboardingService {
     Map<String, dynamic>? initialData,
   }) async {
     try {
-      final data = {
-        'userId': userId,
-        'initialData': initialData ?? {},
-      };
+      final data = {'userId': userId, 'initialData': initialData ?? {}};
 
-      final response = await _dio.post('/ai-onboarding/start', data: data,
-      );
+      final response = await _dio.post('/ai-onboarding/start', data: data);
 
       if (response.statusCode == 200 && response.data != null) {
         return AiOnboardingResponse.fromJson(response.data);
       }
-      
+
       return null;
     } catch (e) {
       _logger.e('Error starting onboarding session: $e');
@@ -60,13 +56,12 @@ class AiOnboardingService {
         },
       };
 
-      final response = await _dio.post('/ai-onboarding/next', data: data,
-      );
+      final response = await _dio.post('/ai-onboarding/next', data: data);
 
       if (response.statusCode == 200 && response.data != null) {
         return AiOnboardingResponse.fromJson(response.data);
       }
-      
+
       return null;
     } catch (e) {
       _logger.e('Error getting next questions: $e');
@@ -102,9 +97,8 @@ class AiOnboardingService {
       if (response.statusCode == 200 && response.data != null) {
         return AiGeneratedProfileSection.fromJson(response.data);
       }
-      
-      return null;
 
+      return null;
     } catch (e) {
       _logger.e('Error generating profile section: $e');
       return null;
@@ -149,10 +143,7 @@ class AiOnboardingService {
     required String userId,
   }) async {
     try {
-      final data = {
-        'sessionId': sessionId,
-        'userId': userId,
-      };
+      final data = {'sessionId': sessionId, 'userId': userId};
 
       final response = await _dio.get(
         '/ai-onboarding/progress',
@@ -162,7 +153,7 @@ class AiOnboardingService {
       if (response.statusCode == 200 && response.data != null) {
         return AiOnboardingProgress.fromJson(response.data);
       }
-      
+
       return null;
     } catch (e) {
       _logger.e('Error getting onboarding progress: $e');
@@ -186,13 +177,12 @@ class AiOnboardingService {
         'completionTime': DateTime.now().toIso8601String(),
       };
 
-      final response = await _dio.post('/ai-onboarding/complete', data: data,
-      );
+      final response = await _dio.post('/ai-onboarding/complete', data: data);
 
       if (response.statusCode == 200 && response.data != null) {
         return response.data['finalProfile'];
       }
-      
+
       return null;
     } catch (e) {
       _logger.e('Error completing onboarding: $e');
@@ -226,10 +216,7 @@ class AiOnboardingService {
         'timestamp': DateTime.now().toIso8601String(),
       };
 
-      final response = await _dio.post(
-        '/ai/feedback',
-        data: data,
-      );
+      final response = await _dio.post('/ai/feedback', data: data);
 
       return response.statusCode == 200;
     } catch (e) {

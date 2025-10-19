@@ -19,11 +19,13 @@ class EmergencyButtonWidget extends StatelessWidget {
       child: BlocBuilder<SafetyBloc, SafetyState>(
         builder: (context, state) {
           final isEmergencyMode = state.isEmergencyMode;
-          
+
           return ElevatedButton(
             onPressed: () => _handleEmergencyPress(context, isEmergencyMode),
             style: ElevatedButton.styleFrom(
-              backgroundColor: isEmergencyMode ? Colors.red : Colors.red.shade600,
+              backgroundColor: isEmergencyMode
+                  ? Colors.red
+                  : Colors.red.shade600,
               foregroundColor: Colors.white,
               elevation: isEmergencyMode ? 12 : 6,
               shadowColor: Colors.red.withValues(alpha: 0.5),
@@ -51,9 +53,9 @@ class EmergencyButtonWidget extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      isEmergencyMode 
-                        ? 'Tap to cancel alert' 
-                        : 'Tap for immediate help',
+                      isEmergencyMode
+                          ? 'Tap to cancel alert'
+                          : 'Tap for immediate help',
                       style: const TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w400,
@@ -124,7 +126,9 @@ class EmergencyButtonWidget extends StatelessWidget {
       builder: (BuildContext context) {
         return AlertDialog(
           title: const Text('Cancel Emergency Alert'),
-          content: const Text('Are you sure you want to cancel the emergency alert?'),
+          content: const Text(
+            'Are you sure you want to cancel the emergency alert?',
+          ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
@@ -170,16 +174,15 @@ class EmergencyButtonWidget extends StatelessWidget {
       }
 
       // Use the location service from service locator
-      final position = await ServiceLocator.instance.location.getCurrentLocation();
+      final position = await ServiceLocator.instance.location
+          .getCurrentLocation();
 
       if (position != null) {
         location = "Lat: ${position.latitude}, Lng: ${position.longitude}";
 
         // Try to get a readable address
-        final address = await ServiceLocator.instance.location.getAddressFromCoordinates(
-          position.latitude,
-          position.longitude,
-        );
+        final address = await ServiceLocator.instance.location
+            .getAddressFromCoordinates(position.latitude, position.longitude);
         if (address != null) {
           location = "$address (${position.latitude}, ${position.longitude})";
         }

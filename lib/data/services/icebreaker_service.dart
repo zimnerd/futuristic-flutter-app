@@ -21,15 +21,19 @@ class IcebreakerService {
         queryParameters: {
           if (count != null) 'count': count.toString(),
           if (context != null) 'context': context,
-          if (interests != null && interests.isNotEmpty) 'interests': interests.join(','),
+          if (interests != null && interests.isNotEmpty)
+            'interests': interests.join(','),
         },
       );
 
       if (response.statusCode == 200 && response.data != null) {
-        final List<dynamic> icebreakersData = response.data['iceBreakers'] ?? [];
+        final List<dynamic> icebreakersData =
+            response.data['iceBreakers'] ?? [];
         final List<String> icebreakers = icebreakersData.cast<String>();
-        
-        _logger.d('Generated ${icebreakers.length} icebreakers for user $targetUserId');
+
+        _logger.d(
+          'Generated ${icebreakers.length} icebreakers for user $targetUserId',
+        );
         return icebreakers;
       } else {
         _logger.e('Failed to generate icebreakers: ${response.statusMessage}');
@@ -64,11 +68,13 @@ class IcebreakerService {
         final List<Map<String, dynamic>> starters = startersData
             .map((item) => Map<String, dynamic>.from(item))
             .toList();
-        
+
         _logger.d('Retrieved ${starters.length} conversation starters');
         return starters;
       } else {
-        _logger.e('Failed to get conversation starters: ${response.statusMessage}');
+        _logger.e(
+          'Failed to get conversation starters: ${response.statusMessage}',
+        );
         return [];
       }
     } catch (e) {
@@ -96,13 +102,16 @@ class IcebreakerService {
       );
 
       if (response.statusCode == 200 && response.data != null) {
-        final List<dynamic> suggestionsData = response.data['suggestions'] ?? [];
+        final List<dynamic> suggestionsData =
+            response.data['suggestions'] ?? [];
         final List<String> suggestions = suggestionsData.cast<String>();
-        
+
         _logger.d('Generated ${suggestions.length} response suggestions');
         return suggestions;
       } else {
-        _logger.e('Failed to generate response suggestions: ${response.statusMessage}');
+        _logger.e(
+          'Failed to generate response suggestions: ${response.statusMessage}',
+        );
         return [];
       }
     } catch (e) {
@@ -130,7 +139,7 @@ class IcebreakerService {
         final List<Map<String, dynamic>> topics = topicsData
             .map((item) => Map<String, dynamic>.from(item))
             .toList();
-        
+
         _logger.d('Retrieved ${topics.length} trending topics');
         return topics;
       } else {
@@ -163,7 +172,9 @@ class IcebreakerService {
         _logger.d('Conversation compatibility analysis completed');
         return response.data;
       } else {
-        _logger.e('Failed to analyze conversation compatibility: ${response.statusMessage}');
+        _logger.e(
+          'Failed to analyze conversation compatibility: ${response.statusMessage}',
+        );
         return null;
       }
     } catch (e) {
@@ -191,7 +202,7 @@ class IcebreakerService {
       if (response.statusCode == 200 && response.data != null) {
         final List<dynamic> tipsData = response.data['tips'] ?? [];
         final List<String> tips = tipsData.cast<String>();
-        
+
         _logger.d('Retrieved ${tips.length} conversation tips');
         return tips;
       } else {
@@ -225,11 +236,13 @@ class IcebreakerService {
       if (response.statusCode == 200 && response.data != null) {
         final List<dynamic> messagesData = response.data['messages'] ?? [];
         final List<String> messages = messagesData.cast<String>();
-        
+
         _logger.d('Generated ${messages.length} opening messages');
         return messages;
       } else {
-        _logger.e('Failed to generate opening messages: ${response.statusMessage}');
+        _logger.e(
+          'Failed to generate opening messages: ${response.statusMessage}',
+        );
         return [];
       }
     } catch (e) {
@@ -312,7 +325,8 @@ class IcebreakerService {
         '/api/v1/ai/icebreaker-stats',
         queryParameters: {
           if (timeframe != null) 'timeframe': timeframe,
-          if (includeSuccessRate != null) 'includeSuccessRate': includeSuccessRate.toString(),
+          if (includeSuccessRate != null)
+            'includeSuccessRate': includeSuccessRate.toString(),
         },
       );
 

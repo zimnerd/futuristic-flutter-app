@@ -27,18 +27,19 @@ class RichAiChatAssistantModal extends StatefulWidget {
   });
 
   @override
-  State<RichAiChatAssistantModal> createState() => _RichAiChatAssistantModalState();
+  State<RichAiChatAssistantModal> createState() =>
+      _RichAiChatAssistantModalState();
 }
 
 class _RichAiChatAssistantModalState extends State<RichAiChatAssistantModal>
     with TickerProviderStateMixin {
   final TextEditingController _requestController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
-  
+
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
-  
+
   // Context selection options
   bool _includeMyProfile = false;
   bool _includeMatchProfile = true;
@@ -46,23 +47,23 @@ class _RichAiChatAssistantModalState extends State<RichAiChatAssistantModal>
   bool _includeMatchGallery = false;
   bool _includePreferences = false;
   double _conversationMessageLimit = 20;
-  
+
   // AI assistance state
   AiAssistanceType _assistanceType = AiAssistanceType.response;
   MessageTone _selectedTone = MessageTone.friendly;
   AiChatAssistanceResponse? _currentResponse;
   bool _isLoading = false;
-  
+
   // Response refinement state
   bool _isRefining = false;
   final TextEditingController _refinementController = TextEditingController();
-  
+
   // UI state
   bool _isTopSectionExpanded = true;
-  
+
   // Custom notification state
   OverlayEntry? _overlayEntry;
-  
+
   @override
   void initState() {
     super.initState();
@@ -75,29 +76,26 @@ class _RichAiChatAssistantModalState extends State<RichAiChatAssistantModal>
       duration: const Duration(milliseconds: 300),
       vsync: this,
     );
-    
-    _fadeAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeOut,
-    ));
-    
-    _slideAnimation = Tween<Offset>(
-      begin: const Offset(0, 1),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeOutCubic,
-    ));
-    
+
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
+    );
+
+    _slideAnimation = Tween<Offset>(begin: const Offset(0, 1), end: Offset.zero)
+        .animate(
+          CurvedAnimation(
+            parent: _animationController,
+            curve: Curves.easeOutCubic,
+          ),
+        );
+
     _animationController.forward();
   }
 
   void _initializeForSpecificMessage() {
     if (widget.specificMessage != null) {
-      _requestController.text = 'Help me respond to: "${widget.specificMessage}"';
+      _requestController.text =
+          'Help me respond to: "${widget.specificMessage}"';
       _assistanceType = AiAssistanceType.response;
       _includeConversation = true;
     }
@@ -201,11 +199,7 @@ class _RichAiChatAssistantModalState extends State<RichAiChatAssistantModal>
             ),
             IconButton(
               onPressed: _closeModal,
-              icon: const Icon(
-                Icons.close,
-                color: Colors.white,
-                size: 24,
-              ),
+              icon: const Icon(Icons.close, color: Colors.white, size: 24),
             ),
           ],
         ),
@@ -290,7 +284,10 @@ class _RichAiChatAssistantModalState extends State<RichAiChatAssistantModal>
               borderRadius: BorderRadius.circular(20),
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
                 decoration: BoxDecoration(
                   gradient: isSelected
                       ? LinearGradient(
@@ -333,10 +330,7 @@ class _RichAiChatAssistantModalState extends State<RichAiChatAssistantModal>
         const SizedBox(height: 8),
         Text(
           'Be specific about what kind of help you want with this conversation',
-          style: TextStyle(
-            fontSize: 14,
-            color: Colors.grey[600],
-          ),
+          style: TextStyle(fontSize: 14, color: Colors.grey[600]),
         ),
         const SizedBox(height: 12),
         Container(
@@ -349,7 +343,8 @@ class _RichAiChatAssistantModalState extends State<RichAiChatAssistantModal>
             controller: _requestController,
             maxLines: 3,
             decoration: const InputDecoration(
-              hintText: 'e.g., "Help me write a flirty response" or "Suggest conversation starters"',
+              hintText:
+                  'e.g., "Help me write a flirty response" or "Suggest conversation starters"',
               border: InputBorder.none,
               contentPadding: EdgeInsets.all(16),
             ),
@@ -374,10 +369,7 @@ class _RichAiChatAssistantModalState extends State<RichAiChatAssistantModal>
         const SizedBox(height: 8),
         Text(
           'Select what information the AI should use to help you',
-          style: TextStyle(
-            fontSize: 14,
-            color: Colors.grey[600],
-          ),
+          style: TextStyle(fontSize: 14, color: Colors.grey[600]),
         ),
         const SizedBox(height: 16),
         _buildContextOption(
@@ -428,7 +420,7 @@ class _RichAiChatAssistantModalState extends State<RichAiChatAssistantModal>
     IconData icon,
   ) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
+
     return AnimatedContainer(
       duration: const Duration(milliseconds: 200),
       margin: const EdgeInsets.only(bottom: 14),
@@ -436,21 +428,23 @@ class _RichAiChatAssistantModalState extends State<RichAiChatAssistantModal>
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: value 
-            ? PulseColors.primary 
-            : (isDark ? Colors.grey[600]! : Colors.grey[300]!),
+          color: value
+              ? PulseColors.primary
+              : (isDark ? Colors.grey[600]! : Colors.grey[300]!),
           width: value ? 2.5 : 1.5,
         ),
-        color: value 
-          ? PulseColors.primary.withValues(alpha: isDark ? 0.15 : 0.08)
-          : (isDark ? Colors.grey[850] : Colors.grey[50]),
-        boxShadow: value ? [
-          BoxShadow(
-            color: PulseColors.primary.withValues(alpha: 0.2),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ] : [],
+        color: value
+            ? PulseColors.primary.withValues(alpha: isDark ? 0.15 : 0.08)
+            : (isDark ? Colors.grey[850] : Colors.grey[50]),
+        boxShadow: value
+            ? [
+                BoxShadow(
+                  color: PulseColors.primary.withValues(alpha: 0.2),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ]
+            : [],
       ),
       child: Row(
         children: [
@@ -458,23 +452,21 @@ class _RichAiChatAssistantModalState extends State<RichAiChatAssistantModal>
             duration: const Duration(milliseconds: 200),
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: value 
-                ? PulseColors.primary 
-                : (isDark ? Colors.grey[700] : Colors.grey[400]),
+              color: value
+                  ? PulseColors.primary
+                  : (isDark ? Colors.grey[700] : Colors.grey[400]),
               borderRadius: BorderRadius.circular(12),
-              boxShadow: value ? [
-                BoxShadow(
-                  color: PulseColors.primary.withValues(alpha: 0.3),
-                  blurRadius: 6,
-                  offset: const Offset(0, 2),
-                ),
-              ] : [],
+              boxShadow: value
+                  ? [
+                      BoxShadow(
+                        color: PulseColors.primary.withValues(alpha: 0.3),
+                        blurRadius: 6,
+                        offset: const Offset(0, 2),
+                      ),
+                    ]
+                  : [],
             ),
-            child: Icon(
-              icon,
-              color: Colors.white,
-              size: 22,
-            ),
+            child: Icon(icon, color: Colors.white, size: 22),
           ),
           const SizedBox(width: 18),
           Expanded(
@@ -486,9 +478,9 @@ class _RichAiChatAssistantModalState extends State<RichAiChatAssistantModal>
                   style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
-                    color: value 
-                      ? PulseColors.primary 
-                      : (isDark ? Colors.grey[200] : Colors.grey[800]),
+                    color: value
+                        ? PulseColors.primary
+                        : (isDark ? Colors.grey[200] : Colors.grey[800]),
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -517,15 +509,15 @@ class _RichAiChatAssistantModalState extends State<RichAiChatAssistantModal>
 
   Widget _buildMessageLimitSlider() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
+
     return Container(
       margin: const EdgeInsets.only(left: 16, bottom: 16),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
-        color: isDark 
-          ? PulseColors.secondary.withValues(alpha: 0.1) 
-          : PulseColors.secondary.withValues(alpha: 0.05),
+        color: isDark
+            ? PulseColors.secondary.withValues(alpha: 0.1)
+            : PulseColors.secondary.withValues(alpha: 0.05),
         border: Border.all(
           color: PulseColors.secondary.withValues(alpha: 0.2),
           width: 1,
@@ -539,10 +531,7 @@ class _RichAiChatAssistantModalState extends State<RichAiChatAssistantModal>
             children: [
               const Text(
                 'Message limit',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                ),
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
               ),
               Text(
                 '${_conversationMessageLimit.toInt()} messages',
@@ -574,10 +563,7 @@ class _RichAiChatAssistantModalState extends State<RichAiChatAssistantModal>
           ),
           Text(
             'Fewer messages = lower cost, more messages = better context',
-            style: TextStyle(
-              fontSize: 12,
-              color: Colors.grey[600],
-            ),
+            style: TextStyle(fontSize: 12, color: Colors.grey[600]),
           ),
         ],
       ),
@@ -607,12 +593,17 @@ class _RichAiChatAssistantModalState extends State<RichAiChatAssistantModal>
               borderRadius: BorderRadius.circular(16),
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 8,
+                ),
                 decoration: BoxDecoration(
                   color: isSelected ? PulseColors.secondary : Colors.grey[100],
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
-                    color: isSelected ? PulseColors.secondary : Colors.grey[300]!,
+                    color: isSelected
+                        ? PulseColors.secondary
+                        : Colors.grey[300]!,
                   ),
                 ),
                 child: Text(
@@ -630,8 +621,6 @@ class _RichAiChatAssistantModalState extends State<RichAiChatAssistantModal>
       ],
     );
   }
-
-
 
   Widget _buildGenerateButton() {
     return SizedBox(
@@ -658,10 +647,7 @@ class _RichAiChatAssistantModalState extends State<RichAiChatAssistantModal>
               )
             : const Text(
                 'Generate AI Assistance',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
               ),
       ),
     );
@@ -739,10 +725,7 @@ class _RichAiChatAssistantModalState extends State<RichAiChatAssistantModal>
                   Expanded(
                     child: Text(
                       _currentResponse!.reasoning,
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.blue[700],
-                      ),
+                      style: TextStyle(fontSize: 12, color: Colors.blue[700]),
                     ),
                   ),
                 ],
@@ -811,7 +794,7 @@ class _RichAiChatAssistantModalState extends State<RichAiChatAssistantModal>
 
   Widget _buildActionButtons() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -837,7 +820,7 @@ class _RichAiChatAssistantModalState extends State<RichAiChatAssistantModal>
             child: ElevatedButton.icon(
               onPressed: _copyToClipboard,
               icon: Icon(
-                Icons.copy_rounded, 
+                Icons.copy_rounded,
                 size: 22,
                 color: isDark ? Colors.grey[300] : Colors.grey[700],
               ),
@@ -870,7 +853,7 @@ class _RichAiChatAssistantModalState extends State<RichAiChatAssistantModal>
             child: ElevatedButton.icon(
               onPressed: _startRefinement,
               icon: const Icon(
-                Icons.tune_rounded, 
+                Icons.tune_rounded,
                 size: 22,
                 color: Colors.white,
               ),
@@ -900,7 +883,10 @@ class _RichAiChatAssistantModalState extends State<RichAiChatAssistantModal>
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(16),
               gradient: LinearGradient(
-                colors: [PulseColors.primary, PulseColors.primary.withValues(alpha: 0.8)],
+                colors: [
+                  PulseColors.primary,
+                  PulseColors.primary.withValues(alpha: 0.8),
+                ],
                 begin: Alignment.centerLeft,
                 end: Alignment.centerRight,
               ),
@@ -915,7 +901,7 @@ class _RichAiChatAssistantModalState extends State<RichAiChatAssistantModal>
             child: ElevatedButton.icon(
               onPressed: _applyToChat,
               icon: const Icon(
-                Icons.send_rounded, 
+                Icons.send_rounded,
                 size: 22,
                 color: Colors.white,
               ),
@@ -1124,7 +1110,7 @@ class _RichAiChatAssistantModalState extends State<RichAiChatAssistantModal>
 
     try {
       final aiService = AiChatAssistantService();
-      
+
       final refinedMessage = await aiService.refineMessage(
         originalMessage: _currentResponse!.suggestion,
         refinementRequest: _refinementController.text.trim(),
@@ -1141,7 +1127,8 @@ class _RichAiChatAssistantModalState extends State<RichAiChatAssistantModal>
       setState(() {
         _currentResponse = AiChatAssistanceResponse(
           suggestion: refinedMessage,
-          reasoning: 'Refined based on your feedback: ${_refinementController.text}',
+          reasoning:
+              'Refined based on your feedback: ${_refinementController.text}',
           alternatives: [],
           contextUsed: _currentResponse!.contextUsed,
           metadata: _currentResponse!.metadata,
@@ -1223,7 +1210,7 @@ class _RichAiChatAssistantModalState extends State<RichAiChatAssistantModal>
         ),
       ),
     );
-    
+
     // Insert the overlay
     Overlay.of(context).insert(_overlayEntry!);
 

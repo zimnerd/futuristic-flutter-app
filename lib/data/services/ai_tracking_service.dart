@@ -26,11 +26,11 @@ class AiTrackingService {
             'feature': feature,
             'user_id': userId,
             'metadata': metadata ?? {},
-          'timestamp': DateTime.now().toIso8601String(),
-        },
+            'timestamp': DateTime.now().toIso8601String(),
+          },
         },
       );
-      
+
       _logger.i('Tracked AI feature engagement: $feature for user: $userId');
     } catch (e) {
       _logger.e('Failed to track AI feature engagement: $e');
@@ -54,11 +54,11 @@ class AiTrackingService {
             'target_user_id': targetUserId,
             'compatibility_score': compatibilityScore,
             'factors': factors,
-          'timestamp': DateTime.now().toIso8601String(),
-        },
+            'timestamp': DateTime.now().toIso8601String(),
+          },
         },
       );
-      
+
       _logger.i(
         'Tracked compatibility analysis for users: $userId -> $targetUserId',
       );
@@ -85,11 +85,11 @@ class AiTrackingService {
             'conversation_id': conversationId,
             'interaction_type': interactionType,
             'metadata': metadata ?? {},
-          'timestamp': DateTime.now().toIso8601String(),
-        },
+            'timestamp': DateTime.now().toIso8601String(),
+          },
         },
       );
-      
+
       _logger.i(
         'Tracked conversation interaction: $interactionType for user: $userId',
       );
@@ -115,11 +115,11 @@ class AiTrackingService {
             'step': step,
             'completed': completed ?? false,
             'metadata': metadata ?? {},
-          'timestamp': DateTime.now().toIso8601String(),
-        },
+            'timestamp': DateTime.now().toIso8601String(),
+          },
         },
       );
-      
+
       _logger.i('Tracked onboarding progress: $step for user: $userId');
     } catch (e) {
       _logger.e('Failed to track onboarding progress: $e');
@@ -145,11 +145,11 @@ class AiTrackingService {
             'rating': rating,
             'comments': comments,
             'metadata': metadata ?? {},
-          'timestamp': DateTime.now().toIso8601String(),
-        },
+            'timestamp': DateTime.now().toIso8601String(),
+          },
         },
       );
-      
+
       _logger.i(
         'Tracked AI feedback: $featureType rating: $rating for user: $userId',
       );

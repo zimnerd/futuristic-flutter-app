@@ -39,7 +39,7 @@ class Conversation extends Equatable {
       final String conversationId = json['id'] as String;
       final String? conversationTitle =
           json['title'] as String? ?? json['name'] as String?;
-      
+
       return Conversation(
         id: conversationId,
         title: conversationTitle,
@@ -192,7 +192,7 @@ class Conversation extends Equatable {
     if (title != null && title!.isNotEmpty) {
       return title!;
     }
-    
+
     if (participants.length == 1) {
       return participants.first.name;
     } else if (participants.length == 2) {
@@ -233,17 +233,17 @@ class Conversation extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        title,
+    id,
+    title,
     isGroup,
-        participants,
-        lastMessage,
-        lastActivity,
-        unreadCount,
-        isActive,
-        isBlocked,
-        metadata,
-        createdAt,
-        updatedAt,
-      ];
+    participants,
+    lastMessage,
+    lastActivity,
+    unreadCount,
+    isActive,
+    isBlocked,
+    metadata,
+    createdAt,
+    updatedAt,
+  ];
 }

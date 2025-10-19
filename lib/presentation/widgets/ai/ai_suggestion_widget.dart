@@ -43,42 +43,35 @@ class _AiSuggestionWidgetState extends State<AiSuggestionWidget>
   late AnimationController _pulseController;
   late Animation<Offset> _slideAnimation;
   late Animation<double> _pulseAnimation;
-  
+
   bool _isExpanded = false;
   bool _hasInteracted = false;
 
   @override
   void initState() {
     super.initState();
-    
+
     _slideController = AnimationController(
       duration: const Duration(milliseconds: 600),
       vsync: this,
     );
-    
+
     _pulseController = AnimationController(
       duration: const Duration(milliseconds: 1500),
       vsync: this,
     );
-    
-    _slideAnimation = Tween<Offset>(
-      begin: const Offset(1, 0),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _slideController,
-      curve: Curves.elasticOut,
-    ));
-    
-    _pulseAnimation = Tween<double>(
-      begin: 1.0,
-      end: 1.05,
-    ).animate(CurvedAnimation(
-      parent: _pulseController,
-      curve: Curves.easeInOut,
-    ));
-    
+
+    _slideAnimation = Tween<Offset>(begin: const Offset(1, 0), end: Offset.zero)
+        .animate(
+          CurvedAnimation(parent: _slideController, curve: Curves.elasticOut),
+        );
+
+    _pulseAnimation = Tween<double>(begin: 1.0, end: 1.05).animate(
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
+    );
+
     _slideController.forward();
-    
+
     // Subtle pulse animation for AI badge
     _pulseController.repeat(reverse: true);
   }
@@ -106,9 +99,7 @@ class _AiSuggestionWidgetState extends State<AiSuggestionWidget>
               Colors.white.withValues(alpha: 0.05),
             ],
           ),
-          border: Border.all(
-            color: Colors.white.withValues(alpha: 0.2),
-          ),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
           boxShadow: [
             BoxShadow(
               color: const Color(0xFF6E3BFF).withValues(alpha: 0.1),
@@ -229,7 +220,7 @@ class _AiSuggestionWidgetState extends State<AiSuggestionWidget>
   Widget _buildConfidenceBadge() {
     final confidence = widget.confidence! * 100;
     final color = _getConfidenceColor(confidence);
-    
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       decoration: BoxDecoration(
@@ -300,9 +291,7 @@ class _AiSuggestionWidgetState extends State<AiSuggestionWidget>
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(8),
                 color: Colors.orange.withValues(alpha: 0.1),
-                border: Border.all(
-                  color: Colors.orange.withValues(alpha: 0.3),
-                ),
+                border: Border.all(color: Colors.orange.withValues(alpha: 0.3)),
               ),
               child: Text(
                 widget.reasoning!,
@@ -387,10 +376,7 @@ class _AiSuggestionWidgetState extends State<AiSuggestionWidget>
               onPressed: _showDetailedFeedback,
               child: const Text(
                 'Feedback',
-                style: TextStyle(
-                  color: Color(0xFF00C2FF),
-                  fontSize: 12,
-                ),
+                style: TextStyle(color: Color(0xFF00C2FF), fontSize: 12),
               ),
             ),
         ],
@@ -401,7 +387,7 @@ class _AiSuggestionWidgetState extends State<AiSuggestionWidget>
   void _onUseSuggestion() {
     setState(() => _hasInteracted = true);
     widget.onUse?.call();
-    
+
     // Show success feedback
     PulseToast.success(
       context,
@@ -411,7 +397,7 @@ class _AiSuggestionWidgetState extends State<AiSuggestionWidget>
 
   void _onCopySuggestion() {
     Clipboard.setData(ClipboardData(text: widget.suggestion));
-    
+
     PulseToast.info(context, message: 'Suggestion copied to clipboard');
   }
 
@@ -435,7 +421,7 @@ class _AiSuggestionWidgetState extends State<AiSuggestionWidget>
         onComplete: () => setState(() => _hasInteracted = true),
       ),
     );
-    
+
     widget.onFeedback?.call();
   }
 
@@ -474,9 +460,7 @@ class CompactAiSuggestion extends StatelessWidget {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(12),
           color: Colors.white.withValues(alpha: 0.1),
-          border: Border.all(
-            color: Colors.white.withValues(alpha: 0.2),
-          ),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
         ),
         child: Row(
           children: [
@@ -498,10 +482,7 @@ class CompactAiSuggestion extends StatelessWidget {
             Expanded(
               child: Text(
                 suggestion,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 12,
-                ),
+                style: const TextStyle(color: Colors.white, fontSize: 12),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),

@@ -2,10 +2,7 @@ class EventCoordinates {
   final double lat;
   final double lng;
 
-  const EventCoordinates({
-    required this.lat,
-    required this.lng,
-  });
+  const EventCoordinates({required this.lat, required this.lng});
 
   factory EventCoordinates.fromJson(Map<String, dynamic> json) {
     return EventCoordinates(
@@ -15,10 +12,7 @@ class EventCoordinates {
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      'lat': lat,
-      'lng': lng,
-    };
+    return {'lat': lat, 'lng': lng};
   }
 
   @override
@@ -47,13 +41,13 @@ class Event {
   categoryDetails; // Full category object with icon, color, etc.
   final String? createdBy;
   final DateTime createdAt;
-  
+
   // Attendance Tracking
   final List<EventAttendance> attendees;
   final bool isAttending;
   final int attendeeCount;
   final int? maxAttendees; // Maximum number of attendees allowed
-  
+
   // Engagement Metrics (NEW)
   final int viewCount;
   final int uniqueViewers;
@@ -118,7 +112,7 @@ class Event {
   factory Event.fromJson(Map<String, dynamic> json, {String? currentUserId}) {
     // Handle wrapped API response
     final eventData = json['data'] ?? json;
-    
+
     // Handle attendees array - convert from the API format to EventAttendance
     // Note: In listing view, attendees array is omitted for privacy (only count is sent)
     List<EventAttendance> attendeesList = [];
@@ -193,7 +187,7 @@ class Event {
     // Handle category - prioritize category object's slug, fallback to tags
     String eventCategory = 'general';
     EventCategory? categoryDetails;
-    
+
     if (eventData['category'] is Map<String, dynamic>) {
       // API returns category as object with id, name, slug, icon, color, etc.
       final categoryObj = eventData['category'] as Map<String, dynamic>;
@@ -201,7 +195,7 @@ class Event {
           categoryObj['slug'] as String? ??
           categoryObj['name'] as String? ??
           'general';
-      
+
       // Parse full category object
       try {
         categoryDetails = EventCategory.fromJson(categoryObj);
@@ -442,7 +436,10 @@ class Event {
     // 30pts: View-to-engagement ratio
     if (uniqueViewers > 0) {
       final engagementActions = clickCount + shareCount;
-      final viewEngagementRatio = (engagementActions / uniqueViewers).clamp(0, 1);
+      final viewEngagementRatio = (engagementActions / uniqueViewers).clamp(
+        0,
+        1,
+      );
       score += viewEngagementRatio * 30;
     }
 
@@ -455,7 +452,10 @@ class Event {
     // 20pts: Community engagement (messages)
     if (attendeeCount > 0 && messageCount > 0) {
       final messagesPerAttendee = messageCount / attendeeCount;
-      final communityScore = (messagesPerAttendee / 10).clamp(0, 1); // Normalize to 10 messages
+      final communityScore = (messagesPerAttendee / 10).clamp(
+        0,
+        1,
+      ); // Normalize to 10 messages
       score += communityScore * 20;
     }
 
@@ -467,7 +467,9 @@ class Event {
 
     // 10pts: Recency bonus (if activity within last 7 days)
     if (lastActivityAt != null) {
-      final daysSinceActivity = DateTime.now().difference(lastActivityAt!).inDays;
+      final daysSinceActivity = DateTime.now()
+          .difference(lastActivityAt!)
+          .inDays;
       if (daysSinceActivity <= 7) {
         final recencyBonus = (1 - (daysSinceActivity / 7)).clamp(0, 1);
         score += recencyBonus * 10;
@@ -531,9 +533,12 @@ class Event {
 
     // Format as percentages
     summary['viewToClick'] = '${(viewToClick * 100).toStringAsFixed(1)}%';
-    summary['clickToRegister'] = '${(clickToRegister * 100).toStringAsFixed(1)}%';
-    summary['registerToAttend'] = '${(registerToAttend * 100).toStringAsFixed(1)}%';
-    summary['overallConversion'] = '${(overallConversion * 100).toStringAsFixed(1)}%';
+    summary['clickToRegister'] =
+        '${(clickToRegister * 100).toStringAsFixed(1)}%';
+    summary['registerToAttend'] =
+        '${(registerToAttend * 100).toStringAsFixed(1)}%';
+    summary['overallConversion'] =
+        '${(overallConversion * 100).toStringAsFixed(1)}%';
 
     // Determine health classification
     if (overallConversion >= 0.15) {
@@ -552,7 +557,9 @@ class Event {
       'click_to_register': clickToRegister,
       'register_to_attend': registerToAttend,
     };
-    final weakestStage = rates.entries.reduce((a, b) => a.value < b.value ? a : b);
+    final weakestStage = rates.entries.reduce(
+      (a, b) => a.value < b.value ? a : b,
+    );
     summary['bottleneck'] = weakestStage.key;
 
     return summary;
@@ -563,7 +570,8 @@ class Event {
   /// Returns: 'premium' (≥80), 'great' (60-79), 'good' (40-59), 'standard' (<40)
   String get eventQualityDisplay {
     // Calculate composite quality score (average of 3 metrics)
-    final compositeScore = (eventSuccessScore + popularityScore + engagementScore) / 3;
+    final compositeScore =
+        (eventSuccessScore + popularityScore + engagementScore) / 3;
 
     if (compositeScore >= 80) return 'premium';
     if (compositeScore >= 60) return 'great';
@@ -573,8 +581,7 @@ class Event {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is Event && id == other.id;
+      identical(this, other) || other is Event && id == other.id;
 
   @override
   int get hashCode => id.hashCode;
@@ -624,8 +631,7 @@ class EventAttendance {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is EventAttendance && id == other.id;
+      identical(this, other) || other is EventAttendance && id == other.id;
 
   @override
   int get hashCode => id.hashCode;

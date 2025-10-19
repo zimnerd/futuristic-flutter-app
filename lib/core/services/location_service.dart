@@ -70,18 +70,18 @@ class LocationService {
       // Check permissions
       LocationPermission permission = await Geolocator.checkPermission();
       debugPrint('LocationService: Current permission status: $permission');
-      
+
       if (permission == LocationPermission.denied) {
         debugPrint('LocationService: Requesting permission...');
         permission = await Geolocator.requestPermission();
         debugPrint('LocationService: Permission after request: $permission');
-        
+
         if (permission == LocationPermission.denied) {
           debugPrint('LocationService: Permission denied by user');
           return null;
         }
       }
-      
+
       if (permission == LocationPermission.deniedForever) {
         debugPrint('LocationService: Permission permanently denied');
         return null;
@@ -90,7 +90,7 @@ class LocationService {
       // Check if location services are enabled
       bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
       debugPrint('LocationService: Location services enabled: $serviceEnabled');
-      
+
       if (!serviceEnabled) {
         debugPrint('LocationService: Location services are disabled');
         return null;
@@ -105,7 +105,7 @@ class LocationService {
           timeLimit: Duration(seconds: 30),
         ),
       );
-      
+
       debugPrint(
         'LocationService: Successfully got position: ${position.latitude}, ${position.longitude}',
       );

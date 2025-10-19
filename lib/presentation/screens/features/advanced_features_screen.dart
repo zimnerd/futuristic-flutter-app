@@ -22,42 +22,36 @@ class AdvancedFeaturesScreen extends StatelessWidget {
           children: [
             const Text(
               'Explore Advanced Features',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             const Text(
               'Tap any feature below to explore PulseLink\'s advanced capabilities',
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey,
-              ),
+              style: TextStyle(fontSize: 16, color: Colors.grey),
             ),
             const SizedBox(height: 24),
-            
+
             // Core Features Section
             _buildSectionHeader('Core Features'),
             const SizedBox(height: 12),
             _buildFeatureGrid(context, NavigationHelper.coreFeatures),
-            
+
             const SizedBox(height: 32),
-            
+
             // Premium Features Section
             _buildSectionHeader('Premium Features'),
             const SizedBox(height: 12),
             _buildFeatureGrid(context, NavigationHelper.premiumFeatures),
-            
+
             const SizedBox(height: 32),
-            
+
             // Quick Actions
             _buildSectionHeader('Quick Actions'),
             const SizedBox(height: 12),
             _buildQuickActions(context),
-            
+
             const SizedBox(height: 32),
-            
+
             // Navigation Test
             _buildSectionHeader('Navigation Test'),
             const SizedBox(height: 12),
@@ -93,11 +87,11 @@ class AdvancedFeaturesScreen extends StatelessWidget {
       itemBuilder: (context, index) {
         final featureKey = features[index];
         final feature = NavigationHelper.getDestination(featureKey);
-        
+
         if (feature == null) return const SizedBox.shrink();
-        
+
         final isPremium = NavigationHelper.isPremiumFeature(featureKey);
-        
+
         return Card(
           elevation: 4,
           child: InkWell(
@@ -139,10 +133,7 @@ class AdvancedFeaturesScreen extends StatelessWidget {
                   const SizedBox(height: 4),
                   Text(
                     feature['description'],
-                    style: const TextStyle(
-                      fontSize: 11,
-                      color: Colors.grey,
-                    ),
+                    style: const TextStyle(fontSize: 11, color: Colors.grey),
                     textAlign: TextAlign.center,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
@@ -164,9 +155,8 @@ class AdvancedFeaturesScreen extends StatelessWidget {
           title: const Text('Send Virtual Gift'),
           subtitle: const Text('Send a gift to someone special'),
           trailing: const Icon(Icons.arrow_forward_ios),
-          onTap: () => context.showVirtualGiftsBottomSheet(
-            recipientName: 'Demo User',
-          ),
+          onTap: () =>
+              context.showVirtualGiftsBottomSheet(recipientName: 'Demo User'),
         ),
         ListTile(
           leading: const Icon(Icons.videocam, color: Colors.blue),
@@ -195,10 +185,7 @@ class AdvancedFeaturesScreen extends StatelessWidget {
           children: [
             const Text(
               'Test Navigation System',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-              ),
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 12),
             const Text(
@@ -209,18 +196,39 @@ class AdvancedFeaturesScreen extends StatelessWidget {
             Wrap(
               spacing: 8,
               runSpacing: 8,
-              children: [
-                'discovery', 'gifts', 'premium', 'safety', 'ai', 
-                'speed dating', 'live', 'dates', 'voice', 'settings'
-              ].map((feature) => ElevatedButton(
-                onPressed: () => context.navigateToFeature(feature),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.deepPurple.withValues(alpha: 0.1),
-                  foregroundColor: Colors.deepPurple,
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                ),
-                child: Text(feature, style: const TextStyle(fontSize: 12)),
-              )).toList(),
+              children:
+                  [
+                        'discovery',
+                        'gifts',
+                        'premium',
+                        'safety',
+                        'ai',
+                        'speed dating',
+                        'live',
+                        'dates',
+                        'voice',
+                        'settings',
+                      ]
+                      .map(
+                        (feature) => ElevatedButton(
+                          onPressed: () => context.navigateToFeature(feature),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.deepPurple.withValues(
+                              alpha: 0.1,
+                            ),
+                            foregroundColor: Colors.deepPurple,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 6,
+                            ),
+                          ),
+                          child: Text(
+                            feature,
+                            style: const TextStyle(fontSize: 12),
+                          ),
+                        ),
+                      )
+                      .toList(),
             ),
           ],
         ),

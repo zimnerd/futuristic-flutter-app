@@ -52,13 +52,18 @@ abstract class MessageRepository {
   Future<String> uploadMediaFile(String filePath, String mediaType);
   Future<void> downloadMediaFile(String mediaUrl, String localPath);
   Future<List<String>> getConversationMedia(
-      String conversationId, String mediaType);
+    String conversationId,
+    String mediaType,
+  );
 
   // Real-time Features
   Stream<MessageModel> getMessageStream(String conversationId);
   Stream<Map<String, dynamic>> getTypingIndicators(String conversationId);
   Future<void> sendTypingIndicator(
-      String conversationId, String userId, bool isTyping);
+    String conversationId,
+    String userId,
+    bool isTyping,
+  );
 
   // Message Search
   Future<List<MessageModel>> searchMessages({
@@ -83,7 +88,10 @@ abstract class MessageRepository {
 
   // Security & Moderation
   Future<void> reportMessage(
-      String messageId, String reporterId, String reason);
+    String messageId,
+    String reporterId,
+    String reason,
+  );
   Future<bool> isMessageBlocked(String messageId);
   Future<void> blockUserMessages(String blockerId, String blockedUserId);
 }

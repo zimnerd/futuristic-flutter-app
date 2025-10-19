@@ -51,15 +51,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
             setState(() {
               _emailSent = true;
             });
-            PulseToast.success(
-              context,
-              message: state.message,
-            );
+            PulseToast.success(context, message: state.message);
           } else if (state is AuthFailure) {
-            PulseToast.error(
-              context,
-              message: state.error,
-            );
+            PulseToast.error(context, message: state.error);
           }
         },
         child: Container(
@@ -138,7 +132,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
             },
           ),
           const SizedBox(height: PulseSpacing.xl),
-          
+
           // Extra space for keyboard
           const SizedBox(height: 80),
 

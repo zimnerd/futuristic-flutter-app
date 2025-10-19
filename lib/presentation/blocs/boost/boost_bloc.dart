@@ -6,7 +6,7 @@ import 'boost_event.dart';
 import 'boost_state.dart';
 
 /// BLoC for managing profile boost functionality
-/// 
+///
 /// Handles:
 /// - Activating boosts
 /// - Checking boost status
@@ -43,36 +43,43 @@ class BoostBloc extends Bloc<BoostEvent, BoostState> {
 
         // Calculate remaining minutes
         final now = DateTime.now();
-        final remainingMinutes =
-            expiresAt.difference(now).inMinutes.clamp(0, durationMinutes);
+        final remainingMinutes = expiresAt
+            .difference(now)
+            .inMinutes
+            .clamp(0, durationMinutes);
 
-        emit(BoostActive(
-          boostId: boostData['boostId'] as String,
-          startTime: startTime,
-          expiresAt: expiresAt,
-          durationMinutes: durationMinutes,
-          remainingMinutes: remainingMinutes,
-        ));
+        emit(
+          BoostActive(
+            boostId: boostData['boostId'] as String,
+            startTime: startTime,
+            expiresAt: expiresAt,
+            durationMinutes: durationMinutes,
+            remainingMinutes: remainingMinutes,
+          ),
+        );
 
-        _logger.i('Boost activated successfully! Duration: $durationMinutes minutes');
-        
+        _logger.i(
+          'Boost activated successfully! Duration: $durationMinutes minutes',
+        );
+
         // Start periodic status checks
         _startStatusCheckTimer();
       } else {
-        final message = result['message'] as String? ?? 'Failed to activate boost';
+        final message =
+            result['message'] as String? ?? 'Failed to activate boost';
         _logger.e('Boost activation failed: $message');
         emit(BoostError(message));
       }
     } catch (e) {
       _logger.e('Error activating boost: $e');
       String errorMessage = 'Failed to activate boost';
-      
+
       if (e.toString().contains('subscription')) {
         errorMessage = 'Active premium subscription required for boost';
       } else if (e.toString().contains('already')) {
         errorMessage = 'You already have an active boost running';
       }
-      
+
       emit(BoostError(errorMessage));
     }
   }
@@ -108,14 +115,16 @@ class BoostBloc extends Bloc<BoostEvent, BoostState> {
           _cancelStatusCheckTimer();
         } else {
           _logger.d('Active boost found: $remainingMinutes minutes remaining');
-          emit(BoostActive(
-            boostId: result['boostId'] as String,
-            startTime: startTime,
-            expiresAt: expiresAt,
-            durationMinutes: durationMinutes,
-            remainingMinutes: remainingMinutes,
-          ));
-          
+          emit(
+            BoostActive(
+              boostId: result['boostId'] as String,
+              startTime: startTime,
+              expiresAt: expiresAt,
+              durationMinutes: durationMinutes,
+              remainingMinutes: remainingMinutes,
+            ),
+          );
+
           // Ensure timer is running
           if (_statusCheckTimer == null || !_statusCheckTimer!.isActive) {
             _startStatusCheckTimer();
@@ -166,14 +175,11 @@ class BoostBloc extends Bloc<BoostEvent, BoostState> {
   /// Start periodic status checks (every minute)
   void _startStatusCheckTimer() {
     _cancelStatusCheckTimer();
-    
-    _statusCheckTimer = Timer.periodic(
-      const Duration(minutes: 1),
-      (timer) {
-        add(CheckBoostStatus());
-      },
-    );
-    
+
+    _statusCheckTimer = Timer.periodic(const Duration(minutes: 1), (timer) {
+      add(CheckBoostStatus());
+    });
+
     _logger.d('Boost status check timer started');
   }
 

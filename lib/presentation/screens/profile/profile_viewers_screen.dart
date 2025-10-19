@@ -12,7 +12,7 @@ import '../../widgets/common/robust_network_image.dart';
 import '../../widgets/verification/verification_badge.dart';
 
 /// Profile Viewers Screen - Premium Feature
-/// 
+///
 /// Displays users who have viewed the current user's profile in a grid layout.
 /// Features:
 /// - 2-column grid of viewer cards
@@ -36,8 +36,8 @@ class _ProfileViewersScreenState extends State<ProfileViewersScreen> {
     super.initState();
     // Check premium access for this feature
     context.read<PremiumBloc>().add(
-          const CheckFeatureAccess(PremiumFeatureType.profileViewers),
-        );
+      const CheckFeatureAccess(PremiumFeatureType.profileViewers),
+    );
     _loadProfileViewers();
   }
 
@@ -82,11 +82,16 @@ class _ProfileViewersScreenState extends State<ProfileViewersScreen> {
                 if (state.viewers.isEmpty) {
                   return _buildEmptyState();
                 }
-                return _buildViewersGrid(state.viewers, state.viewersTotalCount);
+                return _buildViewersGrid(
+                  state.viewers,
+                  state.viewersTotalCount,
+                );
               }
 
               if (state.viewersStatus == ProfileStatus.error) {
-                return _buildErrorState(state.error ?? 'Failed to load viewers');
+                return _buildErrorState(
+                  state.error ?? 'Failed to load viewers',
+                );
               }
 
               return _buildEmptyState();
@@ -112,18 +117,14 @@ class _ProfileViewersScreenState extends State<ProfileViewersScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(
-                  Icons.visibility,
-                  size: 20,
-                  color: PulseColors.primary,
-                ),
+                Icon(Icons.visibility, size: 20, color: PulseColors.primary),
                 const SizedBox(width: 8),
                 Text(
                   '$totalCount ${totalCount == 1 ? 'person has' : 'people have'} viewed your profile',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
-                        color: PulseColors.grey900,
-                      ),
+                    fontWeight: FontWeight.w600,
+                    color: PulseColors.grey900,
+                  ),
                 ),
               ],
             ),
@@ -180,25 +181,21 @@ class _ProfileViewersScreenState extends State<ProfileViewersScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.visibility_off,
-              size: 80,
-              color: Colors.grey[400],
-            ),
+            Icon(Icons.visibility_off, size: 80, color: Colors.grey[400]),
             const SizedBox(height: 24),
             Text(
               'No profile views yet',
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 12),
             Text(
               'Complete your profile and stay active to get more views!',
-              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    color: Colors.grey[600],
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodyLarge?.copyWith(color: Colors.grey[600]),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 32),
@@ -232,25 +229,21 @@ class _ProfileViewersScreenState extends State<ProfileViewersScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.error_outline,
-              size: 80,
-              color: Colors.grey[400],
-            ),
+            Icon(Icons.error_outline, size: 80, color: Colors.grey[400]),
             const SizedBox(height: 24),
             Text(
               'Something went wrong',
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 12),
             Text(
               message,
-              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    color: Colors.grey[600],
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodyLarge?.copyWith(color: Colors.grey[600]),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 32),
@@ -307,30 +300,30 @@ class _ProfileViewersScreenState extends State<ProfileViewersScreen> {
             Text(
               'Premium Feature',
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: PulseColors.grey900,
-                  ),
+                fontWeight: FontWeight.bold,
+                color: PulseColors.grey900,
+              ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 16),
             Text(
               'See Who Viewed Your Profile',
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.w600,
-                    color: PulseColors.primary,
-                  ),
+                fontWeight: FontWeight.w600,
+                color: PulseColors.primary,
+              ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 16),
             Text(
               'Upgrade to premium to see who\'s checking you out and boost your matches!',
-              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    color: PulseColors.grey600,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodyLarge?.copyWith(color: PulseColors.grey600),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 40),
-            
+
             // Features list
             _buildFeatureItem(Icons.visibility, 'See who viewed your profile'),
             const SizedBox(height: 12),
@@ -339,9 +332,9 @@ class _ProfileViewersScreenState extends State<ProfileViewersScreen> {
             _buildFeatureItem(Icons.bolt, 'Unlimited likes & super likes'),
             const SizedBox(height: 12),
             _buildFeatureItem(Icons.filter_alt, 'Advanced filters'),
-            
+
             const SizedBox(height: 40),
-            
+
             // Upgrade button
             SizedBox(
               width: double.infinity,
@@ -365,16 +358,16 @@ class _ProfileViewersScreenState extends State<ProfileViewersScreen> {
                     Text(
                       'Upgrade to Premium',
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                          ),
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ],
                 ),
               ),
             ),
             const SizedBox(height: 16),
-            
+
             // Maybe later button
             TextButton(
               onPressed: () {
@@ -382,10 +375,7 @@ class _ProfileViewersScreenState extends State<ProfileViewersScreen> {
               },
               child: Text(
                 'Maybe Later',
-                style: TextStyle(
-                  color: PulseColors.grey600,
-                  fontSize: 16,
-                ),
+                style: TextStyle(color: PulseColors.grey600, fontSize: 16),
               ),
             ),
           ],
@@ -404,11 +394,7 @@ class _ProfileViewersScreenState extends State<ProfileViewersScreen> {
             color: PulseColors.primary.withValues(alpha: 0.1),
             shape: BoxShape.circle,
           ),
-          child: Icon(
-            icon,
-            size: 18,
-            color: PulseColors.primary,
-          ),
+          child: Icon(icon, size: 18, color: PulseColors.primary),
         ),
         const SizedBox(width: 16),
         Expanded(
@@ -421,11 +407,7 @@ class _ProfileViewersScreenState extends State<ProfileViewersScreen> {
             ),
           ),
         ),
-        Icon(
-          Icons.check_circle,
-          size: 20,
-          color: PulseColors.primary,
-        ),
+        Icon(Icons.check_circle, size: 20, color: PulseColors.primary),
       ],
     );
   }
@@ -436,11 +418,7 @@ class _ViewerGridCard extends StatelessWidget {
   final UserProfile user;
   final VoidCallback onTap;
 
-  const _ViewerGridCard({
-    super.key,
-    required this.user,
-    required this.onTap,
-  });
+  const _ViewerGridCard({super.key, required this.user, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -470,9 +448,7 @@ class _ViewerGridCard extends StatelessWidget {
                 height: double.infinity,
                 placeholder: Container(
                   color: Colors.grey[300],
-                  child: const Center(
-                    child: CircularProgressIndicator(),
-                  ),
+                  child: const Center(child: CircularProgressIndicator()),
                 ),
                 errorWidget: Container(
                   color: Colors.grey[300],
@@ -579,9 +555,7 @@ class _LoadingCard extends StatelessWidget {
         color: Colors.grey[300],
         borderRadius: BorderRadius.circular(16),
       ),
-      child: const Center(
-        child: CircularProgressIndicator(),
-      ),
+      child: const Center(child: CircularProgressIndicator()),
     );
   }
 }

@@ -18,14 +18,16 @@ class SubscriptionManagementScreen extends StatefulWidget {
   const SubscriptionManagementScreen({super.key});
 
   @override
-  State<SubscriptionManagementScreen> createState() => _SubscriptionManagementScreenState();
+  State<SubscriptionManagementScreen> createState() =>
+      _SubscriptionManagementScreenState();
 }
 
-class _SubscriptionManagementScreenState extends State<SubscriptionManagementScreen>
+class _SubscriptionManagementScreenState
+    extends State<SubscriptionManagementScreen>
     with TickerProviderStateMixin {
   late TabController _tabController;
   late SubscriptionService _subscriptionService;
-  
+
   Subscription? _currentSubscription;
   SubscriptionUsage? _currentUsage;
   bool _isLoading = false;
@@ -65,11 +67,11 @@ class _SubscriptionManagementScreenState extends State<SubscriptionManagementScr
 
   Future<void> _loadSubscriptionData() async {
     setState(() => _isLoading = true);
-    
+
     try {
       final subscription = await _subscriptionService.getCurrentSubscription();
       final usage = await _subscriptionService.getSubscriptionUsage();
-      
+
       setState(() {
         _currentSubscription = subscription;
         _currentUsage = usage;
@@ -96,9 +98,7 @@ class _SubscriptionManagementScreenState extends State<SubscriptionManagementScr
       appBar: AppBar(
         title: Text(
           'Subscription',
-          style: AppTextStyles.heading2.copyWith(
-            color: AppColors.textPrimary,
-          ),
+          style: AppTextStyles.heading2.copyWith(color: AppColors.textPrimary),
         ),
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -171,9 +171,7 @@ class _SubscriptionManagementScreenState extends State<SubscriptionManagementScr
           if (_currentUsage != null) ...[
             Padding(
               padding: const EdgeInsets.only(bottom: 16),
-              child: UsageIndicator(
-                usage: _currentUsage!,
-              ),
+              child: UsageIndicator(usage: _currentUsage!),
             ),
           ] else ...[
             _buildEmptyUsageCard(),
@@ -198,14 +196,16 @@ class _SubscriptionManagementScreenState extends State<SubscriptionManagementScr
             ),
           ),
           const SizedBox(height: 16),
-          ...PredefinedPlans.plans.map((plan) => Padding(
-            padding: const EdgeInsets.only(bottom: 16),
-            child: SubscriptionPlanCard(
-              plan: plan,
-              isCurrentPlan: _currentSubscription?.planId == plan.id,
-              onSelect: () => _handleSubscribeToPlan(plan),
+          ...PredefinedPlans.plans.map(
+            (plan) => Padding(
+              padding: const EdgeInsets.only(bottom: 16),
+              child: SubscriptionPlanCard(
+                plan: plan,
+                isCurrentPlan: _currentSubscription?.planId == plan.id,
+                onSelect: () => _handleSubscribeToPlan(plan),
+              ),
             ),
-          )),
+          ),
         ],
       ),
     );
@@ -377,7 +377,12 @@ class _SubscriptionManagementScreenState extends State<SubscriptionManagementScr
     );
   }
 
-  Widget _buildHistoryItem(String title, String date, String amount, IconData icon) {
+  Widget _buildHistoryItem(
+    String title,
+    String date,
+    String amount,
+    IconData icon,
+  ) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Row(
@@ -388,11 +393,7 @@ class _SubscriptionManagementScreenState extends State<SubscriptionManagementScr
               color: AppColors.primary.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: Icon(
-              icon,
-              size: 16,
-              color: AppColors.primary,
-            ),
+            child: Icon(icon, size: 16, color: AppColors.primary),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -506,11 +507,7 @@ class _SubscriptionManagementScreenState extends State<SubscriptionManagementScr
       padding: const EdgeInsets.only(bottom: 16),
       child: Row(
         children: [
-          Icon(
-            icon,
-            size: 20,
-            color: AppColors.primary,
-          ),
+          Icon(icon, size: 20, color: AppColors.primary),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -543,12 +540,12 @@ class _SubscriptionManagementScreenState extends State<SubscriptionManagementScr
     if (!confirmed) return;
 
     setState(() => _isLoading = true);
-    
+
     try {
       final result = await _subscriptionService.cancelSubscription(
         reason: 'User requested cancellation',
       );
-      
+
       if (result.success) {
         _showSuccessSnackBar('Subscription cancelled successfully');
       } else {
@@ -563,10 +560,10 @@ class _SubscriptionManagementScreenState extends State<SubscriptionManagementScr
 
   Future<void> _handleResumeSubscription() async {
     setState(() => _isLoading = true);
-    
+
     try {
       final result = await _subscriptionService.resumeSubscription();
-      
+
       if (result.success) {
         _showSuccessSnackBar('Subscription resumed successfully');
       } else {
@@ -610,7 +607,7 @@ class _SubscriptionManagementScreenState extends State<SubscriptionManagementScr
         ],
       ),
     );
-    
+
     return result ?? false;
   }
 }

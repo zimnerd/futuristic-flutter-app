@@ -15,9 +15,9 @@ class PreferencesService {
   Future<FilterPreferences> getFilterPreferences() async {
     try {
       _logger.d('Fetching filter preferences from backend');
-      
+
       final response = await _apiClient.get(ApiConstants.usersPreferences);
-      
+
       if (response.statusCode == 200) {
         final responseData = response.data as Map<String, dynamic>;
         final data = responseData['data'] as Map<String, dynamic>;
@@ -38,12 +38,12 @@ class PreferencesService {
   Future<bool> saveFilterPreferences(FilterPreferences preferences) async {
     try {
       _logger.d('Saving filter preferences to backend');
-      
+
       final response = await _apiClient.put(
         ApiConstants.usersPreferences,
         data: preferences.toJson(),
       );
-      
+
       if (response.statusCode == 200) {
         _logger.d('Filter preferences saved successfully');
         return true;
@@ -61,9 +61,9 @@ class PreferencesService {
   Future<List<String>> getAvailableInterests() async {
     try {
       _logger.d('Fetching available interests');
-      
+
       final response = await _apiClient.get('${ApiConstants.users}/interests');
-      
+
       if (response.statusCode == 200) {
         final responseData = response.data as Map<String, dynamic>;
         final data = responseData['data'] as Map<String, dynamic>;
@@ -84,11 +84,11 @@ class PreferencesService {
   Future<List<String>> getEducationLevels() async {
     try {
       _logger.d('Fetching education levels');
-      
+
       final response = await _apiClient.get(
         '${ApiConstants.users}/education-levels',
       );
-      
+
       if (response.statusCode == 200) {
         final responseData = response.data as Map<String, dynamic>;
         final data = responseData['data'] as Map<String, dynamic>;
@@ -258,22 +258,22 @@ class PreferencesService {
       _logger.w('Invalid minimum age: ${preferences.minAge}');
       return false;
     }
-    
+
     if (preferences.maxAge < 18 || preferences.maxAge > 99) {
       _logger.w('Invalid maximum age: ${preferences.maxAge}');
       return false;
     }
-    
+
     if (preferences.minAge > preferences.maxAge) {
       _logger.w('Minimum age greater than maximum age');
       return false;
     }
-    
+
     if (preferences.maxDistance < 1 || preferences.maxDistance > 500) {
       _logger.w('Invalid distance: ${preferences.maxDistance}');
       return false;
     }
-    
+
     return true;
   }
 
@@ -430,4 +430,3 @@ class PreferencesService {
     }
   }
 }
-

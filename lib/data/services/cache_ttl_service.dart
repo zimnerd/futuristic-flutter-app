@@ -65,24 +65,26 @@ class CacheTTLService {
       final ttlDuration = ttl ?? _getTTLForType(cacheType);
       final expiresAt = now.add(ttlDuration);
 
-      await db.insert(
-        'cache_metadata',
-        {
-          'cache_key': cacheKey,
-          'cache_type': cacheType,
-          'url': url,
-          'cached_at': now.millisecondsSinceEpoch,
-          'expires_at': expiresAt.millisecondsSinceEpoch,
-          'last_accessed_at': now.millisecondsSinceEpoch,
-          'access_count': 1,
-          'size_bytes': sizeBytes ?? 0,
-        },
-        conflictAlgorithm: ConflictAlgorithm.replace,
-      );
+      await db.insert('cache_metadata', {
+        'cache_key': cacheKey,
+        'cache_type': cacheType,
+        'url': url,
+        'cached_at': now.millisecondsSinceEpoch,
+        'expires_at': expiresAt.millisecondsSinceEpoch,
+        'last_accessed_at': now.millisecondsSinceEpoch,
+        'access_count': 1,
+        'size_bytes': sizeBytes ?? 0,
+      }, conflictAlgorithm: ConflictAlgorithm.replace);
 
-      _logger.d('Recorded cache item: $cacheKey ($cacheType) - expires ${expiresAt.toIso8601String()}');
+      _logger.d(
+        'Recorded cache item: $cacheKey ($cacheType) - expires ${expiresAt.toIso8601String()}',
+      );
     } catch (e, stackTrace) {
-      _logger.e('Error recording cached item', error: e, stackTrace: stackTrace);
+      _logger.e(
+        'Error recording cached item',
+        error: e,
+        stackTrace: stackTrace,
+      );
     }
   }
 
@@ -98,7 +100,11 @@ class CacheTTLService {
         [DateTime.now().millisecondsSinceEpoch, cacheKey],
       );
     } catch (e, stackTrace) {
-      _logger.e('Error recording cache access', error: e, stackTrace: stackTrace);
+      _logger.e(
+        'Error recording cache access',
+        error: e,
+        stackTrace: stackTrace,
+      );
     }
   }
 
@@ -123,7 +129,11 @@ class CacheTTLService {
 
       return isExpired;
     } catch (e, stackTrace) {
-      _logger.e('Error checking cache expiration', error: e, stackTrace: stackTrace);
+      _logger.e(
+        'Error checking cache expiration',
+        error: e,
+        stackTrace: stackTrace,
+      );
       return true; // On error, treat as expired
     }
   }
@@ -141,7 +151,11 @@ class CacheTTLService {
 
       return result;
     } catch (e, stackTrace) {
-      _logger.e('Error getting expired cache items', error: e, stackTrace: stackTrace);
+      _logger.e(
+        'Error getting expired cache items',
+        error: e,
+        stackTrace: stackTrace,
+      );
       return [];
     }
   }
@@ -162,7 +176,11 @@ class CacheTTLService {
 
       return deletedCount;
     } catch (e, stackTrace) {
-      _logger.e('Error removing expired metadata', error: e, stackTrace: stackTrace);
+      _logger.e(
+        'Error removing expired metadata',
+        error: e,
+        stackTrace: stackTrace,
+      );
       return 0;
     }
   }
@@ -180,7 +198,11 @@ class CacheTTLService {
 
       return result.map((row) => row['cache_key'] as String).toList();
     } catch (e, stackTrace) {
-      _logger.e('Error getting LRU cache keys', error: e, stackTrace: stackTrace);
+      _logger.e(
+        'Error getting LRU cache keys',
+        error: e,
+        stackTrace: stackTrace,
+      );
       return [];
     }
   }
@@ -194,13 +216,21 @@ class CacheTTLService {
       final batch = db.batch();
 
       for (final key in cacheKeys) {
-        batch.delete('cache_metadata', where: 'cache_key = ?', whereArgs: [key]);
+        batch.delete(
+          'cache_metadata',
+          where: 'cache_key = ?',
+          whereArgs: [key],
+        );
       }
 
       await batch.commit(noResult: true);
       _logger.d('Removed ${cacheKeys.length} cache metadata entries');
     } catch (e, stackTrace) {
-      _logger.e('Error removing cache metadata', error: e, stackTrace: stackTrace);
+      _logger.e(
+        'Error removing cache metadata',
+        error: e,
+        stackTrace: stackTrace,
+      );
     }
   }
 
@@ -210,7 +240,9 @@ class CacheTTLService {
       final db = await _db;
 
       // Total cached items
-      final totalResult = await db.rawQuery('SELECT COUNT(*) as count FROM cache_metadata');
+      final totalResult = await db.rawQuery(
+        'SELECT COUNT(*) as count FROM cache_metadata',
+      );
       final total = totalResult.first['count'] as int;
 
       // Expired items
@@ -221,7 +253,9 @@ class CacheTTLService {
       final expired = expiredResult.first['count'] as int;
 
       // Total cache size
-      final sizeResult = await db.rawQuery('SELECT SUM(size_bytes) as total_size FROM cache_metadata');
+      final sizeResult = await db.rawQuery(
+        'SELECT SUM(size_bytes) as total_size FROM cache_metadata',
+      );
       final totalSize = (sizeResult.first['total_size'] as int?) ?? 0;
 
       // Most accessed items
@@ -260,7 +294,11 @@ class CacheTTLService {
       await db.delete('cache_metadata');
       _logger.d('Cleared all cache metadata');
     } catch (e, stackTrace) {
-      _logger.e('Error clearing cache metadata', error: e, stackTrace: stackTrace);
+      _logger.e(
+        'Error clearing cache metadata',
+        error: e,
+        stackTrace: stackTrace,
+      );
     }
   }
 

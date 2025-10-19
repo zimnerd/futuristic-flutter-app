@@ -6,13 +6,13 @@ import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:path_provider/path_provider.dart';
 
 /// Reusable service for temporary image uploads with confirm pattern
-/// 
+///
 /// **Usage Pattern**:
 /// 1. Upload images immediately when selected → temp storage
 /// 2. Track temp media IDs in UI state
 /// 3. When user saves (profile/event), call confirmUploads()
 /// 4. If user cancels, temp files auto-cleanup after 24 hours
-/// 
+///
 /// **Benefits**:
 /// - Immediate upload provides instant feedback
 /// - No orphaned files if user cancels
@@ -27,13 +27,14 @@ class TempMediaUploadService {
 
   /// Upload image to temporary storage
   /// Returns MediaUploadResult with mediaId for later confirmation
-  /// 
+  ///
   /// Note: isPrimary and order are NOT supported for temp uploads
   /// These properties are set during confirmation when moved to permanent storage
   Future<MediaUploadResult> uploadTemp({
     required File imageFile,
     required String type, // 'image', 'video', 'audio', 'document' (lowercase)
-    required String category, // 'profile_photo', 'verification_photo', etc. (snake_case)
+    required String
+    category, // 'profile_photo', 'verification_photo', etc. (snake_case)
     String? title,
     String? description,
     List<String>? tags,
@@ -71,9 +72,9 @@ class TempMediaUploadService {
 
       if (response.statusCode == 201 || response.statusCode == 200) {
         final mediaData = response.data['data'] ?? response.data;
-        
+
         _logger.i('✅ Temp upload successful: ${mediaData['id']}');
-        
+
         return MediaUploadResult(
           mediaId: mediaData['id'],
           url: mediaData['url'] ?? mediaData['originalUrl'],
@@ -105,16 +106,13 @@ class TempMediaUploadService {
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         final data = response.data['data'] ?? response.data;
-        
+
         final confirmed = List<String>.from(data['confirmed'] ?? []);
         final failed = List<String>.from(data['failed'] ?? []);
-        
+
         _logger.i('✅ Confirmed: ${confirmed.length}, Failed: ${failed.length}');
-        
-        return ConfirmUploadResult(
-          confirmed: confirmed,
-          failed: failed,
-        );
+
+        return ConfirmUploadResult(confirmed: confirmed, failed: failed);
       } else {
         throw Exception('Failed to confirm uploads: ${response.statusCode}');
       }
@@ -140,16 +138,13 @@ class TempMediaUploadService {
 
       if (response.statusCode == 200) {
         final data = response.data['data'] ?? response.data;
-        
+
         final deleted = List<String>.from(data['deleted'] ?? []);
         final failed = List<String>.from(data['failed'] ?? []);
-        
+
         _logger.i('✅ Deleted: ${deleted.length}, Failed: ${failed.length}');
-        
-        return DeleteMediaResult(
-          deleted: deleted,
-          failed: failed,
-        );
+
+        return DeleteMediaResult(deleted: deleted, failed: failed);
       } else {
         throw Exception('Failed to delete media: ${response.statusCode}');
       }
@@ -184,7 +179,9 @@ class TempMediaUploadService {
       );
 
       if (compressedFile != null) {
-        _logger.i('✅ Image compressed: ${file.lengthSync()} → ${File(compressedFile.path).lengthSync()} bytes');
+        _logger.i(
+          '✅ Image compressed: ${file.lengthSync()} → ${File(compressedFile.path).lengthSync()} bytes',
+        );
         return File(compressedFile.path);
       }
 
@@ -246,10 +243,7 @@ class ConfirmUploadResult {
   final List<String> confirmed;
   final List<String> failed;
 
-  ConfirmUploadResult({
-    required this.confirmed,
-    required this.failed,
-  });
+  ConfirmUploadResult({required this.confirmed, required this.failed});
 
   bool get hasFailures => failed.isNotEmpty;
   bool get allConfirmed => failed.isEmpty;
@@ -260,10 +254,7 @@ class DeleteMediaResult {
   final List<String> deleted;
   final List<String> failed;
 
-  DeleteMediaResult({
-    required this.deleted,
-    required this.failed,
-  });
+  DeleteMediaResult({required this.deleted, required this.failed});
 
   bool get hasFailures => failed.isNotEmpty;
   bool get allDeleted => failed.isEmpty;

@@ -52,12 +52,8 @@ class _WhoLikedYouScreenState extends State<WhoLikedYouScreen> {
 
   void _loadWhoLikedYou() {
     context.read<DiscoveryBloc>().add(
-          LoadWhoLikedYou(
-            filters: DiscoveryFilters(
-              verifiedOnly: _verifiedOnly,
-            ),
-          ),
-        );
+      LoadWhoLikedYou(filters: DiscoveryFilters(verifiedOnly: _verifiedOnly)),
+    );
   }
 
   bool _isPremiumUser(BuildContext context) {
@@ -153,9 +149,7 @@ class _WhoLikedYouScreenState extends State<WhoLikedYouScreen> {
                       _showPremiumPrompt();
                     }
                   },
-                  onLikeBack: isPremium
-                      ? () => _likeBack(users[index])
-                      : null,
+                  onLikeBack: isPremium ? () => _likeBack(users[index]) : null,
                 );
               },
             ),
@@ -175,14 +169,8 @@ class _WhoLikedYouScreenState extends State<WhoLikedYouScreen> {
       ),
       child: Row(
         children: [
-          _buildFilterTab(
-            label: 'All',
-            filter: WhoLikedYouFilter.all,
-          ),
-          _buildFilterTab(
-            label: 'Recent',
-            filter: WhoLikedYouFilter.recent24h,
-          ),
+          _buildFilterTab(label: 'All', filter: WhoLikedYouFilter.all),
+          _buildFilterTab(label: 'Recent', filter: WhoLikedYouFilter.recent24h),
           _buildFilterTab(
             label: 'Verified',
             filter: WhoLikedYouFilter.verifiedOnly,
@@ -237,20 +225,15 @@ class _WhoLikedYouScreenState extends State<WhoLikedYouScreen> {
                 Icon(
                   icon,
                   size: 14,
-                  color: isSelected
-                      ? PulseColors.primary
-                      : PulseColors.grey600,
+                  color: isSelected ? PulseColors.primary : PulseColors.grey600,
                 ),
                 const SizedBox(width: 4),
               ],
               Text(
                 label,
                 style: PulseTypography.labelMedium.copyWith(
-                  color: isSelected
-                      ? PulseColors.primary
-                      : PulseColors.grey600,
-                  fontWeight:
-                      isSelected ? FontWeight.w600 : FontWeight.normal,
+                  color: isSelected ? PulseColors.primary : PulseColors.grey600,
+                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
                 ),
               ),
             ],
@@ -350,11 +333,7 @@ class _WhoLikedYouScreenState extends State<WhoLikedYouScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.error_outline,
-              size: 80,
-              color: PulseColors.error,
-            ),
+            Icon(Icons.error_outline, size: 80, color: PulseColors.error),
             const SizedBox(height: 24),
             Text(
               'Something went wrong',
@@ -431,9 +410,7 @@ class _WhoLikedYouScreenState extends State<WhoLikedYouScreen> {
       builder: (context) => Container(
         decoration: const BoxDecoration(
           color: PulseColors.white,
-          borderRadius: BorderRadius.vertical(
-            top: Radius.circular(24),
-          ),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
         ),
         padding: const EdgeInsets.all(24),
         child: SafeArea(
@@ -515,10 +492,7 @@ class _WhoLikedYouScreenState extends State<WhoLikedYouScreen> {
                   ),
                   child: const Text(
                     'Upgrade to Premium',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                 ),
               ),
@@ -550,11 +524,7 @@ class _WhoLikedYouScreenState extends State<WhoLikedYouScreen> {
             color: PulseColors.primary.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(12),
           ),
-          child: Icon(
-            icon,
-            color: PulseColors.primary,
-            size: 24,
-          ),
+          child: Icon(icon, color: PulseColors.primary, size: 24),
         ),
         const SizedBox(width: 16),
         Expanded(
@@ -643,9 +613,7 @@ class _UserGridCard extends StatelessWidget {
                 height: double.infinity,
                 placeholder: Container(
                   color: PulseColors.grey300,
-                  child: const Center(
-                    child: CircularProgressIndicator(),
-                  ),
+                  child: const Center(child: CircularProgressIndicator()),
                 ),
                 errorWidget: Container(
                   color: PulseColors.grey300,
@@ -661,9 +629,7 @@ class _UserGridCard extends StatelessWidget {
               if (!isPremium)
                 BackdropFilter(
                   filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-                  child: Container(
-                    color: Colors.black.withValues(alpha: 0.3),
-                  ),
+                  child: Container(color: Colors.black.withValues(alpha: 0.3)),
                 ),
 
               // Gradient overlay
@@ -855,9 +821,10 @@ class _LoadingCardState extends State<_LoadingCard>
       duration: const Duration(milliseconds: 1500),
       vsync: this,
     )..repeat();
-    _animation = Tween<double>(begin: -1.0, end: 2.0).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-    );
+    _animation = Tween<double>(
+      begin: -1.0,
+      end: 2.0,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
   }
 
   @override
@@ -928,9 +895,7 @@ class _FilterBottomSheetState extends State<_FilterBottomSheet> {
     return Container(
       decoration: const BoxDecoration(
         color: PulseColors.white,
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(24),
-        ),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       padding: EdgeInsets.only(
         bottom: MediaQuery.of(context).viewInsets.bottom,
@@ -1025,10 +990,7 @@ class _FilterBottomSheetState extends State<_FilterBottomSheet> {
                   ),
                   child: const Text(
                     'Apply Filters',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                 ),
               ),
@@ -1043,9 +1005,4 @@ class _FilterBottomSheetState extends State<_FilterBottomSheet> {
 }
 
 /// Filter options for Who Liked You
-enum WhoLikedYouFilter {
-  all,
-  recent24h,
-  verifiedOnly,
-  superLikes,
-}
+enum WhoLikedYouFilter { all, recent24h, verifiedOnly, superLikes }

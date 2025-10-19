@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
-
 import '../../../core/utils/logger.dart';
 import '../../../core/constants/api_constants.dart';
 import '../../theme/pulse_colors.dart';
@@ -80,7 +79,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
       AppLogger.debug(
         '✅ Received ${conversations.length} conversations from API',
       );
-      
+
       // Filter out group conversations - they should only appear in Group Chat tab
       final directConversations = conversations
           .where((conv) => !conv.isGroup)
@@ -88,21 +87,22 @@ class _MessagesScreenState extends State<MessagesScreen> {
       AppLogger.debug(
         '🔍 Filtered to ${directConversations.length} direct conversations (excluded ${conversations.length - directConversations.length} group chats)',
       );
-      
+
       if (!mounted || !context.mounted) return;
-      
+
       // Get current user ID
       final authState = context.read<AuthBloc>().state;
       String? currentUserId;
       if (authState is AuthAuthenticated) {
         currentUserId = authState.user.id;
       }
-      
+
       // Convert backend Conversation models to UI ConversationData
       final conversationDataList = directConversations.map((conversation) {
         // Get the other participant (assuming 1-on-1 conversations)
         final otherParticipant = conversation.participants.firstWhere(
-          (participant) => participant.id != currentUserId, // Compare with current user ID
+          (participant) =>
+              participant.id != currentUserId, // Compare with current user ID
           orElse: () => conversation.participants.isNotEmpty
               ? conversation.participants.first
               : User(
@@ -136,11 +136,13 @@ class _MessagesScreenState extends State<MessagesScreen> {
         );
 
         // Determine enhanced last message preview with type detection
-        String lastMessagePreview = _formatMessagePreview(conversation.lastMessage);
-        
+        String lastMessagePreview = _formatMessagePreview(
+          conversation.lastMessage,
+        );
+
         final lastMessageDateTime =
             conversation.lastActivity ?? conversation.updatedAt;
-        
+
         return ConversationData(
           id: conversation.id,
           name: otherParticipant
@@ -157,7 +159,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
           type: MessageFilterType.all, // Default type, could be enhanced
         );
       }).toList();
-      
+
       // FILTER: Only include conversations that have actual messages
       // Exclude conversations with "No messages yet" or empty lastMessage
       final conversationsWithMessages = conversationDataList.where((conv) {
@@ -168,11 +170,11 @@ class _MessagesScreenState extends State<MessagesScreen> {
       AppLogger.debug(
         '🔍 Filtered conversations: ${conversationDataList.length} total → ${conversationsWithMessages.length} with messages',
       );
-      
+
       // Deduplicate conversations by otherUserId to prevent duplicate entries
       final Map<String, ConversationData> uniqueConversations = {};
       for (final conv in conversationsWithMessages) {
-        if (!uniqueConversations.containsKey(conv.otherUserId) || 
+        if (!uniqueConversations.containsKey(conv.otherUserId) ||
             uniqueConversations[conv.otherUserId]!.lastMessageTime.isBefore(
               conv.lastMessageTime,
             )) {
@@ -180,12 +182,12 @@ class _MessagesScreenState extends State<MessagesScreen> {
         }
       }
       final deduplicatedList = uniqueConversations.values.toList();
-      
+
       // Sort conversations by most recent activity first (DateTime descending)
       deduplicatedList.sort(
         (a, b) => b.lastMessageTime.compareTo(a.lastMessageTime),
       );
-      
+
       AppLogger.debug(
         '🗋️ After deduplication: ${deduplicatedList.length} conversations',
       );
@@ -194,7 +196,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
         _allConversations = deduplicatedList;
         _isLoading = false;
       });
-      
+
       AppLogger.debug(
         '🎯 Set _allConversations to ${_allConversations.length} items',
       );
@@ -242,16 +244,25 @@ class _MessagesScreenState extends State<MessagesScreen> {
 
     // Prioritize type detection for media messages
     // Check for MessageType enum directly (type is MessageType enum, not string)
-    if (type == MessageType.image || type?.toString() == 'MessageType.image' || type == 'image') {
+    if (type == MessageType.image ||
+        type?.toString() == 'MessageType.image' ||
+        type == 'image') {
       return '📷 Photo';
-    } else if (type == MessageType.video || type?.toString() == 'MessageType.video' || type == 'video') {
+    } else if (type == MessageType.video ||
+        type?.toString() == 'MessageType.video' ||
+        type == 'video') {
       return '🎥 Video';
-    } else if (type == MessageType.audio || type?.toString() == 'MessageType.audio' || type == 'audio' || type == 'voice') {
+    } else if (type == MessageType.audio ||
+        type?.toString() == 'MessageType.audio' ||
+        type == 'audio' ||
+        type == 'voice') {
       return '🎵 Voice message';
-    } else if (type == MessageType.file || type?.toString() == 'MessageType.file' || type == 'file') {
+    } else if (type == MessageType.file ||
+        type?.toString() == 'MessageType.file' ||
+        type == 'file') {
       return '📄 Attachment';
     }
-    
+
     // Check metadata for media type hints
     if (metadata != null) {
       final mediaType = metadata['mediaType'] as String?;
@@ -259,34 +270,41 @@ class _MessagesScreenState extends State<MessagesScreen> {
       if (mediaType == 'video') return '🎥 Video';
       if (mediaType == 'audio') return '🎵 Voice message';
     }
-    
+
     // If no content, return appropriate message
     if (content.isEmpty) {
       return 'No messages yet';
     }
 
     // Check if content is an image URL (fallback detection)
-    if (content.startsWith('http') && 
+    if (content.startsWith('http') &&
         (content.contains('/uploads/') || content.contains('/media/')) &&
-        (content.endsWith('.jpg') || content.endsWith('.jpeg') || 
-         content.endsWith('.png') || content.endsWith('.gif') ||
-         content.endsWith('.webp') || content.contains('.jpg?') || 
-         content.contains('.jpeg?') || content.contains('.png?'))) {
+        (content.endsWith('.jpg') ||
+            content.endsWith('.jpeg') ||
+            content.endsWith('.png') ||
+            content.endsWith('.gif') ||
+            content.endsWith('.webp') ||
+            content.contains('.jpg?') ||
+            content.contains('.jpeg?') ||
+            content.contains('.png?'))) {
       return '📷 Photo';
     }
 
     // Check if content is a video URL
-    if (content.startsWith('http') && 
-        (content.endsWith('.mp4') || content.endsWith('.mov') || 
-         content.endsWith('.avi') || content.contains('.mp4?'))) {
+    if (content.startsWith('http') &&
+        (content.endsWith('.mp4') ||
+            content.endsWith('.mov') ||
+            content.endsWith('.avi') ||
+            content.contains('.mp4?'))) {
       return '🎥 Video';
     }
 
     // Handle different message types with appropriate icons (when content contains keywords)
-    if (content.toLowerCase().contains('location') || content.startsWith('geo:')) {
+    if (content.toLowerCase().contains('location') ||
+        content.startsWith('geo:')) {
       return '📍 Location shared';
     }
-    
+
     // Regular text message - truncate if too long
     return content.length > 50 ? '${content.substring(0, 50)}...' : content;
   }
@@ -299,7 +317,8 @@ class _MessagesScreenState extends State<MessagesScreen> {
         status: 'accepted', // Load accepted matches (mutual matches)
         limit: 20,
         offset: 0,
-        excludeWithConversations: true, // Exclude matches with existing conversations
+        excludeWithConversations:
+            true, // Exclude matches with existing conversations
       ),
     );
   }
@@ -314,11 +333,13 @@ class _MessagesScreenState extends State<MessagesScreen> {
           status: 'accepted',
           limit: 20,
           offset: currentState.matches.length,
-          excludeWithConversations: true, // Exclude matches with existing conversations
+          excludeWithConversations:
+              true, // Exclude matches with existing conversations
         ),
       );
     }
   }
+
   void _onMatchStoryTap(MatchStoryData match) {
     AppLogger.debug(
       'Match tapped: ${match.name} (${match.userId}) - ConversationId: ${match.conversationId}',
@@ -371,16 +392,18 @@ class _MessagesScreenState extends State<MessagesScreen> {
           AppLogger.debug(
             'Navigating to chat with conversation ID: ${state.conversation.id}',
           );
-          
+
           // Refresh matches list from API (will exclude matches with conversations)
-          context.read<MatchBloc>().add(const LoadMatches(
-            status: 'accepted',
-            excludeWithConversations: true,
-          ));
+          context.read<MatchBloc>().add(
+            const LoadMatches(
+              status: 'accepted',
+              excludeWithConversations: true,
+            ),
+          );
           AppLogger.debug(
             'Refreshing matches list after conversation creation',
           );
-          
+
           // Navigate to the newly created conversation
           context.push(
             '/chat/${state.conversation.id}',
@@ -397,10 +420,12 @@ class _MessagesScreenState extends State<MessagesScreen> {
             'First message sent in conversation: ${state.conversationId} - refreshing matches optimistically',
           );
           // Optimistically refresh matches list when first message is sent
-          context.read<MatchBloc>().add(const LoadMatches(
-            status: 'accepted',
-            excludeWithConversations: true,
-          ));
+          context.read<MatchBloc>().add(
+            const LoadMatches(
+              status: 'accepted',
+              excludeWithConversations: true,
+            ),
+          );
         }
       },
       child: Scaffold(
@@ -420,22 +445,22 @@ class _MessagesScreenState extends State<MessagesScreen> {
                     '🐛 MatchBloc state: ${matchState.runtimeType}',
                   );
                   if (matchState is MatchesLoaded) {
-                  // Convert MatchModel to MatchStoryData synchronously for now
-                  final matchStories = matchState.matches.map((match) {
-                    // Use cached enriched match if available, otherwise create basic one
-                    if (_enrichedMatches.containsKey(match.id)) {
-                      return _enrichedMatches[match.id]!;
-                    }
+                    // Convert MatchModel to MatchStoryData synchronously for now
+                    final matchStories = matchState.matches.map((match) {
+                      // Use cached enriched match if available, otherwise create basic one
+                      if (_enrichedMatches.containsKey(match.id)) {
+                        return _enrichedMatches[match.id]!;
+                      }
 
-                    // Determine which user is the other user (not current user)
+                      // Determine which user is the other user (not current user)
                       // Get current user ID from auth state
                       final authState = context.read<AuthBloc>().state;
                       final currentUserId = authState is AuthAuthenticated
                           ? authState.user.id
                           : '';
-                    final otherUserId = match.user1Id == currentUserId
-                        ? match.user2Id
-                        : match.user1Id;
+                      final otherUserId = match.user1Id == currentUserId
+                          ? match.user2Id
+                          : match.user1Id;
 
                       // Use parsed userProfile from MatchModel which contains firstName + lastName
                       final userName =
@@ -446,23 +471,23 @@ class _MessagesScreenState extends State<MessagesScreen> {
                           ? match.userProfile!.photos.first.url
                           : '';
 
-                    final matchStory = MatchStoryData(
-                      id: match.id,
-                      userId: otherUserId,
+                      final matchStory = MatchStoryData(
+                        id: match.id,
+                        userId: otherUserId,
                         name:
                             userName, // Use real user name from parsed userProfile (firstName + lastName)
                         avatarUrl:
                             avatarUrl, // Use real photo from parsed userProfile
-                      isSuperLike: false, // MatchModel doesn't have this info
-                      matchedTime: match.matchedAt,
+                        isSuperLike: false, // MatchModel doesn't have this info
+                        matchedTime: match.matchedAt,
                         conversationId: match
                             .conversationId, // Include existing conversation ID
-                    );
+                      );
 
-                    // Cache for future use
-                    _enrichedMatches[match.id] = matchStory;
-                    return matchStory;
-                  }).toList();
+                      // Cache for future use
+                      _enrichedMatches[match.id] = matchStory;
+                      return matchStory;
+                    }).toList();
 
                     // Filter: Only show matches that don't have messages yet
                     // Check if their conversationId exists in _allConversations and has no lastMessage
@@ -502,86 +527,86 @@ class _MessagesScreenState extends State<MessagesScreen> {
                     );
 
                     if (matchesWithoutMessages.isNotEmpty) {
-                    return MatchStoriesSection(
+                      return MatchStoriesSection(
                         matches: matchesWithoutMessages,
-                      onMatchTap: _onMatchStoryTap,
-                      hasMore: matchState.hasMore,
-                      onLoadMore: _loadMoreMatches,
-                    );
+                        onMatchTap: _onMatchStoryTap,
+                        hasMore: matchState.hasMore,
+                        onLoadMore: _loadMoreMatches,
+                      );
+                    }
                   }
-                }
 
-                if (matchState is MatchLoading) {
+                  if (matchState is MatchLoading) {
                     AppLogger.debug('🐛 MatchLoading state');
-                  return Container(
-                    height: 120,
-                    padding: const EdgeInsets.symmetric(vertical: 8),
-                    child: ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: 5,
-                      itemBuilder: (context, index) => Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 4),
-                        child: SkeletonLoader(
-                          width: 80,
-                          height: 100,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                    ),
-                  );
-                }
-
-                if (matchState is MatchError) {
-                    AppLogger.debug('🐛 MatchError: ${matchState.message}');
-                  return Container(
-                    height: 60,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 8,
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.error_outline,
-                          color: Theme.of(context).colorScheme.error,
-                          size: 20,
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            'Failed to load matches: ${matchState.message}',
-                            style: Theme.of(context).textTheme.bodySmall
-                                ?.copyWith(
-                                  color: Theme.of(context).colorScheme.error,
-                                ),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
+                    return Container(
+                      height: 120,
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      child: ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: 5,
+                        itemBuilder: (context, index) => Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 4),
+                          child: SkeletonLoader(
+                            width: 80,
+                            height: 100,
+                            borderRadius: BorderRadius.circular(12),
                           ),
                         ),
-                        TextButton(
-                          onPressed: _loadMatchStories,
-                          child: const Text('Retry'),
-                        ),
-                      ],
-                    ),
-                  );
-                }
+                      ),
+                    );
+                  }
+
+                  if (matchState is MatchError) {
+                    AppLogger.debug('🐛 MatchError: ${matchState.message}');
+                    return Container(
+                      height: 60,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.error_outline,
+                            color: Theme.of(context).colorScheme.error,
+                            size: 20,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              'Failed to load matches: ${matchState.message}',
+                              style: Theme.of(context).textTheme.bodySmall
+                                  ?.copyWith(
+                                    color: Theme.of(context).colorScheme.error,
+                                  ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          TextButton(
+                            onPressed: _loadMatchStories,
+                            child: const Text('Retry'),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
 
                   // If no specific state, show empty but log it
                   AppLogger.debug(
                     '🐛 Unknown match state: ${matchState.runtimeType}',
                   );
-                return const SizedBox.shrink();
-              },
-            ),
+                  return const SizedBox.shrink();
+                },
+              ),
 
-            // Conversations list
-            Expanded(
-              child: _isLoading
-                  ? _buildLoadingState()
-                  : _error != null
-                      ? _buildErrorState()
-                      : _filteredConversations.isEmpty
+              // Conversations list
+              Expanded(
+                child: _isLoading
+                    ? _buildLoadingState()
+                    : _error != null
+                    ? _buildErrorState()
+                    : _filteredConversations.isEmpty
                     ? RefreshIndicator(
                         onRefresh: () =>
                             _loadConversations(includeMatches: true),
@@ -598,10 +623,10 @@ class _MessagesScreenState extends State<MessagesScreen> {
                             _loadConversations(includeMatches: true),
                         child: _buildConversationsList(),
                       ),
-            ),
-          ],
+              ),
+            ],
+          ),
         ),
-      ),
       ),
     );
   }
@@ -685,8 +710,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
                     decoration: BoxDecoration(
                       color: Colors.white,
                       shape: BoxShape.circle,
-                      border: Border.all(color: PulseColors.primary,
-                        width: 1),
+                      border: Border.all(color: PulseColors.primary, width: 1),
                     ),
                   ),
                 ),
@@ -900,7 +924,9 @@ class _MessagesScreenState extends State<MessagesScreen> {
                                 height: 56,
                               )
                             : Container(
-                                color: PulseColors.primary.withValues(alpha: 0.1),
+                                color: PulseColors.primary.withValues(
+                                  alpha: 0.1,
+                                ),
                                 child: Center(
                                   child: Text(
                                     conversation.name.isNotEmpty
@@ -1027,11 +1053,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.error_outline,
-            size: 64,
-            color: PulseColors.error,
-          ),
+          Icon(Icons.error_outline, size: 64, color: PulseColors.error),
           const SizedBox(height: PulseSpacing.lg),
           Text(
             'Failed to load conversations',
@@ -1059,8 +1081,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
   }
 
   Widget _buildEmptyState() {
-    return EmptyStates.noMessages(onExplore: () => context.go('/matches'),
-    );
+    return EmptyStates.noMessages(onExplore: () => context.go('/matches'));
   }
 
   void _openConversation(ConversationData conversation) {
@@ -1069,7 +1090,8 @@ class _MessagesScreenState extends State<MessagesScreen> {
     context.push(
       '/chat/${conversation.id}',
       extra: {
-        'otherUserId': conversation.otherUserId, // Now using the correct other user ID
+        'otherUserId':
+            conversation.otherUserId, // Now using the correct other user ID
         'otherUserName': conversation.name,
         'otherUserPhoto': conversation.avatar,
       },
@@ -1104,7 +1126,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
   bool _matchesCurrentFilters(ConversationData conversation) {
     // NOTE: Removed "No messages yet" filter - conversations should show even without messages
     // This allows users to see all their conversations, including newly created ones
-    
+
     // Type filter
     if (_currentFilters.type != MessageFilterType.all &&
         conversation.type != _currentFilters.type) {
@@ -1234,7 +1256,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
       }).toList();
       _applyFilters();
     });
-    
+
     PulseToast.success(
       context,
       message: 'All conversations marked as read',

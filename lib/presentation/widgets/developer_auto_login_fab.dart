@@ -139,7 +139,7 @@ class _DeveloperAutoLoginFABState extends State<DeveloperAutoLoginFAB>
             ),
           ),
           const SizedBox(height: 16),
-          
+
           // Test accounts
           ...TestCredentials.testAccounts.map(
             (account) => _buildAutoLoginOption(account),
@@ -159,7 +159,9 @@ class _DeveloperAutoLoginFABState extends State<DeveloperAutoLoginFAB>
           return Material(
             color: Colors.transparent,
             child: InkWell(
-              onTap: isLoading ? null : () => _handleAutoLogin(context, account),
+              onTap: isLoading
+                  ? null
+                  : () => _handleAutoLogin(context, account),
               borderRadius: BorderRadius.circular(8),
               child: Container(
                 padding: const EdgeInsets.all(12),
@@ -205,11 +207,7 @@ class _DeveloperAutoLoginFABState extends State<DeveloperAutoLoginFAB>
                         ),
                       ),
                     ] else ...[
-                      Icon(
-                        Icons.login,
-                        size: 16,
-                        color: PulseColors.primary,
-                      ),
+                      Icon(Icons.login, size: 16, color: PulseColors.primary),
                     ],
                   ],
                 ),
@@ -229,7 +227,7 @@ class _DeveloperAutoLoginFABState extends State<DeveloperAutoLoginFAB>
           password: account.password,
         ),
       );
-      
+
       // Close the expanded panel after login attempt
       Future.delayed(const Duration(milliseconds: 500), () {
         if (mounted) {

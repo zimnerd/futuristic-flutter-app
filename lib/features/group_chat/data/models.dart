@@ -1,34 +1,13 @@
 /// Group chat models for PulseLink dating app
 library;
 
-enum GroupType {
-  standard,
-  study,
-  interest,
-  dating,
-  liveHost,
-  speedDating,
-}
+enum GroupType { standard, study, interest, dating, liveHost, speedDating }
 
-enum ParticipantRole {
-  owner,
-  admin,
-  moderator,
-  member,
-  guest,
-}
+enum ParticipantRole { owner, admin, moderator, member, guest }
 
-enum LiveSessionStatus {
-  waiting,
-  active,
-  ended,
-}
+enum LiveSessionStatus { waiting, active, ended }
 
-enum JoinRequestStatus {
-  pending,
-  approved,
-  rejected,
-}
+enum JoinRequestStatus { pending, approved, rejected }
 
 class GroupSettings {
   final String id;
@@ -181,11 +160,13 @@ class GroupConversation {
     // Handle both response formats:
     // 1. Create response: { id, title, settings: {...}, participants: [...] }
     // 2. User-groups response: { id, title, type: "TRADITIONAL", participants: [...] }
-    
+
     GroupSettings? parsedSettings;
     if (json['settings'] != null) {
       // Format 1: settings object from create response
-      parsedSettings = GroupSettings.fromJson(json['settings'] as Map<String, dynamic>);
+      parsedSettings = GroupSettings.fromJson(
+        json['settings'] as Map<String, dynamic>,
+      );
     } else if (json['type'] != null) {
       // Format 2: type field from user-groups response - create minimal settings
       parsedSettings = GroupSettings(
@@ -205,7 +186,8 @@ class GroupConversation {
       title: json['title'] as String,
       description: json['description'] as String?,
       settings: parsedSettings,
-      participants: (json['participants'] as List<dynamic>?)
+      participants:
+          (json['participants'] as List<dynamic>?)
               ?.map((p) => GroupParticipant.fromJson(p as Map<String, dynamic>))
               .toList() ??
           [],
@@ -400,10 +382,16 @@ class GroupMessage {
       senderUsername: json['senderUsername'] as String? ?? 'Unknown',
       senderFirstName: json['senderFirstName'] as String?,
       senderLastName: json['senderLastName'] as String?,
-      senderProfilePhoto: json['senderAvatar'] as String? ?? json['senderProfilePhoto'] as String?,
+      senderProfilePhoto:
+          json['senderAvatar'] as String? ??
+          json['senderProfilePhoto'] as String?,
       content: json['content'] as String? ?? '',
       type: json['type'] as String? ?? 'text',
-      timestamp: DateTime.parse(json['createdAt'] as String? ?? json['timestamp'] as String? ?? DateTime.now().toIso8601String()),
+      timestamp: DateTime.parse(
+        json['createdAt'] as String? ??
+            json['timestamp'] as String? ??
+            DateTime.now().toIso8601String(),
+      ),
       status: json['status'] as String? ?? 'sent',
       tempId: json['tempId'] as String?,
       replyTo: json['replyTo'] != null
@@ -412,8 +400,8 @@ class GroupMessage {
       metadata: json['metadata'] as Map<String, dynamic>?,
       reactions: json['reactions'] != null
           ? (json['reactions'] as List)
-              .map((r) => MessageReaction.fromJson(r as Map<String, dynamic>))
-              .toList()
+                .map((r) => MessageReaction.fromJson(r as Map<String, dynamic>))
+                .toList()
           : [],
       readBy: json['readBy'] != null
           ? List<String>.from(json['readBy'] as List)
@@ -686,4 +674,3 @@ class ReportedContent {
     };
   }
 }
-

@@ -42,9 +42,7 @@ class _AdvancedFiltersModalState extends State<AdvancedFiltersModal> {
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: PulseColors.surface,
-        borderRadius: const BorderRadius.vertical(
-          top: Radius.circular(20),
-        ),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -77,10 +75,7 @@ class _AdvancedFiltersModalState extends State<AdvancedFiltersModal> {
         ),
         IconButton(
           onPressed: () => Navigator.of(context).pop(),
-          icon: Icon(
-            Icons.close,
-            color: PulseColors.onSurfaceVariant,
-          ),
+          icon: Icon(Icons.close, color: PulseColors.onSurfaceVariant),
         ),
       ],
     );
@@ -134,9 +129,7 @@ class _AdvancedFiltersModalState extends State<AdvancedFiltersModal> {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          border: Border.all(
-            color: PulseColors.primary.withValues(alpha: 0.3),
-          ),
+          border: Border.all(color: PulseColors.primary.withValues(alpha: 0.3)),
           borderRadius: BorderRadius.circular(12),
         ),
         child: Column(
@@ -204,7 +197,8 @@ class _AdvancedFiltersModalState extends State<AdvancedFiltersModal> {
     required DateTime startDate,
     required DateTime endDate,
   }) {
-    final isSelected = _startDate != null &&
+    final isSelected =
+        _startDate != null &&
         _endDate != null &&
         _startDate!.isAtSameMomentAs(startDate) &&
         _endDate!.isAtSameMomentAs(endDate);
