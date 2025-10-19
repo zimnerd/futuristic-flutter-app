@@ -16,8 +16,8 @@ class PremiumService {
       final response = await _apiClient.get(ApiConstants.premiumSubscription);
 
       if (response.statusCode == 200 && response.data != null) {
-        // Backend returns { subscription, plans } - extract plans
-        final List<dynamic> data = response.data['plans'] ?? [];
+        // Backend returns { success, data: { subscription, plans } } - extract nested plans
+        final List<dynamic> data = response.data['data']?['plans'] ?? [];
         final plans = data.map((json) => PremiumPlan.fromJson(json)).toList();
 
         _logger.d('Retrieved ${plans.length} premium plans');
@@ -42,8 +42,8 @@ class PremiumService {
       _logger.d('📦 API Response - Data: ${response.data}');
 
       if (response.statusCode == 200 && response.data != null) {
-        // Backend returns { subscription, plans } - extract subscription
-        final subscriptionData = response.data['subscription'];
+        // Backend returns { success, data: { subscription, plans } } - extract nested subscription
+        final subscriptionData = response.data['data']?['subscription'];
         _logger.d('🎫 Subscription data: $subscriptionData');
 
         if (subscriptionData == null) {
@@ -181,7 +181,13 @@ class PremiumService {
       final response = await _apiClient.get('/premium/coins/balance');
 
       if (response.statusCode == 200 && response.data != null) {
-        final balance = CoinBalance.fromJson(response.data!);
+        // Backend returns { success, data: {...coinBalance} }
+        final balanceData = response.data['data'];
+        if (balanceData == null) {
+          _logger.w('No coin balance data found');
+          return null;
+        }
+        final balance = CoinBalance.fromJson(balanceData);
         _logger.d('Retrieved coin balance: ${balance.totalCoins}');
         return balance;
       } else {
@@ -259,9 +265,14 @@ class PremiumService {
       final response = await _apiClient.get('/premium/features');
 
       if (response.statusCode == 200 && response.data != null) {
-        final List<dynamic> data = response.data['features'] ?? [];
+        // Backend returns { success, data: [...features] }
+        final List<dynamic> data = response.data['data'] ?? [];
         final features = data
-            .map((featureName) {
+            .map((featureData) {
+              // Extract 'key' field from feature object
+              final featureName = featureData['key'] as String?;
+              if (featureName == null) return null;
+              
               // Convert string feature name to enum
               try {
                 return PremiumFeature.values.firstWhere(

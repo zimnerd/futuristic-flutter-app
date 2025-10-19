@@ -11,6 +11,8 @@ import '../../blocs/discovery/discovery_state.dart';
 import '../../blocs/premium/premium_bloc.dart';
 import '../../blocs/premium/premium_event.dart';
 import '../../blocs/premium/premium_state.dart';
+import '../../navigation/app_router.dart';
+import '../profile/profile_details_screen.dart';
 import '../../widgets/common/robust_network_image.dart';
 import '../../widgets/verification/verification_badge.dart';
 
@@ -163,8 +165,18 @@ class _WhoLikedYouScreenState extends State<WhoLikedYouScreen> {
                   isPremium: isPremium,
                   onTap: () {
                     if (isPremium) {
-                      // Navigate to profile view
-                      context.push('/profile/${users[index].id}');
+                      // Navigate to profile details using correct route
+                      context.push(
+                        AppRoutes.profileDetails.replaceFirst(
+                          ':profileId',
+                          users[index].id,
+                        ),
+                        extra: {
+                          'profile': users[index],
+                          'context': ProfileContext.general,
+                          'onLike': () => _likeBack(users[index]),
+                        },
+                      );
                     } else {
                       // Show premium upgrade prompt
                       _showPremiumPrompt();
@@ -956,7 +968,13 @@ class _FilterBottomSheetState extends State<_FilterBottomSheet> {
                         _superLikesOnly = false;
                       });
                     },
-                    child: const Text('Clear All'),
+                    child: Text(
+                      'Clear All',
+                      style: TextStyle(
+                        color: PulseColors.primary,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -966,8 +984,19 @@ class _FilterBottomSheetState extends State<_FilterBottomSheet> {
 
             // Filter options
             SwitchListTile(
-              title: const Text('Verified only'),
-              subtitle: const Text('Show only verified users'),
+              title: Text(
+                'Verified only',
+                style: PulseTypography.bodyMedium.copyWith(
+                  color: PulseColors.grey900,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              subtitle: Text(
+                'Show only verified users',
+                style: PulseTypography.bodySmall.copyWith(
+                  color: PulseColors.grey600,
+                ),
+              ),
               value: _verifiedOnly,
               onChanged: (value) {
                 setState(() {
@@ -978,8 +1007,19 @@ class _FilterBottomSheetState extends State<_FilterBottomSheet> {
             ),
 
             SwitchListTile(
-              title: const Text('Super Likes only'),
-              subtitle: const Text('Show only users who super liked you'),
+              title: Text(
+                'Super Likes only',
+                style: PulseTypography.bodyMedium.copyWith(
+                  color: PulseColors.grey900,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              subtitle: Text(
+                'Show only users who super liked you',
+                style: PulseTypography.bodySmall.copyWith(
+                  color: PulseColors.grey600,
+                ),
+              ),
               value: _superLikesOnly,
               onChanged: (value) {
                 setState(() {
