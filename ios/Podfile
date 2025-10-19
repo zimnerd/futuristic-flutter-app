@@ -31,6 +31,7 @@ target 'Runner' do
   use_frameworks!
 
   flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
+  
   target 'RunnerTests' do
     inherit! :search_paths
   end
@@ -39,5 +40,29 @@ end
 post_install do |installer|
   installer.pods_project.targets.each do |target|
     flutter_additional_ios_build_settings(target)
+    
+    # ✅ CRITICAL FIX: Enable permission_handler permissions
+    # This configures which permissions are included in the iOS build
+    # Without this, permission prompts won't appear and will auto-deny
+    target.build_configurations.each do |config|
+      # Enable required permissions for permission_handler
+      config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] ||= [
+        '$(inherited)',
+        
+        # Core calling permissions (REQUIRED for audio/video calls)
+        'PERMISSION_CAMERA=1',
+        'PERMISSION_MICROPHONE=1',
+        
+        # Media permissions (for profile photos)
+        'PERMISSION_PHOTOS=1',
+        'PERMISSION_PHOTOS_ADD_ONLY=1',
+        
+        # Location permissions (for discovery/matching)
+        'PERMISSION_LOCATION_WHEN_IN_USE=1',
+        
+        # Notification permissions (for push notifications)
+        'PERMISSION_NOTIFICATIONS=1',
+      ]
+    end
   end
 end

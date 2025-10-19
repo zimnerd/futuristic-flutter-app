@@ -8,6 +8,8 @@ import '../../../data/services/messaging_service.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/logger.dart';
+import '../../../core/services/call_invitation_service.dart';
+import '../../../core/models/call_invitation.dart';
 
 class AudioCallScreen extends StatefulWidget {
   final String callId;
@@ -40,6 +42,7 @@ class AudioCallScreen extends StatefulWidget {
 class _AudioCallScreenState extends State<AudioCallScreen>
     with TickerProviderStateMixin {
   late AudioCallService _audioService;
+  final CallInvitationService _callInvitationService = CallInvitationService();
   final MessagingService _messagingService = MessagingService(
     apiClient: ApiClient.instance,
   );
@@ -52,6 +55,7 @@ class _AudioCallScreenState extends State<AudioCallScreen>
   StreamSubscription<QualityType>? _qualitySubscription;
   StreamSubscription<String>? _errorSubscription;
   StreamSubscription<Duration>? _durationSubscription;
+  StreamSubscription<Map<String, dynamic>>? _connectionStatusSubscription;
 
   bool _isMuted = false;
   bool _isSpeakerOn = false;
@@ -61,6 +65,10 @@ class _AudioCallScreenState extends State<AudioCallScreen>
   QualityType _connectionQuality = QualityType.qualityUnknown;
   String? _activeConversationId; // Track conversation for call message
   DateTime? _callStartTime; // Track when call actually connected
+  
+  // NEW: Track connection status
+  CallConnectionStatus _connectionStatus = CallConnectionStatus.ringing;
+  bool _isJoiningAgora = false; // Prevent duplicate joins
 
   late AnimationController _pulseController;
   late Animation<double> _pulseAnimation;
@@ -72,7 +80,10 @@ class _AudioCallScreenState extends State<AudioCallScreen>
     _activeConversationId = widget.conversationId;
     _setupPulseAnimation();
     _setupStreamListeners();
-    _initializeCall();
+    // NEW: Initialize Agora service but don't join channel yet
+    _initializeAgoraService();
+    // NEW: Listen for ready_to_connect event before joining
+    _setupConnectionStatusListener();
   }
 
   void _setupStreamListeners() {
@@ -148,29 +159,102 @@ class _AudioCallScreenState extends State<AudioCallScreen>
     );
   }
 
-  Future<void> _initializeCall() async {
+  /// NEW: Initialize Agora service but don't join channel yet
+  Future<void> _initializeAgoraService() async {
     try {
-      // Initialize service if not already done
       if (!_audioService.isInCall) {
         await _audioService.initialize(
           appId: '0bb5c5b508884aa4bfc25381d51fa329',
         );
+        AppLogger.info(
+          'Agora service initialized, waiting for ready_to_connect event',
+        );
       }
+    } catch (e) {
+      AppLogger.error('Failed to initialize Agora service: $e');
+      _showErrorDialog('Failed to initialize call: $e');
+    }
+  }
 
-      // Join the audio call
+  /// NEW: Listen for connection status events from backend
+  void _setupConnectionStatusListener() {
+    _connectionStatusSubscription = _callInvitationService
+        .onConnectionStatusChanged
+        .listen((statusData) {
+          final event = statusData['event'] as String;
+          final callId = statusData['callId'] as String;
+
+          // Only process events for this call
+          if (callId != widget.callId) return;
+
+          AppLogger.info('Connection status event: $event for call $callId');
+
+          switch (event) {
+            case 'ready_to_connect':
+              // Both users accepted, now join Agora
+              _handleReadyToConnect(statusData);
+              break;
+            case 'connected':
+              // Both users in Agora channel, start timer
+              _handleCallConnected();
+              break;
+            case 'failed':
+              // Call failed (offline, network error, etc.)
+              _handleCallFailed(statusData['reason'] as String?);
+              break;
+          }
+        });
+  }
+
+  /// NEW: Handle ready to connect - Join Agora channel now
+  Future<void> _handleReadyToConnect(Map<String, dynamic> data) async {
+    if (_isJoiningAgora) {
+      AppLogger.warning('Already joining Agora, skipping duplicate join');
+      return;
+    }
+
+    setState(() {
+      _isJoiningAgora = true;
+      _connectionStatus = CallConnectionStatus.connecting;
+    });
+
+    try {
+      AppLogger.info('Ready to connect - joining Agora channel');
+      
       final success = await _audioService.joinAudioCall(
         callId: widget.callId,
         recipientId: widget.recipientId,
-        channelName: widget.channelName,
-        token: widget.token,
+        channelName: data['channelName'] as String? ?? widget.channelName,
+        token: data['token'] as String? ?? widget.token,
       );
 
       if (!success) {
         _showErrorDialog('Failed to join audio call');
       }
     } catch (e) {
+      AppLogger.error('Failed to join Agora: $e');
       _showErrorDialog('Failed to join call: $e');
     }
+  }
+
+  /// NEW: Handle call connected - Start timer NOW
+  void _handleCallConnected() {
+    setState(() {
+      _connectionStatus = CallConnectionStatus.connected;
+      _callStartTime = DateTime.now();
+    });
+    AppLogger.info('Call connected - timer started');
+  }
+
+  /// NEW: Handle call failed
+  void _handleCallFailed(String? reason) {
+    setState(() {
+      _connectionStatus = CallConnectionStatus.failed;
+    });
+    AppLogger.error('Call failed: ${reason ?? "Unknown reason"}');
+    _showErrorDialog(
+      'Call failed: ${reason ?? "User is offline or unreachable"}',
+    );
   }
 
   void _showErrorDialog(String message) {
@@ -293,6 +377,8 @@ class _AudioCallScreenState extends State<AudioCallScreen>
     _qualitySubscription?.cancel();
     _errorSubscription?.cancel();
     _durationSubscription?.cancel();
+    _connectionStatusSubscription
+        ?.cancel(); // NEW: Cancel connection status subscription
     _pulseController.dispose();
     super.dispose();
   }
@@ -502,12 +588,30 @@ class _AudioCallScreenState extends State<AudioCallScreen>
 
   Widget _buildCallStatus() {
     String statusText;
-    if (!_isConnected) {
-      statusText = 'Connecting...';
-    } else if (!_remoteUserJoined) {
-      statusText = widget.isOutgoing ? 'Calling...' : 'Waiting...';
-    } else {
-      statusText = 'Connected';
+    
+    // NEW: Use connection status for more accurate state display
+    switch (_connectionStatus) {
+      case CallConnectionStatus.ringing:
+        statusText = widget.isOutgoing ? 'Ringing...' : 'Incoming call...';
+        break;
+      case CallConnectionStatus.connecting:
+        statusText = 'Connecting...';
+        break;
+      case CallConnectionStatus.connected:
+        statusText = _remoteUserJoined ? 'Connected' : 'Joining...';
+        break;
+      case CallConnectionStatus.failed:
+        statusText = 'Call failed';
+        break;
+      case CallConnectionStatus.noAnswer:
+        statusText = 'No answer';
+        break;
+      case CallConnectionStatus.declined:
+        statusText = 'Declined';
+        break;
+      case CallConnectionStatus.ended:
+        statusText = 'Ended';
+        break;
     }
 
     return Text(

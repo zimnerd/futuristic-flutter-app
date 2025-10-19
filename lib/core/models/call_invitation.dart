@@ -13,6 +13,40 @@ enum CallType {
   }
 }
 
+/// Connection status of an active call
+/// This tracks the actual call connection state, separate from invitation status
+enum CallConnectionStatus {
+  /// Call is ringing, waiting for recipient to accept
+  ringing,
+
+  /// Both users accepted, connecting to Agora channel
+  connecting,
+
+  /// Both users connected in Agora channel (timer starts)
+  connected,
+
+  /// Call ended normally
+  ended,
+
+  /// Call failed - user offline/unreachable
+  failed,
+
+  /// No answer - timed out after 30 seconds
+  noAnswer,
+
+  /// User declined the call
+  declined;
+
+  String toJson() => name;
+
+  static CallConnectionStatus fromJson(String value) {
+    return CallConnectionStatus.values.firstWhere(
+      (e) => e.name == value,
+      orElse: () => CallConnectionStatus.ringing,
+    );
+  }
+}
+
 /// Status of a call invitation
 enum CallInvitationStatus {
   pending,
@@ -73,6 +107,9 @@ class CallInvitation {
   /// Current status of the invitation
   final CallInvitationStatus status;
 
+  /// Connection status of the call (ringing, connecting, connected, etc.)
+  final CallConnectionStatus connectionStatus;
+
   /// Conversation/Channel ID for the call
   final String? conversationId;
 
@@ -102,6 +139,7 @@ class CallInvitation {
     required this.recipientId,
     required this.callType,
     required this.status,
+    this.connectionStatus = CallConnectionStatus.ringing,
     this.conversationId,
     this.groupId,
     this.rtcToken,
@@ -121,6 +159,9 @@ class CallInvitation {
       recipientId: json['recipientId'] as String,
       callType: CallType.fromJson(json['callType'] as String),
       status: CallInvitationStatus.fromJson(json['status'] as String),
+      connectionStatus: json['connectionStatus'] != null
+          ? CallConnectionStatus.fromJson(json['connectionStatus'] as String)
+          : CallConnectionStatus.ringing,
       conversationId: json['conversationId'] as String?,
       groupId: json['groupId'] as String?,
       rtcToken: json['rtcToken'] as String?,
@@ -141,6 +182,7 @@ class CallInvitation {
       'recipientId': recipientId,
       'callType': callType.toJson(),
       'status': status.toJson(),
+      'connectionStatus': connectionStatus.toJson(),
       'conversationId': conversationId,
       'groupId': groupId,
       'rtcToken': rtcToken,
@@ -160,6 +202,7 @@ class CallInvitation {
     String? recipientId,
     CallType? callType,
     CallInvitationStatus? status,
+    CallConnectionStatus? connectionStatus,
     String? conversationId,
     String? groupId,
     String? rtcToken,
@@ -176,6 +219,7 @@ class CallInvitation {
       recipientId: recipientId ?? this.recipientId,
       callType: callType ?? this.callType,
       status: status ?? this.status,
+      connectionStatus: connectionStatus ?? this.connectionStatus,
       conversationId: conversationId ?? this.conversationId,
       groupId: groupId ?? this.groupId,
       rtcToken: rtcToken ?? this.rtcToken,

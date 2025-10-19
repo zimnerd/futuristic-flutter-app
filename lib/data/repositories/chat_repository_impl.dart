@@ -492,16 +492,68 @@ class ChatRepositoryImpl implements ChatRepository {
       _tempIdToRealIdMap[tempId] =
           optimisticId; // Will be updated when real message arrives
 
-      // Save optimistic message to database for local caching
-      await _databaseService.saveMessage(
-        ModelConverters.messageToDbModel(optimisticMessage),
-      );
+      // Ensure conversation exists in local database before saving message
+      // This prevents FOREIGN KEY constraint errors
+      try {
+        final existingConversation = await _databaseService.getConversation(
+          conversationId,
+        );
+
+        if (existingConversation == null) {
+          _logger.d(
+            'Conversation not found in local DB, fetching from server: $conversationId',
+          );
+
+          // Fetch conversation from server and save locally
+          try {
+            final serverConversation = await getConversation(conversationId);
+            if (serverConversation != null) {
+              // Convert ConversationModel to ConversationDbModel using chat_model.dart version
+              final chatModelConversation = serverConversation as dynamic;
+              await _databaseService.saveConversation(
+                ModelConverters.conversationToDbModel(chatModelConversation),
+              );
+              _logger.d('Saved conversation to local DB: $conversationId');
+            } else {
+              throw Exception('Conversation not found on server');
+            }
+          } catch (e) {
+            _logger.w(
+              'Could not fetch conversation from server: $e. Creating minimal conversation entry.',
+            );
+            // Create minimal conversation entry to satisfy FOREIGN KEY constraint
+            final minimalConversation = ConversationDbModel(
+              id: conversationId,
+              type: 'DIRECT', // Default assumption
+              participantIds: [currentUserId ?? 'unknown'], // List<String>
+              unreadCount: 0,
+              createdAt: DateTime.now(),
+              updatedAt: DateTime.now(),
+              syncStatus: 'pending',
+            );
+            await _databaseService.saveConversation(minimalConversation);
+            _logger.d('Created minimal conversation entry: $conversationId');
+          }
+        }
+      } catch (e) {
+        _logger.e('Error ensuring conversation exists: $e');
+        // Continue anyway - if save fails, we'll still send via WebSocket
+      } // Save optimistic message to database for local caching
+      try {
+        await _databaseService.saveMessage(
+          ModelConverters.messageToDbModel(optimisticMessage),
+        );
+        _logger.d('Saved optimistic message to database');
+      } catch (e) {
+        _logger.e('Error saving optimistic message to database: $e');
+        // Don't throw - message was already sent via WebSocket
+        // The message will still appear in UI from WebSocket response
+      }
 
       _logger.d(
         'Successfully sent message via Socket.IO with tempId: $tempId, optimistic ID: $optimisticId',
       );
       _logger.d('Optimistic message senderId: ${optimisticMessage.senderId}');
-      _logger.d('Saved optimistic message to database');
       return optimisticMessage;
     } catch (e) {
       _logger.e('Error sending message: $e');

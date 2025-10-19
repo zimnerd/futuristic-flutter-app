@@ -27,6 +27,10 @@ class CallInvitationService {
   final _callTimeoutController = StreamController<CallInvitation>.broadcast();
   final _callCancelledController = StreamController<CallInvitation>.broadcast();
   final _callStateController = StreamController<CallState>.broadcast();
+  
+  // NEW: Connection status stream for Agora coordination
+  final _connectionStatusController =
+      StreamController<Map<String, dynamic>>.broadcast();
 
   // Public streams
   Stream<CallInvitation> get onIncomingCall => _incomingCallController.stream;
@@ -35,6 +39,11 @@ class CallInvitationService {
   Stream<CallInvitation> get onCallTimeout => _callTimeoutController.stream;
   Stream<CallInvitation> get onCallCancelled => _callCancelledController.stream;
   Stream<CallState> get onCallStateChanged => _callStateController.stream;
+  
+  /// Stream for call connection status changes
+  /// Emits events: call_ready_to_connect, call_connected, call_failed
+  Stream<Map<String, dynamic>> get onConnectionStatusChanged =>
+      _connectionStatusController.stream;
 
   // Current state
   CallState _currentState = const CallState();
@@ -48,6 +57,11 @@ class CallInvitationService {
     _webSocketService.on('call_rejected', _handleCallRejected);
     _webSocketService.on('call_timeout', _handleCallTimeout);
     _webSocketService.on('call_cancelled', _handleCallCancelled);
+    
+    // NEW: Listen for connection status events
+    _webSocketService.on('call_ready_to_connect', _handleReadyToConnect);
+    _webSocketService.on('call_connected', _handleCallConnected);
+    _webSocketService.on('call_failed', _handleCallFailed);
 
     debugPrint('CallInvitationService initialized');
   }
@@ -348,6 +362,76 @@ class CallInvitationService {
     _callTimeouts.remove(callId);
   }
 
+  /// NEW: Handle call ready to connect event from backend
+  /// This means both users have accepted and should now join Agora
+  void _handleReadyToConnect(dynamic data) {
+    try {
+      final callId = data['callId'] as String;
+      final channelName = data['channelName'] as String?;
+      final token = data['token'] as String?;
+
+      debugPrint('Call ready to connect: $callId');
+
+      // Emit connection status event
+      _connectionStatusController.add({
+        'event': 'ready_to_connect',
+        'callId': callId,
+        'channelName': channelName,
+        'token': token,
+        'status': CallConnectionStatus.connecting,
+      });
+    } catch (e) {
+      debugPrint('Error handling call ready to connect: $e');
+    }
+  }
+
+  /// NEW: Handle call connected event from backend
+  /// This means both users are in the Agora channel
+  void _handleCallConnected(dynamic data) {
+    try {
+      final callId = data['callId'] as String;
+
+      debugPrint('Call connected: $callId');
+
+      // Emit connection status event
+      _connectionStatusController.add({
+        'event': 'connected',
+        'callId': callId,
+        'status': CallConnectionStatus.connected,
+      });
+    } catch (e) {
+      debugPrint('Error handling call connected: $e');
+    }
+  }
+
+  /// NEW: Handle call failed event from backend
+  /// User is offline, unreachable, or network error
+  void _handleCallFailed(dynamic data) {
+    try {
+      final callId = data['callId'] as String;
+      final reason = data['reason'] as String?;
+
+      debugPrint('Call failed: $callId, reason: $reason');
+
+      // Emit connection status event
+      _connectionStatusController.add({
+        'event': 'failed',
+        'callId': callId,
+        'reason': reason,
+        'status': CallConnectionStatus.failed,
+      });
+
+      // Update state to clear invitation
+      _currentState = _currentState.copyWith(
+        currentInvitation: null,
+        outgoingInvitation: null,
+      );
+      _callStateController.add(_currentState);
+    } catch (e) {
+      debugPrint('Error handling call failed: $e');
+    }
+  }
+
   /// Clear missed calls
   void clearMissedCalls() {
     _currentState = _currentState.copyWith(missedCalls: []);
@@ -362,6 +446,7 @@ class CallInvitationService {
     _callTimeoutController.close();
     _callCancelledController.close();
     _callStateController.close();
+    _connectionStatusController.close(); // NEW: Close connection status stream
 
     for (final timer in _callTimeouts.values) {
       timer.cancel();

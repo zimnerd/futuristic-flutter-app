@@ -61,6 +61,7 @@ import 'data/services/ai_companion_service.dart';
 import 'presentation/navigation/app_router.dart';
 import 'presentation/theme/pulse_theme.dart';
 import 'presentation/widgets/auto_login_wrapper.dart';
+import 'presentation/widgets/call/call_overlay_handler.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'services/discovery_prefetch_manager.dart';
 
@@ -416,13 +417,15 @@ class PulseDatingApp extends StatelessWidget {
             chatRepository: chatRepository,
             databaseService: databaseService,
             child: AutoLoginWrapper(
-              child: MaterialApp.router(
-                title: AppConstants.appName,
-                theme: PulseTheme.light,
-                darkTheme: PulseTheme.dark,
-                themeMode: ThemeMode.system,
-                debugShowCheckedModeBanner: false,
-                routerConfig: AppRouter.router,
+              child: CallOverlayHandler(
+                child: MaterialApp.router(
+                  title: AppConstants.appName,
+                  theme: PulseTheme.light,
+                  darkTheme: PulseTheme.dark,
+                  themeMode: ThemeMode.system,
+                  debugShowCheckedModeBanner: false,
+                  routerConfig: AppRouter.router,
+                ),
               ),
             ),
           );
