@@ -63,27 +63,10 @@ class _WhoLikedYouScreenState extends State<WhoLikedYouScreen> {
 
   bool _isPremiumUser(BuildContext context) {
     final premiumState = context.watch<PremiumBloc>().state;
-    print('🔍 WHO_LIKED_YOU: Premium state type: ${premiumState.runtimeType}');
-    
     if (premiumState is PremiumLoaded) {
-      final hasSubscription = premiumState.subscription != null;
       final isActive = premiumState.subscription?.isActive ?? false;
-      print(
-        '🎫 WHO_LIKED_YOU: HasSubscription: $hasSubscription, IsActive: $isActive',
-      );
-
-      if (hasSubscription) {
-        print(
-          '📋 WHO_LIKED_YOU: Subscription - ID: ${premiumState.subscription!.id}, Status: ${premiumState.subscription!.status}',
-        );
-      }
-      
       return isActive;
     }
-
-    print(
-      '⚠️  WHO_LIKED_YOU: Premium state is NOT PremiumLoaded, returning false',
-    );
     return false;
   }
 

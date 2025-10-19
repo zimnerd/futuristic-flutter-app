@@ -1384,7 +1384,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
                     const Icon(Icons.timer, color: Colors.white, size: 24),
                     const SizedBox(width: 8),
                     Text(
-                      '${remainingMinutes}:${remainingSeconds.toString().padLeft(2, '0')}',
+                      '$remainingMinutes:${remainingSeconds.toString().padLeft(2, '0')}',
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 32,
