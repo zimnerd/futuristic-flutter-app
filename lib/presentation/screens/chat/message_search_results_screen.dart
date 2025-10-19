@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'dart:async';
 import '../../../core/theme/pulse_design_system.dart';
 import '../../../data/models/chat_model.dart';
 import '../../../blocs/chat_bloc.dart';
@@ -39,6 +40,7 @@ class _MessageSearchResultsScreenState
   String? _selectedConversation;
   DateTimeRange? _selectedDateRange;
   bool _showFilters = false;
+  Timer? _debounceTimer; // ✅ Added for search debouncing
 
   @override
   void initState() {
@@ -49,13 +51,30 @@ class _MessageSearchResultsScreenState
     }
     _selectedConversation = widget.conversationId;
     _loadRecentSearches();
+
+    // ✅ Add listener for real-time search with debouncing
+    _searchController.addListener(_onSearchTextChanged);
   }
 
   @override
   void dispose() {
+    _debounceTimer?.cancel(); // ✅ Cancel timer on dispose
+    _searchController.removeListener(_onSearchTextChanged);
     _searchController.dispose();
     _searchFocus.dispose();
     super.dispose();
+  }
+
+  // ✅ Debounced search handler
+  void _onSearchTextChanged() {
+    _debounceTimer?.cancel();
+    if (_searchController.text.trim().isEmpty) {
+      return;
+    }
+
+    _debounceTimer = Timer(const Duration(milliseconds: 300), () {
+      _performSearch(_searchController.text);
+    });
   }
 
   void _loadRecentSearches() {
@@ -87,15 +106,10 @@ class _MessageSearchResultsScreenState
     _saveRecentSearch(query);
     HapticFeedback.lightImpact();
 
-    // TODO: Implement SearchMessages event in ChatBloc
-    // context.read<ChatBloc>().add(
-    //       SearchMessages(
-    //         query: query,
-    //         conversationId: _selectedConversation,
-    //         startDate: _selectedDateRange?.start,
-    //         endDate: _selectedDateRange?.end,
-    //       ),
-    //     );
+    // Trigger search via ChatBloc
+    context.read<ChatBloc>().add(
+      SearchMessages(query: query, conversationId: _selectedConversation),
+    );
   }
 
   void _jumpToMessage(MessageModel message) {
@@ -129,13 +143,11 @@ class _MessageSearchResultsScreenState
                     icon: const Icon(Icons.clear, color: Colors.white),
                     onPressed: () {
                       _searchController.clear();
-                      setState(() {});
                     },
                   )
                 : null,
           ),
-          onSubmitted: _performSearch,
-          onChanged: (value) => setState(() {}),
+          // Search is triggered automatically via debounced listener
         ),
         actions: [
           IconButton(
@@ -158,22 +170,27 @@ class _MessageSearchResultsScreenState
           // Search results
           Expanded(
             child: BlocBuilder<ChatBloc, ChatState>(
+              buildWhen: (previous, current) {
+                // Only rebuild for search-related state changes
+                return current is MessageSearchLoading ||
+                    current is MessageSearchLoaded ||
+                    current is MessageSearchError;
+              },
               builder: (context, state) {
-                // TODO: Implement ChatSearching and ChatSearchResults states in ChatBloc
-                // if (state is ChatSearching) {
-                //   return _buildLoadingState();
-                // }
+                if (state is MessageSearchLoading) {
+                  return _buildLoadingState();
+                }
 
-                // if (state is ChatSearchResults) {
-                //   if (state.results.isEmpty) {
-                //     return _buildEmptyResults();
-                //   }
-                //   return _buildSearchResults(state.results);
-                // }
+                if (state is MessageSearchLoaded) {
+                  if (state.searchResults.isEmpty) {
+                    return _buildEmptyResults();
+                  }
+                  return _buildSearchResults(state.searchResults);
+                }
 
-                // if (state is ChatError) {
-                //   return _buildErrorState(state.message);
-                // }
+                if (state is MessageSearchError) {
+                  return _buildErrorState(state.error);
+                }
 
                 // Show recent searches when no search performed
                 return _buildRecentSearches();
@@ -297,7 +314,17 @@ class _MessageSearchResultsScreenState
     );
   }
 
-  Widget _buildSearchResults(List<MessageSearchResult> results) {
+  Widget _buildSearchResults(List<MessageModel> messages) {
+    // Convert MessageModel to MessageSearchResult
+    final results = messages.map((message) {
+      return MessageSearchResult(
+        message: message,
+        senderName: message.senderUsername,
+        conversationName:
+            message.conversationId, // Will show conversation ID for now
+      );
+    }).toList();
+
     // Group by conversation
     final groupedResults = <String, List<MessageSearchResult>>{};
     for (final result in results) {
@@ -310,9 +337,10 @@ class _MessageSearchResultsScreenState
       itemCount: groupedResults.length,
       itemBuilder: (context, index) {
         final conversationName = groupedResults.keys.elementAt(index);
-        final messages = groupedResults[conversationName]!;
+        final conversationMessages = groupedResults[conversationName]!;
 
         return Column(
+          key: ValueKey(conversationName), // ✅ Added ValueKey for performance
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Conversation header
@@ -329,7 +357,9 @@ class _MessageSearchResultsScreenState
             ),
 
             // Messages in this conversation
-            ...messages.map((result) => _buildMessageResultCard(result)),
+            ...conversationMessages.map(
+              (result) => _buildMessageResultCard(result),
+            ),
 
             const SizedBox(height: 16),
           ],
