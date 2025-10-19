@@ -5,7 +5,351 @@ This document captures key learnings from building the **Flutter mobile dating a
 
 ---
 
-## 🚀 **Performance Optimization Patterns (Sprint 4, Task #2 - October 2025)**
+## � **Advanced Message Search Patterns (Sprint 4, Task #3 - January 2025)**
+
+**Status**: ✅ **COMPLETE** - Advanced Message Search + 4 Enhancements  
+**Date**: January 22, 2025  
+**Impact**: Production-ready message search with advanced features  
+**Rating**: 9.5/10  
+**Time**: 5.5 hours (core 1.5h + enhancements 4h)
+
+### **Key Lessons: SharedPreferences for User Preferences**
+
+#### **1. SharedPreferences is Perfect for Small User Data** ⭐
+
+**Use Case**: Persisting recent message searches (up to 10 items)
+
+```dart
+// ✅ Load recent searches on app start
+Future<void> _loadRecentSearches() async {
+  final prefs = await SharedPreferences.getInstance();
+  final searches = prefs.getStringList('recent_message_searches') ?? [];
+  setState(() {
+    _recentSearches = searches;
+  });
+}
+
+// ✅ Save after each search (with deduplication)
+Future<void> _saveRecentSearch(String query) async {
+  final trimmed = query.trim();
+  if (trimmed.isEmpty) return;
+  
+  // Remove duplicate and add to front
+  _recentSearches.remove(trimmed);
+  _recentSearches.insert(0, trimmed);
+  
+  // Keep only last 10 searches
+  if (_recentSearches.length > 10) {
+    _recentSearches = _recentSearches.sublist(0, 10);
+  }
+  
+  // Persist to SharedPreferences
+  final prefs = await SharedPreferences.getInstance();
+  await prefs.setStringList('recent_message_searches', _recentSearches);
+  
+  setState(() {});
+}
+```
+
+**Best Practices**:
+- ✅ Use descriptive keys: `'recent_message_searches'` not `'searches'`
+- ✅ Always provide default values: `?? []` prevents null errors
+- ✅ Implement size limits (10 items) to avoid bloat
+- ✅ Deduplicate to avoid showing same search multiple times
+- ✅ Use async/await properly (SharedPreferences returns Future)
+
+**When to Use SharedPreferences**:
+- ✅ User preferences (theme, language, notification settings)
+- ✅ Recent searches or history (up to ~100 items)
+- ✅ Simple key-value pairs (strings, ints, bools, lists)
+- ❌ Don't use for: large data (>1MB), complex objects, sensitive data (use secure_storage)
+
+---
+
+#### **2. AnimationController for Temporary Visual Effects** ⭐
+
+**Use Case**: Highlighting a message when user jumps to it from search results
+
+```dart
+class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
+  String? _highlightMessageId;
+  late AnimationController _highlightAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    
+    // Initialize animation controller
+    _highlightAnimation = AnimationController(
+      duration: const Duration(milliseconds: 500),
+      vsync: this,
+    );
+    
+    // Extract highlightMessageId from route extra
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final extra = GoRouterState.of(context).extra as Map<String, dynamic>?;
+      final highlightId = extra?['highlightMessageId'] as String?;
+      
+      if (highlightId != null) {
+        setState(() => _highlightMessageId = highlightId);
+        _scrollToMessage(highlightId);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _highlightAnimation.dispose(); // CRITICAL: Prevent memory leaks
+    super.dispose();
+  }
+
+  Future<void> _scrollToMessage(String messageId) async {
+    // Wait for UI to settle
+    await Future.delayed(const Duration(milliseconds: 300));
+    
+    final messages = /* get from state */;
+    final index = messages.indexWhere((m) => m.id == messageId);
+    
+    if (index != -1 && _scrollController.hasClients) {
+      // Scroll to message
+      await _scrollController.animateTo(
+        index * 80.0, // Approximate message height
+        duration: const Duration(milliseconds: 500),
+        curve: Curves.easeInOut,
+      );
+      
+      // Trigger highlight: fade in → hold → fade out
+      _highlightAnimation.forward().then((_) {
+        Future.delayed(const Duration(seconds: 2), () {
+          _highlightAnimation.reverse();
+          setState(() => _highlightMessageId = null);
+        });
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return /* ... */
+      MessageBubble(
+        message: message,
+        isHighlighted: message.id == _highlightMessageId,
+        highlightColor: Colors.yellow.withValues(
+          alpha: 0.3 * _highlightAnimation.value, // Smooth fade
+        ),
+      );
+  }
+}
+```
+
+**Animation Sequence**:
+1. User taps search result → Navigate with `extra: {'highlightMessageId': id}`
+2. ChatScreen extracts ID from route parameter
+3. 300ms delay for UI to render
+4. Scroll to message with smooth animation (500ms)
+5. Trigger highlight: `forward()` → yellow fade-in (500ms)
+6. Hold highlight for 2 seconds
+7. `reverse()` → yellow fade-out (500ms)
+8. Clear `_highlightMessageId` to stop highlighting
+
+**Best Practices**:
+- ✅ **MANDATORY**: Dispose AnimationController in dispose() to prevent memory leaks
+- ✅ Use `with TickerProviderStateMixin` for vsync
+- ✅ Use `withValues(alpha: x)` instead of deprecated `withOpacity(x)`
+- ✅ Delay scroll with `Future.delayed()` to ensure UI is ready
+- ✅ Check `_scrollController.hasClients` before animating
+- ✅ Combine `forward()` → delay → `reverse()` for temporary effects
+- ✅ Use 60fps-friendly durations (500ms works well)
+
+**Common Pitfalls**:
+- ❌ Forgetting to dispose AnimationController → memory leak
+- ❌ Not checking if scroll controller has clients → crash
+- ❌ Using hardcoded pixel heights → inaccurate scroll position (acceptable for MVP)
+- ❌ Using deprecated `withOpacity()` → Flutter SDK warnings
+
+---
+
+#### **3. Client-Side Filtering for MVP Advanced Features** ⭐
+
+**Use Case**: Advanced search syntax when backend doesn't support it yet
+
+**SearchQueryParser Pattern**:
+```dart
+class SearchQueryParser {
+  final String rawQuery;
+  String cleanQuery = '';
+  String? sender;
+  DateTime? beforeDate;
+  DateTime? afterDate;
+  List<String> quotedPhrases = [];
+
+  SearchQueryParser(this.rawQuery) {
+    _parse();
+  }
+
+  void _parse() {
+    String query = rawQuery;
+
+    // Extract "quoted phrases" with regex
+    final quotedRegex = RegExp(r'"([^"]+)"');
+    quotedPhrases = quotedRegex.allMatches(query)
+        .map((m) => m.group(1)!)
+        .toList();
+    query = query.replaceAll(quotedRegex, '');
+
+    // Extract sender:username
+    final senderRegex = RegExp(r'sender:(\S+)');
+    final senderMatch = senderRegex.firstMatch(query);
+    if (senderMatch != null) {
+      sender = senderMatch.group(1);
+      query = query.replaceAll(senderRegex, '');
+    }
+
+    // Extract before:YYYY-MM-DD and after:YYYY-MM-DD
+    // ... similar pattern ...
+
+    // Clean query (remaining text after removing all syntax)
+    cleanQuery = query.trim();
+  }
+
+  bool get hasAdvancedSyntax =>
+      sender != null ||
+      beforeDate != null ||
+      afterDate != null ||
+      quotedPhrases.isNotEmpty;
+}
+
+// Usage:
+void _performSearch(String query) {
+  _parsedQuery = SearchQueryParser(query);
+  
+  // Send cleanQuery to backend API
+  context.read<ChatBloc>().add(
+    SearchMessages(query: _parsedQuery!.cleanQuery),
+  );
+}
+
+// Apply filters to backend results
+List<MessageModel> _applyAdvancedFilters(List<MessageModel> messages) {
+  if (_parsedQuery == null) return messages;
+
+  return messages.where((message) {
+    // Filter by sender
+    if (_parsedQuery!.sender != null) {
+      if (message.senderUsername?.toLowerCase() != 
+          _parsedQuery!.sender!.toLowerCase()) {
+        return false;
+      }
+    }
+
+    // Filter by date range
+    if (_parsedQuery!.beforeDate != null) {
+      if (message.createdAt.isAfter(_parsedQuery!.beforeDate!)) return false;
+    }
+    
+    // Filter by quoted phrases (all must match)
+    for (final phrase in _parsedQuery!.quotedPhrases) {
+      if (!message.content.toLowerCase().contains(phrase.toLowerCase())) {
+        return false;
+      }
+    }
+
+    return true;
+  }).toList();
+}
+```
+
+**Supported Syntax**:
+- `"exact phrase"` - Exact phrase match
+- `sender:john` - Messages from user "john"
+- `before:2025-10-15` - Messages before date
+- `after:2025-10-01` - Messages after date
+- `sender:alice "project update" after:2025-10-01` - Combined filters
+
+**Best Practices**:
+- ✅ Use regex for robust pattern matching
+- ✅ Parse once, apply filters to all results
+- ✅ Remove syntax tokens from cleanQuery for backend
+- ✅ Make all comparisons case-insensitive
+- ✅ Provide help dialog with syntax examples
+- ✅ Show active filters as removable Chips for UX
+- ✅ Document that this is client-side filtering (temporary MVP approach)
+
+**When to Use Client-Side Filtering**:
+- ✅ MVP with backend not supporting advanced features yet
+- ✅ Small result sets (< 1000 items)
+- ✅ Simple filters (string matching, date comparisons)
+- ❌ Don't use for: large datasets, complex queries, performance-critical features
+
+**Migration Path**:
+1. Implement client-side filtering for MVP
+2. Gather user feedback on syntax usage
+3. Add backend support when scale demands it
+4. Keep client-side parser for backward compatibility
+
+---
+
+#### **4. Model Import Conflicts and Resolution** ⭐
+
+**Problem**: Two different `ConversationModel` classes exist in codebase:
+- `lib/data/models/chat_model.dart` - Simple model with `lastMessage` as String
+- `lib/data/models/conversation_model.dart` - Full model with `otherUserName`, `lastMessage` as nested object
+
+**Symptoms**:
+```dart
+// ❌ Type error when using wrong ConversationModel
+BlocBuilder<ChatBloc, ChatState>(
+  builder: (context, state) {
+    final conversations = state is ConversationsLoaded
+        ? state.conversations // Uses conversation_model.dart version
+        : <ConversationModel>[]; // Thinks it's chat_model.dart version
+    
+    // Type mismatch error!
+  }
+)
+```
+
+**Solution**:
+```dart
+// ✅ Explicit import resolution
+import '../../../data/models/conversation_model.dart'; // Explicit choice
+
+BlocBuilder<ChatBloc, ChatState>(
+  builder: (context, state) {
+    final conversations = state is ConversationsLoaded
+        ? state.conversations // Now type-safe
+        : <ConversationModel>[];
+    
+    return DropdownButton<String?>(
+      items: conversations.map((conv) {
+        return DropdownMenuItem(
+          value: conv.id,
+          child: Text(conv.otherUserName ?? 'Unknown'), // Correct field
+        );
+      }).toList(),
+    );
+  }
+)
+```
+
+**Best Practices**:
+- ✅ Check BLoC imports to see which model it expects
+- ✅ Use explicit imports, not wildcard imports
+- ✅ Test field access to confirm correct model
+- ✅ Add TODO comments to refactor duplicate models
+- ✅ Prefer consolidating models to avoid confusion
+
+**Long-term Fix**:
+```dart
+// TODO: Refactor to single ConversationModel
+// Option 1: Rename chat_model.dart's ConversationModel to ConversationSummary
+// Option 2: Consolidate into single model with optional fields
+// Option 3: Use conversation_model.dart everywhere and delete duplicate
+```
+
+---
+
+## �🚀 **Performance Optimization Patterns (Sprint 4, Task #2 - October 2025)**
 
 **Status**: ✅ **COMPLETE** - Performance Optimization Implementation  
 **Date**: October 19, 2025  

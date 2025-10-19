@@ -33,6 +33,11 @@ import 'data/services/matching_service.dart';
 import 'data/services/preferences_service.dart';
 import 'data/services/discovery_service.dart';
 import 'data/services/live_streaming_service.dart';
+import 'data/services/profile_service.dart';
+import 'data/services/photo_manager_service.dart';
+import 'data/services/auth_service.dart';
+import 'data/services/temp_media_upload_service.dart';
+import 'package:dio/dio.dart';
 import 'data/services/token_service.dart';
 import 'data/services/message_database_service.dart';
 import 'data/services/background_sync_manager.dart';
@@ -42,6 +47,7 @@ import 'core/services/location_service.dart';
 import 'domain/repositories/user_repository.dart';
 import 'presentation/blocs/auth/auth_bloc.dart';
 import 'presentation/blocs/user/user_bloc.dart';
+import 'presentation/blocs/profile/profile_bloc.dart';
 import 'presentation/blocs/event/event_bloc.dart';
 import 'presentation/blocs/matching/matching_bloc.dart';
 import 'presentation/blocs/match/match_bloc.dart';
@@ -241,6 +247,30 @@ class PulseDatingApp extends StatelessWidget {
             create: (context) =>
                 LiveStreamingService(context.read<ApiClient>()),
           ),
+          // Add AuthService for ProfileService dependency
+          RepositoryProvider<AuthService>(
+            create: (context) => AuthService(
+              apiClient: context.read<ApiClient>(),
+              secureStorage: hiveStorage.secureStorage,
+            ),
+          ),
+          // Add TempMediaUploadService for PhotoManagerService dependency
+          RepositoryProvider<TempMediaUploadService>(
+            create: (context) => TempMediaUploadService(Dio()),
+          ),
+          // Add ProfileService
+          RepositoryProvider<ProfileService>(
+            create: (context) => ProfileService(
+              apiClient: context.read<ApiClient>(),
+              authService: context.read<AuthService>(),
+            ),
+          ),
+          // Add PhotoManagerService
+          RepositoryProvider<PhotoManagerService>(
+            create: (context) => PhotoManagerService(
+              uploadService: context.read<TempMediaUploadService>(),
+            ),
+          ),
 
           // Initialize data sources
           RepositoryProvider<UserRemoteDataSource>(
@@ -339,6 +369,13 @@ class PulseDatingApp extends StatelessWidget {
           BlocProvider<LiveStreamingBloc>(
             create: (context) => LiveStreamingBloc(
               context.read<LiveStreamingService>(),
+            ),
+          ),
+          // ProfileBloc for profile screen
+          BlocProvider<ProfileBloc>(
+            create: (context) => ProfileBloc(
+              profileService: context.read<ProfileService>(),
+              photoManager: context.read<PhotoManagerService>(),
             ),
           ),
         ],
