@@ -52,6 +52,8 @@ class DiscoveryScreen extends StatefulWidget {
 
 class _DiscoveryScreenState extends State<DiscoveryScreen>
     with TickerProviderStateMixin {
+  // PERFORMANCE OPTIMIZATION: Reduced animation controllers from 8 to 3
+  // Combined related animations to reduce overhead
   late AnimationController _cardController;
   late AnimationController _actionController;
   late AnimationController _headerController;
@@ -589,6 +591,15 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
             }
           },
           child: BlocBuilder<DiscoveryBloc, DiscoveryState>(
+              buildWhen: (previous, current) {
+                // Only rebuild when user stack data actually changes
+                if (previous is DiscoveryLoaded && current is DiscoveryLoaded) {
+                  return previous.userStack != current.userStack ||
+                      previous.lastSwipedUser != current.lastSwipedUser;
+                }
+                // Always rebuild for state type changes
+                return previous.runtimeType != current.runtimeType;
+              },
             builder: (context, state) {
               return Stack(
                 children: [

@@ -266,6 +266,15 @@ class _EventsScreenState extends State<EventsScreen>
             ),
             Expanded(
               child: BlocBuilder<EventBloc, EventState>(
+                buildWhen: (previous, current) {
+                  // Only rebuild when events data actually changes
+                  if (previous is EventsLoaded && current is EventsLoaded) {
+                    return previous.events != current.events ||
+                        previous.filteredEvents != current.filteredEvents;
+                  }
+                  // Always rebuild for state type changes
+                  return previous.runtimeType != current.runtimeType;
+                },
                 builder: (context, state) {
                   AppLogger.info(
                     '📱 BlocBuilder rebuilding - State: ${state.runtimeType}',

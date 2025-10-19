@@ -87,6 +87,15 @@ class _ChatListScreenState extends State<ChatListScreen> {
           // Main content
           Expanded(
             child: BlocBuilder<ChatBloc, ChatState>(
+              buildWhen: (previous, current) {
+                // Only rebuild when conversations actually change
+                if (previous is ConversationsLoaded &&
+                    current is ConversationsLoaded) {
+                  return previous.conversations != current.conversations;
+                }
+                // Always rebuild for state type changes (Loading -> Loaded, etc.)
+                return previous.runtimeType != current.runtimeType;
+              },
               builder: (context, state) {
                 if (state is ChatLoading) {
                   return const Center(

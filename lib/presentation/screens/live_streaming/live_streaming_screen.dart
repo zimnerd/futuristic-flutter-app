@@ -219,6 +219,14 @@ class _LiveStreamingScreenState extends State<LiveStreamingScreen>
                 onChanged: _onSearchChanged,
               )
             : BlocBuilder<LiveStreamingBloc, LiveStreamingState>(
+                buildWhen: (previous, current) {
+                  // Only rebuild when streams data changes
+                  if (previous is LiveStreamsLoaded &&
+                      current is LiveStreamsLoaded) {
+                    return previous.streams.length != current.streams.length;
+                  }
+                  return previous.runtimeType != current.runtimeType;
+                },
                 builder: (context, state) {
                   String subtitle = '';
                   if (state is LiveStreamsLoaded) {
@@ -314,6 +322,14 @@ class _LiveStreamingScreenState extends State<LiveStreamingScreen>
               }
             },
             child: BlocBuilder<LiveStreamingBloc, LiveStreamingState>(
+              buildWhen: (previous, current) {
+                // Only rebuild when streams data changes
+                if (previous is LiveStreamsLoaded &&
+                    current is LiveStreamsLoaded) {
+                  return previous.streams != current.streams;
+                }
+                return previous.runtimeType != current.runtimeType;
+              },
               builder: (context, state) {
               if (state is LiveStreamingLoading && _selectedCategory == null) {
                 // Show skeleton loading cards
@@ -361,6 +377,13 @@ class _LiveStreamingScreenState extends State<LiveStreamingScreen>
 
   Widget _buildMyStreamsTab() {
     return BlocBuilder<LiveStreamingBloc, LiveStreamingState>(
+      buildWhen: (previous, current) {
+        // Only rebuild when streams data changes
+        if (previous is LiveStreamsLoaded && current is LiveStreamsLoaded) {
+          return previous.streams != current.streams;
+        }
+        return previous.runtimeType != current.runtimeType;
+      },
       builder: (context, state) {
         if (state is LiveStreamingLoading) {
           // Show skeleton loading cards

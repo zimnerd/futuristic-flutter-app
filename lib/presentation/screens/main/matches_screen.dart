@@ -104,6 +104,14 @@ class _MatchesScreenState extends State<MatchesScreen>
       child: KeyboardDismissibleScaffold(
         body: SafeArea(
           child: BlocConsumer<MatchBloc, MatchState>(
+            buildWhen: (previous, current) {
+              // Only rebuild when matches data actually changes
+              if (previous is MatchesLoaded && current is MatchesLoaded) {
+                return previous.matches != current.matches;
+              }
+              // Always rebuild for state type changes
+              return previous.runtimeType != current.runtimeType;
+            },
             listener: (context, state) {
               if (state is MatchError) {
                 PulseToast.error(
