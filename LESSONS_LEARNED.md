@@ -5,6 +5,324 @@ This document captures key learnings from building the **Flutter mobile dating a
 
 ---
 
+## 🚨🚨 **CRITICAL: Infinite Token Refresh Loop Prevention (January 2026)**
+
+**Status**: ✅ **FIXED** - Added recursion protection and retry limits  
+**Date**: January 2026  
+**Impact**: **CRITICAL** - Prevents app from becoming completely unusable due to infinite 401 loop  
+**Rating**: 10/10 (App-blocking bug)  
+**Component**: ApiClient (`/mobile/lib/core/network/api_client.dart`)
+
+### **Problem: Infinite Recursion on Refresh Endpoint 401**
+
+**What Happened**:
+```
+User logs in with expired refresh token
+    ↓
+App makes ANY API request → Gets 401
+    ↓
+Interceptor: "Let's refresh the token!"
+    ↓
+POST /auth/refresh with expired token
+    ↓
+Backend: 401 "Invalid refresh token"
+    ↓
+Interceptor: "401! Let's refresh the token!" ← INFINITE LOOP!
+    ↓
+POST /auth/refresh (same expired token)
+    ↓
+Backend: 401 "Invalid refresh token"
+    ↓
+[APP COMPLETELY BLOCKED - INFINITE LOOP]
+```
+
+**Root Cause**:
+- ApiClient 401 interceptor catches ALL 401 errors including from `/auth/refresh` itself
+- When refresh endpoint returns 401, interceptor triggers another refresh attempt
+- No check to prevent recursive refresh attempts on the refresh endpoint
+- No retry limit to break out of loop
+- App stuck forever, never logs user out
+
+### **Solution: Triple Protection Strategy**
+
+**1. Skip Refresh Endpoint (Prevent Recursion)**:
+```dart
+// ✅ CRITICAL FIX: Skip refresh attempts for the refresh endpoint itself
+if (error.requestOptions.path.contains('/auth/refresh')) {
+  _logger.e('🚫 401 on refresh endpoint - token is invalid, forcing logout');
+  _refreshAttempts = 0; // Reset counter
+  
+  await GlobalAuthHandler.instance.handleAuthenticationFailure(
+    reason: 'Refresh token is invalid or expired',
+    clearTokens: true,
+  );
+
+  return handler.resolve(/* user-friendly error */);
+}
+```
+
+**2. Limit Retry Attempts (Prevent Endless Loops)**:
+```dart
+// ✅ CRITICAL FIX: Limit refresh attempts to prevent infinite loops
+if (_refreshAttempts >= _maxRefreshAttempts) {
+  _logger.e('🚫 Maximum refresh attempts ($_maxRefreshAttempts) reached, forcing logout');
+  _refreshAttempts = 0; // Reset counter
+  
+  await GlobalAuthHandler.instance.handleAuthenticationFailure(
+    reason: 'Maximum token refresh attempts exceeded',
+    clearTokens: true,
+  );
+
+  return handler.resolve(/* user-friendly error */);
+}
+```
+
+**3. Track and Reset Counter**:
+```dart
+class ApiClient {
+  // ✅ Track refresh attempts to prevent infinite loops
+  int _refreshAttempts = 0;
+  static const int _maxRefreshAttempts = 3;
+  
+  // In interceptor:
+  _refreshAttempts++; // Increment before attempt
+  await _attemptTokenRefresh();
+  _refreshAttempts = 0; // Reset on success
+}
+```
+
+### **Key Learnings**
+
+1. **Always Exclude Retry Logic from Retry Endpoints**
+   - Never apply refresh logic to the refresh endpoint itself
+   - Check request path before triggering refresh
+   - Prevents infinite recursion
+
+2. **Implement Retry Limits for All Retry Logic**
+   - Set maximum attempts (e.g., 3) before giving up
+   - Track attempts across requests
+   - Reset counter on success
+   - Force logout/cleanup after max attempts
+
+3. **Early Detection is Critical**
+   - Invalid refresh token = immediate logout
+   - Don't retry with same invalid credentials
+   - Clear state and force re-authentication
+
+4. **User-Friendly Error Messages**
+   - Don't show technical "Invalid refresh token" to users
+   - Show "Your session has expired. Please log in again."
+   - Return 401 with friendly message instead of throwing
+
+5. **State Management**
+   - Reset counters after successful operations
+   - Reset counters after forced logout
+   - Prevents stale state from affecting future operations
+
+### **Testing Checklist**
+
+- [ ] Test with expired refresh token
+- [ ] Verify logout triggered after max attempts
+- [ ] Verify no infinite loop on refresh endpoint 401
+- [ ] Test successful refresh resets counter
+- [ ] Verify user-friendly error messages shown
+- [ ] Test multiple simultaneous 401 errors
+
+---
+
+## 🚨 **CRITICAL: FCM Token Registration Diagnostic Logging (January 2026)**
+
+**Status**: ✅ **ADDED** - Comprehensive logging for diagnosing token issues  
+**Date**: January 2026  
+**Impact**: **HIGH** - Enables diagnosing why iOS/Android not receiving push notifications  
+**Rating**: 9/10 (Essential for debugging)  
+**Component**: FirebaseNotificationService (`/mobile/lib/services/firebase_notification_service.dart`)
+
+### **Problem: Silent FCM Token Registration Failures**
+
+**Symptoms**:
+- iOS not capturing FCM token at all
+- Android not updating FCM token on login/app launch
+- Calls timeout because recipient never receives notification
+- No diagnostic information to determine root cause
+
+**What Could Fail Silently**:
+1. `Firebase.initializeApp()` not called before FCM initialization
+2. `_messaging.getToken()` returns null (no logging to indicate why)
+3. Notification permissions denied by user
+4. Backend registration API call fails silently
+5. Auth token missing when trying to register
+6. Network errors during registration
+
+### **Solution: Comprehensive Diagnostic Logging**
+
+**1. Initialization Logging**:
+```dart
+Future<void> initialize({String? authToken}) async {
+  try {
+    AppLogger.info('🔔 === FCM INITIALIZATION START ===');
+    AppLogger.info('📱 Platform: ${Platform.isIOS ? "iOS" : "Android"}');
+    AppLogger.info('🔑 Auth token provided: ${authToken != null}');
+    AppLogger.info('🔑 Current auth token in ApiClient: ${_apiClient.authToken != null}');
+    
+    // Get Firebase messaging instance
+    try {
+      _messaging = FirebaseMessaging.instance;
+      AppLogger.info('✅ Firebase messaging instance obtained');
+    } catch (e) {
+      AppLogger.error('❌ CRITICAL: Failed to get Firebase messaging instance: $e');
+      AppLogger.error('⚠️ This means Firebase.initializeApp() may not have been called!');
+      rethrow;
+    }
+    
+    // ... rest of initialization
+  }
+}
+```
+
+**2. Permission Status Logging**:
+```dart
+Future<void> _requestNotificationPermissions() async {
+  AppLogger.info('📋 Requesting notification permissions from OS...');
+  
+  final settings = await _messaging?.requestPermission(...);
+  
+  AppLogger.info('📋 Permission request completed');
+  AppLogger.info('✅ Authorization status: ${settings?.authorizationStatus}');
+  AppLogger.info('🔔 Alert enabled: ${settings?.alert}');
+  AppLogger.info('🔊 Sound enabled: ${settings?.sound}');
+  
+  if (settings?.authorizationStatus == AuthorizationStatus.denied) {
+    AppLogger.warning('⚠️ NOTIFICATION PERMISSIONS DENIED BY USER!');
+    AppLogger.warning('⚠️ App will NOT receive push notifications');
+    AppLogger.warning('⚠️ User must manually enable in device settings');
+  }
+}
+```
+
+**3. Token Capture Logging**:
+```dart
+AppLogger.info('📱 Requesting FCM token from Firebase...');
+try {
+  _fcmToken = await _messaging?.getToken();
+  
+  if (_fcmToken != null) {
+    AppLogger.info('✅ FCM Token obtained successfully!');
+    AppLogger.info('🔑 Token (first 30 chars): ${_fcmToken!.substring(0, 30)}...');
+    AppLogger.info('📏 Token length: ${_fcmToken!.length} characters');
+  } else {
+    AppLogger.error('❌ CRITICAL: FCM Token is NULL!');
+    AppLogger.error('⚠️ Possible causes:');
+    AppLogger.error('  1. Firebase not properly initialized');
+    AppLogger.error('  2. Notification permissions denied');
+    AppLogger.error('  3. Device not connected to internet');
+    AppLogger.error('  4. Google Play Services not available (Android)');
+    AppLogger.error('  5. APNs not configured (iOS)');
+  }
+} catch (e, stackTrace) {
+  AppLogger.error('❌ CRITICAL: Exception getting FCM token: $e');
+  AppLogger.error('📚 Stack trace: $stackTrace');
+}
+```
+
+**4. Backend Registration Logging**:
+```dart
+Future<void> _registerTokenWithBackend(String token) async {
+  try {
+    AppLogger.info('📤 === BACKEND TOKEN REGISTRATION START ===');
+    
+    final userId = await _apiClient.getCurrentUserId();
+    if (userId == null) {
+      AppLogger.error('❌ CRITICAL: Cannot register FCM token - user ID is null!');
+      AppLogger.error('⚠️ This means:');
+      AppLogger.error('  1. User is not authenticated');
+      AppLogger.error('  2. Auth token is missing or invalid');
+      AppLogger.error('  3. Token service cannot extract user ID from token');
+      return;
+    }
+    
+    AppLogger.info('✅ User ID obtained: $userId');
+    AppLogger.info('🚀 Sending registration request to backend...');
+    AppLogger.info('🎯 Endpoint: POST /push-notifications/register-token');
+    
+    final response = await _apiClient.post(...);
+    
+    AppLogger.info('📥 Backend response received');
+    AppLogger.info('📊 Status code: ${response.statusCode}');
+    AppLogger.info('📄 Response data: ${response.data}');
+    
+    if (response.data['success'] == true) {
+      AppLogger.info('✅ === FCM TOKEN REGISTERED SUCCESSFULLY ===');
+    } else {
+      AppLogger.warning('❌ === BACKEND REJECTED TOKEN REGISTRATION ===');
+      AppLogger.warning('💬 Message: ${response.data['message']}');
+    }
+  } catch (e, stackTrace) {
+    AppLogger.error('❌ === TOKEN REGISTRATION FAILED ===');
+    AppLogger.error('💥 Exception: $e');
+    AppLogger.error('📚 Stack trace: $stackTrace');
+  }
+}
+```
+
+**5. Token Refresh Logging**:
+```dart
+_messaging?.onTokenRefresh.listen((String newToken) {
+  AppLogger.info('🔄 === FCM TOKEN REFRESHED BY FIREBASE ===');
+  AppLogger.info('🔑 New token (first 30 chars): ${newToken.substring(0, 30)}...');
+  AppLogger.info('📏 Token length: ${newToken.length} characters');
+  AppLogger.info('⏱️ Refresh timestamp: ${DateTime.now().toIso8601String()}');
+  
+  _fcmToken = newToken;
+  AppLogger.info('📤 Auto-registering refreshed token with backend...');
+  _registerTokenWithBackend(newToken);
+});
+```
+
+### **Key Learnings**
+
+1. **Log Every Critical Step**
+   - Firebase initialization
+   - Permission requests
+   - Token capture attempts
+   - Backend registration
+   - Token refresh events
+
+2. **Include Diagnostic Information**
+   - Platform (iOS/Android)
+   - Auth token availability
+   - Token length and preview
+   - Timestamps
+   - Stack traces on errors
+
+3. **Provide Actionable Error Messages**
+   - List possible causes when operations fail
+   - Guide developers to next debugging steps
+   - Distinguish between different failure modes
+
+4. **Silent Failures Are the Enemy**
+   - Never let operations fail without logging
+   - Catch exceptions at multiple levels
+   - Log both success and failure paths
+
+5. **Structure Logging for Searchability**
+   - Use consistent prefixes (🔔, ✅, ❌, ⚠️)
+   - Mark critical sections with ===
+   - Make logs easy to grep/search
+
+### **Diagnostic Workflow**
+
+**When calls not working**:
+1. Check logs for "FCM INITIALIZATION START"
+2. Verify "Firebase messaging instance obtained"
+3. Check permission status - look for "DENIED"
+4. Verify "FCM Token obtained successfully"
+5. Check "BACKEND TOKEN REGISTRATION START"
+6. Look for "FCM TOKEN REGISTERED SUCCESSFULLY"
+7. If any step fails, logs will indicate root cause
+
+---
+
 ## 🚨 **CRITICAL: Duplicate Call Protection (January 2026)**
 
 **Status**: ✅ **FIXED** - Dual delivery system with duplicate protection  

@@ -38,55 +38,127 @@ class FirebaseNotificationService {
   /// Initialize Firebase messaging and local notifications
   Future<void> initialize({String? authToken}) async {
     try {
-      AppLogger.info('🔔 Initializing Firebase notifications...');
+      AppLogger.info('🔔 === FCM INITIALIZATION START ===');
+      AppLogger.info('📱 Platform: ${Platform.isIOS ? "iOS" : "Android"}');
+      AppLogger.info('🔑 Auth token provided: ${authToken != null}');
+      AppLogger.info(
+        '🔑 Current auth token in ApiClient: ${_apiClient.authToken != null}',
+      );
 
       // Get Firebase messaging instance (Firebase should already be initialized)
-      _messaging = FirebaseMessaging.instance;
+      try {
+        _messaging = FirebaseMessaging.instance;
+        AppLogger.info('✅ Firebase messaging instance obtained');
+      } catch (e) {
+        AppLogger.error(
+          '❌ CRITICAL: Failed to get Firebase messaging instance: $e',
+        );
+        AppLogger.error(
+          '⚠️ This means Firebase.initializeApp() may not have been called!',
+        );
+        rethrow;
+      }
 
       // Request notification permissions
+      AppLogger.info('📋 Requesting notification permissions...');
       await _requestNotificationPermissions();
 
       // Initialize local notifications
+      AppLogger.info('🔔 Initializing local notifications...');
       await _initializeLocalNotifications();
 
       // Get FCM token
-      _fcmToken = await _messaging?.getToken();
-      AppLogger.info(
-        '📱 FCM Token obtained: ${_fcmToken != null ? "${_fcmToken!.substring(0, 20)}..." : "null"}',
-      );
+      AppLogger.info('📱 Requesting FCM token from Firebase...');
+      try {
+        _fcmToken = await _messaging?.getToken();
+        
+        if (_fcmToken != null) {
+          AppLogger.info('✅ FCM Token obtained successfully!');
+          AppLogger.info(
+            '🔑 Token (first 30 chars): ${_fcmToken!.substring(0, _fcmToken!.length < 30 ? _fcmToken!.length : 30)}...',
+          );
+          AppLogger.info('📏 Token length: ${_fcmToken!.length} characters');
+        } else {
+          AppLogger.error('❌ CRITICAL: FCM Token is NULL!');
+          AppLogger.error('⚠️ Possible causes:');
+          AppLogger.error('  1. Firebase not properly initialized');
+          AppLogger.error('  2. Notification permissions denied');
+          AppLogger.error('  3. Device not connected to internet');
+          AppLogger.error('  4. Google Play Services not available (Android)');
+          AppLogger.error('  5. APNs not configured (iOS)');
+        }
+      } catch (e, stackTrace) {
+        AppLogger.error('❌ CRITICAL: Exception getting FCM token: $e');
+        AppLogger.error('📚 Stack trace: $stackTrace');
+      }
 
       // Register token with backend if we have it
       if (_fcmToken != null) {
-        AppLogger.info('🚀 Registering FCM token with backend...');
+        AppLogger.info('� Attempting to register FCM token with backend...');
         await _registerTokenWithBackend(_fcmToken!);
       } else {
-        AppLogger.warning('⚠️ Cannot register FCM token: token not available');
+        AppLogger.warning(
+          '⚠️ Skipping backend registration: FCM token not available',
+        );
       }
 
       // Set up message handlers
+      AppLogger.info('📡 Setting up message handlers...');
       _setupMessageHandlers();
 
-      AppLogger.info('✅ Firebase notifications initialized successfully');
-    } catch (e) {
-      AppLogger.error('❌ Failed to initialize Firebase notifications: $e');
+      AppLogger.info('✅ === FCM INITIALIZATION COMPLETE ===');
+    } catch (e, stackTrace) {
+      AppLogger.error('❌ === FCM INITIALIZATION FAILED ===');
+      AppLogger.error('💥 Error: $e');
+      AppLogger.error('📚 Stack trace: $stackTrace');
     }
   }
 
   /// Request notification permissions
   Future<void> _requestNotificationPermissions() async {
-    final settings = await _messaging?.requestPermission(
-      alert: true,
-      announcement: false,
-      badge: true,
-      carPlay: false,
-      criticalAlert: false,
-      provisional: false,
-      sound: true,
-    );
+    try {
+      AppLogger.info('📋 Requesting notification permissions from OS...');
+      
+      final settings = await _messaging?.requestPermission(
+        alert: true,
+        announcement: false,
+        badge: true,
+        carPlay: false,
+        criticalAlert: false,
+        provisional: false,
+        sound: true,
+      );
 
-    AppLogger.info(
-      'Notification permission granted: ${settings?.authorizationStatus}',
-    );
+      AppLogger.info('📋 Permission request completed');
+      AppLogger.info(
+        '✅ Authorization status: ${settings?.authorizationStatus}',
+      );
+      AppLogger.info('🔔 Alert enabled: ${settings?.alert}');
+      AppLogger.info('🔊 Sound enabled: ${settings?.sound}');
+      AppLogger.info('🔴 Badge enabled: ${settings?.badge}');
+
+      if (settings?.authorizationStatus == AuthorizationStatus.denied) {
+        AppLogger.warning('⚠️ NOTIFICATION PERMISSIONS DENIED BY USER!');
+        AppLogger.warning('⚠️ App will NOT receive push notifications');
+        AppLogger.warning('⚠️ User must manually enable in device settings');
+      } else if (settings?.authorizationStatus ==
+          AuthorizationStatus.authorized) {
+        AppLogger.info('✅ Notification permissions GRANTED');
+      } else if (settings?.authorizationStatus ==
+          AuthorizationStatus.provisional) {
+        AppLogger.info(
+          '⚠️ Provisional authorization (iOS) - limited notifications',
+        );
+      } else if (settings?.authorizationStatus ==
+          AuthorizationStatus.notDetermined) {
+        AppLogger.warning(
+          '⚠️ Permission status NOT DETERMINED - user may not have responded',
+        );
+      }
+    } catch (e, stackTrace) {
+      AppLogger.error('❌ Failed to request notification permissions: $e');
+      AppLogger.error('📚 Stack trace: $stackTrace');
+    }
   }
 
   /// Initialize local notifications for foreground messages
@@ -166,9 +238,19 @@ class FirebaseNotificationService {
 
     // Listen for token refresh - Firebase will automatically retry
     _messaging?.onTokenRefresh.listen((String newToken) {
-      AppLogger.info('🔄 FCM token refreshed: ${newToken.substring(0, 20)}...');
+      AppLogger.info('🔄 === FCM TOKEN REFRESHED BY FIREBASE ===');
+      AppLogger.info(
+        '🔑 New token (first 30 chars): ${newToken.substring(0, newToken.length < 30 ? newToken.length : 30)}...',
+      );
+      AppLogger.info('📏 Token length: ${newToken.length} characters');
+      AppLogger.info(
+        '⏱️ Refresh timestamp: ${DateTime.now().toIso8601String()}',
+      );
+      
       _fcmToken = newToken;
+      
       // Automatically register new token with backend
+      AppLogger.info('📤 Auto-registering refreshed token with backend...');
       _registerTokenWithBackend(newToken);
     });
 
@@ -561,44 +643,77 @@ class FirebaseNotificationService {
   /// Register FCM token with backend using ApiClient
   Future<void> _registerTokenWithBackend(String token) async {
     try {
+      AppLogger.info('📤 === BACKEND TOKEN REGISTRATION START ===');
+      
       // Get current user ID
+      AppLogger.info('🔍 Getting current user ID...');
       final userId = await _apiClient.getCurrentUserId();
 
       if (userId == null) {
         AppLogger.error(
-          '❌ Cannot register FCM token: user ID is null (user not authenticated)',
+          '❌ CRITICAL: Cannot register FCM token - user ID is null!',
         );
+        AppLogger.error('⚠️ This means:');
+        AppLogger.error('  1. User is not authenticated');
+        AppLogger.error('  2. Auth token is missing or invalid');
+        AppLogger.error('  3. Token service cannot extract user ID from token');
         return;
       }
 
+      AppLogger.info('✅ User ID obtained: $userId');
+
       // Get device ID
+      AppLogger.info('📱 Getting device ID...');
       final deviceId = await _getDeviceId();
       final platform = Platform.isIOS ? 'ios' : 'android';
 
+      AppLogger.info('✅ Device ID: $deviceId');
+      AppLogger.info('📱 Platform: $platform');
+      AppLogger.info('🔑 Token length: ${token.length} chars');
       AppLogger.info(
-        '📤 Registering FCM token for user: $userId, device: $deviceId',
+        '🔑 Token preview: ${token.substring(0, token.length < 30 ? token.length : 30)}...',
       );
 
       // Use ApiClient which automatically handles /api/v1 prefix and auth token
+      AppLogger.info('🚀 Sending registration request to backend...');
+      AppLogger.info('🎯 Endpoint: POST /push-notifications/register-token');
+
+      final requestData = {
+        'token': token,
+        'userId': userId,
+        'deviceId': deviceId,
+        'platform': platform,
+      };
+      AppLogger.info('📦 Request payload: $requestData');
+
       final response = await _apiClient.post(
         '/push-notifications/register-token',
-        data: {
-          'token': token,
-          'userId': userId,
-          'deviceId': deviceId,
-          'platform': platform,
-        },
+        data: requestData,
       );
 
+      AppLogger.info('📥 Backend response received');
+      AppLogger.info('📊 Status code: ${response.statusCode}');
+      AppLogger.info('📄 Response data: ${response.data}');
+
       if (response.data['success'] == true) {
-        AppLogger.info('✅ FCM token registered successfully for user: $userId');
+        AppLogger.info('✅ === FCM TOKEN REGISTERED SUCCESSFULLY ===');
+        AppLogger.info('👤 User ID: $userId');
+        AppLogger.info('📱 Device ID: $deviceId');
+        AppLogger.info('🔔 Platform: $platform');
       } else {
-        AppLogger.warning(
-          '❌ Failed to register FCM token: ${response.data['message']}',
-        );
+        AppLogger.warning('❌ === BACKEND REJECTED TOKEN REGISTRATION ===');
+        AppLogger.warning('💬 Message: ${response.data['message']}');
+        AppLogger.warning('📄 Full response: ${response.data}');
       }
-    } catch (e) {
-      AppLogger.error('❌ Error registering FCM token: $e');
+    } catch (e, stackTrace) {
+      AppLogger.error('❌ === TOKEN REGISTRATION FAILED ===');
+      AppLogger.error('💥 Exception: $e');
+      AppLogger.error('📚 Stack trace: $stackTrace');
+      AppLogger.error('⚠️ Possible causes:');
+      AppLogger.error('  1. Network connectivity issues');
+      AppLogger.error('  2. Backend endpoint not available');
+      AppLogger.error('  3. Auth token expired or invalid');
+      AppLogger.error('  4. Backend validation error');
     }
   }
 

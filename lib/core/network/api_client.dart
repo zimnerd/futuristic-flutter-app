@@ -24,6 +24,10 @@ class ApiClient {
   final TokenService _tokenService = TokenService();
   String? _authToken;
 
+  // ✅ Track refresh attempts to prevent infinite loops
+  int _refreshAttempts = 0;
+  static const int _maxRefreshAttempts = 3;
+
   static ApiClient? _instance;
   static ApiClient get instance => _instance ??= ApiClient._();
 
@@ -135,11 +139,66 @@ class ApiClient {
               return;
             }
 
+            // ✅ CRITICAL FIX: Skip refresh attempts for the refresh endpoint itself to prevent infinite loop
+            if (error.requestOptions.path.contains('/auth/refresh')) {
+              _logger.e(
+                '🚫 401 on refresh endpoint - token is invalid, forcing logout',
+              );
+              _refreshAttempts = 0; // Reset counter
+              
+              await GlobalAuthHandler.instance.handleAuthenticationFailure(
+                reason: 'Refresh token is invalid or expired',
+                clearTokens: true,
+              );
+
+              return handler.resolve(
+                Response(
+                  requestOptions: error.requestOptions,
+                  statusCode: 401,
+                  data: {
+                    'success': false,
+                    'message':
+                        'Your session has expired. Please log in again.',
+                    'errors': [],
+                  },
+                ),
+              );
+            }
+
+            // ✅ CRITICAL FIX: Limit refresh attempts to prevent infinite loops
+            if (_refreshAttempts >= _maxRefreshAttempts) {
+              _logger.e(
+                '🚫 Maximum refresh attempts ($_maxRefreshAttempts) reached, forcing logout',
+              );
+              _refreshAttempts = 0; // Reset counter
+              
+              await GlobalAuthHandler.instance.handleAuthenticationFailure(
+                reason: 'Maximum token refresh attempts exceeded',
+                clearTokens: true,
+              );
+
+              return handler.resolve(
+                Response(
+                  requestOptions: error.requestOptions,
+                  statusCode: 401,
+                  data: {
+                    'success': false,
+                    'message':
+                        'Unable to refresh your session. Please log in again.',
+                    'errors': [],
+                  },
+                ),
+              );
+            }
+
             // Try to refresh token if we have one
             if (_authToken != null) {
               try {
-                _logger.i('🔄 Attempting token refresh for 401 error...');
+                _refreshAttempts++; // ✅ Increment counter
+                _logger.i('🔄 Attempting token refresh for 401 error (attempt $_refreshAttempts/$_maxRefreshAttempts)...');
                 await _attemptTokenRefresh();
+                
+                _refreshAttempts = 0; // ✅ Reset counter on success
 
                 // Retry the original request
                 final clonedRequest = await _dio.request(
