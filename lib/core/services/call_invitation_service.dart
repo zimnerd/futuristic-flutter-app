@@ -1,9 +1,10 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:uuid/uuid.dart';
+import 'package:socket_io_client/socket_io_client.dart' as socket_io;
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/call_invitation.dart';
-import '../../domain/services/websocket_service.dart';
-import '../../data/services/websocket_service_impl.dart';
+import '../config/app_config.dart';
 
 /// Service for managing call invitations between users
 ///
@@ -12,13 +13,19 @@ import '../../data/services/websocket_service_impl.dart';
 /// 
 /// NOTE: RTC tokens are NOT generated here - they come from backend
 /// in the 'call_ready_to_connect' event after recipient accepts
+/// 
+/// ARCHITECTURE: Uses DEDICATED /call namespace socket connection
+/// separate from ChatGateway's /chat namespace
 class CallInvitationService {
   static final CallInvitationService _instance =
       CallInvitationService._internal();
   factory CallInvitationService() => _instance;
   CallInvitationService._internal();
 
-  final WebSocketService _webSocketService = WebSocketServiceImpl.instance;
+  // Dedicated /call namespace socket for call invitations
+  socket_io.Socket? _callSocket;
+  bool _isCallSocketConnected = false;
+  
   final _uuid = const Uuid();
 
   // Stream controllers
@@ -50,55 +57,104 @@ class CallInvitationService {
   CallState _currentState = const CallState();
   final Map<String, Timer> _callTimeouts = {};
 
-  /// Initialize the service and listen to WebSocket events
+  /// Initialize the service and set up WebSocket connection to /call namespace
   Future<void> initialize() async {
     debugPrint('🎬 CallInvitationService.initialize() called');
 
-    // Listen to WebSocket connection status to set up listeners after connection
-    _webSocketService.connectionStatus.listen((isConnected) {
-      debugPrint('🔌 WebSocket connection status changed: $isConnected');
-      if (isConnected) {
-        _registerEventListeners();
-      }
-    });
-
-    // If already connected, register listeners immediately
-    if (_webSocketService.isConnected) {
-      debugPrint(
-        '✅ WebSocket already connected, registering listeners immediately',
-      );
-      _registerEventListeners();
-    } else {
-      debugPrint(
-        '⏳ WebSocket not yet connected, listeners will be registered on connection',
-      );
-    }
+    // Connect to dedicated /call namespace for call invitations
+    await _connectToCallGateway();
 
     debugPrint('✅ CallInvitationService initialized');
   }
 
-  /// Register event listeners on WebSocket
-  /// Called when WebSocket connects or reconnects
-  void _registerEventListeners() {
-    debugPrint('📋 Registering call event listeners on WebSocket...');
+  /// Connect to CallGateway on /call namespace
+  Future<void> _connectToCallGateway() async {
+    if (_isCallSocketConnected && _callSocket != null) {
+      debugPrint('✅ Already connected to CallGateway');
+      return;
+    }
 
-    // Note: Socket.IO allows registering the same listener multiple times
-    // but will only fire once per event. We re-register on every connect
-    // to ensure listeners persist after reconnections.
+    debugPrint('🔌 Connecting to CallGateway on /call namespace...');
 
-    // Listen to WebSocket events using the service interface
-    _webSocketService.on('call_invitation', _handleIncomingCall);
-    _webSocketService.on('call_accepted', _handleCallAccepted);
-    _webSocketService.on('call_rejected', _handleCallRejected);
-    _webSocketService.on('call_timeout', _handleCallTimeout);
-    _webSocketService.on('call_cancelled', _handleCallCancelled);
-    
-    // NEW: Listen for connection status events
-    _webSocketService.on('call_ready_to_connect', _handleReadyToConnect);
-    _webSocketService.on('call_connected', _handleCallConnected);
-    _webSocketService.on('call_failed', _handleCallFailed);
+    // Get auth token from storage
+    final authToken = await _getAuthToken();
+    if (authToken == null) {
+      debugPrint('❌ No auth token available for CallGateway connection');
+      return;
+    }
 
-    debugPrint('✅ All call event listeners registered (total: 8 events)');
+    // Build connection options
+    final options = socket_io.OptionBuilder()
+        .setTransports(['websocket', 'polling'])
+        .setAuth({'token': authToken})
+        .enableAutoConnect()
+        .enableReconnection()
+        .setReconnectionAttempts(5)
+        .setReconnectionDelay(1000)
+        .setTimeout(30000)
+        .build();
+
+    // Connect to /call namespace
+    _callSocket = socket_io.io('${AppConfig.websocketUrl}/call', options);
+
+    // Set up event handlers
+    _callSocket!.onConnect((_) {
+      debugPrint('✅ Connected to CallGateway on /call namespace');
+      _isCallSocketConnected = true;
+      _registerCallEventListeners();
+    });
+
+    _callSocket!.onDisconnect((_) {
+      debugPrint('❌ Disconnected from CallGateway');
+      _isCallSocketConnected = false;
+    });
+
+    _callSocket!.onConnectError((error) {
+      debugPrint('❌ CallGateway connection error: $error');
+      _isCallSocketConnected = false;
+    });
+
+    _callSocket!.onError((error) {
+      debugPrint('❌ CallGateway error: $error');
+    });
+  }
+
+  /// Get auth token from storage
+  Future<String?> _getAuthToken() async {
+    try {
+      // Get token from shared preferences (same as WebSocketServiceImpl uses)
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('auth_token');
+
+      if (token != null) {
+        debugPrint('✅ Retrieved auth token for CallGateway connection');
+      } else {
+        debugPrint('⚠️ No auth token found in storage');
+      }
+      
+      return token;
+    } catch (e) {
+      debugPrint('❌ Error getting auth token: $e');
+      return null;
+    }
+  }
+
+  /// Register event listeners on CallGateway socket
+  void _registerCallEventListeners() {
+    debugPrint('📋 Registering call event listeners on CallGateway...');
+
+    _callSocket!.on('call_invitation', _handleIncomingCall);
+    _callSocket!.on('call_accepted', _handleCallAccepted);
+    _callSocket!.on('call_rejected', _handleCallRejected);
+    _callSocket!.on('call_timeout', _handleCallTimeout);
+    _callSocket!.on('call_cancelled', _handleCallCancelled);
+    _callSocket!.on('call_ready_to_connect', _handleReadyToConnect);
+    _callSocket!.on('call_connected', _handleCallConnected);
+    _callSocket!.on('call_failed', _handleCallFailed);
+
+    debugPrint(
+      '✅ All call event listeners registered on CallGateway (8 events)',
+    );
   }
 
   /// Send a call invitation to another user
@@ -146,8 +202,41 @@ class CallInvitationService {
       expiresAt: DateTime.now().add(const Duration(seconds: 30)),
     );
 
-    // Send via WebSocket using the service interface
-    _webSocketService.emit('send_call_invitation', invitation.toJson());
+    // 🔍 DIAGNOSTIC: Check CallGateway connection before sending
+    debugPrint('📞 === SENDING CALL INVITATION ===');
+    debugPrint('📞 Call ID: $callId');
+    debugPrint('📞 Recipient ID: $recipientId');
+    debugPrint('📞 Recipient Name: $recipientName');
+    debugPrint('📞 Call Type: $callType');
+    debugPrint('📞 Channel Name: $channelName');
+    debugPrint('🔌 CallGateway connected: $_isCallSocketConnected');
+
+    if (!_isCallSocketConnected || _callSocket == null) {
+      debugPrint(
+        '❌ CRITICAL: CallGateway is NOT connected! Attempting to connect...',
+      );
+      await _connectToCallGateway();
+
+      // Wait up to 3 seconds for connection
+      int attempts = 0;
+      while (!_isCallSocketConnected && attempts < 30) {
+        await Future.delayed(const Duration(milliseconds: 100));
+        attempts++;
+      }
+
+      if (!_isCallSocketConnected) {
+        throw CallException(
+          'CallGateway not connected. Cannot send call invitation.',
+        );
+      }
+      debugPrint('✅ CallGateway connected after retry');
+    }
+
+    // Send via CallGateway on /call namespace
+    debugPrint('📤 Emitting send_call_invitation event to CallGateway...');
+    debugPrint('📦 Payload: ${invitation.toJson()}');
+    _callSocket!.emit('send_call_invitation', invitation.toJson());
+    debugPrint('✅ CallGateway emit completed (fire and forget)');
 
     // Update state
     _currentState = _currentState.copyWith(outgoingInvitation: invitation);
@@ -156,7 +245,7 @@ class CallInvitationService {
     // Set timeout (30 seconds)
     _setCallTimeout(callId);
 
-    debugPrint('Sent call invitation: $callId to $recipientId');
+    debugPrint('✅ === CALL INVITATION SENT SUCCESSFULLY ===');
     return invitation;
   }
 
@@ -167,8 +256,8 @@ class CallInvitationService {
       throw CallException('No active invitation to accept');
     }
 
-    // Send acceptance via WebSocket using the service interface
-    _webSocketService.emit('accept_call', {'callId': callId});
+    // Send acceptance via CallGateway
+    _callSocket?.emit('accept_call', {'callId': callId});
 
     // Update state
     _currentState = _currentState.copyWith(
@@ -192,8 +281,8 @@ class CallInvitationService {
       throw CallException('No active invitation to reject');
     }
 
-    // Send rejection via WebSocket using the service interface
-    _webSocketService.emit('reject_call', {
+    // Send rejection via CallGateway
+    _callSocket?.emit('reject_call', {
       'callId': callId,
       'reason': reason?.toString() ?? 'user_declined',
     });
@@ -215,8 +304,8 @@ class CallInvitationService {
       throw CallException('No active outgoing call to cancel');
     }
 
-    // Send cancellation via WebSocket using the service interface
-    _webSocketService.emit('cancel_call', {'callId': callId});
+    // Send cancellation via CallGateway
+    _callSocket?.emit('cancel_call', {'callId': callId});
 
     // Update state
     _currentState = _currentState.copyWith(outgoingInvitation: null);

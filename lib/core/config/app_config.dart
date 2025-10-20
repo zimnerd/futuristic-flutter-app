@@ -26,7 +26,7 @@ class AppConfig {
   // API Configuration - Environment-based for development
   static String get apiBaseUrl {
     if (isDevelopment) {
-      final host = Platform.isAndroid ? '10.0.2.2' : 'localhost';
+      final host = 'localhost';
       return 'http://$host:3000/api/v1';
     }
     return 'https://apilink.pulsetek.co.za/api/v1';
@@ -34,7 +34,7 @@ class AppConfig {
 
   static String get websocketUrl {
     if (isDevelopment) {
-      final host = Platform.isAndroid ? '10.0.2.2' : 'localhost';
+      final host = 'localhost';
       return 'ws://$host:3000';
     }
     return 'wss://apilink.pulsetek.co.za';
@@ -42,7 +42,7 @@ class AppConfig {
 
   static String get aiCompanionWebSocketUrl {
     if (isDevelopment) {
-      final host = Platform.isAndroid ? '10.0.2.2' : 'localhost';
+      final host = 'localhost';
       return 'http://$host:3000';
     }
     return 'https://apilink.pulsetek.co.za';
