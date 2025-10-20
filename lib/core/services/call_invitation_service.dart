@@ -256,6 +256,16 @@ class CallInvitationService {
     try {
       final invitation = CallInvitation.fromJson(data as Map<String, dynamic>);
 
+      // Prevent duplicate call handling
+      // If we already have this call invitation active, skip it
+      // This prevents duplicate call screens when both WebSocket and FCM deliver the same call
+      if (_currentState.currentInvitation?.callId == invitation.callId) {
+        debugPrint(
+          '⏭️ Call ${invitation.callId} already active, skipping duplicate WebSocket event',
+        );
+        return;
+      }
+
       // Check if user can receive calls
       if (!_currentState.canReceiveCalls) {
         // Auto-reject with busy status

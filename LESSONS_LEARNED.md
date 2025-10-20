@@ -5,6 +5,408 @@ This document captures key learnings from building the **Flutter mobile dating a
 
 ---
 
+## 🚨 **CRITICAL: Duplicate Call Protection (January 2026)**
+
+**Status**: ✅ **FIXED** - Dual delivery system with duplicate protection  
+**Date**: January 2026  
+**Impact**: **CRITICAL** - Prevents duplicate call screens when receiving both WebSocket AND FCM notifications  
+**Rating**: 10/10 (Essential for reliable call system)  
+**Components**: CallInvitationService, CallNotificationService, Dual delivery architecture
+
+### **Problem Context**
+
+**Backend Change**: Backend now sends BOTH WebSocket AND FCM push notifications for every call:
+- WebSocket event: For foreground/active app (immediate in-app handling)
+- FCM push: For background/terminated app + native platform UI (CallKit/full-screen intent)
+
+**Challenge**: Mobile app could receive the SAME call invitation via two different channels, potentially showing duplicate call screens.
+
+### **Solution: Duplicate Protection**
+
+**1. CallNotificationService Protection** (`/mobile/lib/core/services/call_notification_service.dart`):
+```dart
+Future<void> handleIncomingCallPush(Map<String, dynamic> data) async {
+  final callId = data['callId'] as String?;
+  
+  // Prevent duplicate FCM notifications
+  // This handles cases where both WebSocket and FCM deliver the same call
+  if (_activeCallNotifications.containsKey(callId)) {
+    AppLogger.info('⏭️ Call $callId already being shown, skipping duplicate');
+    return;
+  }
+  
+  // Show native call UI...
+}
+```
+
+**2. CallInvitationService Protection** (`/mobile/lib/core/services/call_invitation_service.dart`):
+```dart
+void _handleIncomingCall(dynamic data) {
+  final invitation = CallInvitation.fromJson(data);
+  
+  // Prevent duplicate WebSocket handling
+  // If we already have this call invitation active, skip it
+  // This prevents duplicate call screens when both WebSocket and FCM deliver the same call
+  if (_currentState.currentInvitation?.callId == invitation.callId) {
+    debugPrint('⏭️ Call ${invitation.callId} already active, skipping duplicate WebSocket event');
+    return;
+  }
+  
+  // Process incoming call...
+}
+```
+
+### **How It Works**
+
+**Scenario 1: App in Foreground**
+```
+Call arrives
+    ↓
+WebSocket received FIRST
+    ├──> CallInvitationService._handleIncomingCall()
+    ├──> Sets _currentState.currentInvitation = invitation
+    ├──> Emits to CallOverlayHandler
+    └──> Shows IncomingCallScreen
+    ↓
+FCM arrives SECOND
+    ├──> CallNotificationService.handleIncomingCallPush()
+    ├──> Checks _activeCallNotifications.containsKey(callId)
+    └──> ❌ Duplicate detected, SKIPPED
+```
+
+**Scenario 2: App in Background/Terminated**
+```
+Call arrives
+    ↓
+FCM received (WebSocket not processed - app suspended)
+    ├──> CallNotificationService.handleIncomingCallPush()
+    ├──> Adds callId to _activeCallNotifications
+    ├──> Shows native CallKit/full-screen UI
+    └──> User sees call screen
+    ↓
+WebSocket arrives when app wakes
+    ├──> CallInvitationService._handleIncomingCall()
+    ├──> Checks if _currentState.currentInvitation?.callId == invitation.callId
+    └──> ❌ Duplicate detected, SKIPPED
+```
+
+### **Key Learnings**
+
+1. **Idempotency is Critical for Notifications**
+   - Always check if notification is already being displayed
+   - Use unique identifiers (callId) to track active notifications
+   - Early return prevents duplicate UI
+
+2. **State Tracking Across Services**
+   - CallNotificationService tracks: `_activeCallNotifications[callId]`
+   - CallInvitationService tracks: `_currentState.currentInvitation.callId`
+   - Both services independently check for duplicates
+
+3. **Race Conditions in Dual Delivery**
+   - WebSocket and FCM arrive at different times
+   - Order depends on network conditions
+   - Protection must work regardless of which arrives first
+
+4. **Clean Architecture Benefits**
+   - Duplicate protection isolated in service layer
+   - UI layer unaware of dual delivery
+   - Easy to test and maintain
+
+**Testing**:
+```bash
+# Test foreground (WebSocket wins)
+1. Keep app open on recipient device
+2. Initiate call from sender
+3. ✅ Should show call screen ONCE
+4. ✅ Log should show: "⏭️ Call X already active, skipping duplicate"
+
+# Test background (FCM wins)
+1. Background app on recipient device
+2. Initiate call from sender
+3. ✅ Should show native call UI ONCE
+4. ✅ No duplicate when app resumes
+
+# Test race condition
+1. Simulate slow WebSocket + fast FCM
+2. ✅ First arrival shows UI
+3. ✅ Second arrival skipped automatically
+```
+
+---
+
+## 🎯 **User-Friendly Error Handling & 401 Auto-Logout (January 2025)**
+
+**Status**: ✅ **FIXED** - User-friendly error messages with automatic logout on 401  
+**Date**: January 14, 2025  
+**Impact**: HIGH - User experience significantly improved, no more technical error details shown  
+**Rating**: 9/10 (Major UX improvement - affects all API error handling)  
+**Components**: ApiClient, DiscoveryBloc, MatchBloc, error interceptors
+
+### **Problem Statement**
+
+**Symptoms**:
+- Users seeing technical DioException error messages with stack traces on UI
+- Error message: "DioException [bad response]: This exception was thrown because the response has a status code of 401"
+- Full HTTP status code explanations visible to end users
+- No automatic logout when session expires
+- Poor user experience on authentication failures
+
+**Example Bad Error Display**:
+```
+Failed to load users: Exception: Failed to fetch discoverable users: 
+DioException [bad response]: This exception was thrown because the 
+response has a status code of 401 and RequestOptions.validateStatus 
+was configured to reject responses with this status code
+```
+
+### **Root Cause Analysis**
+
+**Three interconnected issues**:
+
+1. **ApiClient 401 Interceptor Propagating Technical Errors**:
+   - Token refresh interceptor handled 401 correctly
+   - BUT it called `handler.next(error)` which propagated DioException
+   - Technical error details reached the BLoC layer unchanged
+
+2. **BLoC Layer Using error.toString()**:
+   - All error handlers using `error.toString()` directly
+   - This exposed full DioException with technical details
+   - No extraction of user-friendly messages
+
+3. **No Centralized Error Message Formatting**:
+   - Each error type needed specific user-friendly messaging
+   - Network errors, auth errors, server errors all showing technical details
+   - No consistent error handling pattern
+
+### **Solution Implemented** ✅
+
+**1. Fixed ApiClient 401 Interceptor** (`api_client.dart`):
+
+```dart
+// BEFORE: Propagated technical error
+handler.next(error);
+
+// AFTER: Return user-friendly error response
+return handler.resolve(
+  Response(
+    requestOptions: error.requestOptions,
+    statusCode: 401,
+    data: {
+      'success': false,
+      'message': 'Your session has expired. Please log in again.',
+      'errors': [],
+    },
+  ),
+);
+```
+
+**Benefits**:
+- 401 errors now return friendly message from API layer
+- GlobalAuthHandler still triggers automatic logout
+- Token clearing still works correctly
+- No technical DioException reaches BLoC layer
+
+**2. Added Error Message Extraction Helper** (All BLoCs):
+
+```dart
+/// Extract user-friendly error message from error object
+/// Prevents technical DioException details from showing to users
+String _extractUserFriendlyErrorMessage(dynamic error) {
+  final errorString = error.toString();
+  
+  // Authentication/session errors
+  if (errorString.contains('401') || 
+      errorString.contains('session has expired') ||
+      errorString.contains('Unauthorized')) {
+    return 'Your session has expired. Please log in again.';
+  }
+  
+  // Network errors
+  if (errorString.contains('SocketException') || 
+      errorString.contains('Connection refused') ||
+      errorString.contains('Network is unreachable')) {
+    return 'Connection problem. Please check your internet.';
+  }
+  
+  // Timeout errors
+  if (errorString.contains('timeout')) {
+    return 'Request timed out. Please try again.';
+  }
+  
+  // Server errors (500, 502, 503, 504)
+  if (errorString.contains('500') || errorString.contains('502')) {
+    return 'Server error. Please try again later.';
+  }
+  
+  // Permission errors (403)
+  if (errorString.contains('403') || errorString.contains('Forbidden')) {
+    return 'You don\'t have permission to do that.';
+  }
+  
+  // Not found errors (404)
+  if (errorString.contains('404') || errorString.contains('Not Found')) {
+    return 'Content not found. Please try again.';
+  }
+  
+  // Generic fallback
+  return 'Something went wrong. Please try again.';
+}
+```
+
+**3. Updated All BLoC Error Handlers**:
+
+```dart
+// BEFORE: Technical error shown to user
+emit(DiscoveryError(message: 'Failed to load users: ${error.toString()}'));
+
+// AFTER: User-friendly message
+emit(DiscoveryError(message: _extractUserFriendlyErrorMessage(error)));
+```
+
+**Files Updated**:
+- `mobile/lib/core/network/api_client.dart` - 401 interceptor fix
+- `mobile/lib/presentation/blocs/discovery/discovery_bloc.dart` - 7 error handlers updated
+- `mobile/lib/presentation/blocs/match/match_bloc.dart` - 8 error handlers updated
+
+### **Testing Verification**
+
+**Test Scenarios**:
+1. ✅ Expired token on app startup → Friendly message + auto-logout
+2. ✅ Token expires during app usage → Friendly message + auto-logout
+3. ✅ Network disconnected → "Connection problem" message
+4. ✅ API timeout → "Request timed out" message
+5. ✅ Server error (500) → "Server error" message
+6. ✅ Permission denied (403) → "You don't have permission" message
+
+**Expected User Experience**:
+- No technical jargon visible to users
+- Clear, actionable error messages
+- Automatic logout on invalid session
+- Smooth redirect to login screen
+- Professional error handling UX
+
+### **Key Lessons & Best Practices**
+
+#### **Error Handling Architecture**
+
+✅ **DO: Three-Layer Error Handling**
+```dart
+// Layer 1: API Client - Intercept and format errors
+onError: (error, handler) {
+  if (error.response?.statusCode == 401) {
+    await GlobalAuthHandler.logout();
+    return handler.resolve(friendlyResponse);
+  }
+}
+
+// Layer 2: BLoC - Extract user-friendly messages
+catch (error) {
+  emit(ErrorState(message: _extractUserFriendlyErrorMessage(error)));
+}
+
+// Layer 3: UI - Display with appropriate styling
+if (state is ErrorState) {
+  PulseToast.error(context, message: state.message);
+}
+```
+
+❌ **DON'T: Show Technical Errors to Users**
+```dart
+// BAD: Exposes DioException details
+emit(ErrorState(message: error.toString()));
+
+// BAD: Shows stack traces
+emit(ErrorState(message: 'Error: $error'));
+
+// BAD: HTTP status codes visible
+Text('Failed with status: ${response.statusCode}');
+```
+
+#### **401 Handling Pattern**
+
+✅ **DO: Auto-logout with Friendly Message**
+```dart
+if (statusCode == 401) {
+  await GlobalAuthHandler.logout();  // Clear tokens, navigate to login
+  return friendlyMessage;            // User sees clean message
+}
+```
+
+❌ **DON'T: Just Propagate 401**
+```dart
+// BAD: Technical error reaches UI
+if (statusCode == 401) {
+  handler.next(error);  // Shows DioException
+}
+```
+
+#### **Error Message Guidelines**
+
+**Message Tone**:
+- ✅ Friendly, conversational: "Your session has expired. Please log in again."
+- ❌ Technical, jargon: "DioException [bad response]: status code 401"
+
+**Actionability**:
+- ✅ Tell user what to do: "Please check your internet."
+- ❌ Just state problem: "SocketException occurred."
+
+**Brevity**:
+- ✅ One sentence, clear: "Request timed out. Please try again."
+- ❌ Long explanations: "This exception was thrown because..."
+
+#### **Consistency Patterns**
+
+**Centralized Helper Method**:
+```dart
+// Add to ALL BLoCs that handle API errors
+String _extractUserFriendlyErrorMessage(dynamic error) {
+  // Same implementation across all BLoCs
+}
+```
+
+**Standard Error States**:
+```dart
+// Consistent error state structure
+class ErrorState {
+  final String message;          // User-friendly message
+  final State? previousState;    // For recovery
+}
+```
+
+### **Performance Impact**
+
+- **User Experience**: Dramatically improved - no confusion from technical errors
+- **Support Burden**: Reduced - users see actionable messages, not stack traces
+- **Code Quality**: Improved - consistent error handling pattern
+- **Maintenance**: Easier - centralized error formatting logic
+
+### **Prevention Strategies**
+
+1. **Code Review Checklist**:
+   - [ ] All BLoC error handlers use `_extractUserFriendlyErrorMessage()`
+   - [ ] No `error.toString()` directly in emit statements
+   - [ ] API interceptors return friendly responses for common errors
+   - [ ] Error messages tested with real users for clarity
+
+2. **Testing Strategy**:
+   - Test all error scenarios with actual user testing
+   - Verify no technical jargon appears in UI
+   - Test auto-logout flow on 401 errors
+   - Verify friendly messages for network, timeout, server errors
+
+3. **Documentation**:
+   - Document error handling pattern in coding guidelines
+   - Maintain list of standard error messages
+   - Document when to add new error types to helper method
+
+### **Related Issues & References**
+
+- Related to WebSocket connection errors (need similar friendly handling)
+- Part of overall UX improvement initiative
+- Complements loading state improvements and offline handling
+
+---
+
 ## 🚨 **WebSocket Event Listener Timing Critical Fix (January 2025)**
 
 **Status**: ✅ **FIXED** - Event listeners registered BEFORE WebSocket connected  

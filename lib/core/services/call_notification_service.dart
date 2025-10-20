@@ -93,6 +93,15 @@ class CallNotificationService {
         return;
       }
 
+      // Prevent duplicate call notifications
+      // This handles cases where both WebSocket and FCM deliver the same call
+      if (_activeCallNotifications.containsKey(callId)) {
+        AppLogger.info(
+          '⏭️ Call $callId already being shown, skipping duplicate',
+        );
+        return;
+      }
+
       // Create CallInvitation object for consistency with existing model
       final invitation = CallInvitation(
         callId: callId,
