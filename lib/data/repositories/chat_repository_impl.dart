@@ -988,6 +988,10 @@ class ChatRepositoryImpl implements ChatRepository {
 
         // Save network messages to database
         if (networkMessages.isNotEmpty) {
+          // ✅ FIX: Ensure conversation exists before saving messages
+          // This prevents FOREIGN KEY constraint violations
+          await _ensureConversationExists(conversationId);
+          
           final dbModelsToSave = ModelConverters.messagesToDbModels(
             networkMessages,
           );
@@ -1164,6 +1168,9 @@ class ChatRepositoryImpl implements ChatRepository {
       );
 
       if (networkMessages.isNotEmpty) {
+        // ✅ FIX: Ensure conversation exists before saving messages
+        await _ensureConversationExists(conversationId);
+        
         final dbModelsToSave = ModelConverters.messagesToDbModels(
           networkMessages,
         );
@@ -1176,6 +1183,61 @@ class ChatRepositoryImpl implements ChatRepository {
       _logger.w(
         'Background refresh failed for conversation $conversationId: $e',
       );
+    }
+  }
+
+  /// Ensure conversation exists in local database before saving messages
+  /// This prevents FOREIGN KEY constraint violations when saving messages
+  Future<void> _ensureConversationExists(String conversationId) async {
+    try {
+      // Check if conversation exists in local database
+      final localConversation = await _databaseService.getConversation(
+        conversationId,
+      );
+
+      if (localConversation == null) {
+        _logger.d(
+          'Conversation $conversationId not in local DB, fetching from network...',
+        );
+
+        try {
+          // Try to fetch conversation from network
+          final networkConversation = await _remoteDataSource.getConversation(
+            conversationId,
+          );
+
+          // Convert conversation_model.dart ConversationModel to DB model
+          // Use dynamic cast to work around type incompatibility
+          final chatModelConversation = networkConversation as dynamic;
+          final dbModel = ModelConverters.conversationToDbModel(
+            chatModelConversation,
+          );
+          await _databaseService.saveConversation(dbModel);
+
+          _logger.d('Conversation $conversationId saved to local database');
+        } catch (e) {
+          _logger.w(
+            'Could not fetch conversation from server: $e. Creating minimal entry.',
+          );
+
+          // Create minimal conversation entry to satisfy FOREIGN KEY constraint
+          final minimalConversation = ConversationDbModel(
+            id: conversationId,
+            type: 'DIRECT', // Default assumption
+            participantIds: [], // Empty list, will be updated later
+            unreadCount: 0,
+            createdAt: DateTime.now(),
+            updatedAt: DateTime.now(),
+            syncStatus: 'pending',
+          );
+          await _databaseService.saveConversation(minimalConversation);
+          _logger.d('Created minimal conversation entry: $conversationId');
+        }
+      }
+    } catch (e) {
+      _logger.w('Failed to ensure conversation exists: $e');
+      // Don't rethrow - allow message saving to proceed
+      // The FK constraint will catch any real issues
     }
   }
 

@@ -71,7 +71,8 @@ class _CallOverlayHandlerState extends State<CallOverlayHandler> {
     HapticFeedback.heavyImpact();
 
     // Navigate to IncomingCallScreen and await result
-    Navigator.of(context).push(
+    // Use rootNavigator: true to access MaterialApp's navigator from outside its context
+    Navigator.of(context, rootNavigator: true).push(
       MaterialPageRoute(
         builder: (context) => IncomingCallScreen(invitation: invitation),
         fullscreenDialog: true,

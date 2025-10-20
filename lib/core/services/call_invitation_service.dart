@@ -1,10 +1,11 @@
 import 'dart:async';
+import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:uuid/uuid.dart';
 import 'package:socket_io_client/socket_io_client.dart' as socket_io;
-import 'package:shared_preferences/shared_preferences.dart';
 import '../models/call_invitation.dart';
 import '../config/app_config.dart';
+import '../../data/services/token_service.dart';
 
 /// Service for managing call invitations between users
 ///
@@ -75,13 +76,27 @@ class CallInvitationService {
     }
 
     debugPrint('🔌 Connecting to CallGateway on /call namespace...');
+    debugPrint('📍 WebSocket URL: ${AppConfig.websocketUrl}/call');
 
     // Get auth token from storage
     final authToken = await _getAuthToken();
     if (authToken == null) {
-      debugPrint('❌ No auth token available for CallGateway connection');
+      debugPrint(
+        '❌ CRITICAL: No auth token available for CallGateway connection',
+      );
+      debugPrint(
+        '❌ CRITICAL: No auth token available for CallGateway connection',
+      );
+      debugPrint('❌ CallGateway will NOT be connected - calls will not work!');
       return;
     }
+
+    debugPrint(
+      '🔑 Auth token retrieved, length: ${authToken.length} characters',
+    );
+    debugPrint(
+      '🔑 Auth token retrieved, length: ${authToken.length} characters',
+    );
 
     // Build connection options
     final options = socket_io.OptionBuilder()
@@ -94,42 +109,73 @@ class CallInvitationService {
         .setTimeout(30000)
         .build();
 
-    // Connect to /call namespace
-    _callSocket = socket_io.io('${AppConfig.websocketUrl}/call', options);
+    debugPrint('🔧 Socket options configured');
+
+    try {
+      // Connect to /call namespace
+      _callSocket = socket_io.io('${AppConfig.websocketUrl}/call', options);
+      debugPrint('🚀 Socket.io instance created for CallGateway');
+    } catch (e) {
+      debugPrint('❌ CRITICAL: Failed to create CallGateway socket: $e');
+      return;
+    }
 
     // Set up event handlers
     _callSocket!.onConnect((_) {
-      debugPrint('✅ Connected to CallGateway on /call namespace');
+      debugPrint('');
+      debugPrint('═══════════════════════════════════════════════════════════');
+      debugPrint('✅ SUCCESSFULLY CONNECTED TO CALLGATEWAY ON /call NAMESPACE');
+      debugPrint('═══════════════════════════════════════════════════════════');
+      debugPrint('');
       _isCallSocketConnected = true;
       _registerCallEventListeners();
     });
 
     _callSocket!.onDisconnect((_) {
-      debugPrint('❌ Disconnected from CallGateway');
+      debugPrint('');
+      debugPrint('═══════════════════════════════════════════════════════════');
+      debugPrint('❌ DISCONNECTED FROM CALLGATEWAY');
+      debugPrint('═══════════════════════════════════════════════════════════');
+      debugPrint('');
       _isCallSocketConnected = false;
     });
 
     _callSocket!.onConnectError((error) {
-      debugPrint('❌ CallGateway connection error: $error');
+      debugPrint('');
+      debugPrint('═══════════════════════════════════════════════════════════');
+      debugPrint('❌ CALLGATEWAY CONNECTION ERROR: $error');
+      debugPrint('═══════════════════════════════════════════════════════════');
+      debugPrint('');
       _isCallSocketConnected = false;
     });
 
     _callSocket!.onError((error) {
-      debugPrint('❌ CallGateway error: $error');
+      debugPrint('');
+      debugPrint('═══════════════════════════════════════════════════════════');
+      debugPrint('❌ CALLGATEWAY ERROR: $error');
+      debugPrint('═══════════════════════════════════════════════════════════');
+      debugPrint('');
     });
+
+    debugPrint('📋 Event handlers registered, waiting for connection...');
   }
 
-  /// Get auth token from storage
+  /// Get auth token from secure storage using TokenService
   Future<String?> _getAuthToken() async {
     try {
-      // Get token from shared preferences (same as WebSocketServiceImpl uses)
-      final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('auth_token');
+      // Use TokenService to get token from FlutterSecureStorage
+      final tokenService = TokenService();
+      final token = await tokenService.getAccessToken();
 
       if (token != null) {
-        debugPrint('✅ Retrieved auth token for CallGateway connection');
+        debugPrint(
+          '✅ Retrieved auth token for CallGateway connection (length: ${token.length})',
+        );
+        debugPrint(
+          '✅ Retrieved auth token for CallGateway connection (length: ${token.length})',
+        );
       } else {
-        debugPrint('⚠️ No auth token found in storage');
+        debugPrint('⚠️ No auth token found in secure storage');
       }
       
       return token;
@@ -180,12 +226,22 @@ class CallInvitationService {
     final callId = _uuid.v4();
     final channelName = groupId ?? callId;
 
+    // ✅ Generate a temporary UID for the caller for this call session.
+    // This must be a 32-bit unsigned integer for Agora.
+    final callerUid = Random().nextInt(4294967295);
+
     // ❌ DO NOT generate RTC token here!
     // Token will be sent by backend in 'call_ready_to_connect' event
     // after recipient accepts the call
     // This optimization prevents Agora charges for declined/timeout calls
 
     // Create invitation WITHOUT token
+    // Include callerUid in metadata for backend to use
+    final invitationMetadata = {
+      ...?metadata,
+      'callerUid': callerUid, // ✅ Include the generated UID in metadata
+    };
+
     final invitation = CallInvitation(
       callId: callId,
       callerId: '', // Will be set by backend from JWT
@@ -197,7 +253,7 @@ class CallInvitationService {
       groupId: groupId,
       // rtcToken: null, // Will be received in ready_to_connect event
       channelName: channelName,
-      metadata: metadata,
+      metadata: invitationMetadata,
       createdAt: DateTime.now(),
       expiresAt: DateTime.now().add(const Duration(seconds: 30)),
     );

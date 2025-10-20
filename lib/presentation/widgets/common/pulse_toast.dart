@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme/pulse_design_system.dart';
 import '../../../core/utils/haptic_feedback_utils.dart';
+import '../../../core/utils/logger.dart';
 
 /// Modern Toast Notification System for PulseLink
 ///
@@ -122,6 +123,16 @@ class PulseToast {
     ToastAction? action,
     required Duration duration,
   }) {
+    // Safety check: Only show toast if ScaffoldMessenger is available
+    // This prevents errors when toast is called before MaterialApp is built
+    final scaffoldMessenger = ScaffoldMessenger.maybeOf(context);
+    if (scaffoldMessenger == null) {
+      AppLogger.warning(
+        '⚠️ Cannot show toast: ScaffoldMessenger not available yet. Message: $message',
+      );
+      return;
+    }
+
     final snackBar = SnackBar(
       content: _ToastContent(message: message, icon: icon),
       backgroundColor: backgroundColor,
@@ -139,7 +150,7 @@ class PulseToast {
       elevation: 6,
     );
 
-    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+    scaffoldMessenger.showSnackBar(snackBar);
   }
 }
 
