@@ -197,9 +197,13 @@ class CallInvitationService {
     _callSocket!.on('call_ready_to_connect', _handleReadyToConnect);
     _callSocket!.on('call_connected', _handleCallConnected);
     _callSocket!.on('call_failed', _handleCallFailed);
+    _callSocket!.on(
+      'call_ended',
+      _handleCallEnded,
+    ); // 🔥 NEW: Handle remote call end
 
     debugPrint(
-      '✅ All call event listeners registered on CallGateway (8 events)',
+      '✅ All call event listeners registered on CallGateway (9 events)',
     );
   }
 
@@ -374,8 +378,17 @@ class CallInvitationService {
   }
 
   /// Mark call as ended (user hung up)
-  Future<void> endCall(String callId) async {
-    // Update state
+  Future<void> endCall(String callId, {String? reason}) async {
+    // 🔥 FIRST: Emit end event to backend to notify the other party
+    // This must happen BEFORE updating local state
+    _callSocket?.emit('end_call', {
+      'callId': callId,
+      'reason': reason ?? 'user_hangup',
+    });
+
+    debugPrint('Emitted end_call event for: $callId');
+
+    // THEN: Update local state
     _currentState = _currentState.copyWith(
       isInCall: false,
       currentInvitation: null,
@@ -383,7 +396,7 @@ class CallInvitationService {
     );
     _callStateController.add(_currentState);
 
-    debugPrint('Ended call: $callId');
+    debugPrint('✅ Ended call: $callId');
   }
 
   /// Set user availability for receiving calls
@@ -624,6 +637,41 @@ class CallInvitationService {
       _callStateController.add(_currentState);
     } catch (e) {
       debugPrint('Error handling call failed: $e');
+    }
+  }
+
+  /// 🔥 NEW: Handle call ended event from backend
+  /// Called when the other party ends/hangs up an active call
+  void _handleCallEnded(dynamic data) {
+    try {
+      final callId = data['callId'] as String;
+      final endedBy = data['endedBy'] as String?;
+      final reason = data['reason'] as String?;
+
+      debugPrint(
+        '📞 Call ended remotely: $callId by user $endedBy (reason: $reason)',
+      );
+
+      // Emit connection status event so UI can react (e.g., show "Call ended" message)
+      _connectionStatusController.add({
+        'event': 'ended',
+        'callId': callId,
+        'endedBy': endedBy,
+        'reason': reason,
+        'status': CallConnectionStatus.ended,
+      });
+
+      // Update local state to clear call
+      _currentState = _currentState.copyWith(
+        isInCall: false,
+        currentInvitation: null,
+        outgoingInvitation: null,
+      );
+      _callStateController.add(_currentState);
+
+      debugPrint('✅ Call ended state updated locally');
+    } catch (e) {
+      debugPrint('❌ Error handling call_ended event: $e');
     }
   }
 
