@@ -153,6 +153,12 @@ class MessageDbModel {
 
   /// Convert to database map
   Map<String, dynamic> toMap() {
+    // Convert mediaUrls list to comma-separated string, handling empty lists properly
+    String? mediaUrlsString;
+    if (mediaUrls != null && mediaUrls!.isNotEmpty) {
+      mediaUrlsString = mediaUrls!.join(',');
+    }
+    
     return {
       'id': id,
       'conversation_id': conversationId,
@@ -161,7 +167,7 @@ class MessageDbModel {
       'sender_avatar': senderAvatar,
       'type': type,
       'content': content,
-      'media_urls': mediaUrls?.join(','),
+      'media_urls': mediaUrlsString,
       'metadata': metadata != null ? jsonEncode(metadata) : null,
       'status': status,
       'reactions': reactions != null ? jsonEncode(reactions) : null,
@@ -175,6 +181,13 @@ class MessageDbModel {
 
   /// Create from database map
   factory MessageDbModel.fromMap(Map<String, dynamic> map) {
+    // Parse mediaUrls from comma-separated string, handling empty/null properly
+    List<String>? mediaUrlsList;
+    final mediaUrlsString = map['media_urls'] as String?;
+    if (mediaUrlsString != null && mediaUrlsString.isNotEmpty) {
+      mediaUrlsList = mediaUrlsString.split(',');
+    }
+    
     return MessageDbModel(
       id: map['id'] as String,
       conversationId: map['conversation_id'] as String,
@@ -183,9 +196,7 @@ class MessageDbModel {
       senderAvatar: map['sender_avatar'] as String?,
       type: map['type'] as String,
       content: map['content'] as String?,
-      mediaUrls: map['media_urls'] != null
-          ? (map['media_urls'] as String).split(',')
-          : null,
+      mediaUrls: mediaUrlsList,
       metadata: map['metadata'] != null
           ? jsonDecode(map['metadata'] as String) as Map<String, dynamic>
           : null,

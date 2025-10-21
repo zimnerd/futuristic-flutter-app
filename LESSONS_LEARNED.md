@@ -5,6 +5,132 @@ This document captures key learnings from building the **Flutter mobile dating a
 
 ---
 
+## 🚨 **CRITICAL: Empty String in SQLite Split Bug (January 2026)**
+
+**Status**: ✅ **FIXED** - Added proper null/empty handling for mediaUrls  
+**Date**: January 2026  
+**Impact**: **CRITICAL** - Recipient couldn't see images in chat after reload  
+**Rating**: 9/10 (Breaks core chat functionality)  
+**Component**: MessageDbModel (`/mobile/lib/data/database/models/database_models.dart`)
+
+### **Problem: Empty String Split Returns ['']**
+
+**What Happened**:
+```
+Sender sends image → Backend returns mediaUrls: ['https://...']
+    ↓
+Mobile saves: mediaUrls.join(',') → "https://..."
+    ↓
+Database stores: "https://..." ✅
+    ↓
+Mobile loads: "https://...".split(',') → ['https://...'] ✅
+    ↓
+UI renders image ✅
+
+BUT:
+
+Message with NO images → Backend returns mediaUrls: []
+    ↓
+Mobile saves: [].join(',') → "" (EMPTY STRING!)
+    ↓
+Database stores: "" (not null)
+    ↓
+Mobile loads: "".split(',') → [''] (LIST WITH EMPTY STRING!)
+    ↓
+_hasMedia() check: [''].isNotEmpty → TRUE
+    ↓
+UI tries to render image from '' → "image unavailable" placeholder ❌
+```
+
+**Root Cause**:
+1. **Empty list → empty string**: `[].join(',')` returns `""`, not `null`
+2. **Database stores empty string**: SQLite stores `""` instead of `NULL`
+3. **Empty string split**: `"".split(',')` returns `['']` (list with one empty string!)
+4. **UI thinks there's media**: `[''].isNotEmpty` is `true`, so UI tries to load empty URL
+
+### **Solution: Explicit Null/Empty Checks**
+
+**Before** (BROKEN):
+```dart
+// toMap() - Line 165
+'media_urls': mediaUrls?.join(','),  // [] becomes ""
+
+// fromMap() - Line 187
+mediaUrls: map['media_urls'] != null
+    ? (map['media_urls'] as String).split(',')  // "" becomes ['']
+    : null,
+```
+
+**After** (FIXED):
+```dart
+// toMap() - Line 157
+String? mediaUrlsString;
+if (mediaUrls != null && mediaUrls!.isNotEmpty) {
+  mediaUrlsString = mediaUrls!.join(',');  // Only create string if list has items
+}
+// Result: Empty list → null (not empty string)
+
+// fromMap() - Line 182
+List<String>? mediaUrlsList;
+final mediaUrlsString = map['media_urls'] as String?;
+if (mediaUrlsString != null && mediaUrlsString.isNotEmpty) {
+  mediaUrlsList = mediaUrlsString.split(',');  // Only split if string has content
+}
+// Result: Empty string → null (not [''])
+```
+
+### **Key Lessons**
+
+**1. SQLite String Storage Requires Explicit Null Handling**:
+```dart
+// ❌ BAD: Empty collections become empty strings
+'field': list?.join(',')
+
+// ✅ GOOD: Empty collections become null
+String? fieldString;
+if (list != null && list.isNotEmpty) {
+  fieldString = list.join(',');
+}
+```
+
+**2. String Split Always Returns Non-Empty List**:
+```dart
+"".split(',')        // [''] ❌ NOT []
+"a,b".split(',')     // ['a', 'b'] ✅
+"a".split(',')       // ['a'] ✅
+```
+
+**3. Check String Not Empty Before Split**:
+```dart
+// ❌ BAD
+final list = str != null ? str.split(',') : null;  // "" becomes ['']
+
+// ✅ GOOD
+List<String>? list;
+if (str != null && str.isNotEmpty) {
+  list = str.split(',');
+}
+```
+
+**4. Test Edge Cases in Database Serialization**:
+- Empty lists `[]`
+- Single item lists `['a']`
+- Multi-item lists `['a', 'b', 'c']`
+- Null lists
+- Items containing delimiter (requires escaping)
+
+### **Related Files Modified**:
+- `mobile/lib/data/database/models/database_models.dart` (toMap & fromMap methods)
+
+### **Testing Checklist**:
+- ✅ Send message with images → Recipient sees images
+- ✅ Send message without images → No placeholder shown
+- ✅ Reload app after receiving images → Images still visible
+- ✅ Multiple images in one message → All images display
+- ✅ Mix of messages with/without images → Correct rendering
+
+---
+
 ## 🚨🚨 **CRITICAL: Infinite Token Refresh Loop Prevention (January 2026)**
 
 **Status**: ✅ **FIXED** - Added recursion protection and retry limits  
