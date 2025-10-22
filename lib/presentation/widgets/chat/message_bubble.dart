@@ -532,8 +532,8 @@ class MessageBubble extends StatelessWidget {
         message.mediaUrls!.isNotEmpty &&
         (message.type == entities.MessageType.image ||
             message.type == entities.MessageType.video ||
-            message.type == entities.MessageType.gif ||
-            message.type == entities.MessageType.audio);
+            message.type == entities.MessageType.gif);
+    // Note: audio is excluded - handled by _hasVoiceMessage()
   }
 
   /// Check if message is a voice message
@@ -725,22 +725,148 @@ class MessageBubble extends StatelessWidget {
 
   /// Build voice message content widget
   Widget _buildVoiceMessageContent(BuildContext context) {
+    // Get waveform and duration from metadata (available even for optimistic messages)
+    final duration = message.metadata?['duration'] ?? 0;
+    final waveformData = message.metadata?['waveform'] as List<dynamic>?;
+    final waveform = waveformData != null
+        ? List<double>.from(waveformData)
+        : List.generate(50, (index) => 0.3 + (index % 3) * 0.2);
+
+    // Check if message has media URLs
     if (message.mediaUrls == null || message.mediaUrls!.isEmpty) {
+      // For sending/failed messages with waveform data, show waveform preview
+      if ((message.status == MessageStatus.sending ||
+              message.status == MessageStatus.failed) &&
+          message.metadata?['waveform'] != null) {
+        return Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: isCurrentUser
+                ? PulseColors.primary.withValues(alpha: 0.7)
+                : Colors.grey[200],
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Status indicator
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    message.status == MessageStatus.sending
+                        ? Icons.upload
+                        : Icons.error_outline,
+                    color: isCurrentUser ? Colors.white : Colors.grey[600],
+                    size: 16,
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    message.status == MessageStatus.sending
+                        ? 'Sending...'
+                        : 'Failed',
+                    style: TextStyle(
+                      color: isCurrentUser ? Colors.white70 : Colors.grey[600],
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              // Waveform preview
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.mic,
+                    color: isCurrentUser ? Colors.white : PulseColors.primary,
+                    size: 20,
+                  ),
+                  const SizedBox(width: 8),
+                  SizedBox(
+                    width: 150,
+                    height: 30,
+                    child: CustomPaint(
+                      painter: _WaveformPainter(
+                        waveform: waveform,
+                        color: isCurrentUser
+                            ? Colors.white
+                            : PulseColors.primary,
+                        progress: 0.0,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    _formatDuration(Duration(seconds: duration)),
+                    style: TextStyle(
+                      color: isCurrentUser ? Colors.white : Colors.grey[800],
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      }
+
+      // For other cases without media URLs, show simple placeholder
+      if (message.status == MessageStatus.sending ||
+          message.status == MessageStatus.failed) {
+        return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            color: isCurrentUser
+                ? PulseColors.primary.withValues(alpha: 0.7)
+                : Colors.grey[200],
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                message.status == MessageStatus.sending
+                    ? Icons.upload
+                    : Icons.error_outline,
+                color: isCurrentUser ? Colors.white : Colors.grey[600],
+                size: 20,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                message.status == MessageStatus.sending
+                    ? 'Sending voice message...'
+                    : 'Failed to send voice message',
+                style: TextStyle(
+                  color: isCurrentUser ? Colors.white : Colors.grey[800],
+                  fontSize: 14,
+                ),
+              ),
+            ],
+          ),
+        );
+      }
       return const SizedBox.shrink();
     }
 
+    // Message has media URLs - render full playback widget
     final audioUrl = message.mediaUrls!.first;
-    final duration = message.metadata?['duration'] ?? 0;
-    final waveformData = List<double>.from(
-      message.metadata?['waveform'] ?? List.generate(20, (index) => 0.5),
-    );
 
     return VoiceMessageBubble(
       audioUrl: audioUrl,
       duration: duration,
-      waveformData: waveformData,
+      waveformData: waveform,
       isCurrentUser: isCurrentUser,
     );
+  }
+
+  String _formatDuration(Duration duration) {
+    String twoDigits(int n) => n.toString().padLeft(2, '0');
+    final minutes = twoDigits(duration.inMinutes.remainder(60));
+    final seconds = twoDigits(duration.inSeconds.remainder(60));
+    return '$minutes:$seconds';
   }
 
   /// Build media content widget
@@ -927,7 +1053,11 @@ class MessageBubble extends StatelessWidget {
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: Text(
-                        _formatDuration(message.metadata!['duration'] as int),
+                        _formatDuration(
+                          Duration(
+                            seconds: message.metadata!['duration'] as int,
+                          ),
+                        ),
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 12,
@@ -942,13 +1072,6 @@ class MessageBubble extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  /// Format duration in seconds to MM:SS
-  String _formatDuration(int seconds) {
-    final minutes = seconds ~/ 60;
-    final remainingSeconds = seconds % 60;
-    return '${minutes.toString().padLeft(1, '0')}:${remainingSeconds.toString().padLeft(2, '0')}';
   }
 
   /// Add cache buster to URL for recently uploaded images
@@ -1086,5 +1209,56 @@ class MessageBubble extends StatelessWidget {
     }
 
     return RichText(text: TextSpan(children: spans));
+  }
+}
+
+/// Custom painter for waveform visualization
+class _WaveformPainter extends CustomPainter {
+  final List<double> waveform;
+  final Color color;
+  final double progress;
+
+  _WaveformPainter({
+    required this.waveform,
+    required this.color,
+    this.progress = 0.0,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (waveform.isEmpty) return;
+
+    final paint = Paint()
+      ..color = color
+      ..strokeWidth = 2
+      ..strokeCap = StrokeCap.round;
+
+    final progressPaint = Paint()
+      ..color = color.withValues(alpha: 0.5)
+      ..strokeWidth = 2
+      ..strokeCap = StrokeCap.round;
+
+    final barWidth = size.width / waveform.length;
+    final centerY = size.height / 2;
+
+    for (int i = 0; i < waveform.length; i++) {
+      final x = i * barWidth + barWidth / 2;
+      final barHeight = waveform[i] * size.height * 0.8;
+      final y1 = centerY - barHeight / 2;
+      final y2 = centerY + barHeight / 2;
+
+      // Use different color for played portion
+      final barProgress = i / waveform.length;
+      final currentPaint = barProgress <= progress ? paint : progressPaint;
+
+      canvas.drawLine(Offset(x, y1), Offset(x, y2), currentPaint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(_WaveformPainter oldDelegate) {
+    return oldDelegate.progress != progress ||
+        oldDelegate.waveform != waveform ||
+        oldDelegate.color != color;
   }
 }

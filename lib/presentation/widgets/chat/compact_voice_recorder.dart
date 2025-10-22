@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:record/record.dart';
+import 'package:audio_waveforms/audio_waveforms.dart';
 import 'dart:async';
 import 'dart:io';
+import 'package:path_provider/path_provider.dart';
 
 import '../../../data/models/voice_message.dart';
 import '../../theme/pulse_colors.dart';
 import '../common/pulse_toast.dart';
 
-/// Compact voice recorder widget for chat input
+/// Compact voice recorder widget for chat input with live waveform
 class CompactVoiceRecorder extends StatefulWidget {
   final Function(VoiceMessage) onMessageRecorded;
   final VoidCallback onCancel;
@@ -24,91 +25,69 @@ class CompactVoiceRecorder extends StatefulWidget {
   State<CompactVoiceRecorder> createState() => _CompactVoiceRecorderState();
 }
 
-class _CompactVoiceRecorderState extends State<CompactVoiceRecorder>
-    with TickerProviderStateMixin {
-  final AudioRecorder _recorder = AudioRecorder();
+class _CompactVoiceRecorderState extends State<CompactVoiceRecorder> {
+  late RecorderController _recorderController;
 
   bool _isRecording = false;
   bool _isPaused = false;
   Duration _recordedDuration = Duration.zero;
   Timer? _recordingTimer;
 
-  late AnimationController _pulseController;
-  late AnimationController _waveController;
-  late Animation<double> _pulseAnimation;
-
   String? _currentRecordingPath;
 
   @override
   void initState() {
     super.initState();
-    _initAnimations();
-    _startRecording();
+    _initRecorder();
   }
 
-  void _initAnimations() {
-    _pulseController = AnimationController(
-      duration: const Duration(milliseconds: 1500),
-      vsync: this,
-    );
+  Future<void> _initRecorder() async {
+    // Initialize recorder controller
+    _recorderController = RecorderController()
+      ..androidEncoder = AndroidEncoder.aac
+      ..androidOutputFormat = AndroidOutputFormat.mpeg4
+      ..iosEncoder = IosEncoder.kAudioFormatMPEG4AAC
+      ..sampleRate = 44100;
 
-    _waveController = AnimationController(
-      duration: const Duration(milliseconds: 800),
-      vsync: this,
-    );
-
-    _pulseAnimation = Tween<double>(begin: 1.0, end: 1.3).animate(
-      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
-    );
+    await _startRecording();
   }
 
   @override
   void dispose() {
     _recordingTimer?.cancel();
-    _pulseController.dispose();
-    _waveController.dispose();
-    _recorder.dispose();
+    _recorderController.dispose();
     super.dispose();
   }
 
   Future<void> _startRecording() async {
     try {
-      if (await _recorder.hasPermission()) {
-        final path =
-            '/tmp/voice_message_${DateTime.now().millisecondsSinceEpoch}.m4a';
-        _currentRecordingPath = path;
+      // Get temporary directory for recording
+      final directory = await getTemporaryDirectory();
+      final path =
+          '${directory.path}/voice_message_${DateTime.now().millisecondsSinceEpoch}.m4a';
+      _currentRecordingPath = path;
 
-        await _recorder.start(
-          const RecordConfig(
-            encoder: AudioEncoder.aacLc,
-            bitRate: 128000,
-            sampleRate: 44100,
-          ),
-          path: path,
-        );
+      // Check permissions and start recording
+      await _recorderController.record(path: path);
 
-        setState(() {
-          _isRecording = true;
-          _isPaused = false;
-          _recordedDuration = Duration.zero;
-        });
+      setState(() {
+        _isRecording = true;
+        _isPaused = false;
+        _recordedDuration = Duration.zero;
+      });
 
-        _startTimer();
-        _pulseController.repeat(reverse: true);
-        _waveController.repeat();
-      }
+      _startTimer();
     } catch (e) {
       _showError('Failed to start recording: $e');
+      widget.onCancel();
     }
   }
 
   Future<void> _pauseRecording() async {
     try {
-      await _recorder.pause();
+      await _recorderController.pause();
       setState(() => _isPaused = true);
       _recordingTimer?.cancel();
-      _pulseController.stop();
-      _waveController.stop();
     } catch (e) {
       _showError('Failed to pause recording: $e');
     }
@@ -116,11 +95,9 @@ class _CompactVoiceRecorderState extends State<CompactVoiceRecorder>
 
   Future<void> _resumeRecording() async {
     try {
-      await _recorder.resume();
+      await _recorderController.record();
       setState(() => _isPaused = false);
       _startTimer();
-      _pulseController.repeat(reverse: true);
-      _waveController.repeat();
     } catch (e) {
       _showError('Failed to resume recording: $e');
     }
@@ -128,11 +105,9 @@ class _CompactVoiceRecorderState extends State<CompactVoiceRecorder>
 
   Future<void> _stopRecording() async {
     try {
-      final path = await _recorder.stop();
+      final path = await _recorderController.stop();
 
       _recordingTimer?.cancel();
-      _pulseController.stop();
-      _waveController.stop();
 
       setState(() {
         _isRecording = false;
@@ -142,11 +117,8 @@ class _CompactVoiceRecorderState extends State<CompactVoiceRecorder>
       if (path != null && _recordedDuration.inSeconds > 0) {
         final file = File(path);
         if (await file.exists()) {
-          // Generate simple waveform data
-          final waveformData = List.generate(
-            50,
-            (index) => 0.3 + (index % 3) * 0.2 + (index % 7) * 0.1,
-          );
+          // Extract real waveform data from the recorded audio
+          final waveformData = await _extractWaveformData(path);
 
           final message = VoiceMessage(
             id: DateTime.now().millisecondsSinceEpoch.toString(),
@@ -169,12 +141,39 @@ class _CompactVoiceRecorderState extends State<CompactVoiceRecorder>
     }
   }
 
+  /// Extract waveform data from recorded audio
+  Future<List<double>> _extractWaveformData(String audioPath) async {
+    try {
+      // Initialize a player controller to extract waveform
+      final playerController = PlayerController();
+      await playerController.preparePlayer(
+        path: audioPath,
+        shouldExtractWaveform: true,
+      );
+
+      // Get waveform data (normalized to 0.0-1.0 range)
+      final waveform = playerController.waveformData;
+      playerController.dispose();
+
+      if (waveform.isNotEmpty) {
+        return waveform;
+      }
+    } catch (e) {
+      // If waveform extraction fails, generate placeholder
+      debugPrint('Failed to extract waveform: $e');
+    }
+
+    // Fallback: generate simple waveform data
+    return List.generate(
+      50,
+      (index) => 0.3 + (index % 3) * 0.2 + (index % 7) * 0.1,
+    );
+  }
+
   void _cancelRecording() async {
     try {
-      await _recorder.stop();
+      await _recorderController.stop();
       _recordingTimer?.cancel();
-      _pulseController.stop();
-      _waveController.stop();
 
       // Delete the recording file
       if (_currentRecordingPath != null) {
@@ -203,13 +202,19 @@ class _CompactVoiceRecorderState extends State<CompactVoiceRecorder>
   }
 
   void _showError(String message) {
-    PulseToast.error(context, message: message);
+    if (mounted) {
+      PulseToast.error(context, message: message);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+      ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -237,93 +242,37 @@ class _CompactVoiceRecorderState extends State<CompactVoiceRecorder>
 
           const SizedBox(height: 20),
 
-          // Recording visualizer and timer
-          Row(
-            children: [
-              // Pulsing record button
-              AnimatedBuilder(
-                animation: _pulseAnimation,
-                builder: (context, child) {
-                  return Transform.scale(
-                    scale: _isRecording && !_isPaused
-                        ? _pulseAnimation.value
-                        : 1.0,
-                    child: Container(
-                      width: 50,
-                      height: 50,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: _isRecording
-                            ? (_isPaused ? Colors.orange : Colors.red)
-                            : PulseColors.primary,
-                        boxShadow: _isRecording && !_isPaused
-                            ? [
-                                BoxShadow(
-                                  color: Colors.red.withValues(alpha: 0.3),
-                                  blurRadius: 15,
-                                  spreadRadius: 3,
-                                ),
-                              ]
-                            : null,
-                      ),
-                      child: Icon(
-                        _isRecording
-                            ? (_isPaused ? Icons.pause : Icons.mic)
-                            : Icons.mic_none,
-                        color: Colors.white,
-                        size: 24,
-                      ),
-                    ),
-                  );
-                },
+          // Live Waveform Visualization
+          Container(
+            height: 80,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: AudioWaveforms(
+              recorderController: _recorderController,
+              size: Size(MediaQuery.of(context).size.width - 80, 80),
+              waveStyle: WaveStyle(
+                waveColor: _isRecording
+                    ? (_isPaused ? Colors.orange : PulseColors.primary)
+                    : Colors.grey,
+                showDurationLabel: false,
+                spacing: 4,
+                extendWaveform: true,
+                showMiddleLine: false,
               ),
+            ),
+          ),
 
-              const SizedBox(width: 16),
+          const SizedBox(height: 16),
 
-              // Duration and waveform
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      _formatDuration(_recordedDuration),
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: _isRecording ? Colors.red : PulseColors.primary,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    // Simple waveform visualization
-                    AnimatedBuilder(
-                      animation: _waveController,
-                      builder: (context, child) {
-                        return Row(
-                          children: List.generate(15, (index) {
-                            final height = _isRecording && !_isPaused
-                                ? 2 +
-                                      (index % 4) * 3 +
-                                      (_waveController.value * 8)
-                                : 2.0;
-                            return Container(
-                              margin: const EdgeInsets.symmetric(horizontal: 1),
-                              width: 3,
-                              height: height,
-                              decoration: BoxDecoration(
-                                color: PulseColors.primary.withValues(
-                                  alpha: 0.6,
-                                ),
-                                borderRadius: BorderRadius.circular(2),
-                              ),
-                            );
-                          }),
-                        );
-                      },
-                    ),
-                  ],
-                ),
-              ),
-            ],
+          // Duration Display
+          Text(
+            _formatDuration(_recordedDuration),
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: _isRecording
+                  ? (_isPaused ? Colors.orange : PulseColors.primary)
+                  : Colors.grey,
+            ),
           ),
 
           const SizedBox(height: 20),
@@ -362,7 +311,7 @@ class _CompactVoiceRecorderState extends State<CompactVoiceRecorder>
           ),
 
           // Max duration indicator
-          const SizedBox(height: 8),
+          const SizedBox(height: 16),
           LinearProgressIndicator(
             value:
                 _recordedDuration.inMilliseconds /
@@ -393,25 +342,34 @@ class _CompactVoiceRecorderState extends State<CompactVoiceRecorder>
     return Column(
       children: [
         Container(
-          width: 50,
-          height: 50,
+          width: 56,
+          height: 56,
           decoration: BoxDecoration(
             color: onPressed != null ? color : Colors.grey[300],
             shape: BoxShape.circle,
+            boxShadow: onPressed != null
+                ? [
+                    BoxShadow(
+                      color: color.withValues(alpha: 0.3),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ]
+                : null,
           ),
           child: IconButton(
-            icon: Icon(icon),
+            icon: Icon(icon, size: 24),
             color: Colors.white,
             onPressed: onPressed,
           ),
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: 6),
         Text(
           label,
           style: TextStyle(
-            fontSize: 12,
+            fontSize: 13,
             color: onPressed != null ? color : Colors.grey[500],
-            fontWeight: FontWeight.w500,
+            fontWeight: FontWeight.w600,
           ),
         ),
       ],

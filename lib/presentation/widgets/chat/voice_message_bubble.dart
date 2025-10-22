@@ -64,43 +64,59 @@ class _VoiceMessageBubbleState extends State<VoiceMessageBubble>
   }
 
   Future<void> _initializePlayer() async {
+    if (!mounted) return;
     setState(() => _isLoading = true);
 
     try {
-      await _audioPlayer.setFilePath(widget.audioUrl);
+      // Check if audioUrl is a network URL or local file path
+      if (widget.audioUrl.startsWith('http://') ||
+          widget.audioUrl.startsWith('https://')) {
+        // Network audio
+        await _audioPlayer.setUrl(widget.audioUrl);
+      } else {
+        // Local file
+        await _audioPlayer.setFilePath(widget.audioUrl);
+      }
+
       _totalDuration =
           _audioPlayer.duration ?? Duration(seconds: widget.duration);
 
       _positionSubscription = _audioPlayer.positionStream.listen((position) {
-        setState(() => _currentPosition = position);
+        if (mounted) {
+          setState(() => _currentPosition = position);
+        }
       });
 
       _playerStateSubscription = _audioPlayer.playerStateStream.listen((state) {
-        setState(() {
-          _isPlaying = state.playing;
-          _isLoading = state.processingState == ProcessingState.loading;
-        });
+        if (mounted) {
+          setState(() {
+            _isPlaying = state.playing;
+            _isLoading = state.processingState == ProcessingState.loading;
+          });
 
-        if (state.playing) {
-          _waveController.repeat();
-        } else {
-          _waveController.stop();
+          if (state.playing) {
+            _waveController.repeat();
+          } else {
+            _waveController.stop();
+          }
         }
       });
     } catch (e) {
       // Handle error silently for better UX
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
   @override
   void dispose() {
+    _positionSubscription?.cancel();
+    _playerStateSubscription?.cancel();
     _audioPlayer.dispose();
     _waveController.dispose();
     _speedChangeController.dispose();
-    _positionSubscription?.cancel();
-    _playerStateSubscription?.cancel();
     super.dispose();
   }
 
@@ -129,7 +145,9 @@ class _VoiceMessageBubbleState extends State<VoiceMessageBubble>
       }
 
       await _audioPlayer.setSpeed(newSpeed);
-      setState(() => _playbackSpeed = newSpeed);
+      if (mounted) {
+        setState(() => _playbackSpeed = newSpeed);
+      }
 
       // Haptic feedback
       HapticFeedback.selectionClick();
