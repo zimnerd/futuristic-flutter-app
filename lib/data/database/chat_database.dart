@@ -7,7 +7,8 @@ import '../services/cache_ttl_service.dart';
 /// Optimized for WhatsApp-style messaging with pagination and offline support
 class ChatDatabase {
   static const String _databaseName = 'pulse_chat.db';
-  static const int _databaseVersion = 3;
+  static const int _databaseVersion =
+      4; // Bumped to fix cache_metadata table creation
 
   static Database? _database;
   static final Logger _logger = Logger();
@@ -133,6 +134,9 @@ class ChatDatabase {
       )
     ''');
 
+    // Cache metadata table for TTL tracking
+    await CacheTTLService.createCacheMetadataTable(db);
+
     // Create indexes for optimal query performance
     await _createIndexes(db);
 
@@ -222,6 +226,15 @@ class ChatDatabase {
       _logger.d('Adding cache_metadata table for cache TTL tracking...');
       await CacheTTLService.createCacheMetadataTable(db);
       _logger.d('Cache metadata table created successfully');
+    }
+
+    // Migration to version 4: Ensure cache_metadata table exists
+    // (fixes issue where table wasn't created in _onCreate for fresh installs)
+    if (oldVersion < 4) {
+      _logger.d('Ensuring cache_metadata table exists...');
+      // Use CREATE TABLE IF NOT EXISTS to avoid errors if already created in v3
+      await CacheTTLService.createCacheMetadataTable(db);
+      _logger.d('Cache metadata table verified');
     }
   }
 

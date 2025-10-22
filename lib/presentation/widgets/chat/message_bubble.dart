@@ -725,88 +725,69 @@ class MessageBubble extends StatelessWidget {
 
   /// Build voice message content widget
   Widget _buildVoiceMessageContent(BuildContext context) {
-    // Get waveform and duration from metadata (available even for optimistic messages)
+    // Get duration from metadata
     final duration = message.metadata?['duration'] ?? 0;
-    final waveformData = message.metadata?['waveform'] as List<dynamic>?;
-    final waveform = waveformData != null
-        ? List<double>.from(waveformData)
-        : List.generate(50, (index) => 0.3 + (index % 3) * 0.2);
 
-    // Check if message has media URLs
+    // Check if message has media URLs (server-confirmed message)
     if (message.mediaUrls == null || message.mediaUrls!.isEmpty) {
-      // For sending/failed messages with waveform data, show waveform preview
-      if ((message.status == MessageStatus.sending ||
-              message.status == MessageStatus.failed) &&
-          message.metadata?['waveform'] != null) {
+      // For sending/failed audio messages, show simple loading indicator
+      // Don't try to render optimistic voice message - wait for server confirmation
+      if (message.status == MessageStatus.sending ||
+          message.status == MessageStatus.failed) {
         return Container(
-          padding: const EdgeInsets.all(12),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
             color: isCurrentUser
                 ? PulseColors.primary.withValues(alpha: 0.7)
                 : Colors.grey[200],
             borderRadius: BorderRadius.circular(20),
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Status indicator
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    message.status == MessageStatus.sending
-                        ? Icons.upload
-                        : Icons.error_outline,
-                    color: isCurrentUser ? Colors.white : Colors.grey[600],
-                    size: 16,
-                  ),
-                  const SizedBox(width: 6),
-                  Text(
-                    message.status == MessageStatus.sending
-                        ? 'Sending...'
-                        : 'Failed',
-                    style: TextStyle(
-                      color: isCurrentUser ? Colors.white70 : Colors.grey[600],
-                      fontSize: 12,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              // Waveform preview
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    Icons.mic,
-                    color: isCurrentUser ? Colors.white : PulseColors.primary,
-                    size: 20,
-                  ),
-                  const SizedBox(width: 8),
-                  SizedBox(
-                    width: 150,
-                    height: 30,
-                    child: CustomPaint(
-                      painter: _WaveformPainter(
-                        waveform: waveform,
-                        color: isCurrentUser
-                            ? Colors.white
-                            : PulseColors.primary,
-                        progress: 0.0,
+              // Status icon
+              SizedBox(
+                width: 16,
+                height: 16,
+                child: message.status == MessageStatus.sending
+                    ? CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          isCurrentUser ? Colors.white : PulseColors.primary,
+                        ),
+                      )
+                    : Icon(
+                        Icons.error_outline,
+                        color: isCurrentUser ? Colors.white : Colors.red,
+                        size: 16,
                       ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    _formatDuration(Duration(seconds: duration)),
-                    style: TextStyle(
-                      color: isCurrentUser ? Colors.white : Colors.grey[800],
-                      fontSize: 13,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
+              ),
+              const SizedBox(width: 10),
+              // Voice message icon
+              Icon(
+                Icons.mic,
+                color: isCurrentUser ? Colors.white70 : Colors.grey[600],
+                size: 20,
+              ),
+              const SizedBox(width: 8),
+              // Status text
+              Text(
+                message.status == MessageStatus.sending
+                    ? 'Sending voice message...'
+                    : 'Failed to send',
+                style: TextStyle(
+                  color: isCurrentUser ? Colors.white : Colors.grey[800],
+                  fontSize: 14,
+                ),
+              ),
+              const SizedBox(width: 8),
+              // Duration
+              Text(
+                _formatDuration(Duration(seconds: duration)),
+                style: TextStyle(
+                  color: isCurrentUser ? Colors.white70 : Colors.grey[600],
+                  fontSize: 12,
+                ),
               ),
             ],
           ),
@@ -853,6 +834,13 @@ class MessageBubble extends StatelessWidget {
 
     // Message has media URLs - render full playback widget
     final audioUrl = message.mediaUrls!.first;
+    
+    // Extract waveform data from metadata (if available from server)
+    // Convert to doubles explicitly to handle both int and double values
+    final waveformData = message.metadata?['waveform'] as List<dynamic>?;
+    final waveform = waveformData != null
+        ? waveformData.map((e) => (e as num).toDouble()).toList()
+        : List.generate(50, (index) => 0.3 + (index % 3) * 0.2);
 
     return VoiceMessageBubble(
       audioUrl: audioUrl,
@@ -1209,56 +1197,5 @@ class MessageBubble extends StatelessWidget {
     }
 
     return RichText(text: TextSpan(children: spans));
-  }
-}
-
-/// Custom painter for waveform visualization
-class _WaveformPainter extends CustomPainter {
-  final List<double> waveform;
-  final Color color;
-  final double progress;
-
-  _WaveformPainter({
-    required this.waveform,
-    required this.color,
-    this.progress = 0.0,
-  });
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    if (waveform.isEmpty) return;
-
-    final paint = Paint()
-      ..color = color
-      ..strokeWidth = 2
-      ..strokeCap = StrokeCap.round;
-
-    final progressPaint = Paint()
-      ..color = color.withValues(alpha: 0.5)
-      ..strokeWidth = 2
-      ..strokeCap = StrokeCap.round;
-
-    final barWidth = size.width / waveform.length;
-    final centerY = size.height / 2;
-
-    for (int i = 0; i < waveform.length; i++) {
-      final x = i * barWidth + barWidth / 2;
-      final barHeight = waveform[i] * size.height * 0.8;
-      final y1 = centerY - barHeight / 2;
-      final y2 = centerY + barHeight / 2;
-
-      // Use different color for played portion
-      final barProgress = i / waveform.length;
-      final currentPaint = barProgress <= progress ? paint : progressPaint;
-
-      canvas.drawLine(Offset(x, y1), Offset(x, y2), currentPaint);
-    }
-  }
-
-  @override
-  bool shouldRepaint(_WaveformPainter oldDelegate) {
-    return oldDelegate.progress != progress ||
-        oldDelegate.waveform != waveform ||
-        oldDelegate.color != color;
   }
 }

@@ -112,11 +112,20 @@ class _VoiceMessageBubbleState extends State<VoiceMessageBubble>
 
   @override
   void dispose() {
+    // Cancel subscriptions first to stop incoming events
     _positionSubscription?.cancel();
+    _positionSubscription = null;
     _playerStateSubscription?.cancel();
+    _playerStateSubscription = null;
+
+    // Stop and dispose audio player
+    _audioPlayer.stop();
     _audioPlayer.dispose();
+    
+    // Dispose animation controllers
     _waveController.dispose();
     _speedChangeController.dispose();
+    
     super.dispose();
   }
 
