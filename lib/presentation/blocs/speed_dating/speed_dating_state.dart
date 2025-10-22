@@ -17,6 +17,7 @@ class SpeedDatingLoaded extends SpeedDatingState {
   final Map<String, dynamic>? currentSession;
   final List<Map<String, dynamic>> matches;
   final Map<String, dynamic>? currentEvent;
+  final bool isRefreshing;
 
   const SpeedDatingLoaded({
     this.events = const [],
@@ -24,6 +25,7 @@ class SpeedDatingLoaded extends SpeedDatingState {
     this.currentSession,
     this.matches = const [],
     this.currentEvent,
+    this.isRefreshing = false,
   });
 
   @override
@@ -33,6 +35,7 @@ class SpeedDatingLoaded extends SpeedDatingState {
     currentSession,
     matches,
     currentEvent,
+    isRefreshing,
   ];
 
   SpeedDatingLoaded copyWith({
@@ -41,6 +44,7 @@ class SpeedDatingLoaded extends SpeedDatingState {
     Map<String, dynamic>? currentSession,
     List<Map<String, dynamic>>? matches,
     Map<String, dynamic>? currentEvent,
+    bool? isRefreshing,
   }) {
     return SpeedDatingLoaded(
       events: events ?? this.events,
@@ -48,6 +52,7 @@ class SpeedDatingLoaded extends SpeedDatingState {
       currentSession: currentSession ?? this.currentSession,
       matches: matches ?? this.matches,
       currentEvent: currentEvent ?? this.currentEvent,
+      isRefreshing: isRefreshing ?? this.isRefreshing,
     );
   }
 }

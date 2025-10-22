@@ -109,7 +109,9 @@ class SpeedDatingService {
         data: {'userId': userId},
       );
 
-      if (response.statusCode == 200 && response.data != null) {
+      // Accept both 200 and 201 status codes (201 for created/updated)
+      if ((response.statusCode == 200 || response.statusCode == 201) &&
+          response.data != null) {
         // Refresh event details
         currentEvent = await getEventById(eventId);
         if (currentEvent != null) {

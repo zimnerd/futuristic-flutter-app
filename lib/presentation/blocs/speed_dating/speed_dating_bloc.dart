@@ -51,6 +51,10 @@ class SpeedDatingBloc extends Bloc<SpeedDatingEvent, SpeedDatingState> {
       // Only show loading if we don't already have loaded data
       if (state is! SpeedDatingLoaded) {
         emit(SpeedDatingLoading());
+      } else {
+        // Show refreshing indicator if data already loaded
+        final currentState = state as SpeedDatingLoaded;
+        emit(currentState.copyWith(isRefreshing: true));
       }
       _logger.d('$_tag: Loading speed dating events');
 
@@ -58,7 +62,7 @@ class SpeedDatingBloc extends Bloc<SpeedDatingEvent, SpeedDatingState> {
 
       if (state is SpeedDatingLoaded) {
         final currentState = state as SpeedDatingLoaded;
-        emit(currentState.copyWith(events: events));
+        emit(currentState.copyWith(events: events, isRefreshing: false));
       } else {
         emit(SpeedDatingLoaded(events: events));
       }
@@ -79,13 +83,20 @@ class SpeedDatingBloc extends Bloc<SpeedDatingEvent, SpeedDatingState> {
     Emitter<SpeedDatingState> emit,
   ) async {
     try {
+      // Show refreshing indicator if data already loaded
+      if (state is SpeedDatingLoaded) {
+        final currentState = state as SpeedDatingLoaded;
+        emit(currentState.copyWith(isRefreshing: true));
+      }
       _logger.d('$_tag: Loading user speed dating sessions');
 
       final sessions = await _speedDatingService.getUserEvents();
 
       if (state is SpeedDatingLoaded) {
         final currentState = state as SpeedDatingLoaded;
-        emit(currentState.copyWith(userSessions: sessions));
+        emit(
+          currentState.copyWith(userSessions: sessions, isRefreshing: false),
+        );
       } else {
         emit(SpeedDatingLoaded(userSessions: sessions));
       }
@@ -93,7 +104,7 @@ class SpeedDatingBloc extends Bloc<SpeedDatingEvent, SpeedDatingState> {
       _logger.d('$_tag: Loaded ${sessions.length} user sessions');
     } catch (e, stackTrace) {
       _logger.e(
-        '$_tag: Failed to load user sessions',
+        '$_tag: Failed to load sessions',
         error: e,
         stackTrace: stackTrace,
       );

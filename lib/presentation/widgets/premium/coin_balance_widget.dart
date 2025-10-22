@@ -143,13 +143,13 @@ class CoinBalanceWidget extends StatelessWidget {
               const SizedBox(height: 16),
               Row(
                 children: [
-                  Icon(Icons.history, size: 16, color: Colors.grey[600]),
+                  Icon(Icons.history, size: 16, color: Colors.black54),
                   const SizedBox(width: 6),
                   Text(
                     'Last updated: ${_formatDate(coinBalance!.lastUpdated)}',
                     style: Theme.of(
                       context,
-                    ).textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
+                    ).textTheme.bodySmall?.copyWith(color: Colors.black87),
                   ),
                 ],
               ),
@@ -211,12 +211,15 @@ class CoinBalanceWidget extends StatelessWidget {
               textAlign: TextAlign.center,
               style: Theme.of(
                 context,
-              ).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w500),
+              ).textTheme.bodySmall?.copyWith(
+                fontWeight: FontWeight.w500,
+                color: Colors.black87,
+              ),
             ),
             Text(
               cost,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Colors.grey[600],
+                color: Colors.black87,
                 fontSize: 11,
               ),
             ),

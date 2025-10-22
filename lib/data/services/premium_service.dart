@@ -131,14 +131,14 @@ class PremiumService {
     }
   }
 
-  /// Purchase premium coins
+  /// Purchase coins using a payment method
   Future<PurchaseResult?> purchaseCoins({
     required String coinPackageId,
     required String paymentMethodId,
   }) async {
     try {
       final response = await _apiClient.post(
-        '/api/v1/premium/purchase-coins',
+        '/premium/purchase-coins',
         data: {
           'coinPackageId': coinPackageId,
           'paymentMethodId': paymentMethodId,

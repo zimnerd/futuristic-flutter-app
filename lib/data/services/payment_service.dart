@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../../core/constants/api_constants.dart';
+import '../../core/network/api_client.dart';
 import '../../core/utils/logger.dart';
 import 'peach_payments_service.dart';
 
@@ -31,6 +32,7 @@ class PaymentService {
   static PaymentService get instance => _instance ??= PaymentService._();
   PaymentService._();
 
+  final ApiClient _apiClient = ApiClient.instance;
   String? _authToken;
   final PeachPaymentsService _peachPayments = PeachPaymentsService.instance;
   String get _baseUrl => ApiConstants.baseUrl;
@@ -82,17 +84,23 @@ class PaymentService {
   /// Get user payment methods
   Future<List<Map<String, dynamic>>> getUserPaymentMethods() async {
     try {
-      final response = await http.get(
-        Uri.parse('${ApiConstants.baseUrl}${ApiConstants.payment}/methods'),
-        headers: {
-          'Authorization': 'Bearer $_authToken',
-          'Content-Type': 'application/json',
-        },
-      );
+      // ✅ Use centralized ApiClient instead of raw http calls
+      // This ensures automatic auth token handling and 401 refresh
+      final response = await _apiClient.getPaymentMethods();
 
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        return (data['paymentMethods'] as List).cast<Map<String, dynamic>>();
+      if (response.statusCode == 200 && response.data != null) {
+        final data = response.data;
+        if (data is Map && data.containsKey('data')) {
+          final paymentData = data['data'];
+          if (paymentData is List) {
+            return paymentData.cast<Map<String, dynamic>>();
+          }
+          if (paymentData is Map && paymentData.containsKey('paymentMethods')) {
+            return (paymentData['paymentMethods'] as List)
+                .cast<Map<String, dynamic>>();
+          }
+        }
+        return [];
       } else {
         throw PaymentException(
           'Failed to load payment methods: ${response.statusCode}',

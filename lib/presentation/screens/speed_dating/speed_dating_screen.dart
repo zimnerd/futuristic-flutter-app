@@ -105,12 +105,32 @@ class _SpeedDatingScreenState extends State<SpeedDatingScreen>
             }
 
             if (state is SpeedDatingLoaded) {
-              return TabBarView(
-                controller: _tabController,
+              return Stack(
                 children: [
-                  _buildEventsTab(state),
-                  _buildActiveTab(state),
-                  _buildHistoryTab(state),
+                  TabBarView(
+                    controller: _tabController,
+                    children: [
+                      _buildEventsTab(state),
+                      _buildActiveTab(state),
+                      _buildHistoryTab(state),
+                    ],
+                  ),
+                  // Show loading indicator at top when refreshing
+                  if (state.isRefreshing)
+                    Positioned(
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      child: Container(
+                        height: 3,
+                        child: const LinearProgressIndicator(
+                          backgroundColor: Colors.transparent,
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            PulseColors.primary,
+                          ),
+                        ),
+                      ),
+                    ),
                 ],
               );
             }
@@ -516,14 +536,24 @@ class _SpeedDatingScreenState extends State<SpeedDatingScreen>
         ),
         title: Text(
           title,
-          style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+          style: const TextStyle(
+            fontWeight: FontWeight.w600,
+            fontSize: 16,
+            color: Colors.black87,
+          ),
         ),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 4),
-            Text('Date: $date'),
-            Text('Matches: $matchesCount'),
+            Text(
+              'Date: $date',
+              style: const TextStyle(fontSize: 14, color: Colors.black87),
+            ),
+            Text(
+              'Matches: $matchesCount',
+              style: const TextStyle(fontSize: 14, color: Colors.black87),
+            ),
           ],
         ),
         trailing: Icon(

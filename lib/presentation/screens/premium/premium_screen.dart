@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../core/network/api_client.dart';
 import '../../../data/models/premium.dart';
+import '../../../data/services/payment_service.dart';
+import '../../../data/services/premium_service.dart';
+import '../../blocs/coin_purchase/coin_purchase_bloc.dart';
 import '../../blocs/premium/premium_bloc.dart';
 import '../../blocs/premium/premium_event.dart';
 import '../../blocs/premium/premium_state.dart';
@@ -187,24 +191,42 @@ class _PremiumScreenState extends State<PremiumScreen>
         children: [
           ListTile(
             leading: const Icon(Icons.receipt_long),
-            title: const Text('Billing History'),
-            subtitle: const Text('View your payment history'),
+            title: const Text(
+              'Billing History',
+              style: TextStyle(color: Colors.black87),
+            ),
+            subtitle: const Text(
+              'View your payment history',
+              style: TextStyle(color: Colors.black87),
+            ),
             trailing: const Icon(Icons.arrow_forward_ios),
             onTap: () => _showBillingHistory(),
           ),
           const Divider(height: 1),
           ListTile(
             leading: const Icon(Icons.credit_card),
-            title: const Text('Payment Methods'),
-            subtitle: const Text('Manage your payment options'),
+            title: const Text(
+              'Payment Methods',
+              style: TextStyle(color: Colors.black87),
+            ),
+            subtitle: const Text(
+              'Manage your payment options',
+              style: TextStyle(color: Colors.black87),
+            ),
             trailing: const Icon(Icons.arrow_forward_ios),
             onTap: () => _showPaymentMethods(),
           ),
           const Divider(height: 1),
           ListTile(
             leading: const Icon(Icons.help_outline),
-            title: const Text('Premium Support'),
-            subtitle: const Text('Get help with your subscription'),
+            title: const Text(
+              'Premium Support',
+              style: TextStyle(color: Colors.black87),
+            ),
+            subtitle: const Text(
+              'Get help with your subscription',
+              style: TextStyle(color: Colors.black87),
+            ),
             trailing: const Icon(Icons.arrow_forward_ios),
             onTap: () => _showPremiumSupport(),
           ),
@@ -216,7 +238,10 @@ class _PremiumScreenState extends State<PremiumScreen>
                 'Cancel Subscription',
                 style: TextStyle(color: context.errorColor),
               ),
-              subtitle: const Text('Cancel your premium subscription'),
+              subtitle: const Text(
+                'Cancel your premium subscription',
+                style: TextStyle(color: Colors.black87),
+              ),
               trailing: const Icon(Icons.arrow_forward_ios),
               onTap: () => _showCancellationDialog(state.subscription!),
             ),
@@ -391,12 +416,18 @@ class _PremiumScreenState extends State<PremiumScreen>
   }
 
   void _showCoinPurchaseDialog() {
-    // Show coin purchase sheet
+    // Show coin purchase sheet with BlocProvider to ensure bloc is available
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => const CoinPurchaseSheet(),
+      builder: (modalContext) => BlocProvider(
+        create: (context) => CoinPurchaseBloc(
+          paymentService: PaymentService.instance,
+          premiumService: PremiumService(ApiClient.instance),
+        ),
+        child: const CoinPurchaseSheet(),
+      ),
     );
   }
 
