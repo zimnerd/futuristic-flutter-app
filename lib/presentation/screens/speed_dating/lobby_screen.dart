@@ -157,17 +157,33 @@ class _SpeedDatingLobbyScreenState extends State<SpeedDatingLobbyScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Leave Event'),
-        content: const Text('Are you sure you want to leave this event?'),
+        backgroundColor: Colors.white,
+        title: const Text(
+          'Leave Event',
+          style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold),
+        ),
+        content: const Text(
+          'Are you sure you want to leave this event?',
+          style: TextStyle(color: Colors.black87, fontSize: 16),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+            child: const Text(
+              'Cancel',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+            ),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Leave'),
+            child: const Text(
+              'Leave',
+              style: TextStyle(
+                color: Colors.red,
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ),
         ],
       ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 import '../../navigation/app_router.dart';
 import '../../blocs/speed_dating/speed_dating_bloc.dart';
@@ -8,6 +9,7 @@ import '../../blocs/speed_dating/speed_dating_event.dart';
 import '../../blocs/speed_dating/speed_dating_state.dart';
 import '../../widgets/common/pulse_loading_widget.dart';
 import '../../widgets/common/pulse_error_widget.dart';
+import '../../widgets/common/pulse_toast.dart';
 import '../../widgets/speed_dating/speed_dating_event_card.dart';
 import '../../widgets/speed_dating/active_session_widget.dart';
 import '../../theme/pulse_colors.dart';
@@ -72,37 +74,52 @@ class _SpeedDatingScreenState extends State<SpeedDatingScreen>
           ],
         ),
       ),
-      body: BlocBuilder<SpeedDatingBloc, SpeedDatingState>(
-        builder: (context, state) {
-          if (state is SpeedDatingLoading) {
-            return const Center(child: PulseLoadingWidget());
-          }
-
-          if (state is SpeedDatingError) {
-            return PulseErrorWidget(
-              message: state.message,
-              onRetry: () {
-                context.read<SpeedDatingBloc>().add(LoadSpeedDatingEvents());
-                context.read<SpeedDatingBloc>().add(
-                  LoadUserSpeedDatingSessions(),
-                );
-              },
+      body: BlocListener<SpeedDatingBloc, SpeedDatingState>(
+        listener: (context, state) {
+          // Show success toasts for join/leave actions
+          if (state is SpeedDatingJoined) {
+            PulseToast.success(
+              context,
+              message: 'Successfully joined the event!',
             );
+          } else if (state is SpeedDatingLeft) {
+            PulseToast.success(context, message: 'Successfully left the event');
           }
-
-          if (state is SpeedDatingLoaded) {
-            return TabBarView(
-              controller: _tabController,
-              children: [
-                _buildEventsTab(state),
-                _buildActiveTab(state),
-                _buildHistoryTab(state),
-              ],
-            );
-          }
-
-          return const Center(child: PulseLoadingWidget());
         },
+        child: BlocBuilder<SpeedDatingBloc, SpeedDatingState>(
+          builder: (context, state) {
+            if (state is SpeedDatingLoading) {
+              return const Center(child: PulseLoadingWidget());
+            }
+
+            if (state is SpeedDatingError) {
+              return PulseErrorWidget(
+                message: state.message,
+                onRetry: () {
+                  context.read<SpeedDatingBloc>().add(LoadSpeedDatingEvents());
+                  context.read<SpeedDatingBloc>().add(
+                    LoadUserSpeedDatingSessions(),
+                  );
+                },
+              );
+            }
+
+            if (state is SpeedDatingLoaded) {
+              return TabBarView(
+                controller: _tabController,
+                children: [
+                  _buildEventsTab(state),
+                  _buildActiveTab(state),
+                  _buildHistoryTab(state),
+                ],
+              );
+            }
+
+            // For joining/joined/leaving/left states, show loading
+            // The BLoC will emit SpeedDatingLoaded once events refresh
+            return const Center(child: PulseLoadingWidget());
+          },
+        ),
       ),
     );
   }
@@ -447,24 +464,71 @@ class _SpeedDatingScreenState extends State<SpeedDatingScreen>
   }
 
   Widget _buildHistoryCard(Map<String, dynamic> session) {
+    final String? imageUrl = session['imageUrl'];
+    final String title =
+        session['title'] ?? session['eventTitle'] ?? 'Speed Dating Event';
+
+    // Parse startTime from API
+    final DateTime? startTime = DateTime.tryParse(session['startTime'] ?? '');
+    final String date = startTime != null
+        ? '${startTime.day}/${startTime.month}/${startTime.year}'
+        : (session['date'] ?? 'Unknown');
+
+    final int matchesCount = session['matchesCount'] ?? 0;
+    final bool isCompleted =
+        session['status'] == 'completed' || session['completed'] == true;
+    
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       child: ListTile(
-        leading: CircleAvatar(
-          backgroundColor: PulseColors.secondary.withValues(alpha: 0.2),
-          child: const Icon(Icons.speed, color: PulseColors.secondary),
+        leading: Container(
+          width: 50,
+          height: 50,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            color: PulseColors.secondary.withValues(alpha: 0.2),
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: imageUrl != null && imageUrl.isNotEmpty
+                ? CachedNetworkImage(
+                    imageUrl: imageUrl,
+                    fit: BoxFit.cover,
+                    placeholder: (context, url) => const Center(
+                      child: SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      ),
+                    ),
+                    errorWidget: (context, url, error) => const Icon(
+                      Icons.speed,
+                      color: PulseColors.secondary,
+                      size: 28,
+                    ),
+                  )
+                : const Icon(
+                    Icons.speed,
+                    color: PulseColors.secondary,
+                    size: 28,
+                  ),
+          ),
         ),
-        title: Text(session['eventTitle'] ?? 'Speed Dating Event'),
+        title: Text(
+          title,
+          style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+        ),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Date: ${session['date'] ?? 'Unknown'}'),
-            Text('Matches: ${session['matchesCount'] ?? 0}'),
+            const SizedBox(height: 4),
+            Text('Date: $date'),
+            Text('Matches: $matchesCount'),
           ],
         ),
         trailing: Icon(
-          session['completed'] == true ? Icons.check_circle : Icons.schedule,
-          color: session['completed'] == true ? Colors.green : Colors.orange,
+          isCompleted ? Icons.check_circle : Icons.schedule,
+          color: isCompleted ? Colors.green : Colors.orange,
         ),
         onTap: () => _viewSessionDetails(session),
       ),

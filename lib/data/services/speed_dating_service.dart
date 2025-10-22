@@ -65,6 +65,24 @@ class SpeedDatingService {
     }
   }
 
+  /// Get user's speed dating events (joined/history)
+  Future<List<Map<String, dynamic>>> getUserEvents() async {
+    try {
+      _logger.d('Fetching user speed dating events');
+      final response = await _apiClient.get('/speed-dating/my-events');
+
+      if (response.statusCode == 200 && response.data != null) {
+        final List<dynamic> eventsData = response.data['data'] as List<dynamic>;
+        return eventsData.map((data) => data as Map<String, dynamic>).toList();
+      }
+
+      return [];
+    } catch (e) {
+      _logger.e('Error fetching user events: $e');
+      return [];
+    }
+  }
+
   /// Get event details by ID
   Future<Map<String, dynamic>?> getEventById(String eventId) async {
     try {
@@ -118,7 +136,7 @@ class SpeedDatingService {
         data: {'userId': userId},
       );
 
-      if (response.statusCode == 200) {
+      if (response.statusCode == 200 || response.statusCode == 201) {
         currentEvent = null;
         _currentSession = null;
         _stopTimer();
@@ -269,26 +287,6 @@ class SpeedDatingService {
       return [];
     } catch (e) {
       _logger.e('Error fetching matches: $e');
-      return [];
-    }
-  }
-
-  /// Get user's event participation history
-  Future<List<Map<String, dynamic>>> getUserEvents(String userId) async {
-    try {
-      _logger.d('Fetching user events for $userId');
-      final response = await _apiClient.get(
-        '/speed-dating/users/$userId/events',
-      );
-
-      if (response.statusCode == 200 && response.data != null) {
-        final List<dynamic> eventsData = response.data['data'] as List<dynamic>;
-        return eventsData.map((data) => data as Map<String, dynamic>).toList();
-      }
-
-      return [];
-    } catch (e) {
-      _logger.e('Error fetching user events: $e');
       return [];
     }
   }

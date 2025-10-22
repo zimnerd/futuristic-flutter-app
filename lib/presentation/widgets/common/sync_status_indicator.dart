@@ -229,7 +229,13 @@ class _SyncStatusIndicatorState extends State<SyncStatusIndicator>
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(label, style: const TextStyle(fontWeight: FontWeight.w500)),
+        Text(
+          label,
+          style: const TextStyle(
+            fontWeight: FontWeight.w500,
+            color: Colors.black87,
+          ),
+        ),
         Text(value, style: TextStyle(color: Colors.grey[600])),
       ],
     );

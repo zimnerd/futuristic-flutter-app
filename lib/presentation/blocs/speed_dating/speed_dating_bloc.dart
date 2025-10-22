@@ -48,7 +48,10 @@ class SpeedDatingBloc extends Bloc<SpeedDatingEvent, SpeedDatingState> {
     Emitter<SpeedDatingState> emit,
   ) async {
     try {
-      emit(SpeedDatingLoading());
+      // Only show loading if we don't already have loaded data
+      if (state is! SpeedDatingLoaded) {
+        emit(SpeedDatingLoading());
+      }
       _logger.d('$_tag: Loading speed dating events');
 
       final events = await _speedDatingService.getUpcomingEvents();
@@ -78,7 +81,7 @@ class SpeedDatingBloc extends Bloc<SpeedDatingEvent, SpeedDatingState> {
     try {
       _logger.d('$_tag: Loading user speed dating sessions');
 
-      final sessions = await _speedDatingService.getUpcomingEvents();
+      final sessions = await _speedDatingService.getUserEvents();
 
       if (state is SpeedDatingLoaded) {
         final currentState = state as SpeedDatingLoaded;
@@ -103,6 +106,7 @@ class SpeedDatingBloc extends Bloc<SpeedDatingEvent, SpeedDatingState> {
     Emitter<SpeedDatingState> emit,
   ) async {
     try {
+      // Show joining state instead of error
       emit(SpeedDatingJoining(event.eventId));
       _logger.d('$_tag: Joining speed dating event: ${event.eventId}');
 
@@ -110,11 +114,13 @@ class SpeedDatingBloc extends Bloc<SpeedDatingEvent, SpeedDatingState> {
       final result = await _speedDatingService.joinEvent(event.eventId, userId);
 
       if (result != null) {
+        // Emit joined state - this will trigger the success toast
         emit(SpeedDatingJoined(event.eventId));
         _logger.d('$_tag: Successfully joined event');
 
-        // Refresh user sessions
+        // Refresh user sessions AND events
         add(LoadUserSpeedDatingSessions());
+        add(LoadSpeedDatingEvents());
       } else {
         emit(SpeedDatingError('Failed to join event'));
       }
@@ -124,7 +130,18 @@ class SpeedDatingBloc extends Bloc<SpeedDatingEvent, SpeedDatingState> {
         error: e,
         stackTrace: stackTrace,
       );
-      emit(SpeedDatingError('Failed to join event: ${e.toString()}'));
+      
+      // Extract user-friendly error message
+      String errorMessage = 'Failed to join event';
+      if (e.toString().contains('already registered')) {
+        errorMessage = 'You are already registered for this event';
+      } else if (e.toString().contains('Event is full')) {
+        errorMessage = 'This event is full';
+      } else if (e.toString().contains('not found')) {
+        errorMessage = 'Event not found';
+      }
+
+      emit(SpeedDatingError(errorMessage));
     }
   }
 
@@ -146,8 +163,9 @@ class SpeedDatingBloc extends Bloc<SpeedDatingEvent, SpeedDatingState> {
         emit(SpeedDatingLeft(event.eventId));
         _logger.d('$_tag: Successfully left event');
 
-        // Refresh user sessions
+        // Refresh both user sessions AND events list to update registration status
         add(LoadUserSpeedDatingSessions());
+        add(LoadSpeedDatingEvents());
       } else {
         emit(SpeedDatingError('Failed to leave event'));
       }

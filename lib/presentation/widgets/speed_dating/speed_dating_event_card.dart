@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../../theme/pulse_colors.dart';
+import 'event_countdown_timer.dart';
 
 /// Widget to display speed dating event information
 class SpeedDatingEventCard extends StatelessWidget {
@@ -18,6 +20,7 @@ class SpeedDatingEventCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final String title = event['title'] ?? 'Speed Dating Event';
     final String location = event['location'] ?? 'Virtual';
+    final String? imageUrl = event['imageUrl'];
     
     // Parse startTime from API
     final DateTime? startTime = DateTime.tryParse(event['startTime'] ?? '');
@@ -35,7 +38,9 @@ class SpeedDatingEventCard extends StatelessWidget {
         ? '$minAge-$maxAge'
         : '18-35';
     
-    final bool isJoined = event['isJoined'] ?? false;
+    // Check if user is registered (API returns 'isRegistered')
+    final bool isJoined =
+        event['isRegistered'] == true || event['isJoined'] == true;
     final bool isFull = participantCount >= maxParticipants;
 
     return Card(
@@ -57,9 +62,46 @@ class SpeedDatingEventCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header with title and status
+            // Header with avatar, title and status
             Row(
               children: [
+                // Event avatar/image
+                Container(
+                  width: 50,
+                  height: 50,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    color: PulseColors.primary.withValues(alpha: 0.2),
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: imageUrl != null && imageUrl.isNotEmpty
+                        ? CachedNetworkImage(
+                            imageUrl: imageUrl,
+                            fit: BoxFit.cover,
+                            placeholder: (context, url) => const Center(
+                              child: SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              ),
+                            ),
+                            errorWidget: (context, url, error) => const Icon(
+                              Icons.event,
+                              color: PulseColors.primary,
+                              size: 28,
+                            ),
+                          )
+                        : const Icon(
+                            Icons.event,
+                            color: PulseColors.primary,
+                            size: 28,
+                          ),
+                  ),
+                ),
+                const SizedBox(width: 12),
                 Expanded(
                   child: Text(
                     title,
@@ -69,6 +111,36 @@ class SpeedDatingEventCard extends StatelessWidget {
                     ),
                   ),
                 ),
+                // Registered badge
+                if (isJoined)
+                  Container(
+                    margin: const EdgeInsets.only(right: 8),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.green.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.green, width: 1),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.check_circle, size: 14, color: Colors.green),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Registered',
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.green,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                // Status badge
                 Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 8,
@@ -92,6 +164,15 @@ class SpeedDatingEventCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 16),
+
+            // Countdown Timer (if event is upcoming)
+            if (startTime != null && startTime.isAfter(DateTime.now()))
+              Column(
+                children: [
+                  EventCountdownTimer(eventStartTime: startTime),
+                  const SizedBox(height: 16),
+                ],
+              ),
 
             // Event details
             Row(

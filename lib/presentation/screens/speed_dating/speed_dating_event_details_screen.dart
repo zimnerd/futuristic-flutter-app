@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../theme/pulse_colors.dart';
 import '../../widgets/common/pulse_toast.dart';
+import '../../widgets/speed_dating/event_countdown_timer.dart';
 import '../../blocs/speed_dating/speed_dating_bloc.dart';
 import '../../blocs/speed_dating/speed_dating_event.dart';
 import '../../blocs/speed_dating/speed_dating_state.dart';
@@ -36,13 +37,19 @@ class SpeedDatingEventDetailsScreen extends StatelessWidget {
             context,
             message: 'Successfully joined the event!',
           );
-          // Refresh events to update the UI
-          context.read<SpeedDatingBloc>().add(LoadSpeedDatingEvents());
-          context.pop(); // Return to previous screen
+          // Navigate back after showing toast
+          Future.delayed(const Duration(milliseconds: 800), () {
+            if (context.mounted) {
+              context.pop();
+            }
+          });
         } else if (state is SpeedDatingLeft) {
           PulseToast.success(context, message: 'You have left the event');
-          context.read<SpeedDatingBloc>().add(LoadSpeedDatingEvents());
-          context.pop();
+          Future.delayed(const Duration(milliseconds: 800), () {
+            if (context.mounted) {
+              context.pop();
+            }
+          });
         } else if (state is SpeedDatingError) {
           PulseToast.error(context, message: state.message);
         }
@@ -160,6 +167,15 @@ class SpeedDatingEventDetailsScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
+
+              // Countdown Timer (if event is upcoming)
+              if (startTime != null && startTime.isAfter(DateTime.now()))
+                Column(
+                  children: [
+                    EventCountdownTimer(eventStartTime: startTime),
+                    const SizedBox(height: 16),
+                  ],
+                ),
 
             // Event Status
             Card(
@@ -362,14 +378,26 @@ class SpeedDatingEventDetailsScreen extends StatelessWidget {
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text('Leave Event'),
+        backgroundColor: Colors.white,
+        title: const Text(
+          'Leave Event',
+          style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold),
+        ),
         content: const Text(
           'Are you sure you want to leave this speed dating event?',
+          style: TextStyle(color: Colors.black87, fontSize: 16),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
-            child: const Text('Cancel'),
+            child: const Text(
+              'Cancel',
+              style: TextStyle(
+                color: PulseColors.primary,
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ),
           TextButton(
             onPressed: () {
@@ -381,8 +409,14 @@ class SpeedDatingEventDetailsScreen extends StatelessWidget {
               }
               Navigator.pop(dialogContext); // Close dialog
             },
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Leave'),
+            child: const Text(
+              'Leave',
+              style: TextStyle(
+                color: Colors.red,
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ),
         ],
       ),
