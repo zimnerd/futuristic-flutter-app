@@ -18,11 +18,23 @@ class SpeedDatingEventCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final String title = event['title'] ?? 'Speed Dating Event';
     final String location = event['location'] ?? 'Virtual';
-    final String date = event['date'] ?? 'TBD';
-    final String time = event['time'] ?? 'TBD';
-    final int participantCount = event['participantCount'] ?? 0;
+    
+    // Parse startTime from API
+    final DateTime? startTime = DateTime.tryParse(event['startTime'] ?? '');
+    final String date = startTime != null ? _formatDate(startTime) : 'TBD';
+    final String time = startTime != null ? _formatTime(startTime) : 'TBD';
+
+    // Parse participant data from API
+    final int participantCount = event['currentParticipants'] ?? 0;
     final int maxParticipants = event['maxParticipants'] ?? 20;
-    final String ageRange = event['ageRange'] ?? '18-35';
+    
+    // Parse age range from API
+    final int? minAge = event['minAge'];
+    final int? maxAge = event['maxAge'];
+    final String ageRange = (minAge != null && maxAge != null)
+        ? '$minAge-$maxAge'
+        : '18-35';
+    
     final bool isJoined = event['isJoined'] ?? false;
     final bool isFull = participantCount >= maxParticipants;
 
@@ -260,5 +272,33 @@ class SpeedDatingEventCard extends StatelessWidget {
       default:
         return 'Open';
     }
+  }
+
+  /// Format DateTime to readable date string
+  String _formatDate(DateTime dateTime) {
+    const months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
+    return '${months[dateTime.month - 1]} ${dateTime.day}, ${dateTime.year}';
+  }
+
+  /// Format DateTime to readable time string
+  String _formatTime(DateTime dateTime) {
+    final hour = dateTime.hour;
+    final minute = dateTime.minute.toString().padLeft(2, '0');
+    final period = hour >= 12 ? 'PM' : 'AM';
+    final displayHour = hour > 12 ? hour - 12 : (hour == 0 ? 12 : hour);
+    return '$displayHour:$minute $period';
   }
 }

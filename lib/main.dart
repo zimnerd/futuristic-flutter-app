@@ -59,6 +59,8 @@ import 'presentation/blocs/premium/premium_bloc.dart';
 import 'presentation/blocs/ai_companion/ai_companion_bloc.dart';
 import 'data/services/premium_service.dart';
 import 'data/services/ai_companion_service.dart';
+import 'data/services/speed_dating_service.dart';
+import 'presentation/blocs/speed_dating/speed_dating_bloc.dart';
 import 'presentation/navigation/app_router.dart';
 import 'presentation/theme/pulse_theme.dart';
 import 'presentation/widgets/auto_login_wrapper.dart';
@@ -260,6 +262,10 @@ class PulseDatingApp extends StatelessWidget {
         RepositoryProvider<PremiumService>(
           create: (context) => PremiumService(context.read<ApiClient>()),
         ),
+        // Add SpeedDatingService
+        RepositoryProvider<SpeedDatingService>(
+          create: (context) => SpeedDatingService(),
+        ),
         // Add AiCompanionService
         RepositoryProvider<AiCompanionService>(
           create: (context) => AiCompanionService(),
@@ -404,6 +410,13 @@ class PulseDatingApp extends StatelessWidget {
           create: (context) => ProfileBloc(
             profileService: context.read<ProfileService>(),
             photoManager: context.read<PhotoManagerService>(),
+          ),
+        ),
+        // SpeedDatingBloc for speed dating events
+        BlocProvider<SpeedDatingBloc>(
+          create: (context) => SpeedDatingBloc(
+            speedDatingService: context.read<SpeedDatingService>(),
+            authBloc: context.read<AuthBloc>(),
           ),
         ),
       ],

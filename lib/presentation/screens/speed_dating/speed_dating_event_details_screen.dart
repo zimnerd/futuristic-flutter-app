@@ -2,40 +2,96 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../theme/pulse_colors.dart';
+import '../../widgets/common/pulse_toast.dart';
 import '../../blocs/speed_dating/speed_dating_bloc.dart';
 import '../../blocs/speed_dating/speed_dating_event.dart';
-import '../../widgets/common/pulse_toast.dart';
+import '../../blocs/speed_dating/speed_dating_state.dart';
 
 /// Screen showing detailed view of a speed dating event
-class SpeedDatingEventDetailsScreen extends StatefulWidget {
+class SpeedDatingEventDetailsScreen extends StatelessWidget {
   final Map<String, dynamic> event;
 
   const SpeedDatingEventDetailsScreen({super.key, required this.event});
 
   @override
-  State<SpeedDatingEventDetailsScreen> createState() =>
-      _SpeedDatingEventDetailsScreenState();
-}
-
-class _SpeedDatingEventDetailsScreenState
-    extends State<SpeedDatingEventDetailsScreen> {
-  @override
   Widget build(BuildContext context) {
-    final event = widget.event;
     final startTime = DateTime.tryParse(event['startTime'] ?? '');
-    final endTime = DateTime.tryParse(event['endTime'] ?? '');
+    final durationMinutes = event['durationMinutes'] ?? 0;
     final maxParticipants = event['maxParticipants'] ?? 0;
     final currentParticipants = event['currentParticipants'] ?? 0;
+    final minAge = event['minAge'];
+    final maxAge = event['maxAge'];
+    final imageUrl = event['imageUrl'];
+    final location = event['location'];
+    final isVirtual = event['isVirtual'] ?? true;
+    final category = event['category'];
+    final tags = (event['tags'] as List?)?.cast<String>() ?? [];
     final isRegistered = event['isRegistered'] == true;
-    final canJoin = currentParticipants < maxParticipants && !isRegistered;
+    final canJoin = event['canJoin'] == true && !isRegistered;
 
-    return Scaffold(
-      appBar: AppBar(title: Text(event['title'] ?? 'Speed Dating Event')),
+    return BlocListener<SpeedDatingBloc, SpeedDatingState>(
+      listener: (context, state) {
+        if (state is SpeedDatingJoined) {
+          PulseToast.success(
+            context,
+            message: 'Successfully joined the event!',
+          );
+          // Refresh events to update the UI
+          context.read<SpeedDatingBloc>().add(LoadSpeedDatingEvents());
+          context.pop(); // Return to previous screen
+        } else if (state is SpeedDatingLeft) {
+          PulseToast.success(context, message: 'You have left the event');
+          context.read<SpeedDatingBloc>().add(LoadSpeedDatingEvents());
+          context.pop();
+        } else if (state is SpeedDatingError) {
+          PulseToast.error(context, message: state.message);
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(
+            event['title'] ?? 'Speed Dating Event',
+            style: const TextStyle(
+              color: Colors.black87,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          backgroundColor: Colors.white,
+          iconTheme: const IconThemeData(color: Colors.black87),
+          elevation: 1,
+        ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+              // Event Image
+              if (imageUrl != null && imageUrl.isNotEmpty)
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: Image.network(
+                    imageUrl,
+                    height: 200,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        height: 200,
+                        color: Colors.grey.shade200,
+                        child: const Center(
+                          child: Icon(
+                            Icons.event,
+                            size: 64,
+                            color: Colors.grey,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              if (imageUrl != null && imageUrl.isNotEmpty)
+                const SizedBox(height: 16),
+
             // Event Header
             Card(
               child: Padding(
@@ -43,19 +99,62 @@ class _SpeedDatingEventDetailsScreenState
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      event['title'] ?? 'Speed Dating Event',
-                      style: Theme.of(context).textTheme.headlineSmall
-                          ?.copyWith(fontWeight: FontWeight.bold),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              event['title'] ?? 'Speed Dating Event',
+                              style: Theme.of(context).textTheme.headlineSmall
+                                  ?.copyWith(fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                          if (category != null && category.isNotEmpty)
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 6,
+                              ),
+                              decoration: BoxDecoration(
+                                color: PulseColors.primary.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: Text(
+                                category.toUpperCase(),
+                                style: Theme.of(context).textTheme.labelSmall
+                                    ?.copyWith(
+                                      color: PulseColors.primary,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                              ),
+                            ),
+                        ],
                     ),
                     if (event['description'] != null &&
                         event['description'].isNotEmpty) ...[
-                      const SizedBox(height: 8),
+                        const SizedBox(height: 12),
                       Text(
                         event['description'],
                         style: Theme.of(context).textTheme.bodyLarge,
                       ),
                     ],
+                      if (tags.isNotEmpty) ...[
+                        const SizedBox(height: 12),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: tags
+                              .map(
+                                (tag) => Chip(
+                                  label: Text(tag),
+                                  backgroundColor: Colors.grey.shade200,
+                                  labelStyle: Theme.of(
+                                    context,
+                                  ).textTheme.labelSmall,
+                                ),
+                              )
+                              .toList(),
+                        ),
+                      ],
                   ],
                 ),
               ),
@@ -101,52 +200,82 @@ class _SpeedDatingEventDetailsScreenState
             const SizedBox(height: 16),
 
             // Date & Time
-            if (startTime != null && endTime != null)
+              if (startTime != null)
               Card(
                 child: ListTile(
-                  leading: const Icon(Icons.schedule),
-                  title: const Text('Event Time'),
+                    leading: const Icon(
+                      Icons.schedule,
+                      color: PulseColors.primary,
+                    ),
+                    title: Text(
+                      'Event Time',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        color: Colors.black87,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                   subtitle: Text(
-                    '${_formatDateTime(startTime)} - ${_formatTime(endTime)}',
+                      '${_formatDateTime(startTime)} at ${_formatTime(startTime)}\nDuration: $durationMinutes minutes',
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodyMedium?.copyWith(color: Colors.black87),
                   ),
                 ),
               ),
-            const SizedBox(height: 16),
+              const SizedBox(height: 12),
 
-            // Location
-            if (event['location'] != null && event['location'].isNotEmpty)
+              // Location
               Card(
                 child: ListTile(
-                  leading: const Icon(Icons.location_on),
-                  title: const Text('Location'),
-                  subtitle: Text(event['location']),
-                  trailing: IconButton(
-                    icon: const Icon(Icons.map),
-                    onPressed: () => _openLocation(event['location']),
+                  leading: Icon(
+                    isVirtual ? Icons.video_call : Icons.location_on,
+                    color: PulseColors.primary,
                   ),
+                  title: Text(
+                    isVirtual ? 'Virtual Event' : 'Location',
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      color: Colors.black87,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  subtitle: location != null && location.isNotEmpty
+                      ? Text(
+                          location,
+                          style: Theme.of(context).textTheme.bodyMedium
+                              ?.copyWith(color: Colors.black87),
+                        )
+                      : Text(
+                          isVirtual
+                              ? 'Join online via video call'
+                              : 'No location specified',
+                          style: Theme.of(context).textTheme.bodyMedium
+                              ?.copyWith(color: Colors.black87),
+                        ),
                 ),
               ),
-            const SizedBox(height: 16),
+              const SizedBox(height: 12),
 
             // Age Range
-            if (event['ageRange'] != null)
+              if (minAge != null || maxAge != null)
               Card(
                 child: ListTile(
-                  leading: const Icon(Icons.cake),
-                  title: const Text('Age Range'),
-                  subtitle: Text(event['ageRange']),
-                ),
-              ),
-            const SizedBox(height: 16),
-
-            // Round Duration
-            if (event['roundDuration'] != null)
-              Card(
-                child: ListTile(
-                  leading: const Icon(Icons.timer),
-                  title: const Text('Round Duration'),
+                    leading: const Icon(Icons.cake, color: PulseColors.primary),
+                    title: Text(
+                      'Age Range',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        color: Colors.black87,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                   subtitle: Text(
-                    '${event['roundDuration']} minutes per conversation',
+                      minAge != null && maxAge != null
+                          ? '$minAge - $maxAge years'
+                          : minAge != null
+                          ? '$minAge+ years'
+                          : 'Up to $maxAge years',
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodyMedium?.copyWith(color: Colors.black87),
                   ),
                 ),
               ),
@@ -168,7 +297,7 @@ class _SpeedDatingEventDetailsScreenState
               width: double.infinity,
               child: isRegistered
                   ? ElevatedButton.icon(
-                      onPressed: _leaveEvent,
+                        onPressed: () => _leaveEvent(context),
                       icon: const Icon(Icons.exit_to_app),
                       label: const Text('Leave Event'),
                       style: ElevatedButton.styleFrom(
@@ -177,7 +306,7 @@ class _SpeedDatingEventDetailsScreenState
                       ),
                     )
                   : ElevatedButton.icon(
-                      onPressed: canJoin ? _joinEvent : null,
+                        onPressed: canJoin ? () => _joinEvent(context) : null,
                       icon: const Icon(Icons.join_full),
                       label: Text(canJoin ? 'Join Event' : 'Event Full'),
                       style: ElevatedButton.styleFrom(
@@ -189,6 +318,7 @@ class _SpeedDatingEventDetailsScreenState
           ],
         ),
       ),
+      ), // Close Scaffold and BlocListener
     );
   }
 
@@ -221,37 +351,35 @@ class _SpeedDatingEventDetailsScreenState
     return '$hour:$minute $period';
   }
 
-  void _joinEvent() {
-    final eventId = widget.event['id'] as String?;
+  void _joinEvent(BuildContext context) {
+    final eventId = event['id'] as String?;
     if (eventId != null) {
       context.read<SpeedDatingBloc>().add(JoinSpeedDatingEvent(eventId));
-      PulseToast.info(context, message: 'Joining event...');
     }
   }
 
-  void _leaveEvent() {
+  void _leaveEvent(BuildContext context) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title: const Text('Leave Event'),
         content: const Text(
           'Are you sure you want to leave this speed dating event?',
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(dialogContext),
             child: const Text('Cancel'),
           ),
           TextButton(
             onPressed: () {
-              final eventId = widget.event['id'] as String?;
+              final eventId = event['id'] as String?;
               if (eventId != null) {
                 context.read<SpeedDatingBloc>().add(
                   LeaveSpeedDatingEvent(eventId),
                 );
               }
-              Navigator.pop(context); // Close dialog
-              context.pop(); // Return to previous screen
+              Navigator.pop(dialogContext); // Close dialog
             },
             style: TextButton.styleFrom(foregroundColor: Colors.red),
             child: const Text('Leave'),
@@ -259,9 +387,5 @@ class _SpeedDatingEventDetailsScreenState
         ],
       ),
     );
-  }
-
-  void _openLocation(String location) {
-    PulseToast.info(context, message: 'Opening location: $location');
   }
 }
