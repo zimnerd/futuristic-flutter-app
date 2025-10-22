@@ -22,7 +22,7 @@ class IcebreakerService {
           if (count != null) 'count': count.toString(),
           if (context != null) 'context': context,
           if (interests != null && interests.isNotEmpty)
-            'interests': interests.join(','),
+            'interests': interests, // Let Dio handle array encoding
         },
       );
 

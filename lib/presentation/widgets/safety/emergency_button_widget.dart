@@ -87,21 +87,35 @@ class EmergencyButtonWidget extends StatelessWidget {
       barrierDismissible: false,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Row(
+          backgroundColor: Colors.white,
+          title: Row(
             children: [
-              Icon(Icons.warning, color: Colors.red),
-              SizedBox(width: 8),
-              Text('Emergency Alert'),
+              const Icon(Icons.warning, color: Colors.red),
+              const SizedBox(width: 8),
+              Text(
+                'Emergency Alert',
+                style: TextStyle(
+                  color: Colors.grey.shade900,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ],
           ),
-          content: const Text(
+          content: Text(
             'This will immediately notify your emergency contacts and send your location. '
             'Are you in immediate danger?',
+            style: TextStyle(color: Colors.grey.shade800, fontSize: 16),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cancel'),
+              child: Text(
+                'Cancel',
+                style: TextStyle(
+                  color: Colors.grey.shade700,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ),
             ElevatedButton(
               onPressed: () {
@@ -125,14 +139,28 @@ class EmergencyButtonWidget extends StatelessWidget {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Cancel Emergency Alert'),
-          content: const Text(
+          backgroundColor: Colors.white,
+          title: Text(
+            'Cancel Emergency Alert',
+            style: TextStyle(
+              color: Colors.grey.shade900,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          content: Text(
             'Are you sure you want to cancel the emergency alert?',
+            style: TextStyle(color: Colors.grey.shade800, fontSize: 16),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Keep Active'),
+              child: Text(
+                'Keep Active',
+                style: TextStyle(
+                  color: Colors.grey.shade700,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ),
             ElevatedButton(
               onPressed: () {

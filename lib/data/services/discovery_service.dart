@@ -41,7 +41,8 @@ class DiscoveryService {
         }
         if (filters.interests.isNotEmpty)
           {
-          queryParams['interests'] = filters.interests.join(',');
+          queryParams['interests'] =
+              filters.interests; // Let Dio handle array encoding
         }
         if (filters.verifiedOnly)
           {

@@ -11,7 +11,6 @@ import '../../widgets/common/pulse_error_widget.dart';
 import '../../widgets/speed_dating/speed_dating_event_card.dart';
 import '../../widgets/speed_dating/active_session_widget.dart';
 import '../../theme/pulse_colors.dart';
-import '../../widgets/speed_dating/create_speed_dating_event_dialog.dart';
 
 /// Main screen for speed dating functionality
 class SpeedDatingScreen extends StatefulWidget {
@@ -24,6 +23,16 @@ class SpeedDatingScreen extends StatefulWidget {
 class _SpeedDatingScreenState extends State<SpeedDatingScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
+  String _selectedCategory = 'all';
+  final List<String> _categories = [
+    'all',
+    'general',
+    'professional',
+    'casual',
+    'themed',
+  ];
 
   @override
   void initState() {
@@ -36,6 +45,7 @@ class _SpeedDatingScreenState extends State<SpeedDatingScreen>
   @override
   void dispose() {
     _tabController.dispose();
+    _searchController.dispose();
     super.dispose();
   }
 
@@ -43,7 +53,16 @@ class _SpeedDatingScreenState extends State<SpeedDatingScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Speed Dating'),
+        title: const Text(
+          'Speed Dating',
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: Colors.black,
+          ),
+        ),
+        centerTitle: true,
+        elevation: 2,
         bottom: TabBar(
           controller: _tabController,
           tabs: const [
@@ -85,39 +104,195 @@ class _SpeedDatingScreenState extends State<SpeedDatingScreen>
           return const Center(child: PulseLoadingWidget());
         },
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _showCreateEventDialog(),
-        backgroundColor: PulseColors.primary,
-        foregroundColor: Colors.white,
-        icon: const Icon(Icons.add),
-        label: const Text('Create Event'),
-      ),
     );
   }
 
   Widget _buildEventsTab(SpeedDatingLoaded state) {
-    if (state.events.isEmpty) {
-      return _buildEmptyEvents();
+    // Filter events based on search and category
+    final filteredEvents = state.events.where((event) {
+      final matchesSearch =
+          _searchQuery.isEmpty ||
+          event['title'].toString().toLowerCase().contains(
+            _searchQuery.toLowerCase(),
+          ) ||
+          event['description'].toString().toLowerCase().contains(
+            _searchQuery.toLowerCase(),
+          );
+      
+      final matchesCategory =
+          _selectedCategory == 'all' ||
+          event['category']?.toString() == _selectedCategory;
+
+      return matchesSearch && matchesCategory;
+    }).toList();
+
+    return Column(
+      children: [
+        // Search and Filter Bar
+        Container(
+          padding: const EdgeInsets.all(16),
+          color: Colors.grey.shade50,
+          child: Column(
+            children: [
+              // Search Field
+              TextField(
+                controller: _searchController,
+                decoration: InputDecoration(
+                  hintText: 'Search events...',
+                  prefixIcon: const Icon(Icons.search),
+                  suffixIcon: _searchQuery.isNotEmpty
+                      ? IconButton(
+                          icon: const Icon(Icons.clear),
+                          onPressed: () {
+                            setState(() {
+                              _searchController.clear();
+                              _searchQuery = '';
+                            });
+                          },
+                        )
+                      : null,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  filled: true,
+                  fillColor: Colors.white,
+                ),
+                onChanged: (value) {
+                  setState(() {
+                    _searchQuery = value;
+                  });
+                },
+              ),
+              const SizedBox(height: 12),
+              // Category Filter
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: _categories.map((category) {
+                    final isSelected = _selectedCategory == category;
+                    return Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: FilterChip(
+                        label: Text(
+                          category[0].toUpperCase() + category.substring(1),
+                        ),
+                        selected: isSelected,
+                        onSelected: (selected) {
+                          setState(() {
+                            _selectedCategory = category;
+                          });
+                        },
+                        backgroundColor: Colors.white,
+                        selectedColor: PulseColors.primary.withOpacity(0.2),
+                        checkmarkColor: PulseColors.primary,
+                        labelStyle: TextStyle(
+                          color: isSelected
+                              ? PulseColors.primary
+                              : Colors.grey.shade700,
+                          fontWeight: isSelected
+                              ? FontWeight.w600
+                              : FontWeight.normal,
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ),
+            ],
+          ),
+        ),
+        // Events List
+        Expanded(
+          child: filteredEvents.isEmpty
+              ? _buildEmptyEvents()
+              : RefreshIndicator(
+                  onRefresh: () async {
+                    context.read<SpeedDatingBloc>().add(
+                      LoadSpeedDatingEvents(),
+                    );
+                  },
+                  child: ListView.builder(
+                    padding: const EdgeInsets.all(16),
+                    itemCount: filteredEvents.length,
+                    itemBuilder: (context, index) {
+                      final event = filteredEvents[index];
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 16),
+                        child: SpeedDatingEventCard(
+                          event: event,
+                          onJoin: () => _joinEvent(event['id']),
+                          onViewDetails: () => _viewEventDetails(event),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildEmptyEvents() {
+    if (_searchQuery.isNotEmpty || _selectedCategory != 'all') {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(32),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.search_off, size: 80, color: Colors.grey[400]),
+              const SizedBox(height: 24),
+              const Text(
+                'No Events Found',
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'Try adjusting your search or filters',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+              ),
+              const SizedBox(height: 24),
+              ElevatedButton(
+                onPressed: () {
+                  setState(() {
+                    _searchController.clear();
+                    _searchQuery = '';
+                    _selectedCategory = 'all';
+                  });
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: PulseColors.primary,
+                  foregroundColor: Colors.white,
+                ),
+                child: const Text('Clear Filters'),
+              ),
+            ],
+          ),
+        ),
+      );
     }
 
-    return RefreshIndicator(
-      onRefresh: () async {
-        context.read<SpeedDatingBloc>().add(LoadSpeedDatingEvents());
-      },
-      child: ListView.builder(
-        padding: const EdgeInsets.all(16),
-        itemCount: state.events.length,
-        itemBuilder: (context, index) {
-          final event = state.events[index];
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 16),
-            child: SpeedDatingEventCard(
-              event: event,
-              onJoin: () => _joinEvent(event['id']),
-              onViewDetails: () => _viewEventDetails(event),
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.event_available, size: 80, color: Colors.grey[400]),
+            const SizedBox(height: 24),
+            const Text(
+              'No Speed Dating Events',
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
-          );
-        },
+            const SizedBox(height: 12),
+            Text(
+              'Check back soon! Admins will post new events regularly.',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -163,31 +338,6 @@ class _SpeedDatingScreenState extends State<SpeedDatingScreen>
         final session = state.userSessions[index];
         return _buildHistoryCard(session);
       },
-    );
-  }
-
-  Widget _buildEmptyEvents() {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.event_available, size: 80, color: Colors.grey[400]),
-            const SizedBox(height: 24),
-            const Text(
-              'No Speed Dating Events',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              'Be the first to create a speed dating event in your area!',
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 16, color: Colors.grey[600]),
-            ),
-          ],
-        ),
-      ),
     );
   }
 
@@ -344,13 +494,6 @@ class _SpeedDatingScreenState extends State<SpeedDatingScreen>
     context.push(
       AppRoutes.speedDatingRoom,
       extra: {'session': session, 'eventId': session['eventId'] ?? ''},
-    );
-  }
-
-  void _showCreateEventDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => const CreateSpeedDatingEventDialog(),
     );
   }
 }

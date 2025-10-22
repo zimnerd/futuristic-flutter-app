@@ -362,14 +362,28 @@ class _PremiumScreenState extends State<PremiumScreen>
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Manage Subscription'),
-        content: const Text(
+        backgroundColor: Colors.white,
+        title: Text(
+          'Manage Subscription',
+          style: TextStyle(
+            color: Colors.grey.shade900,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        content: Text(
           'Subscription management functionality coming soon!',
+          style: TextStyle(color: Colors.grey.shade800, fontSize: 16),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('OK'),
+            child: Text(
+              'OK',
+              style: TextStyle(
+                color: PulseColors.primary,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ),
         ],
       ),

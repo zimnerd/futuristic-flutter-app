@@ -25,9 +25,7 @@ class _CreateSpeedDatingEventDialogState
 
   DateTime _selectedDate = DateTime.now().add(const Duration(days: 7));
   TimeOfDay _selectedTime = const TimeOfDay(hour: 19, minute: 0);
-  String _selectedAgeRange = '25-35';
-
-  final List<String> _ageRanges = ['18-25', '25-35', '35-45', '45-55', '55+'];
+  RangeValues _ageRange = const RangeValues(25, 35);
 
   @override
   void dispose() {
@@ -144,26 +142,35 @@ class _CreateSpeedDatingEventDialogState
               ),
               const SizedBox(height: 16),
 
-              // Age Range
-              DropdownButtonFormField<String>(
-                initialValue: _selectedAgeRange,
-                decoration: const InputDecoration(
-                  labelText: 'Age Range',
-                  border: OutlineInputBorder(),
-                ),
-                items: _ageRanges
-                    .map(
-                      (range) =>
-                          DropdownMenuItem(value: range, child: Text(range)),
-                    )
-                    .toList(),
-                onChanged: (value) {
-                  if (value != null) {
-                    setState(() {
-                      _selectedAgeRange = value;
-                    });
-                  }
-                },
+              // Age Range Slider
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Age Range: ${_ageRange.start.round()} - ${_ageRange.end.round()} years',
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  RangeSlider(
+                    values: _ageRange,
+                    min: 18,
+                    max: 70,
+                    divisions: 52,
+                    activeColor: PulseColors.primary,
+                    inactiveColor: PulseColors.primary.withOpacity(0.3),
+                    labels: RangeLabels(
+                      _ageRange.start.round().toString(),
+                      _ageRange.end.round().toString(),
+                    ),
+                    onChanged: (RangeValues values) {
+                      setState(() {
+                        _ageRange = values;
+                      });
+                    },
+                  ),
+                ],
               ),
               const SizedBox(height: 16),
 
@@ -316,7 +323,7 @@ class _CreateSpeedDatingEventDialogState
     );
 
     final preferences = {
-      'ageRange': _selectedAgeRange,
+      'ageRange': '${_ageRange.start.round()}-${_ageRange.end.round()}',
       'location': location,
       'roundDuration': roundDuration,
       'fee': fee,

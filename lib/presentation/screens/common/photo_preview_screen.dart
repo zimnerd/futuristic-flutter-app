@@ -218,13 +218,13 @@ class _PhotoPreviewScreenState extends State<PhotoPreviewScreen> {
 
             // Bottom indicators (dots)
             if (widget.images.length > 1)
-              AnimatedOpacity(
-                opacity: _showUI ? 1.0 : 0.0,
-                duration: const Duration(milliseconds: 200),
-                child: Positioned(
-                  bottom: 40,
-                  left: 0,
-                  right: 0,
+              Positioned(
+                bottom: 40,
+                left: 0,
+                right: 0,
+                child: AnimatedOpacity(
+                  opacity: _showUI ? 1.0 : 0.0,
+                  duration: const Duration(milliseconds: 200),
                   child: Center(
                     child: Container(
                       padding: const EdgeInsets.symmetric(

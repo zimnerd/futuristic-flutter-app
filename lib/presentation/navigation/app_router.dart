@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import '../blocs/auth/auth_bloc.dart';
 import '../blocs/photo/photo_bloc.dart';
+import '../blocs/safety/safety_bloc.dart';
 import '../../domain/repositories/user_repository.dart';
 import '../../domain/entities/user_profile.dart';
 import '../screens/auth/forgot_password_screen.dart';
@@ -95,6 +96,15 @@ import '../screens/premium/transaction_history_screen.dart';
 import '../screens/matching/ai_matching_screen.dart';
 import '../../../data/models/user_model.dart';
 import '../../../data/models/ai_companion.dart';
+import '../../../data/services/safety_service.dart';
+import '../../../data/services/date_planning_service.dart';
+import '../blocs/date_planning/date_planning_bloc.dart';
+import '../../../data/services/virtual_gift_service.dart';
+import '../blocs/virtual_gift/virtual_gift_bloc.dart';
+import '../../../data/services/speed_dating_service.dart';
+import '../blocs/speed_dating/speed_dating_bloc.dart';
+import '../../../data/services/voice_message_service.dart';
+import '../blocs/voice_message/voice_message_bloc.dart';
 import '../../../features/group_chat/data/models.dart';
 import '../../../domain/entities/event.dart';
 // Events screens
@@ -363,9 +373,13 @@ class AppRouter {
           builder: (context, state) {
             final recipientId = state.uri.queryParameters['recipientId'];
             final recipientName = state.uri.queryParameters['recipientName'];
-            return VirtualGiftsScreen(
-              recipientId: recipientId,
-              recipientName: recipientName,
+            return BlocProvider(
+              create: (_) =>
+                  VirtualGiftBloc(VirtualGiftService(ApiClient.instance)),
+              child: VirtualGiftsScreen(
+                recipientId: recipientId,
+                recipientName: recipientName,
+              ),
             );
           },
         ),
@@ -391,7 +405,11 @@ class AppRouter {
         GoRoute(
           path: AppRoutes.safety,
           name: 'safety',
-          builder: (context, state) => const SafetyScreen(),
+          builder: (context, state) => BlocProvider(
+            create: (_) =>
+                SafetyBloc(safetyService: SafetyService(ApiClient.instance)),
+            child: const SafetyScreen(),
+          ),
         ),
         GoRoute(
           path: AppRoutes.aiCompanion,
@@ -401,7 +419,16 @@ class AppRouter {
         GoRoute(
           path: AppRoutes.speedDating,
           name: 'speedDating',
-          builder: (context, state) => const SpeedDatingScreen(),
+          builder: (context, state) {
+            final authBloc = context.read<AuthBloc>();
+            return BlocProvider(
+              create: (_) => SpeedDatingBloc(
+                speedDatingService: SpeedDatingService(),
+                authBloc: authBloc,
+              ),
+              child: const SpeedDatingScreen(),
+            );
+          },
         ),
         GoRoute(
           path: AppRoutes.liveStreaming,
@@ -411,12 +438,20 @@ class AppRouter {
         GoRoute(
           path: AppRoutes.datePlanning,
           name: 'datePlanning',
-          builder: (context, state) => const DatePlanningScreen(),
+          builder: (context, state) => BlocProvider(
+            create: (_) =>
+                DatePlanningBloc(DatePlanningService(ApiClient.instance)),
+            child: const DatePlanningScreen(),
+          ),
         ),
         GoRoute(
           path: AppRoutes.voiceMessages,
           name: 'voiceMessages',
-          builder: (context, state) => const VoiceMessagesScreen(),
+          builder: (context, state) => BlocProvider(
+            create: (_) =>
+                VoiceMessageBloc(VoiceMessageService(ApiClient.instance)),
+            child: const VoiceMessagesScreen(),
+          ),
         ),
         GoRoute(
           path: AppRoutes.profileCreation,
