@@ -172,7 +172,7 @@ class _SyncStatusIndicatorState extends State<SyncStatusIndicator>
           children: [
             Icon(_getStatusIcon(), color: _getStatusColor()),
             const SizedBox(width: 12),
-            Text(_getStatusText()),
+            Text(_getStatusText(), style: TextStyle(color: _getStatusColor())),
           ],
         ),
         content: Column(
