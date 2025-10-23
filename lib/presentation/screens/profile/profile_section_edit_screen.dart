@@ -1585,67 +1585,65 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
   Widget _buildIntentSection() {
     final selectedIntent = _formData['intent'] as String?;
 
-    return StatefulBuilder(
-      builder: (context, setState) {
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
           children: [
-            Row(
-              children: [
-                Text(
-                  'What brings you here?',
-                  style: PulseTextStyles.titleMedium.copyWith(
-                    color: PulseColors.onSurface,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                Text(
-                  ' *',
-                  style: PulseTextStyles.titleMedium.copyWith(
-                    color: PulseColors.error,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: PulseSpacing.md),
             Text(
-              'Choose your primary intent. You can explore other features anytime.',
-              style: PulseTextStyles.bodyMedium.copyWith(
-                color: PulseColors.onSurfaceVariant,
+              '*What brings you here?*',
+              style: PulseTextStyles.titleMedium.copyWith(
+                color: PulseColors.onSurface,
+                fontWeight: FontWeight.w600,
               ),
             ),
-            const SizedBox(height: PulseSpacing.lg),
-            ...IntentOptions.all.map((option) {
-              final isSelected = selectedIntent == option['id'];
-              return Padding(
-                padding: const EdgeInsets.only(bottom: PulseSpacing.md),
-                child: InkWell(
-                  onTap: () {
-                    setState(() {
-                      _formData['intent'] = option['id'];
-                    });
-                  },
+            Text(
+              ' *',
+              style: PulseTextStyles.titleMedium.copyWith(
+                color: PulseColors.error,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: PulseSpacing.md),
+        Text(
+          'Choose your primary intent. You can explore other features anytime.',
+          style: PulseTextStyles.bodyMedium.copyWith(
+            color: PulseColors.onSurfaceVariant,
+          ),
+        ),
+        const SizedBox(height: PulseSpacing.lg),
+        ...IntentOptions.all.map((option) {
+          final isSelected = selectedIntent == option['id'];
+          return Padding(
+            padding: const EdgeInsets.only(bottom: PulseSpacing.md),
+            child: GestureDetector(
+              onTap: () {
+                logger.i('🎯 GestureDetector tap - intent: ${option['id']}');
+                setState(() {
+                  _formData['intent'] = option['id'];
+                  logger.i('  ✅ Intent updated to: ${option['id']}');
+                });
+              },
+              child: Container(
+                padding: const EdgeInsets.all(PulseSpacing.lg),
+                decoration: BoxDecoration(
+                  color: isSelected
+                      ? (option['color'] as Color).withValues(alpha: 0.1)
+                      : PulseColors.surface,
+                  border: Border.all(
+                    color: isSelected
+                        ? option['color'] as Color
+                        : Colors.grey.shade300,
+                    width: isSelected ? 2 : 1,
+                  ),
                   borderRadius: BorderRadius.circular(PulseRadii.lg),
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 200),
-                    padding: const EdgeInsets.all(PulseSpacing.lg),
-                    decoration: BoxDecoration(
-                      color: isSelected
-                          ? (option['color'] as Color).withValues(alpha: 0.1)
-                          : PulseColors.surface,
-                      border: Border.all(
-                        color: isSelected
-                            ? option['color'] as Color
-                            : Colors.grey.shade300,
-                        width: isSelected ? 2 : 1,
-                      ),
-                      borderRadius: BorderRadius.circular(PulseRadii.lg),
-                      boxShadow: isSelected
-                          ? [
-                              BoxShadow(
-                                color: (option['color'] as Color).withValues(
-                                  alpha: 0.3,
+                  boxShadow: isSelected
+                      ? [
+                          BoxShadow(
+                            color: (option['color'] as Color).withValues(
+                              alpha: 0.3,
                                 ),
                                 blurRadius: 12,
                                 offset: const Offset(0, 4),
@@ -1655,6 +1653,34 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
                     ),
                     child: Row(
                       children: [
+                    // Radio button
+                    Container(
+                      width: 24,
+                      height: 24,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: isSelected
+                              ? option['color'] as Color
+                              : Colors.grey.shade400,
+                          width: 2,
+                        ),
+                      ),
+                      child: isSelected
+                          ? Center(
+                              child: Container(
+                                width: 12,
+                                height: 12,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: option['color'] as Color,
+                                ),
+                              ),
+                            )
+                          : null,
+                    ),
+                    const SizedBox(width: PulseSpacing.md),
+                    // Icon
                         Container(
                           width: 56,
                           height: 56,
@@ -1695,22 +1721,14 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
                               ),
                             ],
                           ),
-                        ),
-                        if (isSelected)
-                          Icon(
-                            Icons.check_circle,
-                            color: option['color'] as Color,
-                            size: 28,
-                          ),
+                    ),
                       ],
                     ),
                   ),
                 ),
               );
             }),
-          ],
-        );
-      },
+      ],
     );
   }
 
