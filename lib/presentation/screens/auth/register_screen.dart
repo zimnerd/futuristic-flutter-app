@@ -169,14 +169,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
             _proceedWithRegistration();
           } else if (state is AuthPhoneValidationError) {
             PulseToast.error(context, message: state.message);
-          } else if (state is AuthAuthenticated) {
+          } else if (state is AuthRegistrationSuccess) {
             // Show success message
             PulseToast.success(
               context,
-              message: 'Account created successfully! Welcome to PulseLink 💜',
+              message:
+                  'Account created successfully! Please log in to continue.',
+              duration: const Duration(seconds: 4),
             );
-            // Navigate to home - router will handle this automatically
-            // since isAuthenticated is now true
+            // Navigate to login page
+            context.go('/login');
           }
         },
         child: Container(

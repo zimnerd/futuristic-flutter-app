@@ -187,8 +187,14 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
       if (user != null) {
         _logger.i('✅ Sign up successful: ${user.username}');
-        // Emit authenticated state so user can access the app
-        emit(AuthAuthenticated(user: user));
+        // Emit registration success - user must log in to access the app
+        emit(
+          AuthRegistrationSuccess(
+            user: user,
+            message:
+                'Registration successful! Please log in to verify your account and start matching.',
+          ),
+        );
       } else {
         _logger.w('❌ Sign up failed');
         emit(

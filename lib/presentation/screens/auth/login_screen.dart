@@ -32,12 +32,25 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _obscurePassword = true;
   String _selectedCountryCode = PhoneUtils.defaultCountryCode;
   String _formattedPhoneNumber = '';
+  String? _registrationSuccessMessage;
 
   @override
   void initState() {
     super.initState();
     // Initialize with location-based country detection
     _initializeCountryCode();
+    // Check if user just registered
+    _checkRegistrationSuccess();
+  }
+
+  /// Check if user just registered successfully
+  void _checkRegistrationSuccess() {
+    final authState = context.read<AuthBloc>().state;
+    if (authState is AuthRegistrationSuccess) {
+      setState(() {
+        _registrationSuccessMessage = authState.message;
+      });
+    }
   }
 
   @override
@@ -275,6 +288,10 @@ class _LoginScreenState extends State<LoginScreen> {
           });
 
           if (state is AuthAuthenticated) {
+            // Clear registration success message
+            setState(() {
+              _registrationSuccessMessage = null;
+            });
             context.go('/home');
           } else if (state is AuthOTPSent) {
             // Navigate to OTP verification screen
@@ -288,6 +305,11 @@ class _LoginScreenState extends State<LoginScreen> {
                 'deliveryMethods': state.deliveryMethods,
               },
             );
+          } else if (state is AuthRegistrationSuccess) {
+            // Update message if state changes
+            setState(() {
+              _registrationSuccessMessage = state.message;
+            });
           } else if (state is AuthError) {
             PulseToast.error(context, message: state.message);
           }
@@ -330,7 +352,58 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: 48),
+                const SizedBox(height: 24),
+
+                // Registration success banner
+                if (_registrationSuccessMessage != null) ...[
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: PulseColors.success.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: PulseColors.success.withValues(alpha: 0.3),
+                        width: 1,
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(
+                          Icons.check_circle_outline,
+                          color: PulseColors.success,
+                          size: 24,
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                '🎉 Account Created!',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 16,
+                                  color: PulseColors.success,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                _registrationSuccessMessage!,
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: PulseColors.onSurface.withValues(
+                                    alpha: 0.8,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                ],
 
                 // Toggle between phone and email login
                 Row(
