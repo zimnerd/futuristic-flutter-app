@@ -173,10 +173,40 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
       if (user != null) {
         _logger.i('✅ 🤖 Auto-login successful: ${user.username}');
-        emit(AuthAuthenticated(user: user));
 
-        // Initialize real-time services after successful authentication
-        await _initializeRealTimeServices(user);
+        // Check if user is verified (either email or phone)
+        final isEmailVerified = user.emailVerified;
+        final isPhoneVerified = user.phoneVerified;
+
+        if (!isEmailVerified && !isPhoneVerified) {
+          _logger.i(
+            '⚠️ 🤖 Auto-login: User not verified - showing verification screen',
+          );
+          emit(
+            AuthVerificationRequired(
+              user: user,
+              isEmailVerified: isEmailVerified,
+              isPhoneVerified: isPhoneVerified,
+              message: 'Please verify your account to continue',
+            ),
+          );
+        } else if (!_isProfileComplete(user)) {
+          _logger.i(
+            '⚠️ 🤖 Auto-login: Profile incomplete - showing profile enrichment screen',
+          );
+          emit(
+            AuthProfileEnrichmentRequired(
+              user: user,
+              message: 'Please complete your profile to get started',
+            ),
+          );
+        } else {
+          _logger.i('✅ 🤖 Auto-login: User verified and profile complete');
+          emit(AuthAuthenticated(user: user));
+
+          // Initialize real-time services after successful authentication
+          await _initializeRealTimeServices(user);
+        }
       } else {
         _logger.w('❌ 🤖 Auto-login failed: Invalid credentials');
         emit(

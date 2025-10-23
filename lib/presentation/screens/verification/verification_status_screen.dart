@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../core/theme/app_colors.dart';
-import '../../../core/network/api_client.dart';
+import '../../../core/utils/logger.dart';
+import '../../../data/repositories/verification_repository.dart';
+import '../../../data/models/verification_status.dart';
 import '../../widgets/common/pulse_toast.dart';
 
 /// Verification status screen showing pending/approved/rejected states
@@ -15,63 +18,85 @@ class VerificationStatusScreen extends StatefulWidget {
 }
 
 class _VerificationStatusScreenState extends State<VerificationStatusScreen> {
+  late final VerificationRepository _repository;
   bool _isLoading = true;
-  bool _isVerified = false;
-  List<VerificationRequest> _requests = [];
+  late bool _isVerified;
+  late List<VerificationRequest> _requests;
+  String? _errorMessage;
 
   @override
   void initState() {
     super.initState();
+    _repository = VerificationRepository();
+    _isVerified = false;
+    _requests = [];
     _loadVerificationStatus();
   }
 
   Future<void> _loadVerificationStatus() async {
     setState(() {
       _isLoading = true;
+      _errorMessage = null;
     });
 
     try {
-      // Call verification status API
-      final apiClient = ApiClient.instance;
-      final response = await apiClient.get('/users/me/verification-status');
-
-      if (response.statusCode == 200 && response.data['data'] != null) {
-        final data = response.data['data'];
-        final requestsList = data['requests'] as List<dynamic>? ?? [];
-
+      final status = await _repository.getVerificationStatus();
+      
+      if (mounted) {
         setState(() {
-          _isVerified = data['isVerified'] as bool? ?? false;
-          _requests = requestsList.map((req) {
-            return VerificationRequest(
-              id: req['id'] as String? ?? '',
-              type: req['type'] as String? ?? '',
-              status: req['status'] as String? ?? '',
-              createdAt: req['createdAt'] != null
-                  ? DateTime.parse(req['createdAt'] as String)
-                  : DateTime.now(),
-              submittedAt: req['submittedAt'] != null
-                  ? DateTime.parse(req['submittedAt'] as String)
-                  : DateTime.now(),
-              reviewedAt: req['reviewedAt'] != null
-                  ? DateTime.parse(req['reviewedAt'] as String)
-                  : null,
-              rejectionReason: req['rejectionReason'] as String?,
-            );
-          }).toList();
+          _isVerified = status.hasVerified;
+          _requests = _convertToVerificationRequests(status);
           _isLoading = false;
         });
-      } else {
-        throw Exception('Failed to load verification status');
+        AppLogger.info('Verification status loaded: ${status.hasVerified}');
       }
     } catch (e) {
       if (mounted) {
         setState(() {
           _isLoading = false;
+          _errorMessage = 'Failed to load verification status: $e';
         });
-        _showError('Failed to load verification status');
+        AppLogger.error('Failed to load verification status: $e');
+        _showError(_errorMessage!);
       }
     }
   }
+
+  List<VerificationRequest> _convertToVerificationRequests(
+    VerificationStatus status,
+  ) {
+    final requests = <VerificationRequest>[];
+
+    if (status.emailVerified) {
+      requests.add(
+        VerificationRequest(
+          id: 'email_${status.emailVerifiedAt?.millisecondsSinceEpoch}',
+          type: 'email',
+          status: 'approved',
+          createdAt: DateTime.now(),
+          submittedAt: status.emailVerifiedAt ?? DateTime.now(),
+          reviewedAt: status.emailVerifiedAt,
+        ),
+      );
+    }
+
+    if (status.phoneVerified) {
+      requests.add(
+        VerificationRequest(
+          id: 'phone_${status.phoneVerifiedAt?.millisecondsSinceEpoch}',
+          type: 'phone',
+          status: 'approved',
+          createdAt: DateTime.now(),
+          submittedAt: status.phoneVerifiedAt ?? DateTime.now(),
+          reviewedAt: status.phoneVerifiedAt,
+        ),
+      );
+    }
+
+    return requests;
+  }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -82,7 +107,7 @@ class _VerificationStatusScreenState extends State<VerificationStatusScreen> {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
-          onPressed: () => Navigator.of(context).pop(),
+          onPressed: () => context.go('/settings'),
         ),
         title: const Text(
           'Verification Status',
@@ -131,50 +156,73 @@ class _VerificationStatusScreenState extends State<VerificationStatusScreen> {
   }
 
   Widget _buildVerifiedCard() {
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [AppColors.success.withValues(alpha: 0.8), AppColors.success],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
+    // Get verification methods used
+    final verificationMethods = <String>[];
+    if (_requests.any((r) => r.type == 'email')) {
+      verificationMethods.add('Email');
+    }
+    if (_requests.any((r) => r.type == 'phone')) {
+      verificationMethods.add('WhatsApp');
+    }
+
+    final methodsText = verificationMethods.isNotEmpty
+        ? 'via ${verificationMethods.join(' & ')}'
+        : '';
+
+    return SizedBox(
+      width: double.infinity,
+      child: Container(
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              AppColors.success.withValues(alpha: 0.8),
+              AppColors.success,
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(24),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.success.withValues(alpha: 0.3),
+              blurRadius: 20,
+              offset: const Offset(0, 10),
+            ),
+          ],
         ),
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.success.withValues(alpha: 0.3),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          Container(
-            width: 80,
-            height: 80,
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.2),
-              shape: BoxShape.circle,
+        child: Column(
+          children: [
+            Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.2),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.verified, size: 48, color: Colors.white),
             ),
-            child: const Icon(Icons.verified, size: 48, color: Colors.white),
-          ),
-          const SizedBox(height: 24),
-          const Text(
-            'You\'re Verified!',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 28,
-              fontWeight: FontWeight.bold,
+            const SizedBox(height: 24),
+            const Text(
+              'You\'re Verified!',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 28,
+                fontWeight: FontWeight.bold,
+              ),
             ),
-          ),
-          const SizedBox(height: 8),
-          const Text(
-            'Your profile has been verified by our team',
-            textAlign: TextAlign.center,
-            style: TextStyle(color: Colors.white, fontSize: 16, height: 1.5),
-          ),
-        ],
+            const SizedBox(height: 8),
+            Text(
+              'Your account verified $methodsText',
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                height: 1.5,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -194,46 +242,48 @@ class _VerificationStatusScreenState extends State<VerificationStatusScreen> {
   }
 
   Widget _buildPendingCard() {
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(
-          color: AppColors.warning.withValues(alpha: 0.3),
-          width: 2,
+    return SizedBox(
+      width: double.infinity,
+      child: Container(
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(
+            color: AppColors.warning.withValues(alpha: 0.3),
+            width: 2,
+          ),
         ),
-      ),
-      child: Column(
-        children: [
-          Container(
-            width: 80,
-            height: 80,
-            decoration: BoxDecoration(
-              color: AppColors.warning.withValues(alpha: 0.1),
-              shape: BoxShape.circle,
+        child: Column(
+          children: [
+            Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                color: AppColors.warning.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.schedule,
+                size: 48,
+                color: AppColors.warning,
+              ),
             ),
-            child: const Icon(
-              Icons.schedule,
-              size: 48,
-              color: AppColors.warning,
+            const SizedBox(height: 24),
+            const Text(
+              'Verification Pending',
+              style: TextStyle(
+                color: AppColors.textPrimary,
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+              ),
             ),
-          ),
-          const SizedBox(height: 24),
-          const Text(
-            'Verification Pending',
-            style: TextStyle(
-              color: AppColors.textPrimary,
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 8),
-          const Text(
-            'We\'re reviewing your submission',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: AppColors.textSecondary,
+            const SizedBox(height: 8),
+            const Text(
+              'We\'re reviewing your submission',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: AppColors.textSecondary,
               fontSize: 16,
               height: 1.5,
             ),
@@ -267,40 +317,43 @@ class _VerificationStatusScreenState extends State<VerificationStatusScreen> {
           ),
         ],
       ),
+      ),
     );
   }
 
   Widget _buildRejectedCard() {
     final rejectedRequest = _requests.firstWhere((r) => r.status == 'rejected');
 
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(
-          color: AppColors.error.withValues(alpha: 0.3),
-          width: 2,
-        ),
-      ),
-      child: Column(
-        children: [
-          Container(
-            width: 80,
-            height: 80,
-            decoration: BoxDecoration(
-              color: AppColors.error.withValues(alpha: 0.1),
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(Icons.cancel, size: 48, color: AppColors.error),
+    return SizedBox(
+      width: double.infinity,
+      child: Container(
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(
+            color: AppColors.error.withValues(alpha: 0.3),
+            width: 2,
           ),
-          const SizedBox(height: 24),
-          const Text(
-            'Verification Declined',
-            style: TextStyle(
-              color: AppColors.textPrimary,
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
+        ),
+        child: Column(
+          children: [
+            Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                color: AppColors.error.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.cancel, size: 48, color: AppColors.error),
+            ),
+            const SizedBox(height: 24),
+            const Text(
+              'Verification Declined',
+              style: TextStyle(
+                color: AppColors.textPrimary,
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
             ),
           ),
           const SizedBox(height: 8),
@@ -348,44 +401,47 @@ class _VerificationStatusScreenState extends State<VerificationStatusScreen> {
           ),
         ],
       ),
+      ),
     );
   }
 
   Widget _buildNotStartedCard() {
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: AppColors.border, width: 2),
-      ),
-      child: Column(
-        children: [
-          Container(
-            width: 80,
-            height: 80,
-            decoration: BoxDecoration(
-              color: AppColors.primary.withValues(alpha: 0.1),
-              shape: BoxShape.circle,
+    return SizedBox(
+      width: double.infinity,
+      child: Container(
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(color: AppColors.border, width: 2),
+        ),
+        child: Column(
+          children: [
+            Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                color: AppColors.primary.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.verified_user,
+                size: 48,
+                color: AppColors.primary,
+              ),
             ),
-            child: const Icon(
-              Icons.verified_user,
-              size: 48,
-              color: AppColors.primary,
-            ),
-          ),
-          const SizedBox(height: 24),
-          const Text(
-            'Not Verified Yet',
-            style: TextStyle(
-              color: AppColors.textPrimary,
-              fontSize: 24,
+            const SizedBox(height: 24),
+            const Text(
+              'Not Verified Yet',
+              style: TextStyle(
+                color: AppColors.textPrimary,
+                fontSize: 24,
               fontWeight: FontWeight.bold,
             ),
           ),
           const SizedBox(height: 8),
           const Text(
-            'Get verified to build trust with other users',
+              'Verify your email or WhatsApp to build trust with other users',
             textAlign: TextAlign.center,
             style: TextStyle(
               color: AppColors.textSecondary,
@@ -394,14 +450,65 @@ class _VerificationStatusScreenState extends State<VerificationStatusScreen> {
             ),
           ),
           const SizedBox(height: 24),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Row(
+                    children: [
+                      Icon(
+                        Icons.info_outline,
+                        color: AppColors.primary,
+                        size: 20,
+                      ),
+                      SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'Choose one verification method:',
+                          style: TextStyle(
+                            color: AppColors.textPrimary,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    '• Email: Verify via confirmation link',
+                    style: TextStyle(
+                      color: AppColors.textSecondary,
+                      fontSize: 13,
+                      height: 1.4,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '• WhatsApp: Verify via SMS code',
+                    style: TextStyle(
+                      color: AppColors.textSecondary,
+                      fontSize: 13,
+                      height: 1.4,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 24),
           SizedBox(
             width: double.infinity,
             height: 56,
             child: ElevatedButton.icon(
               onPressed: _startVerification,
-              icon: const Icon(Icons.camera_alt),
+                icon: const Icon(Icons.verified_user),
               label: const Text(
-                'Start Verification',
+                  'Get Verified',
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
               ),
               style: ElevatedButton.styleFrom(
@@ -414,6 +521,7 @@ class _VerificationStatusScreenState extends State<VerificationStatusScreen> {
             ),
           ),
         ],
+      ),
       ),
     );
   }
@@ -528,12 +636,14 @@ class _VerificationStatusScreenState extends State<VerificationStatusScreen> {
 
   String _getRequestTypeLabel(String type) {
     switch (type) {
+      case 'email':
+        return 'Email Verification';
+      case 'phone':
+        return 'WhatsApp Verification';
       case 'photo':
         return 'Photo Verification';
       case 'id':
         return 'ID Verification';
-      case 'phone':
-        return 'Phone Verification';
       case 'social':
         return 'Social Media Verification';
       default:
@@ -584,11 +694,11 @@ class _VerificationStatusScreenState extends State<VerificationStatusScreen> {
   }
 
   void _startVerification() {
-    Navigator.of(context).pushNamed('/photo-verification');
+    context.push('/photo-verification');
   }
 
   void _retryVerification() {
-    Navigator.of(context).pushNamed('/photo-verification');
+    context.push('/photo-verification');
   }
 
   void _contactSupport() async {
@@ -616,7 +726,9 @@ class _VerificationStatusScreenState extends State<VerificationStatusScreen> {
   }
 
   void _showError(String message) {
-    PulseToast.error(context, message: message);
+    if (mounted) {
+      PulseToast.error(context, message: message);
+    }
   }
 }
 

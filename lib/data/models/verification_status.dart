@@ -16,19 +16,42 @@ class VerificationStatus {
     required this.canAccessMatching,
   });
 
-  /// Create from JSON response
+  /// Create from JSON response (supports both old and new API formats)
   factory VerificationStatus.fromJson(Map<String, dynamic> json) {
+    // Handle new nested format: { email: { verified, verifiedAt }, phone: { verified, verifiedAt } }
+    final emailData = json['email'] as Map<String, dynamic>? ?? {};
+    final phoneData = json['phone'] as Map<String, dynamic>? ?? {};
+
+    final emailVerified =
+        emailData['verified'] as bool? ??
+        json['emailVerified'] as bool? ??
+        false;
+    final emailVerifiedAt = emailData['verifiedAt'] != null
+        ? DateTime.parse(emailData['verifiedAt'] as String)
+        : (json['emailVerifiedAt'] != null
+              ? DateTime.parse(json['emailVerifiedAt'] as String)
+              : null);
+
+    final phoneVerified =
+        phoneData['verified'] as bool? ??
+        json['phoneVerified'] as bool? ??
+        false;
+    final phoneVerifiedAt = phoneData['verifiedAt'] != null
+        ? DateTime.parse(phoneData['verifiedAt'] as String)
+        : (json['phoneVerifiedAt'] != null
+              ? DateTime.parse(json['phoneVerifiedAt'] as String)
+              : null);
+
     return VerificationStatus(
-      emailVerified: json['emailVerified'] as bool? ?? false,
-      emailVerifiedAt: json['emailVerifiedAt'] != null
-          ? DateTime.parse(json['emailVerifiedAt'] as String)
-          : null,
-      phoneVerified: json['phoneVerified'] as bool? ?? false,
-      phoneVerifiedAt: json['phoneVerifiedAt'] != null
-          ? DateTime.parse(json['phoneVerifiedAt'] as String)
-          : null,
-      hasVerified: json['hasVerified'] as bool? ?? false,
-      canAccessMatching: json['canAccessMatching'] as bool? ?? false,
+      emailVerified: emailVerified,
+      emailVerifiedAt: emailVerifiedAt,
+      phoneVerified: phoneVerified,
+      phoneVerifiedAt: phoneVerifiedAt,
+      hasVerified:
+          json['verified'] as bool? ?? (emailVerified || phoneVerified),
+      canAccessMatching:
+          json['canAccessMatching'] as bool? ??
+          (emailVerified || phoneVerified),
     );
   }
 
