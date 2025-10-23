@@ -37,13 +37,18 @@ final class AuthUnauthenticated extends AuthState {
 
 /// State when authentication fails
 final class AuthError extends AuthState {
-  const AuthError({required this.message, this.errorCode});
+  const AuthError({
+    required this.message,
+    this.errorCode,
+    this.errorObject,
+  });
 
   final String message;
   final String? errorCode;
+  final dynamic errorObject; // Original error for detailed parsing
 
   @override
-  List<Object?> get props => [message, errorCode];
+  List<Object?> get props => [message, errorCode, errorObject];
 }
 
 /// Alias for AuthError to maintain compatibility

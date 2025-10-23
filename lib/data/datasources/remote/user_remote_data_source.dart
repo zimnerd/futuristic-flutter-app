@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:logger/logger.dart';
 
 import '../../models/user_model.dart';
@@ -253,7 +254,11 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
       }
     } catch (e) {
       _logger.e('Sign up error: $e');
+      
+      // Rethrow the original error so ErrorService can parse it properly
       if (e is ApiException) rethrow;
+      if (e is DioException) rethrow;
+      
       throw ApiException('Sign up failed: ${e.toString()}');
     }
   }

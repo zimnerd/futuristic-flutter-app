@@ -210,6 +210,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         AuthError(
           message: e is AppException ? e.message : 'Sign up failed',
           errorCode: e is AppException ? e.code : null,
+          errorObject: e, // Pass the original error for detailed parsing
         ),
       );
     }

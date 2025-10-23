@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/services/error_service.dart';
 import '../../../core/utils/phone_utils.dart';
 import '../../blocs/auth/auth_bloc.dart';
 import '../../blocs/auth/auth_event.dart';
@@ -36,6 +37,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
   bool _isLoading = false;
   bool _acceptedTerms = false;
   bool _obscurePassword = true;
+  String? _emailError;
+  String? _usernameError;
+  String? _phoneError;
+  String? _passwordError;
 
   @override
   void initState() {
@@ -160,10 +165,49 @@ class _RegisterScreenState extends State<RegisterScreen> {
         listener: (context, state) {
           setState(() {
             _isLoading = state is AuthLoading || state is AuthPhoneValidating;
+            
+            // Clear field errors when loading
+            if (state is AuthLoading || state is AuthPhoneValidating) {
+              _emailError = null;
+              _usernameError = null;
+              _phoneError = null;
+              _passwordError = null;
+            }
           });
 
           if (state is AuthError) {
-            PulseToast.error(context, message: state.message);
+            // Use centralized error service
+            final errorDetails = ErrorService.instance.parseError(
+              state.errorObject ?? state.message,
+            );
+
+            setState(() {
+              // Clear all errors first
+              _emailError = null;
+              _usernameError = null;
+              _phoneError = null;
+              _passwordError = null;
+
+              // Set field-specific errors from backend
+              if (errorDetails.hasFieldErrors) {
+                _emailError = errorDetails.getFieldError('email');
+                _usernameError = errorDetails.getFieldError('username');
+                _phoneError = errorDetails.getFieldError('phone');
+                _passwordError = errorDetails.getFieldError('password');
+
+                // Trigger form validation to show errors
+                Future.delayed(const Duration(milliseconds: 100), () {
+                  _formKey.currentState?.validate();
+                });
+              } else {
+                // Show general error using centralized service
+                ErrorService.instance.showError(
+                  context,
+                  state.errorObject ?? state.message,
+                  onRetry: _handleRegister,
+                );
+              }
+            });
           } else if (state is AuthPhoneValidationSuccess && state.isValid) {
             // Phone validation successful, proceed with registration
             _proceedWithRegistration();
@@ -238,7 +282,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           hintText: 'Username',
                           keyboardType: TextInputType.name,
                           prefixIcon: const Icon(Icons.person),
-                          validator: ValidationHelpers.validateUsername,
+                          validator: (value) {
+                            // Show field-specific error if exists
+                            if (_usernameError != null) {
+                              return _usernameError;
+                            }
+                            return ValidationHelpers.validateUsername(value);
+                          },
                         ),
                         const SizedBox(height: PulseSpacing.lg),
 
@@ -248,7 +298,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           hintText: 'Email Address',
                           keyboardType: TextInputType.emailAddress,
                           prefixIcon: const Icon(Icons.email),
-                          validator: ValidationHelpers.validateEmail,
+                          validator: (value) {
+                            // Show field-specific error if exists
+                            if (_emailError != null) {
+                              return _emailError;
+                            }
+                            return ValidationHelpers.validateEmail(value);
+                          },
                         ),
                         const SizedBox(height: PulseSpacing.lg),
 
@@ -270,7 +326,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               });
                             },
                           ),
-                          validator: ValidationHelpers.validatePassword,
+                          validator: (value) {
+                            // Show field-specific error if exists
+                            if (_passwordError != null) {
+                              return _passwordError;
+                            }
+                            return ValidationHelpers.validatePassword(value);
+                          },
                         ),
                         const SizedBox(height: PulseSpacing.lg),
 
@@ -279,7 +341,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           initialCountryCode: _selectedCountryCode,
                           onChanged: _onPhoneChanged,
                           onCountryChanged: _onCountryChanged,
-                          validator: ValidationHelpers.validatePhone,
+                          validator: (value) {
+                            // Show field-specific error if exists
+                            if (_phoneError != null) {
+                              return _phoneError;
+                            }
+                            return ValidationHelpers.validatePhone(value);
+                          },
                           decoration: const InputDecoration(
                             labelText: 'Phone Number',
                             hintText: 'Enter your phone number',
