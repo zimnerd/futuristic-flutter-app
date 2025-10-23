@@ -98,10 +98,8 @@ void main() {
 
     test('getUserEvents should return user\'s events', () async {
       // Arrange
-      const userId = 'user123';
-
       // Act & Assert
-      expect(() => service.getUserEvents(userId), returnsNormally);
+      expect(() => service.getUserEvents(), returnsNormally);
     });
   });
 

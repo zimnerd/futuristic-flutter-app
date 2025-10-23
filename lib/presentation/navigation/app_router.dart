@@ -13,7 +13,7 @@ import '../../domain/entities/user_profile.dart';
 import '../screens/auth/forgot_password_screen.dart';
 import '../screens/auth/login_screen.dart' as simple_login;
 import '../screens/auth/otp_verification_screen.dart';
-import '../screens/auth/enhanced_register_screen.dart' show RegisterScreen;
+import '../screens/auth/register_screen.dart' show RegisterScreen;
 import '../screens/main/home_screen.dart';
 import '../screens/main/matches_screen.dart';
 import '../screens/main/messages_screen.dart';
