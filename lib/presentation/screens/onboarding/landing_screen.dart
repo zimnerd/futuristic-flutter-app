@@ -114,14 +114,7 @@ class _LandingScreenState extends State<LandingScreen>
 
                   const SizedBox(height: PulseSpacing.xxl),
 
-                  // Social Proof
-                  FadeTransition(
-                    opacity: _fadeAnimation,
-                    child: _buildSocialProof(),
-                  ),
-
-                  const SizedBox(height: PulseSpacing.xxl * 1.5),
-
+            
                   // CTAs
                   FadeTransition(
                     opacity: _fadeAnimation,
@@ -281,74 +274,6 @@ class _LandingScreenState extends State<LandingScreen>
       ),
     );
   }
-
-  Widget _buildSocialProof() {
-    return Container(
-      padding: const EdgeInsets.all(PulseSpacing.lg),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(PulseRadii.lg),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.2),
-        ),
-      ),
-      child: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Icon(
-          Icons.star,
-          color: Colors.amber.shade300,
-                size: 20,
-        ),
-        const SizedBox(width: 4),
-        Text(
-          '4.8',
-                style: PulseTextStyles.titleMedium.copyWith(
-            color: Colors.white,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        const SizedBox(width: PulseSpacing.sm),
-        Text(
-          '•',
-          style: TextStyle(
-            color: Colors.white.withValues(alpha: 0.5),
-          ),
-        ),
-        const SizedBox(width: PulseSpacing.sm),
-        Text(
-                '100K+ Matches Made',
-                style: PulseTextStyles.bodyMedium.copyWith(
-            color: Colors.white.withValues(alpha: 0.9),
-          ),
-        ),
-      ],
-          ),
-          const SizedBox(height: PulseSpacing.sm),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.check_circle,
-                color: PulseColors.success,
-                size: 16,
-              ),
-              const SizedBox(width: PulseSpacing.xs),
-              Text(
-                'Verified & Trusted Community',
-                style: PulseTextStyles.bodySmall.copyWith(
-                  color: Colors.white.withValues(alpha: 0.8),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildCTASection() {
     return Column(
       children: [

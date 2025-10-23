@@ -149,12 +149,47 @@ class _RegisterScreenState extends State<RegisterScreen> {
   void _onPhoneChanged(String formattedPhone) {
     setState(() {
       _currentPhone = formattedPhone;
+      // Automatically clear phone error when user edits the field
+      if (_phoneError != null) {
+        _phoneError = null;
+      }
     });
   }
 
   void _onCountryChanged(String countryCode) {
     setState(() {
       _selectedCountryCode = countryCode;
+      // Automatically clear phone error when user changes country
+      if (_phoneError != null) {
+        _phoneError = null;
+      }
+    });
+  }
+
+  void _onEmailChanged(String email) {
+    setState(() {
+      // Automatically clear email error when user edits the field
+      if (_emailError != null) {
+        _emailError = null;
+      }
+    });
+  }
+
+  void _onUsernameChanged(String username) {
+    setState(() {
+      // Automatically clear username error when user edits the field
+      if (_usernameError != null) {
+        _usernameError = null;
+      }
+    });
+  }
+
+  void _onPasswordChanged(String password) {
+    setState(() {
+      // Automatically clear password error when user edits the field
+      if (_passwordError != null) {
+        _passwordError = null;
+      }
     });
   }
 
@@ -317,12 +352,40 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                   ),
                                   const SizedBox(height: PulseSpacing.xs),
                                   if (_emailError != null)
-                                    Text(
-                                      '• Email: $_emailError',
-                                      style: PulseTextStyles.bodySmall.copyWith(
-                                        color: PulseColors.error,
-                                      ),
-                                    ),
+                                    Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          '• Email: $_emailError',
+                                          style: PulseTextStyles.bodySmall
+                                              .copyWith(
+                                                color: PulseColors.error,
+                                              ),
+                                        ),
+                                        // Recovery suggestion for email errors
+                                        if (_emailError != null &&
+                                            (_emailError!.contains('already') ||
+                                                _emailError!.contains(
+                                                  'registered',
+                                                )))
+                                          Padding(
+                                            padding: const EdgeInsets.only(
+                                              top: PulseSpacing.xs,
+                                            ),
+                                            child: Text(
+                                              '💡 Try a different email or sign in with your existing account',
+                                              style: PulseTextStyles.labelSmall
+                                                  .copyWith(
+                                                    color: PulseColors.error,
+                                                    fontStyle: FontStyle.italic,
+                                                  ),
+                                            ),
+                                          ),
+                                      ],
+                                    )
+                                  else
+                                    const SizedBox.shrink(),
                                   if (_usernameError != null)
                                     Text(
                                       '• Username: $_usernameError',
@@ -331,12 +394,40 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                       ),
                                     ),
                                   if (_phoneError != null)
-                                    Text(
-                                      '• Phone: $_phoneError',
-                                      style: PulseTextStyles.bodySmall.copyWith(
-                                        color: PulseColors.error,
-                                      ),
-                                    ),
+                                    Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          '• Phone: $_phoneError',
+                                          style: PulseTextStyles.bodySmall
+                                              .copyWith(
+                                                color: PulseColors.error,
+                                              ),
+                                        ),
+                                        // Recovery suggestion for phone errors
+                                        if (_phoneError != null &&
+                                            (_phoneError!.contains('already') ||
+                                                _phoneError!.contains(
+                                                  'registered',
+                                                )))
+                                          Padding(
+                                            padding: const EdgeInsets.only(
+                                              top: PulseSpacing.xs,
+                                            ),
+                                            child: Text(
+                                              '💡 Try a different phone number or sign in with your existing account',
+                                              style: PulseTextStyles.labelSmall
+                                                  .copyWith(
+                                                    color: PulseColors.error,
+                                                    fontStyle: FontStyle.italic,
+                                                  ),
+                                            ),
+                                          ),
+                                      ],
+                                    )
+                                  else
+                                    const SizedBox.shrink(),
                                   if (_passwordError != null)
                                     Text(
                                       '• Password: $_passwordError',
@@ -361,6 +452,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           keyboardType: TextInputType.name,
                           prefixIcon: const Icon(Icons.person),
                           errorText: _usernameError != null ? ' ' : null,
+                          onChanged: _onUsernameChanged,
                         ),
                         const SizedBox(height: PulseSpacing.lg),
 
@@ -371,6 +463,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           keyboardType: TextInputType.emailAddress,
                           prefixIcon: const Icon(Icons.email),
                           errorText: _emailError != null ? ' ' : null,
+                          onChanged: _onEmailChanged,
                         ),
                         const SizedBox(height: PulseSpacing.lg),
 
@@ -381,6 +474,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           obscureText: _obscurePassword,
                           prefixIcon: const Icon(Icons.lock),
                           errorText: _passwordError != null ? ' ' : null,
+                          onChanged: _onPasswordChanged,
                           suffixIcon: IconButton(
                             icon: Icon(
                               _obscurePassword

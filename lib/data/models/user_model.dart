@@ -20,6 +20,8 @@ class UserModel {
   final Map<String, dynamic>? coordinates;
   final bool premium;
   final bool verified;
+  final bool emailVerified;
+  final bool phoneVerified;
   final String role;
   final List<String> permissions;
   final bool isActive;
@@ -49,6 +51,8 @@ class UserModel {
     this.coordinates,
     this.premium = false,
     this.verified = false,
+    this.emailVerified = false,
+    this.phoneVerified = false,
     this.role = 'USER',
     this.permissions = const [],
     this.isActive = true,
@@ -99,6 +103,8 @@ class UserModel {
           : null,
       premium: json['premium'] ?? false,
       verified: json['verified'] ?? false,
+      emailVerified: json['emailVerified'] ?? false,
+      phoneVerified: json['phoneVerified'] ?? false,
       role: json['role'] ?? 'USER',
       permissions: json['permissions'] != null
           ? List<String>.from(json['permissions'])
@@ -141,6 +147,8 @@ class UserModel {
       'coordinates': coordinates,
       'premium': premium,
       'verified': verified,
+      'emailVerified': emailVerified,
+      'phoneVerified': phoneVerified,
       'role': role,
       'permissions': permissions,
       'isActive': isActive,

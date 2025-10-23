@@ -6,6 +6,7 @@ import '../../../core/network/api_client.dart';
 import '../../exceptions/app_exceptions.dart';
 import '../../../core/services/service_locator.dart';
 import '../../services/token_service.dart';
+import '../../../core/services/dio_error_parser.dart';
 
 /// Remote data source for user-related API operations
 /// Handles all HTTP requests to the backend user endpoints
@@ -182,9 +183,24 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
       } else {
         throw ApiException('Login failed: ${response.statusMessage}');
       }
+    } on DioException catch (e) {
+      _logger.e('Sign in error: $e');
+
+      // Extract the error message from the backend response
+      final errorMessage = DioErrorParser.extractErrorMessage(
+        e,
+        fallbackMessage: 'Sign in failed',
+      );
+
+      _logger.e('🚨 Extracted error message: $errorMessage');
+      throw ApiException(
+        errorMessage,
+        code: 'SIGN_IN_FAILED',
+        details: e.response?.data,
+      );
     } catch (e) {
       _logger.e('Sign in error: $e');
-      if (e is ApiException) rethrow;
+      if (e is AppException) rethrow;
       throw ApiException('Sign in failed: ${e.toString()}');
     }
   }
@@ -252,12 +268,26 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
       } else {
         throw ApiException('Registration failed: ${response.statusMessage}');
       }
+    } on DioException catch (e) {
+      _logger.e('Sign up error: $e');
+
+      // Extract the error message from the backend response
+      final errorMessage = DioErrorParser.extractErrorMessage(
+        e,
+        fallbackMessage: 'Sign up failed',
+      );
+
+      _logger.e('🚨 Extracted error message: $errorMessage');
+      throw ApiException(
+        errorMessage,
+        code: 'SIGN_UP_FAILED',
+        details: e.response?.data,
+      );
     } catch (e) {
       _logger.e('Sign up error: $e');
       
-      // Rethrow the original error so ErrorService can parse it properly
+      // Rethrow the original error so it propagates properly
       if (e is ApiException) rethrow;
-      if (e is DioException) rethrow;
       
       throw ApiException('Sign up failed: ${e.toString()}');
     }
@@ -496,6 +526,21 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
       } else {
         throw ApiException('Failed to send OTP: ${response.statusMessage}');
       }
+    } on DioException catch (e) {
+      _logger.e('Send OTP error: $e');
+
+      // Extract the error message from the backend response
+      final errorMessage = DioErrorParser.extractErrorMessage(
+        e,
+        fallbackMessage: 'Failed to send OTP',
+      );
+
+      _logger.e('🚨 Extracted error message: $errorMessage');
+      throw ApiException(
+        errorMessage,
+        code: 'SEND_OTP_FAILED',
+        details: e.response?.data,
+      );
     } catch (e) {
       _logger.e('Send OTP error: $e');
       if (e is ApiException) rethrow;
@@ -577,6 +622,21 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
       } else {
         throw ApiException('Failed to verify OTP: ${response.statusMessage}');
       }
+    } on DioException catch (e) {
+      _logger.e('Verify OTP error: $e');
+
+      // Extract the error message from the backend response
+      final errorMessage = DioErrorParser.extractErrorMessage(
+        e,
+        fallbackMessage: 'Failed to verify OTP',
+      );
+
+      _logger.e('🚨 Extracted error message: $errorMessage');
+      throw ApiException(
+        errorMessage,
+        code: 'VERIFY_OTP_FAILED',
+        details: e.response?.data,
+      );
     } catch (e) {
       _logger.e('Verify OTP error: $e');
       if (e is ApiException) rethrow;
@@ -603,6 +663,21 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
       } else {
         throw ApiException('Failed to resend OTP: ${response.statusMessage}');
       }
+    } on DioException catch (e) {
+      _logger.e('Resend OTP error: $e');
+
+      // Extract the error message from the backend response
+      final errorMessage = DioErrorParser.extractErrorMessage(
+        e,
+        fallbackMessage: 'Failed to resend OTP',
+      );
+
+      _logger.e('🚨 Extracted error message: $errorMessage');
+      throw ApiException(
+        errorMessage,
+        code: 'RESEND_OTP_FAILED',
+        details: e.response?.data,
+      );
     } catch (e) {
       _logger.e('Resend OTP error: $e');
       if (e is ApiException) rethrow;

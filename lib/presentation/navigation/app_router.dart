@@ -13,6 +13,7 @@ import '../../domain/entities/user_profile.dart';
 import '../screens/auth/forgot_password_screen.dart';
 import '../screens/auth/login_screen.dart' as simple_login;
 import '../screens/auth/otp_verification_screen.dart';
+import '../screens/auth/verification_method_screen.dart';
 import '../screens/auth/register_screen.dart' show RegisterScreen;
 import '../screens/main/home_screen.dart';
 import '../screens/main/matches_screen.dart';
@@ -198,6 +199,16 @@ class AppRouter {
               sessionId: extra['sessionId'] as String,
               phoneNumber: extra['phoneNumber'] as String,
               deliveryMethods: extra['deliveryMethods'] as List<String>?,
+            );
+          },
+        ),
+        GoRoute(
+          path: AppRoutes.verificationMethod,
+          name: 'verificationMethod',
+          builder: (context, state) {
+            final extra = state.extra as Map<String, dynamic>?;
+            return VerificationMethodScreen(
+              userId: extra?['userId'] as String?,
             );
           },
         ),
@@ -1122,7 +1133,8 @@ class AppRouter {
         state.fullPath == AppRoutes.login ||
         state.fullPath == AppRoutes.register ||
         state.fullPath == AppRoutes.forgotPassword ||
-        state.fullPath == AppRoutes.otpVerify;
+        state.fullPath == AppRoutes.otpVerify ||
+        state.fullPath == AppRoutes.verificationMethod;
 
     final isWelcomeRoute =
         state.fullPath == AppRoutes.welcome ||
@@ -1143,6 +1155,24 @@ class AppRouter {
     if (isLoading) {
       debugPrint('  ⏳ Auth loading - no redirect');
       return null;
+    }
+
+    // Check verification status for authenticated users
+    if (currentState is AuthVerificationRequired &&
+        !state.fullPath!.contains(AppRoutes.verificationMethod)) {
+      debugPrint(
+        '  🔐 User needs verification - redirecting to verification method selection',
+      );
+      return AppRoutes.verificationMethod;
+    }
+
+    // Check profile enrichment status for authenticated users
+    if (currentState is AuthProfileEnrichmentRequired &&
+        !state.fullPath!.contains(AppRoutes.profileSetup)) {
+      debugPrint(
+        '  📝 User needs profile enrichment - redirecting to profile setup',
+      );
+      return AppRoutes.profileSetup;
     }
 
     // Check profile completion status for authenticated users
@@ -1191,6 +1221,7 @@ class AppRoutes {
   static const String register = '/register';
   static const String forgotPassword = '/forgot-password';
   static const String otpVerify = '/otp-verify';
+  static const String verificationMethod = '/verification-method';
   static const String home = '/home';
   static const String matches = '/matches';
   static const String explore = '/explore';

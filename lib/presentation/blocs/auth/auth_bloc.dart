@@ -100,10 +100,36 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
       if (user != null) {
         _logger.i('✅ Sign in successful: ${user.username}');
-        emit(AuthAuthenticated(user: user));
+        
+        // Check if user is verified (either email or phone)
+        final isEmailVerified = user.emailVerified;
+        final isPhoneVerified = user.phoneVerified;
 
-        // Initialize real-time services after successful authentication
-        await _initializeRealTimeServices(user);
+        if (!isEmailVerified && !isPhoneVerified) {
+          _logger.i('⚠️ User not verified - showing verification screen');
+          emit(
+            AuthVerificationRequired(
+              user: user,
+              isEmailVerified: isEmailVerified,
+              isPhoneVerified: isPhoneVerified,
+              message: 'Please verify your account to continue',
+            ),
+          );
+        } else if (!_isProfileComplete(user)) {
+          _logger.i(
+            '⚠️ Profile incomplete - showing profile enrichment screen',
+          );
+          emit(
+            AuthProfileEnrichmentRequired(
+              user: user,
+              message: 'Please complete your profile to get started',
+            ),
+          );
+        } else {
+          _logger.i('✅ User verified and profile complete - authenticating');
+          emit(AuthAuthenticated(user: user));
+          await _initializeRealTimeServices(user);
+        }
       } else {
         _logger.w('❌ Sign in failed: Invalid credentials');
         emit(
@@ -122,6 +148,13 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         ),
       );
     }
+  }
+
+  /// Check if user profile is complete with minimum required fields
+  bool _isProfileComplete(UserModel user) {
+    // Minimum required fields for profile: photos, bio, interests
+    // For now, just check if username exists (which it should after signup)
+    return user.username.isNotEmpty;
   }
 
   /// Handles automatic login for development mode

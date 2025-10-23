@@ -177,3 +177,32 @@ final class AuthPhoneValidationError extends AuthState {
   @override
   List<Object?> get props => [message, errorCode];
 }
+
+/// State when user needs email or phone verification after first login
+final class AuthVerificationRequired extends AuthState {
+  const AuthVerificationRequired({
+    required this.user,
+    required this.isEmailVerified,
+    required this.isPhoneVerified,
+    this.message,
+  });
+
+  final UserModel user;
+  final bool isEmailVerified;
+  final bool isPhoneVerified;
+  final String? message;
+
+  @override
+  List<Object?> get props => [user, isEmailVerified, isPhoneVerified, message];
+}
+
+/// State when user has verified and needs to complete profile enrichment
+final class AuthProfileEnrichmentRequired extends AuthState {
+  const AuthProfileEnrichmentRequired({required this.user, this.message});
+
+  final UserModel user;
+  final String? message;
+
+  @override
+  List<Object?> get props => [user, message];
+}
