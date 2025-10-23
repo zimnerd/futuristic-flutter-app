@@ -5,15 +5,18 @@ import 'package:logger/logger.dart';
 
 import '../../blocs/profile/profile_bloc.dart';
 import '../../theme/pulse_colors.dart';
-import '../../widgets/common/common_widgets.dart';
+import '../../widgets/common/keyboard_dismissible_scaffold.dart';
+import '../../widgets/common/pulse_button.dart';
 import '../../widgets/common/pulse_toast.dart';
+import '../../widgets/profile/profile_relationship_goals_section.dart';
 import '../../../domain/entities/user_profile.dart';
 
 final logger = Logger();
 
-/// User intent selection screen
-/// Allows users to select their primary purpose for using the app
-/// NOW INTEGRATED WITH BACKEND via ProfileBloc
+/// User intent selection screen - Initial profile setup step
+/// Reuses ProfileRelationshipGoalsSection widget for DRY principles
+/// Allows users to select their primary purpose(s) for using the app
+/// Integrated with ProfileBloc for backend sync
 class IntentSelectionScreen extends StatefulWidget {
   const IntentSelectionScreen({super.key});
 
@@ -22,68 +25,16 @@ class IntentSelectionScreen extends StatefulWidget {
 }
 
 class _IntentSelectionScreenState extends State<IntentSelectionScreen> {
-  String? _selectedIntent;
-  final List<String> _secondaryIntents = [];
-
-  final List<IntentOption> _intentOptions = [
-    IntentOption(
-      id: 'dating',
-      title: 'Dating',
-      description: 'Find romantic connections and meaningful relationships',
-      icon: Icons.favorite,
-      color: Color(0xFFFF6B9D),
-    ),
-    IntentOption(
-      id: 'friendship',
-      title: 'Friendship',
-      description: 'Make new friends and expand your social circle',
-      icon: Icons.people,
-      color: Color(0xFF4ECDC4),
-    ),
-    IntentOption(
-      id: 'events',
-      title: 'Events & Activities',
-      description: 'Find people to attend events and activities with',
-      icon: Icons.event,
-      color: Color(0xFFFFA726),
-    ),
-    IntentOption(
-      id: 'companion',
-      title: 'AI Companion',
-      description: 'Chat with AI for advice, support, and conversation',
-      icon: Icons.psychology,
-      color: Color(0xFF9C27B0),
-    ),
-    IntentOption(
-      id: 'support',
-      title: 'Emotional Support',
-      description: 'Connect with understanding people and find support',
-      icon: Icons.favorite_border,
-      color: Color(0xFF66BB6A),
-    ),
-    IntentOption(
-      id: 'explore',
-      title: 'Explore Everything',
-      description: 'I want to explore all features and decide later',
-      icon: Icons.explore,
-      color: Color(0xFF7E57C2),
-    ),
-  ];
-
-  void _toggleSecondaryIntent(String intentId) {
-    setState(() {
-      if (_secondaryIntents.contains(intentId)) {
-        _secondaryIntents.remove(intentId);
-      } else {
-        _secondaryIntents.add(intentId);
-      }
-    });
-  }
+  // ✅ REUSING ProfileRelationshipGoalsSection - stores as list of selected goals
+  List<String> _selectedIntents = [];
 
   /// Validate selection before saving
   bool _validateSelection() {
-    if (_selectedIntent == null) {
-      PulseToast.error(context, message: 'Please select your primary intent');
+    if (_selectedIntents.isEmpty) {
+      PulseToast.error(
+        context,
+        message: 'Please select at least one primary intent',
+      );
       return false;
     }
     return true;
@@ -96,14 +47,12 @@ class _IntentSelectionScreenState extends State<IntentSelectionScreen> {
     }
 
     try {
-      logger.i('💾 Saving intent to backend...');
-      logger.i('  Primary intent: $_selectedIntent');
-      logger.i('  Secondary intents: ${_secondaryIntents.join(", ")}');
+      logger.i('💾 Saving intents to backend...');
+      logger.i('  Selected intents: ${_selectedIntents.join(", ")}');
 
       // ✅ Save locally to SharedPreferences for profile setup tracking
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('user_intent_primary', _selectedIntent!);
-      await prefs.setStringList('user_intent_secondary', _secondaryIntents);
+      await prefs.setStringList('user_intent_list', _selectedIntents);
       await prefs.setString(
         'user_intent_timestamp',
         DateTime.now().toIso8601String(),
@@ -113,14 +62,10 @@ class _IntentSelectionScreenState extends State<IntentSelectionScreen> {
         true,
       ); // ✅ Mark step complete
 
-      logger.i('✅ Intent saved to SharedPreferences');
+      logger.i('✅ Intents saved to SharedPreferences');
 
-      // ✅ NEW: Also save to backend via ProfileBloc
-      // This ensures the backend has the user's primary intent
-      // Combine primary + secondary into relationshipGoals for backend
-      final allIntents = [_selectedIntent!, ..._secondaryIntents];
-
-      // Get current profile from bloc to avoid losing other data
+      // ✅ Also save to backend via ProfileBloc
+      // This ensures backend has user's selected intents
       final profileBloc = context.read<ProfileBloc>();
       final currentState = profileBloc.state;
 
@@ -147,7 +92,7 @@ class _IntentSelectionScreenState extends State<IntentSelectionScreen> {
           lastSeen: currentProfile.lastSeen,
           verified: currentProfile.verified,
           // ✅ Update relationshipGoals with selected intents
-          relationshipGoals: allIntents,
+          relationshipGoals: _selectedIntents,
           // Keep all other fields
           lifestyleChoice: currentProfile.lifestyleChoice,
           height: currentProfile.height,
@@ -171,7 +116,7 @@ class _IntentSelectionScreenState extends State<IntentSelectionScreen> {
         logger.i('✅ Profile update sent to backend');
       } else {
         logger.w(
-          '⚠️ Profile not loaded yet, will save intent to SharedPreferences only',
+          '⚠️ Profile not loaded yet, will save intents to SharedPreferences only',
         );
       }
 
@@ -181,7 +126,7 @@ class _IntentSelectionScreenState extends State<IntentSelectionScreen> {
         Navigator.of(context).pop(true);
       }
     } catch (e) {
-      logger.e('❌ Error saving intent: $e');
+      logger.e('❌ Error saving intents: $e');
       if (mounted) {
         PulseToast.error(context, message: 'Failed to save preferences: $e');
       }
@@ -190,299 +135,86 @@ class _IntentSelectionScreenState extends State<IntentSelectionScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              PulseColors.primary.withValues(alpha: 0.1),
-              PulseColors.surface,
-            ],
+    return KeyboardDismissibleScaffold(
+      backgroundColor: Colors.grey[50],
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.close, color: Colors.black87),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+        title: const Text(
+          'Your Primary Intent',
+          style: TextStyle(
+            color: Colors.black87,
+            fontSize: 20,
+            fontWeight: FontWeight.w600,
           ),
         ),
-        child: SafeArea(
-          child: Column(
-            children: [
-              Expanded(
-                child: CustomScrollView(
-                  slivers: [
-                    // Header
-                    SliverToBoxAdapter(
-                      child: Padding(
-                        padding: const EdgeInsets.all(PulseSpacing.xl),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'What brings you here?',
-                              style: PulseTextStyles.displaySmall.copyWith(
-                                color: PulseColors.onSurface,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(height: PulseSpacing.md),
-                            Text(
-                              'Choose your primary intent. You can explore other features anytime.',
-                              style: PulseTextStyles.bodyLarge.copyWith(
-                                color: PulseColors.onSurfaceVariant,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-
-                    // Intent Options
-                    SliverPadding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: PulseSpacing.lg,
-                      ),
-                      sliver: SliverList(
-                        delegate: SliverChildBuilderDelegate((context, index) {
-                          final option = _intentOptions[index];
-                          final isSelected = _selectedIntent == option.id;
-
-                          return Padding(
-                            padding: const EdgeInsets.only(
-                              bottom: PulseSpacing.md,
-                            ),
-                            child: IntentCard(
-                              option: option,
-                              isSelected: isSelected,
-                              onTap: () {
-                                setState(() {
-                                  _selectedIntent = option.id;
-                                  // Remove from secondary if selected as primary
-                                  _secondaryIntents.remove(option.id);
-                                });
-                              },
-                            ),
-                          );
-                        }, childCount: _intentOptions.length),
-                      ),
-                    ),
-
-                    // Secondary Intents Section
-                    if (_selectedIntent != null)
-                      SliverToBoxAdapter(
-                        child: Padding(
-                          padding: const EdgeInsets.all(PulseSpacing.lg),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const SizedBox(height: PulseSpacing.lg),
-                              Text(
-                                'Also interested in? (Optional)',
-                                style: PulseTextStyles.titleMedium.copyWith(
-                                  color: PulseColors.onSurface,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                              const SizedBox(height: PulseSpacing.sm),
-                              Text(
-                                'Select additional interests to personalize your experience',
-                                style: PulseTextStyles.bodyMedium.copyWith(
-                                  color: PulseColors.onSurfaceVariant,
-                                ),
-                              ),
-                              const SizedBox(height: PulseSpacing.md),
-                              Wrap(
-                                spacing: PulseSpacing.sm,
-                                runSpacing: PulseSpacing.sm,
-                                children: _intentOptions
-                                    .where((opt) => opt.id != _selectedIntent)
-                                    .map((option) {
-                                      final isSelected = _secondaryIntents
-                                          .contains(option.id);
-                                      return ChoiceChip(
-                                        label: Text(option.title),
-                                        selected: isSelected,
-                                        onSelected: (selected) {
-                                          _toggleSecondaryIntent(option.id);
-                                        },
-                                        avatar: Icon(
-                                          option.icon,
-                                          size: 18,
-                                          color: isSelected
-                                              ? Colors.white
-                                              : option.color,
-                                        ),
-                                        selectedColor: option.color,
-                                        backgroundColor: option.color
-                                            .withValues(alpha: 0.1),
-                                        labelStyle: TextStyle(
-                                          color: isSelected
-                                              ? Colors.white
-                                              : PulseColors.onSurface,
-                                          fontWeight: isSelected
-                                              ? FontWeight.w600
-                                              : FontWeight.normal,
-                                        ),
-                                      );
-                                    })
-                                    .toList(),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-
-                    // Bottom Spacing
-                    const SliverToBoxAdapter(child: SizedBox(height: 100)),
-                  ],
-                ),
-              ),
-
-              // Continue Button
-              Container(
-                padding: const EdgeInsets.all(PulseSpacing.lg),
-                decoration: BoxDecoration(
-                  color: PulseColors.surface,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.05),
-                      blurRadius: 10,
-                      offset: const Offset(0, -5),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (_selectedIntent != null)
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: PulseSpacing.md),
-                        child: Text(
-                          _secondaryIntents.isEmpty
-                              ? 'Primary: ${_intentOptions.firstWhere((o) => o.id == _selectedIntent).title}'
-                              : 'Primary: ${_intentOptions.firstWhere((o) => o.id == _selectedIntent).title} + ${_secondaryIntents.length} more',
-                          style: PulseTextStyles.bodySmall.copyWith(
-                            color: PulseColors.onSurfaceVariant,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                    PulseButton(
-                      text: 'Continue',
-                      onPressed: _selectedIntent != null ? _continue : null,
-                      fullWidth: true,
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
+        centerTitle: true,
       ),
-    );
-  }
-}
-
-/// Intent option data model
-class IntentOption {
-  final String id;
-  final String title;
-  final String description;
-  final IconData icon;
-  final Color color;
-
-  const IntentOption({
-    required this.id,
-    required this.title,
-    required this.description,
-    required this.icon,
-    required this.color,
-  });
-}
-
-/// Intent card widget
-class IntentCard extends StatelessWidget {
-  final IntentOption option;
-  final bool isSelected;
-  final VoidCallback onTap;
-
-  const IntentCard({
-    super.key,
-    required this.option,
-    required this.isSelected,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(PulseRadii.lg),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.all(PulseSpacing.lg),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? option.color.withValues(alpha: 0.1)
-              : PulseColors.surface,
-          border: Border.all(
-            color: isSelected ? option.color : Colors.grey.shade300,
-            width: isSelected ? 2 : 1,
-          ),
-          borderRadius: BorderRadius.circular(PulseRadii.lg),
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                    color: option.color.withValues(alpha: 0.3),
-                    blurRadius: 12,
-                    offset: const Offset(0, 4),
-                  ),
-                ]
-              : null,
-        ),
-        child: Row(
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Icon
+            // Info card
             Container(
-              width: 56,
-              height: 56,
+              padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: isSelected
-                    ? option.color
-                    : option.color.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(PulseRadii.md),
+                color: PulseColors.primary.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(12),
               ),
-              child: Icon(
-                option.icon,
-                color: isSelected ? Colors.white : option.color,
-                size: 28,
-              ),
-            ),
-            const SizedBox(width: PulseSpacing.md),
-
-            // Content
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              child: Row(
                 children: [
-                  Text(
-                    option.title,
-                    style: PulseTextStyles.titleMedium.copyWith(
-                      color: PulseColors.onSurface,
-                      fontWeight: FontWeight.w600,
-                    ),
+                  Icon(
+                    Icons.info_outline,
+                    color: PulseColors.primary,
+                    size: 24,
                   ),
-                  const SizedBox(height: PulseSpacing.xs),
-                  Text(
-                    option.description,
-                    style: PulseTextStyles.bodyMedium.copyWith(
-                      color: PulseColors.onSurfaceVariant,
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      'Help us personalize your experience and show you relevant connections.',
+                      style: TextStyle(
+                        color: Colors.grey[700],
+                        fontSize: 14,
+                        height: 1.4,
+                      ),
                     ),
                   ),
                 ],
               ),
             ),
+            const SizedBox(height: 24),
 
-            // Selected Indicator
-            if (isSelected)
-              Icon(Icons.check_circle, color: option.color, size: 28),
+            // ✅ REUSING ProfileRelationshipGoalsSection widget
+            // This maintains consistency with ProfileEditScreen implementation
+            // No duplicate code - single source of truth for intent selection UI
+            ProfileRelationshipGoalsSection(
+              selectedGoals: _selectedIntents,
+              onChanged: (intents) {
+                setState(() {
+                  _selectedIntents = intents;
+                });
+              },
+              title: 'What brings you here?',
+              subtitle:
+                  'Select one or more. You can change this anytime in your profile.',
+              maxSelections: 3, // Allow up to 3 primary intents
+            ),
+            const SizedBox(height: 32),
+
+            // Continue Button
+            PulseButton(
+              text: _selectedIntents.isEmpty
+                  ? 'Select to Continue'
+                  : 'Continue (${_selectedIntents.length} selected)',
+              onPressed: _selectedIntents.isNotEmpty ? _continue : null,
+              fullWidth: true,
+            ),
+            const SizedBox(height: 16),
           ],
         ),
       ),
