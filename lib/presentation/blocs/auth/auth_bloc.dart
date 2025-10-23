@@ -187,12 +187,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
       if (user != null) {
         _logger.i('✅ Sign up successful: ${user.username}');
-        emit(
-          AuthRegistrationSuccess(
-            user: user,
-            message: 'Account created successfully! Please verify your email.',
-          ),
-        );
+        // Emit authenticated state so user can access the app
+        emit(AuthAuthenticated(user: user));
       } else {
         _logger.w('❌ Sign up failed');
         emit(
@@ -568,6 +564,11 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         countryCode: event.countryCode,
       );
 
+      _logger.d('📊 Validation response: $response');
+      _logger.d(
+        '📊 isValid value: ${response['isValid']} (type: ${response['isValid'].runtimeType})',
+      );
+      
       if (response['isValid'] == true) {
         _logger.i('✅ Phone validation successful');
         emit(

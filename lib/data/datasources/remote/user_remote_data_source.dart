@@ -615,16 +615,27 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
 
       final response = await _apiClient.rawPost(
         '/auth/validate-phone',
-        data: {'phone': phone, 'countryCode': countryCode},
+        data: {'phoneNumber': phone, 'countryCode': countryCode},
       );
 
       if (response.statusCode == 200) {
-        return {
-          'isValid': response.data['isValid'],
-          'formattedPhone': response.data['formattedPhone'],
-          'message': response.data['message'],
-          'errorCode': response.data['errorCode'],
+        _logger.d('Raw response data: ${response.data}');
+
+        // Backend returns: { success, data: { isValid, formattedNumber, ... }, message, ... }
+        final data = response.data['data'] ?? response.data;
+        _logger.d('Extracted data: $data');
+
+        final result = {
+          'isValid': data['isValid'] ?? false,
+          'formattedPhone': data['formattedNumber'] ?? phone,
+          'isRegistered': data['isRegistered'] ?? false,
+          'hasWhatsApp': data['hasWhatsApp'] ?? false,
+          'message': response.data['message'] ?? 'Phone validation completed',
+          'suggestion': data['suggestion'],
         };
+        
+        _logger.d('Returning validation result: $result');
+        return result;
       } else {
         return {
           'isValid': false,
