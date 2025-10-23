@@ -78,6 +78,9 @@ dependencies:
   # Authentication
   local_auth: ^2.1.8
   flutter_secure_storage: ^9.2.4
+  google_sign_in: ^6.2.1
+  sign_in_with_apple: ^5.0.0
+  flutter_facebook_auth: ^6.0.3
 
   # Live Streaming
   camera: ^0.11.0+2
