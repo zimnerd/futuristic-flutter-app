@@ -49,6 +49,9 @@ class _PremiumScreenState extends State<PremiumScreen>
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final bool isSmallScreen = screenWidth < 360;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Premium'),
@@ -59,11 +62,17 @@ class _PremiumScreenState extends State<PremiumScreen>
           labelColor: context.onPrimaryColor,
           unselectedLabelColor: context.onPrimaryColor.withValues(alpha: 0.7),
           indicatorColor: context.onPrimaryColor,
-          tabs: const [
-            Tab(text: 'Plans', icon: Icon(Icons.star)),
-            Tab(text: 'Features', icon: Icon(Icons.featured_play_list)),
-            Tab(text: 'Account', icon: Icon(Icons.account_circle)),
-          ],
+          tabs: isSmallScreen
+              ? const [
+                  Tab(icon: Icon(Icons.star)),
+                  Tab(icon: Icon(Icons.featured_play_list)),
+                  Tab(icon: Icon(Icons.account_circle)),
+                ]
+              : const [
+                  Tab(text: 'Plans', icon: Icon(Icons.star)),
+                  Tab(text: 'Features', icon: Icon(Icons.featured_play_list)),
+                  Tab(text: 'Account', icon: Icon(Icons.account_circle)),
+                ],
         ),
       ),
       body: BlocConsumer<PremiumBloc, PremiumState>(

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../theme/pulse_colors.dart';
@@ -91,8 +90,8 @@ class _IntentSelectionScreenState extends State<IntentSelectionScreen> {
       );
 
       if (mounted) {
-        // Navigate to home/onboarding completion
-        context.go('/home');
+        // Pop with true to signal step completion to profile setup wizard
+        Navigator.of(context).pop(true);
       }
     } catch (e) {
       if (mounted) {

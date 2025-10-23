@@ -190,3 +190,32 @@ final class AuthPhoneValidationRequested extends AuthEvent {
   @override
   List<Object?> get props => [phone, countryCode];
 }
+
+/// Event triggered when Google sign-in is requested
+final class AuthGoogleSignInRequested extends AuthEvent {
+  const AuthGoogleSignInRequested();
+}
+
+/// Event triggered when Apple sign-in is requested
+final class AuthAppleSignInRequested extends AuthEvent {
+  const AuthAppleSignInRequested();
+}
+
+/// Event triggered when Facebook sign-in is requested
+final class AuthFacebookSignInRequested extends AuthEvent {
+  const AuthFacebookSignInRequested();
+}
+
+/// Event triggered when account linking verification is requested
+final class AuthLinkAccountRequested extends AuthEvent {
+  const AuthLinkAccountRequested({
+    required this.provider,
+    required this.verificationCode,
+  });
+
+  final String provider;
+  final String verificationCode;
+
+  @override
+  List<Object?> get props => [provider, verificationCode];
+}

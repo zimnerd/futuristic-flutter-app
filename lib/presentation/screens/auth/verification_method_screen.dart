@@ -12,13 +12,10 @@ import '../../widgets/common/pulse_toast.dart';
 
 /// Screen for selecting verification method (Email or WhatsApp)
 /// Shown after first login if user hasn't verified via either method
+/// User is already AUTHENTICATED with valid JWT token
+/// Backend will retrieve email/phone from JWT automatically
 class VerificationMethodScreen extends StatefulWidget {
-  final String? userId;
-
-  const VerificationMethodScreen({
-    super.key,
-    this.userId,
-  });
+  const VerificationMethodScreen({super.key});
 
   @override
   State<VerificationMethodScreen> createState() => _VerificationMethodScreenState();
@@ -256,15 +253,23 @@ class _VerificationMethodScreenState extends State<VerificationMethodScreen> {
       return;
     }
 
-    _logger.i('Starting verification with method: $_selectedMethod');
+    _logger.i('🔐 Starting account verification');
+    _logger.i('   ✅ User is AUTHENTICATED (valid JWT)');
+    _logger.i('   ✅ Method selected: $_selectedMethod');
+    _logger.i('   ✅ Backend will retrieve email/phone from JWT');
+    _logger.i('   ✅ Session token links to verification');
 
     final authBloc = context.read<AuthBloc>();
 
-    // Request OTP with selected delivery method for account verification
+    // ✅ Request verification OTP with SELECTED METHOD ONLY
+    // ✅ Backend extracts user_id from JWT Authorization header
+    // ✅ Backend retrieves user's email and phone from database using user_id
+    // ✅ OTP session created with sessionId linking to this verification
     authBloc.add(
       AuthOTPSendRequested(
-        type: 'phone_verification',
+        type: 'phone_verification', // Account verification (not login)
         preferredMethod: _selectedMethod, // 'email' or 'whatsapp'
+        // ✅ NO email/phoneNumber passed - backend gets from authenticated user
       ),
     );
   }

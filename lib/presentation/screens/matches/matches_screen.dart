@@ -313,11 +313,7 @@ class _MatchesScreenState extends State<MatchesScreen>
       bottom: TabBar(
         controller: _tabController,
         onTap: (_) => _onTabChanged(),
-        tabs: const [
-          Tab(icon: Icon(Icons.favorite), text: 'Active'),
-          Tab(icon: Icon(Icons.schedule), text: 'Pending'),
-          Tab(icon: Icon(Icons.all_inclusive), text: 'All'),
-        ],
+        tabs: _buildResponsiveTabs(context),
         indicatorColor: Colors.white,
         labelColor: Colors.white,
         unselectedLabelColor: Colors.white70,
@@ -384,16 +380,31 @@ class _MatchesScreenState extends State<MatchesScreen>
       bottom: TabBar(
         controller: _tabController,
         onTap: (_) => _onTabChanged(),
-        tabs: const [
-          Tab(icon: Icon(Icons.favorite), text: 'Active'),
-          Tab(icon: Icon(Icons.schedule), text: 'Pending'),
-          Tab(icon: Icon(Icons.all_inclusive), text: 'All'),
-        ],
+        tabs: _buildResponsiveTabs(context),
         indicatorColor: Colors.white,
         labelColor: Colors.white,
         unselectedLabelColor: Colors.white70,
       ),
     );
+  }
+
+  List<Widget> _buildResponsiveTabs(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final bool isSmallScreen = screenWidth < 360;
+
+    if (isSmallScreen) {
+      return const [
+        Tab(icon: Icon(Icons.favorite)),
+        Tab(icon: Icon(Icons.schedule)),
+        Tab(icon: Icon(Icons.all_inclusive)),
+      ];
+    } else {
+      return const [
+        Tab(icon: Icon(Icons.favorite), text: 'Active'),
+        Tab(icon: Icon(Icons.schedule), text: 'Pending'),
+        Tab(icon: Icon(Icons.all_inclusive), text: 'All'),
+      ];
+    }
   }
 
   void _filterMatches() {

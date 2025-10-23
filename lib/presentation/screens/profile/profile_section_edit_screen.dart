@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../blocs/profile/profile_bloc.dart';
 import '../../blocs/photo/photo_bloc.dart';
@@ -20,14 +21,20 @@ import '../../../domain/entities/user_profile.dart';
 import '../../navigation/app_router.dart';
 
 /// Profile section edit screen for editing individual profile sections
+/// 
+/// Can operate in two modes:
+/// - isEditMode=true: Used when editing existing profile (pops after save)
+/// - isEditMode=false: Used during onboarding setup (progresses to next section)
 class ProfileSectionEditScreen extends StatefulWidget {
   final String sectionType;
   final Map<String, dynamic>? initialData;
+  final bool isEditMode;
 
   const ProfileSectionEditScreen({
     super.key,
     required this.sectionType,
     this.initialData,
+    this.isEditMode = false,
   });
 
   @override
@@ -75,6 +82,9 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
         break;
       case 'interests':
         // Interests are handled separately as a list
+        break;
+      case 'intent':
+        // Intent is handled separately as a selection
         break;
       case 'preferences':
         // Preferences are handled as dropdown selections
@@ -221,6 +231,8 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
         return _buildWorkEducationSection();
       case 'interests':
         return _buildInterestsSection();
+      case 'intent':
+        return _buildIntentSection();
       case 'preferences':
         return _buildPreferencesSection();
       default:
@@ -298,9 +310,34 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
               Icon(Icons.photo_library, color: PulseColors.primary),
               const SizedBox(width: PulseSpacing.sm),
               Expanded(
-                child: Text(
-                  'Add up to 6 photos ($totalPhotos/6). Your first photo will be your main profile picture.',
-                  style: PulseTextStyles.bodyMedium,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Text(
+                          'Add photos',
+                          style: PulseTextStyles.bodyMedium.copyWith(
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        Text(
+                          ' *',
+                          style: PulseTextStyles.bodyMedium.copyWith(
+                            color: PulseColors.error,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Add up to 6 photos ($totalPhotos/6). Your first photo will be your main profile picture.',
+                      style: PulseTextStyles.bodySmall.copyWith(
+                        color: PulseColors.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
@@ -964,12 +1001,23 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Select your interests (max 10)',
-              style: PulseTextStyles.titleMedium.copyWith(
-                color: PulseColors.onSurface,
-                fontWeight: FontWeight.w600,
-              ),
+            Row(
+              children: [
+                Text(
+                  'Select your interests (at least 1)',
+                  style: PulseTextStyles.titleMedium.copyWith(
+                    color: PulseColors.onSurface,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                Text(
+                  ' *',
+                  style: PulseTextStyles.titleMedium.copyWith(
+                    color: PulseColors.error,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: PulseSpacing.md),
             Text(
@@ -1462,6 +1510,183 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
     );
   }
 
+  Widget _buildIntentSection() {
+    final List<Map<String, dynamic>> intentOptions = [
+      {
+        'id': 'dating',
+        'title': 'Dating',
+        'description': 'Find romantic connections and meaningful relationships',
+        'icon': Icons.favorite,
+        'color': const Color(0xFFFF6B9D),
+      },
+      {
+        'id': 'friendship',
+        'title': 'Friendship',
+        'description': 'Make new friends and expand your social circle',
+        'icon': Icons.people,
+        'color': const Color(0xFF4ECDC4),
+      },
+      {
+        'id': 'events',
+        'title': 'Events & Activities',
+        'description': 'Find people to attend events and activities with',
+        'icon': Icons.event,
+        'color': const Color(0xFFFFA726),
+      },
+      {
+        'id': 'companion',
+        'title': 'AI Companion',
+        'description': 'Chat with AI for advice, support, and conversation',
+        'icon': Icons.psychology,
+        'color': const Color(0xFF9C27B0),
+      },
+      {
+        'id': 'support',
+        'title': 'Emotional Support',
+        'description': 'Connect with understanding people and find support',
+        'icon': Icons.favorite_border,
+        'color': const Color(0xFF66BB6A),
+      },
+      {
+        'id': 'explore',
+        'title': 'Explore Everything',
+        'description': 'I want to explore all features and decide later',
+        'icon': Icons.explore,
+        'color': const Color(0xFF7E57C2),
+      },
+    ];
+
+    final selectedIntent = _formData['intent'] as String?;
+
+    return StatefulBuilder(
+      builder: (context, setState) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Text(
+                  'What brings you here?',
+                  style: PulseTextStyles.titleMedium.copyWith(
+                    color: PulseColors.onSurface,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                Text(
+                  ' *',
+                  style: PulseTextStyles.titleMedium.copyWith(
+                    color: PulseColors.error,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: PulseSpacing.md),
+            Text(
+              'Choose your primary intent. You can explore other features anytime.',
+              style: PulseTextStyles.bodyMedium.copyWith(
+                color: PulseColors.onSurfaceVariant,
+              ),
+            ),
+            const SizedBox(height: PulseSpacing.lg),
+            ...intentOptions.map((option) {
+              final isSelected = selectedIntent == option['id'];
+              return Padding(
+                padding: const EdgeInsets.only(bottom: PulseSpacing.md),
+                child: InkWell(
+                  onTap: () {
+                    setState(() {
+                      _formData['intent'] = option['id'];
+                    });
+                  },
+                  borderRadius: BorderRadius.circular(PulseRadii.lg),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    padding: const EdgeInsets.all(PulseSpacing.lg),
+                    decoration: BoxDecoration(
+                      color: isSelected
+                          ? (option['color'] as Color).withValues(alpha: 0.1)
+                          : PulseColors.surface,
+                      border: Border.all(
+                        color: isSelected
+                            ? option['color'] as Color
+                            : Colors.grey.shade300,
+                        width: isSelected ? 2 : 1,
+                      ),
+                      borderRadius: BorderRadius.circular(PulseRadii.lg),
+                      boxShadow: isSelected
+                          ? [
+                              BoxShadow(
+                                color: (option['color'] as Color).withValues(
+                                  alpha: 0.3,
+                                ),
+                                blurRadius: 12,
+                                offset: const Offset(0, 4),
+                              ),
+                            ]
+                          : null,
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 56,
+                          height: 56,
+                          decoration: BoxDecoration(
+                            color: isSelected
+                                ? option['color'] as Color
+                                : (option['color'] as Color).withValues(
+                                    alpha: 0.1,
+                                  ),
+                            borderRadius: BorderRadius.circular(PulseRadii.md),
+                          ),
+                          child: Icon(
+                            option['icon'] as IconData,
+                            color: isSelected
+                                ? Colors.white
+                                : option['color'] as Color,
+                            size: 28,
+                          ),
+                        ),
+                        const SizedBox(width: PulseSpacing.md),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                option['title'] as String,
+                                style: PulseTextStyles.titleMedium.copyWith(
+                                  color: PulseColors.onSurface,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              const SizedBox(height: PulseSpacing.xs),
+                              Text(
+                                option['description'] as String,
+                                style: PulseTextStyles.bodyMedium.copyWith(
+                                  color: PulseColors.onSurfaceVariant,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        if (isSelected)
+                          Icon(
+                            Icons.check_circle,
+                            color: option['color'] as Color,
+                            size: 28,
+                          ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            }).toList(),
+          ],
+        );
+      },
+    );
+  }
+
   String _getSectionTitle() {
     switch (widget.sectionType) {
       case 'basic_info':
@@ -1472,6 +1697,8 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
         return 'Work & Education';
       case 'interests':
         return 'Interests';
+      case 'intent':
+        return 'Your Primary Intent';
       case 'preferences':
         return 'Dating Preferences';
       default:
@@ -1489,6 +1716,8 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
         return 'Share your professional and educational background.';
       case 'interests':
         return 'Select your hobbies and interests to find better matches.';
+      case 'intent':
+        return 'Help us personalize your experience and show you relevant connections.';
       case 'preferences':
         return 'Set your dating preferences and who you\'re looking for.';
       default:
@@ -1506,6 +1735,8 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
         return Icons.work;
       case 'interests':
         return Icons.favorite;
+      case 'intent':
+        return Icons.psychology;
       case 'preferences':
         return Icons.tune;
       default:
@@ -1513,8 +1744,66 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
     }
   }
 
+  /// Validate that required fields are populated
+  String? _validateSection() {
+    switch (widget.sectionType) {
+      case 'intent':
+        final intent = _formData['intent'] as String?;
+        if (intent == null || intent.isEmpty) {
+          return 'Please select your primary intent';
+        }
+        break;
+
+      case 'photos':
+        final existingPhotos =
+            (_formData['photos'] as List<dynamic>?)?.isNotEmpty ?? false;
+        final newPhotos =
+            (_formData['newPhotos'] as List<File>?)?.isNotEmpty ?? false;
+        if (!existingPhotos && !newPhotos) {
+          return 'Please add at least 1 photo';
+        }
+        break;
+
+      case 'interests':
+        final interests = _formData['interests'] as List<String>?;
+        if (interests == null || interests.isEmpty) {
+          return 'Please select at least 1 interest';
+        }
+        break;
+
+      case 'basic_info':
+        final name = _controllers['name']?.text.trim();
+        final bio = _controllers['bio']?.text.trim();
+        if (name == null || name.isEmpty) {
+          return 'Please enter your name';
+        }
+        if (bio == null || bio.isEmpty) {
+          return 'Please enter your bio';
+        }
+        break;
+
+      case 'work_education':
+        // These are optional, so no validation needed
+        break;
+
+      case 'preferences':
+        // These are optional, so no validation needed
+        break;
+    }
+
+    return null; // No validation errors
+  }
+
   /// Delete a photo from current photos
   void _saveSection() async {
+    // ✅ FIRST: Validate that all required fields are populated
+    final validationError = _validateSection();
+    if (validationError != null) {
+      PulseToast.error(context, message: validationError);
+      debugPrint('❌ Validation failed: $validationError');
+      return; // Stop here, don't proceed
+    }
+
     if (_formKey.currentState?.validate() ?? false) {
       // Show loading indicator for photo uploads
       if (widget.sectionType == 'photos' &&
@@ -1587,14 +1876,97 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
         }
       }
 
-      // Navigate back with the updated data
-      context.pop(_formData);
+      // Mark this section as complete in SharedPreferences
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('setup_${widget.sectionType}_completed', true);
+      debugPrint('✅ Marked setup_${widget.sectionType}_completed = true');
 
       // Show success message
-      PulseToast.success(
-        context,
-        message: '${_getSectionTitle()} updated successfully',
-      );
+      if (mounted) {
+        PulseToast.success(
+          context,
+          message: '${_getSectionTitle()} updated successfully',
+        );
+      }
+
+      // Handle navigation based on mode
+      if (mounted) {
+        if (widget.isEditMode) {
+          // Edit mode: pop back to profile edit page
+          debugPrint('🔙 Edit mode - popping back');
+          context.pop(_formData);
+        } else {
+          // Setup mode: navigate to next required section or home
+          const requiredSections = ['intent', 'photos', 'interests'];
+          final currentIndex = requiredSections.indexOf(widget.sectionType);
+
+          if (currentIndex < requiredSections.length - 1) {
+            // There's a next required section - navigate to it
+            final nextSection = requiredSections[currentIndex + 1];
+            debugPrint(
+              '➡️ Setup mode - navigating to next section: $nextSection',
+            );
+            context.replace(
+              AppRoutes.profileSetup,
+              extra: {'sectionType': nextSection},
+            );
+          } else {
+            // All required sections are done - navigate to home
+            debugPrint(
+              '✅ Setup mode - all sections complete! Navigating to home',
+            );
+            context.go(AppRoutes.home);
+          }
+        }
+      }
     }
+  }
+
+  /// Helper method to check if all required setup sections are completed
+  Future<bool> _areAllSetupSectionsCompleted() async {
+    final prefs = await SharedPreferences.getInstance();
+    const requiredSections = ['intent', 'photos', 'interests'];
+
+    for (final section in requiredSections) {
+      final isComplete = prefs.getBool('setup_${section}_completed') ?? false;
+      if (!isComplete) {
+        debugPrint(
+          '❌ Section not complete: setup_${section}_completed = false',
+        );
+        return false;
+      }
+    }
+
+    debugPrint('✅ All setup sections completed!');
+    return true;
+  }
+
+  /// Get the next required setup section to display
+  Future<String?> _getNextRequiredSetupSection() async {
+    final prefs = await SharedPreferences.getInstance();
+    const requiredSections = ['intent', 'photos', 'interests'];
+
+    for (final section in requiredSections) {
+      final isComplete = prefs.getBool('setup_${section}_completed') ?? false;
+      if (!isComplete) {
+        debugPrint('➡️ Next required section: $section');
+        return section;
+      }
+    }
+
+    debugPrint('✅ No more required sections');
+    return null; // All sections completed
+  }
+
+  /// Clear all setup completion flags (useful for testing or resetting setup)
+  Future<void> _clearSetupFlags() async {
+    final prefs = await SharedPreferences.getInstance();
+    const requiredSections = ['intent', 'photos', 'interests'];
+
+    for (final section in requiredSections) {
+      await prefs.remove('setup_${section}_completed');
+    }
+
+    debugPrint('🔄 Cleared all setup flags');
   }
 }

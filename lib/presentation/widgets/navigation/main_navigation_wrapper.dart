@@ -200,6 +200,11 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper>
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final isActive = index == widget.navigationShell.currentIndex;
+    final screenWidth = MediaQuery.of(context).size.width;
+
+    // Responsive breakpoints
+    final bool isSmallScreen = screenWidth < 360;
+    final bool isMediumScreen = screenWidth >= 360 && screenWidth < 400;
 
     // Use theme colors for active state
     final activeColor = PulseColors.backgroundDark;
@@ -243,9 +248,9 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper>
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 600),
                       curve: Curves.easeInOut,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 18,
-                        vertical: 14,
+                      padding: EdgeInsets.symmetric(
+                        horizontal: isSmallScreen ? 10 : (isMediumScreen ? 14 : 18),
+                        vertical: isSmallScreen ? 10 : 14,
                       ),
                       decoration: BoxDecoration(
                         color: activeColor.withValues(alpha: 0.3),
@@ -254,17 +259,23 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper>
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(item.activeIcon, color: Colors.white, size: 24),
-                          const SizedBox(width: 10),
-                          Text(
-                            item.label,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 15,
-                              fontWeight: FontWeight.w500,
-                            ),
+                          Icon(
+                            item.activeIcon,
+                            color: Colors.white,
+                            size: isSmallScreen ? 20 : 24,
                           ),
-                          if (badgeCount != null && badgeCount > 0) ...[
+                          if (!isSmallScreen) ...[
+                            SizedBox(width: isMediumScreen ? 6 : 10),
+                            Text(
+                              item.label,
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: isMediumScreen ? 13 : 15,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                          if (badgeCount != null && badgeCount > 0 && !isSmallScreen) ...[
                             const SizedBox(width: 8),
                             Container(
                               padding: const EdgeInsets.symmetric(
@@ -277,9 +288,9 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper>
                               ),
                               child: Text(
                                 badgeCount > 99 ? '99+' : badgeCount.toString(),
-                                style: const TextStyle(
+                                style: TextStyle(
                                   color: Colors.white,
-                                  fontSize: 12,
+                                  fontSize: isMediumScreen ? 10 : 12,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
@@ -292,21 +303,25 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper>
                 : AnimatedContainer(
                     duration: const Duration(milliseconds: 300),
                     curve: Curves.easeInOut,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
+                    padding: EdgeInsets.symmetric(
+                      horizontal: isSmallScreen ? 8 : 12,
                       vertical: 10,
                     ),
                     child: Stack(
                       clipBehavior: Clip.none,
                       children: [
-                        Icon(item.icon, color: inactiveColor, size: 24),
+                        Icon(
+                          item.icon,
+                          color: inactiveColor,
+                          size: isSmallScreen ? 20 : 24,
+                        ),
                         if (badgeCount != null && badgeCount > 0)
                           Positioned(
                             right: -6,
                             top: -6,
                             child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 4,
+                              padding: EdgeInsets.symmetric(
+                                horizontal: isSmallScreen ? 3 : 4,
                                 vertical: 2,
                               ),
                               decoration: BoxDecoration(
@@ -321,9 +336,9 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper>
                               ),
                               child: Text(
                                 badgeCount > 99 ? '99+' : badgeCount.toString(),
-                                style: const TextStyle(
+                                style: TextStyle(
                                   color: Colors.white,
-                                  fontSize: 10,
+                                  fontSize: isSmallScreen ? 8 : 10,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),

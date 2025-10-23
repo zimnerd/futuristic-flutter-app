@@ -25,7 +25,6 @@ import '../screens/statistics_screen.dart';
 import '../screens/onboarding/onboarding_screen.dart';
 import '../screens/onboarding/landing_screen.dart';
 import '../screens/onboarding/intent_selection_screen.dart';
-import '../screens/onboarding/profile_setup_wizard.dart';
 import '../screens/subscription_management_screen.dart';
 import '../screens/payment/payment_methods_screen.dart';
 import '../../../presentation/payment/screens/saved_payment_methods_screen.dart';
@@ -80,8 +79,6 @@ import '../screens/settings/blocked_users_screen.dart';
 import '../screens/safety/safety_center_screen.dart';
 import '../screens/safety/emergency_contacts_screen.dart';
 import '../screens/matching/match_explanation_screen.dart';
-import '../screens/analytics/advanced_analytics_screen.dart'
-    show AnalyticsScreen;
 import '../blocs/notification/notification_bloc.dart';
 import '../blocs/block_report/block_report_bloc.dart';
 import '../blocs/auth/auth_state.dart';
@@ -167,7 +164,25 @@ class AppRouter {
         GoRoute(
           path: AppRoutes.profileSetup,
           name: 'profileSetup',
-          builder: (context, state) => const ProfileSetupWizard(),
+          builder: (context, state) {
+            // Get the sectionType from extra data or default to 'intent'
+            final extra = state.extra as Map<String, dynamic>?;
+            final sectionType = extra?['sectionType'] as String? ?? 'intent';
+
+            debugPrint(
+              '🎯 Profile Setup Route - showing section: $sectionType (isEditMode=false)',
+            );
+
+            return BlocProvider(
+              create: (context) =>
+                  PhotoBloc(userRepository: context.read<UserRepository>()),
+              child: ProfileSectionEditScreen(
+                sectionType: sectionType,
+                initialData: {},
+                isEditMode: false,
+              ),
+            );
+          },
         ),
 
         // Authentication routes
@@ -206,10 +221,7 @@ class AppRouter {
           path: AppRoutes.verificationMethod,
           name: 'verificationMethod',
           builder: (context, state) {
-            final extra = state.extra as Map<String, dynamic>?;
-            return VerificationMethodScreen(
-              userId: extra?['userId'] as String?,
-            );
+            return const VerificationMethodScreen();
           },
         ),
 
@@ -486,6 +498,7 @@ class AppRouter {
             final sectionType =
                 extra?['sectionType'] as String? ?? 'basic_info';
             final initialData = extra?['initialData'] as Map<String, dynamic>?;
+            final isEditMode = extra?['isEditMode'] as bool? ?? true;
 
             return BlocProvider(
               create: (context) =>
@@ -493,6 +506,7 @@ class AppRouter {
               child: ProfileSectionEditScreen(
                 sectionType: sectionType,
                 initialData: initialData,
+                isEditMode: isEditMode,
               ),
             );
           },
@@ -1065,7 +1079,9 @@ class AppRouter {
           path: AppRoutes.advancedAnalytics,
           name: 'advancedAnalytics',
           builder: (context, state) {
-            return const AnalyticsScreen();
+            return const Scaffold(
+              body: Center(child: Text('Analytics Screen')),
+            );
           },
         ),
         GoRoute(
@@ -1163,6 +1179,7 @@ class AppRouter {
       debugPrint(
         '  🔐 User needs verification - redirecting to verification method selection',
       );
+      // Return route with verification method - data passed via route callback
       return AppRoutes.verificationMethod;
     }
 
@@ -1176,21 +1193,42 @@ class AppRouter {
     }
 
     // Check profile completion status for authenticated users
-    if (isAuthenticated) {
+    if (isAuthenticated && !isProfileSetupRoute) {
       final prefs = await SharedPreferences.getInstance();
-      final profileSetupComplete = prefs.getBool('profile_setup_complete') ?? false;
+      
+      // Check individual step completion (more reliable than single flag)
+      final intentCompleted = prefs.getBool('setup_intent_completed') ?? false;
+      final photosCompleted = prefs.getBool('setup_photos_completed') ?? false;
+      final interestsCompleted =
+          prefs.getBool('setup_interests_completed') ?? false;
+
+      // Profile setup is complete only if all required steps are done
+      final profileSetupComplete =
+          intentCompleted && photosCompleted && interestsCompleted;
 
       // If authenticated user hasn't completed profile setup
-      if (!profileSetupComplete && !isProfileSetupRoute) {
-        debugPrint('  📝 Profile setup incomplete - redirecting to profile setup');
+      if (!profileSetupComplete) {
+        debugPrint(
+          '  📝 Profile setup incomplete (Intent: $intentCompleted, Photos: $photosCompleted, Interests: $interestsCompleted) - redirecting to profile setup',
+        );
         return AppRoutes.profileSetup;
       }
+    }
 
-      // If user is authenticated with completed profile and trying to access auth/welcome routes,
-      // redirect to home
-      if ((isAuthRoute || isWelcomeRoute) && profileSetupComplete) {
+    // If user is authenticated with completed profile and trying to access auth/welcome routes,
+    // redirect to home
+    if (isAuthenticated && (isAuthRoute || isWelcomeRoute)) {
+      final prefs = await SharedPreferences.getInstance();
+      final intentCompleted = prefs.getBool('setup_intent_completed') ?? false;
+      final photosCompleted = prefs.getBool('setup_photos_completed') ?? false;
+      final interestsCompleted =
+          prefs.getBool('setup_interests_completed') ?? false;
+      final profileSetupComplete =
+          intentCompleted && photosCompleted && interestsCompleted;
+
+      if (profileSetupComplete) {
         debugPrint(
-          '  ✅ Authenticated user accessing welcome/auth route - redirecting to home',
+          '  ✅ Authenticated user with complete profile accessing welcome/auth route - redirecting to home',
         );
         return AppRoutes.home;
       }

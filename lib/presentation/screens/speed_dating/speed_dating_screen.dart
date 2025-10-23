@@ -53,6 +53,9 @@ class _SpeedDatingScreenState extends State<SpeedDatingScreen>
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final bool isSmallScreen = screenWidth < 360;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text(
@@ -67,11 +70,17 @@ class _SpeedDatingScreenState extends State<SpeedDatingScreen>
         elevation: 2,
         bottom: TabBar(
           controller: _tabController,
-          tabs: const [
-            Tab(icon: Icon(Icons.event), text: 'Events'),
-            Tab(icon: Icon(Icons.speed), text: 'Active'),
-            Tab(icon: Icon(Icons.history), text: 'History'),
-          ],
+          tabs: isSmallScreen
+              ? const [
+                  Tab(icon: Icon(Icons.event)),
+                  Tab(icon: Icon(Icons.speed)),
+                  Tab(icon: Icon(Icons.history)),
+                ]
+              : const [
+                  Tab(icon: Icon(Icons.event), text: 'Events'),
+                  Tab(icon: Icon(Icons.speed), text: 'Active'),
+                  Tab(icon: Icon(Icons.history), text: 'History'),
+                ],
         ),
       ),
       body: BlocListener<SpeedDatingBloc, SpeedDatingState>(

@@ -161,11 +161,15 @@ class _ProfileSetupWizardState extends State<ProfileSetupWizard> {
       return;
     }
 
-    // Mark setup as complete
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('profile_setup_complete', true);
-
+    // All required steps are already marked complete in SharedPreferences
+    // (done when each step is completed). Just navigate to home.
+    debugPrint(
+      '✅ Profile setup complete! Required steps: Intent=$_intentSelected, Photos=$_photosAdded, Interests=$_interestsAdded',
+    );
+    
     if (mounted) {
+      // Small delay to ensure SharedPreferences has synced
+      await Future.delayed(const Duration(milliseconds: 100));
       context.go(AppRoutes.home);
     }
   }
@@ -176,14 +180,25 @@ class _ProfileSetupWizardState extends State<ProfileSetupWizard> {
       final shouldClose = await showDialog<bool>(
         context: context,
         builder: (context) => AlertDialog(
-          title: const Text('Complete Your Profile'),
-          content: const Text(
+          backgroundColor: PulseColors.surface,
+          title: Text(
+            'Complete Your Profile',
+            style: TextStyle(
+              color: PulseColors.onSurface,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          content: Text(
             'You need to complete the required steps (intent, photos, and interests) before you can access the app.\n\nWould you like to continue setup?',
+            style: TextStyle(color: PulseColors.onSurface),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context, false),
-              child: const Text('Continue Setup'),
+              child: Text(
+                'Continue Setup',
+                style: TextStyle(color: PulseColors.primary),
+              ),
             ),
             TextButton(
               onPressed: () => Navigator.pop(context, true),

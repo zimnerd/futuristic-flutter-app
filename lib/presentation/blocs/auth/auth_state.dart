@@ -206,3 +206,21 @@ final class AuthProfileEnrichmentRequired extends AuthState {
   @override
   List<Object?> get props => [user, message];
 }
+
+/// State when account linking is required (social login with existing email)
+final class AuthAccountLinkingRequired extends AuthState {
+  const AuthAccountLinkingRequired({
+    required this.userId,
+    required this.email,
+    required this.provider,
+    required this.message,
+  });
+
+  final String userId;
+  final String email;
+  final String provider;
+  final String message;
+
+  @override
+  List<Object?> get props => [userId, email, provider, message];
+}
