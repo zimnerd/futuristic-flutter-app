@@ -1,14 +1,14 @@
-import 'package:dio/dio.dart';
 import 'package:logger/logger.dart';
+import '../../core/network/api_client.dart';
 
 /// AI Tracking Service for monitoring AI feature usage and performance
 /// Lightweight wrapper that sends tracking data to backend analytics endpoints
 class AiTrackingService {
-  final Dio _dio;
+  final ApiClient _apiClient;
   final Logger _logger;
 
-  AiTrackingService({required Dio dio, required Logger logger})
-    : _dio = dio,
+  AiTrackingService({required Logger logger})
+    : _apiClient = ApiClient.instance,
       _logger = logger;
 
   /// Track AI feature engagement
@@ -18,7 +18,7 @@ class AiTrackingService {
     Map<String, dynamic>? metadata,
   }) async {
     try {
-      await _dio.post(
+      await _apiClient.post(
         '/analytics/track/event',
         data: {
           'event_type': 'ai_feature_engagement',
@@ -45,7 +45,7 @@ class AiTrackingService {
     List<String>? factors,
   }) async {
     try {
-      await _dio.post(
+      await _apiClient.post(
         '/analytics/track/event',
         data: {
           'event_type': 'compatibility_analysis',
@@ -76,7 +76,7 @@ class AiTrackingService {
     Map<String, dynamic>? metadata,
   }) async {
     try {
-      await _dio.post(
+      await _apiClient.post(
         '/analytics/track/event',
         data: {
           'event_type': 'ai_conversation_interaction',
@@ -106,7 +106,7 @@ class AiTrackingService {
     Map<String, dynamic>? metadata,
   }) async {
     try {
-      await _dio.post(
+      await _apiClient.post(
         '/analytics/track/event',
         data: {
           'event_type': 'ai_onboarding_progress',
@@ -135,7 +135,7 @@ class AiTrackingService {
     Map<String, dynamic>? metadata,
   }) async {
     try {
-      await _dio.post(
+      await _apiClient.post(
         '/analytics/track/event',
         data: {
           'event_type': 'ai_feedback',

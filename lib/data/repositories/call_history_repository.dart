@@ -373,18 +373,16 @@ class CallHistoryRepository {
         });
       }
 
-      final response = await _apiClient.dio.get(
+      final response = await _apiClient.get(
         '/calls/history',
         queryParameters: queryParams,
       );
 
-      if (response.statusCode == 200 && response.data != null) {
-        final data = response.data as Map<String, dynamic>;
-        if (data['success'] == true && data['data'] != null) {
-          return CallHistoryResponse.fromJson(
-            data['data'] as Map<String, dynamic>,
-          );
-        }
+      final data = response.data as Map<String, dynamic>;
+      if (data['success'] == true && data['data'] != null) {
+        return CallHistoryResponse.fromJson(
+          data['data'] as Map<String, dynamic>,
+        );
       }
       throw Exception('Failed to fetch call history');
     } catch (e) {
@@ -395,13 +393,11 @@ class CallHistoryRepository {
   /// Get detailed information about a specific call
   Future<CallDetails> getCallDetails(String callId) async {
     try {
-      final response = await _apiClient.dio.get('/calls/history/$callId');
+      final response = await _apiClient.get('/calls/history/$callId');
 
-      if (response.statusCode == 200 && response.data != null) {
-        final data = response.data as Map<String, dynamic>;
-        if (data['success'] == true && data['data'] != null) {
-          return CallDetails.fromJson(data['data'] as Map<String, dynamic>);
-        }
+      final data = response.data as Map<String, dynamic>;
+      if (data['success'] == true && data['data'] != null) {
+        return CallDetails.fromJson(data['data'] as Map<String, dynamic>);
       }
       throw Exception('Failed to fetch call details');
     } catch (e) {
@@ -412,13 +408,11 @@ class CallHistoryRepository {
   /// Delete a call from the user's call history (soft delete)
   Future<void> deleteCallRecord(String callId) async {
     try {
-      final response = await _apiClient.dio.delete('/calls/history/$callId');
+      final response = await _apiClient.delete('/calls/history/$callId');
 
-      if (response.statusCode == 200 && response.data != null) {
-        final data = response.data as Map<String, dynamic>;
-        if (data['success'] == true) {
-          return;
-        }
+      final data = response.data as Map<String, dynamic>;
+      if (data['success'] == true) {
+        return;
       }
       throw Exception('Failed to delete call record');
     } catch (e) {
@@ -429,13 +423,11 @@ class CallHistoryRepository {
   /// Get call statistics for the authenticated user
   Future<CallStatistics> getCallStats() async {
     try {
-      final response = await _apiClient.dio.get('/calls/stats');
+      final response = await _apiClient.get('/calls/stats');
 
-      if (response.statusCode == 200 && response.data != null) {
-        final data = response.data as Map<String, dynamic>;
-        if (data['success'] == true && data['data'] != null) {
-          return CallStatistics.fromJson(data['data'] as Map<String, dynamic>);
-        }
+      final data = response.data as Map<String, dynamic>;
+      if (data['success'] == true && data['data'] != null) {
+        return CallStatistics.fromJson(data['data'] as Map<String, dynamic>);
       }
       throw Exception('Failed to fetch call statistics');
     } catch (e) {

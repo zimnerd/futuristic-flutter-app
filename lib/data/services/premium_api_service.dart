@@ -1,6 +1,6 @@
-import 'dart:convert';
-import 'package:http/http.dart' as http;
+import 'package:dio/dio.dart';
 import '../../core/constants/api_constants.dart';
+import '../../core/network/api_client.dart';
 import '../../core/utils/logger.dart';
 import '../models/premium_plan.dart';
 import '../models/subscription.dart';
@@ -11,33 +11,23 @@ class PremiumApiService {
   static PremiumApiService get instance => _instance ??= PremiumApiService._();
   PremiumApiService._();
 
-  String? _authToken;
+  final ApiClient _apiClient = ApiClient.instance;
 
   /// Set authentication token
   void setAuthToken(String token) {
-    _authToken = token;
+    // ApiClient handles authentication internally
   }
 
   /// Get available premium plans
   Future<List<PremiumPlan>> getAvailablePlans() async {
     try {
-      final response = await http.get(
-        Uri.parse('${ApiConstants.baseUrl}${ApiConstants.premium}/plans'),
-        headers: {
-          'Authorization': 'Bearer $_authToken',
-          'Content-Type': 'application/json',
-        },
-      );
+      final response = await _apiClient.get('${ApiConstants.premium}/plans');
 
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        return (data['plans'] as List)
-            .map((json) => PremiumPlan.fromJson(json))
-            .toList();
-      } else {
-        throw Exception('Failed to load premium plans: ${response.statusCode}');
-      }
-    } catch (e) {
+      final data = response.data as Map<String, dynamic>;
+      return (data['plans'] as List)
+          .map((json) => PremiumPlan.fromJson(json))
+          .toList();
+    } on DioException catch (e) {
       AppLogger.error('Error fetching premium plans: $e');
       rethrow;
     }
@@ -46,27 +36,18 @@ class PremiumApiService {
   /// Get user's current subscription
   Future<Subscription?> getCurrentSubscription(String userId) async {
     try {
-      final response = await http.get(
-        Uri.parse(
-          '${ApiConstants.baseUrl}${ApiConstants.premium}/subscription/$userId',
-        ),
-        headers: {
-          'Authorization': 'Bearer $_authToken',
-          'Content-Type': 'application/json',
-        },
+      final response = await _apiClient.get(
+        '${ApiConstants.premium}/subscription/$userId',
       );
 
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        return data['subscription'] != null
-            ? Subscription.fromJson(data['subscription'])
-            : null;
-      } else if (response.statusCode == 404) {
+      final data = response.data as Map<String, dynamic>;
+      return data['subscription'] != null
+          ? Subscription.fromJson(data['subscription'])
+          : null;
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 404) {
         return null; // No active subscription
-      } else {
-        throw Exception('Failed to load subscription: ${response.statusCode}');
       }
-    } catch (e) {
       AppLogger.error('Error fetching current subscription: $e');
       rethrow;
     }
@@ -79,27 +60,18 @@ class PremiumApiService {
     Map<String, dynamic>? metadata,
   }) async {
     try {
-      final response = await http.post(
-        Uri.parse('${ApiConstants.baseUrl}${ApiConstants.premium}/subscribe'),
-        headers: {
-          'Authorization': 'Bearer $_authToken',
-          'Content-Type': 'application/json',
-        },
-        body: json.encode({
+      final response = await _apiClient.post(
+        '${ApiConstants.premium}/subscribe',
+        data: {
           'planId': planId,
           'paymentMethodId': paymentMethodId,
           'metadata': metadata,
-        }),
+        },
       );
 
-      if (response.statusCode == 201) {
-        final data = json.decode(response.body);
-        return Subscription.fromJson(data['subscription']);
-      } else {
-        final errorData = json.decode(response.body);
-        throw Exception(errorData['message'] ?? 'Failed to subscribe to plan');
-      }
-    } catch (e) {
+      final data = response.data as Map<String, dynamic>;
+      return Subscription.fromJson(data['subscription']);
+    } on DioException catch (e) {
       AppLogger.error('Error subscribing to plan: $e');
       rethrow;
     }
@@ -108,23 +80,10 @@ class PremiumApiService {
   /// Cancel subscription
   Future<void> cancelSubscription(String subscriptionId) async {
     try {
-      final response = await http.patch(
-        Uri.parse(
-          '${ApiConstants.baseUrl}${ApiConstants.premium}/subscription/$subscriptionId/cancel',
-        ),
-        headers: {
-          'Authorization': 'Bearer $_authToken',
-          'Content-Type': 'application/json',
-        },
+      await _apiClient.patch(
+        '${ApiConstants.premium}/subscription/$subscriptionId/cancel',
       );
-
-      if (response.statusCode != 200) {
-        final errorData = json.decode(response.body);
-        throw Exception(
-          errorData['message'] ?? 'Failed to cancel subscription',
-        );
-      }
-    } catch (e) {
+    } on DioException catch (e) {
       AppLogger.error('Error cancelling subscription: $e');
       rethrow;
     }
@@ -137,30 +96,17 @@ class PremiumApiService {
     Map<String, dynamic>? metadata,
   }) async {
     try {
-      final response = await http.patch(
-        Uri.parse(
-          '${ApiConstants.baseUrl}${ApiConstants.premium}/subscription/$subscriptionId',
-        ),
-        headers: {
-          'Authorization': 'Bearer $_authToken',
-          'Content-Type': 'application/json',
-        },
-        body: json.encode({
+      final response = await _apiClient.patch(
+        '${ApiConstants.premium}/subscription/$subscriptionId',
+        data: {
           if (planId != null) 'planId': planId,
           if (metadata != null) 'metadata': metadata,
-        }),
+        },
       );
 
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        return Subscription.fromJson(data['subscription']);
-      } else {
-        final errorData = json.decode(response.body);
-        throw Exception(
-          errorData['message'] ?? 'Failed to update subscription',
-        );
-      }
-    } catch (e) {
+      final data = response.data as Map<String, dynamic>;
+      return Subscription.fromJson(data['subscription']);
+    } on DioException catch (e) {
       AppLogger.error('Error updating subscription: $e');
       rethrow;
     }
@@ -169,27 +115,15 @@ class PremiumApiService {
   /// Get subscription history
   Future<List<Subscription>> getSubscriptionHistory(String userId) async {
     try {
-      final response = await http.get(
-        Uri.parse(
-          '${ApiConstants.baseUrl}${ApiConstants.premium}/subscription/$userId/history',
-        ),
-        headers: {
-          'Authorization': 'Bearer $_authToken',
-          'Content-Type': 'application/json',
-        },
+      final response = await _apiClient.get(
+        '${ApiConstants.premium}/subscription/$userId/history',
       );
 
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        return (data['subscriptions'] as List)
-            .map((json) => Subscription.fromJson(json))
-            .toList();
-      } else {
-        throw Exception(
-          'Failed to load subscription history: ${response.statusCode}',
-        );
-      }
-    } catch (e) {
+      final data = response.data as Map<String, dynamic>;
+      return (data['subscriptions'] as List)
+          .map((json) => Subscription.fromJson(json))
+          .toList();
+    } on DioException catch (e) {
       AppLogger.error('Error fetching subscription history: $e');
       rethrow;
     }
@@ -198,23 +132,11 @@ class PremiumApiService {
   /// Get premium features
   Future<Map<String, dynamic>> getPremiumFeatures() async {
     try {
-      final response = await http.get(
-        Uri.parse('${ApiConstants.baseUrl}${ApiConstants.premium}/features'),
-        headers: {
-          'Authorization': 'Bearer $_authToken',
-          'Content-Type': 'application/json',
-        },
-      );
+      final response = await _apiClient.get('${ApiConstants.premium}/features');
 
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        return data['features'] as Map<String, dynamic>;
-      } else {
-        throw Exception(
-          'Failed to load premium features: ${response.statusCode}',
-        );
-      }
-    } catch (e) {
+      final data = response.data as Map<String, dynamic>;
+      return data['features'] as Map<String, dynamic>;
+    } on DioException catch (e) {
       AppLogger.error('Error fetching premium features: $e');
       rethrow;
     }
@@ -227,27 +149,17 @@ class PremiumApiService {
     required String paymentMethodId,
   }) async {
     try {
-      final response = await http.post(
-        Uri.parse('${ApiConstants.baseUrl}${ApiConstants.premium}/boost'),
-        headers: {
-          'Authorization': 'Bearer $_authToken',
-          'Content-Type': 'application/json',
-        },
-        body: json.encode({
+      final response = await _apiClient.post(
+        '${ApiConstants.premium}/boost',
+        data: {
           'boostType': boostType,
           'quantity': quantity,
           'paymentMethodId': paymentMethodId,
-        }),
+        },
       );
 
-      if (response.statusCode == 201) {
-        final data = json.decode(response.body);
-        return data as Map<String, dynamic>;
-      } else {
-        final errorData = json.decode(response.body);
-        throw Exception(errorData['message'] ?? 'Failed to purchase boost');
-      }
-    } catch (e) {
+      return response.data as Map<String, dynamic>;
+    } on DioException catch (e) {
       AppLogger.error('Error purchasing boost: $e');
       rethrow;
     }
@@ -256,23 +168,13 @@ class PremiumApiService {
   /// Get boost credits
   Future<Map<String, int>> getBoostCredits(String userId) async {
     try {
-      final response = await http.get(
-        Uri.parse(
-          '${ApiConstants.baseUrl}${ApiConstants.premium}/boost/$userId/credits',
-        ),
-        headers: {
-          'Authorization': 'Bearer $_authToken',
-          'Content-Type': 'application/json',
-        },
+      final response = await _apiClient.get(
+        '${ApiConstants.premium}/boost/$userId/credits',
       );
 
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        return Map<String, int>.from(data['credits']);
-      } else {
-        throw Exception('Failed to load boost credits: ${response.statusCode}');
-      }
-    } catch (e) {
+      final data = response.data as Map<String, dynamic>;
+      return Map<String, int>.from(data['credits']);
+    } on DioException catch (e) {
       AppLogger.error('Error fetching boost credits: $e');
       rethrow;
     }
@@ -284,20 +186,12 @@ class PremiumApiService {
     Map<String, dynamic>? targetData,
   }) async {
     try {
-      final response = await http.post(
-        Uri.parse('${ApiConstants.baseUrl}${ApiConstants.premium}/boost/use'),
-        headers: {
-          'Authorization': 'Bearer $_authToken',
-          'Content-Type': 'application/json',
+      await _apiClient.post(
+        '${ApiConstants.premium}/boost/use',
+        data: {'boostType': boostType, 'targetData': targetData,
         },
-        body: json.encode({'boostType': boostType, 'targetData': targetData}),
       );
-
-      if (response.statusCode != 200) {
-        final errorData = json.decode(response.body);
-        throw Exception(errorData['message'] ?? 'Failed to use boost');
-      }
-    } catch (e) {
+    } on DioException catch (e) {
       AppLogger.error('Error using boost: $e');
       rethrow;
     }
@@ -306,21 +200,9 @@ class PremiumApiService {
   /// Cancel active boost
   Future<Map<String, dynamic>> cancelBoost() async {
     try {
-      final response = await http.delete(
-        Uri.parse('${ApiConstants.baseUrl}${ApiConstants.premium}/boost'),
-        headers: {
-          'Authorization': 'Bearer $_authToken',
-          'Content-Type': 'application/json',
-        },
-      );
-
-      if (response.statusCode == 200) {
-        return json.decode(response.body);
-      } else {
-        final errorData = json.decode(response.body);
-        throw Exception(errorData['message'] ?? 'Failed to cancel boost');
-      }
-    } catch (e) {
+      final response = await _apiClient.delete('${ApiConstants.premium}/boost');
+      return response.data as Map<String, dynamic>;
+    } on DioException catch (e) {
       AppLogger.error('Error canceling boost: $e');
       rethrow;
     }

@@ -1,7 +1,7 @@
-import 'dart:convert';
-import 'package:http/http.dart' as http;
+import 'package:dio/dio.dart';
 import 'package:socket_io_client/socket_io_client.dart' as io;
 import '../../core/constants/api_constants.dart';
+import '../../core/network/api_client.dart';
 import '../../core/utils/logger.dart';
 import '../models/notification.dart';
 
@@ -12,17 +12,16 @@ class NotificationApiService {
       _instance ??= NotificationApiService._();
   NotificationApiService._();
 
+  final ApiClient _apiClient = ApiClient.instance;
   io.Socket? _socket;
-  String? _authToken;
 
   /// Set authentication token
   void setAuthToken(String token) {
-    _authToken = token;
+    // ApiClient handles authentication internally
   }
 
   /// Initialize WebSocket connection for real-time notifications
   Future<void> initializeSocket(String authToken) async {
-    _authToken = authToken;
 
     try {
       _socket = io.io(
@@ -60,34 +59,23 @@ class NotificationApiService {
     bool? unreadOnly,
   }) async {
     try {
-      final queryParams = <String, String>{
-        'page': page.toString(),
-        'limit': limit.toString(),
+      final queryParams = <String, dynamic>{'page': page, 'limit': limit,
       };
 
       if (unreadOnly != null) {
-        queryParams['unreadOnly'] = unreadOnly.toString();
+        queryParams['unreadOnly'] = unreadOnly;
       }
 
-      final response = await http.get(
-        Uri.parse(
-          '${ApiConstants.baseUrl}${ApiConstants.notifications}',
-        ).replace(queryParameters: queryParams),
-        headers: {
-          'Authorization': 'Bearer $_authToken',
-          'Content-Type': 'application/json',
-        },
+      final response = await _apiClient.get(
+        ApiConstants.notifications,
+        queryParameters: queryParams,
       );
 
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        return (data['notifications'] as List)
-            .map((json) => NotificationModel.fromJson(json))
-            .toList();
-      } else {
-        throw Exception('Failed to load notifications: ${response.statusCode}');
-      }
-    } catch (e) {
+      final data = response.data as Map<String, dynamic>;
+      return (data['notifications'] as List)
+          .map((json) => NotificationModel.fromJson(json))
+          .toList();
+    } on DioException catch (e) {
       AppLogger.error('Error fetching notifications: $e');
       rethrow;
     }
@@ -96,22 +84,10 @@ class NotificationApiService {
   /// Mark notification as read
   Future<void> markAsRead(String notificationId) async {
     try {
-      final response = await http.patch(
-        Uri.parse(
-          '${ApiConstants.baseUrl}${ApiConstants.notifications}/$notificationId/read',
-        ),
-        headers: {
-          'Authorization': 'Bearer $_authToken',
-          'Content-Type': 'application/json',
-        },
+      await _apiClient.patch(
+        '${ApiConstants.notifications}/$notificationId/read',
       );
-
-      if (response.statusCode != 200) {
-        throw Exception(
-          'Failed to mark notification as read: ${response.statusCode}',
-        );
-      }
-    } catch (e) {
+    } on DioException catch (e) {
       AppLogger.error('Error marking notification as read: $e');
       rethrow;
     }
@@ -120,22 +96,9 @@ class NotificationApiService {
   /// Mark all notifications as read
   Future<void> markAllAsRead() async {
     try {
-      final response = await http.patch(
-        Uri.parse(
-          '${ApiConstants.baseUrl}${ApiConstants.notifications}/read-all',
-        ),
-        headers: {
-          'Authorization': 'Bearer $_authToken',
-          'Content-Type': 'application/json',
-        },
+      await _apiClient.patch('${ApiConstants.notifications}/read-all',
       );
-
-      if (response.statusCode != 200) {
-        throw Exception(
-          'Failed to mark all notifications as read: ${response.statusCode}',
-        );
-      }
-    } catch (e) {
+    } on DioException catch (e) {
       AppLogger.error('Error marking all notifications as read: $e');
       rethrow;
     }
@@ -144,22 +107,9 @@ class NotificationApiService {
   /// Delete notification
   Future<void> deleteNotification(String notificationId) async {
     try {
-      final response = await http.delete(
-        Uri.parse(
-          '${ApiConstants.baseUrl}${ApiConstants.notifications}/$notificationId',
-        ),
-        headers: {
-          'Authorization': 'Bearer $_authToken',
-          'Content-Type': 'application/json',
-        },
+      await _apiClient.delete('${ApiConstants.notifications}/$notificationId',
       );
-
-      if (response.statusCode != 200) {
-        throw Exception(
-          'Failed to delete notification: ${response.statusCode}',
-        );
-      }
-    } catch (e) {
+    } on DioException catch (e) {
       AppLogger.error('Error deleting notification: $e');
       rethrow;
     }
@@ -168,25 +118,13 @@ class NotificationApiService {
   /// Get notification preferences
   Future<Map<String, dynamic>> getNotificationPreferences() async {
     try {
-      final response = await http.get(
-        Uri.parse(
-          '${ApiConstants.baseUrl}${ApiConstants.notifications}/preferences',
-        ),
-        headers: {
-          'Authorization': 'Bearer $_authToken',
-          'Content-Type': 'application/json',
-        },
+      final response = await _apiClient.get(
+        '${ApiConstants.notifications}/preferences',
       );
 
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        return data['preferences'] as Map<String, dynamic>;
-      } else {
-        throw Exception(
-          'Failed to load notification preferences: ${response.statusCode}',
-        );
-      }
-    } catch (e) {
+      final data = response.data as Map<String, dynamic>;
+      return data['preferences'] as Map<String, dynamic>;
+    } on DioException catch (e) {
       AppLogger.error('Error fetching notification preferences: $e');
       rethrow;
     }
@@ -197,24 +135,11 @@ class NotificationApiService {
     Map<String, dynamic> preferences,
   ) async {
     try {
-      final response = await http.patch(
-        Uri.parse(
-          '${ApiConstants.baseUrl}${ApiConstants.notifications}/preferences',
-        ),
-        headers: {
-          'Authorization': 'Bearer $_authToken',
-          'Content-Type': 'application/json',
-        },
-        body: json.encode({'preferences': preferences}),
+      await _apiClient.patch(
+        '${ApiConstants.notifications}/preferences',
+        data: {'preferences': preferences},
       );
-
-      if (response.statusCode != 200) {
-        final errorData = json.decode(response.body);
-        throw Exception(
-          errorData['message'] ?? 'Failed to update notification preferences',
-        );
-      }
-    } catch (e) {
+    } on DioException catch (e) {
       AppLogger.error('Error updating notification preferences: $e');
       rethrow;
     }
@@ -223,23 +148,13 @@ class NotificationApiService {
   /// Get unread notification count
   Future<int> getUnreadCount() async {
     try {
-      final response = await http.get(
-        Uri.parse(
-          '${ApiConstants.baseUrl}${ApiConstants.notifications}/unread-count',
-        ),
-        headers: {
-          'Authorization': 'Bearer $_authToken',
-          'Content-Type': 'application/json',
-        },
+      final response = await _apiClient.get(
+        '${ApiConstants.notifications}/unread-count',
       );
 
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        return data['count'] as int;
-      } else {
-        throw Exception('Failed to load unread count: ${response.statusCode}');
-      }
-    } catch (e) {
+      final data = response.data as Map<String, dynamic>;
+      return data['count'] as int;
+    } on DioException catch (e) {
       AppLogger.error('Error fetching unread count: $e');
       rethrow;
     }
@@ -254,26 +169,17 @@ class NotificationApiService {
     Map<String, dynamic>? data,
   }) async {
     try {
-      final response = await http.post(
-        Uri.parse('${ApiConstants.baseUrl}${ApiConstants.notifications}/send'),
-        headers: {
-          'Authorization': 'Bearer $_authToken',
-          'Content-Type': 'application/json',
-        },
-        body: json.encode({
+      await _apiClient.post(
+        '${ApiConstants.notifications}/send',
+        data: {
           'userId': userId,
           'title': title,
           'body': body,
           'type': type,
           'data': data,
-        }),
+        },
       );
-
-      if (response.statusCode != 201) {
-        final errorData = json.decode(response.body);
-        throw Exception(errorData['message'] ?? 'Failed to send notification');
-      }
-    } catch (e) {
+    } on DioException catch (e) {
       AppLogger.error('Error sending notification: $e');
       rethrow;
     }

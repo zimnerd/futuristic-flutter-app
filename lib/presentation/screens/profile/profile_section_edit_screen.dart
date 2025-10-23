@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:logger/logger.dart';
 
 import '../../blocs/profile/profile_bloc.dart';
 import '../../blocs/photo/photo_bloc.dart';
@@ -19,6 +20,7 @@ import '../../dialogs/photo_details_dialog.dart';
 import '../../sheets/photo_reorder_sheet.dart';
 import '../../../domain/entities/user_profile.dart';
 import '../../navigation/app_router.dart';
+import '../../widgets/profile/interests_selector.dart';
 
 /// Profile section edit screen for editing individual profile sections
 /// 
@@ -46,6 +48,8 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
   final _formKey = GlobalKey<FormState>();
   late final Map<String, TextEditingController> _controllers;
   late final Map<String, dynamic> _formData;
+  UserProfile? _currentProfile; // NEW: Store loaded profile
+  final logger = Logger(); // NEW: For debug logging
 
   @override
   void initState() {
@@ -53,6 +57,12 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
     _controllers = {};
     _formData = Map.from(widget.initialData ?? {});
     _initializeControllers();
+    
+    // NEW: Load existing profile data for prepopulation
+    logger.i(
+      '📱 Initializing ProfileSectionEditScreen for section: ${widget.sectionType}',
+    );
+    context.read<ProfileBloc>().add(const LoadProfile());
   }
 
   void _initializeControllers() {
@@ -100,80 +110,180 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
     super.dispose();
   }
 
+  void _populateFields(UserProfile profile) {
+    logger.i('🔄 _populateFields() called for section: ${widget.sectionType}');
+
+    try {
+      switch (widget.sectionType) {
+        case 'basic_info':
+          _controllers['name']!.text = profile.name;
+          _controllers['bio']!.text = profile.bio;
+          _formData['dateOfBirth'] = profile.dateOfBirth;
+          _formData['gender'] = _normalizeGender(profile.gender);
+          _formData['showMe'] = _normalizeShowMe(profile.showMe);
+          logger.i('✅ Populated basic_info fields');
+          break;
+
+        case 'work_education':
+          _controllers['job']!.text = profile.occupation ?? profile.job ?? '';
+          _controllers['company']!.text = profile.company ?? '';
+          _controllers['school']!.text =
+              profile.education ?? profile.school ?? '';
+          logger.i('✅ Populated work_education fields');
+          break;
+
+        case 'photos':
+          _formData['photos'] = List.from(profile.photos);
+          // newPhotos stays empty - only for new selections
+          _formData['newPhotos'] = [];
+          logger.i(
+            '✅ Populated photos: ${profile.photos.length} existing photos',
+          );
+          break;
+
+        case 'interests':
+          _formData['interests'] = List.from(profile.interests);
+          _formData['selectedInterests'] = List.from(profile.interests);
+          logger.i(
+            '✅ Populated interests: ${profile.interests.length} interests selected',
+          );
+          break;
+
+        case 'intent':
+          // Intent comes from relationshipGoals array - take first if exists
+          final intent = profile.relationshipGoals.isNotEmpty
+              ? profile.relationshipGoals.first
+              : null;
+          _formData['intent'] = intent;
+          logger.i('✅ Populated intent: $intent');
+          break;
+
+        case 'preferences':
+          _formData['gender'] = _normalizeGender(profile.gender);
+          _formData['showMe'] = _normalizeShowMe(profile.showMe);
+          logger.i('✅ Populated preferences');
+          break;
+      }
+
+      _currentProfile = profile;
+      logger.i('✅ _populateFields() completed successfully');
+    } catch (e) {
+      logger.e('❌ Error in _populateFields(): $e');
+      // Don't throw - form can still work with empty fields
+    }
+  }
+
+  String? _normalizeGender(String? gender) {
+    if (gender == null) return null;
+
+    final lower = gender.toLowerCase();
+    if (lower.contains('man') || lower.contains('male')) return 'Man';
+    if (lower.contains('woman') || lower.contains('female')) return 'Woman';
+    if (lower.contains('non') || lower.contains('other')) return 'Non-binary';
+
+    return gender; // Return original if no match
+  }
+
+  List<String> _normalizeShowMe(dynamic showMe) {
+    if (showMe == null) return [];
+    if (showMe is List) return List<String>.from(showMe);
+    if (showMe is String) return [showMe];
+    return [];
+  }
+
   @override
   Widget build(BuildContext context) {
-    return BlocListener<PhotoBloc, PhotoState>(
+    return BlocListener<ProfileBloc, ProfileState>(
       listener: (context, state) {
-        if (state is PhotoError) {
-          PulseToast.error(
-            context,
-            message: state.message,
-            duration: const Duration(seconds: 3),
-          );
-        } else if (state is PhotoOperationSuccess) {
-          PulseToast.success(
-            context,
-            message: state.message,
-            duration: const Duration(seconds: 2),
-          );
-          // Refresh profile data
-          context.read<ProfileBloc>().add(LoadProfile());
+        logger.d('📡 ProfileBloc state changed: ${state.status}');
+
+        if (state.status == ProfileStatus.loaded && state.profile != null) {
+          logger.i('📝 Profile loaded, calling _populateFields()');
+
+          setState(() {
+            _currentProfile = state.profile;
+            _populateFields(state.profile!);
+          });
+        } else if (state.status == ProfileStatus.error) {
+          // Handle error gracefully - form can still work with empty fields
+          logger.w('⚠️ Failed to load profile: ${state.error}');
+          // Don't show error toast - user can still use empty form
         }
       },
-      child: KeyboardDismissibleScaffold(
-        appBar: AppBar(
-          title: Text(
-            _getSectionTitle(),
-            style: PulseTextStyles.titleLarge.copyWith(
-              color: PulseColors.onSurface,
-              fontWeight: FontWeight.bold,
+      child: BlocListener<PhotoBloc, PhotoState>(
+        listener: (context, state) {
+          if (state is PhotoError) {
+            PulseToast.error(
+              context,
+              message: state.message,
+              duration: const Duration(seconds: 3),
+            );
+          } else if (state is PhotoOperationSuccess) {
+            PulseToast.success(
+              context,
+              message: state.message,
+              duration: const Duration(seconds: 2),
+            );
+            // Refresh profile data
+            context.read<ProfileBloc>().add(LoadProfile());
+          }
+        },
+        child: KeyboardDismissibleScaffold(
+          appBar: AppBar(
+            title: Text(
+              _getSectionTitle(),
+              style: PulseTextStyles.titleLarge.copyWith(
+                color: PulseColors.onSurface,
+                fontWeight: FontWeight.bold,
+              ),
             ),
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back, color: PulseColors.onSurface),
+              onPressed: () => context.pop(),
+            ),
+            actions: [
+              TextButton(
+                onPressed: _saveSection,
+                child: Text(
+                  'Save',
+                  style: PulseTextStyles.titleMedium.copyWith(
+                    color: PulseColors.primary,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
           ),
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back, color: PulseColors.onSurface),
-            onPressed: () => context.pop(),
-          ),
-          actions: [
-            TextButton(
-              onPressed: _saveSection,
-              child: Text(
-                'Save',
-                style: PulseTextStyles.titleMedium.copyWith(
-                  color: PulseColors.primary,
-                  fontWeight: FontWeight.bold,
+          body: SafeArea(
+            child: Form(
+              key: _formKey,
+              child: SingleChildScrollView(
+                padding: EdgeInsets.only(
+                  left: PulseSpacing.lg,
+                  right: PulseSpacing.lg,
+                  top: PulseSpacing.lg,
+                  bottom:
+                      MediaQuery.of(context).viewInsets.bottom +
+                      PulseSpacing.lg,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildSectionDescription(),
+                    const SizedBox(height: PulseSpacing.xl),
+                    _buildSectionContent(),
+                    const SizedBox(height: PulseSpacing.xxl),
+                    _buildActionButtons(),
+                  ],
                 ),
               ),
             ),
-          ],
-        ),
-        body: SafeArea(
-          child: Form(
-            key: _formKey,
-            child: SingleChildScrollView(
-              padding: EdgeInsets.only(
-                left: PulseSpacing.lg,
-                right: PulseSpacing.lg,
-                top: PulseSpacing.lg,
-                bottom:
-                    MediaQuery.of(context).viewInsets.bottom + PulseSpacing.lg,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildSectionDescription(),
-                  const SizedBox(height: PulseSpacing.xl),
-                  _buildSectionContent(),
-                  const SizedBox(height: PulseSpacing.xxl),
-                  _buildActionButtons(),
-                ],
-              ),
-            ),
           ),
-        ),
-      ), // KeyboardDismissibleScaffold
-    ); // BlocListener
+        ), // KeyboardDismissibleScaffold
+      ), // PhotoBloc BlocListener
+    ); // ProfileBloc BlocListener
   }
 
   Widget _buildSectionDescription() {
@@ -244,6 +354,24 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // Show pre-populated indicator if profile was loaded
+        if (_currentProfile != null)
+          Padding(
+            padding: const EdgeInsets.only(bottom: PulseSpacing.md),
+            child: Row(
+              children: [
+                Icon(Icons.check_circle, color: PulseColors.success, size: 16),
+                const SizedBox(width: 8),
+                Text(
+                  'Loaded from your profile',
+                  style: PulseTextStyles.labelSmall.copyWith(
+                    color: PulseColors.success,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        
         _buildTextField(
           controller: _controllers['name']!,
           label: 'Name',
@@ -973,101 +1101,44 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
   }
 
   Widget _buildInterestsSection() {
-    final availableInterests = [
-      'Music',
-      'Travel',
-      'Fitness',
-      'Photography',
-      'Cooking',
-      'Reading',
-      'Movies',
-      'Art',
-      'Sports',
-      'Gaming',
-      'Dancing',
-      'Hiking',
-      'Yoga',
-      'Coffee',
-      'Wine',
-      'Fashion',
-      'Technology',
-      'Animals',
-    ];
-
     final selectedInterests = List<String>.from(_formData['interests'] ?? []);
+    
+    // Show pre-populated indicator if profile was loaded
+    final showPrepopulatedIndicator = _currentProfile != null;
 
-    return StatefulBuilder(
-      builder: (context, setState) {
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (showPrepopulatedIndicator)
+          Padding(
+            padding: const EdgeInsets.only(bottom: PulseSpacing.md),
+            child: Row(
               children: [
+                Icon(Icons.check_circle, color: PulseColors.success, size: 16),
+                const SizedBox(width: 8),
                 Text(
-                  'Select your interests (at least 1)',
-                  style: PulseTextStyles.titleMedium.copyWith(
-                    color: PulseColors.onSurface,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                Text(
-                  ' *',
-                  style: PulseTextStyles.titleMedium.copyWith(
-                    color: PulseColors.error,
-                    fontWeight: FontWeight.w600,
+                  'Loaded from your profile',
+                  style: PulseTextStyles.labelSmall.copyWith(
+                    color: PulseColors.success,
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: PulseSpacing.md),
-            Text(
-              'Choose what you\'re passionate about to help people understand you better.',
-              style: PulseTextStyles.bodyMedium.copyWith(
-                color: PulseColors.onSurfaceVariant,
-              ),
-            ),
-            const SizedBox(height: PulseSpacing.lg),
-            Wrap(
-              spacing: PulseSpacing.sm,
-              runSpacing: PulseSpacing.sm,
-              children: availableInterests.map((interest) {
-                final isSelected = selectedInterests.contains(interest);
-                return FilterChip(
-                  label: Text(interest),
-                  selected: isSelected,
-                  onSelected: (selected) {
-                    setState(() {
-                      if (selected && selectedInterests.length < 10) {
-                        selectedInterests.add(interest);
-                      } else if (!selected) {
-                        selectedInterests.remove(interest);
-                      }
-                      _formData['interests'] = selectedInterests;
-                    });
-                  },
-                  selectedColor: PulseColors.primary.withValues(alpha: 0.2),
-                  checkmarkColor: PulseColors.primary,
-                  labelStyle: TextStyle(
-                    color: isSelected
-                        ? PulseColors.primary
-                        : PulseColors.onSurface,
-                    fontWeight: isSelected
-                        ? FontWeight.w600
-                        : FontWeight.normal,
-                  ),
-                );
-              }).toList(),
-            ),
-            const SizedBox(height: PulseSpacing.md),
-            Text(
-              '${selectedInterests.length}/10 selected',
-              style: PulseTextStyles.bodySmall.copyWith(
-                color: PulseColors.onSurfaceVariant,
-              ),
-            ),
-          ],
-        );
-      },
+          ),
+        
+        // Use the reusable InterestsSelector widget
+        InterestsSelector(
+          selectedInterests: selectedInterests,
+          onInterestsChanged: (selected) {
+            setState(() {
+              _formData['interests'] = selected;
+              _formData['selectedInterests'] = selected;
+            });
+          },
+          maxInterests: 10,
+          minInterests: 1,
+        ),
+      ],
     );
   }
 

@@ -1,6 +1,6 @@
-import 'dart:convert';
-import 'package:http/http.dart' as http;
+import 'package:dio/dio.dart';
 import '../../core/constants/api_constants.dart';
+import '../../core/network/api_client.dart';
 import '../../core/utils/logger.dart';
 import '../models/achievement.dart';
 import '../models/leaderboard_entry.dart';
@@ -12,35 +12,25 @@ class SocialGamingApiService {
       _instance ??= SocialGamingApiService._();
   SocialGamingApiService._();
 
-  String? _authToken;
+  final ApiClient _apiClient = ApiClient.instance;
 
   /// Set authentication token
   void setAuthToken(String token) {
-    _authToken = token;
+    // ApiClient handles authentication internally
   }
 
   /// Get user achievements
   Future<List<Achievement>> getUserAchievements(String userId) async {
     try {
-      final response = await http.get(
-        Uri.parse(
-          '${ApiConstants.baseUrl}${ApiConstants.socialGaming}/achievements/$userId',
-        ),
-        headers: {
-          'Authorization': 'Bearer $_authToken',
-          'Content-Type': 'application/json',
-        },
+      final response = await _apiClient.get(
+        '${ApiConstants.socialGaming}/achievements/$userId',
       );
 
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        return (data['achievements'] as List)
-            .map((json) => Achievement.fromJson(json))
-            .toList();
-      } else {
-        throw Exception('Failed to load achievements: ${response.statusCode}');
-      }
-    } catch (e) {
+      final data = response.data as Map<String, dynamic>;
+      return (data['achievements'] as List)
+          .map((json) => Achievement.fromJson(json))
+          .toList();
+    } on DioException catch (e) {
       AppLogger.error('Error fetching user achievements: $e');
       rethrow;
     }
@@ -49,27 +39,15 @@ class SocialGamingApiService {
   /// Get all available achievements
   Future<List<Achievement>> getAllAchievements() async {
     try {
-      final response = await http.get(
-        Uri.parse(
-          '${ApiConstants.baseUrl}${ApiConstants.socialGaming}/achievements',
-        ),
-        headers: {
-          'Authorization': 'Bearer $_authToken',
-          'Content-Type': 'application/json',
-        },
+      final response = await _apiClient.get(
+        '${ApiConstants.socialGaming}/achievements',
       );
 
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        return (data['achievements'] as List)
-            .map((json) => Achievement.fromJson(json))
-            .toList();
-      } else {
-        throw Exception(
-          'Failed to load all achievements: ${response.statusCode}',
-        );
-      }
-    } catch (e) {
+      final data = response.data as Map<String, dynamic>;
+      return (data['achievements'] as List)
+          .map((json) => Achievement.fromJson(json))
+          .toList();
+    } on DioException catch (e) {
       AppLogger.error('Error fetching all achievements: $e');
       rethrow;
     }
@@ -81,25 +59,14 @@ class SocialGamingApiService {
     Map<String, dynamic>? metadata,
   }) async {
     try {
-      final response = await http.post(
-        Uri.parse(
-          '${ApiConstants.baseUrl}${ApiConstants.socialGaming}/achievements/$achievementId/unlock',
-        ),
-        headers: {
-          'Authorization': 'Bearer $_authToken',
-          'Content-Type': 'application/json',
-        },
-        body: json.encode({'metadata': metadata}),
+      final response = await _apiClient.post(
+        '${ApiConstants.socialGaming}/achievements/$achievementId/unlock',
+        data: {'metadata': metadata},
       );
 
-      if (response.statusCode == 201) {
-        final data = json.decode(response.body);
-        return Achievement.fromJson(data['achievement']);
-      } else {
-        final errorData = json.decode(response.body);
-        throw Exception(errorData['message'] ?? 'Failed to unlock achievement');
-      }
-    } catch (e) {
+      final data = response.data as Map<String, dynamic>;
+      return Achievement.fromJson(data['achievement']);
+    } on DioException catch (e) {
       AppLogger.error('Error unlocking achievement: $e');
       rethrow;
     }
@@ -112,31 +79,18 @@ class SocialGamingApiService {
     int limit = 50,
   }) async {
     try {
-      final response = await http.get(
-        Uri.parse(
-          '${ApiConstants.baseUrl}${ApiConstants.socialGaming}/leaderboard',
-        ).replace(
-          queryParameters: {
-            'category': category,
-            'page': page.toString(),
-            'limit': limit.toString(),
-          },
-        ),
-        headers: {
-          'Authorization': 'Bearer $_authToken',
-          'Content-Type': 'application/json',
+      final response = await _apiClient.get(
+        '${ApiConstants.socialGaming}/leaderboard',
+        queryParameters: {'category': category,
+          'page': page, 'limit': limit,
         },
       );
 
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        return (data['leaderboard'] as List)
-            .map((json) => LeaderboardEntry.fromJson(json))
-            .toList();
-      } else {
-        throw Exception('Failed to load leaderboard: ${response.statusCode}');
-      }
-    } catch (e) {
+      final data = response.data as Map<String, dynamic>;
+      return (data['leaderboard'] as List)
+          .map((json) => LeaderboardEntry.fromJson(json))
+          .toList();
+    } on DioException catch (e) {
       AppLogger.error('Error fetching leaderboard: $e');
       rethrow;
     }
@@ -148,27 +102,19 @@ class SocialGamingApiService {
     String category = 'overall',
   }) async {
     try {
-      final response = await http.get(
-        Uri.parse(
-          '${ApiConstants.baseUrl}${ApiConstants.socialGaming}/leaderboard/$userId',
-        ).replace(queryParameters: {'category': category}),
-        headers: {
-          'Authorization': 'Bearer $_authToken',
-          'Content-Type': 'application/json',
-        },
+      final response = await _apiClient.get(
+        '${ApiConstants.socialGaming}/leaderboard/$userId',
+        queryParameters: {'category': category},
       );
 
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        return data['position'] != null
-            ? LeaderboardEntry.fromJson(data['position'])
-            : null;
-      } else if (response.statusCode == 404) {
+      final data = response.data as Map<String, dynamic>;
+      return data['position'] != null
+          ? LeaderboardEntry.fromJson(data['position'])
+          : null;
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 404) {
         return null; // User not on leaderboard
-      } else {
-        throw Exception('Failed to load user position: ${response.statusCode}');
       }
-    } catch (e) {
       AppLogger.error('Error fetching user leaderboard position: $e');
       rethrow;
     }
@@ -181,24 +127,15 @@ class SocialGamingApiService {
     Map<String, dynamic>? metadata,
   }) async {
     try {
-      final response = await http.post(
-        Uri.parse('${ApiConstants.baseUrl}${ApiConstants.socialGaming}/score'),
-        headers: {
-          'Authorization': 'Bearer $_authToken',
-          'Content-Type': 'application/json',
-        },
-        body: json.encode({
+      await _apiClient.post(
+        '${ApiConstants.socialGaming}/score',
+        data: {
           'category': category,
           'points': points,
           'metadata': metadata,
-        }),
+        },
       );
-
-      if (response.statusCode != 201) {
-        final errorData = json.decode(response.body);
-        throw Exception(errorData['message'] ?? 'Failed to update score');
-      }
-    } catch (e) {
+    } on DioException catch (e) {
       AppLogger.error('Error updating user score: $e');
       rethrow;
     }
@@ -207,23 +144,13 @@ class SocialGamingApiService {
   /// Get user stats
   Future<Map<String, dynamic>> getUserStats(String userId) async {
     try {
-      final response = await http.get(
-        Uri.parse(
-          '${ApiConstants.baseUrl}${ApiConstants.socialGaming}/stats/$userId',
-        ),
-        headers: {
-          'Authorization': 'Bearer $_authToken',
-          'Content-Type': 'application/json',
-        },
+      final response = await _apiClient.get(
+        '${ApiConstants.socialGaming}/stats/$userId',
       );
 
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        return data['stats'] as Map<String, dynamic>;
-      } else {
-        throw Exception('Failed to load user stats: ${response.statusCode}');
-      }
-    } catch (e) {
+      final data = response.data as Map<String, dynamic>;
+      return data['stats'] as Map<String, dynamic>;
+    } on DioException catch (e) {
       AppLogger.error('Error fetching user stats: $e');
       rethrow;
     }
@@ -232,23 +159,13 @@ class SocialGamingApiService {
   /// Get leaderboard categories
   Future<List<String>> getLeaderboardCategories() async {
     try {
-      final response = await http.get(
-        Uri.parse(
-          '${ApiConstants.baseUrl}${ApiConstants.socialGaming}/leaderboard/categories',
-        ),
-        headers: {
-          'Authorization': 'Bearer $_authToken',
-          'Content-Type': 'application/json',
-        },
+      final response = await _apiClient.get(
+        '${ApiConstants.socialGaming}/leaderboard/categories',
       );
 
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        return (data['categories'] as List).cast<String>();
-      } else {
-        throw Exception('Failed to load categories: ${response.statusCode}');
-      }
-    } catch (e) {
+      final data = response.data as Map<String, dynamic>;
+      return (data['categories'] as List).cast<String>();
+    } on DioException catch (e) {
       AppLogger.error('Error fetching leaderboard categories: $e');
       rethrow;
     }
@@ -261,29 +178,18 @@ class SocialGamingApiService {
     Map<String, dynamic>? parameters,
   }) async {
     try {
-      final response = await http.post(
-        Uri.parse(
-          '${ApiConstants.baseUrl}${ApiConstants.socialGaming}/challenge',
-        ),
-        headers: {
-          'Authorization': 'Bearer $_authToken',
-          'Content-Type': 'application/json',
-        },
-        body: json.encode({
+      final response = await _apiClient.post(
+        '${ApiConstants.socialGaming}/challenge',
+        data: {
           'targetUserId': targetUserId,
           'challengeType': challengeType,
           'parameters': parameters,
-        }),
+        },
       );
 
-      if (response.statusCode == 201) {
-        final data = json.decode(response.body);
-        return data['challenge'] as Map<String, dynamic>;
-      } else {
-        final errorData = json.decode(response.body);
-        throw Exception(errorData['message'] ?? 'Failed to create challenge');
-      }
-    } catch (e) {
+      final data = response.data as Map<String, dynamic>;
+      return data['challenge'] as Map<String, dynamic>;
+    } on DioException catch (e) {
       AppLogger.error('Error creating challenge: $e');
       rethrow;
     }
@@ -292,23 +198,13 @@ class SocialGamingApiService {
   /// Get user challenges
   Future<List<Map<String, dynamic>>> getUserChallenges(String userId) async {
     try {
-      final response = await http.get(
-        Uri.parse(
-          '${ApiConstants.baseUrl}${ApiConstants.socialGaming}/challenges/$userId',
-        ),
-        headers: {
-          'Authorization': 'Bearer $_authToken',
-          'Content-Type': 'application/json',
-        },
+      final response = await _apiClient.get(
+        '${ApiConstants.socialGaming}/challenges/$userId',
       );
 
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        return (data['challenges'] as List).cast<Map<String, dynamic>>();
-      } else {
-        throw Exception('Failed to load challenges: ${response.statusCode}');
-      }
-    } catch (e) {
+      final data = response.data as Map<String, dynamic>;
+      return (data['challenges'] as List).cast<Map<String, dynamic>>();
+    } on DioException catch (e) {
       AppLogger.error('Error fetching user challenges: $e');
       rethrow;
     }
