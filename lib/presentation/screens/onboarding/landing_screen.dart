@@ -296,35 +296,35 @@ class _LandingScreenState extends State<LandingScreen>
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.star,
-                color: Colors.amber.shade300,
+      children: [
+        Icon(
+          Icons.star,
+          color: Colors.amber.shade300,
                 size: 20,
-              ),
-              const SizedBox(width: 4),
-              Text(
-                '4.8',
+        ),
+        const SizedBox(width: 4),
+        Text(
+          '4.8',
                 style: PulseTextStyles.titleMedium.copyWith(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const SizedBox(width: PulseSpacing.sm),
-              Text(
-                '•',
-                style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.5),
-                ),
-              ),
-              const SizedBox(width: PulseSpacing.sm),
-              Text(
+            color: Colors.white,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(width: PulseSpacing.sm),
+        Text(
+          '•',
+          style: TextStyle(
+            color: Colors.white.withValues(alpha: 0.5),
+          ),
+        ),
+        const SizedBox(width: PulseSpacing.sm),
+        Text(
                 '100K+ Matches Made',
                 style: PulseTextStyles.bodyMedium.copyWith(
-                  color: Colors.white.withValues(alpha: 0.9),
-                ),
-              ),
-            ],
+            color: Colors.white.withValues(alpha: 0.9),
+          ),
+        ),
+      ],
           ),
           const SizedBox(height: PulseSpacing.sm),
           Row(
@@ -352,7 +352,86 @@ class _LandingScreenState extends State<LandingScreen>
   Widget _buildCTASection() {
     return Column(
       children: [
-        // Primary CTA
+        // Social media buttons FIRST (top priority)
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            _buildSocialButton(
+              icon: Icons.g_mobiledata,
+              label: 'Google',
+              onPressed: () {
+                // TODO: Implement Google Sign In
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Google Sign In - Coming Soon'),
+                    duration: Duration(seconds: 2),
+                  ),
+                );
+              },
+            ),
+            const SizedBox(width: PulseSpacing.md),
+            _buildSocialButton(
+              icon: Icons.apple,
+              label: 'Apple',
+              onPressed: () {
+                // TODO: Implement Apple Sign In
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Apple Sign In - Coming Soon'),
+                    duration: Duration(seconds: 2),
+                  ),
+                );
+              },
+            ),
+            const SizedBox(width: PulseSpacing.md),
+            _buildSocialButton(
+              icon: Icons.facebook,
+              label: 'Facebook',
+              onPressed: () {
+                // TODO: Implement Facebook Sign In
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Facebook Sign In - Coming Soon'),
+                    duration: Duration(seconds: 2),
+                  ),
+                );
+              },
+            ),
+          ],
+        ),
+
+        const SizedBox(height: PulseSpacing.xl),
+
+        // Divider with "or"
+        Row(
+          children: [
+            Expanded(
+              child: Container(
+                height: 1,
+                color: Colors.white.withValues(alpha: 0.3),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: PulseSpacing.md),
+              child: Text(
+                'or',
+                style: PulseTextStyles.labelMedium.copyWith(
+                  color: Colors.white.withValues(alpha: 0.7),
+                ),
+              ),
+            ),
+            Expanded(
+              child: Container(
+                height: 1,
+                color: Colors.white.withValues(alpha: 0.3),
+              ),
+            ),
+          ],
+        ),
+
+        const SizedBox(height: PulseSpacing.xl),
+
+        // Primary CTA (now secondary option)
         SizedBox(
           width: double.infinity,
           height: 56,
@@ -371,7 +450,7 @@ class _LandingScreenState extends State<LandingScreen>
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
-                  'Create Free Account',
+                  'Sign up with Email',
                   style: PulseTextStyles.titleMedium.copyWith(
                     color: PulseColors.primary,
                     fontWeight: FontWeight.w700,
@@ -380,7 +459,7 @@ class _LandingScreenState extends State<LandingScreen>
                 ),
                 const SizedBox(width: PulseSpacing.sm),
                 Icon(
-                  Icons.arrow_forward,
+                  Icons.email_outlined,
                   color: PulseColors.primary,
                   size: 20,
                 ),
@@ -389,7 +468,7 @@ class _LandingScreenState extends State<LandingScreen>
           ),
         ),
 
-        const SizedBox(height: PulseSpacing.lg),
+        const SizedBox(height: PulseSpacing.xl),
 
         // Secondary CTA
         TextButton(
@@ -422,6 +501,51 @@ class _LandingScreenState extends State<LandingScreen>
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildSocialButton({
+    required IconData icon,
+    required String label,
+    required VoidCallback onPressed,
+  }) {
+    return Expanded(
+      child: Container(
+        height: 56,
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.15),
+          borderRadius: BorderRadius.circular(PulseRadii.md),
+          border: Border.all(
+            color: Colors.white.withValues(alpha: 0.3),
+            width: 1,
+          ),
+        ),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: onPressed,
+            borderRadius: BorderRadius.circular(PulseRadii.md),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  icon,
+                  color: Colors.white,
+                  size: 28,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  label,
+                  style: PulseTextStyles.labelSmall.copyWith(
+                    color: Colors.white.withValues(alpha: 0.9),
+                    fontSize: 11,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 

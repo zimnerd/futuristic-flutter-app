@@ -84,65 +84,81 @@ class _PulseTextFieldState extends State<PulseTextField> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          curve: Curves.easeInOut,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(PulseRadii.input),
-            border: Border.all(
-              color: _getBorderColor(),
-              width: _isFocused ? 2 : 1,
-            ),
+        TextFormField(
+          controller: widget.controller,
+          focusNode: _focusNode,
+          obscureText: widget.obscureText,
+          enabled: widget.enabled,
+          readOnly: widget.readOnly,
+          maxLines: widget.maxLines,
+          maxLength: widget.maxLength,
+          keyboardType: widget.keyboardType,
+          textInputAction: widget.textInputAction,
+          onChanged: widget.onChanged,
+          onFieldSubmitted: widget.onSubmitted,
+          validator: widget.validator,
+          autofocus: widget.autofocus,
+          onTap: widget.onTap,
+          style: PulseTextStyles.bodyMedium.copyWith(
             color: widget.enabled
+                ? PulseColors.onSurface
+                : PulseColors.onSurfaceVariant,
+          ),
+          decoration: InputDecoration(
+            // Use Material Design's OutlineInputBorder for proper rounded corners
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(PulseRadii.input),
+              borderSide: BorderSide(color: PulseColors.outline, width: 1),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(PulseRadii.input),
+              borderSide: BorderSide(color: _getBorderColor(), width: 1),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(PulseRadii.input),
+              borderSide: BorderSide(color: PulseColors.primary, width: 2),
+            ),
+            errorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(PulseRadii.input),
+              borderSide: BorderSide(color: PulseColors.error, width: 1),
+            ),
+            focusedErrorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(PulseRadii.input),
+              borderSide: BorderSide(color: PulseColors.error, width: 2),
+            ),
+            disabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(PulseRadii.input),
+              borderSide: BorderSide(
+                color: PulseColors.outlineVariant,
+                width: 1,
+              ),
+            ),
+            // Material Design labels that float on top
+            labelText: widget.labelText ?? widget.hintText,
+            hintText: widget.hintText,
+            prefixIcon: widget.prefixIcon,
+            suffixIcon: widget.suffixIcon,
+            counterText: '',
+            // Proper padding for Material Design
+            contentPadding: const EdgeInsets.fromLTRB(16, 20, 16, 16),
+            labelStyle: PulseTextStyles.bodyMedium.copyWith(
+              color: _getLabelColor(),
+            ),
+            hintStyle: PulseTextStyles.bodyMedium.copyWith(
+              color: PulseColors.onSurfaceVariant,
+            ),
+            // Material Design floating label behavior
+            floatingLabelBehavior: FloatingLabelBehavior.auto,
+            filled: true,
+            fillColor: widget.enabled
                 ? PulseColors.surfaceVariant
                 : PulseColors.outlineVariant.withValues(alpha: 0.1),
           ),
-          child: TextFormField(
-            controller: widget.controller,
-            focusNode: _focusNode,
-            obscureText: widget.obscureText,
-            enabled: widget.enabled,
-            readOnly: widget.readOnly,
-            maxLines: widget.maxLines,
-            maxLength: widget.maxLength,
-            keyboardType: widget.keyboardType,
-            textInputAction: widget.textInputAction,
-            onChanged: widget.onChanged,
-            onFieldSubmitted: widget.onSubmitted,
-            validator: widget.validator,
-            autofocus: widget.autofocus,
-            onTap: widget.onTap,
-            style: PulseTextStyles.bodyMedium.copyWith(
-              color: widget.enabled
-                  ? PulseColors.onSurface
-                  : PulseColors.onSurfaceVariant,
-            ),
-            decoration: InputDecoration(
-              labelText: widget.labelText,
-              hintText: widget.hintText,
-              prefixIcon: widget.prefixIcon,
-              suffixIcon: widget.suffixIcon,
-              counterText: '',
-              border: InputBorder.none,
-              enabledBorder: InputBorder.none,
-              focusedBorder: InputBorder.none,
-              errorBorder: InputBorder.none,
-              disabledBorder: InputBorder.none,
-              contentPadding: const EdgeInsets.all(PulseSpacing.md),
-              labelStyle: PulseTextStyles.bodyMedium.copyWith(
-                color: _getLabelColor(),
-              ),
-              hintStyle: PulseTextStyles.bodyMedium.copyWith(
-                color: PulseColors.onSurfaceVariant,
-              ),
-              floatingLabelBehavior: FloatingLabelBehavior.auto,
-            ),
-          ),
         ),
         if (widget.helperText != null || widget.errorText != null) ...[
-          const SizedBox(height: PulseSpacing.xs),
+          const SizedBox(height: 4),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: PulseSpacing.md),
+            padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Text(
               widget.errorText ?? widget.helperText!,
               style: PulseTextStyles.labelSmall.copyWith(

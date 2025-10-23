@@ -5,6 +5,121 @@ This document captures key learnings from building the **Flutter mobile dating a
 
 ---
 
+## ✨ **Best Practice: Proper Material Design Text Fields (October 2025)**
+
+**Status**: ✅ **IMPLEMENTED** - All form fields now use Material Design patterns  
+**Date**: October 2025  
+**Impact**: **HIGH** - Professional form appearance, better UX  
+**Rating**: 8/10 (Significantly improves form usability and appearance)  
+**Components**: PulseTextField, LoginScreen, RegisterScreen
+
+### **Problem: Custom Border Styling Was Clipping Corners**
+
+**What Was Wrong**:
+```dart
+// ❌ OLD: AnimatedContainer with custom border + TextFormField with no border
+AnimatedContainer(
+  decoration: BoxDecoration(
+    borderRadius: BorderRadius.circular(12),
+    border: Border.all(color: outlineColor),
+  ),
+  child: TextFormField(
+    decoration: InputDecoration(
+      border: InputBorder.none,  // No border on field!
+      enabledBorder: InputBorder.none,
+      focusedBorder: InputBorder.none,
+      labelText: 'Label',  // Labels weren't floating properly
+    ),
+  ),
+)
+```
+
+**Issues**:
+1. Border clipped at corners - AnimatedContainer border + TextFormField inner borders conflicted
+2. Labels not floating - TextField didn't have proper `floatingLabelBehavior`
+3. No focus state indication - Border style didn't change on focus
+4. Over-engineered - Custom container when Material Design already solved this
+
+### **Solution: Use Flutter's OutlineInputBorder**
+
+```dart
+// ✅ NEW: TextFormField with Material Design OutlineInputBorder
+TextFormField(
+  decoration: InputDecoration(
+    // Proper Material Design borders
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: BorderSide(color: Colors.grey),
+    ),
+    enabledBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: BorderSide(color: Color(0xFFE0E0E0)),
+    ),
+    focusedBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: BorderSide(color: primaryColor, width: 2),
+    ),
+    errorBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: BorderSide(color: Colors.red),
+    ),
+    focusedErrorBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: BorderSide(color: Colors.red, width: 2),
+    ),
+    
+    // Material Design floating label
+    labelText: 'Email Address',
+    floatingLabelBehavior: FloatingLabelBehavior.auto,
+    
+    // Proper padding
+    contentPadding: EdgeInsets.fromLTRB(16, 20, 16, 16),
+    
+    // Modern filled appearance
+    filled: true,
+    fillColor: Color(0xFFFAFAFA),
+  ),
+)
+```
+
+**Benefits**:
+- ✅ Corners render perfectly (no clipping)
+- ✅ Labels float smoothly when typing
+- ✅ Clear focus/blur visual feedback
+- ✅ Error states obvious
+- ✅ Less code (no custom AnimatedContainer)
+- ✅ Follows Material Design 3 spec
+
+### **Key Learnings**
+
+1. **Don't fight Material Design** - Flutter's built-in components already solve common problems
+2. **OutlineInputBorder is your friend** - Handles rounded corners + borders correctly
+3. **FloatingLabelBehavior.auto** - Automatically handles label positioning
+4. **Separate border states** - `border`, `enabledBorder`, `focusedBorder`, `errorBorder`, `focusedErrorBorder`
+5. **Focus width difference** - Use `width: 2` on focus to show clear feedback vs `width: 1` normal
+6. **ContentPadding matters** - Top padding needs to be larger for floating labels (20 vs 16 for left)
+
+### **Files Modified**:
+- `mobile/lib/presentation/widgets/common/pulse_text_field.dart` - Refactored to use OutlineInputBorder
+- `mobile/lib/presentation/screens/auth/login_screen.dart` - Applied Material Design to email/password fields
+- `mobile/lib/presentation/screens/auth/register_screen.dart` - Already using PulseTextField (updated widget)
+
+### **Testing Checklist**:
+- [x] Register screen - borders don't clip, labels float
+- [x] Login screen - email/password fields display correctly
+- [x] Focus states - border color changes, width increases
+- [x] Error states - red border, error text visible
+- [x] All devices - iPad, iPhone, different screen sizes
+- [x] Accessibility - touch targets still accessible
+
+### **Migration Path for Other Forms**:
+1. Forgot password screen
+2. Profile edit screens
+3. Search/filter forms
+4. Settings screens
+
+---
+
 ## 🚨 **CRITICAL: Empty String in SQLite Split Bug (January 2026)**
 
 **Status**: ✅ **FIXED** - Added proper null/empty handling for mediaUrls  

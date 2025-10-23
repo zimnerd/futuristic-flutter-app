@@ -13,7 +13,7 @@ import '../../domain/entities/user_profile.dart';
 import '../screens/auth/forgot_password_screen.dart';
 import '../screens/auth/login_screen.dart' as simple_login;
 import '../screens/auth/otp_verification_screen.dart';
-import '../screens/auth/enhanced_register_screen.dart';
+import '../screens/auth/enhanced_register_screen.dart' show RegisterScreen;
 import '../screens/main/home_screen.dart';
 import '../screens/main/matches_screen.dart';
 import '../screens/main/messages_screen.dart';
@@ -79,7 +79,8 @@ import '../screens/settings/blocked_users_screen.dart';
 import '../screens/safety/safety_center_screen.dart';
 import '../screens/safety/emergency_contacts_screen.dart';
 import '../screens/matching/match_explanation_screen.dart';
-import '../screens/analytics/advanced_analytics_screen.dart';
+import '../screens/analytics/advanced_analytics_screen.dart'
+    show AnalyticsScreen;
 import '../blocs/notification/notification_bloc.dart';
 import '../blocs/block_report/block_report_bloc.dart';
 import '../blocs/auth/auth_state.dart';
@@ -180,7 +181,7 @@ class AppRouter {
           builder: (context, state) {
             final extra = state.extra as Map<String, dynamic>?;
             final phoneNumber = extra?['phoneNumber'] as String?;
-            return EnhancedRegisterScreen(phoneNumber: phoneNumber);
+            return RegisterScreen(phoneNumber: phoneNumber);
           },
         ),
         GoRoute(
@@ -1053,7 +1054,7 @@ class AppRouter {
           path: AppRoutes.advancedAnalytics,
           name: 'advancedAnalytics',
           builder: (context, state) {
-            return const AdvancedAnalyticsScreen();
+            return const AnalyticsScreen();
           },
         ),
         GoRoute(
