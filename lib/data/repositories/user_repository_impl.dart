@@ -234,6 +234,26 @@ class UserRepositoryImpl implements UserRepository {
   }
 
   @override
+  Future<Map<String, dynamic>> sendVerificationOTP({
+    required String preferredMethod,
+  }) async {
+    try {
+      _logger.i('Sending verification OTP via: $preferredMethod');
+
+      final result = await _remoteDataSource.sendVerificationOTP(
+        preferredMethod: preferredMethod,
+      );
+
+      _logger.i('Verification OTP sent successfully');
+      return result;
+    } catch (e) {
+      _logger.e('Send verification OTP failed: $e');
+      if (e is AppException) rethrow;
+      throw AuthException('Send verification OTP failed: ${e.toString()}');
+    }
+  }
+
+  @override
   Future<Map<String, dynamic>> verifyOTP({
     required String sessionId,
     required String code,

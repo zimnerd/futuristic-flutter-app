@@ -34,6 +34,14 @@ abstract class UserRepository {
     required String type,
     String? preferredMethod,
   });
+
+  /// Send verification OTP to authenticated user
+  /// Uses JWT token to identify user - no need to pass email/phone
+  /// [preferredMethod] can be 'email', 'whatsapp', or 'both'
+  Future<Map<String, dynamic>> sendVerificationOTP({
+    required String preferredMethod,
+  });
+
   Future<Map<String, dynamic>> verifyOTP({
     required String sessionId,
     required String code,

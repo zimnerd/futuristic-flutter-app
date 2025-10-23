@@ -1,12 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:logger/logger.dart';
 
+import '../../blocs/profile/profile_bloc.dart';
 import '../../theme/pulse_colors.dart';
 import '../../widgets/common/common_widgets.dart';
 import '../../widgets/common/pulse_toast.dart';
+import '../../../domain/entities/user_profile.dart';
+
+final logger = Logger();
 
 /// User intent selection screen
 /// Allows users to select their primary purpose for using the app
+/// NOW INTEGRATED WITH BACKEND via ProfileBloc
 class IntentSelectionScreen extends StatefulWidget {
   const IntentSelectionScreen({super.key});
 
@@ -73,14 +80,27 @@ class _IntentSelectionScreenState extends State<IntentSelectionScreen> {
     });
   }
 
-  Future<void> _continue() async {
+  /// Validate selection before saving
+  bool _validateSelection() {
     if (_selectedIntent == null) {
       PulseToast.error(context, message: 'Please select your primary intent');
+      return false;
+    }
+    return true;
+  }
+
+  Future<void> _continue() async {
+    // ✅ Validate
+    if (!_validateSelection()) {
       return;
     }
 
-    // Save intent to SharedPreferences
     try {
+      logger.i('💾 Saving intent to backend...');
+      logger.i('  Primary intent: $_selectedIntent');
+      logger.i('  Secondary intents: ${_secondaryIntents.join(", ")}');
+
+      // ✅ Save locally to SharedPreferences for profile setup tracking
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('user_intent_primary', _selectedIntent!);
       await prefs.setStringList('user_intent_secondary', _secondaryIntents);
@@ -88,12 +108,80 @@ class _IntentSelectionScreenState extends State<IntentSelectionScreen> {
         'user_intent_timestamp',
         DateTime.now().toIso8601String(),
       );
+      await prefs.setBool(
+        'setup_intent_completed',
+        true,
+      ); // ✅ Mark step complete
+
+      logger.i('✅ Intent saved to SharedPreferences');
+
+      // ✅ NEW: Also save to backend via ProfileBloc
+      // This ensures the backend has the user's primary intent
+      // Combine primary + secondary into relationshipGoals for backend
+      final allIntents = [_selectedIntent!, ..._secondaryIntents];
+
+      // Get current profile from bloc to avoid losing other data
+      final profileBloc = context.read<ProfileBloc>();
+      final currentState = profileBloc.state;
+
+      // Check if profile is loaded
+      if (currentState.status == ProfileStatus.loaded &&
+          currentState.profile != null) {
+        final currentProfile = currentState.profile!;
+
+        // Create updated profile with new intent data
+        final updatedProfile = UserProfile(
+          id: currentProfile.id,
+          name: currentProfile.name,
+          bio: currentProfile.bio,
+          age: currentProfile.age,
+          dateOfBirth: currentProfile.dateOfBirth,
+          photos: currentProfile.photos,
+          interests: currentProfile.interests,
+          location: currentProfile.location,
+          gender: currentProfile.gender,
+          job: currentProfile.job,
+          company: currentProfile.company,
+          school: currentProfile.school,
+          isOnline: currentProfile.isOnline,
+          lastSeen: currentProfile.lastSeen,
+          verified: currentProfile.verified,
+          // ✅ Update relationshipGoals with selected intents
+          relationshipGoals: allIntents,
+          // Keep all other fields
+          lifestyleChoice: currentProfile.lifestyleChoice,
+          height: currentProfile.height,
+          religion: currentProfile.religion,
+          politics: currentProfile.politics,
+          drinking: currentProfile.drinking,
+          smoking: currentProfile.smoking,
+          drugs: currentProfile.drugs,
+          children: currentProfile.children,
+          languages: currentProfile.languages,
+        );
+
+        // Dispatch to backend
+        logger.i('🚀 Dispatching UpdateProfile event to ProfileBloc...');
+        if (mounted) {
+          context.read<ProfileBloc>().add(
+            UpdateProfile(profile: updatedProfile),
+          );
+        }
+
+        logger.i('✅ Profile update sent to backend');
+      } else {
+        logger.w(
+          '⚠️ Profile not loaded yet, will save intent to SharedPreferences only',
+        );
+      }
 
       if (mounted) {
         // Pop with true to signal step completion to profile setup wizard
+        logger.i('✅ Intent selection complete - navigating back');
         Navigator.of(context).pop(true);
       }
     } catch (e) {
+      logger.e('❌ Error saving intent: $e');
       if (mounted) {
         PulseToast.error(context, message: 'Failed to save preferences: $e');
       }

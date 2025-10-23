@@ -39,6 +39,9 @@ class ApiConstants {
       '$users/me/privacy'; // Fixed: now /me/privacy
   static const String usersDiscovery = '$users/discovery';
   static const String usersVerification = '$users/verification';
+  static const String usersVerificationStatus = '$users/me/verification-status';
+  static const String usersVerificationSendOTP =
+      '$users/me/verification/send-otp';
 
   // Matching endpoints (matching.controller.ts)
   static const String matching = '/matching';

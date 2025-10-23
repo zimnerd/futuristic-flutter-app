@@ -36,6 +36,48 @@ class VerificationRepository {
     }
   }
 
+  /// Send verification OTP to authenticated user
+  /// Uses JWT token to identify user and send OTP to their stored email/phone
+  ///
+  /// [preferredMethod] can be:
+  /// - 'email': Send OTP to user's email
+  /// - 'whatsapp': Send OTP to user's WhatsApp
+  /// - 'both': Send OTP to both email and WhatsApp
+  ///
+  /// Returns a map with:
+  /// - sessionId: OTP session identifier for verification
+  /// - deliveryMethods: Status of delivery attempts (email/whatsapp)
+  /// - expiresAt: When the OTP expires
+  Future<Map<String, dynamic>> sendVerificationOTP(
+    String preferredMethod,
+  ) async {
+    try {
+      AppLogger.info('Sending verification OTP via $preferredMethod...');
+
+      final response = await _apiClient.post(
+        '/users/me/verification/send-otp',
+        data: {'preferredMethod': preferredMethod},
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final data = response.data['data'] as Map<String, dynamic>;
+
+        AppLogger.info(
+          'Verification OTP sent successfully: ${data['sessionId']}',
+        );
+
+        return data;
+      } else {
+        throw Exception(
+          response.data?['message'] ?? 'Failed to send verification OTP',
+        );
+      }
+    } catch (e) {
+      AppLogger.error('Failed to send verification OTP: $e');
+      rethrow;
+    }
+  }
+
   /// Request email verification
   /// Sends OTP to user's email address
   Future<void> requestEmailVerification() async {

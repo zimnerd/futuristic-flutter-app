@@ -41,6 +41,13 @@ abstract class UserRemoteDataSource {
     required String type,
     String? preferredMethod,
   });
+
+  /// Send verification OTP to authenticated user
+  /// Uses JWT token from ApiClient - no need to pass email/phone
+  Future<Map<String, dynamic>> sendVerificationOTP({
+    required String preferredMethod,
+  });
+
   Future<Map<String, dynamic>> verifyOTP({
     required String sessionId,
     required String code,
@@ -545,6 +552,64 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
       _logger.e('Send OTP error: $e');
       if (e is ApiException) rethrow;
       throw ApiException('Failed to send OTP: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>> sendVerificationOTP({
+    required String preferredMethod,
+  }) async {
+    try {
+      _logger.i('Sending verification OTP via: $preferredMethod');
+
+      final response = await _apiClient.post(
+        '/users/me/verification/send-otp',
+        data: {'preferredMethod': preferredMethod},
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final data = response.data['data'] ?? response.data;
+
+        // Parse deliveryMethods - backend returns a map like: {"whatsapp": {"sent": true}}
+        final deliveryMethodsMap =
+            data['deliveryMethods'] as Map<String, dynamic>?;
+        final deliveryMethods = <String>[];
+        if (deliveryMethodsMap != null) {
+          deliveryMethodsMap.forEach((method, details) {
+            if (details is Map && details['sent'] == true) {
+              deliveryMethods.add(method);
+            }
+          });
+        }
+
+        return {
+          'sessionId': data['sessionId'],
+          'deliveryMethods': deliveryMethods,
+          'expiresAt': data['expiresAt'],
+        };
+      } else {
+        throw ApiException(
+          'Failed to send verification OTP: ${response.statusMessage}',
+        );
+      }
+    } on DioException catch (e) {
+      _logger.e('Send verification OTP error: $e');
+
+      final errorMessage = DioErrorParser.extractErrorMessage(
+        e,
+        fallbackMessage: 'Failed to send verification OTP',
+      );
+
+      _logger.e('🚨 Extracted error message: $errorMessage');
+      throw ApiException(
+        errorMessage,
+        code: 'SEND_VERIFICATION_OTP_FAILED',
+        details: e.response?.data,
+      );
+    } catch (e) {
+      _logger.e('Send verification OTP error: $e');
+      if (e is ApiException) rethrow;
+      throw ApiException('Failed to send verification OTP: ${e.toString()}');
     }
   }
 

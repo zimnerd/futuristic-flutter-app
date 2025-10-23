@@ -163,7 +163,7 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
 
                 // Title
                 Text(
-                  'Verify Your Number',
+                  'Verify Your Email / Number',
                   style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                     color: PulseColors.onSurface,

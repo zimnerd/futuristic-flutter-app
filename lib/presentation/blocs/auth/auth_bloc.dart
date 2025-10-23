@@ -59,10 +59,40 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
       if (user != null) {
         _logger.i('✅ User is authenticated: ${user.username}');
-        emit(AuthAuthenticated(user: user));
+        
+        // ✅ Check verification and profile completion status
+        final isEmailVerified = user.emailVerified;
+        final isPhoneVerified = user.phoneVerified;
 
-        // Initialize real-time services after successful authentication
-        await _initializeRealTimeServices(user);
+        if (!isEmailVerified && !isPhoneVerified) {
+          _logger.i(
+            '⚠️ Auth status check: User not verified - showing verification screen',
+          );
+          emit(
+            AuthVerificationRequired(
+              user: user,
+              isEmailVerified: isEmailVerified,
+              isPhoneVerified: isPhoneVerified,
+              message: 'Please verify your account to continue',
+            ),
+          );
+        } else if (!_isProfileComplete(user)) {
+          _logger.i(
+            '⚠️ Auth status check: Profile incomplete (${user.profileCompletionPercentage}%) - showing profile enrichment screen',
+          );
+          emit(
+            AuthProfileEnrichmentRequired(
+              user: user,
+              message: 'Please complete your profile to get started',
+            ),
+          );
+        } else {
+          _logger.i('✅ Auth status check: User verified and profile complete');
+          emit(AuthAuthenticated(user: user));
+
+          // Initialize real-time services after successful authentication
+          await _initializeRealTimeServices(user);
+        }
       } else {
         _logger.i('❌ User is not authenticated');
         emit(const AuthUnauthenticated());
@@ -152,9 +182,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
   /// Check if user profile is complete with minimum required fields
   bool _isProfileComplete(UserModel user) {
-    // Minimum required fields for profile: photos, bio, interests
-    // For now, just check if username exists (which it should after signup)
-    return user.username.isNotEmpty;
+    // Profile is complete when profileCompletionPercentage >= 50%
+    // This matches backend ProfileCompletionGuard requirement
+    return (user.profileCompletionPercentage ?? 0) >= 50;
   }
 
   /// Handles automatic login for development mode
@@ -317,7 +347,36 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
       if (user != null) {
         _logger.i('✅ Token refresh successful');
-        emit(AuthAuthenticated(user: user));
+        
+        // ✅ Check verification and profile completion status
+        final isEmailVerified = user.emailVerified;
+        final isPhoneVerified = user.phoneVerified;
+
+        if (!isEmailVerified && !isPhoneVerified) {
+          _logger.i(
+            '⚠️ Token refresh: User not verified - showing verification screen',
+          );
+          emit(
+            AuthVerificationRequired(
+              user: user,
+              isEmailVerified: isEmailVerified,
+              isPhoneVerified: isPhoneVerified,
+              message: 'Please verify your account to continue',
+            ),
+          );
+        } else if (!_isProfileComplete(user)) {
+          _logger.i(
+            '⚠️ Token refresh: Profile incomplete - showing profile enrichment screen',
+          );
+          emit(
+            AuthProfileEnrichmentRequired(
+              user: user,
+              message: 'Please complete your profile to get started',
+            ),
+          );
+        } else {
+          emit(AuthAuthenticated(user: user));
+        }
       } else {
         _logger.w('❌ Token refresh failed - user not found');
         emit(const AuthUnauthenticated());
@@ -385,8 +444,36 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       );
 
       if (user != null) {
-        emit(AuthAuthenticated(user: user));
-        _logger.i('Two-factor authentication verified successfully');
+        // ✅ Check verification and profile completion status
+        final isEmailVerified = user.emailVerified;
+        final isPhoneVerified = user.phoneVerified;
+
+        if (!isEmailVerified && !isPhoneVerified) {
+          _logger.i(
+            '⚠️ 2FA verification: User not verified - showing verification screen',
+          );
+          emit(
+            AuthVerificationRequired(
+              user: user,
+              isEmailVerified: isEmailVerified,
+              isPhoneVerified: isPhoneVerified,
+              message: 'Please verify your account to continue',
+            ),
+          );
+        } else if (!_isProfileComplete(user)) {
+          _logger.i(
+            '⚠️ 2FA verification: Profile incomplete - showing profile enrichment screen',
+          );
+          emit(
+            AuthProfileEnrichmentRequired(
+              user: user,
+              message: 'Please complete your profile to get started',
+            ),
+          );
+        } else {
+          emit(AuthAuthenticated(user: user));
+          _logger.i('Two-factor authentication verified successfully');
+        }
       } else {
         emit(const AuthError(message: 'Two-factor verification failed'));
       }
@@ -413,8 +500,36 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       final user = await _userRepository.signInWithBiometric();
 
       if (user != null) {
-        emit(AuthAuthenticated(user: user));
-        _logger.i('Biometric authentication successful');
+        // ✅ Check verification and profile completion status
+        final isEmailVerified = user.emailVerified;
+        final isPhoneVerified = user.phoneVerified;
+
+        if (!isEmailVerified && !isPhoneVerified) {
+          _logger.i(
+            '⚠️ Biometric: User not verified - showing verification screen',
+          );
+          emit(
+            AuthVerificationRequired(
+              user: user,
+              isEmailVerified: isEmailVerified,
+              isPhoneVerified: isPhoneVerified,
+              message: 'Please verify your account to continue',
+            ),
+          );
+        } else if (!_isProfileComplete(user)) {
+          _logger.i(
+            '⚠️ Biometric: Profile incomplete - showing profile enrichment screen',
+          );
+          emit(
+            AuthProfileEnrichmentRequired(
+              user: user,
+              message: 'Please complete your profile to get started',
+            ),
+          );
+        } else {
+          emit(AuthAuthenticated(user: user));
+          _logger.i('Biometric authentication successful');
+        }
       } else {
         emit(const AuthError(message: 'Biometric authentication failed'));
       }
@@ -439,13 +554,32 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       );
       emit(const AuthLoading());
 
-      final result = await _userRepository.sendOTP(
-        email: event.email,
-        phoneNumber: event.phoneNumber,
-        countryCode: event.countryCode,
-        type: event.type,
-        preferredMethod: event.preferredMethod,
-      );
+      final Map<String, dynamic> result;
+
+      // Use different endpoint based on type
+      if (event.type == 'phone_verification') {
+        // Verification stage - user already authenticated
+        // Use new endpoint that gets email/phone from JWT token
+        _logger.i('Using verification OTP endpoint (JWT-based)');
+        if (event.preferredMethod == null) {
+          throw ValidationException(
+            'Preferred method is required for verification OTP',
+          );
+        }
+        result = await _userRepository.sendVerificationOTP(
+          preferredMethod: event.preferredMethod!,
+        );
+      } else {
+        // Login/Registration - use traditional endpoint with email/phone in body
+        _logger.i('Using traditional OTP endpoint (email/phone in body)');
+        result = await _userRepository.sendOTP(
+          email: event.email,
+          phoneNumber: event.phoneNumber,
+          countryCode: event.countryCode,
+          type: event.type,
+          preferredMethod: event.preferredMethod,
+        );
+      }
 
       emit(
         AuthOTPSent(
@@ -526,8 +660,25 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           final userData = result['user'];
           if (userData != null) {
             final user = UserModel.fromJson(userData);
-            emit(AuthAuthenticated(user: user));
-            _logger.i('OTP verification successful: ${user.username}');
+            
+            // ✅ NEW: Check if profile needs enrichment before full authentication
+            if ((user.profileCompletionPercentage ?? 0) < 50) {
+              _logger.i(
+                '⚠️ OTP verified but profile incomplete (${user.profileCompletionPercentage}%) - redirecting to profile enrichment',
+              );
+              emit(
+                AuthProfileEnrichmentRequired(
+                  user: user,
+                  message: 'Please complete your profile to start matching',
+                ),
+              );
+            } else {
+              // Profile complete - fully authenticated
+              emit(AuthAuthenticated(user: user));
+              _logger.i(
+                '✅ OTP verification successful and profile complete: ${user.username}',
+              );
+            }
           } else {
             emit(
               const AuthError(
@@ -680,8 +831,15 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     }
   }
 
-  /// Checks if user is currently authenticated
-  bool get isAuthenticated => state is AuthAuthenticated;
+  /// Checks if user is currently authenticated (includes verification and profile enrichment states)
+  /// This returns true for:
+  /// - AuthAuthenticated: User fully authenticated with complete profile
+  /// - AuthVerificationRequired: User logged in but needs verification
+  /// - AuthProfileEnrichmentRequired: User verified but needs profile completion
+  bool get isAuthenticated =>
+      state is AuthAuthenticated ||
+      state is AuthVerificationRequired ||
+      state is AuthProfileEnrichmentRequired;
 
   /// Checks if authentication is currently loading
   bool get isLoading => state is AuthLoading;

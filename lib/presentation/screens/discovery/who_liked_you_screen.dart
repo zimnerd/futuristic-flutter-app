@@ -73,13 +73,20 @@ class _WhoLikedYouScreenState extends State<WhoLikedYouScreen> {
   @override
   Widget build(BuildContext context) {
     final isPremium = _isPremiumUser(context);
+    final screenWidth = MediaQuery.of(context).size.width;
+    // Responsive: use 1 column on very small screens, 2 on normal
+    final isSmallScreen = screenWidth < 400;
 
     return Scaffold(
       backgroundColor: PulseColors.backgroundLight,
       appBar: AppBar(
-        title: const Text('Who Liked You'),
+        title: const Text(
+          'Who Liked You',
+          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+        ),
         backgroundColor: PulseColors.white,
         elevation: 0,
+        centerTitle: false,
         actions: [
           IconButton(
             icon: Badge(
@@ -110,7 +117,7 @@ class _WhoLikedYouScreenState extends State<WhoLikedYouScreen> {
             if (state.userStack.isEmpty) {
               return _buildEmptyState();
             }
-            return _buildUserGrid(state.userStack, isPremium);
+            return _buildUserGrid(state.userStack, isPremium, isSmallScreen);
           }
 
           return _buildEmptyState();
@@ -119,7 +126,11 @@ class _WhoLikedYouScreenState extends State<WhoLikedYouScreen> {
     );
   }
 
-  Widget _buildUserGrid(List<UserProfile> users, bool isPremium) {
+  Widget _buildUserGrid(
+    List<UserProfile> users,
+    bool isPremium,
+    bool isSmallScreen,
+  ) {
     return RefreshIndicator(
       onRefresh: () async {
         _loadWhoLikedYou();
@@ -134,12 +145,12 @@ class _WhoLikedYouScreenState extends State<WhoLikedYouScreen> {
           Expanded(
             child: GridView.builder(
               controller: _scrollController,
-              padding: const EdgeInsets.all(16),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: isSmallScreen ? 1 : 2,
                 crossAxisSpacing: 12,
                 mainAxisSpacing: 12,
-                childAspectRatio: 0.7,
+                childAspectRatio: isSmallScreen ? 0.6 : 0.7,
               ),
               itemCount: users.length,
               itemBuilder: (context, index) {
@@ -176,27 +187,39 @@ class _WhoLikedYouScreenState extends State<WhoLikedYouScreen> {
   }
 
   Widget _buildFilterTabs() {
-    return Container(
-      margin: const EdgeInsets.all(16),
-      padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(
-        color: PulseColors.grey100,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Row(
-        children: [
-          _buildFilterTab(label: 'All', filter: WhoLikedYouFilter.all),
-          _buildFilterTab(label: 'Recent', filter: WhoLikedYouFilter.recent24h),
-          _buildFilterTab(
-            label: 'Verified',
-            filter: WhoLikedYouFilter.verifiedOnly,
-          ),
-          _buildFilterTab(
-            label: 'Super',
-            filter: WhoLikedYouFilter.superLikes,
-            icon: Icons.star,
-          ),
-        ],
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        decoration: BoxDecoration(
+          color: PulseColors.grey100,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          children: [
+            _buildFilterTab(
+              label: 'All',
+              filter: WhoLikedYouFilter.all,
+              icon: Icons.layers,
+            ),
+            _buildFilterTab(
+              label: '24h',
+              filter: WhoLikedYouFilter.recent24h,
+              icon: Icons.schedule,
+            ),
+            _buildFilterTab(
+              label: 'Verified',
+              filter: WhoLikedYouFilter.verifiedOnly,
+              icon: Icons.verified,
+            ),
+            _buildFilterTab(
+              label: 'Super ⭐',
+              filter: WhoLikedYouFilter.superLikes,
+              icon: Icons.star,
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -220,7 +243,8 @@ class _WhoLikedYouScreenState extends State<WhoLikedYouScreen> {
         },
         child: AnimatedContainer(
           duration: PulseAnimations.fast,
-          padding: const EdgeInsets.symmetric(vertical: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+          margin: const EdgeInsets.symmetric(horizontal: 2),
           decoration: BoxDecoration(
             color: isSelected ? PulseColors.white : Colors.transparent,
             borderRadius: BorderRadius.circular(8),
@@ -234,22 +258,23 @@ class _WhoLikedYouScreenState extends State<WhoLikedYouScreen> {
                   ]
                 : null,
           ),
-          child: Row(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              if (icon != null) ...[
+              if (icon != null)
                 Icon(
                   icon,
-                  size: 14,
+                  size: 16,
                   color: isSelected ? PulseColors.primary : PulseColors.grey600,
                 ),
-                const SizedBox(width: 4),
-              ],
+              if (icon != null) const SizedBox(height: 2),
               Text(
                 label,
-                style: PulseTypography.labelMedium.copyWith(
+                textAlign: TextAlign.center,
+                style: PulseTypography.labelSmall.copyWith(
                   color: isSelected ? PulseColors.primary : PulseColors.grey600,
-                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                 ),
               ),
             ],

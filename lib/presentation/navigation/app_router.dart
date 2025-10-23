@@ -1206,10 +1206,20 @@ class AppRouter {
       final profileSetupComplete =
           intentCompleted && photosCompleted && interestsCompleted;
 
+      // ✅ NEW: Also check user model profile completion percentage as fallback
+      // This handles case where SharedPreferences flags haven't been set yet
+      // (e.g., after OTP verification but before profile setup started)
+      bool profileCompleteByPercentage = false;
+      if (currentState is AuthAuthenticated) {
+        final user = currentState.user;
+        profileCompleteByPercentage =
+            (user.profileCompletionPercentage ?? 0) >= 50;
+      }
+
       // If authenticated user hasn't completed profile setup
-      if (!profileSetupComplete) {
+      if (!profileSetupComplete && !profileCompleteByPercentage) {
         debugPrint(
-          '  📝 Profile setup incomplete (Intent: $intentCompleted, Photos: $photosCompleted, Interests: $interestsCompleted) - redirecting to profile setup',
+          '  📝 Profile setup incomplete (SharedPrefs - Intent: $intentCompleted, Photos: $photosCompleted, Interests: $interestsCompleted | User Model - Completion: ${currentState is AuthAuthenticated ? (currentState.user.profileCompletionPercentage ?? 0) : 'N/A'}%) - redirecting to profile setup',
         );
         return AppRoutes.profileSetup;
       }
@@ -1226,7 +1236,15 @@ class AppRouter {
       final profileSetupComplete =
           intentCompleted && photosCompleted && interestsCompleted;
 
-      if (profileSetupComplete) {
+      // ✅ NEW: Also check user model profile completion percentage as fallback
+      bool profileCompleteByPercentage = false;
+      if (currentState is AuthAuthenticated) {
+        final user = currentState.user;
+        profileCompleteByPercentage =
+            (user.profileCompletionPercentage ?? 0) >= 50;
+      }
+
+      if (profileSetupComplete || profileCompleteByPercentage) {
         debugPrint(
           '  ✅ Authenticated user with complete profile accessing welcome/auth route - redirecting to home',
         );
