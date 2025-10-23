@@ -59,7 +59,6 @@ class _AudioCallScreenState extends State<AudioCallScreen>
 
   bool _isMuted = false;
   bool _isSpeakerOn = false;
-  bool _isConnected = false;
   bool _remoteUserJoined = false;
   Duration _callDuration = Duration.zero;
   QualityType _connectionQuality = QualityType.qualityUnknown;
@@ -94,11 +93,8 @@ class _AudioCallScreenState extends State<AudioCallScreen>
 
   void _setupStreamListeners() {
     _callStateSubscription = _audioService.onCallStateChanged.listen((inCall) {
-      if (mounted) {
-        setState(() {
-          _isConnected = inCall;
-        });
-      }
+      // Connection status is now tracked via _connectionStatus from WebSocket events
+      // This listener is kept for backward compatibility but not used for UI state
     });
 
     _muteStateSubscription = _audioService.onMuteStateChanged.listen((muted) {

@@ -1751,7 +1751,7 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
                   ),
                 ),
               );
-            }).toList(),
+            }),
           ],
         );
       },
@@ -1991,53 +1991,5 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
         }
       }
     }
-  }
-
-  /// Helper method to check if all required setup sections are completed
-  Future<bool> _areAllSetupSectionsCompleted() async {
-    final prefs = await SharedPreferences.getInstance();
-    const requiredSections = ['intent', 'photos', 'interests'];
-
-    for (final section in requiredSections) {
-      final isComplete = prefs.getBool('setup_${section}_completed') ?? false;
-      if (!isComplete) {
-        debugPrint(
-          '❌ Section not complete: setup_${section}_completed = false',
-        );
-        return false;
-      }
-    }
-
-    debugPrint('✅ All setup sections completed!');
-    return true;
-  }
-
-  /// Get the next required setup section to display
-  Future<String?> _getNextRequiredSetupSection() async {
-    final prefs = await SharedPreferences.getInstance();
-    const requiredSections = ['intent', 'photos', 'interests'];
-
-    for (final section in requiredSections) {
-      final isComplete = prefs.getBool('setup_${section}_completed') ?? false;
-      if (!isComplete) {
-        debugPrint('➡️ Next required section: $section');
-        return section;
-      }
-    }
-
-    debugPrint('✅ No more required sections');
-    return null; // All sections completed
-  }
-
-  /// Clear all setup completion flags (useful for testing or resetting setup)
-  Future<void> _clearSetupFlags() async {
-    final prefs = await SharedPreferences.getInstance();
-    const requiredSections = ['intent', 'photos', 'interests'];
-
-    for (final section in requiredSections) {
-      await prefs.remove('setup_${section}_completed');
-    }
-
-    debugPrint('🔄 Cleared all setup flags');
   }
 }

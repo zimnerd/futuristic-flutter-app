@@ -130,7 +130,7 @@ class _SpeedDatingScreenState extends State<SpeedDatingScreen>
                       top: 0,
                       left: 0,
                       right: 0,
-                      child: Container(
+                      child: SizedBox(
                         height: 3,
                         child: const LinearProgressIndicator(
                           backgroundColor: Colors.transparent,
@@ -229,7 +229,9 @@ class _SpeedDatingScreenState extends State<SpeedDatingScreen>
                           });
                         },
                         backgroundColor: Colors.white,
-                        selectedColor: PulseColors.primary.withOpacity(0.2),
+                        selectedColor: PulseColors.primary.withValues(
+                          alpha: 0.2,
+                        ),
                         checkmarkColor: PulseColors.primary,
                         labelStyle: TextStyle(
                           color: isSelected

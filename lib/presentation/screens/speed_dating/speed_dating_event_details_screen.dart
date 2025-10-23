@@ -122,7 +122,9 @@ class SpeedDatingEventDetailsScreen extends StatelessWidget {
                                 vertical: 6,
                               ),
                               decoration: BoxDecoration(
-                                color: PulseColors.primary.withOpacity(0.1),
+                                color: PulseColors.primary.withValues(
+                                  alpha: 0.1,
+                                ),
                                 borderRadius: BorderRadius.circular(20),
                               ),
                               child: Text(

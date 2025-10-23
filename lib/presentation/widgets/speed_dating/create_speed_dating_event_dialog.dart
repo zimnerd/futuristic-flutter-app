@@ -159,7 +159,7 @@ class _CreateSpeedDatingEventDialogState
                     max: 70,
                     divisions: 52,
                     activeColor: PulseColors.primary,
-                    inactiveColor: PulseColors.primary.withOpacity(0.3),
+                    inactiveColor: PulseColors.primary.withValues(alpha: 0.3),
                     labels: RangeLabels(
                       _ageRange.start.round().toString(),
                       _ageRange.end.round().toString(),
