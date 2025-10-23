@@ -228,11 +228,11 @@ class ValidationHelpers {
       return 'Password must be less than 128 characters';
     }
 
-    // Backend regex: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/
+    // Backend regex: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]/
     final hasLowercase = RegExp(r'[a-z]').hasMatch(value);
     final hasUppercase = RegExp(r'[A-Z]').hasMatch(value);
     final hasDigit = RegExp(r'\d').hasMatch(value);
-    final hasSpecialChar = RegExp(r'[@$!%*?&]').hasMatch(value);
+    final hasSpecialChar = RegExp(r'[@$!%*?&#]').hasMatch(value);
 
     if (!hasLowercase) {
       return 'Password must contain at least one lowercase letter';
@@ -244,7 +244,7 @@ class ValidationHelpers {
       return 'Password must contain at least one number';
     }
     if (!hasSpecialChar) {
-      return 'Password must contain at least one special character (@\$!%*?&)';
+      return 'Password must contain at least one special character (@\$!%*?&#)';
     }
 
     return null;

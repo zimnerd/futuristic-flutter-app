@@ -151,15 +151,17 @@ final class AuthPhoneValidationSuccess extends AuthState {
   const AuthPhoneValidationSuccess({
     required this.formattedPhone,
     required this.isValid,
+    required this.isRegistered,
     this.message,
   });
 
   final String formattedPhone;
   final bool isValid;
+  final bool isRegistered;
   final String? message;
 
   @override
-  List<Object?> get props => [formattedPhone, isValid, message];
+  List<Object?> get props => [formattedPhone, isValid, isRegistered, message];
 }
 
 /// State when phone validation fails

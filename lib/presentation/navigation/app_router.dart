@@ -1,7 +1,9 @@
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../blocs/auth/auth_bloc.dart';
 import '../blocs/photo/photo_bloc.dart';
@@ -11,7 +13,7 @@ import '../../domain/entities/user_profile.dart';
 import '../screens/auth/forgot_password_screen.dart';
 import '../screens/auth/login_screen.dart' as simple_login;
 import '../screens/auth/otp_verification_screen.dart';
-import '../screens/auth/register_screen.dart';
+import '../screens/auth/enhanced_register_screen.dart';
 import '../screens/main/home_screen.dart';
 import '../screens/main/matches_screen.dart';
 import '../screens/main/messages_screen.dart';
@@ -20,8 +22,9 @@ import '../screens/main/settings_screen.dart';
 import '../screens/main/filters_screen.dart';
 import '../screens/statistics_screen.dart';
 import '../screens/onboarding/onboarding_screen.dart';
-import '../screens/onboarding/modern_landing_screen.dart';
+import '../screens/onboarding/landing_screen.dart';
 import '../screens/onboarding/intent_selection_screen.dart';
+import '../screens/onboarding/profile_setup_wizard.dart';
 import '../screens/subscription_management_screen.dart';
 import '../screens/payment/payment_methods_screen.dart';
 import '../../../presentation/payment/screens/saved_payment_methods_screen.dart';
@@ -147,7 +150,7 @@ class AppRouter {
         GoRoute(
           path: AppRoutes.welcome,
           name: 'welcome',
-          builder: (context, state) => const ModernLandingScreen(),
+          builder: (context, state) => const LandingScreen(),
         ),
         GoRoute(
           path: AppRoutes.onboarding,
@@ -158,6 +161,11 @@ class AppRouter {
           path: AppRoutes.intentSelection,
           name: 'intentSelection',
           builder: (context, state) => const IntentSelectionScreen(),
+        ),
+        GoRoute(
+          path: AppRoutes.profileSetup,
+          name: 'profileSetup',
+          builder: (context, state) => const ProfileSetupWizard(),
         ),
 
         // Authentication routes
@@ -172,7 +180,7 @@ class AppRouter {
           builder: (context, state) {
             final extra = state.extra as Map<String, dynamic>?;
             final phoneNumber = extra?['phoneNumber'] as String?;
-            return RegisterScreen(phoneNumber: phoneNumber);
+            return EnhancedRegisterScreen(phoneNumber: phoneNumber);
           },
         ),
         GoRoute(
@@ -1101,8 +1109,8 @@ class AppRouter {
         'AppRouter not initialized. Call AppRouter.initialize() first.',
       ));
 
-  /// Handle route redirects based on authentication state
-  static String? _handleRedirect(BuildContext context, GoRouterState state) {
+  /// Handle route redirects based on authentication state and profile completion
+  static FutureOr<String?> _handleRedirect(BuildContext context, GoRouterState state) async {
     final authBloc = context.read<AuthBloc>();
     final isAuthenticated = authBloc.isAuthenticated;
     final isLoading = authBloc.isLoading;
@@ -1119,6 +1127,8 @@ class AppRouter {
         state.fullPath == AppRoutes.welcome ||
         state.fullPath == AppRoutes.onboarding;
 
+    final isProfileSetupRoute = state.fullPath == AppRoutes.profileSetup;
+
     // Debug logging
     debugPrint('🔄 Navigation Debug:');
     debugPrint('  Current Path: ${state.fullPath}');
@@ -1134,13 +1144,25 @@ class AppRouter {
       return null;
     }
 
-    // If user is authenticated and trying to access auth/welcome routes,
-    // redirect to home
-    if (isAuthenticated && (isAuthRoute || isWelcomeRoute)) {
-      debugPrint(
-        '  ✅ Authenticated user accessing welcome/auth route - redirecting to home',
-      );
-      return AppRoutes.home;
+    // Check profile completion status for authenticated users
+    if (isAuthenticated) {
+      final prefs = await SharedPreferences.getInstance();
+      final profileSetupComplete = prefs.getBool('profile_setup_complete') ?? false;
+
+      // If authenticated user hasn't completed profile setup
+      if (!profileSetupComplete && !isProfileSetupRoute) {
+        debugPrint('  📝 Profile setup incomplete - redirecting to profile setup');
+        return AppRoutes.profileSetup;
+      }
+
+      // If user is authenticated with completed profile and trying to access auth/welcome routes,
+      // redirect to home
+      if ((isAuthRoute || isWelcomeRoute) && profileSetupComplete) {
+        debugPrint(
+          '  ✅ Authenticated user accessing welcome/auth route - redirecting to home',
+        );
+        return AppRoutes.home;
+      }
     }
 
     // If user is not authenticated and trying to access protected routes,
@@ -1163,6 +1185,7 @@ class AppRoutes {
   static const String welcome = '/';
   static const String onboarding = '/onboarding';
   static const String intentSelection = '/intent-selection';
+  static const String profileSetup = '/profile-setup';
   static const String login = '/login';
   static const String register = '/register';
   static const String forgotPassword = '/forgot-password';

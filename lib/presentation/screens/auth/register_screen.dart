@@ -165,7 +165,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         listener: (context, state) {
           setState(() {
             _isLoading = state is AuthLoading || state is AuthPhoneValidating;
-            
+
             // Clear field errors when loading
             if (state is AuthLoading || state is AuthPhoneValidating) {
               _emailError = null;
@@ -195,10 +195,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 _phoneError = errorDetails.getFieldError('phone');
                 _passwordError = errorDetails.getFieldError('password');
 
-                // Trigger form validation to show errors
-                Future.delayed(const Duration(milliseconds: 100), () {
-                  _formKey.currentState?.validate();
-                });
+                // Error banner will show automatically above the form
               } else {
                 // Show general error using centralized service
                 ErrorService.instance.showError(
@@ -209,7 +206,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
               }
             });
           } else if (state is AuthPhoneValidationSuccess && state.isValid) {
-            // Phone validation successful, proceed with registration
+            // Check if phone is already registered
+            if (state.isRegistered) {
+              setState(() {
+                _phoneError =
+                    'This phone number is already registered. Please use a different number or sign in.';
+              });
+              return;
+            }
+
+            // Phone validation successful and not registered, proceed with registration
             _proceedWithRegistration();
           } else if (state is AuthPhoneValidationError) {
             PulseToast.error(context, message: state.message);
@@ -273,6 +279,78 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                     const SizedBox(height: PulseSpacing.xxl),
 
+                    // Error banner - shows when there's a field error
+                    if (_emailError != null ||
+                        _usernameError != null ||
+                        _phoneError != null ||
+                        _passwordError != null)
+                      Container(
+                        margin: const EdgeInsets.only(bottom: PulseSpacing.lg),
+                        padding: const EdgeInsets.all(PulseSpacing.md),
+                        decoration: BoxDecoration(
+                          color: PulseColors.errorContainer,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: PulseColors.error,
+                            width: 1,
+                          ),
+                        ),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Icon(
+                              Icons.error_outline,
+                              color: PulseColors.error,
+                              size: 20,
+                            ),
+                            const SizedBox(width: PulseSpacing.sm),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Please fix the following errors:',
+                                    style: PulseTextStyles.labelMedium.copyWith(
+                                      color: PulseColors.error,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  const SizedBox(height: PulseSpacing.xs),
+                                  if (_emailError != null)
+                                    Text(
+                                      '• Email: $_emailError',
+                                      style: PulseTextStyles.bodySmall.copyWith(
+                                        color: PulseColors.error,
+                                      ),
+                                    ),
+                                  if (_usernameError != null)
+                                    Text(
+                                      '• Username: $_usernameError',
+                                      style: PulseTextStyles.bodySmall.copyWith(
+                                        color: PulseColors.error,
+                                      ),
+                                    ),
+                                  if (_phoneError != null)
+                                    Text(
+                                      '• Phone: $_phoneError',
+                                      style: PulseTextStyles.bodySmall.copyWith(
+                                        color: PulseColors.error,
+                                      ),
+                                    ),
+                                  if (_passwordError != null)
+                                    Text(
+                                      '• Password: $_passwordError',
+                                      style: PulseTextStyles.bodySmall.copyWith(
+                                        color: PulseColors.error,
+                                      ),
+                                    ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
                     // Form fields
                     Column(
                       children: [
@@ -282,13 +360,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           hintText: 'Username',
                           keyboardType: TextInputType.name,
                           prefixIcon: const Icon(Icons.person),
-                          validator: (value) {
-                            // Show field-specific error if exists
-                            if (_usernameError != null) {
-                              return _usernameError;
-                            }
-                            return ValidationHelpers.validateUsername(value);
-                          },
+                          errorText: _usernameError != null ? ' ' : null,
                         ),
                         const SizedBox(height: PulseSpacing.lg),
 
@@ -298,13 +370,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           hintText: 'Email Address',
                           keyboardType: TextInputType.emailAddress,
                           prefixIcon: const Icon(Icons.email),
-                          validator: (value) {
-                            // Show field-specific error if exists
-                            if (_emailError != null) {
-                              return _emailError;
-                            }
-                            return ValidationHelpers.validateEmail(value);
-                          },
+                          errorText: _emailError != null ? ' ' : null,
                         ),
                         const SizedBox(height: PulseSpacing.lg),
 
@@ -314,6 +380,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           hintText: 'Password',
                           obscureText: _obscurePassword,
                           prefixIcon: const Icon(Icons.lock),
+                          errorText: _passwordError != null ? ' ' : null,
                           suffixIcon: IconButton(
                             icon: Icon(
                               _obscurePassword
@@ -326,13 +393,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               });
                             },
                           ),
-                          validator: (value) {
-                            // Show field-specific error if exists
-                            if (_passwordError != null) {
-                              return _passwordError;
-                            }
-                            return ValidationHelpers.validatePassword(value);
-                          },
                         ),
                         const SizedBox(height: PulseSpacing.lg),
 
@@ -341,16 +401,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           initialCountryCode: _selectedCountryCode,
                           onChanged: _onPhoneChanged,
                           onCountryChanged: _onCountryChanged,
-                          validator: (value) {
-                            // Show field-specific error if exists
-                            if (_phoneError != null) {
-                              return _phoneError;
-                            }
-                            return ValidationHelpers.validatePhone(value);
-                          },
-                          decoration: const InputDecoration(
+                          decoration: InputDecoration(
                             labelText: 'Phone Number',
                             hintText: 'Enter your phone number',
+                            errorText: _phoneError != null ? ' ' : null,
                           ),
                         ),
                         const SizedBox(height: PulseSpacing.xl),

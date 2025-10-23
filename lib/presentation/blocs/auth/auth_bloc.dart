@@ -578,10 +578,14 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       
       if (response['isValid'] == true) {
         _logger.i('✅ Phone validation successful');
+        
+        final isRegistered = response['isRegistered'] == true;
+        
         emit(
           AuthPhoneValidationSuccess(
             formattedPhone: response['formattedPhone'] ?? event.phone,
             isValid: true,
+            isRegistered: isRegistered,
             message: response['message'],
           ),
         );

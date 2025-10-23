@@ -77,8 +77,8 @@ class UserRepositoryImpl implements UserRepository {
       return user;
     } catch (e) {
       _logger.e('Sign up failed: $e');
-      if (e is AppException) rethrow;
-      throw AuthException('Sign up failed: ${e.toString()}');
+      // Rethrow original error so ErrorService can parse it
+      rethrow;
     }
   }
 

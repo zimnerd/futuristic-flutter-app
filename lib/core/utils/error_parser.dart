@@ -125,7 +125,7 @@ class ErrorParser {
 
     if (lowerMessage.contains('password must contain') ||
         lowerMessage.contains('password does not meet')) {
-      return 'Password must contain at least 8 characters, including uppercase, lowercase, number, and special character (@\$!%*?&).';
+      return 'Password must contain at least 8 characters, including uppercase, lowercase, number, and special character (@\$!%*?&#).';
     }
 
     // Return original message if no pattern matches
