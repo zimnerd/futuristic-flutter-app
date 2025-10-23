@@ -848,15 +848,20 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
   @override
   Future<String> uploadProfilePhoto(String userId, String photoPath) async {
     try {
-      _logger.i('Uploading profile photo for user: $userId');
-
-      final response = await _apiClient.rawPost(
-        '/users/$userId/photos',
-        data: {'photoPath': photoPath},
+      _logger.i(
+        'Uploading profile photo for user: $userId from path: $photoPath',
       );
 
-      if (response.statusCode == 201) {
-        return response.data['photoUrl'];
+      // Use the media endpoint instead of users endpoint
+      final response = await _apiClient.rawPost(
+        '/media/upload',
+        data: {'photoPath': photoPath, 'category': 'profile_photo'},
+      );
+
+      if (response.statusCode == 201 || response.statusCode == 200) {
+        final url = response.data['data']['url'] ?? response.data['photoUrl'];
+        _logger.i('✅ Profile photo uploaded successfully: $url');
+        return url;
       } else {
         throw ApiException('Failed to upload photo: ${response.statusMessage}');
       }
@@ -872,12 +877,13 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
     try {
       _logger.i('Deleting profile photo for user: $userId');
 
+      // Use the media endpoint for deletion
       await _apiClient.delete(
-        '/users/$userId/photos',
+        '/media/files/$photoUrl',
         data: {'photoUrl': photoUrl},
       );
 
-      _logger.i('Profile photo deleted successfully');
+      _logger.i('✅ Profile photo deleted successfully');
     } catch (e) {
       _logger.e('Delete profile photo error: $e');
       if (e is ApiException) rethrow;

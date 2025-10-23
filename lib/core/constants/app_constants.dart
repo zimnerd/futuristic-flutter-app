@@ -99,8 +99,10 @@ class ApiEndpoints {
   // User Management
   static const String profile = '/users/profile';
   static const String updateProfile = '/users/profile';
-  static const String uploadPhoto = '/users/photos';
-  static const String deletePhoto = '/users/photos';
+  static const String uploadPhoto =
+      '/media/upload'; // ✅ Updated: now uses media endpoint
+  static const String deletePhoto =
+      '/media/files'; // ✅ Updated: now uses media endpoint
   static const String updateLocation =
       '/users/me/location'; // Fixed: was /users/location, now /me/location
   static const String preferences = '/users/preferences';

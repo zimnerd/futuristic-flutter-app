@@ -568,12 +568,12 @@ class UserRepositoryImpl implements UserRepository {
     try {
       _logger.i('Reordering photos for user: $userId');
 
-      // Call backend POST /users/me/photos/reorder via remote data source
+      // Call backend POST /users/me/photos/reorder endpoint
       await _remoteDataSource.reorderPhotos(photoIds);
 
-      _logger.i('Photos reordered successfully');
+      _logger.i('✅ Photos reordered successfully');
     } catch (e) {
-      _logger.e('Reorder photos failed: $e');
+      _logger.e('❌ Reorder photos failed: $e');
       if (e is AppException) rethrow;
       throw UserException('Failed to reorder photos: ${e.toString()}');
     }
@@ -584,15 +584,14 @@ class UserRepositoryImpl implements UserRepository {
     try {
       _logger.i('Setting main photo $photoId for user: $userId');
 
-      // Use syncPhotos API to set main photo
-      // The backend PUT /users/me/photos endpoint accepts isMain flag
+      // Use PUT /users/me/photos endpoint to sync photos with isMain flag
       await _remoteDataSource.syncPhotos([
         {'mediaId': photoId, 'isMain': true, 'order': 0},
       ]);
 
-      _logger.i('Main photo set successfully');
+      _logger.i('✅ Main photo set successfully');
     } catch (e) {
-      _logger.e('Set main photo failed: $e');
+      _logger.e('❌ Set main photo failed: $e');
       if (e is AppException) rethrow;
       throw UserException('Failed to set main photo: ${e.toString()}');
     }
