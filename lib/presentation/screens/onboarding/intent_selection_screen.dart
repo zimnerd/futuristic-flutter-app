@@ -8,8 +8,8 @@ import '../../theme/pulse_colors.dart';
 import '../../widgets/common/keyboard_dismissible_scaffold.dart';
 import '../../widgets/common/pulse_button.dart';
 import '../../widgets/common/pulse_toast.dart';
-import '../../widgets/profile/profile_relationship_goals_section.dart';
 import '../../../domain/entities/user_profile.dart';
+import '../../../core/constants/intent_options.dart';
 
 final logger = Logger();
 
@@ -41,8 +41,12 @@ class _IntentSelectionScreenState extends State<IntentSelectionScreen> {
   }
 
   Future<void> _continue() async {
+    logger.w('🔵 Continue button pressed');
+    logger.w('  Selected intents: $_selectedIntents');
+    
     // ✅ Validate
     if (!_validateSelection()) {
+      logger.e('❌ Validation failed');
       return;
     }
 
@@ -133,8 +137,112 @@ class _IntentSelectionScreenState extends State<IntentSelectionScreen> {
     }
   }
 
+  /// Build intent option widgets - Uses shared IntentOptions constant
+  List<Widget> _buildIntentOptions() {
+    return IntentOptions.all.map((option) {
+      final optionId = option['id'] as String;
+      final isSelected = _selectedIntents.contains(optionId);
+
+      return Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () {
+            logger.i('✅ InkWell.onTap fired for: $optionId');
+            setState(() {
+              if (isSelected) {
+                _selectedIntents.remove(optionId);
+                logger.i('  ➖ Removed: $optionId');
+              } else {
+                // Max 1 selection
+                _selectedIntents.clear();
+                _selectedIntents.add(optionId);
+                logger.i('  ➕ Added: $optionId');
+              }
+              logger.i('  Current selections: $_selectedIntents');
+            });
+          },
+          borderRadius: BorderRadius.circular(12),
+          child: Padding(
+            padding: const EdgeInsets.only(bottom: 12.0),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: isSelected
+                    ? PulseColors.secondary.withValues(alpha: 0.15)
+                    : Colors.grey[100],
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: isSelected ? PulseColors.secondary : Colors.grey[300]!,
+                  width: isSelected ? 2 : 1,
+                ),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: PulseColors.secondary.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Icon(
+                      option['icon'] as IconData,
+                      color: PulseColors.secondary,
+                      size: 24,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          option['title'] as String,
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.black87,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          option['description'] as String,
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  if (isSelected)
+                    Icon(
+                      Icons.check_circle,
+                      color: PulseColors.secondary,
+                      size: 24,
+                    )
+                  else
+                    Icon(
+                      Icons.radio_button_unchecked,
+                      color: Colors.grey[400],
+                      size: 24,
+                    ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    }).toList();
+  }
+
   @override
   Widget build(BuildContext context) {
+    logger.i('🎨 IntentSelectionScreen.build() called');
+    logger.i('  Current selections: $_selectedIntents');
+    logger.i('  Button enabled: ${_selectedIntents.length == 1}');
+    
     return KeyboardDismissibleScaffold(
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
@@ -189,29 +297,31 @@ class _IntentSelectionScreenState extends State<IntentSelectionScreen> {
             ),
             const SizedBox(height: 24),
 
-            // ✅ REUSING ProfileRelationshipGoalsSection widget
-            // This maintains consistency with ProfileEditScreen implementation
-            // No duplicate code - single source of truth for intent selection UI
-            ProfileRelationshipGoalsSection(
-              selectedGoals: _selectedIntents,
-              onChanged: (intents) {
-                setState(() {
-                  _selectedIntents = intents;
-                });
-              },
-              title: 'What brings you here?',
-              subtitle:
-                  'Select one or more. You can change this anytime in your profile.',
-              maxSelections: 3, // Allow up to 3 primary intents
+            // Intent Options - Direct Implementation (No DRY)
+            // Breaking DRY principle for guaranteed functionality
+            // Using the same pattern from profile_section_edit_screen.dart that works
+            Text(
+              'What brings you here? *',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: PulseColors.onSurface,
+              ),
             ),
+            const SizedBox(height: 8),
+            Text(
+              'Choose your primary intent. You can explore other features anytime.',
+              style: TextStyle(fontSize: 14, color: Colors.grey[700]),
+            ),
+            const SizedBox(height: 16),
+            ..._buildIntentOptions(),
             const SizedBox(height: 32),
 
             // Continue Button
+            // ✅ Only enabled when exactly 1 intent selected
             PulseButton(
-              text: _selectedIntents.isEmpty
-                  ? 'Select to Continue'
-                  : 'Continue (${_selectedIntents.length} selected)',
-              onPressed: _selectedIntents.isNotEmpty ? _continue : null,
+              text: 'Continue',
+              onPressed: _selectedIntents.length == 1 ? _continue : null,
               fullWidth: true,
             ),
             const SizedBox(height: 16),

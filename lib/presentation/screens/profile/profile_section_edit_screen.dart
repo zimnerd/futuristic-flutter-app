@@ -21,6 +21,7 @@ import '../../sheets/photo_reorder_sheet.dart';
 import '../../../domain/entities/user_profile.dart';
 import '../../navigation/app_router.dart';
 import '../../widgets/profile/interests_selector.dart';
+import '../../../core/constants/intent_options.dart';
 
 /// Profile section edit screen for editing individual profile sections
 /// 
@@ -1582,51 +1583,6 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
   }
 
   Widget _buildIntentSection() {
-    final List<Map<String, dynamic>> intentOptions = [
-      {
-        'id': 'dating',
-        'title': 'Dating',
-        'description': 'Find romantic connections and meaningful relationships',
-        'icon': Icons.favorite,
-        'color': const Color(0xFFFF6B9D),
-      },
-      {
-        'id': 'friendship',
-        'title': 'Friendship',
-        'description': 'Make new friends and expand your social circle',
-        'icon': Icons.people,
-        'color': const Color(0xFF4ECDC4),
-      },
-      {
-        'id': 'events',
-        'title': 'Events & Activities',
-        'description': 'Find people to attend events and activities with',
-        'icon': Icons.event,
-        'color': const Color(0xFFFFA726),
-      },
-      {
-        'id': 'companion',
-        'title': 'AI Companion',
-        'description': 'Chat with AI for advice, support, and conversation',
-        'icon': Icons.psychology,
-        'color': const Color(0xFF9C27B0),
-      },
-      {
-        'id': 'support',
-        'title': 'Emotional Support',
-        'description': 'Connect with understanding people and find support',
-        'icon': Icons.favorite_border,
-        'color': const Color(0xFF66BB6A),
-      },
-      {
-        'id': 'explore',
-        'title': 'Explore Everything',
-        'description': 'I want to explore all features and decide later',
-        'icon': Icons.explore,
-        'color': const Color(0xFF7E57C2),
-      },
-    ];
-
     final selectedIntent = _formData['intent'] as String?;
 
     return StatefulBuilder(
@@ -1660,7 +1616,7 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
               ),
             ),
             const SizedBox(height: PulseSpacing.lg),
-            ...intentOptions.map((option) {
+            ...IntentOptions.all.map((option) {
               final isSelected = selectedIntent == option['id'];
               return Padding(
                 padding: const EdgeInsets.only(bottom: PulseSpacing.md),

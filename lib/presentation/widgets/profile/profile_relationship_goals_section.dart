@@ -1,8 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:logger/logger.dart';
 import '../../theme/pulse_colors.dart';
+
+final logger = Logger();
 
 /// Relationship goals multi-selector for user profile
 /// Maps to Profile.relationshipGoals field in backend Prisma schema
+/// 
+/// This is a FULLY CONTROLLED widget - all state is managed by parent.
+/// Parent passes selectedGoals and onChanged callback.
 class ProfileRelationshipGoalsSection extends StatelessWidget {
   final List<String> selectedGoals;
   final Function(List<String>) onChanged;
@@ -59,19 +65,136 @@ class ProfileRelationshipGoalsSection extends StatelessWidget {
   ];
 
   void _toggleGoal(String goalValue) {
+    logger.i('🎯 _toggleGoal called for: $goalValue');
+    logger.i('  Current selections: $selectedGoals');
+    
     final updatedGoals = List<String>.from(selectedGoals);
 
     if (updatedGoals.contains(goalValue)) {
-      // Remove if already selected
+      logger.i('  ➖ Removing: $goalValue');
       updatedGoals.remove(goalValue);
     } else {
-      // Add if not selected and within max limit
+      logger.i('  ➕ Adding: $goalValue');
       if (maxSelections == null || updatedGoals.length < maxSelections!) {
         updatedGoals.add(goalValue);
+      } else {
+        logger.w('  ⚠️ Max selections reached, ignoring');
+        return;
       }
     }
 
+    logger.i('  ✅ Updated goals: $updatedGoals');
+    logger.i('  🔔 Calling onChanged callback...');
     onChanged(updatedGoals);
+  }
+
+  /// Builds individual intent option widget
+  /// Extracted to ensure proper tap handling and state synchronization
+  Widget _buildGoalOption({
+    required Map<String, dynamic> option,
+    required bool isSelected,
+    required bool isDark,
+    required Color textColor,
+    required Color borderColor,
+  }) {
+    final optionValue = option['value'] as String;
+    final canSelect =
+        maxSelections == null ||
+        selectedGoals.length < maxSelections! ||
+        isSelected;
+    final isDisabled = !canSelect;
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: isDisabled
+            ? null
+            : () {
+                logger.i('💎 InkWell.onTap detected for: $optionValue');
+                _toggleGoal(optionValue);
+              },
+        borderRadius: BorderRadius.circular(12),
+        splashColor: PulseColors.secondary.withValues(alpha: 0.3),
+        highlightColor: PulseColors.secondary.withValues(alpha: 0.1),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? PulseColors.secondary.withValues(alpha: 0.2)
+                : isDisabled
+                ? (isDark
+                      ? Colors.white.withValues(alpha: 0.02)
+                      : Colors.grey.shade100)
+                : (isDark
+                      ? Colors.white.withValues(alpha: 0.05)
+                      : Colors.grey.shade50),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: isSelected
+                  ? PulseColors.secondary
+                  : isDisabled
+                  ? (isDark
+                        ? Colors.white.withValues(alpha: 0.05)
+                        : Colors.grey.shade200)
+                  : borderColor,
+              width: isSelected ? 2 : 1,
+            ),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                option['icon'] as IconData,
+                color: isSelected
+                    ? PulseColors.secondary
+                    : isDisabled
+                    ? textColor.withValues(alpha: 0.3)
+                    : textColor.withValues(alpha: 0.7),
+                size: 20,
+              ),
+              const SizedBox(width: 8),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    option['label'] as String,
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: isSelected
+                          ? (isDark ? Colors.white : Colors.black87)
+                          : isDisabled
+                          ? textColor.withValues(alpha: 0.4)
+                          : textColor,
+                    ),
+                  ),
+                  Text(
+                    option['description'] as String,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: isSelected
+                          ? textColor.withValues(alpha: 0.7)
+                          : isDisabled
+                          ? textColor.withValues(alpha: 0.3)
+                          : textColor.withValues(alpha: 0.6),
+                    ),
+                  ),
+                ],
+              ),
+              if (isSelected) ...[
+                const SizedBox(width: 8),
+                const Icon(
+                  Icons.check_circle,
+                  color: PulseColors.secondary,
+                  size: 18,
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   @override
@@ -172,98 +295,15 @@ class ProfileRelationshipGoalsSection extends StatelessWidget {
             spacing: 12,
             runSpacing: 12,
             children: goalOptions.map((option) {
-              final isSelected = selectedGoals.contains(option['value']);
-              final canSelect =
-                  maxSelections == null ||
-                  selectedGoals.length < maxSelections! ||
-                  isSelected;
-              final isDisabled = !canSelect;
+              final optionValue = option['value'] as String;
+              final isSelected = selectedGoals.contains(optionValue);
 
-              return InkWell(
-                onTap: isDisabled
-                    ? null
-                    : () => _toggleGoal(option['value'] as String),
-                borderRadius: BorderRadius.circular(12),
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 12,
-                  ),
-                  decoration: BoxDecoration(
-                    color: isSelected
-                        ? PulseColors.secondary.withValues(alpha: 0.2)
-                        : isDisabled
-                        ? (isDark
-                              ? Colors.white.withValues(alpha: 0.02)
-                              : Colors.grey.shade100)
-                        : (isDark
-                              ? Colors.white.withValues(alpha: 0.05)
-                              : Colors.grey.shade50),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: isSelected
-                          ? PulseColors.secondary
-                          : isDisabled
-                          ? (isDark
-                                ? Colors.white.withValues(alpha: 0.05)
-                                : Colors.grey.shade200)
-                          : borderColor,
-                      width: isSelected ? 2 : 1,
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        option['icon'] as IconData,
-                        color: isSelected
-                            ? PulseColors.secondary
-                            : isDisabled
-                            ? textColor.withValues(alpha: 0.3)
-                            : textColor.withValues(alpha: 0.7),
-                        size: 20,
-                      ),
-                      const SizedBox(width: 8),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            option['label'] as String,
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              color: isSelected
-                                  ? (isDark ? Colors.white : Colors.black87)
-                                  : isDisabled
-                                  ? textColor.withValues(alpha: 0.4)
-                                  : textColor,
-                            ),
-                          ),
-                          Text(
-                            option['description'] as String,
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: isSelected
-                                  ? textColor.withValues(alpha: 0.7)
-                                  : isDisabled
-                                  ? textColor.withValues(alpha: 0.3)
-                                  : textColor.withValues(alpha: 0.6),
-                            ),
-                          ),
-                        ],
-                      ),
-                      if (isSelected) ...[
-                        const SizedBox(width: 8),
-                        const Icon(
-                          Icons.check_circle,
-                          color: PulseColors.secondary,
-                          size: 18,
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
+              return _buildGoalOption(
+                option: option,
+                isSelected: isSelected,
+                isDark: isDark,
+                textColor: textColor,
+                borderColor: borderColor,
               );
             }).toList(),
           ),
