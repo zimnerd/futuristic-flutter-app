@@ -15,8 +15,8 @@ MOBILE_DIR="$(dirname "$SCRIPT_DIR")"
 PROJECT_DIR="$(dirname "$MOBILE_DIR")"
 
 # Configuration
-ANDROID_APP_ID="co.za.pulsetek.pulselink"
-IOS_APP_ID="1:436349093696:ios:eb0ed710c339640c4d1ca5"
+ANDROID_APP_ID="1:436349093696:android:b91f9173cc17e3814d1ca5"
+IOS_APP_ID="1:436349093696:ios:344c8da0682b15b64d1ca5"
 FIREBASE_PROJECT="futuristic-app-f7280"
 
 echo -e "${BLUE}╔════════════════════════════════════════════════════╗${NC}"
@@ -176,12 +176,14 @@ if [ -f "$TESTERS_FILE" ]; then
     "$APK_DIST_DIR/PulseLink-${NEW_VERSION}-universal.apk" \
     --app "$ANDROID_APP_ID" \
     --release-notes-file="$RELEASE_NOTES_FILE" \
-    --testers-file="$TESTERS_FILE" 2>&1 | grep -v "^$" || true
+    --testers-file="$TESTERS_FILE" \
+    --project="$FIREBASE_PROJECT" 2>&1 | grep -v "^$" || true
 else
   firebase appdistribution:distribute \
     "$APK_DIST_DIR/PulseLink-${NEW_VERSION}-universal.apk" \
     --app "$ANDROID_APP_ID" \
-    --release-notes-file="$RELEASE_NOTES_FILE" 2>&1 | grep -v "^$" || true
+    --release-notes-file="$RELEASE_NOTES_FILE" \
+    --project="$FIREBASE_PROJECT" 2>&1 | grep -v "^$" || true
 fi
 
 echo -e "${GREEN}✓ Android deployed${NC}"
@@ -193,12 +195,14 @@ if [ -f "$TESTERS_FILE" ]; then
     "$IPA_PATH" \
     --app "$IOS_APP_ID" \
     --release-notes-file="$RELEASE_NOTES_FILE" \
-    --testers-file="$TESTERS_FILE" 2>&1 | grep -v "^$" || true
+    --testers-file="$TESTERS_FILE" \
+    --project="$FIREBASE_PROJECT" 2>&1 | grep -v "^$" || true
 else
   firebase appdistribution:distribute \
     "$IPA_PATH" \
     --app "$IOS_APP_ID" \
-    --release-notes-file="$RELEASE_NOTES_FILE" 2>&1 | grep -v "^$" || true
+    --release-notes-file="$RELEASE_NOTES_FILE" \
+    --project="$FIREBASE_PROJECT" 2>&1 | grep -v "^$" || true
 fi
 
 echo -e "${GREEN}✓ iOS deployed${NC}"
