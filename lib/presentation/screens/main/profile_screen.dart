@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../theme/pulse_colors.dart';
+import '../../theme/theme_extensions.dart';
 import '../../../domain/entities/user_profile.dart';
 import '../../widgets/profile/profile_completion_widget.dart';
 import '../../widgets/profile/verification_cta_banner.dart';
@@ -47,7 +48,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.error_outline, size: 64, color: Colors.grey),
+                  Icon(Icons.error_outline, size: 64, color: Theme.of(context).colorScheme.onSurfaceVariant),
                   const SizedBox(height: 16),
                   Text(state.error ?? 'Failed to load profile'),
                   const SizedBox(height: 16),
@@ -163,15 +164,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       userProfile.photos.first.url,
                       fit: BoxFit.cover,
                       errorBuilder: (context, error, stackTrace) {
-                        return const Icon(
+                        return Icon(
                           Icons.person,
                           size: 50,
-                          color: Colors.white,
+                          color: Theme.of(context).colorScheme.onPrimary,
                         );
                       },
                     ),
                   )
-                : const Icon(Icons.person, size: 50, color: Colors.white),
+                : Icon(Icons.person, size: 50, color: Theme.of(context).colorScheme.onPrimary),
           ),
           const SizedBox(height: PulseSpacing.md),
 
@@ -233,7 +234,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               label: const Text('Edit Profile'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: PulseColors.primary,
-                foregroundColor: Colors.white,
+                foregroundColor: Theme.of(context).colorScheme.onPrimary,
                 padding: const EdgeInsets.symmetric(
                   horizontal: PulseSpacing.lg,
                   vertical: PulseSpacing.md,
@@ -357,7 +358,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Container(
       padding: const EdgeInsets.all(PulseSpacing.md),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(PulseRadii.lg),
         border: Border.all(color: PulseColors.outline.withValues(alpha: 0.3)),
         boxShadow: [
@@ -383,7 +384,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                   borderRadius: BorderRadius.circular(PulseRadii.md),
                 ),
-                child: Icon(icon, color: Colors.white, size: 20),
+                child: Icon(icon, color: Theme.of(context).colorScheme.onPrimary, size: 20),
               ),
               if (isPremium)
                 Positioned(
@@ -394,12 +395,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     decoration: BoxDecoration(
                       color: Colors.amber,
                       shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white, width: 2),
+                      border: Border.all(color: Theme.of(context).colorScheme.surface, width: 2),
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.workspace_premium,
                       size: 12,
-                      color: Colors.white,
+                      color: Theme.of(context).colorScheme.onPrimary,
                     ),
                   ),
                 ),
@@ -440,12 +441,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Container(
       padding: const EdgeInsets.all(PulseSpacing.md),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(PulseRadii.lg),
         border: Border.all(color: PulseColors.outline.withValues(alpha: 0.3)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: Theme.of(context).colorScheme.shadow.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -457,7 +458,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             width: 36,
             height: 36,
             decoration: BoxDecoration(
-              color: Colors.grey[300],
+              color: Theme.of(context).colorScheme.surfaceContainerHighest,
               borderRadius: BorderRadius.circular(PulseRadii.md),
             ),
           ),
@@ -466,7 +467,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             width: 40,
             height: 20,
             decoration: BoxDecoration(
-              color: Colors.grey[300],
+              color: Theme.of(context).colorScheme.surfaceContainerHighest,
               borderRadius: BorderRadius.circular(4),
             ),
           ),
@@ -475,7 +476,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             width: 50,
             height: 14,
             decoration: BoxDecoration(
-              color: Colors.grey[200],
+              color: Theme.of(context).colorScheme.surfaceContainerHighest,
               borderRadius: BorderRadius.circular(4),
             ),
           ),
@@ -557,7 +558,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         border: Border.all(color: PulseColors.outline.withValues(alpha: 0.5)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: Theme.of(context).colorScheme.shadow.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),

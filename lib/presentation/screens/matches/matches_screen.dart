@@ -7,6 +7,7 @@ import '../../blocs/match/match_bloc.dart';
 import '../../blocs/match/match_event.dart';
 import '../../blocs/match/match_state.dart';
 import '../../../data/models/match_model.dart';
+import '../../theme/theme_extensions.dart';
 import '../../widgets/common/loading_indicator.dart';
 import '../../widgets/common/error_message.dart';
 import '../../widgets/common/pulse_toast.dart';
@@ -443,20 +444,20 @@ class _MatchesScreenState extends State<MatchesScreen>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.search_off, size: 64, color: Colors.grey[400]),
+            Icon(Icons.search_off, size: 64, color: Theme.of(context).colorScheme.onSurfaceVariant),
             const SizedBox(height: 16),
             Text(
               'No matches found',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
-                color: Colors.grey[600],
+                color: Theme.of(context).colorScheme.onSurface,
               ),
             ),
             const SizedBox(height: 8),
             Text(
               'Try searching with different keywords',
-              style: TextStyle(fontSize: 14, color: Colors.grey[500]),
+              style: TextStyle(fontSize: 14, color: Theme.of(context).colorScheme.onSurfaceVariant),
             ),
           ],
         ),
@@ -647,10 +648,10 @@ class _MatchesScreenState extends State<MatchesScreen>
                   borderRadius: const BorderRadius.vertical(
                     top: Radius.circular(16),
                   ),
-                  color: Colors.grey[300],
+                  color: Theme.of(context).colorScheme.surfaceContainerHighest,
                 ),
-                child: const Center(
-                  child: Icon(Icons.person, size: 40, color: Colors.grey),
+                child: Center(
+                  child: Icon(Icons.person, size: 40, color: Theme.of(context).colorScheme.onSurfaceVariant),
                 ),
               ),
             ),
@@ -673,7 +674,7 @@ class _MatchesScreenState extends State<MatchesScreen>
                     const SizedBox(height: 4),
                     Text(
                       '${(match.compatibilityScore * 100).round()}% match',
-                      style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                      style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 12),
                     ),
                     const Spacer(),
                     _buildGridActionButtons(match, status),
@@ -703,10 +704,10 @@ class _MatchesScreenState extends State<MatchesScreen>
                   borderRadius: const BorderRadius.vertical(
                     top: Radius.circular(20),
                   ),
-                  color: Colors.grey[300],
+                  color: Theme.of(context).colorScheme.surfaceContainerHighest,
                 ),
-                child: const Center(
-                  child: Icon(Icons.person, size: 80, color: Colors.grey),
+                child: Center(
+                  child: Icon(Icons.person, size: 80, color: Theme.of(context).colorScheme.onSurfaceVariant),
                 ),
               ),
             ),
@@ -726,7 +727,7 @@ class _MatchesScreenState extends State<MatchesScreen>
                     const SizedBox(height: 8),
                     Text(
                       '${(match.compatibilityScore * 100).round()}% compatibility',
-                      style: TextStyle(color: Colors.grey[600], fontSize: 14),
+                      style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 14),
                     ),
                     const Spacer(),
                     _buildSliderActionButtons(match, status),
@@ -752,7 +753,7 @@ class _MatchesScreenState extends State<MatchesScreen>
                 minimumSize: const Size(0, 28),
                 padding: const EdgeInsets.symmetric(horizontal: 8),
               ),
-              child: const Icon(Icons.check, size: 16, color: Colors.white),
+              child: Icon(Icons.check, size: 16, color: Theme.of(context).colorScheme.onPrimary),
             ),
           ),
           const SizedBox(width: 4),
@@ -764,7 +765,7 @@ class _MatchesScreenState extends State<MatchesScreen>
                 minimumSize: const Size(0, 28),
                 padding: const EdgeInsets.symmetric(horizontal: 8),
               ),
-              child: const Icon(Icons.close, size: 16, color: Colors.white),
+              child: Icon(Icons.close, size: 16, color: Theme.of(context).colorScheme.onPrimary),
             ),
           ),
         ],

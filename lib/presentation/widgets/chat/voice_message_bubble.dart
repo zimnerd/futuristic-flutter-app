@@ -4,6 +4,7 @@ import 'package:just_audio/just_audio.dart';
 import 'dart:async';
 
 import '../../theme/pulse_colors.dart';
+import '../../theme/theme_extensions.dart';
 
 /// Compact voice message bubble for chat with enhanced playback controls
 class VoiceMessageBubble extends StatefulWidget {
@@ -199,7 +200,7 @@ class _VoiceMessageBubbleState extends State<VoiceMessageBubble>
             height: 36,
             decoration: BoxDecoration(
               color: widget.isCurrentUser
-                  ? Colors.white.withValues(alpha: 0.2)
+                  ? Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.2)
                   : PulseColors.primary,
               shape: BoxShape.circle,
             ),
@@ -210,7 +211,7 @@ class _VoiceMessageBubbleState extends State<VoiceMessageBubble>
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
                       valueColor: AlwaysStoppedAnimation<Color>(
-                        widget.isCurrentUser ? Colors.white : Colors.white,
+                        Theme.of(context).colorScheme.onPrimary,
                       ),
                     ),
                   )
@@ -219,7 +220,7 @@ class _VoiceMessageBubbleState extends State<VoiceMessageBubble>
                       _isPlaying ? Icons.pause : Icons.play_arrow,
                       size: 20,
                     ),
-                    color: widget.isCurrentUser ? Colors.white : Colors.white,
+                    color: Theme.of(context).colorScheme.onPrimary,
                     onPressed: _playPause,
                     padding: EdgeInsets.zero,
                   ),
@@ -277,10 +278,10 @@ class _VoiceMessageBubbleState extends State<VoiceMessageBubble>
                                 decoration: BoxDecoration(
                                   color: isPlayed
                                       ? (widget.isCurrentUser
-                                            ? Colors.white
+                                            ? Theme.of(context).colorScheme.onPrimary
                                             : PulseColors.primary)
                                       : (widget.isCurrentUser
-                                            ? Colors.white.withValues(
+                                            ? Theme.of(context).colorScheme.onPrimary.withValues(
                                                 alpha: 0.4,
                                               )
                                             : PulseColors.primary.withValues(
@@ -310,8 +311,8 @@ class _VoiceMessageBubbleState extends State<VoiceMessageBubble>
                       style: TextStyle(
                         fontSize: 12,
                         color: widget.isCurrentUser
-                            ? Colors.white.withValues(alpha: 0.8)
-                            : Colors.grey[600],
+                            ? Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.8)
+                            : Theme.of(context).colorScheme.onSurfaceVariant,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -338,7 +339,7 @@ class _VoiceMessageBubbleState extends State<VoiceMessageBubble>
                     ),
                     decoration: BoxDecoration(
                       color: widget.isCurrentUser
-                          ? Colors.white.withValues(alpha: 0.2)
+                          ? Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.2)
                           : PulseColors.primary.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(10),
                     ),
@@ -348,7 +349,7 @@ class _VoiceMessageBubbleState extends State<VoiceMessageBubble>
                         fontSize: 10,
                         fontWeight: FontWeight.bold,
                         color: widget.isCurrentUser
-                            ? Colors.white
+                            ? Theme.of(context).colorScheme.onPrimary
                             : PulseColors.primary,
                       ),
                     ),

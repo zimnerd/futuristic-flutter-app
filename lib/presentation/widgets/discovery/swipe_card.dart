@@ -8,6 +8,7 @@ import '../../animations/pulse_animations.dart';
 import '../../navigation/app_router.dart';
 import '../../screens/common/photo_preview_screen.dart';
 import '../../screens/profile/profile_details_screen.dart';
+import '../../theme/theme_extensions.dart';
 import '../common/robust_network_image.dart';
 import '../verification/verification_badge.dart';
 import '../dialogs/report_user_dialog.dart';
@@ -325,16 +326,16 @@ class _SwipeCardState extends State<SwipeCard> with TickerProviderStateMixin {
   /// Error placeholder with modern design
   Widget _buildErrorPlaceholder() {
     return Container(
-      color: Colors.grey[200],
-      child: const Center(
+      color: context.surfaceVariantColor,
+      child: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.broken_image_outlined, size: 80, color: Colors.grey),
-            SizedBox(height: 8),
+            Icon(Icons.broken_image_outlined, size: 80, color: context.onSurfaceVariantColor),
+            const SizedBox(height: 8),
             Text(
               'Photo unavailable',
-              style: TextStyle(color: Colors.grey, fontSize: 14),
+              style: TextStyle(color: context.onSurfaceVariantColor, fontSize: 14),
             ),
           ],
         ),

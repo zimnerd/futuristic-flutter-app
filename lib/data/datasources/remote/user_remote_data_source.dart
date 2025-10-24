@@ -353,7 +353,11 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
       final response = await _apiClient.getCurrentUser();
 
       if (response.statusCode == 200) {
-        return UserModel.fromJson(response.data);
+        // Extract the user data from the API response wrapper
+        // Backend returns: {success, statusCode, message, data: {user}}
+        final userData =
+            response.data['data'] as Map<String, dynamic>? ?? response.data;
+        return UserModel.fromJson(userData);
       } else {
         throw ApiException(
           'Failed to get current user: ${response.statusMessage}',
@@ -813,7 +817,10 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
       final response = await _apiClient.getUserById(userId);
 
       if (response.statusCode == 200) {
-        return UserModel.fromJson(response.data);
+        // Extract the user data from the API response wrapper
+        final userData =
+            response.data['data'] as Map<String, dynamic>? ?? response.data;
+        return UserModel.fromJson(userData);
       } else {
         throw ApiException('Failed to get user: ${response.statusMessage}');
       }
@@ -835,7 +842,10 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
       final response = await _apiClient.updateProfile(updates);
 
       if (response.statusCode == 200) {
-        return UserModel.fromJson(response.data);
+        // Extract the user data from the API response wrapper
+        final userData =
+            response.data['data'] as Map<String, dynamic>? ?? response.data;
+        return UserModel.fromJson(userData);
       } else {
         throw ApiException(
           'Failed to update profile: ${response.statusMessage}',
@@ -1135,7 +1145,10 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
       );
 
       if (response.statusCode == 200) {
-        return UserModel.fromJson(response.data);
+        // Extract the user data from the API response wrapper
+        final userData =
+            response.data['data'] as Map<String, dynamic>? ?? response.data;
+        return UserModel.fromJson(userData);
       } else {
         throw ApiException(
           'Phone verification failed: ${response.statusMessage}',
@@ -1176,7 +1189,10 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
       );
 
       if (response.statusCode == 200) {
-        return UserModel.fromJson(response.data);
+        // Extract the user data from the API response wrapper
+        final userData =
+            response.data['data'] as Map<String, dynamic>? ?? response.data;
+        return UserModel.fromJson(userData);
       } else {
         throw ApiException(
           'Email verification failed: ${response.statusMessage}',

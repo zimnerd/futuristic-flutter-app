@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../../data/models/chat_model.dart';
 import '../../theme/pulse_colors.dart';
+import '../../theme/theme_extensions.dart';
 
 /// WhatsApp-style call message widget for chat bubbles
 /// Displays call history with type, status, duration, and action buttons
@@ -29,7 +30,7 @@ class CallMessageWidget extends StatelessWidget {
 
     final isVideo = callType.toLowerCase() == 'video';
     final callStatus = _getCallStatus(isIncoming, isMissed, duration);
-    final statusColor = _getStatusColor(callStatus);
+    final statusColor = _getStatusColor(callStatus, context);
     final iconData = _getCallIcon(isVideo, callStatus);
 
     return Container(
@@ -43,7 +44,7 @@ class CallMessageWidget extends StatelessWidget {
       decoration: BoxDecoration(
         color: isMe
             ? PulseColors.primary.withValues(alpha: 0.1)
-            : Colors.grey[100],
+            : Theme.of(context).colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: statusColor.withValues(alpha: 0.3), width: 1),
       ),
@@ -68,7 +69,7 @@ class CallMessageWidget extends StatelessWidget {
                       style: TextStyle(
                         fontWeight: FontWeight.w600,
                         fontSize: 14,
-                        color: Colors.grey[800],
+                        color: Theme.of(context).colorScheme.onSurface,
                       ),
                     ),
                     const SizedBox(height: 2),
@@ -113,7 +114,7 @@ class CallMessageWidget extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             _formatTimestamp(message.createdAt),
-            style: TextStyle(fontSize: 11, color: Colors.grey[600]),
+            style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurfaceVariant),
           ),
 
           // Action buttons
@@ -144,7 +145,7 @@ class CallMessageWidget extends StatelessWidget {
                     child: _ActionButton(
                       icon: Icons.info_outline,
                       label: 'Details',
-                      color: Colors.grey[700]!,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                       onTap: onViewDetails!,
                     ),
                   ),
@@ -170,17 +171,17 @@ class CallMessageWidget extends StatelessWidget {
     }
   }
 
-  Color _getStatusColor(CallStatus status) {
+  Color _getStatusColor(CallStatus status, BuildContext context) {
     switch (status) {
       case CallStatus.missedIncoming:
-        return Colors.red[700]!;
+        return Theme.of(context).colorScheme.error;
       case CallStatus.missedOutgoing:
-        return Colors.orange[700]!;
+        return Theme.of(context).colorScheme.error;
       case CallStatus.completedIncoming:
       case CallStatus.completedOutgoing:
-        return Colors.green[700]!;
+        return PulseColors.success;
       case CallStatus.failed:
-        return Colors.grey[700]!;
+        return Theme.of(context).colorScheme.onSurfaceVariant;
     }
   }
 

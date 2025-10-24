@@ -11,6 +11,7 @@ import 'package:logger/logger.dart';
 
 import '../../blocs/auth/auth_bloc.dart';
 import '../../blocs/auth/auth_event.dart';
+import '../../blocs/auth/auth_state.dart';
 import '../../blocs/profile/profile_bloc.dart';
 import '../../blocs/photo/photo_bloc.dart';
 import '../../blocs/photo/photo_state.dart';
@@ -2455,12 +2456,42 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
             const AuthStatusChecked(forceRefresh: true),
           );
 
-          // Wait a moment for auth state to update
-          await Future.delayed(const Duration(milliseconds: 500));
-
-          debugPrint('✅ Navigating to home after auth state refresh');
+          // ✅ Wait for auth state to update before navigating
+          // Listen to auth state changes and navigate when auth succeeds
+          // This ensures we have fresh user data before proceeding
           if (mounted && context.mounted) {
-            context.go(AppRoutes.home);
+            context
+                .read<AuthBloc>()
+                .stream
+                .listen(
+                  (authState) {
+                    debugPrint(
+                      '📍 Auth state changed to: ${authState.runtimeType}',
+                    );
+                
+                    // Navigate based on the new auth state
+                    if (authState is AuthAuthenticated) {
+                      debugPrint('✅ Auth successful - navigating to home');
+                      if (mounted && context.mounted) {
+                        context.go(AppRoutes.home);
+                      }
+                    } else if (authState is AuthError) {
+                      debugPrint('❌ Auth error: ${authState.message}');
+                      // Show error but don't block user from proceeding
+                      if (mounted && context.mounted) {
+                        context.go(AppRoutes.home);
+                      }
+                    }
+                  },
+                  onError: (error) {
+                    debugPrint('⚠️ Auth stream error: $error');
+                    // Fallback - navigate to home anyway
+                    if (mounted && context.mounted) {
+                      context.go(AppRoutes.home);
+                    }
+                  },
+                )
+                .cancel;
           }
         }
       } else {

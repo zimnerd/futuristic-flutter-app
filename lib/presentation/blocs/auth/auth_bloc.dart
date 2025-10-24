@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:logger/logger.dart';
 
@@ -69,9 +70,35 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         // ✅ Check verification and profile completion status
         final isEmailVerified = user.emailVerified;
         final isPhoneVerified = user.phoneVerified;
-        final isVerified = isEmailVerified || isPhoneVerified; // At least one must be verified
+        final isVerified =
+            isEmailVerified == true ||
+            isPhoneVerified == true; // At least one must be verified
+
+        // 🔍 DEBUG with print to ensure it shows
+        debugPrint('═' * 80);
+        debugPrint('🔐 AUTH VERIFICATION CHECK');
+        debugPrint(
+          '  emailVerified: $isEmailVerified (${isEmailVerified.runtimeType})',
+        );
+        debugPrint(
+          '  phoneVerified: $isPhoneVerified (${isPhoneVerified.runtimeType})',
+        );
+        debugPrint('  isVerified: $isVerified');
+        debugPrint('  profileCompletion: ${user.profileCompletionPercentage}%');
+        debugPrint(
+          '  Full user: verified=${user.verified}, email=${user.email}',
+        );
+        debugPrint('═' * 80);
+
+        _logger.i(
+          '🔐 Verification Check:\n'
+          '  - emailVerified: $isEmailVerified\n'
+          '  - phoneVerified: $isPhoneVerified\n'
+          '  - isVerified: $isVerified',
+        );
 
         if (!isVerified) {
+          debugPrint('⚠️ NOT VERIFIED - showing verification screen');
           _logger.i(
             '⚠️ Auth status check: User not verified - showing verification screen',
           );

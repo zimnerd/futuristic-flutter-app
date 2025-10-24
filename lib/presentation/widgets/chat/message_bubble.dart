@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../theme/pulse_colors.dart';
+import '../../theme/theme_extensions.dart';
 import '../../../data/models/chat_model.dart';
 import '../../../domain/entities/message.dart' as entities;
 import '../media/media_grid.dart';
@@ -61,7 +62,7 @@ class MessageBubble extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   // Avatar for received messages
-                  if (!isCurrentUser) _buildAvatar(),
+                  if (!isCurrentUser) _buildAvatar(context),
 
                   // Message bubble - keeping existing structure for now
                   Flexible(
@@ -86,7 +87,7 @@ class MessageBubble extends StatelessWidget {
                                     ))
                             : (isCurrentUser
                                   ? PulseColors.primary
-                                  : Colors.grey[50]),
+                                  : Theme.of(context).colorScheme.surfaceContainerHighest),
                         border: isHighlighted
                             ? Border.all(color: PulseColors.primary, width: 2)
                             : null,
@@ -100,7 +101,7 @@ class MessageBubble extends StatelessWidget {
                             ? []
                             : [
                                 BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.05),
+                                  color: Theme.of(context).colorScheme.shadow.withValues(alpha: 0.05),
                                   blurRadius: 8,
                                   offset: const Offset(0, 2),
                                 ),
@@ -187,7 +188,7 @@ class MessageBubble extends StatelessWidget {
                               decoration: BoxDecoration(
                                 color: isCurrentUser
                                     ? PulseColors.primary
-                                    : Colors.grey[50],
+                                    : Theme.of(context).colorScheme.surfaceContainerHighest,
                                 borderRadius: BorderRadius.only(
                                   bottomLeft: Radius.circular(
                                     isCurrentUser ? 20 : 6,
@@ -204,8 +205,8 @@ class MessageBubble extends StatelessWidget {
                                     message.content!,
                                     style: TextStyle(
                                       color: isCurrentUser
-                                          ? Colors.white
-                                          : Colors.black87,
+                                          ? Theme.of(context).colorScheme.onPrimary
+                                          : Theme.of(context).colorScheme.onSurface,
                                       fontSize: 16,
                                       height: 1.3,
                                     ),
@@ -220,10 +221,10 @@ class MessageBubble extends StatelessWidget {
                                         ).format(message.createdAt),
                                         style: TextStyle(
                                           color: isCurrentUser
-                                              ? Colors.white.withValues(
+                                              ? Theme.of(context).colorScheme.onPrimary.withValues(
                                                   alpha: 0.7,
                                                 )
-                                              : Colors.grey[600],
+                                              : Theme.of(context).colorScheme.onSurfaceVariant,
                                           fontSize: 12,
                                         ),
                                       ),
@@ -233,10 +234,10 @@ class MessageBubble extends StatelessWidget {
                                           status: message.status,
                                           onRetry: onRetry,
                                           size: 16,
-                                          color: Colors.white.withValues(
+                                          color: Theme.of(context).colorScheme.onPrimary.withValues(
                                             alpha: 0.7,
                                           ),
-                                          readColor: Colors.blue.shade300,
+                                          readColor: Theme.of(context).colorScheme.tertiary,
                                         ),
                                       ],
                                     ],
@@ -251,6 +252,7 @@ class MessageBubble extends StatelessWidget {
                               message.content != null &&
                               message.content!.isNotEmpty) ...[
                             _buildHighlightedText(
+                              context,
                               message.content!,
                               isCurrentUser,
                             ),
@@ -264,8 +266,8 @@ class MessageBubble extends StatelessWidget {
                                   ).format(message.createdAt),
                                   style: TextStyle(
                                     color: isCurrentUser
-                                        ? Colors.white.withValues(alpha: 0.7)
-                                        : Colors.grey[600],
+                                        ? Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.7)
+                                        : Theme.of(context).colorScheme.onSurfaceVariant,
                                     fontSize: 12,
                                   ),
                                 ),
@@ -275,8 +277,8 @@ class MessageBubble extends StatelessWidget {
                                     status: message.status,
                                     onRetry: onRetry,
                                     size: 16,
-                                    color: Colors.white.withValues(alpha: 0.7),
-                                    readColor: Colors.blue.shade300,
+                                    color: Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.7),
+                                    readColor: Theme.of(context).colorScheme.tertiary,
                                   ),
                                 ],
                               ],
@@ -298,7 +300,7 @@ class MessageBubble extends StatelessWidget {
                                       vertical: 4,
                                     ),
                                     decoration: BoxDecoration(
-                                      color: Colors.black.withValues(
+                                      color: Theme.of(context).colorScheme.scrim.withValues(
                                         alpha: 0.6,
                                       ),
                                       borderRadius: BorderRadius.circular(12),
@@ -352,12 +354,12 @@ class MessageBubble extends StatelessWidget {
     );
   }
 
-  Widget _buildAvatar() {
+  Widget _buildAvatar(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(right: 8, bottom: 4),
       child: CircleAvatar(
         radius: 16,
-        backgroundColor: Colors.grey[300],
+        backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
         backgroundImage: message.senderAvatar != null
             ? NetworkImage(message.senderAvatar!) // ✅ Use NetworkImage instead
             : null,
@@ -366,10 +368,10 @@ class MessageBubble extends StatelessWidget {
                 message.senderUsername.isNotEmpty
                     ? message.senderUsername[0].toUpperCase()
                     : '?',
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
               )
             : null,
@@ -393,7 +395,7 @@ class MessageBubble extends StatelessWidget {
               decoration: BoxDecoration(
                 color: isCurrentUser
                     ? PulseColors.primary.withValues(alpha: 0.8)
-                    : Colors.grey[400],
+                    : Theme.of(context).colorScheme.outline,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -402,7 +404,7 @@ class MessageBubble extends StatelessWidget {
               child: Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Colors.grey[100],
+                  color: Theme.of(context).colorScheme.surfaceContainerHighest,
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Column(
@@ -415,13 +417,13 @@ class MessageBubble extends StatelessWidget {
                         fontWeight: FontWeight.w600,
                         color: isCurrentUser
                             ? PulseColors.primary
-                            : Colors.grey[600],
+                            : Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       _getPreviewText(replyTo),
-                      style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                      style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurfaceVariant),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -445,14 +447,14 @@ class MessageBubble extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.forward, size: 14, color: Colors.grey[600]),
+          Icon(Icons.forward, size: 14, color: Theme.of(context).colorScheme.onSurfaceVariant),
           const SizedBox(width: 4),
           Text(
             'Forwarded',
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w500,
-              color: Colors.grey[600],
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
               fontStyle: FontStyle.italic,
             ),
           ),
@@ -494,7 +496,7 @@ class MessageBubble extends StatelessWidget {
               decoration: BoxDecoration(
                 color: hasUserReacted
                     ? PulseColors.primary.withValues(alpha: 0.1)
-                    : Colors.grey[100],
+                    : Theme.of(context).colorScheme.surfaceContainerHighest,
                 borderRadius: BorderRadius.circular(12),
                 border: hasUserReacted
                     ? Border.all(color: PulseColors.primary, width: 1)
@@ -512,7 +514,7 @@ class MessageBubble extends StatelessWidget {
                         fontSize: 12,
                         color: hasUserReacted
                             ? PulseColors.primary
-                            : Colors.grey[600],
+                            : Theme.of(context).colorScheme.onSurfaceVariant,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -577,9 +579,9 @@ class MessageBubble extends StatelessWidget {
         width: 280,
         height: 160,
         decoration: BoxDecoration(
-          color: Colors.grey[100],
+          color: Theme.of(context).colorScheme.surfaceContainerHighest,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.grey[300]!),
+          border: Border.all(color: Theme.of(context).colorScheme.outline),
         ),
         child: Stack(
           children: [
@@ -610,13 +612,13 @@ class MessageBubble extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
-                      color: Colors.grey[800],
+                      color: Theme.of(context).colorScheme.onSurface,
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     '${lat.toStringAsFixed(4)}, ${lng.toStringAsFixed(4)}',
-                    style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                    style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurfaceVariant),
                   ),
                 ],
               ),
@@ -739,7 +741,7 @@ class MessageBubble extends StatelessWidget {
           decoration: BoxDecoration(
             color: isCurrentUser
                 ? PulseColors.primary.withValues(alpha: 0.7)
-                : Colors.grey[200],
+                : Theme.of(context).colorScheme.surfaceContainerHighest,
             borderRadius: BorderRadius.circular(20),
           ),
           child: Row(
@@ -753,12 +755,12 @@ class MessageBubble extends StatelessWidget {
                     ? CircularProgressIndicator(
                         strokeWidth: 2,
                         valueColor: AlwaysStoppedAnimation<Color>(
-                          isCurrentUser ? Colors.white : PulseColors.primary,
+                          isCurrentUser ? Theme.of(context).colorScheme.onPrimary : PulseColors.primary,
                         ),
                       )
                     : Icon(
                         Icons.error_outline,
-                        color: isCurrentUser ? Colors.white : Colors.red,
+                        color: isCurrentUser ? Theme.of(context).colorScheme.onPrimary : Theme.of(context).colorScheme.error,
                         size: 16,
                       ),
               ),
@@ -766,7 +768,7 @@ class MessageBubble extends StatelessWidget {
               // Voice message icon
               Icon(
                 Icons.mic,
-                color: isCurrentUser ? Colors.white70 : Colors.grey[600],
+                color: isCurrentUser ? Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.7) : Theme.of(context).colorScheme.onSurfaceVariant,
                 size: 20,
               ),
               const SizedBox(width: 8),
@@ -776,7 +778,7 @@ class MessageBubble extends StatelessWidget {
                     ? 'Sending voice message...'
                     : 'Failed to send',
                 style: TextStyle(
-                  color: isCurrentUser ? Colors.white : Colors.grey[800],
+                  color: isCurrentUser ? Theme.of(context).colorScheme.onPrimary : Theme.of(context).colorScheme.onSurface,
                   fontSize: 14,
                 ),
               ),
@@ -785,7 +787,7 @@ class MessageBubble extends StatelessWidget {
               Text(
                 _formatDuration(Duration(seconds: duration)),
                 style: TextStyle(
-                  color: isCurrentUser ? Colors.white70 : Colors.grey[600],
+                  color: isCurrentUser ? Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.7) : Theme.of(context).colorScheme.onSurfaceVariant,
                   fontSize: 12,
                 ),
               ),
@@ -802,7 +804,7 @@ class MessageBubble extends StatelessWidget {
           decoration: BoxDecoration(
             color: isCurrentUser
                 ? PulseColors.primary.withValues(alpha: 0.7)
-                : Colors.grey[200],
+                : Theme.of(context).colorScheme.surfaceContainerHighest,
             borderRadius: BorderRadius.circular(20),
           ),
           child: Row(
@@ -812,7 +814,7 @@ class MessageBubble extends StatelessWidget {
                 message.status == MessageStatus.sending
                     ? Icons.upload
                     : Icons.error_outline,
-                color: isCurrentUser ? Colors.white : Colors.grey[600],
+                color: isCurrentUser ? Theme.of(context).colorScheme.onPrimary : Theme.of(context).colorScheme.onSurfaceVariant,
                 size: 20,
               ),
               const SizedBox(width: 8),
@@ -821,7 +823,7 @@ class MessageBubble extends StatelessWidget {
                     ? 'Sending voice message...'
                     : 'Failed to send voice message',
                 style: TextStyle(
-                  color: isCurrentUser ? Colors.white : Colors.grey[800],
+                  color: isCurrentUser ? Theme.of(context).colorScheme.onPrimary : Theme.of(context).colorScheme.onSurface,
                   fontSize: 14,
                 ),
               ),
@@ -896,7 +898,7 @@ class MessageBubble extends StatelessWidget {
       width: 200,
       height: 200,
       decoration: BoxDecoration(
-        color: Colors.grey[200],
+        color: Theme.of(context).colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
@@ -911,7 +913,7 @@ class MessageBubble extends StatelessWidget {
           Text(
             'Uploading...',
             style: TextStyle(
-              color: Colors.grey[600],
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
               fontSize: 14,
               fontWeight: FontWeight.w500,
             ),
@@ -1126,13 +1128,13 @@ class MessageBubble extends StatelessWidget {
     }
   }
 
-  Widget _buildHighlightedText(String content, bool isCurrentUser) {
+  Widget _buildHighlightedText(BuildContext context, String content, bool isCurrentUser) {
     // If no search query or not highlighted, show normal text
     if (searchQuery == null || searchQuery!.isEmpty || !isHighlighted) {
       return Text(
         content,
         style: TextStyle(
-          color: isCurrentUser ? Colors.white : Colors.black87,
+          color: isCurrentUser ? Theme.of(context).colorScheme.onPrimary : Theme.of(context).colorScheme.onSurface,
           fontSize: 16,
           height: 1.3,
         ),
@@ -1154,7 +1156,7 @@ class MessageBubble extends StatelessWidget {
           TextSpan(
             text: content.substring(start, index),
             style: TextStyle(
-              color: isCurrentUser ? Colors.white : Colors.black87,
+              color: isCurrentUser ? Theme.of(context).colorScheme.onPrimary : Theme.of(context).colorScheme.onSurface,
               fontSize: 16,
               height: 1.3,
             ),
@@ -1188,7 +1190,7 @@ class MessageBubble extends StatelessWidget {
         TextSpan(
           text: content.substring(start),
           style: TextStyle(
-            color: isCurrentUser ? Colors.white : Colors.black87,
+            color: isCurrentUser ? Theme.of(context).colorScheme.onPrimary : Theme.of(context).colorScheme.onSurface,
             fontSize: 16,
             height: 1.3,
           ),

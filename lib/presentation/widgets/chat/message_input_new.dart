@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../theme/pulse_colors.dart';
+import '../../theme/theme_extensions.dart';
 
 class MessageInput extends StatelessWidget {
   final TextEditingController controller;
@@ -18,8 +19,8 @@ class MessageInput extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border(top: BorderSide(color: Colors.grey[200]!)),
+        color: Theme.of(context).colorScheme.surface,
+        border: Border(top: BorderSide(color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.2))),
       ),
       child: SafeArea(
         child: Padding(
@@ -29,7 +30,7 @@ class MessageInput extends StatelessWidget {
               Expanded(
                 child: Container(
                   decoration: BoxDecoration(
-                    color: Colors.grey[100],
+                    color: Theme.of(context).colorScheme.surfaceContainerHighest,
                     borderRadius: BorderRadius.circular(24),
                   ),
                   child: TextField(
@@ -55,7 +56,7 @@ class MessageInput extends StatelessWidget {
                   shape: BoxShape.circle,
                 ),
                 child: IconButton(
-                  icon: const Icon(Icons.send, color: Colors.white, size: 20),
+                  icon: Icon(Icons.send, color: Theme.of(context).colorScheme.onPrimary, size: 20),
                   onPressed: onSend,
                 ),
               ),
