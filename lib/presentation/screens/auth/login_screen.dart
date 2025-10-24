@@ -8,6 +8,7 @@ import '../../blocs/auth/auth_bloc.dart';
 import '../../blocs/auth/auth_event.dart';
 import '../../blocs/auth/auth_state.dart';
 import '../../theme/pulse_colors.dart';
+import '../../theme/theme_extensions.dart';
 import '../../widgets/common/keyboard_dismissible_scaffold.dart';
 import '../../widgets/common/pulse_toast.dart';
 import '../../widgets/developer_auto_login_fab.dart';
@@ -211,7 +212,7 @@ class _LoginScreenState extends State<LoginScreen> {
               onPressed: () => Navigator.of(context).pop(true),
               style: ElevatedButton.styleFrom(
                 backgroundColor: PulseColors.primary,
-                foregroundColor: Colors.white,
+                foregroundColor: context.theme.colorScheme.onPrimary,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 24,
                   vertical: 12,
@@ -547,7 +548,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           controller: _emailController,
                           keyboardType: TextInputType.emailAddress,
                           validator: _validateEmail,
-                          style: const TextStyle(color: Colors.black87),
+                          style: TextStyle(color: context.onSurfaceColor),
                           decoration: InputDecoration(
                             labelText: 'Email',
                             hintText: 'Enter your email address',
@@ -582,7 +583,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           controller: _passwordController,
                           obscureText: _obscurePassword,
                           validator: _validatePassword,
-                          style: const TextStyle(color: Colors.black87),
+                          style: TextStyle(color: context.onSurfaceColor),
                           decoration: InputDecoration(
                             labelText: 'Password',
                             hintText: 'Enter your password',
@@ -632,20 +633,20 @@ class _LoginScreenState extends State<LoginScreen> {
                         onPressed: _isLoading ? null : _handleLogin,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: PulseColors.primary,
-                          foregroundColor: Colors.white,
+                          foregroundColor: context.theme.colorScheme.onPrimary,
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
                         child: _isLoading
-                            ? const SizedBox(
+                            ? SizedBox(
                                 height: 20,
                                 width: 20,
                                 child: CircularProgressIndicator(
                                   strokeWidth: 2,
                                   valueColor: AlwaysStoppedAnimation<Color>(
-                                    Colors.white,
+                                    context.theme.colorScheme.onPrimary,
                                   ),
                                 ),
                               )

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../data/models/chat_model.dart';
 import '../../data/models/user_model.dart';
 import '../theme/pulse_colors.dart';
+import '../theme/theme_extensions.dart';
 
 /// Confirmation dialog shown before calling back from a call message
 /// Prevents accidental calls and allows user to choose audio vs video
@@ -61,7 +62,10 @@ class CallBackConfirmationDialog extends StatelessWidget {
         children: [
           Text(
             'Do you want to call $userName?',
-            style: const TextStyle(fontSize: 15),
+            style: TextStyle(
+              fontSize: 15,
+              color: context.onSurfaceVariantColor,
+            ),
           ),
 
           if (isMissed) ...[
@@ -69,20 +73,26 @@ class CallBackConfirmationDialog extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.red[50],
+                color: context.errorColor.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.red[200]!),
+                border: Border.all(
+                  color: context.errorColor.withValues(alpha: 0.3),
+                ),
               ),
               child: Row(
                 children: [
-                  Icon(Icons.info_outline, color: Colors.red[700], size: 20),
+                  Icon(
+                    Icons.info_outline,
+                    color: context.errorColor,
+                    size: 20,
+                  ),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
                       'This was a missed call',
                       style: TextStyle(
                         fontSize: 13,
-                        color: Colors.red[700],
+                        color: context.errorColor,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -98,7 +108,7 @@ class CallBackConfirmationDialog extends StatelessWidget {
               'Choose call type:',
               style: TextStyle(
                 fontSize: 13,
-                color: Colors.grey[600],
+                color: context.onSurfaceVariantColor,
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -109,7 +119,10 @@ class CallBackConfirmationDialog extends StatelessWidget {
         // Cancel button
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: Text('Cancel', style: TextStyle(color: Colors.grey[600])),
+          child: Text(
+            'Cancel',
+            style: TextStyle(color: context.onSurfaceVariantColor),
+          ),
         ),
 
         // Call buttons
@@ -122,7 +135,9 @@ class CallBackConfirmationDialog extends StatelessWidget {
             },
             icon: const Icon(Icons.phone, size: 18),
             label: const Text('Audio'),
-            style: TextButton.styleFrom(foregroundColor: Colors.green[700]),
+            style: TextButton.styleFrom(
+              foregroundColor: context.successColor,
+            ),
           ),
 
           // Video call option
@@ -135,7 +150,7 @@ class CallBackConfirmationDialog extends StatelessWidget {
             label: const Text('Video'),
             style: ElevatedButton.styleFrom(
               backgroundColor: PulseColors.primary,
-              foregroundColor: Colors.white,
+              foregroundColor: context.theme.colorScheme.onPrimary,
               elevation: 0,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
@@ -152,8 +167,8 @@ class CallBackConfirmationDialog extends StatelessWidget {
             icon: const Icon(Icons.phone, size: 18),
             label: const Text('Call'),
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.green[700],
-              foregroundColor: Colors.white,
+              backgroundColor: context.successColor,
+              foregroundColor: context.theme.colorScheme.onTertiary,
               elevation: 0,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),

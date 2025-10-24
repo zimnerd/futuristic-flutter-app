@@ -11,6 +11,7 @@ import '../blocs/premium/premium_event.dart';
 import '../blocs/premium/premium_state.dart';
 import '../widgets/premium/coin_package_card.dart';
 import '../widgets/common/pulse_toast.dart';
+import '../theme/theme_extensions.dart';
 
 /// Bottom sheet for purchasing coin packages
 ///
@@ -148,9 +149,9 @@ class _CoinPurchaseSheetState extends State<CoinPurchaseSheet>
                               ),
                             ],
                           ),
-                          child: const Icon(
+                          child: Icon(
                             Icons.monetization_on,
-                            color: Colors.white,
+                            color: context.theme.colorScheme.onPrimary,
                             size: 28,
                           ),
                         ),
@@ -226,15 +227,15 @@ class _CoinPurchaseSheetState extends State<CoinPurchaseSheet>
                   children: [
                     Icon(
                       _getReasonIcon(widget.reason!),
-                      color: Colors.white,
+                      color: context.theme.colorScheme.onPrimary,
                       size: 20,
                     ),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
                         _getReasonText(widget.reason!),
-                        style: const TextStyle(
-                          color: Colors.white,
+                        style: TextStyle(
+                          color: context.theme.colorScheme.onPrimary,
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
                         ),
@@ -399,24 +400,24 @@ class _CoinPurchaseSheetState extends State<CoinPurchaseSheet>
                               ? Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    const SizedBox(
+                                    SizedBox(
                                       width: 20,
                                       height: 20,
                                       child: CircularProgressIndicator(
                                         strokeWidth: 2,
                                         valueColor:
                                             AlwaysStoppedAnimation<Color>(
-                                              Colors.white,
+                                              context.theme.colorScheme.onPrimary,
                                             ),
                                       ),
                                     ),
                                     const SizedBox(width: 12),
                                     Text(
                                       state.message ?? 'Processing...',
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                         fontSize: 16,
                                         fontWeight: FontWeight.bold,
-                                        color: Colors.white,
+                                        color: context.theme.colorScheme.onPrimary,
                                       ),
                                     ),
                                   ],
@@ -424,20 +425,20 @@ class _CoinPurchaseSheetState extends State<CoinPurchaseSheet>
                               : Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    const Icon(
+                                    Icon(
                                       Icons.lock,
                                       size: 18,
-                                      color: Colors.white,
+                                      color: context.theme.colorScheme.onPrimary,
                                     ),
                                     const SizedBox(width: 8),
                                     Text(
                                       _selectedPackage != null
                                           ? 'Purchase ${_selectedPackage!.totalCoins} Coins for ${_selectedPackage!.priceDisplay}'
                                           : 'Select a Package',
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                         fontSize: 16,
                                         fontWeight: FontWeight.bold,
-                                        color: Colors.white,
+                                        color: context.theme.colorScheme.onPrimary,
                                       ),
                                     ),
                                   ],

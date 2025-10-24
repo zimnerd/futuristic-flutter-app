@@ -3,6 +3,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 
 import '../../domain/entities/user_profile.dart';
 import '../theme/pulse_colors.dart';
+import '../theme/theme_extensions.dart';
 
 /// Dialog for viewing and editing photo details
 ///
@@ -91,7 +92,9 @@ class _PhotoDetailsDialogState extends State<PhotoDetailsDialog> {
               }
               Navigator.of(context).pop(); // Close details dialog
             },
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            style: TextButton.styleFrom(
+              foregroundColor: Theme.of(context).colorScheme.error,
+            ),
             child: const Text('Delete'),
           ),
         ],
@@ -131,15 +134,15 @@ class _PhotoDetailsDialogState extends State<PhotoDetailsDialog> {
                       height: 300,
                       fit: BoxFit.cover,
                       placeholder: (context, url) => Container(
-                        color: Colors.grey[200],
+                        color: context.surfaceVariantColor,
                         child: const Center(child: CircularProgressIndicator()),
                       ),
                       errorWidget: (context, url, error) => Container(
-                        color: Colors.grey[300],
+                        color: context.surfaceVariantColor,
                         child: Icon(
                           Icons.broken_image,
                           size: 64,
-                          color: Colors.grey[600],
+                          color: context.onSurfaceVariantColor,
                         ),
                       ),
                     ),
@@ -161,13 +164,17 @@ class _PhotoDetailsDialogState extends State<PhotoDetailsDialog> {
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
-                          children: const [
-                            Icon(Icons.star, color: Colors.white, size: 16),
-                            SizedBox(width: 6),
+                          children: [
+                            Icon(
+                              Icons.star,
+                              color: Theme.of(context).colorScheme.onPrimary,
+                              size: 16,
+                            ),
+                            const SizedBox(width: 6),
                             Text(
                               'Primary Photo',
                               style: TextStyle(
-                                color: Colors.white,
+                                color: Theme.of(context).colorScheme.onPrimary,
                                 fontSize: 14,
                                 fontWeight: FontWeight.bold,
                               ),
@@ -183,11 +190,14 @@ class _PhotoDetailsDialogState extends State<PhotoDetailsDialog> {
                     right: 16,
                     child: Container(
                       decoration: BoxDecoration(
-                        color: Colors.black.withValues(alpha: 0.5),
+                        color: ThemeColors.getOverlayColor(context),
                         shape: BoxShape.circle,
                       ),
                       child: IconButton(
-                        icon: const Icon(Icons.close, color: Colors.white),
+                        icon: Icon(
+                          Icons.close,
+                          color: Theme.of(context).colorScheme.surface,
+                        ),
                         onPressed: () => Navigator.of(context).pop(),
                       ),
                     ),
@@ -267,7 +277,7 @@ class _PhotoDetailsDialogState extends State<PhotoDetailsDialog> {
                           onPressed: _handleSaveDescription,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: PulseColors.primary,
-                            foregroundColor: Colors.white,
+                            foregroundColor: context.theme.colorScheme.onPrimary,
                           ),
                           child: const Text('Save'),
                         ),
@@ -281,8 +291,8 @@ class _PhotoDetailsDialogState extends State<PhotoDetailsDialog> {
                       style: TextStyle(
                         fontSize: 14,
                         color: widget.photo.description?.isNotEmpty == true
-                            ? null
-                            : Colors.grey[600],
+                            ? context.onSurfaceColor
+                            : context.onSurfaceVariantColor,
                         fontStyle: widget.photo.description?.isNotEmpty == true
                             ? null
                             : FontStyle.italic,
@@ -310,7 +320,7 @@ class _PhotoDetailsDialogState extends State<PhotoDetailsDialog> {
                         _buildActionButton(
                           icon: Icons.delete_outline,
                           label: 'Delete Photo',
-                          color: Colors.red,
+                          color: context.errorColor,
                           onTap: _handleDelete,
                         ),
                       ],
@@ -331,7 +341,7 @@ class _PhotoDetailsDialogState extends State<PhotoDetailsDialog> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.grey[100],
+        color: context.surfaceVariantColor,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
@@ -342,14 +352,22 @@ class _PhotoDetailsDialogState extends State<PhotoDetailsDialog> {
             label: 'Views',
             value: _formatNumber(analytics.views),
           ),
-          Container(width: 1, height: 40, color: Colors.grey[300]),
+          Container(
+            width: 1,
+            height: 40,
+            color: ThemeColors.getDividerColor(context),
+          ),
           _buildAnalyticItem(
             icon: Icons.favorite,
             label: 'Likes',
             value: _formatNumber(analytics.likes),
           ),
           if (analytics.swipeRightRate != null) ...[
-            Container(width: 1, height: 40, color: Colors.grey[300]),
+            Container(
+              width: 1,
+              height: 40,
+              color: ThemeColors.getDividerColor(context),
+            ),
             _buildAnalyticItem(
               icon: Icons.trending_up,
               label: 'Match Rate',
@@ -375,7 +393,10 @@ class _PhotoDetailsDialogState extends State<PhotoDetailsDialog> {
           style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 2),
-        Text(label, style: TextStyle(fontSize: 12, color: Colors.grey[600])),
+        Text(
+          label,
+          style: TextStyle(fontSize: 12, color: context.onSurfaceVariantColor),
+        ),
       ],
     );
   }

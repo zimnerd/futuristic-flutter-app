@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_colors.dart';
+import '../theme/theme_extensions.dart';
 
 /// Dialog for collecting cancellation reasons and offering retention
 class CancellationReasonDialog extends StatefulWidget {
@@ -67,7 +68,7 @@ class _CancellationReasonDialogState extends State<CancellationReasonDialog> {
           Icon(
             Icons.sentiment_dissatisfied,
             size: 48,
-            color: Colors.orange[700],
+            color: Theme.of(context).colorScheme.error,
           ),
           const SizedBox(height: 12),
           const Text(
@@ -105,7 +106,7 @@ class _CancellationReasonDialogState extends State<CancellationReasonDialog> {
                 hintText: 'Tell us more...',
                 border: const OutlineInputBorder(),
                 contentPadding: const EdgeInsets.all(12),
-                hintStyle: TextStyle(color: Colors.grey[400]),
+                hintStyle: TextStyle(color: context.onSurfaceVariantColor),
               ),
               maxLines: 3,
               maxLength: 500,
@@ -117,19 +118,28 @@ class _CancellationReasonDialogState extends State<CancellationReasonDialog> {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.orange[50],
+                color: Theme.of(context).colorScheme.errorContainer,
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.orange[200]!),
+                border: Border.all(
+                  color: Theme.of(context).colorScheme.error.withValues(alpha: 0.3),
+                ),
               ),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(Icons.info_outline, color: Colors.orange[700], size: 20),
+                  Icon(
+                    Icons.info_outline,
+                    color: Theme.of(context).colorScheme.error,
+                    size: 20,
+                  ),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
                       'Your premium features will remain active until the end of your current billing period.',
-                      style: TextStyle(fontSize: 12, color: Colors.orange[900]),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Theme.of(context).colorScheme.onErrorContainer,
+                      ),
                     ),
                   ),
                 ],
@@ -145,7 +155,9 @@ class _CancellationReasonDialogState extends State<CancellationReasonDialog> {
         ),
         TextButton(
           onPressed: _handleContinueCancellation,
-          style: TextButton.styleFrom(foregroundColor: Colors.red),
+          style: TextButton.styleFrom(
+            foregroundColor: Theme.of(context).colorScheme.error,
+          ),
           child: const Text('Continue to Cancel'),
         ),
       ],
@@ -169,9 +181,9 @@ class _CancellationReasonDialogState extends State<CancellationReasonDialog> {
           decoration: BoxDecoration(
             color: isSelected
                 ? AppColors.primary.withValues(alpha: 0.1)
-                : Colors.grey[50],
+                : context.surfaceVariantColor,
             border: Border.all(
-              color: isSelected ? AppColors.primary : Colors.grey[300]!,
+              color: isSelected ? AppColors.primary : context.outlineColor,
               width: isSelected ? 2 : 1,
             ),
             borderRadius: BorderRadius.circular(12),
@@ -180,7 +192,7 @@ class _CancellationReasonDialogState extends State<CancellationReasonDialog> {
             children: [
               Icon(
                 reason.icon,
-                color: isSelected ? AppColors.primary : Colors.grey[600],
+                color: isSelected ? AppColors.primary : context.onSurfaceVariantColor,
                 size: 24,
               ),
               const SizedBox(width: 12),
@@ -192,7 +204,7 @@ class _CancellationReasonDialogState extends State<CancellationReasonDialog> {
                     fontWeight: isSelected
                         ? FontWeight.w600
                         : FontWeight.normal,
-                    color: isSelected ? AppColors.primary : Colors.black87,
+                    color: isSelected ? AppColors.primary : context.onSurfaceColor,
                   ),
                 ),
               ),
@@ -214,7 +226,11 @@ class _CancellationReasonDialogState extends State<CancellationReasonDialog> {
       return AlertDialog(
         title: Column(
           children: [
-            Icon(Icons.celebration, size: 48, color: Colors.green[700]),
+            Icon(
+              Icons.celebration,
+              size: 48,
+              color: context.successColor,
+            ),
             const SizedBox(height: 12),
             const Text(
               'Offer Applied!',
@@ -223,18 +239,21 @@ class _CancellationReasonDialogState extends State<CancellationReasonDialog> {
             ),
           ],
         ),
-        content: const Column(
+        content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(
+            const Text(
               'Great! We\'ve applied 50% off your next month.',
               textAlign: TextAlign.center,
             ),
-            SizedBox(height: 12),
+            const SizedBox(height: 12),
             Text(
               'Your subscription will continue at the discounted rate.',
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 12, color: Colors.grey),
+              style: TextStyle(
+                fontSize: 12,
+                color: context.onSurfaceVariantColor,
+              ),
             ),
           ],
         ),
@@ -248,7 +267,7 @@ class _CancellationReasonDialogState extends State<CancellationReasonDialog> {
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primary,
-              foregroundColor: Colors.white,
+              foregroundColor: context.theme.colorScheme.onPrimary,
             ),
             child: const Text('Awesome!'),
           ),
@@ -281,20 +300,23 @@ class _CancellationReasonDialogState extends State<CancellationReasonDialog> {
               ),
               borderRadius: BorderRadius.circular(16),
             ),
-            child: const Column(
+            child: Column(
               children: [
                 Text(
                   '50% OFF',
                   style: TextStyle(
-                    color: Colors.white,
+                    color: context.theme.colorScheme.onPrimary,
                     fontSize: 32,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                SizedBox(height: 8),
+                const SizedBox(height: 8),
                 Text(
                   'Your Next Month',
-                  style: TextStyle(color: Colors.white, fontSize: 16),
+                  style: TextStyle(
+                    color: context.theme.colorScheme.onPrimary,
+                    fontSize: 16,
+                  ),
                 ),
               ],
             ),
@@ -308,12 +330,16 @@ class _CancellationReasonDialogState extends State<CancellationReasonDialog> {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: Colors.green[50],
+              color: context.successColor.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Row(
               children: [
-                Icon(Icons.check_circle, color: Colors.green[700], size: 20),
+                Icon(
+                  Icons.check_circle,
+                  color: context.successColor,
+                  size: 20,
+                ),
                 const SizedBox(width: 8),
                 const Expanded(
                   child: Text(
@@ -329,14 +355,16 @@ class _CancellationReasonDialogState extends State<CancellationReasonDialog> {
       actions: [
         TextButton(
           onPressed: _handleDeclineOffer,
-          style: TextButton.styleFrom(foregroundColor: Colors.grey),
+          style: TextButton.styleFrom(
+            foregroundColor: context.onSurfaceVariantColor,
+          ),
           child: const Text('No thanks, cancel anyway'),
         ),
         ElevatedButton(
           onPressed: _handleAcceptOffer,
           style: ElevatedButton.styleFrom(
             backgroundColor: AppColors.primary,
-            foregroundColor: Colors.white,
+            foregroundColor: context.theme.colorScheme.onPrimary,
           ),
           child: const Text('Accept Offer'),
         ),
@@ -348,9 +376,9 @@ class _CancellationReasonDialogState extends State<CancellationReasonDialog> {
     if (_selectedReason == null) {
       // Show error - must select a reason
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please select a reason for cancellation'),
-          backgroundColor: Colors.red,
+        SnackBar(
+          content: const Text('Please select a reason for cancellation'),
+          backgroundColor: Theme.of(context).colorScheme.error,
         ),
       );
       return;

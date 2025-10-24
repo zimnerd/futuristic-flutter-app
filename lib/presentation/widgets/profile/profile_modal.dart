@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../domain/entities/user_profile.dart';
 import '../../theme/pulse_colors.dart';
+import '../../theme/theme_extensions.dart';
 import '../common/robust_network_image.dart';
 import '../verification/verification_badge.dart';
 
@@ -21,9 +22,9 @@ class ProfileModal extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       height: MediaQuery.of(context).size.height * 0.85,
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.only(
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: const BorderRadius.only(
           topLeft: Radius.circular(20),
           topRight: Radius.circular(20),
         ),
@@ -36,7 +37,7 @@ class ProfileModal extends StatelessWidget {
             width: 40,
             height: 4,
             decoration: BoxDecoration(
-              color: Colors.grey[300],
+              color: context.outlineColor,
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -119,14 +120,14 @@ class ProfileModal extends StatelessWidget {
                       children: [
                         Icon(
                           Icons.location_on,
-                          color: Colors.grey[600],
+                          color: context.onSurfaceVariantColor,
                           size: 16,
                         ),
                         const SizedBox(width: 4),
                         Text(
                           userProfile.location.city!,
                           style: TextStyle(
-                            color: Colors.grey[600],
+                            color: context.onSurfaceVariantColor,
                             fontSize: 16,
                           ),
                         ),
@@ -206,7 +207,11 @@ class ProfileModal extends StatelessWidget {
                     if (userProfile.occupation?.isNotEmpty == true) ...[
                       Row(
                         children: [
-                          Icon(Icons.work, color: Colors.grey[600], size: 20),
+                          Icon(
+                            Icons.work,
+                            color: context.onSurfaceVariantColor,
+                            size: 20,
+                          ),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
@@ -222,7 +227,11 @@ class ProfileModal extends StatelessWidget {
                     if (userProfile.education?.isNotEmpty == true) ...[
                       Row(
                         children: [
-                          Icon(Icons.school, color: Colors.grey[600], size: 20),
+                          Icon(
+                            Icons.school,
+                            color: context.onSurfaceVariantColor,
+                            size: 20,
+                          ),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
@@ -250,7 +259,7 @@ class ProfileModal extends StatelessWidget {
                   onPressed: onMessage,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: PulseColors.primary,
-                    foregroundColor: Colors.white,
+                    foregroundColor: context.theme.colorScheme.onPrimary,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),

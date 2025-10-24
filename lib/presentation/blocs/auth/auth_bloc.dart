@@ -40,7 +40,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<AuthPhoneValidationRequested>(_onPhoneValidationRequested);
 
     // Check authentication status when BLoC is created
-    add(const AuthStatusChecked());
+    // Force refresh on startup to ensure fresh user data (especially after profile enrichment)
+    add(const AuthStatusChecked(forceRefresh: true));
   }
 
   final UserRepository _userRepository;
