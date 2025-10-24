@@ -51,18 +51,18 @@ sed -i '' "s/^version:.*/version: $NEW_VERSION/" pubspec.yaml
 echo -e "${GREEN}✓ pubspec.yaml updated${NC}"
 
 # Step 2: Build Android
-echo -e "\n${YELLOW}🔨 Step 2: Building Android APKs...${NC}"
+echo -e "\n${YELLOW}🔨 Step 2: Building Android Universal APK...${NC}"
 
 flutter clean
 flutter pub get
 
+# Build universal APK (works on all architectures)
 flutter build apk \
   --release \
-  --split-per-abi \
   --obfuscate \
   --split-debug-info=build/release/debug_symbols
 
-echo -e "${GREEN}✓ Android APKs built${NC}"
+echo -e "${GREEN}✓ Android Universal APK built${NC}"
 
 # Step 3: Build iOS
 echo -e "\n${YELLOW}🔨 Step 3: Building iOS Archive...${NC}"
@@ -116,22 +116,16 @@ echo -e "\n${YELLOW}📱 Step 5: Organizing Build Artifacts...${NC}"
 APK_DIST_DIR="$MOBILE_DIR/build/release/distribution/apk"
 mkdir -p "$APK_DIST_DIR"
 
-# Copy APKs with version naming
-for apk in $MOBILE_DIR/build/app/outputs/flutter-apk/app-*.apk; do
-  if [ -f "$apk" ]; then
-    filename=$(basename "$apk")
-    if [[ $filename == *"arm64"* ]]; then
-      cp "$apk" "$APK_DIST_DIR/PulseLink-${NEW_VERSION}-arm64.apk"
-      echo -e "${GREEN}✓ $(du -h "$APK_DIST_DIR/PulseLink-${NEW_VERSION}-arm64.apk" | cut -f1) - arm64${NC}"
-    elif [[ $filename == *"armeabi"* ]]; then
-      cp "$apk" "$APK_DIST_DIR/PulseLink-${NEW_VERSION}-armv7.apk"
-      echo -e "${GREEN}✓ $(du -h "$APK_DIST_DIR/PulseLink-${NEW_VERSION}-armv7.apk" | cut -f1) - armv7${NC}"
-    elif [[ $filename == *"x86"* ]]; then
-      cp "$apk" "$APK_DIST_DIR/PulseLink-${NEW_VERSION}-x86_64.apk"
-      echo -e "${GREEN}✓ $(du -h "$APK_DIST_DIR/PulseLink-${NEW_VERSION}-x86_64.apk" | cut -f1) - x86_64${NC}"
-    fi
-  fi
-done
+# Copy universal APK with version naming
+UNIVERSAL_APK="$MOBILE_DIR/build/app/outputs/flutter-apk/app-release.apk"
+if [ -f "$UNIVERSAL_APK" ]; then
+  cp "$UNIVERSAL_APK" "$APK_DIST_DIR/PulseLink-${NEW_VERSION}-universal.apk"
+  APK_SIZE=$(du -h "$APK_DIST_DIR/PulseLink-${NEW_VERSION}-universal.apk" | cut -f1)
+  echo -e "${GREEN}✓ $APK_SIZE - Universal APK (all architectures)${NC}"
+else
+  echo -e "${RED}✗ Universal APK not found at $UNIVERSAL_APK${NC}"
+  exit 1
+fi
 
 # Step 6: Deploy to Firebase
 echo -e "\n${YELLOW}🚀 Step 6: Deploying to Firebase App Distribution...${NC}"
@@ -143,43 +137,69 @@ if ! command -v firebase &> /dev/null; then
   exit 1
 fi
 
-# Get testers from file or use default
+# Get testers from file
 TESTERS_FILE="$MOBILE_DIR/testers.txt"
 if [ -f "$TESTERS_FILE" ]; then
-  TESTERS=$(cat "$TESTERS_FILE" | tr '\n' ',' | sed 's/,$//')
-  echo -e "Testers: ${BLUE}$TESTERS${NC}"
+  echo -e "Testers: ${BLUE}$(cat "$TESTERS_FILE" | tr '\n' ', ')${NC}"
 else
   echo -e "${YELLOW}⚠ No testers.txt file found${NC}"
-  TESTERS=""
 fi
 
-# Create release notes
-RELEASE_NOTES="PulseLink v$NEW_VERSION
+# Create release notes file
+RELEASE_NOTES_FILE="$MOBILE_DIR/build/release/release-notes.txt"
+mkdir -p "$(dirname "$RELEASE_NOTES_FILE")"
+cat > "$RELEASE_NOTES_FILE" << EOF
+PulseLink v$NEW_VERSION
 
-Changes:
-- Updated dependencies
-- Bug fixes and improvements
+🎉 New Features & Improvements:
+- Enhanced user interface
+- Bug fixes and performance improvements
+- Better stability across all devices
+
+📱 Platform Support:
+- Android: Works on all architectures (arm64, armv7, x86_64, x86)
+- iOS: Full iOS compatibility
+
+🐛 Fixes:
+- Various stability improvements
 - Performance optimizations
 
-Build: $(date '+%Y-%m-%d %H:%M:%S')"
+Build Date: $(date '+%Y-%m-%d %H:%M:%S')
+EOF
 
-# Deploy Android (arm64 recommended)
-echo -e "\n${BLUE}→ Deploying Android (arm64)...${NC}"
-firebase appdistribution:distribute \
-  "$APK_DIST_DIR/PulseLink-${NEW_VERSION}-arm64.apk" \
-  --app "$ANDROID_APP_ID" \
-  --release-notes="$RELEASE_NOTES" \
-  --testers="$TESTERS" 2>/dev/null || true
+echo -e "${GREEN}✓ Release notes created${NC}"
+
+# Deploy Android (universal)
+echo -e "\n${BLUE}→ Deploying Android (Universal)...${NC}"
+if [ -f "$TESTERS_FILE" ]; then
+  firebase appdistribution:distribute \
+    "$APK_DIST_DIR/PulseLink-${NEW_VERSION}-universal.apk" \
+    --app "$ANDROID_APP_ID" \
+    --release-notes-file="$RELEASE_NOTES_FILE" \
+    --testers-file="$TESTERS_FILE" 2>&1 | grep -v "^$" || true
+else
+  firebase appdistribution:distribute \
+    "$APK_DIST_DIR/PulseLink-${NEW_VERSION}-universal.apk" \
+    --app "$ANDROID_APP_ID" \
+    --release-notes-file="$RELEASE_NOTES_FILE" 2>&1 | grep -v "^$" || true
+fi
 
 echo -e "${GREEN}✓ Android deployed${NC}"
 
 # Deploy iOS
 echo -e "\n${BLUE}→ Deploying iOS...${NC}"
-firebase appdistribution:distribute \
-  "$IPA_PATH" \
-  --app "$IOS_APP_ID" \
-  --release-notes="$RELEASE_NOTES" \
-  --testers="$TESTERS" 2>/dev/null || true
+if [ -f "$TESTERS_FILE" ]; then
+  firebase appdistribution:distribute \
+    "$IPA_PATH" \
+    --app "$IOS_APP_ID" \
+    --release-notes-file="$RELEASE_NOTES_FILE" \
+    --testers-file="$TESTERS_FILE" 2>&1 | grep -v "^$" || true
+else
+  firebase appdistribution:distribute \
+    "$IPA_PATH" \
+    --app "$IOS_APP_ID" \
+    --release-notes-file="$RELEASE_NOTES_FILE" 2>&1 | grep -v "^$" || true
+fi
 
 echo -e "${GREEN}✓ iOS deployed${NC}"
 
@@ -188,7 +208,7 @@ echo -e "\n${BLUE}╔═══════════════════�
 echo -e "${BLUE}║              🎉 Release Complete! 🎉               ║${NC}"
 echo -e "${BLUE}╚════════════════════════════════════════════════════╝${NC}"
 echo -e "\n${GREEN}Version:${NC} $NEW_VERSION"
-echo -e "${GREEN}Android:${NC} $APK_DIST_DIR/PulseLink-${NEW_VERSION}-arm64.apk"
+echo -e "${GREEN}Android:${NC} $APK_DIST_DIR/PulseLink-${NEW_VERSION}-universal.apk"
 echo -e "${GREEN}iOS:${NC} $IPA_PATH"
 echo -e "${GREEN}Firebase Project:${NC} $FIREBASE_PROJECT"
 echo -e "\n${YELLOW}Next steps:${NC}"
