@@ -57,6 +57,9 @@ import 'presentation/blocs/discovery/discovery_bloc.dart';
 import 'presentation/blocs/live_streaming/live_streaming_bloc.dart';
 import 'presentation/blocs/premium/premium_bloc.dart';
 import 'presentation/blocs/ai_companion/ai_companion_bloc.dart';
+import 'presentation/blocs/theme/theme_bloc.dart';
+import 'presentation/blocs/theme/theme_event.dart';
+import 'presentation/blocs/theme/theme_state.dart';
 import 'data/services/premium_service.dart';
 import 'data/services/ai_companion_service.dart';
 import 'data/services/speed_dating_service.dart';
@@ -418,6 +421,10 @@ class PulseDatingApp extends StatelessWidget {
             speedDatingService: context.read<SpeedDatingService>(),
           ),
         ),
+        // ThemeBloc for theme management
+        BlocProvider<ThemeBloc>(
+          create: (context) => ThemeBloc()..add(ThemeInitialized()),
+        ),
       ],
       child: Builder(
         builder: (context) {
@@ -429,21 +436,25 @@ class PulseDatingApp extends StatelessWidget {
           final chatRepository = context.read<ChatRepository>();
           final databaseService = MessageDatabaseService();
 
-          return BackgroundSyncManager.provider(
-            chatRepository: chatRepository,
-            databaseService: databaseService,
-            child: AutoLoginWrapper(
-              child: CallOverlayHandler(
-                child: MaterialApp.router(
-                  title: AppConstants.appName,
-                  theme: PulseTheme.light,
-                  darkTheme: PulseTheme.dark,
-                  themeMode: ThemeMode.system,
-                  debugShowCheckedModeBanner: false,
-                  routerConfig: AppRouter.router,
+          return BlocBuilder<ThemeBloc, ThemeState>(
+            builder: (context, themeState) {
+              return BackgroundSyncManager.provider(
+                chatRepository: chatRepository,
+                databaseService: databaseService,
+                child: AutoLoginWrapper(
+                  child: CallOverlayHandler(
+                    child: MaterialApp.router(
+                      title: AppConstants.appName,
+                      theme: PulseTheme.light,
+                      darkTheme: PulseTheme.dark,
+                      themeMode: themeState.themeMode,
+                      debugShowCheckedModeBanner: false,
+                      routerConfig: AppRouter.router,
+                    ),
+                  ),
                 ),
-              ),
-            ),
+              );
+            },
           );
         },
       ),

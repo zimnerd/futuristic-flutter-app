@@ -102,9 +102,22 @@ class UserRepositoryImpl implements UserRepository {
   }
 
   @override
-  Future<UserModel?> getCurrentUser() async {
+  Future<UserModel?> getCurrentUser({bool forceRefresh = false}) async {
     try {
-      _logger.i('Getting current user');
+      _logger.i(
+        'Getting current user${forceRefresh ? ' (force refresh)' : ''}',
+      );
+
+      // If force refresh, skip cache and go straight to API
+      if (forceRefresh) {
+        _logger.i('Force refresh - fetching from API');
+        final user = await _remoteDataSource.getCurrentUser();
+
+        // Update cache with fresh data
+        await _localDataSource.cacheUser(user);
+        _logger.i('Updated cache with fresh user data');
+        return user;
+      }
 
       // Try to get from local cache first
       final cachedUser = await _localDataSource.getCurrentUser();

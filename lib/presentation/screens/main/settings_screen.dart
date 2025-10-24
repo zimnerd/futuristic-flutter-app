@@ -7,6 +7,9 @@ import '../../../core/services/location_service.dart';
 import '../../../core/services/location_tracking_initializer.dart';
 import '../../blocs/auth/auth_bloc.dart';
 import '../../blocs/auth/auth_event.dart';
+import '../../blocs/theme/theme_bloc.dart';
+import '../../blocs/theme/theme_event.dart';
+import '../../blocs/theme/theme_state.dart';
 import '../../theme/pulse_colors.dart';
 import '../../widgets/common/common_widgets.dart';
 import '../../widgets/common/pulse_toast.dart';
@@ -35,6 +38,7 @@ class SettingsScreen extends StatelessWidget {
         children: [
           // Preferences Section
           _buildSectionHeader('Preferences'),
+          _buildThemeToggle(context),
           _buildSettingsTile(
             icon: Icons.notifications,
             title: 'Notifications',
@@ -208,6 +212,108 @@ class SettingsScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Widget _buildThemeToggle(BuildContext context) {
+    return BlocBuilder<ThemeBloc, ThemeState>(
+      builder: (context, themeState) {
+        return Container(
+          margin: const EdgeInsets.only(bottom: PulseSpacing.xs),
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surface,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.1),
+            ),
+          ),
+          child: ListTile(
+            leading: Container(
+              padding: const EdgeInsets.all(PulseSpacing.sm),
+              decoration: BoxDecoration(
+                color: PulseColors.primary.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(
+                themeState.themeMode == ThemeMode.dark
+                    ? Icons.dark_mode
+                    : themeState.themeMode == ThemeMode.light
+                        ? Icons.light_mode
+                        : Icons.brightness_auto,
+                color: PulseColors.primary,
+                size: 20,
+              ),
+            ),
+            title: Text(
+              'Theme',
+              style: PulseTextStyles.bodyLarge.copyWith(
+                color: Theme.of(context).colorScheme.onSurface,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            subtitle: Text(
+              _getThemeSubtitle(themeState.themeMode),
+              style: PulseTextStyles.bodyMedium.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
+            trailing: DropdownButton<ThemeMode>(
+              value: themeState.themeMode,
+              underline: const SizedBox(),
+              dropdownColor: Theme.of(context).colorScheme.surface,
+              onChanged: (ThemeMode? newMode) {
+                if (newMode != null) {
+                  context.read<ThemeBloc>().add(ThemeChanged(newMode));
+                }
+              },
+              items: [
+                DropdownMenuItem(
+                  value: ThemeMode.system,
+                  child: Text(
+                    'System',
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
+                  ),
+                ),
+                DropdownMenuItem(
+                  value: ThemeMode.light,
+                  child: Text(
+                    'Light',
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
+                  ),
+                ),
+                DropdownMenuItem(
+                  value: ThemeMode.dark,
+                  child: Text(
+                    'Dark',
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: PulseSpacing.lg,
+              vertical: PulseSpacing.sm,
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  String _getThemeSubtitle(ThemeMode mode) {
+    switch (mode) {
+      case ThemeMode.system:
+        return 'Follow system settings';
+      case ThemeMode.light:
+        return 'Light mode';
+      case ThemeMode.dark:
+        return 'Dark mode';
+    }
   }
 
   Widget _buildSettingsTile({

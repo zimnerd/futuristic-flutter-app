@@ -9,6 +9,8 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:logger/logger.dart';
 
+import '../../blocs/auth/auth_bloc.dart';
+import '../../blocs/auth/auth_event.dart';
 import '../../blocs/profile/profile_bloc.dart';
 import '../../blocs/photo/photo_bloc.dart';
 import '../../blocs/photo/photo_state.dart';
@@ -342,9 +344,9 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
             ),
             actions: [
               TextButton(
-                onPressed: _saveSection,
+                onPressed: _handleCancel,
                 child: Text(
-                  'Save',
+                  'Cancel',
                   style: PulseTextStyles.titleMedium.copyWith(
                     color: PulseColors.primary,
                     fontWeight: FontWeight.bold,
@@ -943,16 +945,28 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
-              leading: const Icon(Icons.photo_library),
-              title: const Text('Choose from gallery'),
+              leading: const Icon(Icons.photo_library, color: Colors.black87),
+              title: const Text(
+                'Choose from gallery',
+                style: TextStyle(
+                  color: Colors.black87,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
               onTap: () {
                 Navigator.pop(context);
                 _pickImage(ImageSource.gallery);
               },
             ),
             ListTile(
-              leading: const Icon(Icons.camera_alt),
-              title: const Text('Take a photo'),
+              leading: const Icon(Icons.camera_alt, color: Colors.black87),
+              title: const Text(
+                'Take a photo',
+                style: TextStyle(
+                  color: Colors.black87,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
               onTap: () {
                 Navigator.pop(context);
                 _pickImage(ImageSource.camera);
@@ -982,19 +996,33 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
       }
 
       final ImagePicker picker = ImagePicker();
-      final XFile? image = await picker.pickImage(
-        source: source,
-        maxWidth: 1080,
-        maxHeight: 1080,
-        imageQuality: 80,
-      );
+      
+      // Use pickMultiImage for gallery (multiple selection), pickImage for camera (single)
+      final List<XFile> images;
+      if (source == ImageSource.camera) {
+        final singleImage = await picker.pickImage(
+          source: source,
+          maxWidth: 1080,
+          maxHeight: 1080,
+          imageQuality: 80,
+        );
+        images = singleImage != null ? [singleImage] : [];
+      } else {
+        images = await picker.pickMultiImage(
+          maxWidth: 1080,
+          maxHeight: 1080,
+          imageQuality: 80,
+        );
+      }
 
-      if (image != null) {
-        final File file = File(image.path);
+      if (images.isNotEmpty) {
         setState(() {
           final List<File> newPhotos =
               ((_formData['newPhotos'] as List<dynamic>?)?.cast<File>()) ?? [];
-          newPhotos.add(file);
+          // Add all selected images to the list
+          for (final image in images) {
+            newPhotos.add(File(image.path));
+          }
           _formData['newPhotos'] = newPhotos;
         });
       }
@@ -1224,7 +1252,10 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
   }
 
   Widget _buildInterestsSection() {
-    final selectedInterests = List<String>.from(_formData['interests'] ?? []);
+    // Parse interests from API response (handles nested objects)
+    final selectedInterests = _parseInterestsFromFormData(
+      _formData['interests'],
+    );
     
     // Show pre-populated indicator if profile was loaded
     final showPrepopulatedIndicator = _currentProfile != null;
@@ -1675,42 +1706,88 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
   }
 
   Widget _buildActionButtons() {
-    return Row(
-      children: [
-        Expanded(
-          child: OutlinedButton(
-            onPressed: () => context.pop(),
-            style: OutlinedButton.styleFrom(
-              padding: const EdgeInsets.all(PulseSpacing.md),
-              side: BorderSide(color: PulseColors.outline),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(PulseRadii.md),
+    // Only show action buttons in setup mode (not edit mode)
+    if (widget.isEditMode) {
+      return Row(
+        children: [
+          Expanded(
+            child: OutlinedButton(
+              onPressed: () => context.pop(),
+              style: OutlinedButton.styleFrom(
+                padding: const EdgeInsets.all(PulseSpacing.md),
+                side: BorderSide(color: PulseColors.outline),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(PulseRadii.md),
+                ),
               ),
-            ),
-            child: Text(
-              'Cancel',
-              style: PulseTextStyles.titleMedium.copyWith(
-                color: PulseColors.onSurface,
+              child: Text(
+                'Cancel',
+                style: PulseTextStyles.titleMedium.copyWith(
+                  color: PulseColors.onSurface,
+                ),
               ),
             ),
           ),
+          const SizedBox(width: PulseSpacing.md),
+          Expanded(flex: 2, child: _buildActionButton()),
+        ],
+      );
+    }
+
+    // Setup mode: Smart button logic based on section and data
+    final hasChanges = _hasSectionChanged();
+
+    if (widget.sectionType == 'goals') {
+      // First section: Only show Skip/Save (no back button at bottom)
+      return SizedBox(
+        width: double.infinity,
+        child: PulseButton(
+          text: hasChanges ? 'Save & Continue' : 'Skip',
+          onPressed: _saveSection,
         ),
-        const SizedBox(width: PulseSpacing.md),
-        Expanded(
-          flex: 2,
-          child: _buildActionButton(),
-        ),
-      ],
-    );
+      );
+    } else {
+      // Sections 2+: Show Back + Save/Skip
+      return Row(
+        children: [
+          Expanded(
+            child: OutlinedButton(
+              onPressed: _goToPreviousSection,
+              style: OutlinedButton.styleFrom(
+                padding: const EdgeInsets.all(PulseSpacing.md),
+                side: BorderSide(color: PulseColors.outline),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(PulseRadii.md),
+                ),
+              ),
+              child: Text(
+                'Back',
+                style: PulseTextStyles.titleMedium.copyWith(
+                  color: PulseColors.onSurface,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: PulseSpacing.md),
+          Expanded(
+            flex: 2,
+            child: PulseButton(
+              text: hasChanges ? 'Save & Continue' : 'Skip',
+              onPressed: _saveSection,
+            ),
+          ),
+        ],
+      );
+    }
   }
 
-  /// Build action button - shows "Skip" if no changes, "Save Changes" otherwise
+  /// Build action button - shows "Skip" if no changes, "Save & Continue" otherwise
   Widget _buildActionButton() {
     final hasChanges = _hasSectionChanged();
     final isEditMode = widget.isEditMode;
 
     return PulseButton(
-      text: (hasChanges || isEditMode) ? 'Save Changes' : 'Skip',
+      text: (hasChanges || isEditMode) ? 'Save & Continue' : 'Skip',
       onPressed: _saveSection,
     );
   }
@@ -1760,32 +1837,7 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              children: [
-                Text(
-                  '*What brings you here?*',
-                  style: PulseTextStyles.titleMedium.copyWith(
-                    color: PulseColors.onSurface,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                Text(
-                  ' *',
-                  style: PulseTextStyles.titleMedium.copyWith(
-                    color: PulseColors.error,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: PulseSpacing.md),
-            Text(
-              'Choose your primary intent. You can explore other features anytime.',
-              style: PulseTextStyles.bodyMedium.copyWith(
-                color: PulseColors.onSurfaceVariant,
-              ),
-            ),
-            const SizedBox(height: PulseSpacing.lg),
+            // Compact goal cards
             ...goals.map((option) {
               final isSelected =
                   selectedGoal == option['slug'] ||
@@ -1794,7 +1846,7 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
               final color = _parseColorFromHex(colorHex);
 
               return Padding(
-                padding: const EdgeInsets.only(bottom: PulseSpacing.md),
+                padding: const EdgeInsets.only(bottom: PulseSpacing.sm),
                 child: GestureDetector(
                   onTap: () {
                     logger.i(
@@ -1807,7 +1859,10 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
                     });
                   },
                   child: Container(
-                    padding: const EdgeInsets.all(PulseSpacing.lg),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: PulseSpacing.md,
+                      vertical: PulseSpacing.sm,
+                    ),
                     decoration: BoxDecoration(
                       color: isSelected
                           ? color.withValues(alpha: 0.1)
@@ -1817,37 +1872,27 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
                             ? color : Colors.grey.shade300,
                         width: isSelected ? 2 : 1,
                       ),
-                      borderRadius: BorderRadius.circular(PulseRadii.lg),
-                      boxShadow: isSelected
-                          ? [
-                              BoxShadow(
-                                color: color.withValues(alpha: 0.3,
-                                ),
-                                blurRadius: 12,
-                                offset: const Offset(0, 4),
-                              ),
-                            ]
-                          : null,
+                      borderRadius: BorderRadius.circular(PulseRadii.md),
                     ),
                     child: Row(
                       children: [
-                        // Radio button
+                        // Compact radio button
                         Container(
-                          width: 24,
-                          height: 24,
+                          width: 20,
+                          height: 20,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             border: Border.all(
                               color: isSelected
                                   ? color : Colors.grey.shade400,
-                              width: 2,
+                              width: 1.5,
                             ),
                           ),
                           child: isSelected
                               ? Center(
                                   child: Container(
-                                    width: 12,
-                                    height: 12,
+                                    width: 10,
+                                    height: 10,
                                     decoration: BoxDecoration(
                                       shape: BoxShape.circle,
                                       color: color,
@@ -1856,46 +1901,48 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
                                 )
                               : null,
                         ),
-                        const SizedBox(width: PulseSpacing.md),
-                        // Icon
+                        const SizedBox(width: PulseSpacing.sm),
+                        // Compact icon
                         Container(
-                          width: 56,
-                          height: 56,
+                          width: 40,
+                          height: 40,
                           decoration: BoxDecoration(
                             color: isSelected
                                 ? color
                                 : color.withValues(
                                     alpha: 0.1,
                                   ),
-                            borderRadius: BorderRadius.circular(PulseRadii.md),
+                            borderRadius: BorderRadius.circular(PulseRadii.sm),
                           ),
                           child: Icon(
                             option['iconData'] as IconData? ?? Icons.explore,
                             color: isSelected
                                 ? Colors.white
                                 : color,
-                            size: 28,
+                            size: 20,
                           ),
                         ),
-                        const SizedBox(width: PulseSpacing.md),
+                        const SizedBox(width: PulseSpacing.sm),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
                                 option['title'] as String? ?? 'Unknown',
-                                style: PulseTextStyles.titleMedium.copyWith(
+                                style: PulseTextStyles.labelMedium.copyWith(
                                   color: PulseColors.onSurface,
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
-                              const SizedBox(height: PulseSpacing.xs),
                               Text(
                                 option['description'] as String? ??
                                     'No description',
-                                style: PulseTextStyles.bodyMedium.copyWith(
+                                style: PulseTextStyles.bodySmall.copyWith(
                                   color: PulseColors.onSurfaceVariant,
+                                  height: 1.2,
                                 ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ],
                           ),
@@ -1920,6 +1967,37 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
     } catch (e) {
       return const Color(0xFF7E57C2); // Fallback color
     }
+  }
+
+  /// Parse interests from form data (handles nested objects from API)
+  /// Backend returns: [{id: "...", interest: {id: "...", name: "..."}}]
+  /// We extract interest names for display to InterestsSelector
+  List<String> _parseInterestsFromFormData(dynamic interestsData) {
+    if (interestsData == null) return [];
+
+    if (interestsData is List) {
+      return interestsData
+          .map((interest) {
+            // If it's a nested object from API: {id, interest: {id, name}}
+            if (interest is Map && interest.containsKey('interest')) {
+              final nestedInterest = interest['interest'] as Map?;
+              if (nestedInterest != null &&
+                  nestedInterest.containsKey('name')) {
+                return nestedInterest['name'] as String;
+              }
+            }
+            // If it's a direct object: {id, name}
+            if (interest is Map && interest.containsKey('name')) {
+              return interest['name'] as String;
+            }
+            // Otherwise it's already a string name
+            return interest.toString();
+          })
+          .whereType<String>()
+          .toList();
+    }
+
+    return [];
   }
 
   String _getSectionTitle() {
@@ -1983,8 +2061,8 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
   String? _validateSection() {
     switch (widget.sectionType) {
       case 'goals':
-        final goal = _formData['goals'] as String?;
-        if (goal == null || goal.isEmpty) {
+        final goals = _formData['goals'] as List<dynamic>?;
+        if (goals == null || goals.isEmpty) {
           return 'Please select your relationship goals';
         }
         break;
@@ -2169,16 +2247,40 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
             );
             debugPrint('✅ Relationship goals saved to backend: $goalsList');
           }
+        } else if (widget.sectionType == 'interests' &&
+            _formData.containsKey('interests')) {
+          // Save interests to backend - send interest IDs (best practice)
+          final interests = _formData['interests'] as List<dynamic>?;
+          if (interests != null && interests.isNotEmpty) {
+            // If interests are already objects with IDs, extract the IDs
+            // Otherwise, assume they're already IDs (strings)
+            final interestIds = interests.map((interest) {
+              if (interest is Map && interest.containsKey('id')) {
+                // It's an interest object with {id, name, ...}
+                return interest['id'] as String;
+              }
+              // Otherwise assume it's already an ID string
+              return interest.toString();
+            }).toList();
+
+            debugPrint('💾 Saving interests to backend (IDs): $interestIds');
+            final apiClient = ServiceLocator.instance.apiClient;
+            await apiClient.put(
+              '/users/me',
+              data: {'interestIds': interestIds},
+            );
+            debugPrint('✅ Interests saved to backend: $interestIds');
+          }
         }
       } catch (e) {
-        debugPrint('❌ ERROR: Failed to save relationship goals: $e');
+        debugPrint('❌ ERROR: Failed to save section data: $e');
         if (mounted) {
           PulseToast.error(
             context,
-            message: 'Failed to save relationship goals. Please try again.',
+            message: 'Failed to save section data. Please try again.',
           );
         }
-        return; // Stop - don't proceed if goals failed to save
+        return; // Stop - don't proceed if save failed
       }
 
       // Mark this section as complete in SharedPreferences
@@ -2265,10 +2367,12 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
         hasPhotos = photos != null && photos.isNotEmpty;
         debugPrint('  📸 Photos: ${hasPhotos ? "✅ Yes (${photos.length})" : "❌ No"}');
         
-        // Check Interests - should have at least 2 interests
+        // Check Interests - should have at least 1 interest
         final interests = userData['interests'] as List?;
-        hasInterests = interests != null && interests.length >= 2;
-        debugPrint('  💡 Interests: ${hasInterests ? "✅ Yes (${interests.length})" : "❌ No (need 2+)"}');
+        hasInterests = interests != null && interests.isNotEmpty;
+        debugPrint(
+          '  💡 Interests: ${hasInterests ? "✅ Yes (${interests.length})" : "❌ No (need 1+)"}',
+        );
         
         final allValid = hasGoals && hasPhotos && hasInterests;
         debugPrint('${allValid ? '✅ All sections have minimal data!' : '⚠️ Some sections missing minimal data'}');
@@ -2337,12 +2441,27 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
 
         debugPrint('✅ Marked all setup sections complete in SharedPreferences');
 
-        // Navigate to home - the router will check auth state and allow access
+        // ✅ CRITICAL: Refresh auth state after profile enrichment
+        // Without this, auth state remains AuthProfileEnrichmentRequired
+        // and router redirects back to profile setup instead of home
         if (mounted && context.mounted) {
           debugPrint(
-            '✅ Navigating to home after profile enrichment completion',
+            '🔄 Refreshing auth state after profile enrichment completion',
           );
-          context.go(AppRoutes.home);
+          // This triggers AuthStatusChecked with forceRefresh: true
+          // Forces a fresh fetch from backend (bypasses cache)
+          // Backend now returns profileComplete: true, so user moves to AuthAuthenticated
+          context.read<AuthBloc>().add(
+            const AuthStatusChecked(forceRefresh: true),
+          );
+
+          // Wait a moment for auth state to update
+          await Future.delayed(const Duration(milliseconds: 500));
+
+          debugPrint('✅ Navigating to home after auth state refresh');
+          if (mounted && context.mounted) {
+            context.go(AppRoutes.home);
+          }
         }
       } else {
         debugPrint(
@@ -2362,45 +2481,64 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
     }
   }
 
-  void _handleBackPress() {
-    // If in setup mode (isEditMode=false) and on the first section (goals),
-    // show a warning that this will log the user off
-    if (!widget.isEditMode && widget.sectionType == 'goals') {
-      showDialog<bool>(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text(
-            'Leave Setup?',
-            style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold),
-          ),
-          content: const Text(
-            'Leaving now will log you off. You can resume setup later.',
-            style: TextStyle(color: Colors.black87),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => context.pop(),
-              child: const Text(
-                'Stay',
-                style: TextStyle(color: PulseColors.primary, fontWeight: FontWeight.w600),
-              ),
-            ),
-            TextButton(
-              onPressed: () {
-                context.pop(); // Close dialog
-                context.pop(); // Navigate back
-              },
-              child: const Text(
-                'Log Off',
-                style: TextStyle(color: Colors.red, fontWeight: FontWeight.w600),
-              ),
-            ),
-          ],
+  /// Handle top-right Cancel button - shows exit confirmation
+  void _handleCancel() {
+    showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text(
+          'Exit Setup?',
+          style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold),
         ),
+        content: const Text(
+          'Your progress will be saved. You can resume setup later.',
+          style: TextStyle(color: Colors.black87),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => context.pop(),
+            child: const Text(
+              'Continue Setup',
+              style: TextStyle(
+                color: PulseColors.primary,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: () {
+              context.pop(); // Close dialog
+              if (mounted && context.mounted) {
+                context.go(AppRoutes.home);
+              }
+            },
+            child: const Text(
+              'Exit',
+              style: TextStyle(color: Colors.red, fontWeight: FontWeight.w600),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Handle back arrow button on top left - shows exit confirmation
+  void _handleBackPress() {
+    _handleCancel();
+  }
+
+  /// Handle back button at bottom - navigate to previous section
+  void _goToPreviousSection() {
+    const requiredSections = ['goals', 'photos', 'interests'];
+    final currentIndex = requiredSections.indexOf(widget.sectionType);
+
+    if (currentIndex > 0) {
+      final previousSection = requiredSections[currentIndex - 1];
+      debugPrint('⬅️ Navigating to previous section: $previousSection');
+      context.replace(
+        AppRoutes.profileSetup,
+        extra: {'sectionType': previousSection},
       );
-    } else {
-      // Normal back navigation for other cases
-      context.pop();
     }
   }
 }

@@ -106,6 +106,38 @@ class ProfileService {
     }
   }
 
+  /// Parse relationship goals safely from user data
+  /// Handles both root level (userData['relationshipGoals']) and nested (userData['profile']['relationshipGoals'])
+  List<String> _parseRelationshipGoals(Map<String, dynamic> userData) {
+    try {
+      // First try root level (new location in User table)
+      if (userData['relationshipGoals'] != null &&
+          userData['relationshipGoals'] is List) {
+        return List<String>.from(
+          userData['relationshipGoals'] as List<dynamic>,
+        );
+      }
+
+      // Fall back to nested profile (old location - if profile exists)
+      if (userData['profile'] != null &&
+          userData['profile'] is Map &&
+          userData['profile']['relationshipGoals'] != null &&
+          userData['profile']['relationshipGoals'] is List) {
+        return List<String>.from(
+          userData['profile']['relationshipGoals'] as List<dynamic>,
+        );
+      }
+
+      // Default to empty list if not found
+      return [];
+    } catch (e) {
+      _logger.w(
+        '⚠️ Error parsing relationship goals: $e, defaulting to empty list',
+      );
+      return [];
+    }
+  }
+
   /// Convert API user data to domain UserProfile entity
   domain.UserProfile _convertUserDataToEntity(Map<String, dynamic> userData) {
     // Extract photos from API response
@@ -235,9 +267,7 @@ class ProfileService {
       drugs: userData['profile']?['drugs'] as String?,
       children: userData['profile']?['children'] as String?,
       lifestyleChoice: userData['profile']?['lifestyle'] as String?,
-      relationshipGoals: userData['profile']?['relationshipGoals'] != null
-          ? List<String>.from(userData['profile']['relationshipGoals'])
-          : [],
+      relationshipGoals: _parseRelationshipGoals(userData),
       languages: userData['profile']?['languages'] != null
           ? List<String>.from(userData['profile']['languages'])
           : [],

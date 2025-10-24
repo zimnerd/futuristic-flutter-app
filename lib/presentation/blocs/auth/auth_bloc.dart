@@ -52,10 +52,15 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     Emitter<AuthState> emit,
   ) async {
     try {
-      _logger.i('🔍 Checking authentication status...');
+      _logger.i(
+        '🔍 Checking authentication status${event.forceRefresh ? ' (force refresh)' : ''}...',
+      );
       emit(const AuthLoading());
 
-      final user = await _userRepository.getCurrentUser();
+      // Use forceRefresh to bypass cache if needed (e.g., after profile enrichment)
+      final user = await _userRepository.getCurrentUser(
+        forceRefresh: event.forceRefresh,
+      );
 
       if (user != null) {
         _logger.i('✅ User is authenticated: ${user.username}');
@@ -63,8 +68,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         // ✅ Check verification and profile completion status
         final isEmailVerified = user.emailVerified;
         final isPhoneVerified = user.phoneVerified;
+        final isVerified = isEmailVerified || isPhoneVerified; // At least one must be verified
 
-        if (!isEmailVerified && !isPhoneVerified) {
+        if (!isVerified) {
           _logger.i(
             '⚠️ Auth status check: User not verified - showing verification screen',
           );
@@ -134,8 +140,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         // Check if user is verified (either email or phone)
         final isEmailVerified = user.emailVerified;
         final isPhoneVerified = user.phoneVerified;
+        final isVerified = isEmailVerified || isPhoneVerified; // At least one must be verified
 
-        if (!isEmailVerified && !isPhoneVerified) {
+        if (!isVerified) {
           _logger.i('⚠️ User not verified - showing verification screen');
           emit(
             AuthVerificationRequired(
@@ -207,8 +214,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         // Check if user is verified (either email or phone)
         final isEmailVerified = user.emailVerified;
         final isPhoneVerified = user.phoneVerified;
+        final isVerified = isEmailVerified || isPhoneVerified; // At least one must be verified
 
-        if (!isEmailVerified && !isPhoneVerified) {
+        if (!isVerified) {
           _logger.i(
             '⚠️ 🤖 Auto-login: User not verified - showing verification screen',
           );
@@ -351,8 +359,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         // ✅ Check verification and profile completion status
         final isEmailVerified = user.emailVerified;
         final isPhoneVerified = user.phoneVerified;
+        final isVerified = isEmailVerified || isPhoneVerified; // At least one must be verified
 
-        if (!isEmailVerified && !isPhoneVerified) {
+        if (!isVerified) {
           _logger.i(
             '⚠️ Token refresh: User not verified - showing verification screen',
           );
@@ -447,8 +456,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         // ✅ Check verification and profile completion status
         final isEmailVerified = user.emailVerified;
         final isPhoneVerified = user.phoneVerified;
+        final isVerified = isEmailVerified || isPhoneVerified; // At least one must be verified
 
-        if (!isEmailVerified && !isPhoneVerified) {
+        if (!isVerified) {
           _logger.i(
             '⚠️ 2FA verification: User not verified - showing verification screen',
           );
@@ -503,8 +513,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         // ✅ Check verification and profile completion status
         final isEmailVerified = user.emailVerified;
         final isPhoneVerified = user.phoneVerified;
+        final isVerified = isEmailVerified || isPhoneVerified; // At least one must be verified
 
-        if (!isEmailVerified && !isPhoneVerified) {
+        if (!isVerified) {
           _logger.i(
             '⚠️ Biometric: User not verified - showing verification screen',
           );

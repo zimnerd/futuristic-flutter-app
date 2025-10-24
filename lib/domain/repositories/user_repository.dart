@@ -17,7 +17,7 @@ abstract class UserRepository {
     String? location,
   });
   Future<void> signOut();
-  Future<UserModel?> getCurrentUser();
+  Future<UserModel?> getCurrentUser({bool forceRefresh = false});
   Future<void> requestPasswordReset(String email);
   Future<UserModel?> verifyTwoFactor({
     required String sessionId,

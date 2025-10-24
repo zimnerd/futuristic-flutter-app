@@ -70,8 +70,14 @@ final class AuthSignOutRequested extends AuthEvent {
 }
 
 /// Event triggered when app starts to check if user is already authenticated
+/// [forceRefresh] if true, forces a fresh fetch from API instead of using cache
 final class AuthStatusChecked extends AuthEvent {
-  const AuthStatusChecked();
+  const AuthStatusChecked({this.forceRefresh = false});
+
+  final bool forceRefresh;
+
+  @override
+  List<Object?> get props => [forceRefresh];
 }
 
 /// Event triggered when user authentication token needs to be refreshed
