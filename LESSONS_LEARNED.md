@@ -5,6 +5,224 @@ This document captures key learnings from building the **Flutter mobile dating a
 
 ---
 
+## ✨ **DRY Architecture: Frontend Learning from API Values (October 2025)**
+
+**Status**: ✅ **IMPLEMENTED** - Relationship goals now fetched from backend  
+**Date**: October 2025  
+**Impact**: **VERY HIGH** - Single source of truth, eliminates duplication, easier to maintain  
+**Rating**: 10/10 (Best practice for feature metadata)  
+**Components**: RelationshipGoalsService, IntentOptions, profile_section_edit_screen.dart
+
+### **Problem: Frontend Had Hardcoded UI Metadata**
+
+**What Was Wrong**:
+```dart
+// ❌ OLD: Frontend defined goals with hardcoded icons, colors, descriptions
+class IntentOptions {
+  static const List<Map<String, dynamic>> all = [
+    {'id': 'dating', 'title': 'Dating', 'icon': Icons.favorite, 'color': Color(0xFFFF6B9D)},
+    {'id': 'friendship', 'title': 'Friendship', 'icon': Icons.people, 'color': Color(0xFF4ECDC4)},
+    // ... more hardcoded goals
+  ];
+}
+
+// Backend also hardcoded validation list
+const validGoals = ['dating', 'fun', 'companionship', ...];
+```
+
+**Issues**:
+1. **DRY Violation**: Metadata defined in TWO places (backend + frontend)
+2. **Sync Problem**: Adding new goal requires changes in 2+ locations
+3. **No UI Metadata in DB**: Descriptions, icons, colors weren't queryable
+4. **Tight Coupling**: Frontend couldn't adapt to backend changes
+5. **Mobile-Centric**: No way for web admin to query available options
+
+### **Solution: Backend-First Architecture with RelationshipGoal Table**
+
+**1. Database Schema**:
+```prisma
+model RelationshipGoal {
+  id           String   @id @default(cuid())
+  slug         String   @unique              // 'dating', 'friendship', etc.
+  title        String                        // 'Dating', 'Friendship'
+  description  String                        // UI description text
+  icon         String                        // Material icon name: 'favorite', 'people'
+  color        String                        // Hex color: '#FF6B9D'
+  displayOrder Int                           // Sort order in UI (1-8)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([displayOrder])
+  @@map("relationship_goals")
+}
+
+// Update User model
+model User {
+  // ... existing fields
+  relationshipGoals String[]  @default([])   // Array of goal slugs, validated against DB
+}
+```
+
+**2. Backend Service** (Single Source of Truth):
+```typescript
+// users.service.ts - Validates against database
+async updateRelationshipGoals(userId: string, relationshipGoals: string[]) {
+  // Fetch valid goals from database
+  const validGoals = await this.prisma.relationshipGoal.findMany();
+  const validSlugs = validGoals.map(g => g.slug);
+  
+  const invalidGoals = relationshipGoals.filter(goal => !validSlugs.includes(goal));
+  if (invalidGoals.length > 0) {
+    throw new Error(`Invalid relationship goals: ${invalidGoals.join(', ')}`);
+  }
+  
+  return await this.prisma.user.update({
+    where: { id: userId },
+    data: { relationshipGoals },
+  });
+}
+
+// New endpoint: GET /users/relationship-goals/options
+async getAllRelationshipGoals() {
+  return await this.prisma.relationshipGoal.findMany({
+    orderBy: { displayOrder: 'asc' },
+  });
+}
+```
+
+**3. Backend Seeder** (8 goals with full metadata):
+```typescript
+// relationship-goals.seeder.ts
+const goals = [
+  {
+    slug: 'dating',
+    title: 'Dating',
+    description: 'Find romantic connections and meaningful relationships',
+    icon: 'favorite',
+    color: '#FF6B9D',
+    displayOrder: 1,
+  },
+  // ... 7 more goals
+];
+```
+
+**4. Mobile Service** (Fetches from Backend):
+```dart
+// relationship_goals_service.dart
+class RelationshipGoalsService {
+  Future<List<Map<String, dynamic>>> getAvailableGoals() async {
+    final response = await _apiClient.get('/users/relationship-goals/options');
+    
+    _cachedGoals = response.data['data'] ?? response.data;
+    _lastFetchTime = DateTime.now();
+    
+    return _cachedGoals;
+  }
+  
+  // Helper methods for UI lookups
+  Future<String?> getTitleBySlug(String slug) async {
+    final goal = await getGoalBySlug(slug);
+    return goal?['title'];
+  }
+}
+```
+
+**5. Updated IntentOptions** (Dynamic, API-Driven):
+```dart
+// intent_options.dart - No longer static!
+class IntentOptions {
+  static Future<List<Map<String, dynamic>>> getAll() async {
+    final goals = await RelationshipGoalsService.instance.getAvailableGoals();
+    
+    // Convert icon name strings to IconData
+    return goals.map((goal) => {
+      ...goal,
+      'iconData': _mapIconName(goal['icon']),
+    }).toList();
+  }
+  
+  static Future<Map<String, dynamic>?> getById(String slug) async {
+    final goals = await getAll();
+    return goals.firstWhere((g) => g['slug'] == slug);
+  }
+}
+```
+
+**6. UI Update** (FutureBuilder Pattern):
+```dart
+// profile_section_edit_screen.dart
+Widget _buildIntentSection() {
+  return FutureBuilder<List<Map<String, dynamic>>>(
+    future: IntentOptions.getAll(),  // Fetch from backend
+    builder: (context, snapshot) {
+      if (snapshot.hasData) {
+        final goals = snapshot.data!;
+        return Column(
+          children: [
+            ...goals.map((goal) {
+              final color = _parseColorFromHex(goal['color']);
+              return _buildGoalCard(
+                title: goal['title'],
+                description: goal['description'],
+                icon: goal['iconData'],
+                color: color,
+              );
+            }).toList(),
+          ],
+        );
+      }
+      return const CircularProgressIndicator();
+    },
+  );
+}
+```
+
+### **Benefits**:
+
+1. ✅ **Single Source of Truth**: Goals defined once in database, used everywhere
+2. ✅ **No Duplication**: Frontend fetches instead of hardcoding
+3. ✅ **Scalable**: Add goals by seeding database, no frontend changes needed
+4. ✅ **Web & Mobile**: Both platforms query same endpoint
+5. ✅ **Rich Metadata**: Icons, colors, descriptions all in database
+6. ✅ **Matching Engine Ready**: Backend can use goals for proximity matching:
+   - Show matches with same goals first
+   - Expand to adjacent goals when users exhaust same-goal matches
+   - Use displayOrder for consistent UI
+
+### **Usage in Matching**:
+
+```typescript
+// matching.service.ts - Prioritize matches by goal compatibility
+async getMatches(userId: string) {
+  const userGoals = user.relationshipGoals;  // e.g., ['dating']
+  
+  // First: Exact goal match
+  const exactMatches = await db.user.findMany({
+    where: { relationshipGoals: { hasSome: userGoals } },
+  });
+  
+  // Then: Expand to adjacent goals if needed
+  if (exactMatches.length < THRESHOLD) {
+    const adjacentMatches = await db.user.findMany({
+      where: { relationshipGoals: { isEmpty: false } },
+      orderBy: { createdAt: 'desc' },  // Newer users first
+    });
+  }
+  
+  return [...exactMatches, ...adjacentMatches];
+}
+```
+
+### **Key Takeaways**:
+
+- **Never hardcode business logic in frontend** - API metadata should be the source
+- **Use FutureBuilder for async data** - Better than trying to cache statically
+- **Metadata tables > Enums** - More flexible, easier to update, queryable
+- **Single seeder** - One place to define goals, both platforms use it
+- **Icon/Color Strategy** - Store names in DB (portable), convert in frontend (platform-specific)
+
+---
+
 ## ✨ **Best Practice: Proper Material Design Text Fields (October 2025)**
 
 **Status**: ✅ **IMPLEMENTED** - All form fields now use Material Design patterns  

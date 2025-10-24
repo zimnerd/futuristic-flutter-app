@@ -159,9 +159,9 @@ class AppRouter {
           path: AppRoutes.profileSetup,
           name: 'profileSetup',
           builder: (context, state) {
-            // Get the sectionType from extra data or default to 'intent'
+            // Get the sectionType from extra data or default to 'goals'
             final extra = state.extra as Map<String, dynamic>?;
-            final sectionType = extra?['sectionType'] as String? ?? 'intent';
+            final sectionType = extra?['sectionType'] as String? ?? 'goals';
 
             debugPrint(
               '🎯 Profile Setup Route - showing section: $sectionType (isEditMode=false)',

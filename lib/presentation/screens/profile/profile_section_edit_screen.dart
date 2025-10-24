@@ -22,7 +22,7 @@ import '../../sheets/photo_reorder_sheet.dart';
 import '../../../domain/entities/user_profile.dart';
 import '../../navigation/app_router.dart';
 import '../../widgets/profile/interests_selector.dart';
-import '../../../core/constants/intent_options.dart';
+import '../../../core/constants/relationship_goals_options.dart';
 import '../../../core/services/service_locator.dart';
 
 /// Profile section edit screen for editing individual profile sections
@@ -126,8 +126,8 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
       case 'interests':
         // Interests are handled separately as a list
         break;
-      case 'intent':
-        // Intent is handled separately as a selection
+      case 'goals':
+        // Goals are handled separately as a selection
         break;
       case 'preferences':
         // Preferences are handled as dropdown selections
@@ -196,13 +196,13 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
           );
           break;
 
-        case 'intent':
-          // Intent comes from relationshipGoals array - take first if exists
-          final intent = profile.relationshipGoals.isNotEmpty
+        case 'goals':
+          // Goals come from relationshipGoals array - take first if exists
+          final goal = profile.relationshipGoals.isNotEmpty
               ? profile.relationshipGoals.first
               : null;
-          _formData['intent'] = intent;
-          logger.i('✅ Populated intent: $intent');
+          _formData['goals'] = goal;
+          logger.i('✅ Populated goals: $goal');
           break;
 
         case 'preferences':
@@ -388,8 +388,8 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
         return _buildWorkEducationSection();
       case 'interests':
         return _buildInterestsSection();
-      case 'intent':
-        return _buildIntentSection();
+      case 'goals':
+        return _buildGoalsSection();
       case 'preferences':
         return _buildPreferencesSection();
       default:
@@ -1654,11 +1654,11 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
     );
   }
 
-  Widget _buildIntentSection() {
-    final selectedIntent = _formData['intent'] as String?;
+  Widget _buildGoalsSection() {
+    final selectedGoal = _formData['goals'] as String?;
 
     return FutureBuilder<List<Map<String, dynamic>>>(
-      future: IntentOptions.getAll(),
+      future: RelationshipGoalsOptions.getAll(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
@@ -1719,8 +1719,8 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
             const SizedBox(height: PulseSpacing.lg),
             ...goals.map((option) {
               final isSelected =
-                  selectedIntent == option['slug'] ||
-                  selectedIntent == option['id'];
+                  selectedGoal == option['slug'] ||
+                  selectedGoal == option['id'];
               final colorHex = option['color'] as String? ?? '#7E57C2';
               final color = _parseColorFromHex(colorHex);
 
@@ -1729,11 +1729,11 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
                 child: GestureDetector(
                   onTap: () {
                     logger.i(
-                      '🎯 GestureDetector tap - intent: ${option['slug']}',
+                      '🎯 GestureDetector tap - goals: ${option['slug']}',
                     );
                     setState(() {
-                      _formData['intent'] = option['slug'] as String;
-                      logger.i('  ✅ Intent updated to: ${option['slug']}');
+                      _formData['goals'] = option['slug'] as String;
+                      logger.i('  ✅ Goals updated to: ${option['slug']}');
                     });
                   },
                   child: Container(
@@ -1862,8 +1862,8 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
         return 'Work & Education';
       case 'interests':
         return 'Interests';
-      case 'intent':
-        return 'Your Primary Intent';
+      case 'goals':
+        return 'Your Relationship Goals';
       case 'preferences':
         return 'Dating Preferences';
       default:
@@ -1881,8 +1881,8 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
         return 'Share your professional and educational background.';
       case 'interests':
         return 'Select your hobbies and interests to find better matches.';
-      case 'intent':
-        return 'Help us personalize your experience and show you relevant connections.';
+      case 'goals':
+        return 'Tell us what you\'re looking for so we can match you better.';
       case 'preferences':
         return 'Set your dating preferences and who you\'re looking for.';
       default:
@@ -1900,8 +1900,8 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
         return Icons.work;
       case 'interests':
         return Icons.favorite;
-      case 'intent':
-        return Icons.psychology;
+      case 'goals':
+        return Icons.favorite_border;
       case 'preferences':
         return Icons.tune;
       default:
@@ -1912,10 +1912,10 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
   /// Validate that required fields are populated
   String? _validateSection() {
     switch (widget.sectionType) {
-      case 'intent':
-        final intent = _formData['intent'] as String?;
-        if (intent == null || intent.isEmpty) {
-          return 'Please select your primary intent';
+      case 'goals':
+        final goal = _formData['goals'] as String?;
+        if (goal == null || goal.isEmpty) {
+          return 'Please select your relationship goals';
         }
         break;
 
@@ -2067,19 +2067,19 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
 
       // Save section data to backend based on section type
       try {
-        if (widget.sectionType == 'intent' && _formData.containsKey('intent')) {
-          // Save intent (relationship goals) to backend
-          final intent = _formData['intent'] as String?;
-          if (intent != null && intent.isNotEmpty) {
-            debugPrint('💾 Saving intent to backend: $intent');
+        if (widget.sectionType == 'goals' && _formData.containsKey('goals')) {
+          // Save relationship goals to backend
+          final goal = _formData['goals'] as String?;
+          if (goal != null && goal.isNotEmpty) {
+            debugPrint('💾 Saving relationship goal to backend: $goal');
             final apiClient = ServiceLocator.instance.apiClient;
             await apiClient.post(
               '/users/me/profile/goals',
               data: {
-                'relationshipGoals': [intent],
+                'relationshipGoals': [goal],
               },
             );
-            debugPrint('✅ Intent saved to backend');
+            debugPrint('✅ Relationship goal saved to backend');
           }
         }
       } catch (e) {
@@ -2108,7 +2108,7 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
           context.pop(_formData);
         } else {
           // Setup mode: navigate to next required section or home
-          const requiredSections = ['intent', 'photos', 'interests'];
+          const requiredSections = ['goals', 'photos', 'interests'];
           final currentIndex = requiredSections.indexOf(widget.sectionType);
 
           if (currentIndex < requiredSections.length - 1) {
