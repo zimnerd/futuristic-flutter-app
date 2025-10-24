@@ -46,10 +46,10 @@ class _SpeedDatingEventDetailsScreenState
             context,
             message: 'Successfully joined the event!',
           );
-          // Navigate back after showing toast
+          // Navigate back to speed dating list explicitly
           Future.delayed(const Duration(milliseconds: 800), () {
             if (context.mounted) {
-              context.pop();
+              context.goNamed('speedDating');
             }
           });
         } else if (state is SpeedDatingLeft) {
@@ -67,7 +67,7 @@ class _SpeedDatingEventDetailsScreenState
             });
             Future.delayed(const Duration(milliseconds: 300), () {
               if (context.mounted) {
-                context.pop();
+                context.goNamed('speedDating');
               }
             });
           }
