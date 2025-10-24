@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'dart:async';
 import '../../../data/services/speed_dating_service.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../blocs/auth/auth_bloc.dart';
 import '../../blocs/auth/auth_state.dart';
 import '../../widgets/common/pulse_toast.dart';
-import 'active_round_screen.dart';
 
 /// Speed Dating Lobby Screen
 /// Shows event details, participant list, and join/leave controls
@@ -30,14 +31,80 @@ class _SpeedDatingLobbyScreenState extends State<SpeedDatingLobbyScreen> {
   bool _hasJoined = false;
   String? _error;
 
+  // Real-time listeners
+  StreamSubscription? _eventStatusSubscription;
+  Timer? _refreshTimer;
+
   @override
   void initState() {
     super.initState();
-    _loadEventData();
-    _listenToEventStatus();
+    _initializeScreen();
+  }
+
+  Future<void> _initializeScreen() async {
+    await _loadEventData();
+    _setupRealTimeListeners();
+    _startAutoRefresh();
+  }
+
+  void _setupRealTimeListeners() {
+    // Listen to event status changes
+    _eventStatusSubscription = _speedDatingService.onEventStatusChanged.listen((
+      status,
+    ) {
+      if (!mounted) return;
+
+      if (status == SpeedDatingEventStatus.active) {
+        _handleEventStarted();
+      } else if (status == SpeedDatingEventStatus.completed) {
+        _handleEventCompleted();
+      } else if (status == SpeedDatingEventStatus.cancelled) {
+        _handleEventCancelled();
+      }
+    });
+  }
+
+  void _startAutoRefresh() {
+    // Auto-refresh every 15 seconds to ensure data is fresh
+    _refreshTimer = Timer.periodic(const Duration(seconds: 15), (_) {
+      if (mounted && !_isLoading) {
+        _loadEventData();
+      }
+    });
+  }
+
+  void _handleEventStarted() {
+    if (!mounted) return;
+
+    final userId = _getCurrentUserId();
+    if (userId != null && _event != null) {
+      PulseToast.success(context, message: 'Event has started!');
+      // Navigate to active round screen using GoRouter
+      context.goNamed(
+        'speedDatingActive',
+        pathParameters: {
+          'eventId': widget.eventId,
+          'sessionId': _event!['currentSessionId'] as String? ?? widget.eventId,
+        },
+      );
+    }
+  }
+
+  void _handleEventCompleted() {
+    if (!mounted) return;
+    PulseToast.info(context, message: 'Event has completed');
+    context.goNamed('speedDating');
+  }
+
+  void _handleEventCancelled() {
+    if (!mounted) return;
+    PulseToast.error(context, message: 'Event has been cancelled');
+    context.goNamed('speedDating');
   }
 
   Future<void> _loadEventData() async {
+    if (!mounted) return;
+
     setState(() {
       _isLoading = true;
       _error = null;
@@ -47,16 +114,18 @@ class _SpeedDatingLobbyScreenState extends State<SpeedDatingLobbyScreen> {
       final event = await _speedDatingService.getEventById(widget.eventId);
 
       if (event != null && mounted) {
+        final currentUserId = _getCurrentUserId();
+        final updatedParticipants = List<Map<String, dynamic>>.from(
+          event['participants'] ?? [],
+        );
+
         setState(() {
           _event = event;
-          _participants = List<Map<String, dynamic>>.from(
-            event['participants'] ?? [],
-          );
+          _participants = updatedParticipants;
           _isLoading = false;
-
-          // Check if current user has joined
-          final currentUserId = _getCurrentUserId();
-          _hasJoined = _participants.any((p) => p['userId'] == currentUserId);
+          _hasJoined = updatedParticipants.any(
+            (p) => p['userId'] == currentUserId,
+          );
         });
       } else if (mounted) {
         setState(() {
@@ -74,28 +143,6 @@ class _SpeedDatingLobbyScreenState extends State<SpeedDatingLobbyScreen> {
     }
   }
 
-  void _listenToEventStatus() {
-    _speedDatingService.onEventStatusChanged.listen((status) {
-      if (status == SpeedDatingEventStatus.active && mounted) {
-        // Event has started - navigate to active round
-        final userId = _getCurrentUserId();
-        if (userId != null && _event != null) {
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(
-              builder: (_) => ActiveRoundScreen(
-                eventId: widget.eventId,
-                sessionId:
-                    _event!['currentSessionId'] as String? ?? widget.eventId,
-              ),
-            ),
-          );
-        } else {
-          PulseToast.info(context, message: 'Event has started!');
-        }
-      }
-    });
-  }
-
   String? _getCurrentUserId() {
     final authState = context.read<AuthBloc>().state;
     if (authState is AuthAuthenticated) {
@@ -106,7 +153,10 @@ class _SpeedDatingLobbyScreenState extends State<SpeedDatingLobbyScreen> {
 
   Future<void> _joinEvent() async {
     final userId = _getCurrentUserId();
-    if (userId == null) return;
+    if (userId == null) {
+      PulseToast.error(context, message: 'User not authenticated');
+      return;
+    }
 
     setState(() {
       _isJoining = true;
@@ -114,15 +164,11 @@ class _SpeedDatingLobbyScreenState extends State<SpeedDatingLobbyScreen> {
     });
 
     try {
-      final participant = await _speedDatingService.joinEvent(
-        widget.eventId,
-        userId,
-      );
+      final participant = await _speedDatingService.joinEvent(widget.eventId);
 
       if (participant != null && mounted) {
         setState(() {
           _hasJoined = true;
-          _isJoining = false;
         });
 
         // Reload event data to get updated participant list
@@ -152,7 +198,10 @@ class _SpeedDatingLobbyScreenState extends State<SpeedDatingLobbyScreen> {
 
   Future<void> _leaveEvent() async {
     final userId = _getCurrentUserId();
-    if (userId == null) return;
+    if (userId == null) {
+      PulseToast.error(context, message: 'User not authenticated');
+      return;
+    }
 
     final confirmed = await showDialog<bool>(
       context: context,
@@ -197,10 +246,7 @@ class _SpeedDatingLobbyScreenState extends State<SpeedDatingLobbyScreen> {
     });
 
     try {
-      final success = await _speedDatingService.leaveEvent(
-        widget.eventId,
-        userId,
-      );
+      final success = await _speedDatingService.leaveEvent(widget.eventId);
 
       if (success && mounted) {
         setState(() {
@@ -231,13 +277,20 @@ class _SpeedDatingLobbyScreenState extends State<SpeedDatingLobbyScreen> {
   }
 
   Future<void> _startEvent() async {
+    if (_event == null) return;
+
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Start Event'),
+        backgroundColor: Colors.white,
+        title: const Text(
+          'Start Event',
+          style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold),
+        ),
         content: const Text(
           'Are you sure you want to start the speed dating event? '
           'All participants will begin their first round.',
+          style: TextStyle(color: Colors.black87),
         ),
         actions: [
           TextButton(
@@ -246,6 +299,9 @@ class _SpeedDatingLobbyScreenState extends State<SpeedDatingLobbyScreen> {
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF6E3BFF),
+            ),
             child: const Text('Start Event'),
           ),
         ],
@@ -261,8 +317,7 @@ class _SpeedDatingLobbyScreenState extends State<SpeedDatingLobbyScreen> {
 
     try {
       await _speedDatingService.startEvent(widget.eventId);
-
-      // Navigation will happen via event status listener
+      // Event status listener will handle navigation
     } catch (e) {
       if (mounted) {
         setState(() {
@@ -270,31 +325,44 @@ class _SpeedDatingLobbyScreenState extends State<SpeedDatingLobbyScreen> {
           _isLoading = false;
         });
       }
+      if (mounted) {
+        PulseToast.error(context, message: 'Failed to start event: $e');
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Speed Dating Lobby'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: _loadEventData,
+    return WillPopScope(
+      onWillPop: () async {
+        context.goNamed('speedDating');
+        return false;
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Speed Dating Lobby'),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () => context.goNamed('speedDating'),
           ),
-        ],
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.refresh),
+              onPressed: _isLoading ? null : _loadEventData,
+            ),
+          ],
+        ),
+        body: _buildBody(),
       ),
-      body: _buildBody(),
     );
   }
 
   Widget _buildBody() {
-    if (_isLoading) {
+    if (_isLoading && _event == null) {
       return const Center(child: CircularProgressIndicator());
     }
 
-    if (_error != null) {
+    if (_error != null && _event == null) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -333,8 +401,41 @@ class _SpeedDatingLobbyScreenState extends State<SpeedDatingLobbyScreen> {
             _buildParticipantsSection(),
             const SizedBox(height: 24),
             _buildActionButtons(),
+            const SizedBox(height: 16),
+            if (_error != null) _buildErrorBanner(),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildErrorBanner() {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.red.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.red.withValues(alpha: 0.5)),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.error_outline, color: Colors.red, size: 20),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              _error!,
+              style: const TextStyle(color: Colors.red, fontSize: 14),
+            ),
+          ),
+          IconButton(
+            icon: const Icon(Icons.close, color: Colors.red, size: 20),
+            onPressed: () {
+              setState(() {
+                _error = null;
+              });
+            },
+          ),
+        ],
       ),
     );
   }
@@ -525,7 +626,13 @@ class _SpeedDatingLobbyScreenState extends State<SpeedDatingLobbyScreen> {
         backgroundImage: photoUrl != null
             ? CachedNetworkImageProvider(photoUrl)
             : null,
-        child: photoUrl == null ? Text(name[0].toUpperCase()) : null,
+        backgroundColor: Colors.grey[300],
+        child: photoUrl == null
+            ? Text(
+                name.isNotEmpty ? name[0].toUpperCase() : '?',
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              )
+            : null,
       ),
       title: Text(name, style: const TextStyle(fontWeight: FontWeight.w600)),
       subtitle: age != null ? Text('$age years old') : null,
@@ -564,7 +671,7 @@ class _SpeedDatingLobbyScreenState extends State<SpeedDatingLobbyScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        if (status == 'upcoming') ...[
+        if (status.toLowerCase() == 'upcoming') ...[
           if (_hasJoined)
             ElevatedButton(
               onPressed: _isJoining ? null : _leaveEvent,
@@ -589,6 +696,7 @@ class _SpeedDatingLobbyScreenState extends State<SpeedDatingLobbyScreen> {
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
+                        color: Colors.white,
                       ),
                     ),
             )
@@ -616,6 +724,7 @@ class _SpeedDatingLobbyScreenState extends State<SpeedDatingLobbyScreen> {
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
+                        color: Colors.white,
                       ),
                     ),
             ),
@@ -641,7 +750,9 @@ class _SpeedDatingLobbyScreenState extends State<SpeedDatingLobbyScreen> {
 
   @override
   void dispose() {
-    // Clean up if needed
+    // Clean up subscriptions and timers
+    _eventStatusSubscription?.cancel();
+    _refreshTimer?.cancel();
     super.dispose();
   }
 }

@@ -2,7 +2,7 @@ name: pulse_dating_app
 description: "A modern Flutter dating app with AR, WebRTC, and real-time features"
 publish_to: 'none'
 
-version: 1.0.2+1
+version: 1.0.4+3
 
 environment:
   sdk: ^3.8.0
@@ -79,7 +79,7 @@ dependencies:
   local_auth: ^2.1.8
   flutter_secure_storage: ^9.2.4
   google_sign_in: ^6.2.1
-  sign_in_with_apple: ^5.0.0
+  sign_in_with_apple: ^7.0.0
   flutter_facebook_auth: ^6.0.3
 
   # Live Streaming
