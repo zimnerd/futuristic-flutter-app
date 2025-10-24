@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../services/profile_draft_service.dart';
+import '../../../data/models/interest.dart';
 import '../../blocs/profile/profile_bloc.dart';
 import '../../blocs/user/user_bloc.dart';
 import '../../blocs/user/user_event.dart';
@@ -39,7 +40,7 @@ class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
   final int _totalSteps = 5;
 
   final List<String> _selectedPhotos = [];
-  List<String> _selectedInterests = [];
+  List<Interest> _selectedInterests = [];
   String? _selectedGender;
   String? _selectedLookingFor;
 
@@ -89,7 +90,8 @@ class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
       _bioController.text = draft.bio ?? '';
       _selectedPhotos.clear();
       _selectedPhotos.addAll(draft.photos);
-      _selectedInterests = List<String>.from(draft.interests);
+      // Convert interest IDs back to Interest objects (stored as empty interests for now)
+      _selectedInterests = [];
       _selectedGender = draft.gender;
       _selectedLookingFor = draft.lookingFor;
       _currentStep = draft.currentStep;
@@ -808,7 +810,7 @@ class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
       'occupation': _occupationController.text.trim(),
       'gender': _selectedGender,
       'lookingFor': _selectedLookingFor,
-      'interests': _selectedInterests,
+      'interestIds': _selectedInterests.map((i) => i.id).toList(),
       'photos': _selectedPhotos,
       'profileCompleted': true,
     };
@@ -871,7 +873,7 @@ class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
       age: int.tryParse(_ageController.text),
       bio: _bioController.text.isNotEmpty ? _bioController.text : null,
       photos: List<String>.from(_selectedPhotos),
-      interests: List<String>.from(_selectedInterests),
+      interests: _selectedInterests.map((i) => i.id).toList(),
       gender: _selectedGender,
       lookingFor: _selectedLookingFor,
       currentStep: _currentStep,

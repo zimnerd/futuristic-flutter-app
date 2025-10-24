@@ -23,6 +23,8 @@ import '../../widgets/common/pulse_toast.dart';
 import '../../dialogs/photo_details_dialog.dart';
 import '../../sheets/photo_reorder_sheet.dart';
 import '../../../domain/entities/user_profile.dart';
+import '../../../data/models/interest.dart';
+import '../../../data/models/user_profile_model.dart';
 import '../../navigation/app_router.dart';
 import '../../widgets/profile/interests_selector.dart';
 import '../../../core/constants/relationship_goals_options.dart';
@@ -248,13 +250,30 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
 
       case 'interests':
         final original =
-            (_formData['originalInterests'] as List<dynamic>?)
-                ?.cast<String>() ??
-            [];
-        final current =
-            (_formData['interests'] as List<dynamic>?)?.cast<String>() ?? [];
-        return original.length != current.length ||
-            !original.every((item) => current.contains(item));
+            (_formData['originalInterests'] as List<dynamic>?) ?? [];
+        final current = (_formData['interests'] as List<dynamic>?) ?? [];
+
+        // Extract IDs for comparison (handles both Interest objects and strings)
+        final originalIds = original
+            .map((item) {
+              if (item is Interest) return item.id;
+              if (item is String) return item;
+              return null;
+            })
+            .whereType<String>()
+            .toList();
+
+        final currentIds = current
+            .map((item) {
+              if (item is Interest) return item.id;
+              if (item is String) return item;
+              return null;
+            })
+            .whereType<String>()
+            .toList();
+
+        return originalIds.length != currentIds.length ||
+            !originalIds.every((item) => currentIds.contains(item));
 
       case 'goals':
         final original =
@@ -1972,29 +1991,43 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
 
   /// Parse interests from form data (handles nested objects from API)
   /// Backend returns: [{id: "...", interest: {id: "...", name: "..."}}]
-  /// We extract interest names for display to InterestsSelector
-  List<String> _parseInterestsFromFormData(dynamic interestsData) {
+  /// We extract Interest objects to pass to InterestsSelector
+  List<Interest> _parseInterestsFromFormData(dynamic interestsData) {
     if (interestsData == null) return [];
 
     if (interestsData is List) {
       return interestsData
           .map((interest) {
+            // If it's already an Interest object, return it
+            if (interest is Interest) {
+              return interest;
+            }
             // If it's a nested object from API: {id, interest: {id, name}}
             if (interest is Map && interest.containsKey('interest')) {
               final nestedInterest = interest['interest'] as Map?;
-              if (nestedInterest != null &&
-                  nestedInterest.containsKey('name')) {
-                return nestedInterest['name'] as String;
+              if (nestedInterest != null) {
+                try {
+                  return Interest.fromJson(
+                    nestedInterest.cast<String, dynamic>(),
+                  );
+                } catch (e) {
+                  return null;
+                }
               }
             }
-            // If it's a direct object: {id, name}
-            if (interest is Map && interest.containsKey('name')) {
-              return interest['name'] as String;
+            // If it's a direct object: {id, name, categoryId, ...}
+            if (interest is Map &&
+                interest.containsKey('id') &&
+                interest.containsKey('name')) {
+              try {
+                return Interest.fromJson(interest.cast<String, dynamic>());
+              } catch (e) {
+                return null;
+              }
             }
-            // Otherwise it's already a string name
-            return interest.toString();
+            return null;
           })
-          .whereType<String>()
+          .whereType<Interest>()
           .toList();
     }
 
@@ -2081,8 +2114,7 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
         break;
 
       case 'interests':
-        final interests = (_formData['interests'] as List<dynamic>?)
-            ?.cast<String>();
+        final interests = _formData['interests'] as List<dynamic>?;
         if (interests == null || interests.isEmpty) {
           return 'Please select at least 1 interest';
         }
@@ -2250,27 +2282,28 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
           }
         } else if (widget.sectionType == 'interests' &&
             _formData.containsKey('interests')) {
-          // Save interests to backend - send interest IDs (best practice)
+          // Save interests to backend - extract IDs from Interest objects
           final interests = _formData['interests'] as List<dynamic>?;
           if (interests != null && interests.isNotEmpty) {
-            // If interests are already objects with IDs, extract the IDs
-            // Otherwise, assume they're already IDs (strings)
-            final interestIds = interests.map((interest) {
-              if (interest is Map && interest.containsKey('id')) {
-                // It's an interest object with {id, name, ...}
-                return interest['id'] as String;
+            // Extract interest IDs from Interest objects
+            final interestIds = <String>[];
+            for (final interest in interests) {
+              if (interest is Interest) {
+                interestIds.add(interest.id);
+              } else if (interest is Map && interest['id'] != null) {
+                interestIds.add(interest['id'] as String);
               }
-              // Otherwise assume it's already an ID string
-              return interest.toString();
-            }).toList();
+            }
 
-            debugPrint('💾 Saving interests to backend (IDs): $interestIds');
-            final apiClient = ServiceLocator.instance.apiClient;
-            await apiClient.put(
-              '/users/me',
-              data: {'interestIds': interestIds},
-            );
-            debugPrint('✅ Interests saved to backend: $interestIds');
+            if (interestIds.isNotEmpty) {
+              debugPrint('💾 Saving interests to backend (IDs): $interestIds');
+              final apiClient = ServiceLocator.instance.apiClient;
+              await apiClient.put(
+                '/users/me',
+                data: {'interestIds': interestIds},
+              );
+              debugPrint('✅ Interests saved to backend: $interestIds');
+            }
           }
         }
       } catch (e) {
@@ -2300,8 +2333,9 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
           final data = response.data as Map<String, dynamic>;
           final userData = data['data'] as Map<String, dynamic>? ?? {};
 
-          // Update the current profile with fresh data
-          _currentProfile = UserProfile.fromJson(userData);
+          // Update the current profile with fresh data using UserProfileModel
+          // which has proper nested interests parsing
+          _currentProfile = UserProfileModel.fromJson(userData);
 
           // Re-populate fields with fresh data to show in UI
           _populateFields(_currentProfile!);
@@ -2320,9 +2354,16 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
         );
       }
 
-      // Check if all required sections have minimal data before allowing progression
-      if (mounted && !widget.isEditMode) {
-        debugPrint('🔍 Checking if all sections have minimal data...');
+      // Only validate all sections when transitioning from the LAST section (interests) to enrichment
+      // For all other sections, just move to the next section
+      const requiredSections = ['goals', 'photos', 'interests'];
+      final currentIndex = requiredSections.indexOf(widget.sectionType);
+      final isLastSection = currentIndex == requiredSections.length - 1;
+
+      if (mounted && !widget.isEditMode && isLastSection) {
+        debugPrint(
+          '🔍 Final section complete - checking if all sections have minimal data...',
+        );
         final allSectionsValid = await _validateAllSectionsHaveMinimalData();
         
         if (!allSectionsValid) {
@@ -2330,7 +2371,11 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
           return;
         }
         
-        debugPrint('✅ All sections have minimal data - allowing progression');
+        debugPrint(
+          '✅ All sections have minimal data - allowing progression to enrichment',
+        );
+      } else if (mounted && !widget.isEditMode && !isLastSection) {
+        debugPrint('✅ Section complete - progressing to next section');
       }
 
       // Handle navigation based on mode

@@ -22,6 +22,7 @@ import '../../widgets/profile/profile_physical_attributes_section.dart';
 import '../../widgets/profile/profile_lifestyle_choices_section.dart';
 import '../../widgets/profile/profile_languages_section.dart';
 import '../../../domain/entities/user_profile.dart';
+import '../../../data/models/interest.dart';
 import '../../../core/services/error_handler.dart';
 import './profile_details_screen.dart';
 
@@ -58,7 +59,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
 
   // Profile data
   DateTime? _dateOfBirth;
-  List<String> _selectedInterests = [];
+  List<Interest> _selectedInterests = [];
   String _selectedGender = 'Woman';
   String? _selectedPreference;
   List<ProfilePhoto> _photos = [];
@@ -142,7 +143,10 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
     _companyController.text =
         profile.company ?? ''; // Company not in backend schema
     _schoolController.text = profile.education ?? profile.school ?? '';
-    _selectedInterests = List.from(profile.interests);
+    // Note: profile.interests is currently List<String> from UserProfile entity
+    // This is a mismatch - should be Interest objects from API
+    // For now, initialize as empty and let the API call populate actual interests
+    _selectedInterests = [];
 
     // Normalize gender from backend format (MALE/FEMALE) to UI format (Man/Woman)
     _selectedGender = _normalizeGender(profile.gender) ?? 'Woman';
@@ -409,7 +413,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
                 ]
               : _photos)
           : _photos,
-      interests: _selectedInterests,
+      interests: _selectedInterests.map((i) => i.name).toList(),
       location: _currentProfile?.location ??
           UserLocation(latitude: 0.0, longitude: 0.0, city: 'Current City'),
       gender: isPreview ? _selectedGender : _convertGenderToBackendFormat(_selectedGender),

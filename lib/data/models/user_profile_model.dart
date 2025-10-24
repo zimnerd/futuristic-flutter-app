@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 import '../../domain/entities/user_profile.dart';
 
 /// Data model for UserProfile with JSON serialization
@@ -50,11 +52,7 @@ class UserProfileModel extends UserProfile {
         json['location'] as Map<String, dynamic>,
       ),
       isVerified: json['isVerified'] as bool? ?? false,
-      interests:
-          (json['interests'] as List<dynamic>?)
-              ?.map((interest) => interest as String)
-              .toList() ??
-          [],
+      interests: _parseInterests(json['interests']),
       occupation: json['occupation'] as String?,
       education: json['education'] as String?,
       height: json['height'] as int?,
@@ -143,6 +141,71 @@ class UserProfileModel extends UserProfile {
       lastActiveAt: entity.lastActiveAt,
       distanceKm: entity.distanceKm,
     );
+  }
+
+  /// Parse interests from backend response
+  /// Backend returns: [{id: UUID, interest: {id: UUID, name: "Soccer"}}, ...]
+  /// We extract the interest names for display
+  static List<String> _parseInterests(dynamic interestsData) {
+    if (interestsData == null) {
+      debugPrint('❌ _parseInterests: interestsData is null');
+      return [];
+    }
+    if (interestsData is! List) {
+      debugPrint(
+        '❌ _parseInterests: interestsData is not a list, type: ${interestsData.runtimeType}',
+      );
+      return [];
+    }
+
+    debugPrint('🔍 _parseInterests: Processing ${interestsData.length} items');
+    final interests = <String>[];
+
+    for (final item in interestsData) {
+      debugPrint('   📦 Processing item: ${item.runtimeType} = $item');
+
+      if (item is String) {
+        // Plain string format
+        debugPrint('   ✅ Added string interest: $item');
+        interests.add(item);
+      } else if (item is Map<String, dynamic>) {
+        // Check if it's the nested format: {id: ..., interest: {id: ..., name: ...}}
+        if (item.containsKey('interest')) {
+          final interest = item['interest'] as Map<String, dynamic>?;
+          debugPrint('   🔗 Found nested interest object: $interest');
+
+          if (interest != null && interest.containsKey('name')) {
+            final name = interest['name'] as String?;
+            if (name != null && name.isNotEmpty) {
+              debugPrint('   ✅ Extracted nested interest name: $name');
+              interests.add(name);
+            } else {
+              debugPrint('   ❌ Interest name is null or empty');
+            }
+          } else {
+            debugPrint('   ❌ Interest object null or no name key');
+          }
+        } else if (item.containsKey('name')) {
+          // Direct format: {id: UUID, name: "Soccer"}
+          final name = item['name'] as String?;
+          if (name != null && name.isNotEmpty) {
+            debugPrint('   ✅ Extracted direct interest name: $name');
+            interests.add(name);
+          }
+        } else {
+          debugPrint(
+            '   ❌ Item is Map but has no interest or name key. Keys: ${item.keys.toList()}',
+          );
+        }
+      } else {
+        debugPrint('   ❌ Item is neither String nor Map: ${item.runtimeType}');
+      }
+    }
+
+    debugPrint(
+      '✨ _parseInterests completed: ${interests.length} interests parsed = $interests',
+    );
+    return interests;
   }
 }
 

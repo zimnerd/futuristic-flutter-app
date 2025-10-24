@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../data/models/interest.dart';
 import '../../../data/repositories/interests_repository.dart';
 import '../../blocs/interests/interests_bloc.dart';
 import '../../blocs/interests/interests_event.dart';
@@ -8,8 +9,8 @@ import '../../theme/pulse_colors.dart';
 
 /// Enhanced interests selector with API integration
 class InterestsSelector extends StatefulWidget {
-  final List<String> selectedInterests;
-  final Function(List<String>) onInterestsChanged;
+  final List<Interest> selectedInterests;
+  final Function(List<Interest>) onInterestsChanged;
   final int maxInterests;
   final int minInterests;
 
@@ -29,7 +30,7 @@ class _InterestsSelectorState extends State<InterestsSelector>
     with TickerProviderStateMixin {
   TabController? _tabController;
   final TextEditingController _searchController = TextEditingController();
-  List<String> _selectedInterests = [];
+  late List<Interest> _selectedInterests = [];
   String _searchQuery = '';
 
   @override
@@ -45,11 +46,16 @@ class _InterestsSelectorState extends State<InterestsSelector>
     super.dispose();
   }
 
-  void _toggleInterest(String interest) {
+  void _toggleInterest(Interest interest) {
     setState(() {
-      if (_selectedInterests.contains(interest)) {
-        _selectedInterests.remove(interest);
+      // Check if already selected by comparing IDs
+      final index = _selectedInterests.indexWhere((i) => i.id == interest.id);
+
+      if (index >= 0) {
+        // Already selected, remove it
+        _selectedInterests.removeAt(index);
       } else if (_selectedInterests.length < widget.maxInterests) {
+        // Not selected and under limit, add it
         _selectedInterests.add(interest);
       } else {
         _showMaxInterestsReachedDialog();
@@ -96,12 +102,12 @@ class _InterestsSelectorState extends State<InterestsSelector>
     );
   }
 
-  List<String> _getFilteredInterests(List<String> interests) {
+  List<Interest> _getFilteredInterests(List<Interest> interests) {
     if (_searchQuery.isEmpty) return interests;
     return interests
         .where(
           (interest) =>
-              interest.toLowerCase().contains(_searchQuery.toLowerCase()),
+              interest.name.toLowerCase().contains(_searchQuery.toLowerCase()),
         )
         .toList();
   }
@@ -296,8 +302,9 @@ class _InterestsSelectorState extends State<InterestsSelector>
                   child: TabBarView(
                     controller: _tabController,
                     children: categories.map((category) {
+                      // Pass full Interest objects, not just names
                       final interests = _getFilteredInterests(
-                        category.interests.map((i) => i.name).toList(),
+                        category.interests,
                       );
 
                       if (interests.isEmpty && _searchQuery.isNotEmpty) {
@@ -335,8 +342,9 @@ class _InterestsSelectorState extends State<InterestsSelector>
                         itemCount: interests.length,
                         itemBuilder: (context, index) {
                           final interest = interests[index];
-                          final isSelected = _selectedInterests.contains(
-                            interest,
+                          // Check if selected by ID comparison
+                          final isSelected = _selectedInterests.any(
+                            (i) => i.id == interest.id,
                           );
                           return _buildInterestChip(interest, isSelected);
                         },
@@ -387,7 +395,7 @@ class _InterestsSelectorState extends State<InterestsSelector>
     );
   }
 
-  Widget _buildInterestChip(String interest, bool isSelected) {
+  Widget _buildInterestChip(Interest interest, bool isSelected) {
     return InkWell(
       onTap: () => _toggleInterest(interest),
       borderRadius: BorderRadius.circular(8),
@@ -405,7 +413,7 @@ class _InterestsSelectorState extends State<InterestsSelector>
           children: [
             Expanded(
               child: Text(
-                interest,
+                interest.name,
                 style: TextStyle(
                   color: isSelected ? Colors.white : Colors.black87,
                   fontSize: 13,
@@ -425,7 +433,7 @@ class _InterestsSelectorState extends State<InterestsSelector>
     );
   }
 
-  Widget _buildSelectedInterestChip(String interest) {
+  Widget _buildSelectedInterestChip(Interest interest) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
@@ -438,7 +446,7 @@ class _InterestsSelectorState extends State<InterestsSelector>
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
-            interest,
+            interest.name,
             style: const TextStyle(
               color: Colors.white,
               fontSize: 12,

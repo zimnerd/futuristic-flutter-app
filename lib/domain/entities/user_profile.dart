@@ -472,7 +472,9 @@ class UserProfile extends Equatable {
               )
               .toList() ??
           [],
-      location: UserLocation.fromJson(json['location'] as Map<String, dynamic>),
+      location: json['location'] != null
+          ? UserLocation.fromJson(json['location'] as Map<String, dynamic>)
+          : UserLocation(address: 'Unknown', latitude: 0, longitude: 0),
       isVerified: json['isVerified'] as bool? ?? false,
       interests: (json['interests'] as List<dynamic>?)?.cast<String>() ?? [],
       occupation: json['occupation'] as String?,
