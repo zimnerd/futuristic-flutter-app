@@ -24,6 +24,7 @@ import '../../navigation/app_router.dart';
 import '../../widgets/profile/interests_selector.dart';
 import '../../../core/constants/relationship_goals_options.dart';
 import '../../../core/services/service_locator.dart';
+import '../../../core/network/api_client.dart';
 
 /// Profile section edit screen for editing individual profile sections
 /// 
@@ -2034,8 +2035,16 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
     // ✅ CHECK: Skip if nothing changed (for already valid sections)
     if (!_hasSectionChanged() && !widget.isEditMode) {
       debugPrint(
-        '⏭️ No changes detected - skipping save and proceeding to next section',
+        '⏭️ No changes detected - marking section as complete and proceeding to next section',
       );
+      
+      // Mark this section as complete since it was already valid
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('setup_${widget.sectionType}_completed', true);
+      debugPrint(
+        '✅ Marked setup_${widget.sectionType}_completed = true (skipped)',
+      );
+      
       _proceedToNextSection();
       return;
     }
@@ -2175,10 +2184,72 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
         );
       }
 
+      // Check if all required sections have minimal data before allowing progression
+      if (mounted && !widget.isEditMode) {
+        debugPrint('🔍 Checking if all sections have minimal data...');
+        final allSectionsValid = await _validateAllSectionsHaveMinimalData();
+        
+        if (!allSectionsValid) {
+          debugPrint('⚠️ Not all sections have minimal data yet - staying on current section');
+          return;
+        }
+        
+        debugPrint('✅ All sections have minimal data - allowing progression');
+      }
+
       // Handle navigation based on mode
       if (mounted) {
         _proceedToNextSection();
       }
+    }
+  }
+
+  /// Validate that all required sections have minimal data
+  /// Calls backend API to check profile completion status
+  Future<bool> _validateAllSectionsHaveMinimalData() async {
+    try {
+      debugPrint('📡 Calling backend to validate profile sections...');
+      
+      final apiClient = ApiClient.instance;
+      final response = await apiClient.getCurrentUser();
+      
+      if (response.statusCode == 200 && response.data != null) {
+        final data = response.data as Map<String, dynamic>;
+        final userData = data['data'] as Map<String, dynamic>? ?? {};
+        
+        // Check minimal requirements for each section
+        bool hasGoals = false;
+        bool hasPhotos = false;
+        bool hasInterests = false;
+        
+        // Check Goals - relationshipGoals should be non-empty list
+        final goals = userData['relationshipGoals'] as List?;
+        hasGoals = goals != null && goals.isNotEmpty;
+        debugPrint('  📋 Goals: ${hasGoals ? "✅ Yes (${goals.length})" : "❌ No"}');
+        
+        // Check Photos - should have at least 1 photo
+        final photos = userData['photos'] as List?;
+        hasPhotos = photos != null && photos.isNotEmpty;
+        debugPrint('  📸 Photos: ${hasPhotos ? "✅ Yes (${photos.length})" : "❌ No"}');
+        
+        // Check Interests - should have at least 2 interests
+        final interests = userData['interests'] as List?;
+        hasInterests = interests != null && interests.length >= 2;
+        debugPrint('  💡 Interests: ${hasInterests ? "✅ Yes (${interests.length})" : "❌ No (need 2+)"}');
+        
+        final allValid = hasGoals && hasPhotos && hasInterests;
+        debugPrint('${allValid ? '✅ All sections have minimal data!' : '⚠️ Some sections missing minimal data'}');
+        
+        return allValid;
+      } else {
+        debugPrint('⚠️ Failed to validate profile: ${response.statusCode}');
+        // If API call fails, allow progression (don't block user)
+        return true;
+      }
+    } catch (e) {
+      debugPrint('❌ Error validating profile sections: $e');
+      // If API call fails, allow progression (don't block user)
+      return true;
     }
   }
 
@@ -2202,8 +2273,57 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
           extra: {'sectionType': nextSection},
         );
       } else {
-        // All required sections are done - navigate to home
-        debugPrint('✅ Setup mode - all sections complete! Navigating to home');
+        // All required sections are done - complete the profile on backend
+        debugPrint('✅ Setup mode - all sections complete!');
+        _completeProfileEnrichment();
+      }
+    }
+  }
+
+  /// Call backend to mark profile enrichment as complete
+  /// This updates the auth state so the user can access home screen
+  Future<void> _completeProfileEnrichment() async {
+    try {
+      debugPrint('📝 Calling backend to complete profile enrichment...');
+
+      // Call the backend endpoint to confirm profile is complete
+      // This should update the user's auth state from AuthProfileEnrichmentRequired
+      // to AuthAuthenticated
+      final apiClient = ApiClient.instance;
+      final response = await apiClient.confirmProfileEnrichment();
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        debugPrint('✅ Profile enrichment completed successfully on backend');
+
+        // Mark all setup flags in SharedPreferences as complete
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setBool('setup_goals_completed', true);
+        await prefs.setBool('setup_photos_completed', true);
+        await prefs.setBool('setup_interests_completed', true);
+        await prefs.setBool('profile_setup_complete', true);
+
+        debugPrint('✅ Marked all setup sections complete in SharedPreferences');
+
+        // Navigate to home - the router will check auth state and allow access
+        if (mounted && context.mounted) {
+          debugPrint(
+            '✅ Navigating to home after profile enrichment completion',
+          );
+          context.go(AppRoutes.home);
+        }
+      } else {
+        debugPrint(
+          '⚠️ Profile enrichment confirmation returned: ${response.statusCode}',
+        );
+        // Still navigate to home - user has completed the required sections
+        if (mounted && context.mounted) {
+          context.go(AppRoutes.home);
+        }
+      }
+    } catch (e) {
+      debugPrint('⚠️ Error confirming profile enrichment: $e');
+      // Still navigate to home - don't block user
+      if (mounted && context.mounted) {
         context.go(AppRoutes.home);
       }
     }

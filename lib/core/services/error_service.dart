@@ -34,7 +34,21 @@ class ErrorDetails {
 
   /// Get error for a specific field
   String? getFieldError(String fieldName) {
-    return fieldErrors?[fieldName];
+    // Try exact match first
+    if (fieldErrors?.containsKey(fieldName) == true) {
+      return fieldErrors![fieldName];
+    }
+
+    // If no exact match, try case-insensitive lookup
+    final lowerFieldName = fieldName.toLowerCase();
+    for (final entry
+        in (fieldErrors?.entries ?? <MapEntry<String, String>>[]).toList()) {
+      if (entry.key.toLowerCase() == lowerFieldName) {
+        return entry.value;
+      }
+    }
+
+    return null;
   }
 }
 

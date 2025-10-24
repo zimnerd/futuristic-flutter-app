@@ -1159,10 +1159,17 @@ class AppRouter {
     debugPrint('  Is Loading: $isLoading');
     debugPrint('  Is Auth Route: $isAuthRoute');
     debugPrint('  Is Welcome Route: $isWelcomeRoute');
+    debugPrint('  Is Profile Setup Route: $isProfileSetupRoute');
 
     // Don't redirect while authentication is loading
     if (isLoading) {
       debugPrint('  ⏳ Auth loading - no redirect');
+      return null;
+    }
+
+    // ✅ ALLOW profile-setup route - don't redirect away from it
+    if (isProfileSetupRoute) {
+      debugPrint('  📝 User on profile setup route - allowing navigation');
       return null;
     }
 
@@ -1176,13 +1183,22 @@ class AppRouter {
       return AppRoutes.verificationMethod;
     }
 
+    // ✅ ALLOW verification-method route - don't redirect away from it
+    if (state.fullPath == AppRoutes.verificationMethod &&
+        currentState is AuthVerificationRequired) {
+      debugPrint(
+        '  🔐 User on verification method route and needs verification - allowing navigation',
+      );
+      return null;
+    }
+
     // ✅ CONSOLIDATED: Fetch SharedPreferences ONCE for all profile checks
     // This prevents multiple async calls that can cause widget tree conflicts
-    late final bool goalsCompleted;
-    late final bool photosCompleted;
-    late final bool interestsCompleted;
-    late final bool profileSetupComplete;
-    late final bool profileCompleteByPercentage;
+    bool goalsCompleted = false;
+    bool photosCompleted = false;
+    bool interestsCompleted = false;
+    bool profileSetupComplete = false;
+    bool profileCompleteByPercentage = false;
 
     if ((currentState is AuthProfileEnrichmentRequired ||
             (isAuthenticated && !isProfileSetupRoute) ||
@@ -1200,22 +1216,15 @@ class AppRouter {
           : false;
     }
 
-    // Check profile enrichment status for authenticated users
-    // BUT: Only redirect if profile setup is actually incomplete
+    // CRITICAL: If auth state is AuthProfileEnrichmentRequired, ALWAYS redirect to profile setup
+    // This state means the backend determined profile is incomplete
+    // Do NOT bypass this with SharedPrefs checks - trust the backend state
     if (currentState is AuthProfileEnrichmentRequired &&
         !state.fullPath!.contains(AppRoutes.profileSetup)) {
-      // Only redirect if profile is actually incomplete
-      if (!profileSetupComplete) {
-        debugPrint(
-          '  📝 User needs profile enrichment - redirecting to profile setup (Goals: $goalsCompleted, Photos: $photosCompleted, Interests: $interestsCompleted)',
-        );
-        return AppRoutes.profileSetup;
-      } else {
-        debugPrint(
-          '  ✅ Profile setup actually complete despite AuthProfileEnrichmentRequired state - allowing home navigation',
-        );
-        // Don't redirect - profile is complete
-      }
+      debugPrint(
+        '  📝 Auth state is AuthProfileEnrichmentRequired - MUST redirect to profile setup',
+      );
+      return AppRoutes.profileSetup;
     }
 
     // Check profile completion status for authenticated users
@@ -1230,13 +1239,18 @@ class AppRouter {
     }
 
     // If user is authenticated with completed profile and trying to access auth/welcome routes,
-    // redirect to home
-    if (isAuthenticated && (isAuthRoute || isWelcomeRoute)) {
-      if (profileSetupComplete || profileCompleteByPercentage) {
-        debugPrint(
-          '  ✅ Authenticated user with complete profile accessing welcome/auth route - redirecting to home',
-        );
-        return AppRoutes.home;
+    // redirect to home (EXCEPT for verification-method - users needing verification must stay there)
+    if (isAuthenticated &&
+        (isAuthRoute || isWelcomeRoute) &&
+        state.fullPath != AppRoutes.verificationMethod) {
+      // Skip this redirect if user needs verification
+      if (currentState is! AuthVerificationRequired) {
+        if (profileSetupComplete || profileCompleteByPercentage) {
+          debugPrint(
+            '  ✅ Authenticated user with complete profile accessing welcome/auth route - redirecting to home',
+          );
+          return AppRoutes.home;
+        }
       }
     }
 

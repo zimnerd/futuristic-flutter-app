@@ -24,7 +24,7 @@ class PhotoPickerWidget extends StatefulWidget {
 class _PhotoPickerWidgetState extends State<PhotoPickerWidget> {
   final ImagePicker _picker = ImagePicker();
 
-  Future<void> _pickImage(ImageSource source) async {
+  Future<void> _pickImage(ImageSource source, {bool multiple = false}) async {
     try {
       // Check permissions
       if (source == ImageSource.camera) {
@@ -41,18 +41,51 @@ class _PhotoPickerWidgetState extends State<PhotoPickerWidget> {
         }
       }
 
-      final XFile? image = await _picker.pickImage(
-        source: source,
-        maxWidth: 1080,
-        maxHeight: 1080,
-        imageQuality: 80,
-      );
+      List<XFile> images = [];
 
-      if (image != null) {
-        final File file = File(image.path);
-        final List<File> updatedPhotos = List.from(widget.selectedPhotos)
-          ..add(file);
-        widget.onPhotosChanged(updatedPhotos);
+      if (multiple && source == ImageSource.gallery) {
+        // Multi-select from gallery
+        images = await _picker.pickMultiImage(
+          maxWidth: 1080,
+          maxHeight: 1080,
+          imageQuality: 80,
+        );
+      } else {
+        // Single image from camera or gallery
+        final XFile? image = await _picker.pickImage(
+          source: source,
+          maxWidth: 1080,
+          maxHeight: 1080,
+          imageQuality: 80,
+        );
+        if (image != null) {
+          images = [image];
+        }
+      }
+
+      if (images.isNotEmpty) {
+        final List<File> newFiles = images
+            .map((img) => File(img.path))
+            .toList();
+
+        // Check if we would exceed max photos
+        if (widget.selectedPhotos.length + newFiles.length > widget.maxPhotos) {
+          _showErrorDialog(
+            'Maximum ${widget.maxPhotos} photos allowed. You can add ${widget.maxPhotos - widget.selectedPhotos.length} more.',
+          );
+          // Add only as many as we can
+          final canAdd = widget.maxPhotos - widget.selectedPhotos.length;
+          final filesToAdd = newFiles.take(canAdd).toList();
+          if (filesToAdd.isNotEmpty) {
+            final List<File> updatedPhotos = List.from(widget.selectedPhotos)
+              ..addAll(filesToAdd);
+            widget.onPhotosChanged(updatedPhotos);
+          }
+        } else {
+          final List<File> updatedPhotos = List.from(widget.selectedPhotos)
+            ..addAll(newFiles);
+          widget.onPhotosChanged(updatedPhotos);
+        }
       }
     } catch (e) {
       _showErrorDialog('Failed to pick image: $e');
@@ -209,14 +242,9 @@ class _PhotoPickerWidgetState extends State<PhotoPickerWidget> {
   }
 
   void _showImageSourceDialog() {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-
     showModalBottomSheet(
       context: context,
-      backgroundColor:
-          theme.bottomSheetTheme.backgroundColor ??
-          (isDark ? const Color(0xFF1E1E1E) : Colors.white),
+      backgroundColor: Colors.white,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -224,18 +252,16 @@ class _PhotoPickerWidgetState extends State<PhotoPickerWidget> {
         child: Wrap(
           children: [
             ListTile(
-              leading: Icon(
+              leading: const Icon(
                 Icons.camera_alt,
-                color:
-                    theme.iconTheme.color ??
-                    (isDark ? Colors.white : Colors.black87),
+                color: Colors.black87,
               ),
-              title: Text(
+              title: const Text(
                 'Camera',
-                style: theme.textTheme.bodyLarge?.copyWith(
-                  color:
-                      theme.textTheme.bodyLarge?.color ??
-                      (isDark ? Colors.white : Colors.black87),
+                style: TextStyle(
+                  color: Colors.black87,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
               onTap: () {
@@ -244,31 +270,52 @@ class _PhotoPickerWidgetState extends State<PhotoPickerWidget> {
               },
             ),
             ListTile(
-              leading: Icon(
-                Icons.photo_library,
-                color:
-                    theme.iconTheme.color ??
-                    (isDark ? Colors.white : Colors.black87),
-              ),
-              title: Text(
-                'Photo Library',
-                style: theme.textTheme.bodyLarge?.copyWith(
-                  color:
-                      theme.textTheme.bodyLarge?.color ??
-                      (isDark ? Colors.white : Colors.black87),
+              leading: const Icon(Icons.photo_library, color: Colors.black87),
+              title: const Text(
+                'Photo Library (Single)',
+                style: TextStyle(
+                  color: Colors.black87,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
               onTap: () {
                 Navigator.pop(context);
-                _pickImage(ImageSource.gallery);
+                _pickImage(ImageSource.gallery, multiple: false);
               },
             ),
             ListTile(
-              leading: Icon(Icons.cancel, color: theme.colorScheme.error),
-              title: Text(
+              leading: const Icon(
+                Icons.photo_library,
+                color: Colors.purple,
+              ),
+              title: const Text(
+                'Photo Library (Multiple)',
+                style: TextStyle(
+                  color: Colors.black87,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              subtitle: const Text(
+                'Select multiple photos at once',
+                style: TextStyle(color: Colors.grey, fontSize: 13,
+                ),
+              ),
+              onTap: () {
+                Navigator.pop(context);
+                _pickImage(ImageSource.gallery, multiple: true);
+              },
+            ),
+            const Divider(height: 1),
+            ListTile(
+              leading: const Icon(Icons.close, color: Colors.red),
+              title: const Text(
                 'Cancel',
-                style: theme.textTheme.bodyLarge?.copyWith(
-                  color: theme.colorScheme.error,
+                style: TextStyle(
+                  color: Colors.red,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
               onTap: () => Navigator.pop(context),

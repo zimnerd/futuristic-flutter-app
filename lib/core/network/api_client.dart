@@ -506,6 +506,13 @@ class ApiClient {
     return await _dio.delete('/media/$photoId');
   }
 
+  /// Confirm/finalize profile enrichment after setup is complete
+  /// This tells the backend that the user has completed all required profile sections
+  /// and is ready to access the main app features
+  Future<Response> confirmProfileEnrichment() async {
+    return await _dio.post('/users/me/profile/confirm');
+  }
+
   /// Update user location
   Future<Response> updateLocation({
     required double latitude,
